@@ -18,6 +18,7 @@ HyperFixi is a TypeScript-based project that creates a bridge between _hyperscri
 ### Build System
 
 The project uses Rollup with TypeScript to create two output formats:
+
 - **dist/hyperscript-fixi.mjs** - ES module for modern bundlers
 - **dist/hyperscript-fixi.min.js** - UMD bundle for script tags (with global `hyperscriptFixi`)
 
@@ -28,12 +29,14 @@ Both outputs include source maps and the UMD version is minified with Terser.
 The project extends _hyperscript's command system by adding custom `fetch` commands that follow hyperscript's natural language syntax. The integration allows for:
 
 1. **Shorthand Syntax** for simple GET requests:
+
    ```
    fetch /url and replace #target
    fetch /url and put into #container
    ```
 
 2. **Extended Syntax** for complex requests:
+
    ```
    fetch /url with method: 'POST', body: formData, headers: {...}
    ```
@@ -41,18 +44,21 @@ The project extends _hyperscript's command system by adding custom `fetch` comma
 ## Development Commands
 
 ### Build
+
 ```bash
 npm run build
 # Uses rollup to compile TypeScript and generate both ES and UMD bundles
 ```
 
 ### Development
+
 ```bash
 # No dev server configured - development done via direct file editing
 # Test using fixi/test.html as reference for testing patterns
 ```
 
 ### Type Checking
+
 ```bash
 npx tsc --noEmit
 # Validates TypeScript without generating output
@@ -76,6 +82,7 @@ This project follows the minimalist philosophy of both parent libraries:
 ## Testing Approach
 
 The project follows fixi's testing philosophy:
+
 - **fixi/test.html** - Self-contained HTML file with visual testing infrastructure
 - No external testing framework dependencies
 - Tests run in browser using file:// protocol

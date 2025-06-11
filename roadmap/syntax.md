@@ -4,10 +4,10 @@ The goal is to move beyond simply wrapping JavaScript functions and to create a 
 
 ### Guiding Principles
 
-1.  **Clarity at a Glance:** Simple requests should look simple. Complex requests should be explicit and unambiguous, not confusing.
-2.  **Natural Language Flow:** The syntax should read like a set of instructions, leveraging Hyperscript's event-driven, sentence-like structure.
-3.  **Unified Command:** Instead of multiple commands (`get`, `post`, etc.), we'll unify them under a single, powerful `fetch` command. This simplifies the API surface and makes it easier to learn.
-4.  **Consistency and Predictability:** The syntax should have a consistent structure that is easy for developers to remember and for AI to generate or parse.
+1. **Clarity at a Glance:** Simple requests should look simple. Complex requests should be explicit and unambiguous, not confusing.
+2. **Natural Language Flow:** The syntax should read like a set of instructions, leveraging Hyperscript's event-driven, sentence-like structure.
+3. **Unified Command:** Instead of multiple commands (`get`, `post`, etc.), we'll unify them under a single, powerful `fetch` command. This simplifies the API surface and makes it easier to learn.
+4. **Consistency and Predictability:** The syntax should have a consistent structure that is easy for developers to remember and for AI to generate or parse.
 
 ---
 
@@ -25,10 +25,10 @@ This syntax is optimized for the most common web interaction: getting a piece of
 * **`fetch <url>`**: The core action. Always starts with `fetch` followed by the URL to retrieve.
 * **`[and]`**: An optional connector word to improve readability.
 * **`<placement>`**: A keyword defining how the fetched content interacts with the target.
-    * `replace`: Replaces the target element itself.
-    * `put into`: Replaces the inner HTML of the target element.
-    * `append to`: Adds the content inside the target, at the end.
-    * `prepend to`: Adds the content inside the target, at the beginning.
+  * `replace`: Replaces the target element itself.
+  * `put into`: Replaces the inner HTML of the target element.
+  * `append to`: Adds the content inside the target, at the end.
+  * `prepend to`: Adds the content inside the target, at the beginning.
 * **`<target>`**: A CSS selector for the element to be modified.
 
 **Examples:**
