@@ -59,3 +59,24 @@ temp/
 
 # Rollup cache
 .rollup.cache/
+
+# Monorepo specific
+lerna-debug.log*
+
+# Debug files (hyperfixi specific)
+debug*.js
+debug*.ts
+debug*.mjs
+debug*.html
+
+# Data files
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated files
+/src/generated/
+/packages/*/src/generated/
+
+# Vitest
+.vitest/

@@ -86,16 +86,45 @@ export class Parser {
 
   parse(): ParseResult {
     try {
+      // Handle empty input
+      if (this.tokens.length === 0) {
+        this.addError('Cannot parse empty input');
+        return {
+          success: false,
+          node: this.createErrorNode(),
+          tokens: this.tokens,
+          error: this.error!
+        };
+      }
+
       const ast = this.parseExpression();
-      const result: ParseResult = {
+      
+      // Check if we have an error or unexpected remaining tokens
+      if (this.error) {
+        return {
+          success: false,
+          node: this.createErrorNode(),
+          tokens: this.tokens,
+          error: this.error
+        };
+      }
+      
+      // Check for unexpected tokens after parsing
+      if (!this.isAtEnd()) {
+        this.addError(`Unexpected token: ${this.peek().value}`);
+        return {
+          success: false,
+          node: this.createErrorNode(),
+          tokens: this.tokens,
+          error: this.error!
+        };
+      }
+
+      return {
         success: true,
         node: ast,
         tokens: this.tokens
       };
-      if (this.error) {
-        result.error = this.error;
-      }
-      return result;
     } catch (error) {
       this.addError(error instanceof Error ? error.message : 'Unknown parsing error');
       return {
@@ -177,6 +206,13 @@ export class Parser {
 
     while (this.match('+', '-')) {
       const operator = this.previous().value;
+      
+      // Check if we're at the end or have invalid token for right operand
+      if (this.isAtEnd()) {
+        this.addError(`Expected expression after '${operator}' operator`);
+        return expr;
+      }
+      
       const right = this.parseMultiplication();
       expr = this.createBinaryExpression(operator, expr, right);
     }
@@ -189,6 +225,13 @@ export class Parser {
 
     while (this.match('*', '/', '%', 'mod')) {
       const operator = this.previous().value;
+      
+      // Check if we're at the end or have invalid token for right operand
+      if (this.isAtEnd()) {
+        this.addError(`Expected expression after '${operator}' operator`);
+        return expr;
+      }
+      
       const right = this.parseUnary();
       expr = this.createBinaryExpression(operator, expr, right);
     }
@@ -406,7 +449,8 @@ export class Parser {
       return this.createIdentifier(token.value);
     }
 
-    this.addError(`Unexpected token: ${this.peek().value}`);
+    const token = this.peek();
+    this.addError(`Unexpected token: ${token.value} at line ${token.line}, column ${token.column}`);
     return this.createErrorNode();
   }
 

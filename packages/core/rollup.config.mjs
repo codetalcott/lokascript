@@ -6,17 +6,23 @@ export default {
   input: 'src/index.ts',
   output: [
     {
-      file: 'dist/hyperscript-fixi.mjs', // For modern bundlers
+      file: 'dist/index.mjs', // ES module output
       format: 'es',
       sourcemap: true,
     },
     {
-      file: 'dist/hyperscript-fixi.min.js', // For <script> tags
+      file: 'dist/index.js', // CommonJS output
+      format: 'cjs',
+      sourcemap: true,
+    },
+    {
+      file: 'dist/index.min.js', // Minified UMD for browser
       format: 'umd',
-      name: 'hyperscriptFixi', // Global variable name
+      name: 'HyperFixiCore',
       plugins: [terser()],
       sourcemap: true,
     },
   ],
   plugins: [nodeResolve(), typescript()],
+  external: [] // No external dependencies for core
 };

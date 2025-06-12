@@ -1,0 +1,95 @@
+{
+  "name": "@hyperfixi/core",
+  "version": "1.0.0",
+  "description": "Pure hyperscript expression evaluation engine with TypeScript support",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./parser": {
+      "import": "./dist/parser/index.mjs",
+      "require": "./dist/parser/index.js",
+      "types": "./dist/parser/index.d.ts"
+    },
+    "./runtime": {
+      "import": "./dist/runtime/index.mjs",
+      "require": "./dist/runtime/index.js",
+      "types": "./dist/runtime/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "docs/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "size": "npm run size:analysis",
+    "size:analysis": "echo 'Size Analysis:' && echo 'ES Module: '$(wc -c < dist/index.mjs)' bytes' && echo 'CJS Module: '$(wc -c < dist/index.js)' bytes' && echo 'Gzipped: '$(gzip -c dist/index.mjs | wc -c)' bytes'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "better-sqlite3": "^9.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "happy-dom": "^12.0.0",
+    "prettier": "^3.0.0",
+    "rollup": "^2.79.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "tslib": "^2.8.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "keywords": [
+    "hyperscript",
+    "parser",
+    "expressions",
+    "dom",
+    "typescript",
+    "ast"
+  ],
+  "author": "HyperFixi Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperfixi/hyperfixi.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/hyperfixi/hyperfixi/issues"
+  },
+  "homepage": "https://github.com/hyperfixi/hyperfixi/tree/main/packages/core#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}

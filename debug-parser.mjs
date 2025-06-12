@@ -2,7 +2,7 @@
 import { parse } from './src/parser/parser.ts';
 import { tokenize } from './src/parser/tokenizer.ts';
 
-const input = 'if x > 5 then add .active else remove .active';
+const input = 'on click if my value > 0 and my className contains active then hide me';
 console.log('=== INPUT ===');
 console.log(input);
 

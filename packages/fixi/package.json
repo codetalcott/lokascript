@@ -1,0 +1,101 @@
+{
+  "name": "@hyperfixi/fixi",
+  "version": "1.0.0",
+  "description": "Utility functions and helpers for hyperscript expressions",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./string": {
+      "import": "./dist/string.mjs",
+      "require": "./dist/string.js",
+      "types": "./dist/string.d.ts"
+    },
+    "./date": {
+      "import": "./dist/date.mjs",
+      "require": "./dist/date.js",
+      "types": "./dist/date.d.ts"
+    },
+    "./array": {
+      "import": "./dist/array.mjs",
+      "require": "./dist/array.js",
+      "types": "./dist/array.d.ts"
+    },
+    "./dom": {
+      "import": "./dist/dom.mjs",
+      "require": "./dist/dom.js",
+      "types": "./dist/dom.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "size": "npm run size:analysis",
+    "size:analysis": "echo 'Size Analysis:' && echo 'ES Module: '$(wc -c < dist/index.mjs)' bytes' && echo 'Gzipped: '$(gzip -c dist/index.mjs | wc -c)' bytes'"
+  },
+  "peerDependencies": {
+    "@hyperfixi/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@hyperfixi/core": "^1.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "happy-dom": "^12.0.0",
+    "prettier": "^3.0.0",
+    "rollup": "^2.79.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "hyperscript",
+    "utilities",
+    "helpers",
+    "string",
+    "array",
+    "dom",
+    "date"
+  ],
+  "author": "HyperFixi Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperfixi/hyperfixi.git",
+    "directory": "packages/fixi"
+  },
+  "bugs": {
+    "url": "https://github.com/hyperfixi/hyperfixi/issues"
+  },
+  "homepage": "https://github.com/hyperfixi/hyperfixi/tree/main/packages/fixi#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
