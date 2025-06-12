@@ -338,6 +338,10 @@ export const containsExpression: ExpressionImplementation = {
     if (container instanceof NodeList) {
       return Array.from(container).includes(value);
     }
+    // Check if object has property
+    if (typeof container === 'object' && container !== null && typeof value === 'string') {
+      return value in container;
+    }
     return false;
   },
   
@@ -415,26 +419,40 @@ export const matchesExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['matches'],
   
-  async evaluate(context: ExecutionContext, str: any, pattern: any): Promise<boolean> {
-    if (typeof str !== 'string' || typeof pattern !== 'string') {
+  async evaluate(context: ExecutionContext, element: any, selector: any): Promise<boolean> {
+    // If it's a DOM element and selector is a CSS selector, use CSS matching
+    if (element instanceof Element && typeof selector === 'string') {
+      // Check if it looks like a CSS selector (starts with . # : [ or is a tag name)
+      if (selector.startsWith('.') || selector.startsWith('#') || selector.startsWith(':') || 
+          selector.startsWith('[') || /^[a-zA-Z][\w-]*$/.test(selector)) {
+        try {
+          return element.matches(selector);
+        } catch (error) {
+          return false;
+        }
+      }
+    }
+    
+    // Otherwise, treat as string pattern matching
+    if (typeof element !== 'string' || typeof selector !== 'string') {
       return false;
     }
     
     try {
       // Support both string patterns and regex patterns
-      const regex = pattern.startsWith('/') && pattern.endsWith('/') 
-        ? new RegExp(pattern.slice(1, -1))
-        : new RegExp(pattern);
-      return regex.test(str);
+      const regex = selector.startsWith('/') && selector.endsWith('/') 
+        ? new RegExp(selector.slice(1, -1))
+        : new RegExp(selector);
+      return regex.test(element);
     } catch (error) {
       // If pattern is invalid regex, treat as literal string
-      return str.includes(pattern);
+      return element.includes(selector);
     }
   },
   
   validate(args: any[]): string | null {
     if (args.length !== 2) {
-      return 'matches requires exactly two arguments (str, pattern)';
+      return 'matches requires exactly two arguments (element, selector)';
     }
     return null;
   }

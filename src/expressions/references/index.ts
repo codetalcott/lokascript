@@ -228,6 +228,63 @@ export const parentExpression: ExpressionImplementation = {
 };
 
 // ============================================================================
+// Additional Global References
+// ============================================================================
+
+export const windowExpression: ExpressionImplementation = {
+  name: 'window',
+  category: 'Reference',
+  evaluatesTo: 'Object',
+  
+  async evaluate(context: ExecutionContext): Promise<Window> {
+    return window;
+  },
+  
+  validate(): string | null {
+    return null; // window requires no arguments
+  }
+};
+
+export const documentExpression: ExpressionImplementation = {
+  name: 'document',
+  category: 'Reference',
+  evaluatesTo: 'Object',
+  
+  async evaluate(context: ExecutionContext): Promise<Document> {
+    return document;
+  },
+  
+  validate(): string | null {
+    return null; // document requires no arguments
+  }
+};
+
+export const elementWithSelectorExpression: ExpressionImplementation = {
+  name: 'elementWithSelector',
+  category: 'Reference',
+  evaluatesTo: 'Array',
+  
+  async evaluate(context: ExecutionContext, selector: string): Promise<HTMLElement[]> {
+    if (typeof selector !== 'string') {
+      throw new Error('Selector must be a string');
+    }
+    
+    const elements = document.querySelectorAll(selector);
+    return Array.from(elements) as HTMLElement[];
+  },
+  
+  validate(args: any[]): string | null {
+    if (args.length !== 1) {
+      return 'elementWithSelector requires exactly one argument (selector)';
+    }
+    if (typeof args[0] !== 'string') {
+      return 'selector must be a string';
+    }
+    return null;
+  }
+};
+
+// ============================================================================
 // Export all reference expressions
 // ============================================================================
 
@@ -242,6 +299,9 @@ export const referenceExpressions = {
   getElementsByClassName: classExpression,
   closest: closestExpression,
   parent: parentExpression,
+  window: windowExpression,
+  document: documentExpression,
+  elementWithSelector: elementWithSelectorExpression,
 } as const;
 
 export type ReferenceExpressionName = keyof typeof referenceExpressions;
