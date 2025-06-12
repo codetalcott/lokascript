@@ -187,7 +187,108 @@ export class Parser {
       return this.createUnaryExpression(operator, expr, true);
     }
 
-    return this.parseCall();
+    return this.parseImplicitBinary();
+  }
+
+  private parseImplicitBinary(): ASTNode {
+    let expr = this.parseCall();
+
+    // Handle implicit binary expressions like "command selector" OR commands with arguments
+    while (!this.isAtEnd() && 
+           !this.checkTokenType(TokenType.OPERATOR) && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.check(')') && 
+           !this.check(']') && 
+           !this.check(',')) {
+      
+      // Check if current expression is an identifier from a command token
+      if (expr.type === 'identifier') {
+        // If followed by a selector, create binary expression
+        if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
+            this.checkTokenType(TokenType.ID_SELECTOR) || 
+            this.checkTokenType(TokenType.CLASS_SELECTOR)) {
+          
+          const right = this.parseCall();
+          expr = this.createBinaryExpression(' ', expr, right);
+          
+        // If followed by other argument types and the identifier is a command, create command
+        } else if (this.checkTokenType(TokenType.TIME_EXPRESSION) ||
+                   this.checkTokenType(TokenType.STRING) ||
+                   this.checkTokenType(TokenType.NUMBER) ||
+                   this.checkTokenType(TokenType.CONTEXT_VAR) ||
+                   this.checkTokenType(TokenType.IDENTIFIER)) {
+          
+          // Convert identifier back to command if it's actually a command
+          if (this.isCommand(expr.name)) {
+            expr = this.createCommandFromIdentifier(expr);
+          } else {
+            break;
+          }
+        } else {
+          // No arguments follow - keep as identifier even if it's a command name
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  private isCommand(name: string): boolean {
+    // Check if the name is in the COMMANDS set from tokenizer
+    const COMMANDS = new Set([
+      'add', 'append', 'async', 'beep', 'break', 'call', 'continue', 'decrement',
+      'default', 'fetch', 'get', 'go', 'halt', 'hide', 'increment', 'js', 'log',
+      'make', 'measure', 'pick', 'put', 'remove', 'render', 'return',
+      'send', 'settle', 'show', 'take', 'tell', 'throw', 'toggle',
+      'transition', 'trigger', 'wait'
+    ]);
+    return COMMANDS.has(name.toLowerCase());
+  }
+
+  private createCommandFromIdentifier(identifierNode: any): any {
+    const args: ASTNode[] = [];
+    
+    // Parse command arguments
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
+      
+      if (this.checkTokenType(TokenType.CONTEXT_VAR) || 
+          this.checkTokenType(TokenType.IDENTIFIER) ||
+          this.checkTokenType(TokenType.CSS_SELECTOR) ||
+          this.checkTokenType(TokenType.ID_SELECTOR) ||
+          this.checkTokenType(TokenType.CLASS_SELECTOR) ||
+          this.checkTokenType(TokenType.STRING) ||
+          this.checkTokenType(TokenType.NUMBER) ||
+          this.checkTokenType(TokenType.TIME_EXPRESSION) ||
+          this.match('<')) {
+        args.push(this.parsePrimary());
+      } else {
+        args.push(this.parseExpression());
+      }
+      
+      if (!this.match(',')) {
+        break;
+      }
+    }
+
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start,
+      end: this.getPosition().end,
+      line: identifierNode.line,
+      column: identifierNode.column
+    };
   }
 
   private parseCall(): ASTNode {
@@ -235,6 +336,12 @@ export class Parser {
       return this.createLiteral(value, this.previous().value);
     }
 
+    // Handle time expressions
+    if (this.matchTokenType(TokenType.TIME_EXPRESSION)) {
+      const raw = this.previous().value;
+      return this.createLiteral(raw, raw); // Keep time expressions as string literals
+    }
+
     // Handle CSS selectors
     if (this.matchTokenType(TokenType.CSS_SELECTOR) || this.matchTokenType(TokenType.ID_SELECTOR) || this.matchTokenType(TokenType.CLASS_SELECTOR)) {
       return this.createSelector(this.previous().value);
@@ -252,7 +359,7 @@ export class Parser {
       return expr;
     }
 
-    // Handle identifiers and keywords
+    // Handle identifiers, keywords, and commands
     if (this.matchTokenType(TokenType.IDENTIFIER) || 
         this.matchTokenType(TokenType.KEYWORD) || 
         this.matchTokenType(TokenType.CONTEXT_VAR) ||
@@ -271,7 +378,7 @@ export class Parser {
       // Handle hyperscript navigation functions
       if (token.value === 'closest' || token.value === 'first' || token.value === 'last') {
         // Check if followed by function call syntax or expression
-        if (this.check('(') || this.checkTokenType(TokenType.CSS_SELECTOR) || this.match('<')) {
+        if (this.check('(') || this.checkTokenType(TokenType.CSS_SELECTOR) || this.check('<')) {
           return this.parseNavigationFunction(token.value);
         }
         return this.createIdentifier(token.value);
@@ -316,13 +423,22 @@ export class Parser {
     // Parse commands
     const commands: CommandNode[] = [];
     
-    do {
-      if (this.matchTokenType(TokenType.COMMAND)) {
+    // Look for commands after the event (and optional selector)
+    while (!this.isAtEnd()) {
+      if (this.checkTokenType(TokenType.COMMAND)) {
+        this.advance(); // consume the command token
         commands.push(this.parseCommand());
       } else {
         break;
       }
-    } while (this.match('then', 'and'));
+      
+      // Handle command separators
+      if (this.match('then', 'and', ',')) {
+        continue; // parse next command
+      } else {
+        break; // no more commands
+      }
+    }
 
     const pos = this.getPosition();
     const node: EventHandlerNode = {
@@ -346,11 +462,30 @@ export class Parser {
     const commandToken = this.previous();
     const args: ASTNode[] = [];
 
-    // Parse command arguments based on command type
-    while (!this.isAtEnd() && !this.check('then') && !this.check('else') && !this.checkTokenType(TokenType.COMMAND)) {
-      args.push(this.parseExpression());
+    // Parse command arguments - continue until we hit a separator or end
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
       
-      // Break after parsing one argument for most commands
+      // For simple arguments like identifiers, selectors, literals
+      if (this.checkTokenType(TokenType.CONTEXT_VAR) || 
+          this.checkTokenType(TokenType.IDENTIFIER) ||
+          this.checkTokenType(TokenType.CSS_SELECTOR) ||
+          this.checkTokenType(TokenType.ID_SELECTOR) ||
+          this.checkTokenType(TokenType.CLASS_SELECTOR) ||
+          this.checkTokenType(TokenType.STRING) ||
+          this.checkTokenType(TokenType.NUMBER) ||
+          this.checkTokenType(TokenType.TIME_EXPRESSION) ||
+          this.match('<')) {
+        args.push(this.parsePrimary());
+      } else {
+        // For more complex expressions
+        args.push(this.parseExpression());
+      }
+      
+      // Break after parsing one argument unless there's a comma
       if (!this.match(',')) {
         break;
       }
@@ -625,10 +760,17 @@ export class Parser {
   }
 
   private consume(expected: string | TokenType, message: string): Token {
-    if (typeof expected === 'string') {
-      if (this.check(expected)) return this.advance();
+    const currentToken = this.peek();
+    
+    // Check if it's a token type (enum value) by checking if it matches any TokenType enum values
+    const isTokenType = Object.values(TokenType).includes(expected as TokenType);
+    
+    if (isTokenType) {
+      // It's a token type - check the token's type property
+      if (this.checkTokenType(expected as TokenType)) return this.advance();
     } else {
-      if (this.checkTokenType(expected)) return this.advance();
+      // It's a literal string value - check the token's value property
+      if (this.check(expected as string)) return this.advance();
     }
 
     this.addError(message);
