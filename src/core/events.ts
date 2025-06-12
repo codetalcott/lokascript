@@ -402,3 +402,100 @@ export function waitForEvent(
     element.addEventListener(eventType, handler, { once: true });
   });
 }
+
+/**
+ * Emits fx:config event for fixi compatibility
+ * Allows modification of request configuration before sending
+ */
+export function emitConfigEvent(element: HTMLElement, cfg: any): boolean {
+  const event = new CustomEvent('fx:config', {
+    detail: { config: cfg },
+    bubbles: true,
+    cancelable: true,
+  });
+  
+  element.dispatchEvent(event);
+  
+  // Return false if event was cancelled (preventDefault called)
+  return !event.defaultPrevented;
+}
+
+/**
+ * Emits fx:before event for fixi compatibility
+ * Fired just before HTTP request is sent
+ */
+export function emitBeforeEvent(element: HTMLElement, cfg: any): boolean {
+  const event = new CustomEvent('fx:before', {
+    detail: { config: cfg },
+    bubbles: true,
+    cancelable: true,
+  });
+  
+  element.dispatchEvent(event);
+  
+  // Return false if event was cancelled (preventDefault called)
+  return !event.defaultPrevented;
+}
+
+/**
+ * Emits fx:after event for fixi compatibility
+ * Fired after HTTP response is received
+ */
+export function emitAfterEvent(element: HTMLElement, cfg: any): boolean {
+  const event = new CustomEvent('fx:after', {
+    detail: { config: cfg },
+    bubbles: true,
+    cancelable: true,
+  });
+  
+  element.dispatchEvent(event);
+  
+  // Return false if event was cancelled (preventDefault called)
+  return !event.defaultPrevented;
+}
+
+/**
+ * Emits fx:error event for fixi compatibility
+ * Fired when HTTP request or processing encounters an error
+ */
+export function emitErrorEvent(element: HTMLElement, error: Error, cfg: any, command: any): void {
+  const event = new CustomEvent('fx:error', {
+    detail: { 
+      error, 
+      config: cfg, 
+      command 
+    },
+    bubbles: true,
+    cancelable: false, // Error events are not cancelable
+  });
+  
+  element.dispatchEvent(event);
+}
+
+/**
+ * Emits fx:finally event for fixi compatibility
+ * Fired after request completion (success or error)
+ */
+export function emitFinallyEvent(element: HTMLElement, cfg: any): void {
+  const event = new CustomEvent('fx:finally', {
+    detail: { config: cfg },
+    bubbles: true,
+    cancelable: false, // Finally events are not cancelable
+  });
+  
+  element.dispatchEvent(event);
+}
+
+/**
+ * Emits fx:swapped event for fixi compatibility
+ * Fired after DOM content has been swapped/updated
+ */
+export function emitSwappedEvent(element: HTMLElement, cfg: any): void {
+  const event = new CustomEvent('fx:swapped', {
+    detail: { config: cfg },
+    bubbles: true,
+    cancelable: false, // Swapped events are not cancelable (already done)
+  });
+  
+  element.dispatchEvent(event);
+}

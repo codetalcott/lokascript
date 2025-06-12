@@ -16,6 +16,12 @@ import {
   setupEventDelegation,
   cleanupEventDelegation,
   registerManagerForDelegation,
+  emitConfigEvent,
+  emitBeforeEvent,
+  emitAfterEvent,
+  emitErrorEvent,
+  emitFinallyEvent,
+  emitSwappedEvent,
 } from './events';
 
 describe('Event System', () => {
@@ -325,6 +331,198 @@ describe('Event System', () => {
       testElement.dispatchEvent(hsEvent);
       
       expect(contextHandler).toHaveBeenCalled();
+    });
+  });
+
+  describe('Fixi Event Compatibility', () => {
+    it('should emit fx:config event with proper data', () => {
+      const cfg = { url: '/test', method: 'GET' };
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:config', handler);
+      
+      const result = emitConfigEvent(testElement, cfg);
+      
+      expect(result).toBe(true);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:config',
+          detail: { config: cfg },
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    });
+
+    it('should return false when fx:config event is cancelled', () => {
+      const cfg = { url: '/test', method: 'GET' };
+      const handler = vi.fn((event) => event.preventDefault());
+      
+      testElement.addEventListener('fx:config', handler);
+      
+      const result = emitConfigEvent(testElement, cfg);
+      
+      expect(result).toBe(false);
+      expect(handler).toHaveBeenCalled();
+    });
+
+    it('should emit fx:before event with proper data', () => {
+      const cfg = { url: '/test', method: 'POST', body: 'data' };
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:before', handler);
+      
+      const result = emitBeforeEvent(testElement, cfg);
+      
+      expect(result).toBe(true);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:before',
+          detail: { config: cfg },
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    });
+
+    it('should return false when fx:before event is cancelled', () => {
+      const cfg = { url: '/test', method: 'POST' };
+      const handler = vi.fn((event) => event.preventDefault());
+      
+      testElement.addEventListener('fx:before', handler);
+      
+      const result = emitBeforeEvent(testElement, cfg);
+      
+      expect(result).toBe(false);
+      expect(handler).toHaveBeenCalled();
+    });
+
+    it('should emit fx:after event with proper data', () => {
+      const cfg = { url: '/test', response: { status: 200, data: 'success' } };
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:after', handler);
+      
+      const result = emitAfterEvent(testElement, cfg);
+      
+      expect(result).toBe(true);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:after',
+          detail: { config: cfg },
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    });
+
+    it('should return false when fx:after event is cancelled', () => {
+      const cfg = { url: '/test', response: { status: 200 } };
+      const handler = vi.fn((event) => event.preventDefault());
+      
+      testElement.addEventListener('fx:after', handler);
+      
+      const result = emitAfterEvent(testElement, cfg);
+      
+      expect(result).toBe(false);
+      expect(handler).toHaveBeenCalled();
+    });
+
+    it('should emit fx:error event with error data', () => {
+      const cfg = { url: '/test', method: 'GET' };
+      const command = { type: 'fetch', target: testElement };
+      const error = new Error('Network error');
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:error', handler);
+      
+      emitErrorEvent(testElement, error, cfg, command);
+      
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:error',
+          detail: { error, config: cfg, command },
+          bubbles: true,
+          cancelable: false,
+        })
+      );
+    });
+
+    it('should emit fx:finally event after request completion', () => {
+      const cfg = { url: '/test', method: 'GET', completed: true };
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:finally', handler);
+      
+      emitFinallyEvent(testElement, cfg);
+      
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:finally',
+          detail: { config: cfg },
+          bubbles: true,
+          cancelable: false,
+        })
+      );
+    });
+
+    it('should emit fx:swapped event after DOM updates', () => {
+      const cfg = { url: '/test', target: testElement, content: '<div>new content</div>' };
+      const handler = vi.fn();
+      
+      testElement.addEventListener('fx:swapped', handler);
+      
+      emitSwappedEvent(testElement, cfg);
+      
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'fx:swapped',
+          detail: { config: cfg },
+          bubbles: true,
+          cancelable: false,
+        })
+      );
+    });
+
+    it('should support event chaining with multiple handlers', () => {
+      const cfg = { url: '/test', method: 'GET' };
+      let eventOrder: string[] = [];
+      
+      testElement.addEventListener('fx:config', () => eventOrder.push('config'));
+      testElement.addEventListener('fx:before', () => eventOrder.push('before'));
+      testElement.addEventListener('fx:after', () => eventOrder.push('after'));
+      testElement.addEventListener('fx:finally', () => eventOrder.push('finally'));
+      testElement.addEventListener('fx:swapped', () => eventOrder.push('swapped'));
+      
+      // Simulate typical fixi event chain
+      expect(emitConfigEvent(testElement, cfg)).toBe(true);
+      expect(emitBeforeEvent(testElement, cfg)).toBe(true);
+      expect(emitAfterEvent(testElement, { ...cfg, response: { status: 200 } })).toBe(true);
+      emitFinallyEvent(testElement, cfg);
+      emitSwappedEvent(testElement, cfg);
+      
+      expect(eventOrder).toEqual(['config', 'before', 'after', 'finally', 'swapped']);
+    });
+
+    it('should handle event bubbling through DOM hierarchy', () => {
+      const parentElement = createTestElement('<div id="parent"></div>');
+      const childElement = createTestElement('<button id="child">Click me</button>');
+      parentElement.appendChild(childElement);
+      document.body.appendChild(parentElement);
+      
+      const parentHandler = vi.fn();
+      const childHandler = vi.fn();
+      
+      parentElement.addEventListener('fx:config', parentHandler);
+      childElement.addEventListener('fx:config', childHandler);
+      
+      const cfg = { url: '/test', method: 'GET' };
+      emitConfigEvent(childElement, cfg);
+      
+      expect(childHandler).toHaveBeenCalled();
+      expect(parentHandler).toHaveBeenCalled();
+      
+      document.body.removeChild(parentElement);
     });
   });
 });
