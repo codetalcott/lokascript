@@ -129,7 +129,7 @@ This positions the project at the cutting edge, providing the ideal client-side 
 
 ---
 
-## 6. Mobile Extension (Hyperview Model)
+## 6. Defer until later: Mobile Extension (Hyperview Model)
 
 **Goal:** To extend the same declarative syntax to native mobile development, allowing teams to use a single, unified paradigm for both web and mobile UIs.
 
