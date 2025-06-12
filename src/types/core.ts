@@ -49,16 +49,25 @@ export interface ExecutionContext {
   result: any;
   
   /** Local variable scope */
-  locals: Map<string, any>;
+  locals?: Map<string, any>;
   
   /** Global variable scope */
-  globals: Map<string, any>;
+  globals?: Map<string, any>;
+  
+  /** General variables storage (for simple use cases) */
+  variables?: Map<string, any>;
+  
+  /** Event handlers storage for cleanup */
+  events?: Map<string, { target: HTMLElement; event: string; handler: Function }>;
+  
+  /** Current DOM event (when in event handler) */
+  event?: Event;
   
   /** Parent context for scope chain */
   parent?: ExecutionContext;
   
   /** Execution flags */
-  flags: {
+  flags?: {
     halted: boolean;
     breaking: boolean;
     continuing: boolean;

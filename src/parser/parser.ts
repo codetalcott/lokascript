@@ -87,19 +87,22 @@ export class Parser {
   parse(): ParseResult {
     try {
       const ast = this.parseExpression();
-      return {
+      const result: ParseResult = {
         success: true,
         node: ast,
-        tokens: this.tokens,
-        error: this.error
+        tokens: this.tokens
       };
+      if (this.error) {
+        result.error = this.error;
+      }
+      return result;
     } catch (error) {
       this.addError(error instanceof Error ? error.message : 'Unknown parsing error');
       return {
         success: false,
         node: this.createErrorNode(),
         tokens: this.tokens,
-        error: this.error
+        error: this.error!
       };
     }
   }
@@ -221,8 +224,8 @@ export class Parser {
                    this.checkTokenType(TokenType.IDENTIFIER)) {
           
           // Convert identifier back to command if it's actually a command
-          if (this.isCommand(expr.name)) {
-            expr = this.createCommandFromIdentifier(expr);
+          if (expr.type === 'identifier' && this.isCommand((expr as IdentifierNode).name)) {
+            expr = this.createCommandFromIdentifier(expr as IdentifierNode);
           } else {
             break;
           }
@@ -719,24 +722,6 @@ export class Parser {
     return this.tokens[this.current + 1].value === value;
   }
 
-  private checkSequence(...values: string[]): boolean {
-    for (let i = 0; i < values.length; i++) {
-      if (this.current + i >= this.tokens.length) return false;
-      if (this.tokens[this.current + i].value !== values[i]) return false;
-    }
-    return true;
-  }
-
-  private consumePossessive(): void {
-    if (this.check("'s") || this.check("'s")) {
-      this.advance();
-    } else if (this.check("'") || this.check("'")) {
-      this.advance(); // consume apostrophe
-      this.consume('s', "Expected 's' after apostrophe in possessive");
-    } else {
-      this.addError("Expected possessive syntax ('s)");
-    }
-  }
 
   private advance(): Token {
     if (!this.isAtEnd()) this.current++;
@@ -760,8 +745,6 @@ export class Parser {
   }
 
   private consume(expected: string | TokenType, message: string): Token {
-    const currentToken = this.peek();
-    
     // Check if it's a token type (enum value) by checking if it matches any TokenType enum values
     const isTokenType = Object.values(TokenType).includes(expected as TokenType);
     
