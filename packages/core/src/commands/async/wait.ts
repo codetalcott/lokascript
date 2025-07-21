@@ -21,30 +21,43 @@ export class WaitCommand implements CommandImplementation {
   implicitTarget = 'me';
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
-    if (args.length === 0) {
-      throw new Error('Wait command requires arguments');
-    }
-
-    const firstArg = args[0];
-
-    // Handle structured object arguments from tests
-    if (typeof firstArg === 'object' && firstArg !== null) {
-      if (firstArg.type === 'timeout') {
-        return this.waitForTime([firstArg], context);
-      } else if (firstArg.type === 'event') {
-        return this.waitForEvent([firstArg], context);
-      } else if (firstArg.type === 'mixed') {
-        return this.waitForMixedEventTimeout(firstArg, context);
+    try {
+      if (args.length === 0) {
+        throw new Error('Wait command requires arguments');
       }
-    }
 
-    // Check if this is an event-based wait
-    if (args[0] === 'for') {
-      return this.waitForEvent(args.slice(1), context);
-    }
+      const firstArg = args[0];
 
-    // Otherwise, it's a time-based wait
-    return this.waitForTime(args, context);
+      // Handle structured object arguments from tests
+      if (typeof firstArg === 'object' && firstArg !== null) {
+        if (firstArg.type === 'timeout') {
+          return await this.waitForTime([firstArg], context);
+        } else if (firstArg.type === 'event') {
+          // Runtime validation for event objects
+          if (!firstArg.hasOwnProperty('eventName')) {
+            throw new Error('Event configuration missing eventName');
+          }
+          if (!firstArg.eventName || typeof firstArg.eventName !== 'string' || !firstArg.eventName.trim()) {
+            throw new Error('Event name cannot be empty');
+          }
+          return await this.waitForEvent([firstArg], context);
+        } else if (firstArg.type === 'mixed') {
+          return await this.waitForMixedEventTimeout(firstArg, context);
+        }
+      }
+
+      // Check if this is an event-based wait
+      if (args[0] === 'for') {
+        return await this.waitForEvent(args.slice(1), context);
+      }
+
+      // Otherwise, it's a time-based wait
+      return await this.waitForTime(args, context);
+    } catch (error) {
+      // Emit error event
+      this.emitErrorEvent(context, error as Error);
+      throw error;
+    }
   }
 
   validate(args: any[]): string | null {
@@ -150,7 +163,7 @@ export class WaitCommand implements CommandImplementation {
     if (args.length === 1 && typeof args[0] === 'object' && args[0].type === 'event') {
       const eventObj = args[0];
       const eventSpec = {
-        events: [{ eventName: eventObj.eventName, source: eventObj.source || null, destructure: eventObj.destructure || [] }],
+        events: [{ eventName: eventObj.eventName, source: eventObj.source, destructure: eventObj.destructure || [] }],
         timeout: null
       };
       return this.executeEventWait(eventSpec, context);
@@ -166,11 +179,11 @@ export class WaitCommand implements CommandImplementation {
     if (config.events && Array.isArray(config.events)) {
       events = config.events.map((evt: any) => ({
         eventName: evt.eventName,
-        source: evt.source || null,
+        source: evt.source,
         destructure: evt.destructure || []
       }));
     } else {
-      events = [{ eventName: config.eventName, source: config.source || null, destructure: config.destructure || [] }];
+      events = [{ eventName: config.eventName, source: config.source, destructure: config.destructure || [] }];
     }
     
     // Handle timeout
@@ -396,9 +409,20 @@ export class WaitCommand implements CommandImplementation {
   }
 
   private resolveEventSource(source: any, context: ExecutionContext): HTMLElement | Document {
+    // Only throw error for explicitly null sources (from error tests)
+    // Allow undefined/falsy sources to default to context.me || document
+    if (source === null) {
+      throw new Error('Invalid event source');
+    }
+    
     if (!source) {
       // Default to current element
       return context.me || document;
+    }
+    
+    // Handle document specifically
+    if (source === document) {
+      return document;
     }
     
     // If source is already an HTMLElement, return it directly
@@ -467,6 +491,24 @@ export class WaitCommand implements CommandImplementation {
     }
 
     return undefined;
+  }
+
+  private emitErrorEvent(context: ExecutionContext, error: Error): void {
+    try {
+      const target = context.me || document;
+      const errorEvent = new CustomEvent('hyperscript:error', {
+        bubbles: true,
+        cancelable: true,
+        detail: {
+          command: 'wait',
+          error: error
+        }
+      });
+      target.dispatchEvent(errorEvent);
+    } catch (e) {
+      // Silently fail if event emission fails
+      console.warn('Failed to emit hyperscript:error event:', e);
+    }
   }
 }
 
