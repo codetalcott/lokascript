@@ -426,6 +426,24 @@ export class DefFeature {
           const varName = await this.evaluateExpression(command.args[1], context);
           const value = await this.evaluateExpression(command.args[2], context);
           context.globals!.set(varName, value);
+        } else {
+          // Handle simple set operations like: set result, value * 2
+          const varName = await this.evaluateExpression(command.args[0], context);
+          const value = await this.evaluateExpression(command.args[1], context);
+          context.locals!.set(varName, value);
+        }
+        return;
+
+      case 'if':
+        // Handle simplified if commands like: if condition, then, return, value
+        const condition = await this.evaluateExpression(command.args[0], context);
+        if (condition) {
+          if (command.args[1] === 'then' && command.args[2] === 'return') {
+            context.flags!.returning = true;
+            const returnValue = await this.evaluateExpression(command.args[3], context);
+            context.returnValue = returnValue;
+            return returnValue;
+          }
         }
         return;
 
@@ -452,84 +470,24 @@ export class DefFeature {
    */
   private async evaluateExpression(expr: any, context: ExecutionContext): Promise<any> {
     if (typeof expr === 'string') {
-      // Handle property access (e.g., "param.name")
-      if (expr.includes('.')) {
-        const parts = expr.split('.');
-        let obj = await this.evaluateExpression(parts[0], context);
-        for (let i = 1; i < parts.length; i++) {
-          if (obj && typeof obj === 'object' && parts[i] in obj) {
-            obj = obj[parts[i]];
-          } else {
-            return undefined;
-          }
-        }
-        return obj;
-      }
-
-      // Handle logical OR (e.g., "param2 || 'default'")
-      if (expr.includes(' || ')) {
-        const parts = expr.split(' || ').map(p => p.trim());
-        const left = await this.evaluateExpression(parts[0], context);
-        if (left) return left;
-        return await this.evaluateExpression(parts[1], context);
-      }
-
-      // Handle string literals with quotes
-      if (expr.startsWith('"') && expr.endsWith('"')) {
-        return expr.slice(1, -1);
-      }
-
-      // Simple variable lookup
-      if (context.locals?.has(expr)) {
-        return context.locals.get(expr);
-      }
-      if (context.globals?.has(expr)) {
-        return context.globals.get(expr);
-      }
-      
-      // Handle type conversion (simplified)
-      if (expr.includes(' as int')) {
-        const value = await this.evaluateExpression(expr.replace(' as int', ''), context);
-        return parseInt(value) || 0;
-      }
-
-      // Handle arithmetic with proper precedence  
-      if (expr.includes(' * ') && !expr.includes('(')) {
-        const parts = expr.split(' * ').map(p => p.trim());
-        let result = await this.evaluateExpression(parts[0], context);
-        for (let i = 1; i < parts.length; i++) {
-          const right = await this.evaluateExpression(parts[i], context);
-          result = (Number(result) || 0) * (Number(right) || 0);
-        }
-        return result;
-      }
-
-      if (expr.includes(' + ') && !expr.includes('(') && !expr.includes('"')) {
-        const parts = expr.split(' + ').map(p => p.trim());
-        let result = await this.evaluateExpression(parts[0], context);
-        for (let i = 1; i < parts.length; i++) {
-          const right = await this.evaluateExpression(parts[i], context);
-          // Try numeric addition first, fall back to string concatenation
-          const numResult = (Number(result) || 0) + (Number(right) || 0);
-          if (!isNaN(numResult) && Number(result) == result && Number(right) == right) {
-            result = numResult;
-          } else {
-            result = String(result) + String(right);
-          }
-        }
-        return result;
-      }
-
-      // Handle comparison operators
-      if (expr.includes(' <= ')) {
-        const parts = expr.split(' <= ').map(p => p.trim());
-        const left = await this.evaluateExpression(parts[0], context);
-        const right = await this.evaluateExpression(parts[1], context);
-        return left <= right;
-      }
-
-      // Handle function calls (recursive) - with recursion depth limit
+      // Handle parentheses first for proper precedence
       if (expr.includes('(') && expr.includes(')')) {
+        // Handle type conversion patterns like "(i as int) + (j as int)"
+        const typeConversionMatch = expr.match(/\((.+?) as (int|number)\)/g);
+        if (typeConversionMatch) {
+          let processedExpr = expr;
+          for (const match of typeConversionMatch) {
+            const innerMatch = match.match(/\((.+?) as (int|number)\)/);
+            if (innerMatch) {
+              const value = await this.evaluateExpression(innerMatch[1], context);
+              const converted = parseInt(String(value)) || 0;
+              processedExpr = processedExpr.replace(match, String(converted));
+            }
+          }
+          return await this.evaluateExpression(processedExpr, context);
+        }
+
+        // Handle function calls
         const funcMatch = expr.match(/^(\w+)\((.*)\)$/);
         if (funcMatch) {
           const funcName = funcMatch[1];
@@ -550,6 +508,117 @@ export class DefFeature {
             return await this.executeFunction(funcName, argValues, newContext);
           }
         }
+      }
+
+      // Handle string literals with embedded expressions (e.g., "caught: e.message")
+      if (expr.includes(':') && !expr.includes(' + ') && !expr.includes(' * ')) {
+        // Handle simple string literal with property access pattern
+        const match = expr.match(/^(.+?):\s*(.+)$/);
+        if (match) {
+          const [, prefix, propertyExpr] = match;
+          const propertyValue = await this.evaluateExpression(propertyExpr, context);
+          return prefix + ': ' + String(propertyValue);
+        }
+      }
+
+      // Handle string concatenation with quotes (e.g., "Hello " + name)
+      if (expr.includes(' + ') && expr.includes('"')) {
+        const parts = expr.split(' + ').map(p => p.trim());
+        let result = await this.evaluateExpression(parts[0], context);
+        for (let i = 1; i < parts.length; i++) {
+          const right = await this.evaluateExpression(parts[i], context);
+          result = String(result) + String(right);
+        }
+        return result;
+      }
+
+      // Handle arithmetic operations with proper precedence  
+      if (expr.includes(' * ') && !expr.includes('"')) {
+        const parts = expr.split(' * ').map(p => p.trim());
+        let result = await this.evaluateExpression(parts[0], context);
+        for (let i = 1; i < parts.length; i++) {
+          const right = await this.evaluateExpression(parts[i], context);
+          result = (Number(result) || 0) * (Number(right) || 0);
+        }
+        return result;
+      }
+
+      if (expr.includes(' + ') && !expr.includes('"')) {
+        const parts = expr.split(' + ').map(p => p.trim());
+        let result = await this.evaluateExpression(parts[0], context);
+        for (let i = 1; i < parts.length; i++) {
+          const right = await this.evaluateExpression(parts[i], context);
+          // Try numeric addition first
+          const numResult = (Number(result) || 0) + (Number(right) || 0);
+          if (!isNaN(numResult) && !isNaN(Number(result)) && !isNaN(Number(right))) {
+            result = numResult;
+          } else {
+            result = String(result) + String(right);
+          }
+        }
+        return result;
+      }
+
+      // Handle subtraction
+      if (expr.includes(' - ') && !expr.includes('"')) {
+        const parts = expr.split(' - ').map(p => p.trim());
+        let result = await this.evaluateExpression(parts[0], context);
+        for (let i = 1; i < parts.length; i++) {
+          const right = await this.evaluateExpression(parts[i], context);
+          result = (Number(result) || 0) - (Number(right) || 0);
+        }
+        return result;
+      }
+
+      // Handle property access (e.g., "param.name", "e.message")
+      if (expr.includes('.')) {
+        const parts = expr.split('.');
+        let obj = await this.evaluateExpression(parts[0], context);
+        for (let i = 1; i < parts.length; i++) {
+          if (obj && typeof obj === 'object' && parts[i] in obj) {
+            obj = obj[parts[i]];
+          } else if (obj instanceof Error && parts[i] === 'message') {
+            obj = obj.message;
+          } else {
+            return undefined;
+          }
+        }
+        return obj;
+      }
+
+      // Handle logical OR (e.g., "param2 || 'default'")
+      if (expr.includes(' || ')) {
+        const parts = expr.split(' || ').map(p => p.trim());
+        const left = await this.evaluateExpression(parts[0], context);
+        if (left) return left;
+        return await this.evaluateExpression(parts[1], context);
+      }
+
+      // Handle string literals with quotes
+      if (expr.startsWith('"') && expr.endsWith('"')) {
+        return expr.slice(1, -1);
+      }
+
+      // Handle type conversion (simplified)
+      if (expr.includes(' as int')) {
+        const value = await this.evaluateExpression(expr.replace(' as int', ''), context);
+        return parseInt(String(value)) || 0;
+      }
+
+      // Handle comparison operators
+      if (expr.includes(' <= ')) {
+        const parts = expr.split(' <= ').map(p => p.trim());
+        const left = await this.evaluateExpression(parts[0], context);
+        const right = await this.evaluateExpression(parts[1], context);
+        return left <= right;
+      }
+      
+      // Simple variable lookup
+      if (context.locals?.has(expr)) {
+        return context.locals.get(expr);
+      }
+      if (context.globals?.has(expr)) {
+        return context.globals.get(expr);
       }
       
       // Check if it's a number
