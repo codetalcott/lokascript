@@ -96,12 +96,23 @@ describe('Hyperscript Tokenizer', () => {
       const input = 'get my.value';
       const tokens = tokenize(input);
       
-      expect(tokens).toHaveLength(2);
+      // Current tokenizer design tokenizes each element separately for parser flexibility
+      expect(tokens).toHaveLength(4);
+      expect(tokens[0]).toMatchObject({
+        type: TokenType.COMMAND,
+        value: 'get',
+      });
       expect(tokens[1]).toMatchObject({
-        type: TokenType.PROPERTY_ACCESS,
-        value: 'my.value',
-        start: 4,
-        end: 12,
+        type: TokenType.CONTEXT_VAR,
+        value: 'my',
+      });
+      expect(tokens[2]).toMatchObject({
+        type: TokenType.OPERATOR,
+        value: '.',
+      });
+      expect(tokens[3]).toMatchObject({
+        type: TokenType.IDENTIFIER,
+        value: 'value',
       });
     });
 

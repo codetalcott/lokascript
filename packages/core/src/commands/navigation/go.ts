@@ -24,8 +24,8 @@ export class GoCommand implements CommandImplementation {
       throw new Error('Go command requires arguments');
     }
 
-    // Handle "go back" command
-    if (args[0] === 'back') {
+    // Handle "go back" command (case insensitive)
+    if (typeof args[0] === 'string' && args[0].toLowerCase() === 'back') {
       return this.goBack();
     }
 
@@ -40,11 +40,11 @@ export class GoCommand implements CommandImplementation {
 
   validate(args: any[]): string | null {
     if (args.length === 0) {
-      return 'Go command requires arguments';
+      return 'Go command requires at least one argument';
     }
 
-    // Validate "go back"
-    if (args[0] === 'back') {
+    // Validate "go back" (case insensitive)
+    if (typeof args[0] === 'string' && args[0].toLowerCase() === 'back') {
       if (args.length > 1) {
         return 'Go back command does not accept additional arguments';
       }
@@ -125,16 +125,70 @@ export class GoCommand implements CommandImplementation {
 
     // Perform scroll
     if (typeof window !== 'undefined') {
-      const behavior = smooth ? 'smooth' : 'auto';
+      const behavior = smooth ? 'smooth' : 'instant';
       
-      if (window.scrollTo) {
-        window.scrollTo({
-          left: x,
-          top: y,
-          behavior: behavior as ScrollBehavior
-        });
-      } else if (element.scrollIntoView) {
-        element.scrollIntoView({ behavior: behavior as ScrollBehavior });
+      // Map position to scrollIntoView options
+      let block: ScrollLogicalPosition = 'start';
+      let inline: ScrollLogicalPosition = 'nearest';
+      
+      switch (position.vertical) {
+        case 'top':
+          block = 'start';
+          break;
+        case 'middle':
+          block = 'center';
+          break;
+        case 'bottom':
+          block = 'end';
+          break;
+      }
+      
+      switch (position.horizontal) {
+        case 'left':
+          inline = 'start';
+          break;
+        case 'center':
+          inline = 'center';
+          break;
+        case 'right':
+          inline = 'end';
+          break;
+        case 'nearest':
+        default:
+          inline = 'nearest';
+          break;
+      }
+      
+      // For scrolling with offsets, calculate position and use scrollTo
+      if (offset !== 0) {
+        // Still call scrollIntoView first to handle basic positioning
+        if (element.scrollIntoView) {
+          element.scrollIntoView({ 
+            behavior: behavior as ScrollBehavior,
+            block,
+            inline
+          });
+        }
+        
+        // Then adjust with scrollTo for offset
+        if (window.scrollTo) {
+          setTimeout(() => {
+            window.scrollTo({
+              left: x,
+              top: y,
+              behavior: behavior as ScrollBehavior
+            });
+          }, 0);
+        }
+      } else {
+        // For basic element scrolling, use scrollIntoView
+        if (element.scrollIntoView) {
+          element.scrollIntoView({ 
+            behavior: behavior as ScrollBehavior,
+            block,
+            inline
+          });
+        }
       }
     }
 
@@ -148,7 +202,7 @@ export class GoCommand implements CommandImplementation {
   }
 
   private parseScrollPosition(args: any[]): { vertical: string; horizontal: string } {
-    const position = { vertical: 'top', horizontal: 'left' };
+    const position = { vertical: 'top', horizontal: 'nearest' }; // Default to nearest for horizontal
     
     // Look for position keywords
     const verticalKeywords = ['top', 'middle', 'bottom'];
@@ -171,28 +225,43 @@ export class GoCommand implements CommandImplementation {
     // Find target after "of" keyword
     const ofIndex = args.findIndex(arg => arg === 'of');
     if (ofIndex !== -1 && ofIndex + 1 < args.length) {
-      return args[ofIndex + 1];
+      let targetArg = args[ofIndex + 1];
+      
+      // Skip "the" keyword if it appears right after "of"
+      if (targetArg === 'the' && ofIndex + 2 < args.length) {
+        targetArg = args[ofIndex + 2];
+      }
+      
+      return targetArg;
     }
 
-    // Handle "the" keyword - skip it and get next argument  
+    // Handle direct element arguments (not strings)
+    for (const arg of args) {
+      if (typeof arg === 'object' && arg && arg.nodeType) {
+        // This is likely an HTMLElement
+        return arg;
+      }
+    }
+
+    // Handle "the" keyword - skip it and get next argument that's not a position keyword
     for (let i = 0; i < args.length; i++) {
       if (args[i] === 'the' && i + 1 < args.length) {
         const next = args[i + 1];
         if (typeof next === 'string' && next !== 'top' && next !== 'middle' && next !== 'bottom' && 
-            next !== 'left' && next !== 'center' && next !== 'right') {
+            next !== 'left' && next !== 'center' && next !== 'right' && next !== 'of') {
           return next;
         }
       }
     }
 
-    // Look for selector-like arguments (skip position keywords)
+    // Look for selector-like arguments or element names (skip position keywords)
     const positionKeywords = ['top', 'middle', 'bottom', 'left', 'center', 'right', 'of', 'the', 'to', 'smoothly', 'instantly'];
     for (const arg of args) {
       if (typeof arg === 'string' && !positionKeywords.includes(arg) && (
         arg.startsWith('#') || 
         arg.startsWith('.') || 
         arg.includes('[') ||
-        /^[a-zA-Z][a-zA-Z0-9]*$/.test(arg)
+        /^[a-zA-Z][a-zA-Z0-9-]*$/.test(arg) // Allow hyphens in element names
       )) {
         return arg;
       }
@@ -229,7 +298,10 @@ export class GoCommand implements CommandImplementation {
   }
 
   private parseScrollBehavior(args: any[]): boolean {
-    return args.includes('smoothly');
+    if (args.includes('instantly')) {
+      return false; // instant scrolling
+    }
+    return true; // smooth by default, or if 'smoothly' is specified
   }
 
   private resolveUrl(url: any, context: ExecutionContext): string {
@@ -249,7 +321,25 @@ export class GoCommand implements CommandImplementation {
     return String(url);
   }
 
-  private resolveScrollTarget(target: string, context: ExecutionContext): HTMLElement | null {
+  private resolveScrollTarget(target: any, context: ExecutionContext): HTMLElement | null {
+    // Handle direct HTMLElement objects
+    if (typeof target === 'object' && target && target.nodeType) {
+      return target as HTMLElement;
+    }
+    
+    // Handle string targets
+    if (typeof target !== 'string') {
+      target = String(target);
+    }
+    
+    // Handle special element names
+    if (target === 'body' && typeof document !== 'undefined') {
+      return document.body;
+    }
+    if (target === 'html' && typeof document !== 'undefined') {
+      return document.documentElement;
+    }
+    
     // Handle context references
     if (target === 'me' && context.me) {
       return context.me;
@@ -265,9 +355,25 @@ export class GoCommand implements CommandImplementation {
       return variable;
     }
 
-    // Handle CSS selectors
-    if (typeof document !== 'undefined' && document.querySelector) {
-      return document.querySelector(target) as HTMLElement;
+    // Handle CSS selectors and tag names
+    if (typeof document !== 'undefined') {
+      try {
+        // Try as CSS selector first
+        const element = document.querySelector(target);
+        if (element) {
+          return element as HTMLElement;
+        }
+      } catch (error) {
+        // If selector fails, try as tag name
+        try {
+          const elements = document.getElementsByTagName(target);
+          if (elements.length > 0) {
+            return elements[0] as HTMLElement;
+          }
+        } catch (e) {
+          // Ignore tag name errors
+        }
+      }
     }
 
     return null;
