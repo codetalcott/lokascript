@@ -77,6 +77,8 @@ const COMPARISON_OPERATORS = new Set([
   'contains', 'matches', 'exists'
 ]);
 
+const MATHEMATICAL_OPERATORS = new Set(['mod']);
+
 const TIME_UNITS = new Set(['ms', 's', 'seconds', 'minutes', 'hours', 'days']);
 
 // Common DOM events
@@ -111,10 +113,12 @@ export function tokenize(input: string): Token[] {
   const tokenizer = createTokenizer();
   tokenizer.input = input;
   
-  while (tokenizer.position < input.length) {
+  const inputLength = input.length; // Cache length for performance
+  
+  while (tokenizer.position < inputLength) {
     skipWhitespace(tokenizer);
     
-    if (tokenizer.position >= input.length) break;
+    if (tokenizer.position >= inputLength) break;
     
     const char = input[tokenizer.position];
     
@@ -213,14 +217,14 @@ export function tokenize(input: string): Token[] {
       continue;
     }
     
-    // Handle numbers and time expressions
-    if (isDigit(char)) {
+    // Handle numbers and time expressions - optimized path
+    if (char >= '0' && char <= '9') { // Faster than isDigit
       tokenizeNumberOrTime(tokenizer);
       continue;
     }
     
-    // Handle identifiers, keywords, commands, etc.
-    if (isAlpha(char) || char === '_') {
+    // Handle identifiers, keywords, commands, etc. - optimized path
+    if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || char === '_') {
       tokenizeIdentifier(tokenizer);
       continue;
     }
@@ -262,8 +266,12 @@ function advance(tokenizer: Tokenizer): string {
 }
 
 function skipWhitespace(tokenizer: Tokenizer): void {
-  while (tokenizer.position < tokenizer.input.length) {
-    const char = tokenizer.input[tokenizer.position];
+  const input = tokenizer.input;
+  const inputLength = input.length;
+  
+  while (tokenizer.position < inputLength) {
+    const char = input[tokenizer.position];
+    // Optimized whitespace check - most common first
     if (char === ' ' || char === '\t' || char === '\r' || char === '\n') {
       advance(tokenizer);
     } else {
@@ -456,26 +464,43 @@ function tokenizeOperator(tokenizer: Tokenizer): void {
 
 function tokenizeNumberOrTime(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
+  const input = tokenizer.input;
+  const inputLength = input.length;
   let value = '';
   
-  // Read digits
-  while (tokenizer.position < tokenizer.input.length && isDigit(tokenizer.input[tokenizer.position])) {
-    value += advance(tokenizer);
-  }
-  
-  // Handle decimal
-  if (tokenizer.position < tokenizer.input.length && tokenizer.input[tokenizer.position] === '.') {
-    value += advance(tokenizer);
-    while (tokenizer.position < tokenizer.input.length && isDigit(tokenizer.input[tokenizer.position])) {
+  // Read digits - optimized
+  while (tokenizer.position < inputLength) {
+    const char = input[tokenizer.position];
+    if (char >= '0' && char <= '9') {
       value += advance(tokenizer);
+    } else {
+      break;
     }
   }
   
-  // Check for time unit
+  // Handle decimal
+  if (tokenizer.position < inputLength && input[tokenizer.position] === '.') {
+    value += advance(tokenizer);
+    while (tokenizer.position < inputLength) {
+      const char = input[tokenizer.position];
+      if (char >= '0' && char <= '9') {
+        value += advance(tokenizer);
+      } else {
+        break;
+      }
+    }
+  }
+  
+  // Check for time unit - optimized
   const unitStart = tokenizer.position;
   let unit = '';
-  while (tokenizer.position < tokenizer.input.length && isAlpha(tokenizer.input[tokenizer.position])) {
-    unit += advance(tokenizer);
+  while (tokenizer.position < inputLength) {
+    const char = input[tokenizer.position];
+    if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')) {
+      unit += advance(tokenizer);
+    } else {
+      break;
+    }
   }
   
   if (TIME_UNITS.has(unit)) {
@@ -489,11 +514,17 @@ function tokenizeNumberOrTime(tokenizer: Tokenizer): void {
 
 function tokenizeIdentifier(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
+  const input = tokenizer.input;
+  const inputLength = input.length;
   let value = '';
   
-  while (tokenizer.position < tokenizer.input.length) {
-    const char = tokenizer.input[tokenizer.position];
-    if (isAlphaNumeric(char) || char === '_' || char === '-') {
+  while (tokenizer.position < inputLength) {
+    const char = input[tokenizer.position];
+    // Optimized character checking - avoid function calls
+    if ((char >= 'a' && char <= 'z') || 
+        (char >= 'A' && char <= 'Z') || 
+        (char >= '0' && char <= '9') || 
+        char === '_' || char === '-') {
       value += advance(tokenizer);
     } else {
       break;
@@ -511,6 +542,10 @@ function classifyIdentifier(value: string): TokenType {
   // Check more specific types first
   if (LOGICAL_OPERATORS.has(lowerValue)) {
     return TokenType.LOGICAL_OPERATOR;
+  }
+  
+  if (MATHEMATICAL_OPERATORS.has(lowerValue)) {
+    return TokenType.OPERATOR;
   }
   
   if (CONTEXT_VARS.has(lowerValue)) {

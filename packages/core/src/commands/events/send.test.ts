@@ -23,8 +23,16 @@ describe('Send Command', () => {
     if (!context.globals) context.globals = new Map();
 
     // Mock document.dispatchEvent and element.dispatchEvent
-    vi.spyOn(document, 'dispatchEvent').mockImplementation(() => true);
-    vi.spyOn(testElement, 'dispatchEvent').mockImplementation(() => true);
+    vi.spyOn(document, 'dispatchEvent').mockReturnValue(true);
+    vi.spyOn(testElement, 'dispatchEvent').mockReturnValue(true);
+    
+    // Mock CustomEvent constructor to ensure it works properly in tests
+    global.CustomEvent = vi.fn().mockImplementation((type: string, options?: any) => ({
+      type,
+      bubbles: options?.bubbles || false,
+      cancelable: options?.cancelable || false,
+      detail: options?.detail || {}
+    }));
   });
 
   afterEach(() => {
@@ -161,26 +169,30 @@ describe('Send Command', () => {
     it('should dispatch event to specific element by ID', async () => {
       const targetElement = createTestElement('<div id="div1">Target</div>');
       document.body.appendChild(targetElement);
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      
+      // Create a spy that captures the event object
+      const dispatchSpy = vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       
       // Mock querySelector to return our target
       vi.spyOn(document, 'querySelector').mockReturnValue(targetElement);
 
-      await command.execute(context, 'doIt', { answer: 42 }, 'to', '#div1');
+      const result = await command.execute(context, 'doIt', { answer: 42 }, 'to', '#div1');
 
       expect(document.querySelector).toHaveBeenCalledWith('#div1');
-      expect(targetElement.dispatchEvent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'doIt'
-        })
-      );
+      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      
+      // Check the actual event object passed to dispatchEvent
+      const eventArg = dispatchSpy.mock.calls[0][0];
+      expect(eventArg).toBeDefined();
+      expect(eventArg.type).toBe('doIt');
+      expect(eventArg.detail).toEqual({ answer: 42 });
 
       document.body.removeChild(targetElement);
     });
 
     it('should dispatch event to specific element object', async () => {
       const targetElement = createTestElement('<div>Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
 
       await command.execute(context, 'testEvent', null, 'to', targetElement);
 
@@ -195,8 +207,8 @@ describe('Send Command', () => {
       const element1 = createTestElement('<form class="target">Form 1</form>');
       const element2 = createTestElement('<form class="target">Form 2</form>');
       
-      vi.spyOn(element1, 'dispatchEvent').mockImplementation(() => true);
-      vi.spyOn(element2, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(element1, 'dispatchEvent').mockReturnValue(true);
+      vi.spyOn(element2, 'dispatchEvent').mockReturnValue(true);
       
       const nodeList = [element1, element2];
       vi.spyOn(document, 'querySelectorAll').mockReturnValue(nodeList as any);
@@ -224,7 +236,7 @@ describe('Send Command', () => {
   describe('Event Target Specification - "on" syntax (trigger)', () => {
     it('should support "on" syntax as alias for "to"', async () => {
       const targetElement = createTestElement('<div id="target">Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       vi.spyOn(document, 'querySelector').mockReturnValue(targetElement);
 
       // Create trigger command variant
@@ -454,13 +466,11 @@ describe('Send Command', () => {
     });
 
     it('should handle null/undefined arguments gracefully', async () => {
-      await expect(async () => {
-        await command.execute(context, 'testEvent', null);
-      }).resolves.not.toThrow();
+      // Should not throw when handling null arguments
+      await expect(command.execute(context, 'testEvent', null)).resolves.toBeDefined();
 
-      await expect(async () => {
-        await command.execute(context, 'testEvent', undefined);
-      }).resolves.not.toThrow();
+      // Should not throw when handling undefined arguments  
+      await expect(command.execute(context, 'testEvent', undefined)).resolves.toBeDefined();
     });
   });
 
@@ -468,7 +478,7 @@ describe('Send Command', () => {
     it('should handle LSP example 1: send with arguments to specific element', async () => {
       // From LSP: on click send doIt(answer:42) to #div1
       const targetElement = createTestElement('<div id="div1">Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       vi.spyOn(document, 'querySelector').mockReturnValue(targetElement);
 
       const mockCustomEvent = vi.fn().mockImplementation((type, options) => ({
@@ -511,8 +521,9 @@ describe('Send Command', () => {
     it('should handle LSP example 3: simple send to element', async () => {
       // From LSP: on click send hello to <form />
       const formElement = createTestElement('<form>Form</form>');
-      vi.spyOn(formElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(formElement, 'dispatchEvent').mockReturnValue(true);
       vi.spyOn(document, 'querySelector').mockReturnValue(formElement);
+      vi.spyOn(document, 'querySelectorAll').mockReturnValue([formElement] as any);
 
       await command.execute(context, 'hello', null, 'to', 'form');
 
@@ -526,8 +537,9 @@ describe('Send Command', () => {
     it('should handle LSP example 4: delayed send', async () => {
       // From LSP: wait 5s send hello to .target
       const targetElement = createTestElement('<div class="target">Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       vi.spyOn(document, 'querySelector').mockReturnValue(targetElement);
+      vi.spyOn(document, 'querySelectorAll').mockReturnValue([targetElement] as any);
 
       // Simulate the send part (wait would be handled by wait command)
       await command.execute(context, 'hello', null, 'to', '.target');
@@ -543,7 +555,7 @@ describe('Send Command', () => {
       // From LSP: on doIt remove me (event handler)
       // The send part: on click send doIt to #event-target-3
       const targetElement = createTestElement('<div id="event-target-3">Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       vi.spyOn(document, 'querySelector').mockReturnValue(targetElement);
 
       await command.execute(context, 'doIt', null, 'to', '#event-target-3');
@@ -639,7 +651,7 @@ describe('Send Command', () => {
 
     it('should work with dynamic targets from context', async () => {
       const targetElement = createTestElement('<div class="dynamic-target">Target</div>');
-      vi.spyOn(targetElement, 'dispatchEvent').mockImplementation(() => true);
+      vi.spyOn(targetElement, 'dispatchEvent').mockReturnValue(true);
       
       context.locals!.set('target', targetElement);
       

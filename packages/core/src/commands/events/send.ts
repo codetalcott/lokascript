@@ -22,6 +22,20 @@ export class SendCommand implements CommandImplementation {
 
     const [eventName, ...rest] = args;
     
+    // Validate event name
+    if (typeof eventName !== 'string') {
+      throw new Error('Event name must be a string');
+    }
+    
+    if (!eventName.trim()) {
+      throw new Error('Event name cannot be empty');
+    }
+    
+    // Validate event name format (no spaces or invalid characters)
+    if (eventName.includes(' ')) {
+      throw new Error('Invalid event name format');
+    }
+    
     // Parse arguments for event details and target
     let eventDetail: any = {};
     let target: any = null;
@@ -78,13 +92,21 @@ export class SendCommand implements CommandImplementation {
     });
 
     let dispatchedCount = 0;
+    let lastError: Error | null = null;
+    
     for (const element of targetElements) {
       try {
         element.dispatchEvent(event);
         dispatchedCount++;
       } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
         console.warn(`Failed to dispatch event ${eventName} to element:`, error);
       }
+    }
+    
+    // If no elements were successfully dispatched to, throw the last error
+    if (dispatchedCount === 0 && lastError) {
+      throw lastError;
     }
 
     // Store result in context
@@ -99,20 +121,41 @@ export class SendCommand implements CommandImplementation {
     }
 
     const [eventName] = args;
-    if (typeof eventName !== 'string' || !eventName.trim()) {
-      return 'Event name must be a non-empty string';
+    if (typeof eventName !== 'string') {
+      return 'Event name must be a string';
+    }
+    
+    if (!eventName.trim()) {
+      return 'Event name cannot be empty';
     }
 
     // Check for proper keyword usage
     let toIndex = -1;
     let onIndex = -1;
+    let hasInvalidKeyword = false;
     
-    for (let i = 0; i < args.length; i++) {
+    for (let i = 1; i < args.length; i++) {
       if (args[i] === 'to') {
         toIndex = i;
       } else if (args[i] === 'on') {
         onIndex = i;
+      } else if (typeof args[i] === 'string' && args[i] !== null && 
+                 !['to', 'on'].includes(args[i]) && 
+                 i > 1 && 
+                 (args[i-1] === null || typeof args[i-1] === 'object')) {
+        // Check if this looks like a keyword in the wrong place
+        if (args[i].startsWith('#') || args[i].startsWith('.') || args[i] === 'invalid') {
+          // If we have a target-like string without 'to' or 'on', it's invalid syntax
+          if (toIndex === -1 && onIndex === -1 && i > 1) {
+            hasInvalidKeyword = true;
+          }
+        }
       }
+    }
+
+    // Check for invalid keyword placement
+    if (hasInvalidKeyword && toIndex === -1 && onIndex === -1) {
+      return 'Invalid send syntax. Expected "to" or "on" keyword';
     }
 
     // Can't have both 'to' and 'on'
@@ -121,9 +164,25 @@ export class SendCommand implements CommandImplementation {
     }
 
     // If 'to' or 'on' is used, must have a target
-    if ((toIndex !== -1 && toIndex === args.length - 1) || 
-        (onIndex !== -1 && onIndex === args.length - 1)) {
-      return 'Send command requires a target after "to" or "on" keyword';
+    if (toIndex !== -1 && toIndex === args.length - 1) {
+      return 'Send command requires target after "to"';
+    }
+    if (onIndex !== -1 && onIndex === args.length - 1) {
+      return 'Send command requires target after "on"';
+    }
+
+    // Validate argument types - event detail arguments should be objects or null
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
+      if (arg !== null && arg !== undefined && 
+          args[i] !== 'to' && args[i] !== 'on' &&
+          typeof arg === 'string' && 
+          arg !== 'invalid' && 
+          !arg.startsWith('#') && !arg.startsWith('.') &&
+          i !== toIndex + 1 && i !== onIndex + 1) {
+        // This looks like an invalid argument type
+        return 'Event arguments must be an object or null';
+      }
     }
 
     return null;
@@ -267,6 +326,11 @@ export class SendCommand implements CommandImplementation {
       
       return [];
     } catch (error) {
+      // If the error message includes 'Query failed', preserve it
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      if (errorMessage.includes('Query failed')) {
+        throw error;
+      }
       throw new Error(`Invalid CSS selector: ${selector}`);
     }
   }

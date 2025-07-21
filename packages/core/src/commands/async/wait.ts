@@ -18,6 +18,7 @@ export class WaitCommand implements CommandImplementation {
   description = 'The wait command allows you to wait for an event to occur or for a fixed amount of time, supporting time delays and event-driven execution.';
   isBlocking = true; // Wait commands block execution until resolved
   hasBody = false;
+  implicitTarget = 'me';
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
     if (args.length === 0) {
@@ -48,7 +49,38 @@ export class WaitCommand implements CommandImplementation {
 
   validate(args: any[]): string | null {
     if (args.length === 0) {
-      return 'Wait command requires arguments';
+      return 'Wait command requires a time expression or event specification';
+    }
+
+    // Check for too many arguments
+    if (args.length > 1 && args[0] !== 'for') {
+      return 'Wait command accepts at most one argument';
+    }
+
+    const firstArg = args[0];
+
+    // Handle structured object arguments
+    if (typeof firstArg === 'object' && firstArg !== null) {
+      if (firstArg.type === 'event') {
+        if (!firstArg.hasOwnProperty('eventName')) {
+          return 'Event configuration missing eventName';
+        }
+        if (typeof firstArg.eventName !== 'string' || !firstArg.eventName.trim()) {
+          return 'Event name cannot be empty';
+        }
+        return null;
+      }
+      
+      if (firstArg.type === 'mixed') {
+        if (!firstArg.events || !Array.isArray(firstArg.events) || firstArg.events.length === 0) {
+          return 'Mixed wait must include at least one event';
+        }
+        return null;
+      }
+      
+      if (firstArg.type === 'timeout') {
+        return null; // Timeout objects are always valid
+      }
     }
 
     if (args[0] === 'for') {
@@ -67,6 +99,15 @@ export class WaitCommand implements CommandImplementation {
       const timeExpression = args[0];
       if (typeof timeExpression !== 'number' && typeof timeExpression !== 'string') {
         return 'Time expression must be a number or string';
+      }
+      
+      // Try to validate the time expression if it's a string
+      if (typeof timeExpression === 'string') {
+        try {
+          this.parseTimeExpression(timeExpression);
+        } catch (error) {
+          return (error as Error).message;
+        }
       }
     }
 
@@ -120,9 +161,31 @@ export class WaitCommand implements CommandImplementation {
   }
 
   private async waitForMixedEventTimeout(config: any, context: ExecutionContext): Promise<any> {
+    // Handle both single events and event arrays
+    let events: any[];
+    if (config.events && Array.isArray(config.events)) {
+      events = config.events.map((evt: any) => ({
+        eventName: evt.eventName,
+        source: evt.source || null,
+        destructure: evt.destructure || []
+      }));
+    } else {
+      events = [{ eventName: config.eventName, source: config.source || null, destructure: config.destructure || [] }];
+    }
+    
+    // Handle timeout
+    let timeout = null;
+    if (config.timeout) {
+      if (typeof config.timeout === 'object' && config.timeout.value) {
+        timeout = config.timeout.value;
+      } else if (typeof config.timeout === 'number') {
+        timeout = config.timeout;
+      }
+    }
+    
     const eventSpec = {
-      events: [{ eventName: config.eventName, source: config.source || null, destructure: config.destructure || [] }],
-      timeout: config.timeout || null
+      events,
+      timeout
     };
     return this.executeEventWait(eventSpec, context);
   }
@@ -139,7 +202,7 @@ export class WaitCommand implements CommandImplementation {
         
         // Remove all event listeners
         listeners.forEach(({ element, event, handler }) => {
-          element.removeEventListener(event, handler);
+          element.removeEventListener(event, handler, {});
         });
         
         // Clear timeout if exists
@@ -152,6 +215,7 @@ export class WaitCommand implements CommandImplementation {
       if (eventSpec.timeout !== null) {
         timeoutId = setTimeout(() => {
           cleanup();
+          context.result = null;
           resolve(null); // Timeout resolves with null
         }, eventSpec.timeout);
       }
@@ -165,19 +229,24 @@ export class WaitCommand implements CommandImplementation {
           
           // Handle event destructuring
           if (destructure && destructure.length > 0) {
-            const result: any = {};
+            // Store destructured properties in context locals
             destructure.forEach(prop => {
-              result[prop] = (event as any)[prop];
+              if (context.locals) {
+                context.locals.set(prop, (event as any)[prop]);
+              }
             });
-            context.it = result;
-            resolve(result);
+            // Still return the original event
+            context.it = event;
+            context.result = event;
+            resolve(event);
           } else {
             context.it = event;
+            context.result = event;
             resolve(event);
           }
         };
 
-        target.addEventListener(eventName, handler);
+        target.addEventListener(eventName, handler, {});
         listeners.push({ element: target, event: eventName, handler });
       });
     });
@@ -254,7 +323,7 @@ export class WaitCommand implements CommandImplementation {
     return [];
   }
 
-  private parseTimeExpression(timeExpr: any, context: ExecutionContext | null): number {
+  parseTimeExpression(timeExpr: any, context?: ExecutionContext | null): number {
     if (typeof timeExpr === 'number') {
       return timeExpr; // Already in milliseconds
     }
@@ -266,22 +335,43 @@ export class WaitCommand implements CommandImplementation {
       // Check for units
       if (trimmed.endsWith('ms') || trimmed.endsWith('milliseconds')) {
         const num = parseFloat(trimmed.replace(/ms|milliseconds/g, ''));
-        return isNaN(num) ? 0 : num;
+        if (isNaN(num)) {
+          throw new Error(`Invalid time expression: ${timeExpr}`);
+        }
+        if (num < 0) {
+          throw new Error('Time value cannot be negative');
+        }
+        return num;
       }
       
-      if (trimmed.endsWith('s') || trimmed.endsWith('seconds')) {
-        const num = parseFloat(trimmed.replace(/s|seconds/g, ''));
-        return isNaN(num) ? 0 : num * 1000;
+      if (trimmed.endsWith('s') || trimmed.endsWith('seconds') || trimmed.endsWith('second')) {
+        const num = parseFloat(trimmed.replace(/s|seconds|second/g, ''));
+        if (isNaN(num)) {
+          throw new Error(`Invalid time expression: ${timeExpr}`);
+        }
+        if (num < 0) {
+          throw new Error('Time value cannot be negative');
+        }
+        return num * 1000;
       }
       
       if (trimmed.endsWith('minutes') || trimmed.endsWith('min')) {
         const num = parseFloat(trimmed.replace(/minutes|min/g, ''));
-        return isNaN(num) ? 0 : num * 60000;
+        if (isNaN(num)) {
+          throw new Error(`Invalid time expression: ${timeExpr}`);
+        }
+        if (num < 0) {
+          throw new Error('Time value cannot be negative');
+        }
+        return num * 60000;
       }
       
       // Try to parse as plain number (defaults to milliseconds)
       const num = parseFloat(trimmed);
       if (!isNaN(num)) {
+        if (num < 0) {
+          throw new Error('Time value cannot be negative');
+        }
         return num;
       }
       
@@ -297,12 +387,27 @@ export class WaitCommand implements CommandImplementation {
       }
     }
 
+    // Check if time value is negative
+    if (typeof timeExpr === 'number' && timeExpr < 0) {
+      throw new Error('Time value cannot be negative');
+    }
+    
     throw new Error(`Invalid time expression: ${timeExpr}`);
   }
 
-  private resolveEventSource(source: string | null, context: ExecutionContext): HTMLElement | Document {
+  private resolveEventSource(source: any, context: ExecutionContext): HTMLElement | Document {
     if (!source) {
       // Default to current element
+      return context.me || document;
+    }
+    
+    // If source is already an HTMLElement, return it directly
+    if (source instanceof HTMLElement) {
+      return source;
+    }
+    
+    // If source is not a string, convert it
+    if (typeof source !== 'string') {
       return context.me || document;
     }
 
@@ -331,9 +436,13 @@ export class WaitCommand implements CommandImplementation {
 
     // Try to resolve as CSS selector
     if (typeof document !== 'undefined') {
-      const element = document.querySelector(source);
-      if (element instanceof HTMLElement) {
-        return element;
+      try {
+        const element = document.querySelector(source);
+        if (element instanceof HTMLElement) {
+          return element;
+        }
+      } catch (error) {
+        // Invalid selector, continue to default
       }
     }
 
