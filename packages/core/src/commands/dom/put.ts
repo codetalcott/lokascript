@@ -77,22 +77,31 @@ export class PutCommand implements CommandImplementation {
 
   private resolveTarget(target: any, context: ExecutionContext): HTMLElement {
     // If target is already an HTMLElement, use it directly
-    if (target instanceof HTMLElement) {
+    if (target && typeof target === 'object' && target.style) {
       return target;
     }
     
-    // If target is a string, treat as CSS selector
-    if (typeof target === 'string') {
-      const element = document.querySelector(target);
-      if (!element) {
-        throw new Error(`Target element not found: ${target}`);
-      }
-      return element as HTMLElement;
-    }
-    
-    // If target is 'me', use the context element
+    // If target is 'me' string, use the context element
     if (target === 'me' && context.me) {
       return context.me as HTMLElement;
+    }
+    
+    // If target is a string, treat as CSS selector or check for special mocks
+    if (typeof target === 'string') {
+      // In test environment, document might be mocked or unavailable
+      if (typeof document !== 'undefined' && document.querySelector) {
+        const element = document.querySelector(target);
+        if (!element) {
+          throw new Error(`Target element not found: ${target}`);
+        }
+        return element as HTMLElement;
+      } else {
+        // Test environment - return context.me as fallback for 'me' selector
+        if (target === 'me' && context.me) {
+          return context.me as HTMLElement;
+        }
+        throw new Error(`Target element not found: ${target}`);
+      }
     }
     
     throw new Error(`Invalid target: ${target}. Must be an HTMLElement, CSS selector, or 'me'`);

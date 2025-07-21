@@ -320,7 +320,7 @@ export class Parser {
                  (this.checkTokenType(TokenType.NUMBER) || this.checkTokenType(TokenType.IDENTIFIER))) {
         // Detect missing operator between literals/numbers like "5 3" or "123abc"
         const nextToken = this.peek();
-        this.addError(`Unexpected token: ${nextToken.value}`);
+        this.addError(`Missing operator between '${expr.raw || expr.value}' and '${nextToken.value}'`);
         return expr;
       } else {
         break;
@@ -409,6 +409,13 @@ export class Parser {
   }
 
   private parsePrimary(): ASTNode {
+    // Check for binary operators that cannot start an expression
+    if (this.check('*') || this.check('/') || this.check('%') || this.check('mod')) {
+      const token = this.peek();
+      this.addError(`Binary operator '${token.value}' requires a left operand`);
+      return this.createErrorNode();
+    }
+    
     // Handle literals
     if (this.matchTokenType(TokenType.NUMBER)) {
       const value = parseFloat(this.previous().value);

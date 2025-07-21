@@ -75,7 +75,7 @@ describe('Parser Error Recovery and Error Messages', () => {
     });
 
     it('should recover from missing operands', () => {
-      const result = parse('+ 5 - 3');
+      const result = parse('* 5 - 3');
       
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();

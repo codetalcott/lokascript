@@ -103,37 +103,45 @@ export class Runtime {
   private async executeCommand(node: CommandNode, context: ExecutionContext): Promise<any> {
     const { name, args } = node;
     
-    // Evaluate arguments
-    const evaluatedArgs = await Promise.all(
-      (args || []).map(arg => this.execute(arg, context))
-    );
+    // For now, let commands handle their own argument evaluation
+    // This ensures compatibility with how the commands are designed
+    const rawArgs = args || [];
 
     switch (name.toLowerCase()) {
       case 'hide':
-        return this.executeHideCommand(evaluatedArgs, context);
+        // These commands expect evaluated args
+        const hideArgs = await Promise.all(rawArgs.map(arg => this.execute(arg, context)));
+        return this.executeHideCommand(hideArgs, context);
       
       case 'show':
-        return this.executeShowCommand(evaluatedArgs, context);
+        const showArgs = await Promise.all(rawArgs.map(arg => this.execute(arg, context)));
+        return this.executeShowCommand(showArgs, context);
       
       case 'wait':
-        return this.executeWaitCommand(evaluatedArgs, context);
+        const waitArgs = await Promise.all(rawArgs.map(arg => this.execute(arg, context)));
+        return this.executeWaitCommand(waitArgs, context);
       
       case 'add':
-        return this.executeAddCommand(evaluatedArgs, context);
+        const addArgs = await Promise.all(rawArgs.map(arg => this.execute(arg, context)));
+        return this.executeAddCommand(addArgs, context);
       
       case 'remove':
-        return this.executeRemoveCommand(evaluatedArgs, context);
+        const removeArgs = await Promise.all(rawArgs.map(arg => this.execute(arg, context)));
+        return this.executeRemoveCommand(removeArgs, context);
       
       case 'put':
-        return await this.executePutCommand(evaluatedArgs, context);
+        // Put command should get mixed arguments - content evaluated, target as raw string/element
+        return await this.executePutCommand(rawArgs, context);
       
       case 'set':
-        return await this.executeSetCommand(evaluatedArgs, context);
+        // Set command should get mixed arguments - variable name raw, value evaluated  
+        return await this.executeSetCommand(rawArgs, context);
       
       default:
         throw new Error(`Unknown command: ${name}`);
     }
   }
+
 
   /**
    * Execute an event handler node (on click, on change, etc.)
@@ -299,17 +307,66 @@ export class Runtime {
   /**
    * Execute put command (set content)
    */
-  private async executePutCommand(args: any[], context: ExecutionContext): Promise<void> {
-    // Use the new PutCommand class for proper implementation
-    return this.putCommand.execute(context, ...args);
+  private async executePutCommand(rawArgs: any[], context: ExecutionContext): Promise<void> {
+    // Process arguments: content (evaluate), preposition (evaluate), target (special handling)
+    if (rawArgs.length >= 3) {
+      const content = await this.execute(rawArgs[0], context);
+      const preposition = await this.execute(rawArgs[1], context);
+      let target = rawArgs[2];
+      
+      // Handle target resolution - fix the [object Object] issue
+      if (target?.type === 'identifier' && target.name === 'me') {
+        target = context.me;
+      } else if (target?.type === 'identifier') {
+        // For other identifiers, keep as string for CSS selector or context lookup
+        target = target.name;
+      } else if (target?.type === 'literal') {
+        target = target.value;
+      } else if (target?.type === 'selector') {
+        target = target.value;
+      } else {
+        // Only evaluate if it's not already a target we can handle
+        if (typeof target === 'object' && target?.type) {
+          target = await this.execute(target, context);
+        }
+      }
+      
+      return this.putCommand.execute(context, content, preposition, target);
+    }
+    
+    // Fallback: use raw args
+    return this.putCommand.execute(context, ...rawArgs);
   }
 
   /**
    * Execute set command (set variables)
    */
-  private async executeSetCommand(args: any[], context: ExecutionContext): Promise<void> {
-    // Use the new SetCommand class for proper implementation
-    return this.setCommand.execute(context, ...args);
+  private async executeSetCommand(rawArgs: any[], context: ExecutionContext): Promise<void> {
+    // Process arguments: variable name (raw), "to" (evaluate), value (evaluate)
+    if (rawArgs.length >= 3) {
+      let varName = rawArgs[0];
+      if (varName?.type === 'identifier') {
+        varName = varName.name;
+      } else if (varName?.type === 'literal') {
+        varName = varName.value;
+      } else {
+        varName = String(varName);
+      }
+      
+      const toKeyword = await this.execute(rawArgs[1], context);
+      const value = await this.execute(rawArgs[2], context);
+      
+      // Handle special context variables directly
+      if (varName === 'result') {
+        context.result = value;
+        return;
+      }
+      
+      return this.setCommand.execute(context, varName, toKeyword, value);
+    }
+    
+    // Fallback: use raw args
+    return this.setCommand.execute(context, ...rawArgs);
   }
 
   /**
