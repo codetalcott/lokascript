@@ -17,6 +17,7 @@ export enum TokenType {
   STRING = 'string',
   NUMBER = 'number',
   BOOLEAN = 'boolean',
+  TEMPLATE_LITERAL = 'template_literal',
   
   // Selectors and references
   CSS_SELECTOR = 'css_selector',
@@ -157,6 +158,12 @@ export function tokenize(input: string): Token[] {
       continue;
     }
     
+    // Handle template literals (backticks)
+    if (char === '`') {
+      tokenizeTemplateLiteral(tokenizer);
+      continue;
+    }
+    
     // Handle query reference syntax (<selector/>) vs comparison operators
     if (char === '<') {
       // Look ahead to see if this is actually a query reference (ends with />)
@@ -182,7 +189,9 @@ export function tokenize(input: string): Token[] {
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
       const isCSSSelectorContext = !prevToken || 
         prevToken.type === 'whitespace' || 
-        prevToken.type === 'operator' ||
+        (prevToken.type === 'operator' && 
+         // Exclude closing parens and brackets which indicate method calls or array access
+         prevToken.value !== ')' && prevToken.value !== ']') ||
         prevToken.type === 'keyword' ||
         prevToken.type === 'command' ||  // Commands like "add .active" in conditionals
         prevToken.value === '(' || 
@@ -420,6 +429,48 @@ function tokenizeString(tokenizer: Tokenizer): void {
   }
   
   addToken(tokenizer, TokenType.STRING, value, start);
+}
+
+function tokenizeTemplateLiteral(tokenizer: Tokenizer): void {
+  const start = tokenizer.position;
+  advance(tokenizer); // consume opening backtick
+  let value = '';
+  
+  while (tokenizer.position < tokenizer.input.length) {
+    const char = tokenizer.input[tokenizer.position];
+    
+    if (char === '`') {
+      advance(tokenizer); // consume closing backtick
+      break;
+    }
+    
+    if (char === '\\') {
+      // Handle escape sequences
+      advance(tokenizer); // consume backslash
+      if (tokenizer.position < tokenizer.input.length) {
+        const escaped = advance(tokenizer);
+        // Handle common escape sequences
+        switch (escaped) {
+          case 'n': value += '\n'; break;
+          case 't': value += '\t'; break;
+          case 'r': value += '\r'; break;
+          case '\\': value += '\\'; break;
+          case '`': value += '`'; break;
+          default: 
+            value += escaped;
+        }
+      }
+    } else {
+      value += advance(tokenizer);
+    }
+  }
+  
+  // Check if we reached EOF without closing backtick
+  if (tokenizer.position >= tokenizer.input.length && !tokenizer.input.endsWith('`')) {
+    throw new Error(`Unterminated template literal at line ${tokenizer.line}, column ${tokenizer.column - value.length}`);
+  }
+  
+  addToken(tokenizer, TokenType.TEMPLATE_LITERAL, value, start);
 }
 
 function tokenizeCSSSelector(tokenizer: Tokenizer): void {

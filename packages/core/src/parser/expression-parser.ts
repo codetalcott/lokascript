@@ -523,6 +523,17 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
     };
   }
   
+  // Template literals
+  if (token.type === TokenType.TEMPLATE_LITERAL) {
+    advance(state);
+    return {
+      type: 'templateLiteral',
+      value: token.value,
+      start: token.start,
+      end: token.end
+    };
+  }
+  
   // Number literals
   if (token.type === TokenType.NUMBER) {
     advance(state);
@@ -885,6 +896,9 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
   switch (node.type) {
     case 'literal':
       return node.value;
+      
+    case 'templateLiteral':
+      return evaluateTemplateLiteral(node, context);
       
     case 'identifier':
       return resolveIdentifier(node.name, context);
@@ -1485,6 +1499,54 @@ function parseAttributeSelector(state: ParseState, openBracket: Token): ASTNode 
     start: openBracket.start,
     end: closeToken.end
   };
+}
+
+/**
+ * Evaluate template literal expressions
+ */
+async function evaluateTemplateLiteral(node: any, context: ExecutionContext): Promise<string> {
+  const template = node.value;
+  
+  // Replace ${expression} patterns with evaluated results
+  const result = await replaceAsyncBatch(template, /\$\{([^}]+)\}/g, async (match: string, expr: string) => {
+    try {
+      // Recursively parse and evaluate the interpolated expression
+      const result = await parseAndEvaluateExpression(expr, context);
+      return String(result);
+    } catch (error) {
+      // On error, return the literal expression or 'undefined'
+      return 'undefined';
+    }
+  });
+  
+  return result;
+}
+
+/**
+ * Helper function to perform async replacements on a string
+ */
+async function replaceAsyncBatch(str: string, regex: RegExp, replacer: (match: string, ...args: any[]) => Promise<string>): Promise<string> {
+  const matches = [];
+  let match;
+  
+  // Find all matches
+  while ((match = regex.exec(str)) !== null) {
+    matches.push({
+      match: match[0],
+      index: match.index,
+      length: match[0].length,
+      replacement: await replacer(match[0], ...match.slice(1))
+    });
+  }
+  
+  // Replace from end to start to preserve indices
+  let result = str;
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const m = matches[i];
+    result = result.substring(0, m.index) + m.replacement + result.substring(m.index + m.length);
+  }
+  
+  return result;
 }
 
 /**
