@@ -395,9 +395,8 @@ export class Parser {
         const index = this.parseExpression();
         this.consume(']', "Expected ']' after array index");
         expr = this.createMemberExpression(expr, index, true);
-      } else if ((this.check("'") || this.check("'")) && this.checkNext("s")) {
-        // Handle possessive syntax: element's property (now tokenized as separate ' and s)
-        this.advance(); // consume apostrophe
+      } else if (this.check("'s")) {
+        // Handle possessive syntax: element's property (tokenized as single 's operator)
         this.advance(); // consume 's'
         const property = this.consume(TokenType.IDENTIFIER, "Expected property name after possessive");
         expr = this.createPossessiveExpression(expr, this.createIdentifier(property.value));
@@ -454,6 +453,14 @@ export class Parser {
       return this.createSelector(this.previous().value);
     }
 
+    // Handle query reference selectors (<button/>, <.class/>, <#id/>)
+    if (this.matchTokenType(TokenType.QUERY_REFERENCE)) {
+      const queryValue = this.previous().value;
+      // Extract the selector from <.../>
+      const selector = queryValue.slice(1, -2); // Remove < and />
+      return this.createSelector(selector);
+    }
+
     // Handle hyperscript selector syntax: <button/>
     if (this.match('<')) {
       return this.parseHyperscriptSelector();
@@ -491,7 +498,7 @@ export class Parser {
       // Handle hyperscript navigation functions
       if (token.value === 'closest' || token.value === 'first' || token.value === 'last') {
         // Check if followed by function call syntax or expression
-        if (this.check('(') || this.checkTokenType(TokenType.CSS_SELECTOR) || this.check('<')) {
+        if (this.check('(') || this.checkTokenType(TokenType.CSS_SELECTOR) || this.check('<') || this.checkTokenType(TokenType.QUERY_REFERENCE)) {
           return this.parseNavigationFunction(token.value);
         }
         return this.createIdentifier(token.value);

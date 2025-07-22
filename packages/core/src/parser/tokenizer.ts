@@ -75,7 +75,8 @@ const LOGICAL_OPERATORS = new Set(['and', 'or', 'not']);
 
 const COMPARISON_OPERATORS = new Set([
   '==', '!=', '===', '!==', '<', '>', '<=', '>=', 'is', 'is not',
-  'contains', 'does not contain', 'matches', 'exists', 'is empty', 'is not empty'
+  'contains', 'does not contain', 'matches', 'exists', 'is empty', 'is not empty',
+  'is in', 'is not in', 'equals'
 ]);
 
 const MATHEMATICAL_OPERATORS = new Set(['mod']);
@@ -140,11 +141,15 @@ export function tokenize(input: string): Token[] {
       const nextChar = peek(tokenizer, 1);
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
       const isPossessive = nextChar === 's' && prevToken && 
-        (prevToken.type === TokenType.IDENTIFIER || prevToken.type === TokenType.CONTEXT_VAR);
+        (prevToken.type === TokenType.IDENTIFIER || prevToken.type === TokenType.CONTEXT_VAR || 
+         prevToken.type === TokenType.ID_SELECTOR || prevToken.type === TokenType.CLASS_SELECTOR);
       
       if (isPossessive) {
-        // Tokenize as operator for possessive syntax
-        tokenizeOperator(tokenizer);
+        // Directly create the "'s" token without compound operator interference
+        const start = tokenizer.position;
+        advance(tokenizer); // consume apostrophe
+        advance(tokenizer); // consume 's'
+        addToken(tokenizer, TokenType.OPERATOR, "'s", start);
       } else {
         // Tokenize as string
         tokenizeString(tokenizer);
@@ -152,9 +157,16 @@ export function tokenize(input: string): Token[] {
       continue;
     }
     
-    // Handle query reference syntax (<selector/>)
+    // Handle query reference syntax (<selector/>) vs comparison operators
     if (char === '<') {
-      tokenizeQueryReference(tokenizer);
+      // Look ahead to see if this is actually a query reference (ends with />)
+      // vs a comparison operator like "< 10"
+      if (looksLikeQueryReference(tokenizer)) {
+        tokenizeQueryReference(tokenizer);
+      } else {
+        // Treat as comparison operator
+        tokenizeOperator(tokenizer);
+      }
       continue;
     }
     
@@ -603,6 +615,23 @@ function tryTokenizeCompoundOperator(tokenizer: Tokenizer, firstWord: string, st
   const lowerFirst = firstWord.toLowerCase();
   const originalPosition = tokenizer.position;
   
+  // Never treat 's as part of a compound operator - it's possessive syntax
+  if (firstWord === "'s" || firstWord === "'s") {
+    return false;
+  }
+  
+  // Don't create compound operators that would interfere with possessive syntax
+  // Check if we just tokenized something that could be followed by 's (possessive)
+  const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
+  if (prevToken && (prevToken.type === 'identifier' || prevToken.type === 'id_selector' || 
+                    prevToken.type === 'class_selector' || prevToken.type === 'context_var')) {
+    const nextChar = tokenizer.position < tokenizer.input.length ? tokenizer.input[tokenizer.position] : '';
+    if (nextChar === "'" || nextChar === "'") {
+      // This might be possessive syntax, don't create compound operators
+      return false;
+    }
+  }
+  
   // Skip whitespace to find next word
   skipWhitespace(tokenizer);
   
@@ -718,6 +747,44 @@ function isDigit(char: string): boolean {
 
 function isAlphaNumeric(char: string): boolean {
   return /[a-zA-Z0-9]/.test(char);
+}
+
+function looksLikeQueryReference(tokenizer: Tokenizer): boolean {
+  // Look ahead to see if this pattern matches <.../>
+  // A query reference should contain valid selector characters and end with />
+  let pos = tokenizer.position + 1; // Start after <
+  let foundValidContent = false;
+  
+  while (pos < tokenizer.input.length) {
+    const char = tokenizer.input[pos];
+    
+    // If we find />, this is likely a query reference
+    if (char === '/' && pos + 1 < tokenizer.input.length && tokenizer.input[pos + 1] === '>') {
+      return foundValidContent; // Only return true if we found some content between < and />
+    }
+    
+    // If we find content that looks like selector syntax
+    if (isAlphaNumeric(char) || char === '.' || char === '#' || char === '[' || char === ']' || 
+        char === ':' || char === '-' || char === '_' || char === ' ' || char === '=' || 
+        char === '"' || char === "'" || char === '(') {
+      foundValidContent = true;
+      pos++;
+    } else if (char === ' ' || char === '\t') {
+      // Skip whitespace
+      pos++;
+    } else {
+      // Found invalid character for query reference, probably comparison
+      return false;
+    }
+    
+    // If we've gone too far without finding />, it's probably not a query reference
+    if (pos - tokenizer.position > 50) {
+      return false;
+    }
+  }
+  
+  // Reached end without finding />, not a query reference
+  return false;
 }
 
 function isOperatorChar(char: string): boolean {

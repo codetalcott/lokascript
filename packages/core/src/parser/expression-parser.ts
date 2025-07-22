@@ -116,8 +116,18 @@ function parseComparisonExpression(state: ParseState): ASTNode {
       const operator = token.value;
       state.position++; // consume operator
       
+      // Handle unary operators that don't need a right operand
+      if (['exists', 'is empty', 'is not empty'].includes(operator)) {
+        left = {
+          type: 'unaryExpression',
+          operator,
+          operand: left,
+          start: left.start,
+          end: token.end
+        };
+      }
       // Handle multi-word operators like "is not"
-      if (operator === 'is' && peek(state)?.value === 'not') {
+      else if (operator === 'is' && peek(state)?.value === 'not') {
         state.position++; // consume 'not'
         const right = parseArithmeticExpression(state);
         left = {
@@ -229,7 +239,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
   while (state.position < state.tokens.length) {
     const token = state.tokens[state.position];
     
-    // Handle possessive syntax with apostrophe (obj's property)
+    // Handle possessive syntax with apostrophe (obj's property) - supports chaining
     if (token.type === TokenType.OPERATOR && token.value === "'s") {
       state.position++; // consume "'s" operator
       
@@ -242,6 +252,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
         start: left.start,
         end: property.end
       };
+      // Continue loop to handle chained possessive (obj's prop1's prop2)
+      continue;
     }
     // Handle context possessive syntax (my property, its property, your property)
     else if (left.type === 'identifier' && 
@@ -373,6 +385,47 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
     };
   }
   
+  // Bracket notation for attribute access [@attr] or [expr]
+  if (token.value === '[') {
+    advance(state); // consume '['
+    
+    // Check if this is attribute syntax [@attr]
+    const nextToken = peek(state);
+    if (nextToken?.value === '@') {
+      advance(state); // consume '@'
+      const attrToken = advance(state);
+      if (!attrToken || attrToken.type !== TokenType.IDENTIFIER) {
+        throw new ExpressionParseError('Expected attribute name after @');
+      }
+      
+      const closeToken = advance(state);
+      if (!closeToken || closeToken.value !== ']') {
+        throw new ExpressionParseError('Expected closing bracket after attribute name');
+      }
+      
+      return {
+        type: 'attributeAccess',
+        attributeName: attrToken.value,
+        start: token.start,
+        end: closeToken.end
+      };
+    } else {
+      // Handle general bracket expressions [expr]
+      const expr = parseLogicalExpression(state);
+      const closeToken = advance(state);
+      if (!closeToken || closeToken.value !== ']') {
+        throw new ExpressionParseError('Expected closing bracket');
+      }
+      
+      return {
+        type: 'bracketExpression',
+        expression: expr,
+        start: token.start,
+        end: closeToken.end
+      };
+    }
+  }
+  
   // Context variables and identifiers
   if (token.type === TokenType.CONTEXT_VAR || token.type === TokenType.IDENTIFIER) {
     advance(state);
@@ -432,6 +485,12 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
       
     case 'unaryExpression':
       return evaluateUnaryExpression(node, context);
+      
+    case 'attributeAccess':
+      return evaluateAttributeAccess(node, context);
+      
+    case 'bracketExpression':
+      return evaluateBracketExpression(node, context);
       
     default:
       throw new ExpressionParseError(`Unknown AST node type: ${(node as any).type}`);
@@ -518,6 +577,10 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
       return logicalExpressions.isEmpty.evaluate(context, left);
     case 'is not empty':
       return logicalExpressions.isNotEmpty.evaluate(context, left);
+    case 'is in':
+      return logicalExpressions.contains.evaluate(context, right, left); // Note: reversed args for membership
+    case 'is not in':
+      return logicalExpressions.doesNotContain.evaluate(context, right, left); // Note: reversed args
     default:
       throw new ExpressionParseError(`Unknown binary operator: ${operator}`);
   }
@@ -551,15 +614,24 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   const object = await evaluateASTNode(node.object, context);
   const propertyNode = node.property;
   
-  // Extract property name
-  let propertyName: string;
+  // Handle different types of property access
   if (propertyNode.type === 'identifier') {
-    propertyName = propertyNode.name;
+    const propertyName = propertyNode.name;
+    return propertyExpressions.possessive.evaluate(context, object, propertyName);
+  } else if (propertyNode.type === 'attributeAccess') {
+    // Handle [@attr] syntax - access attribute on the object
+    const attributeName = propertyNode.attributeName;
+    if (object && object instanceof Element) {
+      return object.getAttribute(attributeName);
+    }
+    return null;
+  } else if (propertyNode.type === 'bracketExpression') {
+    // Handle [expr] syntax - evaluate expression as property key
+    const propertyKey = await evaluateASTNode(propertyNode.expression, context);
+    return propertyExpressions.possessive.evaluate(context, object, String(propertyKey));
   } else {
-    throw new ExpressionParseError('Property name must be an identifier');
+    throw new ExpressionParseError(`Unsupported property access type: ${propertyNode.type}`);
   }
-  
-  return propertyExpressions.possessive.evaluate(context, object, propertyName);
 }
 
 /**
@@ -653,7 +725,36 @@ async function evaluateUnaryExpression(node: any, context: ExecutionContext): Pr
   switch (operator) {
     case 'not':
       return logicalExpressions.not.evaluate(context, operand);
+    case 'exists':
+      return logicalExpressions.exists.evaluate(context, operand);
+    case 'is empty':
+      return logicalExpressions.isEmpty.evaluate(context, operand);
+    case 'is not empty':
+      return logicalExpressions.isNotEmpty.evaluate(context, operand);
     default:
       throw new ExpressionParseError(`Unknown unary operator: ${operator}`);
   }
+}
+
+/**
+ * Evaluate attribute access expressions [@data-foo]
+ */
+async function evaluateAttributeAccess(node: any, context: ExecutionContext): Promise<any> {
+  const attributeName = node.attributeName;
+  
+  // Use the current context element (usually 'me') or return the attribute name for further processing
+  if (context.me && context.me instanceof Element) {
+    return context.me.getAttribute(attributeName);
+  }
+  
+  // Return as attribute reference for possessive evaluation
+  return `@${attributeName}`;
+}
+
+/**
+ * Evaluate bracket expressions [expr]
+ */
+async function evaluateBracketExpression(node: any, context: ExecutionContext): Promise<any> {
+  // Evaluate the inner expression
+  return await evaluateASTNode(node.expression, context);
 }
