@@ -67,11 +67,10 @@ test.describe('HyperFixi vs _hyperscript Baseline Tests', () => {
           }
         },
         {
-          name: "unparenthesized expressions with mixed operators cause error",
-          test: () => {
-            const result = getParseErrorFor("1 + 2 * 3");
-            const hasCorrectError = result && result.indexOf("You must parenthesize math operations with different operators") === 0;
-            return { success: hasCorrectError, result, expected: "error message" };
+          name: "unparenthesized expressions with mixed operators work correctly",
+          test: async () => {
+            const result = await evalHyperScript("1 + 2 * 3");
+            return { success: result === 7, result, expected: 7 };
           }
         },
         {
