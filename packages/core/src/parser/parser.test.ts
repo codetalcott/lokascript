@@ -598,6 +598,47 @@ describe('Hyperscript AST Parser', () => {
         }]
       });
     });
+
+    it('should parse conditional event handler syntax', () => {
+      // Test the syntax: on keydown[altKey and code is 'KeyS'] hide me  
+      expectAST("on keydown[altKey and code is 'KeyS'] hide me", {
+        type: 'eventHandler',
+        event: 'keydown',
+        condition: {
+          type: 'binaryExpression',
+          operator: 'and',
+          left: { type: 'identifier', name: 'altKey' },
+          right: {
+            type: 'binaryExpression',
+            operator: 'is',
+            left: { type: 'identifier', name: 'code' },
+            right: { type: 'literal', value: 'KeyS' }
+          }
+        },
+        commands: [{
+          type: 'command',
+          name: 'hide',
+          args: [{ type: 'identifier', name: 'me' }]
+        }]
+      });
+    });
+
+    it('should parse simple conditional event handler', () => {
+      // Test simpler conditional syntax
+      expectAST("on keydown[altKey] hide me", {
+        type: 'eventHandler',
+        event: 'keydown',
+        condition: {
+          type: 'identifier',
+          name: 'altKey'
+        },
+        commands: [{
+          type: 'command',
+          name: 'hide',
+          args: [{ type: 'identifier', name: 'me' }]
+        }]
+      });
+    });
   });
 
   describe('Error Handling and Edge Cases', () => {

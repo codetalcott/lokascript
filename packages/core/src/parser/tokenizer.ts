@@ -192,21 +192,37 @@ export function tokenize(input: string): Token[] {
     }
     
     if (char === '[') {
-      // Determine if this is array literal or member access
+      // Determine if this is array literal, member access, or event condition
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
+      
+      // Check for event handler condition syntax
+      const isEventCondition = prevToken && 
+        (prevToken.type === TokenType.EVENT || 
+         (prevToken.type === TokenType.IDENTIFIER && DOM_EVENTS.has(prevToken.value))) &&
+        tokenizer.tokens.length >= 2 &&
+        tokenizer.tokens[tokenizer.tokens.length - 2]?.value === 'on';
+      
       const isMemberAccess = prevToken && 
         (prevToken.type === TokenType.IDENTIFIER || 
          prevToken.type === TokenType.CONTEXT_VAR ||
          prevToken.value === ')' ||
-         prevToken.value === ']');
+         prevToken.value === ']') &&
+        !isEventCondition; // Don't treat as member access if it's an event condition
       
       if (isMemberAccess) {
         // Treat as member access operator
         addToken(tokenizer, TokenType.OPERATOR, '[');
         advance(tokenizer);
       } else {
-        // Treat as array literal
-        tokenizeArrayLiteral(tokenizer);
+        // Treat as array literal or event condition bracket
+        if (isEventCondition) {
+          // For event conditions, just add the bracket as a simple token
+          addToken(tokenizer, TokenType.SYMBOL, '[');
+          advance(tokenizer);
+        } else {
+          // Treat as array literal
+          tokenizeArrayLiteral(tokenizer);
+        }
       }
       continue;
     }

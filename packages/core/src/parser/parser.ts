@@ -71,6 +71,7 @@ interface PossessiveExpressionNode extends ASTNode {
 interface EventHandlerNode extends ASTNode {
   type: 'eventHandler';
   event: string;
+  condition?: ASTNode;
   selector?: string;
   commands: CommandNode[];
 }
@@ -524,7 +525,24 @@ export class Parser {
   }
 
   private parseEventHandler(): EventHandlerNode {
-    const event = this.consume(TokenType.EVENT, "Expected event name after 'on'").value;
+    // Event name can be EVENT token or IDENTIFIER (for cases like "keydown")
+    let eventToken: Token;
+    if (this.checkTokenType(TokenType.EVENT)) {
+      eventToken = this.advance();
+    } else if (this.checkTokenType(TokenType.IDENTIFIER)) {
+      eventToken = this.advance();
+    } else {
+      eventToken = this.consume(TokenType.EVENT, "Expected event name after 'on'");
+    }
+    
+    const event = eventToken.value;
+    
+    // Check for conditional syntax: [condition]
+    let condition: ASTNode | undefined;
+    if (this.match('[')) {
+      condition = this.parseExpression();
+      this.consume(']', "Expected ']' after event condition");
+    }
     
     // Optional: handle "from selector"
     let selector: string | undefined;
@@ -541,8 +559,55 @@ export class Parser {
       if (this.checkTokenType(TokenType.COMMAND)) {
         this.advance(); // consume the command token
         commands.push(this.parseCommand());
+      } else if (this.checkTokenType(TokenType.IDENTIFIER)) {
+        // Check if this identifier is a command or function call
+        const token = this.peek();
+        if (this.isCommand(token.value)) {
+          // It's a command - parse as command
+          this.advance(); // consume the command token
+          commands.push(this.parseCommand());
+        } else {
+          // Parse as expression (could be function call like focus())
+          const expr = this.parseExpression();
+          
+          // Convert call expressions to commands
+          if (expr && expr.type === 'callExpression') {
+            const callExpr = expr as any;
+            const commandNode: CommandNode = {
+              type: 'command',
+              name: (callExpr.callee as any).name,
+              args: callExpr.arguments as any[],
+              isBlocking: false,
+              start: expr.start,
+              end: expr.end,
+              line: expr.line,
+              column: expr.column
+            };
+            commands.push(commandNode);
+          } else if (expr && expr.type === 'binaryExpression' && (expr as any).operator === ' ') {
+            // Handle "command target" patterns
+            const binExpr = expr as any;
+            if (binExpr.left && binExpr.left.type === 'identifier' && this.isCommand(binExpr.left.name)) {
+              const commandNode: CommandNode = {
+                type: 'command',
+                name: binExpr.left.name,
+                args: [binExpr.right],
+                isBlocking: false,
+                start: expr.start,
+                end: expr.end,
+                line: expr.line,
+                column: expr.column
+              };
+              commands.push(commandNode);
+            } else {
+              break; // Not a command pattern
+            }
+          } else {
+            break; // Not a command pattern
+          }
+        }
       } else {
-        break;
+        break; // No more commands
       }
       
       // Handle command separators
@@ -563,6 +628,10 @@ export class Parser {
       line: pos.line,
       column: pos.column
     };
+
+    if (condition) {
+      node.condition = condition;
+    }
 
     if (selector) {
       node.selector = selector;

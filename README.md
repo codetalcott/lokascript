@@ -2,102 +2,112 @@
 
 🚀 **Modular hyperscript expression engine with utilities**
 
-A modern, high-performance hyperscript implementation with comprehensive utility functions. Built for modularity, performance, and developer experience.
+A modern, high-performance hyperscript implementation with comprehensive utility
+functions. Built for modularity, performance, and developer experience.
 
 ## Packages
 
-| Package | Description | Bundle Size | Status |
-|---------|-------------|-------------|--------|
-| [`@hyperfixi/core`](./packages/core) | Pure hyperscript parser & runtime | ~12KB | ✅ Stable |
-| [`@hyperfixi/fixi`](./packages/fixi) | Utility functions & helpers | ~8KB | 🚧 In Development |
-| [`hyperfixi`](./packages/integrated) | Complete solution (core + fixi) | ~20KB | 🚧 In Development |
+| Package                              | Description                       | Bundle Size | Status            |
+| ------------------------------------ | --------------------------------- | ----------- | ----------------- |
+| [`@hyperfixi/core`](./packages/core) | Pure hyperscript parser & runtime | ~12KB       | ✅ Stable         |
+| [`@hyperfixi/fixi`](./packages/fixi) | Utility functions & helpers       | ~8KB        | 🚧 In Development |
+| [`hyperfixi`](./packages/integrated) | Complete solution (core + fixi)   | ~20KB       | 🚧 In Development |
 
 ## Apps & Tools
 
-| App | Description | Status |
-|-----|-------------|--------|
+| App                               | Description                    | Status            |
+| --------------------------------- | ------------------------------ | ----------------- |
 | [`playground`](./apps/playground) | Interactive expression testing | 🚧 In Development |
-| [`docs-site`](./apps/docs-site) | Documentation website | 📋 Planned |
-| [`examples`](./apps/examples) | Example applications | 📋 Planned |
+| [`docs-site`](./apps/docs-site)   | Documentation website          | 📋 Planned        |
+| [`examples`](./apps/examples)     | Example applications           | 📋 Planned        |
 
 ## Quick Start
 
 ### For Minimalists (Core Only)
+
 ```bash
 npm install @hyperfixi/core
 ```
 
 ```typescript
-import { hyperscript } from '@hyperfixi/core';
+import { hyperscript } from "@hyperfixi/core";
 
-const result = await hyperscript.run('5 + 3 * 2'); // Returns 11
+const result = await hyperscript.run("5 + 3 * 2"); // Returns 11
 
 const context = hyperscript.createContext(element);
-await hyperscript.run('hide me then wait 1s then show me', context);
+await hyperscript.run("hide me then wait 1s then show me", context);
 ```
 
 ### For Complete Solution (Batteries Included)
+
 ```bash
 npm install hyperfixi
 ```
 
 ```typescript
-import { hyperscript } from 'hyperfixi';
+import { hyperscript } from "hyperfixi";
 
 // All utilities automatically available
 const context = hyperscript.createContext(element);
-await hyperscript.run('capitalize(userName)', context);
+await hyperscript.run("capitalize(userName)", context);
 await hyperscript.run('format(date, "MM/DD/YYYY")', context);
-await hyperscript.run('debounce(search, 300)', context);
+await hyperscript.run("debounce(search, 300)", context);
 ```
 
 ### For Custom Setup
+
 ```bash
 npm install @hyperfixi/core @hyperfixi/fixi
 ```
 
 ```typescript
-import { hyperscript } from '@hyperfixi/core';
-import { stringUtils, dateUtils } from '@hyperfixi/fixi';
+import { hyperscript } from "@hyperfixi/core";
+import { dateUtils, stringUtils } from "@hyperfixi/fixi";
 
 const context = hyperscript.createContext(element);
-context.variables?.set('string', stringUtils);
-context.variables?.set('date', dateUtils);
+context.variables?.set("string", stringUtils);
+context.variables?.set("date", dateUtils);
 ```
 
 ## Features
 
 ### 🚀 High Performance
+
 - Optimized tokenizer with character code checks (2-5x faster than regex)
 - Parser handles 1000+ token expressions efficiently
 - Tree-shakable modules for minimal bundle size
 - Memory-efficient AST compilation and caching
 
 ### 🔧 TypeScript First
+
 - Complete type safety with comprehensive type definitions
 - IntelliSense support for all expressions and utilities
 - Strict mode compatibility
 - Zero type errors in build
 
-### 🎯 Excellent Developer Experience  
+### 🎯 Excellent Developer Experience
+
 - Enhanced error messages with suggestions and recovery strategies
 - Real-time syntax validation
 - Interactive playground for testing expressions
 - Comprehensive documentation with examples
 
 ### 🧪 Thoroughly Tested
+
 - **400+ tests** with 100% pass rate
 - Cross-browser compatibility testing
 - Performance regression testing
 - Integration testing with real DOM elements
 
 ### 🌊 Complete DOM Support
+
 - Element manipulation (`hide`, `show`, `add`, `remove`)
 - CSS selector queries (`<.class/>`, `<#id/>`)
 - Property access (`me.textContent`, `element's className`)
 - Event handling integration
 
 ### ⚡ Rich Expression System
+
 - **Arithmetic**: `5 + 3 * 2`, `(value + 5) / 2`
 - **Logical**: `true and false`, `value > 10`, `element matches .class`
 - **String Operations**: `capitalize("hello")`, `text contains "word"`
@@ -107,6 +117,7 @@ context.variables?.set('date', dateUtils);
 ## Architecture
 
 ### Modular Design
+
 ```
 @hyperfixi/core     - Pure hyperscript engine (no dependencies)
     ├── parser/     - Tokenizer, AST parser, error handling
@@ -128,6 +139,7 @@ hyperfixi          - Integrated package (combines both)
 ## Development
 
 ### Setup
+
 ```bash
 # Clone and install dependencies
 git clone https://github.com/hyperfixi/hyperfixi.git
@@ -145,6 +157,7 @@ npm run build
 ```
 
 ### Workspace Commands
+
 ```bash
 # Run command in all workspaces
 npm run test --workspaces
@@ -157,6 +170,7 @@ npm run dev --workspace=apps/playground
 ```
 
 ### Package Development
+
 ```bash
 # Work on core package
 cd packages/core
@@ -176,14 +190,16 @@ npm run test
 ## Testing
 
 ### Test Results
+
 - **Core Package**: 400+ tests, 100% passing
-- **Parser Tests**: 54/54 ✅  
+- **Parser Tests**: 54/54 ✅
 - **API Tests**: 23/23 ✅
 - **Integration Tests**: 23/23 ✅
-- **Performance Tests**: 16/18 ✅ 
+- **Performance Tests**: 16/18 ✅
 - **Error Recovery**: 21/21 ✅
 
 ### Test Categories
+
 - **Unit Tests**: Individual expression categories and utilities
 - **Integration Tests**: Real-world usage patterns with DOM
 - **Performance Tests**: Large expression handling and memory usage
@@ -192,27 +208,29 @@ npm run test
 
 ## Performance Benchmarks
 
-| Operation | Core Only | With Utilities | Notes |
-|-----------|-----------|----------------|-------|
-| **Simple Expression** | < 1ms | < 1ms | `5 + 3 * 2` |
-| **Complex Expression** | < 10ms | < 15ms | 100+ tokens |
-| **DOM Manipulation** | < 5ms | < 5ms | `hide me then show me` |
-| **Bundle Size (gzipped)** | 12KB | 20KB | Production builds |
+| Operation                 | Core Only | With Utilities | Notes                  |
+| ------------------------- | --------- | -------------- | ---------------------- |
+| **Simple Expression**     | < 1ms     | < 1ms          | `5 + 3 * 2`            |
+| **Complex Expression**    | < 10ms    | < 15ms         | 100+ tokens            |
+| **DOM Manipulation**      | < 5ms     | < 5ms          | `hide me then show me` |
+| **Bundle Size (gzipped)** | 12KB      | 20KB           | Production builds      |
 
 ## Browser Support
 
-| Browser | Version | Support Level |
-|---------|---------|---------------|
-| **Chrome** | 70+ | ✅ Full |
-| **Firefox** | 65+ | ✅ Full |
-| **Safari** | 12+ | ✅ Full |
-| **Edge** | 79+ | ✅ Full |
+| Browser     | Version | Support Level |
+| ----------- | ------- | ------------- |
+| **Chrome**  | 70+     | ✅ Full       |
+| **Firefox** | 65+     | ✅ Full       |
+| **Safari**  | 12+     | ✅ Full       |
+| **Edge**    | 79+     | ✅ Full       |
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
+for details.
 
 ### Development Workflow
+
 1. Fork and clone the repository
 2. Create a feature branch
 3. Make changes with comprehensive tests
@@ -220,6 +238,7 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 5. Submit a pull request
 
 ### Package Guidelines
+
 - **Core**: Keep minimal, no external dependencies
 - **Fixi**: Utility functions only, depend on core
 - **Integrated**: Convenience package, combines both
@@ -232,19 +251,22 @@ MIT - see [LICENSE](./LICENSE) file for details.
 ## Roadmap
 
 ### ✅ Completed (Phase 1-3)
+
 - [x] Complete hyperscript parser with error recovery
-- [x] High-performance runtime with DOM manipulation  
+- [x] High-performance runtime with DOM manipulation
 - [x] Comprehensive expression system (400+ tests)
 - [x] TypeScript-first architecture
 - [x] Public API with full documentation
 
 ### 🚧 In Progress (Phase 4)
+
 - [ ] Fixi utility functions implementation
 - [ ] Interactive playground application
 - [ ] Enhanced error reporting and debugging
 - [ ] Performance optimization and JIT compilation
 
 ### 📋 Planned (Phase 5)
+
 - [ ] Framework integrations (React, Vue, Svelte)
 - [ ] Browser extension for debugging
 - [ ] VS Code extension with syntax highlighting
