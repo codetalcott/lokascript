@@ -90,7 +90,13 @@
                     Object.assign(window, context);
                 }
                 
-                await hyperfixi.evalHyperScript(command, context);
+                // Pass context with locals for variable resolution
+                const hyperscriptContext = {
+                    locals: context,
+                    globals: context
+                };
+                
+                await hyperfixi.evalHyperScript(command, hyperscriptContext);
                 
                 // Return context variables that may have been set
                 const result = {};

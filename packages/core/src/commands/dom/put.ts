@@ -19,42 +19,53 @@ export class PutCommand implements CommandImplementation {
 
     const [content, preposition, target] = args;
     
-    // Resolve target element
-    const targetElement = this.resolveTarget(target, context);
+    // Resolve target element and optional property
+    const { element: targetElement, property } = this.resolveTarget(target, context);
     
     // Convert content to string, handling null/undefined
     const contentStr = content == null ? '' : String(content);
     
-    // Execute based on preposition
-    switch (preposition) {
-      case 'into':
-        targetElement.innerHTML = contentStr;
-        break;
-        
-      case 'before':
-        if (targetElement.parentNode) {
-          const textNode = document.createTextNode(contentStr);
-          targetElement.parentNode.insertBefore(textNode, targetElement);
-        }
-        break;
-        
-      case 'after':
-        if (targetElement.parentNode) {
-          const textNode = document.createTextNode(contentStr);
-          targetElement.parentNode.insertBefore(textNode, targetElement.nextSibling);
-        }
-        break;
-        
-      case 'at start of':
-        targetElement.innerHTML = contentStr + targetElement.innerHTML;
-        break;
-        
-      case 'at end of':
-        targetElement.innerHTML = targetElement.innerHTML + contentStr;
-        break;
-        
-      default:
-        throw new Error(`Invalid preposition: ${preposition}. Must be one of: into, before, after, at start of, at end of`);
+    // If a specific property is targeted (like innerHTML), handle it directly
+    if (property) {
+      switch (preposition) {
+        case 'into':
+          (targetElement as any)[property] = contentStr;
+          break;
+        default:
+          throw new Error(`Property access (${property}) only supports 'into' preposition`);
+      }
+    } else {
+      // Execute based on preposition for the element itself
+      switch (preposition) {
+        case 'into':
+          targetElement.textContent = contentStr; // Use textContent for safer content insertion
+          break;
+          
+        case 'before':
+          if (targetElement.parentNode) {
+            const textNode = document.createTextNode(contentStr);
+            targetElement.parentNode.insertBefore(textNode, targetElement);
+          }
+          break;
+          
+        case 'after':
+          if (targetElement.parentNode) {
+            const textNode = document.createTextNode(contentStr);
+            targetElement.parentNode.insertBefore(textNode, targetElement.nextSibling);
+          }
+          break;
+          
+        case 'at start of':
+          targetElement.innerHTML = contentStr + targetElement.innerHTML;
+          break;
+          
+        case 'at end of':
+          targetElement.innerHTML = targetElement.innerHTML + contentStr;
+          break;
+          
+        default:
+          throw new Error(`Invalid preposition: ${preposition}. Must be one of: into, before, after, at start of, at end of`);
+      }
     }
     
     return content;
@@ -75,32 +86,54 @@ export class PutCommand implements CommandImplementation {
     return null;
   }
 
-  private resolveTarget(target: any, context: ExecutionContext): HTMLElement {
+  private resolveTarget(target: any, context: ExecutionContext): { element: HTMLElement; property?: string } {
     // If target is already an HTMLElement, use it directly
     if (target && typeof target === 'object' && target.style) {
-      return target;
+      return { element: target };
     }
     
     // If target is 'me' string, use the context element
     if (target === 'me' && context.me) {
-      return context.me as HTMLElement;
+      return { element: context.me as HTMLElement };
     }
     
-    // If target is a string, treat as CSS selector or check for special mocks
+    // If target is a string, handle CSS selector with optional property access
     if (typeof target === 'string') {
-      // In test environment, document might be mocked or unavailable
-      if (typeof document !== 'undefined' && document.querySelector) {
-        const element = document.querySelector(target);
-        if (!element) {
+      // Check for property access syntax like "#element.innerHTML"
+      const propertyMatch = target.match(/^(.+)\.(\w+)$/);
+      
+      if (propertyMatch) {
+        const [, selector, property] = propertyMatch;
+        
+        // In test environment, document might be mocked or unavailable
+        if (typeof document !== 'undefined' && document.querySelector) {
+          const element = document.querySelector(selector);
+          if (!element) {
+            throw new Error(`Target element not found: ${selector}`);
+          }
+          return { element: element as HTMLElement, property };
+        } else {
+          // Test environment - return context.me as fallback for 'me' selector
+          if (selector === 'me' && context.me) {
+            return { element: context.me as HTMLElement, property };
+          }
+          throw new Error(`Target element not found: ${selector}`);
+        }
+      } else {
+        // Regular CSS selector without property access
+        if (typeof document !== 'undefined' && document.querySelector) {
+          const element = document.querySelector(target);
+          if (!element) {
+            throw new Error(`Target element not found: ${target}`);
+          }
+          return { element: element as HTMLElement };
+        } else {
+          // Test environment - return context.me as fallback for 'me' selector
+          if (target === 'me' && context.me) {
+            return { element: context.me as HTMLElement };
+          }
           throw new Error(`Target element not found: ${target}`);
         }
-        return element as HTMLElement;
-      } else {
-        // Test environment - return context.me as fallback for 'me' selector
-        if (target === 'me' && context.me) {
-          return context.me as HTMLElement;
-        }
-        throw new Error(`Target element not found: ${target}`);
       }
     }
     

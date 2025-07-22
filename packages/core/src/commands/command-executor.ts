@@ -46,6 +46,42 @@ class CommandAdapter implements Command {
           evaluatedArgs.push(args[i]);
         }
       }
+    } else if (this.impl.name === 'add' && args.length >= 2) {
+      // For ADD command, keep class/attribute expressions as strings
+      // "add .class-name target" -> keep ".class-name" as string
+      evaluatedArgs.push(args[0]); // Keep class/attribute expression as string
+      
+      // Evaluate target if provided
+      for (let i = 1; i < args.length; i++) {
+        try {
+          const evaluated = await evaluateCommandArgument(args[i], context);
+          evaluatedArgs.push(evaluated);
+        } catch (error) {
+          evaluatedArgs.push(args[i]);
+        }
+      }
+    } else if (this.impl.name === 'put' && args.length >= 3) {
+      // For PUT command: "put content into target"
+      // Evaluate content (like variables), keep preposition as string, keep target as string for property access
+      try {
+        const evaluated = await evaluateCommandArgument(args[0], context);
+        evaluatedArgs.push(evaluated);
+      } catch (error) {
+        evaluatedArgs.push(args[0]);
+      }
+      
+      evaluatedArgs.push(args[1]); // Keep preposition as string
+      evaluatedArgs.push(args[2]); // Keep target as string for property parsing (don't evaluate CSS selectors)
+      
+      // Handle any additional arguments
+      for (let i = 3; i < args.length; i++) {
+        try {
+          const evaluated = await evaluateCommandArgument(args[i], context);
+          evaluatedArgs.push(evaluated);
+        } catch (error) {
+          evaluatedArgs.push(args[i]);
+        }
+      }
     } else {
       // Default behavior for other commands
       for (const arg of args) {

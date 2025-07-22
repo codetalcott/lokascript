@@ -30,16 +30,29 @@ export class AddCommand implements CommandImplementation {
   async execute(context: ExecutionContext, classExpression?: any, target?: any): Promise<void> {
     // Parse arguments - add command can be called as:
     // add("class-name", target) or add("class-name") 
-    const classes = this.parseClasses(classExpression);
+    // add("[@attr=value]", target) for attributes
+    
     const elements = this.resolveTargets(context, target);
     
-    if (!classes.length) {
-      console.warn('Add command: No classes provided to add');
+    if (!elements.length) {
+      console.warn('Add command: No target elements found');
       return;
     }
     
-    for (const element of elements) {
-      await this.addClass(element, classes, context);
+    // Check if this is attribute syntax
+    if (typeof classExpression === 'string' && this.isAttributeSyntax(classExpression)) {
+      await this.addAttributes(elements, classExpression, context);
+    } else {
+      // Handle as CSS classes
+      const classes = this.parseClasses(classExpression);
+      if (!classes.length) {
+        console.warn('Add command: No classes provided to add');
+        return;
+      }
+      
+      for (const element of elements) {
+        await this.addClass(element, classes, context);
+      }
     }
   }
 
@@ -49,21 +62,40 @@ export class AddCommand implements CommandImplementation {
     }
 
     if (typeof classExpression === 'string') {
-      // Split by various delimiters and filter out empty strings
-      return classExpression
+      // Handle hyperscript class syntax like '.class-name'
+      const cleanExpression = classExpression.trim();
+      
+      // Check if this is an attribute syntax like [@data-test="value"]
+      if (cleanExpression.startsWith('[@') && cleanExpression.endsWith(']')) {
+        // This is attribute syntax, not class syntax - return empty for now
+        // TODO: Handle attribute syntax in a separate method
+        return [];
+      }
+      
+      // Split by various delimiters and clean up class names
+      return cleanExpression
         .split(/[\s,]+/)
-        .map(cls => cls.trim())
-        .filter(cls => cls.length > 0);
+        .map(cls => {
+          // Remove leading dot from CSS class selectors
+          const trimmed = cls.trim();
+          return trimmed.startsWith('.') ? trimmed.substring(1) : trimmed;
+        })
+        .filter(cls => cls.length > 0 && this.isValidClassName(cls));
     }
 
     if (Array.isArray(classExpression)) {
       return classExpression
-        .map(cls => String(cls).trim())
-        .filter(cls => cls.length > 0);
+        .map(cls => {
+          const trimmed = String(cls).trim();
+          return trimmed.startsWith('.') ? trimmed.substring(1) : trimmed;
+        })
+        .filter(cls => cls.length > 0 && this.isValidClassName(cls));
     }
 
     // Convert other types to string
-    return [String(classExpression).trim()].filter(cls => cls.length > 0);
+    const str = String(classExpression).trim();
+    const cleanStr = str.startsWith('.') ? str.substring(1) : str;
+    return cleanStr.length > 0 && this.isValidClassName(cleanStr) ? [cleanStr] : [];
   }
 
   private resolveTargets(context: ExecutionContext, target?: any): HTMLElement[] {
@@ -139,6 +171,69 @@ export class AddCommand implements CommandImplementation {
         classes,
       });
     }
+  }
+
+  private isAttributeSyntax(expression: string): boolean {
+    const trimmed = expression.trim();
+    return trimmed.startsWith('[@') && trimmed.endsWith(']');
+  }
+
+  private async addAttributes(elements: HTMLElement[], attributeExpression: string, context: ExecutionContext): Promise<void> {
+    const attributes = this.parseAttributes(attributeExpression);
+    
+    for (const element of elements) {
+      for (const [name, value] of attributes) {
+        try {
+          element.setAttribute(name, value);
+          
+          // Dispatch add attribute event
+          dispatchCustomEvent(element, 'hyperscript:add', {
+            element,
+            context,
+            command: 'add',
+            type: 'attribute',
+            attribute: { name, value },
+          });
+        } catch (error) {
+          console.warn(`Error setting attribute ${name}="${value}":`, error);
+          
+          // Dispatch error event
+          dispatchCustomEvent(element, 'hyperscript:error', {
+            element,
+            context,
+            command: 'add',
+            error: error as Error,
+            attribute: { name, value },
+          });
+        }
+      }
+    }
+  }
+
+  private parseAttributes(attributeExpression: string): Array<[string, string]> {
+    // Parse [@data-test="value"] or [@data-test=value] syntax
+    const trimmed = attributeExpression.trim();
+    
+    // Remove [@ and ] brackets
+    const inner = trimmed.slice(2, -1);
+    
+    // Split on = to get name and value
+    const equalIndex = inner.indexOf('=');
+    if (equalIndex === -1) {
+      // No value, treat as boolean attribute
+      return [[inner.trim(), '']];
+    }
+    
+    const name = inner.slice(0, equalIndex).trim();
+    let value = inner.slice(equalIndex + 1).trim();
+    
+    // Remove quotes if present
+    if ((value.startsWith('"') && value.endsWith('"')) || 
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    
+    return [[name, value]];
   }
 
   private isValidClassName(className: string): boolean {
