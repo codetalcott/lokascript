@@ -22,6 +22,7 @@ export enum TokenType {
   CSS_SELECTOR = 'css_selector',
   ID_SELECTOR = 'id_selector',
   CLASS_SELECTOR = 'class_selector',
+  QUERY_REFERENCE = 'query_reference',
   
   // Context variables
   CONTEXT_VAR = 'context_var',
@@ -74,7 +75,7 @@ const LOGICAL_OPERATORS = new Set(['and', 'or', 'not']);
 
 const COMPARISON_OPERATORS = new Set([
   '==', '!=', '===', '!==', '<', '>', '<=', '>=', 'is', 'is not',
-  'contains', 'matches', 'exists'
+  'contains', 'does not contain', 'matches', 'exists', 'is empty', 'is not empty'
 ]);
 
 const MATHEMATICAL_OPERATORS = new Set(['mod']);
@@ -148,6 +149,12 @@ export function tokenize(input: string): Token[] {
         // Tokenize as string
         tokenizeString(tokenizer);
       }
+      continue;
+    }
+    
+    // Handle query reference syntax (<selector/>)
+    if (char === '<') {
+      tokenizeQueryReference(tokenizer);
       continue;
     }
     
@@ -404,6 +411,30 @@ function tokenizeCSSSelector(tokenizer: Tokenizer): void {
   addToken(tokenizer, type, value, start);
 }
 
+function tokenizeQueryReference(tokenizer: Tokenizer): void {
+  const start = tokenizer.position;
+  let value = '';
+  
+  // Consume opening '<'
+  value += advance(tokenizer);
+  
+  // Read until closing '/>'
+  while (tokenizer.position < tokenizer.input.length - 1) {
+    const char = tokenizer.input[tokenizer.position];
+    const nextChar = tokenizer.input[tokenizer.position + 1];
+    
+    value += advance(tokenizer);
+    
+    // Check for closing '/>'
+    if (char === '/' && nextChar === '>') {
+      value += advance(tokenizer); // consume '>'
+      break;
+    }
+  }
+  
+  addToken(tokenizer, TokenType.QUERY_REFERENCE, value, start);
+}
+
 function tokenizeSymbol(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
   let value = advance(tokenizer); // consume @
@@ -453,6 +484,16 @@ function tokenizeArrayLiteral(tokenizer: Tokenizer): void {
 function tokenizeOperator(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
   let value = '';
+  
+  // Handle possessive operator first ('s)
+  const char = tokenizer.input[tokenizer.position];
+  if ((char === "'" || char === "'") && peek(tokenizer, 1) === 's') {
+    value = "'s";
+    advance(tokenizer); // consume apostrophe
+    advance(tokenizer); // consume 's'
+    addToken(tokenizer, TokenType.OPERATOR, value, start);
+    return;
+  }
   
   // Handle multi-character operators
   const twoChar = tokenizer.input.substring(tokenizer.position, tokenizer.position + 2);
@@ -547,9 +588,88 @@ function tokenizeIdentifier(tokenizer: Tokenizer): void {
     }
   }
   
+  // Check for multi-word operators starting with this identifier
+  const compound = tryTokenizeCompoundOperator(tokenizer, value, start);
+  if (compound) {
+    return; // Compound operator was handled
+  }
+  
   // Classify the identifier
   const type = classifyIdentifier(value);
   addToken(tokenizer, type, value, start);
+}
+
+function tryTokenizeCompoundOperator(tokenizer: Tokenizer, firstWord: string, start: number): boolean {
+  const lowerFirst = firstWord.toLowerCase();
+  const originalPosition = tokenizer.position;
+  
+  // Skip whitespace to find next word
+  skipWhitespace(tokenizer);
+  
+  // Peek at the next identifier
+  const nextWordStart = tokenizer.position;
+  let nextWord = '';
+  while (tokenizer.position < tokenizer.input.length) {
+    const char = tokenizer.input[tokenizer.position];
+    if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || 
+        (char >= '0' && char <= '9') || char === '_' || char === '-') {
+      nextWord += advance(tokenizer);
+    } else {
+      break;
+    }
+  }
+  
+  if (nextWord) {
+    const lowerNext = nextWord.toLowerCase();
+    let compound = `${lowerFirst} ${lowerNext}`;
+    
+    // Check for three-word operators
+    if (compound === 'is not' || compound === 'does not') {
+      const nextNextWordStart = tokenizer.position;
+      skipWhitespace(tokenizer);
+      
+      let thirdWord = '';
+      while (tokenizer.position < tokenizer.input.length) {
+        const char = tokenizer.input[tokenizer.position];
+        if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || 
+            (char >= '0' && char <= '9') || char === '_' || char === '-') {
+          thirdWord += advance(tokenizer);
+        } else {
+          break;
+        }
+      }
+      
+      if (thirdWord) {
+        const lowerThird = thirdWord.toLowerCase();
+        const threeWordCompound = `${compound} ${lowerThird}`;
+        
+        if (COMPARISON_OPERATORS.has(threeWordCompound)) {
+          addToken(tokenizer, TokenType.COMPARISON_OPERATOR, threeWordCompound, start);
+          return true;
+        }
+      }
+      
+      // Reset to check two-word operator
+      tokenizer.position = nextNextWordStart;
+    }
+    
+    // Check two-word operators
+    if (COMPARISON_OPERATORS.has(compound)) {
+      addToken(tokenizer, TokenType.COMPARISON_OPERATOR, compound, start);
+      return true;
+    }
+  }
+  
+  // Check single-word operators
+  if (COMPARISON_OPERATORS.has(lowerFirst)) {
+    tokenizer.position = originalPosition; // Reset position
+    addToken(tokenizer, TokenType.COMPARISON_OPERATOR, firstWord, start);
+    return true;
+  }
+  
+  // No compound operator found, reset position
+  tokenizer.position = originalPosition;
+  return false;
 }
 
 function classifyIdentifier(value: string): TokenType {
