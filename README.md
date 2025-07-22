@@ -9,7 +9,7 @@ functions. Built for modularity, performance, and developer experience.
 
 | Package                              | Description                       | Bundle Size | Status            |
 | ------------------------------------ | --------------------------------- | ----------- | ----------------- |
-| [`@hyperfixi/core`](./packages/core) | Pure hyperscript parser & runtime | ~12KB       | ✅ Stable         |
+| [`@hyperfixi/core`](./packages/core) | Pure hyperscript parser & runtime | ~12KB       | ✅ Internal Tests |
 | [`@hyperfixi/fixi`](./packages/fixi) | Utility functions & helpers       | ~8KB        | 🚧 In Development |
 | [`hyperfixi`](./packages/integrated) | Complete solution (core + fixi)   | ~20KB       | 🚧 In Development |
 
@@ -94,9 +94,12 @@ context.variables?.set("date", dateUtils);
 
 ### 🧪 Thoroughly Tested
 
-- **400+ tests** with 100% pass rate
-- Cross-browser compatibility testing
+- **1800+ internal tests** with 98.5% pass rate (our implementation)
+- Complete hyperscript AST parser (56/56 tests passing)
+- Expression evaluation system (388/388 tests passing)  
+- Command implementations with comprehensive coverage
 - Performance regression testing
+- **Note**: Not yet validated against official `_hyperscript` test suite
 - Integration testing with real DOM elements
 
 ### 🌊 Complete DOM Support

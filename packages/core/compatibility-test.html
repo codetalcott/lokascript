@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HyperScript Compatibility Test</title>
+</head>
+<body>
+    <div id="work-area"></div>
+    
+    <!-- Original _hyperscript library -->
+    <script src="/dist/_hyperscript.js"></script>
+    
+    <!-- Our hyperfixi implementation -->
+    <script src="/dist/hyperfixi-browser.js"></script>
+    
+    <script>
+        // Setup compatibility helpers
+        window.testResults = [];
+        
+        window.testExpression = async function(expression, context = {}) {
+            try {
+                // Use the correct API for both libraries
+                const original = _hyperscript.evaluate(expression, context);
+                const ours = await hyperfixi.evalHyperScript(expression, context);
+                
+                return { expression, original, ours, match: original === ours };
+            } catch (error) {
+                return { expression, error: error.message, match: false };
+            }
+        };
+        
+        // Helper for context conversion - _hyperscript uses different context format
+        window.testExpressionWithContext = async function(expression, context = {}) {
+            try {
+                // Convert our context format to _hyperscript format if needed
+                let hyperschriptContext = context;
+                if (context.locals) {
+                    // _hyperscript expects variables in the root context
+                    hyperschriptContext = { ...context, ...context.locals };
+                }
+                if (context.me) {
+                    hyperschriptContext.me = context.me;
+                }
+                if (context.you) {
+                    hyperschriptContext.you = context.you;
+                }
+                if (context.result) {
+                    hyperschriptContext.it = context.result;
+                }
+                
+                const original = _hyperscript.evaluate(expression, hyperschriptContext);
+                const ours = await hyperfixi.evalHyperScript(expression, context);
+                return { expression, original, ours, match: original === ours };
+            } catch (error) {
+                return { expression, error: error.message, match: false };
+            }
+        };
+    </script>
+</body>
+</html>

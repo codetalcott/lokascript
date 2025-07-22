@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Browser Test</title>
+</head>
+<body>
+    <div id="work-area"></div>
+    
+    <!-- Original _hyperscript library -->
+    <script src="/dist/_hyperscript.js" onload="console.log('_hyperscript loaded')" onerror="console.error('_hyperscript failed to load')"></script>
+    
+    <!-- Our hyperfixi implementation -->
+    <script src="/dist/hyperfixi-browser.js" onload="console.log('hyperfixi loaded')" onerror="console.error('hyperfixi failed to load')"></script>
+    
+    <script>
+        window.addEventListener('load', function() {
+            console.log('Window loaded');
+            console.log('_hyperscript available:', typeof _hyperscript);
+            console.log('hyperfixi available:', typeof hyperfixi);
+            
+            // Check if _hyperscript has evaluate method
+            if (typeof _hyperscript !== 'undefined') {
+                console.log('_hyperscript.evaluate available:', typeof _hyperscript.evaluate);
+                console.log('_hyperscript keys:', Object.keys(_hyperscript));
+            }
+            
+            // Check if hyperfixi has evalHyperScript method  
+            if (typeof hyperfixi !== 'undefined') {
+                console.log('hyperfixi.evalHyperScript available:', typeof hyperfixi.evalHyperScript);
+                console.log('hyperfixi keys:', Object.keys(hyperfixi));
+            }
+            
+            window.libraryCheck = {
+                hyperschript: typeof _hyperscript,
+                hyperschriptEvaluate: _hyperscript && typeof _hyperscript.evaluate,
+                hyperfixi: typeof hyperfixi,
+                hyperfixiEval: hyperfixi && typeof hyperfixi.evalHyperScript
+            };
+            
+            // Test basic functionality with correct API
+            if (typeof _hyperscript !== 'undefined' && _hyperscript.evaluate) {
+                try {
+                    const result = _hyperscript.evaluate('5 + 3', {});
+                    console.log('_hyperscript.evaluate test result:', result);
+                } catch (error) {
+                    console.error('_hyperscript.evaluate test error:', error);
+                }
+            }
+            
+            if (typeof hyperfixi !== 'undefined' && hyperfixi.evalHyperScript) {
+                hyperfixi.evalHyperScript('5 + 3').then(result => {
+                    console.log('hyperfixi.evalHyperScript test result:', result);
+                }).catch(error => {
+                    console.error('hyperfixi.evalHyperScript test error:', error);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
