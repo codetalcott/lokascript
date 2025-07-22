@@ -95,8 +95,9 @@ export async function evalHyperScript(
     
     // Determine if this is a command or expression
     if (isCommand(script)) {
-      // Use full parser + runtime for commands
-      return await executeAsCommand(script, executionContext);
+      // Use command executor for commands
+      const { executeCommand } = await import('../commands/command-executor.js');
+      return await executeCommand(script, executionContext);
     } else {
       // Use expression parser for expressions
       const result = await parseAndEvaluateExpression(script, executionContext);
@@ -115,18 +116,38 @@ export async function evalHyperScript(
  * Determine if input is a command vs an expression
  */
 function isCommand(script: string): boolean {
-  const trimmed = script.trim();
+  const trimmed = script.trim().toLowerCase();
   
-  // Known command starters
-  const commandStarters = [
-    'put', 'set', 'add', 'remove', 'show', 'hide', 'toggle',
-    'if', 'repeat', 'wait', 'call', 'send', 'make', 'log',
-    'increment', 'decrement', 'fetch', 'throw', 'return',
-    'break', 'continue', 'halt', 'go', 'on'
+  // Known command patterns (more specific matching)
+  const commandPatterns = [
+    /^set\s+.+\s+to\s+.+/,           // set x to y
+    /^put\s+.+\s+(into|before|after)\s+.+/, // put x into y
+    /^add\s+.+(\s+to\s+.+)?/,        // add .class or add .class to #element
+    /^remove\s+.+(\s+from\s+.+)?/,   // remove .class or remove .class from #element
+    /^show\s+.+/,                    // show #element
+    /^hide\s+.+/,                    // hide #element
+    /^toggle\s+.+/,                  // toggle .class
+    /^log\s+.*/,                     // log "message" (can have no args)
+    /^wait\s+.+/,                    // wait 1s
+    /^call\s+.+/,                    // call function()
+    /^send\s+.+/,                    // send event
+    /^make\s+.+/,                    // make <div/>
+    /^increment\s+.+/,               // increment counter
+    /^decrement\s+.+/,               // decrement counter
+    /^fetch\s+.+/,                   // fetch /api/data
+    /^throw\s+.+/,                   // throw error
+    /^return\s+.+/,                  // return value
+    /^break/,                        // break
+    /^continue/,                     // continue
+    /^halt/,                         // halt
+    /^go\s+.+/,                      // go to #section
+    /^if\s+.+/,                      // if condition
+    /^repeat\s+.+/,                  // repeat for x in list
+    /^on\s+.+/                       // on click
   ];
   
-  const firstWord = trimmed.split(/\s+/)[0];
-  return commandStarters.includes(firstWord.toLowerCase());
+  // Check if script matches any command pattern
+  return commandPatterns.some(pattern => pattern.test(trimmed));
 }
 
 /**

@@ -9,7 +9,8 @@ export default {
     file: 'dist/hyperfixi-browser.js',
     format: 'iife',
     name: 'hyperfixi',
-    sourcemap: true
+    sourcemap: true,
+    inlineDynamicImports: true
   },
   plugins: [
     nodeResolve({

@@ -66,6 +66,47 @@
             }
         };
         
+        // Set up global evalHyperScript function for test compatibility
+        window.evalHyperScript = hyperfixi.evalHyperScript;
+        window.getParseErrorFor = function(expr) {
+            try {
+                hyperfixi.evalHyperScript(expr);
+                return null;
+            } catch (e) {
+                return e.message;
+            }
+        };
+        
+        // Clear work area helper
+        window.clearWorkArea = function() {
+            document.getElementById('work-area').innerHTML = '';
+        };
+        
+        // Test command execution helper
+        window.testCommandExecution = async function(command, context = {}) {
+            try {
+                // Set up context variables globally for the command to access
+                if (context) {
+                    Object.assign(window, context);
+                }
+                
+                await hyperfixi.evalHyperScript(command, context);
+                
+                // Return context variables that may have been set
+                const result = {};
+                // Copy any global variables that may have been set
+                if (window.x !== undefined) result.x = window.x;
+                if (window.message !== undefined) result.message = window.message;
+                if (window.result !== undefined) result.result = window.result;
+                if (window.myVar !== undefined) result.myVar = window.myVar;
+                if (window.myValue !== undefined) result.myValue = window.myValue;
+                
+                return { success: true, context: result };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        };
+        
         // Helper for context conversion - _hyperscript uses different context format
         window.testExpressionWithContext = async function(expression, context = {}) {
             try {

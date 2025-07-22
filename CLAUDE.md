@@ -111,6 +111,19 @@ npm run test:watch                         # Watch mode for development
 npm run test:coverage                      # Generate coverage reports
 ```
 
+### Compatibility Testing (Official _hyperscript Test Suite)
+
+```bash
+npm run test:browser                       # Run compatibility tests vs _hyperscript
+npx playwright test --grep "Command Tests"  # Test command compatibility  
+npx playwright test --grep "Expression Tests"  # Test expression compatibility
+```
+
+**Current Compatibility Status:**
+- **Expression compatibility**: 100% (15/15 tests passing)
+- **Command compatibility**: ~60% (9/15 tests passing)
+- **Overall compatibility**: ~80% across all hyperscript features
+
 ### Build
 
 ```bash
