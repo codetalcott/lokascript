@@ -625,7 +625,7 @@ describe('Hyperscript AST Parser', () => {
       // Test invalid identifier start
       const result3 = parse('123abc');
       expect(result3.success).toBe(false);
-      expect(result3.error?.message).toContain('Unexpected token');
+      expect(result3.error?.message).toContain('Missing operator between');
     });
 
     it('should handle unmatched parentheses', () => {
@@ -678,7 +678,7 @@ describe('Hyperscript AST Parser', () => {
       // Test unexpected operators
       const result3 = parse('* 5');
       expect(result3.success).toBe(false);
-      expect(result3.error?.message).toContain('Unexpected');
+      expect(result3.error?.message).toContain('requires a left operand');
       
       // Test Unicode characters
       const result4 = parse('5 + λ');

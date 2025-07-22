@@ -48,7 +48,6 @@ const TOKEN_TYPE_MAP = new Map<string, TokenType>([
   ['show', TokenType.COMMAND],
   ['wait', TokenType.COMMAND],
   ['put', TokenType.COMMAND],
-  ['set', TokenType.COMMAND],
   ['get', TokenType.COMMAND],
   ['take', TokenType.COMMAND],
   ['make', TokenType.COMMAND],
@@ -89,6 +88,7 @@ const TOKEN_TYPE_MAP = new Map<string, TokenType>([
   ['init', TokenType.KEYWORD],
   ['behavior', TokenType.KEYWORD],
   ['def', TokenType.KEYWORD],
+  ['set', TokenType.KEYWORD],
   ['if', TokenType.KEYWORD],
   ['else', TokenType.KEYWORD],
   ['unless', TokenType.KEYWORD],
@@ -212,7 +212,7 @@ export function tokenizeOptimized(input: string): Token[] {
       continue;
     }
     
-    // Handle other characters
+    // Handle object/array literals
     if (char === '{') {
       tokenizeObjectLiteralOptimized(tokenizer);
       continue;
@@ -534,7 +534,7 @@ function tokenizeArrayLiteral(tokenizer: OptimizedTokenizer): void {
 
 // Helper function (could be optimized further with character code checks)
 function isOperatorChar(char: string): boolean {
-  return '+-*/%=<>!&|?:;,()[]{}^~'.includes(char);
+  return '+-*/%=!<>&|(){}[],.;:?\'\''.includes(char);
 }
 
 // Export for compatibility
