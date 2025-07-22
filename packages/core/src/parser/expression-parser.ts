@@ -282,7 +282,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     // Handle context possessive syntax (my property, its property, your property)
     else if (left.type === 'identifier' && 
              ['my', 'its', 'your'].includes((left as any).name) &&
-             token.type === TokenType.IDENTIFIER) {
+             (token.type === TokenType.IDENTIFIER || token.type === TokenType.CONTEXT_VAR)) {
       
       const property = parsePrimaryExpression(state);
       

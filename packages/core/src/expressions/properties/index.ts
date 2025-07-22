@@ -64,7 +64,18 @@ export const myExpression: ExpressionImplementation = {
       throw new Error('Property name must be a string');
     }
     
-    return getElementProperty(context.me, property);
+    // Handle DOM elements
+    if (context.me instanceof Element) {
+      return getElementProperty(context.me, property);
+    }
+    
+    // Handle plain objects
+    if (typeof context.me === 'object' && context.me !== null) {
+      return (context.me as any)[property];
+    }
+    
+    // Handle primitive values
+    return (context.me as any)[property];
   },
   
   validate(args: any[]): string | null {
@@ -135,7 +146,18 @@ export const yourExpression: ExpressionImplementation = {
       throw new Error('Property name must be a string');
     }
     
-    return getElementProperty(context.you, property);
+    // Handle DOM elements
+    if (context.you instanceof Element) {
+      return getElementProperty(context.you, property);
+    }
+    
+    // Handle plain objects
+    if (typeof context.you === 'object' && context.you !== null) {
+      return (context.you as any)[property];
+    }
+    
+    // Handle primitive values
+    return (context.you as any)[property];
   },
   
   validate(args: any[]): string | null {
