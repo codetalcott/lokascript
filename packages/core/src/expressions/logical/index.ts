@@ -4,6 +4,7 @@
  */
 
 import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import { matchesWithCache } from '../../performance/integration.js';
 
 // ============================================================================
 // Comparison Operators
@@ -420,13 +421,13 @@ export const matchesExpression: ExpressionImplementation = {
   operators: ['matches'],
   
   async evaluate(context: ExecutionContext, element: any, selector: any): Promise<boolean> {
-    // If it's a DOM element and selector is a CSS selector, use CSS matching
+    // If it's a DOM element and selector is a CSS selector, use CSS matching with cache
     if (element instanceof Element && typeof selector === 'string') {
       // Check if it looks like a CSS selector (starts with . # : [ or is a tag name)
       if (selector.startsWith('.') || selector.startsWith('#') || selector.startsWith(':') || 
           selector.startsWith('[') || /^[a-zA-Z][\w-]*$/.test(selector)) {
         try {
-          return element.matches(selector);
+          return matchesWithCache(element, selector);
         } catch (error) {
           return false;
         }

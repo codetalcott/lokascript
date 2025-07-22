@@ -5,6 +5,7 @@
 
 import type { CommandImplementation, ExecutionContext } from '../../types/core';
 import { dispatchCustomEvent } from '../../core/events';
+import { queryAllWithCache, batchDOMOperation } from '../../performance/integration.js';
 
 export interface AddCommandOptions {
   delimiter?: string;
@@ -86,10 +87,10 @@ export class AddCommand implements CommandImplementation {
       return target.filter(item => item instanceof HTMLElement) as HTMLElement[];
     }
 
-    // Handle CSS selector string
+    // Handle CSS selector string with caching
     if (typeof target === 'string') {
-      const elements = document.querySelectorAll(target);
-      return Array.from(elements) as HTMLElement[];
+      const elements = queryAllWithCache(target);
+      return elements as HTMLElement[];
     }
 
     // Fallback to context.me for invalid targets
@@ -102,6 +103,7 @@ export class AddCommand implements CommandImplementation {
     try {
       const addedClasses: string[] = [];
       
+      // Add classes directly (DOM classList operations are already efficient)
       for (const className of classes) {
         if (this.isValidClassName(className)) {
           if (!element.classList.contains(className)) {
