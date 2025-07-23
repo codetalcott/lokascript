@@ -159,7 +159,7 @@ function parseComparisonExpression(state: ParseState): ASTNode {
       state.position++; // consume operator
       
       // Handle unary operators that don't need a right operand
-      if (['exists', 'is empty', 'is not empty'].includes(operator)) {
+      if (['exists', 'does not exist', 'is empty', 'is not empty'].includes(operator)) {
         left = {
           type: 'unaryExpression',
           operator,
@@ -495,26 +495,53 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
         (nextToken.type === TokenType.CLASS_SELECTOR || 
          nextToken.type === TokenType.ID_SELECTOR ||
          nextToken.type === TokenType.QUERY_REFERENCE ||
-         nextToken.type === TokenType.IDENTIFIER)) {
-      // Parse the argument expression
-      const argument = parsePrimaryExpression(state);
-      return {
-        type: 'positionalExpression',
-        operator: operatorToken.value,
-        argument,
-        start: operatorToken.start,
-        end: argument.end
-      };
-    } else {
-      // No argument - just the positional expression on its own (operates on context.it)
-      return {
-        type: 'positionalExpression',
-        operator: operatorToken.value,
-        argument: null,
-        start: operatorToken.start,
-        end: operatorToken.end
-      };
+         nextToken.type === TokenType.IDENTIFIER ||
+         // Handle case where tokenizer split '.test-item' into '.' + 'test-item'
+         (nextToken.type === TokenType.OPERATOR && nextToken.value === '.'))) {
+      
+      // Special handling for dot followed by identifier (CSS class selector)
+      if (nextToken.type === TokenType.OPERATOR && nextToken.value === '.') {
+        advance(state); // consume '.'
+        const identifierToken = peek(state);
+        if (identifierToken && identifierToken.type === TokenType.IDENTIFIER) {
+          advance(state); // consume identifier
+          // Create a synthetic class selector argument
+          const argument = {
+            type: 'cssSelector',
+            selectorType: 'class',
+            selector: '.' + identifierToken.value,
+            start: nextToken.start,
+            end: identifierToken.end
+          };
+          return {
+            type: 'positionalExpression',
+            operator: operatorToken.value,
+            argument,
+            start: operatorToken.start,
+            end: argument.end
+          };
+        }
+      } else {
+        // Parse the argument expression normally
+        const argument = parsePrimaryExpression(state);
+        return {
+          type: 'positionalExpression',
+          operator: operatorToken.value,
+          argument,
+          start: operatorToken.start,
+          end: argument.end
+        };
+      }
     }
+    
+    // No argument - just the positional expression on its own (operates on context.it)
+    return {
+      type: 'positionalExpression',
+      operator: operatorToken.value,
+      argument: null,
+      start: operatorToken.start,
+      end: operatorToken.end
+    };
   }
   
   // Handle unary minus and plus operators
@@ -868,13 +895,15 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       // Check for arguments before closing paren
       let currentToken = peek(state);
       while (currentToken && currentToken.value !== ')') {
-        const arg = parseExpression(state);
+        const arg = parseLogicalExpression(state);
         args.push(arg);
         
         currentToken = peek(state);
         if (currentToken && currentToken.value === ',') {
           advance(state); // consume comma
           currentToken = peek(state);
+        } else {
+          break;
         }
       }
       
@@ -1315,6 +1344,8 @@ async function evaluateUnaryExpression(node: any, context: ExecutionContext): Pr
       return logicalExpressions.no.evaluate(context, operand);
     case 'exists':
       return logicalExpressions.exists.evaluate(context, operand);
+    case 'does not exist':
+      return logicalExpressions.doesNotExist.evaluate(context, operand);
     case 'is empty':
       return logicalExpressions.isEmpty.evaluate(context, operand);
     case 'is not empty':

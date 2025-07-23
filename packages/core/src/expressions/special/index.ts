@@ -420,12 +420,12 @@ function interpolateString(template: string, context: ExecutionContext): string 
           value = value[parts[i]];
         }
         
-        return String(value ?? '');
+        return value !== undefined ? String(value) : `[${varName}]`;
       }
       
       // Handle simple variables
       const value = resolveVariable(varName, context);
-      return String(value ?? '');
+      return value !== undefined ? String(value) : `[${varName}]`;
     } catch (error) {
       // Return empty string for failed lookups
       return '';
@@ -453,11 +453,11 @@ function interpolateString(template: string, context: ExecutionContext): string 
             value = value[parts[i]];
           }
           
-          return String(value ?? '');
+          return value !== undefined ? String(value) : `[${varName}]`;
         }
         
         const value = resolveVariable(varName, context);
-        return String(value ?? '');
+        return value !== undefined ? String(value) : `[${varName}]`;
       }
       
       // For complex expressions, return placeholder for now

@@ -200,13 +200,12 @@ export function tokenize(input: string): Token[] {
          prevToken.value !== ')' && prevToken.value !== ']') ||
         prevToken.type === 'keyword' ||
         prevToken.type === 'command' ||  // Commands like "add .active" in conditionals
+        prevToken.type === 'comparison_operator' || // Comparison operators like "is not in"
         prevToken.value === '(' || 
         prevToken.value === '[' ||
         prevToken.value === '{' ||
         prevToken.value === ',' ||
-        prevToken.value === ';' ||
-        // Positional expressions like 'first', 'last' should treat following dots as CSS selectors
-        (prevToken.type === 'identifier' && ['first', 'last', 'next', 'previous'].includes(prevToken.value));
+        prevToken.value === ';';
         
       if (isCSSSelectorContext && isAlpha(peek(tokenizer))) {
         tokenizeCSSSelector(tokenizer);

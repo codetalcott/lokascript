@@ -39,8 +39,8 @@ describe('Missing Expression Features Fix - Official Test Patterns', () => {
     });
 
     it('should convert timestamp number to Date', async () => {
-      // Unix timestamp conversion
-      const timestamp = new Date('2023-01-01').getTime();
+      // Unix timestamp conversion - use local timezone to avoid offset issues
+      const timestamp = new Date(2023, 0, 1).getTime(); // January 1, 2023 in local timezone
       const result = await parseAndEvaluateExpression(`${timestamp} as Date`, context);
       expect(result).toBeInstanceOf(Date);
       expect(result.getFullYear()).toBe(2023);
