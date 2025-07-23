@@ -15,7 +15,7 @@ describe('Render Command', () => {
   beforeEach(() => {
     renderCommand = new RenderCommand();
     
-    // Create mock execution context
+    // Create execution context
     mockContext = {
       me: null,
       it: null,
@@ -25,17 +25,8 @@ describe('Render Command', () => {
       globals: new Map()
     };
 
-    // Create mock template element
+    // Create real template element (Happy-DOM provides real DOM)
     mockTemplate = document.createElement('template');
-    
-    // Mock document.querySelector
-    vi.stubGlobal('document', {
-      createElement: vi.fn(() => document.createElement('div')),
-      querySelector: vi.fn(),
-      createTreeWalker: vi.fn(() => ({
-        nextNode: vi.fn(() => null)
-      }))
-    });
   });
 
   describe('Command Properties', () => {

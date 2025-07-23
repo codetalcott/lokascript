@@ -126,12 +126,22 @@ export class RenderCommand implements CommandImplementation {
     let match;
 
     while ((match = interpolationRegex.exec(text)) !== null) {
-      const expression = match[1];
+      const expression = match[1].trim();
       try {
-        // Use our expression evaluator to process the interpolation
-        const value = await this.evaluateExpression(expression, context);
-        const escapedValue = this.escapeHtml(String(value));
-        result = result.replace(match[0], escapedValue);
+        let value: any;
+        let shouldEscape = true;
+
+        // Check for "unescaped" prefix
+        if (expression.startsWith('unescaped ')) {
+          const actualExpression = expression.substring('unescaped '.length).trim();
+          value = await this.evaluateExpression(actualExpression, context);
+          shouldEscape = false;
+        } else {
+          value = await this.evaluateExpression(expression, context);
+        }
+
+        const processedValue = shouldEscape ? this.escapeHtml(String(value)) : String(value);
+        result = result.replace(match[0], processedValue);
       } catch (error) {
         console.warn(`Template interpolation error for "${expression}":`, error);
         result = result.replace(match[0], `[Error: ${expression}]`);
@@ -321,12 +331,10 @@ export class RenderCommand implements CommandImplementation {
   }
 
   private async evaluateExpression(expression: string, context: ExecutionContext): Promise<any> {
-    // This would use our existing expression evaluator
-    // For now, a placeholder that would integrate with our expression system
     try {
-      // Import and use our expression evaluator
-      const { evalExpression } = await import('../../core/expression-evaluator');
-      return await evalExpression(expression, context);
+      // Use the parser's expression evaluation function
+      const { parseAndEvaluateExpression } = await import('../../parser/expression-parser.js');
+      return await parseAndEvaluateExpression(expression, context);
     } catch (error) {
       throw new Error(`Expression evaluation failed: ${expression} - ${error}`);
     }

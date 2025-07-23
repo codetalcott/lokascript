@@ -28,7 +28,14 @@ export interface HyperScriptContext {
 /**
  * Converts _hyperscript context format to our internal ExecutionContext format
  */
-function convertContext(hyperScriptContext?: HyperScriptContext): ExecutionContext {
+function convertContext(hyperScriptContext?: HyperScriptContext | ExecutionContext): ExecutionContext {
+  // If it's already an ExecutionContext, return as-is
+  if (hyperScriptContext && 
+      typeof (hyperScriptContext as any).locals === 'object' && 
+      (hyperScriptContext as any).locals instanceof Map) {
+    return hyperScriptContext as ExecutionContext;
+  }
+  
   const context: ExecutionContext = {
     me: hyperScriptContext?.me || null,
     you: hyperScriptContext?.you || null,
@@ -94,7 +101,7 @@ function convertContext(hyperScriptContext?: HyperScriptContext): ExecutionConte
  */
 export async function evalHyperScript(
   script: string, 
-  context?: HyperScriptContext
+  context?: HyperScriptContext | ExecutionContext
 ): Promise<any> {
   // Handle empty input
   if (!script || script.trim() === '') {
@@ -155,7 +162,8 @@ function isCommand(script: string): boolean {
     /^go\s+.+/,                      // go to #section
     /^if\s+.+/,                      // if condition
     /^repeat\s+.+/,                  // repeat for x in list
-    /^on\s+.+/                       // on click
+    /^on\s+.+/,                      // on click
+    /^render\s+.+/                   // render #template or render #template with data
   ];
   
   // Check if script matches any command pattern
@@ -188,7 +196,7 @@ async function executeAsCommand(script: string, context: ExecutionContext): Prom
  */
 export async function evalHyperScriptAsync(
   expression: string,
-  context?: HyperScriptContext
+  context?: HyperScriptContext | ExecutionContext
 ): Promise<any> {
   // Handle empty expressions
   if (!expression || expression.trim() === '') {
@@ -226,7 +234,7 @@ export function isAsyncExpression(expression: string): boolean {
  */
 export async function evalHyperScriptSmart(
   expression: string,
-  context?: HyperScriptContext
+  context?: HyperScriptContext | ExecutionContext
 ): Promise<any> {
   if (isAsyncExpression(expression)) {
     return evalHyperScriptAsync(expression, context);
