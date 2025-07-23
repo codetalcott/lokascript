@@ -38,7 +38,12 @@ export class PutCommand implements CommandImplementation {
       // Execute based on preposition for the element itself
       switch (preposition) {
         case 'into':
-          targetElement.textContent = contentStr; // Use textContent for safer content insertion
+          // Check if content contains HTML by looking for < and > characters
+          if (contentStr.includes('<') && contentStr.includes('>')) {
+            targetElement.innerHTML = contentStr;
+          } else {
+            targetElement.textContent = contentStr;
+          }
           break;
           
         case 'before':
