@@ -1225,10 +1225,10 @@ async function evaluateQueryReference(node: any, context: ExecutionContext): Pro
   // Remove the < and /> wrapper to get the actual selector
   const cleanSelector = selector.slice(1, -2); // Remove '<' and '/>'
   
-  // Handle different query types
+  // Handle different query types - Query references ALWAYS return collections
   if (cleanSelector.startsWith('#')) {
-    // ID query: <#id/> returns single element
-    return propertyExpressions.idReference.evaluate(context, cleanSelector);
+    // ID query: <#id/> returns collection (unlike direct #id which returns single element)
+    return referenceExpressions.querySelectorAll.evaluate(context, cleanSelector);
   } else if (cleanSelector.startsWith('.')) {
     // Class query: <.class/> returns array of elements  
     return propertyExpressions.classReference.evaluate(context, cleanSelector);

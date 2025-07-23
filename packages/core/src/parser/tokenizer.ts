@@ -78,7 +78,7 @@ const LOGICAL_OPERATORS = new Set(['and', 'or', 'not', 'no']);
 
 const COMPARISON_OPERATORS = new Set([
   '==', '!=', '===', '!==', '<', '>', '<=', '>=', 'is', 'is not',
-  'contains', 'does not contain', 'include', 'includes', 'does not include', 'matches', 'exists', 'is empty', 'is not empty',
+  'contains', 'does not contain', 'include', 'includes', 'does not include', 'matches', 'exists', 'does not exist', 'is empty', 'is not empty',
   'is in', 'is not in', 'equals', 'in',
   // English-style comparison operators
   'is equal to', 'is really equal to', 'is not equal to', 'is not really equal to',
