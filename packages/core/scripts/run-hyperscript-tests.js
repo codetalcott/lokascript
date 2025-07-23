@@ -192,8 +192,8 @@ Object.defineProperty(Object.prototype, 'should', {
   }
 
   async runExpressionTest(testCase) {
-    // Import our compatibility layer
-    const { evalHyperScript } = await import('../dist/index.mjs');
+    // Import our hyperscript API
+    const { hyperscript } = await import('../dist/index.mjs');
     
     // Extract evalHyperScript calls from test code
     const evalCalls = this.extractEvalCalls(testCase.code);
@@ -205,7 +205,23 @@ Object.defineProperty(Object.prototype, 'should', {
     
     for (const call of evalCalls) {
       try {
-        const result = await evalHyperScript(call.expression, call.context);
+        // Create execution context from the call context
+        const context = hyperscript.createContext();
+        if (call.context && call.context.locals) {
+          Object.assign(context.locals, call.context.locals);
+        }
+        if (call.context && call.context.me) {
+          context.me = call.context.me;
+        }
+        if (call.context && call.context.you) {
+          context.you = call.context.you;
+        }
+        if (call.context && call.context.result) {
+          context.result = call.context.result;
+        }
+        
+        // Run the expression using our API
+        const result = await hyperscript.run(call.expression, context);
         
         // Try to extract expected result from test code
         const expectedResult = this.extractExpectedResult(testCase.code, call.expression);
