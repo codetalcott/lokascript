@@ -235,6 +235,15 @@ export class RenderCommand implements CommandImplementation {
         const [newLines, nextIndex] = await this.processIfBlock(lines, i, context);
         result.push(...newLines);
         i = nextIndex;
+      } else if (trimmedLine.startsWith('@set ')) {
+        // Handle @set directive - execute as hyperscript command
+        try {
+          const setCommand = trimmedLine.substring(1); // Remove @
+          await this.executeHyperscriptCommand(setCommand, context);
+        } catch (error) {
+          console.warn(`Template @set directive error for "${trimmedLine}":`, error);
+        }
+        i++;
       } else if (trimmedLine.startsWith('@') && !trimmedLine.startsWith('@end') && !trimmedLine.startsWith('@else')) {
         // Other standalone directives - execute but don't include in output
         try {
@@ -520,6 +529,21 @@ export class RenderCommand implements CommandImplementation {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  private async executeHyperscriptCommand(command: string, context: ExecutionContext): Promise<any> {
+    try {
+      console.debug(`Executing hyperscript command: "${command}"`);
+      
+      // Use the hyperscript evaluator to execute the command
+      const { evalHyperscript } = await import('../../compatibility/eval-hyperscript.js');
+      const result = await evalHyperscript(command, context);
+      
+      console.debug(`Command result:`, result);
+      return result;
+    } catch (error) {
+      throw new Error(`Hyperscript command execution failed: ${command} - ${error}`);
+    }
   }
 
   private async evaluateExpression(expression: string, context: ExecutionContext): Promise<any> {

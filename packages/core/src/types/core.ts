@@ -66,6 +66,9 @@ export interface ExecutionContext {
   /** Parent context for scope chain */
   parent?: ExecutionContext;
   
+  /** Meta scope - template variables and internal hyperscript state */
+  meta?: Record<string, any>;
+  
   /** Execution flags */
   flags?: {
     halted: boolean;

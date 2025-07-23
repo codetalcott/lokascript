@@ -95,5 +95,8 @@
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "jsdom": "^26.1.0"
   }
 }

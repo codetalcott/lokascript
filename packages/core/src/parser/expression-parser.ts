@@ -1046,6 +1046,8 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
  * Resolve identifier to its value in context
  */
 function resolveIdentifier(name: string, context: ExecutionContext): any {
+  // Official _hyperscript variable resolution order: Meta → Local → Element → Global
+  
   // Special debugging for 'it' identifier
   if (name === 'it') {
     console.debug(`resolveIdentifier: Looking up 'it'`);
@@ -1054,8 +1056,19 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
     console.debug(`  context.locals.get('it'):`, context.locals.get('it'));
   }
   
-  // Check locals first (this fixes the template iteration issue)
-  if (context.locals.has(name)) {
+  // 1. Meta scope - template variables and internal hyperscript state
+  if (context.meta && typeof context.meta === 'object') {
+    if (context.meta.hasOwnProperty(name)) {
+      const value = (context.meta as any)[name];
+      if (name === 'it') {
+        console.debug(`  Found 'it' in meta:`, value);
+      }
+      return value;
+    }
+  }
+  
+  // 2. Local scope - variables from template arguments and function parameters
+  if (context.locals && context.locals.has(name)) {
     const value = context.locals.get(name);
     if (name === 'it') {
       console.debug(`  Found 'it' in locals:`, value);
@@ -1063,15 +1076,19 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
     return value;
   }
   
-  // Check context variables
+  // 3. Element scope - context variables (me, you, it, result)
   if (name === 'me') return context.me;
   if (name === 'you') return context.you;
   if (name === 'it') return context.it;
   if (name === 'result') return context.result;
   
-  // Check globals
+  // 4. Global scope - global variables
   if (context.globals && context.globals.has(name)) {
-    return context.globals.get(name);
+    const value = context.globals.get(name);
+    if (name === 'it') {
+      console.debug(`  Found 'it' in globals:`, value);
+    }
+    return value;
   }
   
   // Return undefined for unknown identifiers

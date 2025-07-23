@@ -141,117 +141,131 @@ that works exactly like the original, with modern TypeScript benefits.
   - [x] Ensure compatibility with DOM event standards
   - [x] **Phase 3 Complete!**
 
-## Phase 4: Official Test Suite Compatibility ⚡ **CURRENT FOCUS**
+## Phase 4: Template System Completion ⚡ **CURRENT FOCUS**
 
-**Goal**: Address missing functionality identified by running the full official
-_hyperscript test suite
+**Goal**: Complete the render command and template.js compatibility for production-ready template processing
 
-**Current Status**: 73% compatibility (134/183 tests passing) - Strong
-foundation, targeted improvements needed
+**Current Status**: Template interpolation partially working, but missing critical directives and proper two-phase processing architecture
 
-### 🔍 **Official Test Results Analysis**
+### **Recent Discovery**: Official _hyperscript Template Architecture
 
-**Test Categories Examined**:
+Analysis of `~/projects/_hyperscript/src/template.js` reveals a sophisticated two-phase system:
 
-- **expressions/**: 14 test files covering string templates, operators, type
-  conversion, DOM queries
-- **Total Tests**: 183 individual test cases from official _hyperscript
-  repository
-- **Success Rate**: 73% (134 passing, 49 failing)
+**Phase 1: Template Compilation**
+- Templates are compiled into hyperscript commands before execution
+- `@` lines become hyperscript commands (like `@set bg to it`)
+- Regular content becomes `call meta.__ht_template_result.push(...)` statements
+- Automatic HTML escaping with `${}` → `${escape html }` conversion
 
-### 📋 **Missing Functionality Checklist**
+**Phase 2: Template Execution**
+- Compiled commands execute in a proper hyperscript context
+- Variables stored in `context.locals` with full scope chain
+- Function calls work through standard hyperscript function resolution
 
-#### **Priority 1: Critical Operators (Quick Wins)**
+### 📋 **Critical Template System Gaps**
 
-- [ ] **Modulo Operator**: `3 mod 2` → currently throws "Unsupported binary
-      operator: mod"
-- [ ] **Equals Operator**: `1 equals 2` → currently throws "Unsupported binary
-      operator: equals"
-- [ ] **Contains/Includes**: `array contains item`, `array includes item` → not
-      implemented
-- [ ] **String Templates**: `$variable`, `$window.foo` → currently throws
-      "Unexpected token"
+**Current Implementation Issues**:
+- ❌ **@set directive**: Missing completely - blocks variable creation in templates
+- ❌ **Function calls**: `getContrastingColor(it)` type calls not supported
+- ❌ **Variable resolution order**: Checking context properties before locals (wrong!)  
+- ❌ **Two-phase processing**: Current single-pass approach is fragile
+- ⚠️ **${it} interpolation**: Fixed but blocked by build/browser cache issues
 
-#### **Priority 2: English-Style Operators (Parser Extensions)**
+**Real-World Use Case Blocked**:
+```hyperscript
+<template id="color-template">
+  <ul>
+    @repeat in colors
+      @set bg to it                           <!-- ❌ Missing @set -->
+      @set fg to getContrastingColor(it)      <!-- ❌ Missing function calls -->
+      <li style="background: ${bg}; color: ${unescaped fg}">${bg}</li>
+    @end
+  </ul>
+</template>
+```
 
-- [ ] **English Comparisons**:
-  - [ ] `is equal to`: `1 is equal to 2`
-  - [ ] `is really equal to`: `1 is really equal to 2`
-  - [ ] `is not equal to`: `1 is not equal to 2`
-  - [ ] `is greater than`: `1 is greater than 2`
-  - [ ] `is less than`: `1 is less than 2`
-  - [ ] `is greater than or equal to`: `1 is greater than or equal to 2`
-  - [ ] `is less than or equal to`: `1 is less than or equal to 2`
+### 🎯 **Phase 4 Implementation Plan**
+
+Based on official _hyperscript template architecture analysis, focus on completing core template functionality first:
+
+#### **Week 1: @set Directive Implementation** 
+**CRITICAL FOR REAL-WORLD USAGE**
+
+- [ ] **@set Command**: Implement `@set bg to it` directive processing
+  - [ ] Study `~/projects/_hyperscript/src/hyperscript.js` set command implementation
+  - [ ] Add @set to template directive processing pipeline  
+  - [ ] Support variable creation in template context (`context.locals`)
+  - [ ] Enable complex expressions: `@set fg to getContrastingColor(it)`
+
+- [ ] **Variable Resolution Order Fix**: 
+  - [ ] Fix `resolveIdentifier` to check `context.locals` BEFORE context properties
+  - [ ] Follow official resolution chain: Meta → Local → Element → Global
+  - [ ] Test ${it} interpolation fix (currently blocked by browser cache)
+
+#### **Week 2: Function Calls in Templates**
+**ENABLE DYNAMIC TEMPLATE PROCESSING**
+
+- [ ] **Function Call Support**: Enable `getContrastingColor(it)` in templates
+  - [ ] Study function resolution in `~/projects/_hyperscript/src/hyperscript.js`
+  - [ ] Add function parsing to template expression evaluator
+  - [ ] Support global function calls with template context
+  - [ ] Test complex expressions in @set directives
+
+- [ ] **Template Context Integration**:
+  - [ ] Ensure functions have access to template variables
+  - [ ] Support nested function calls and property access
+  - [ ] Add error handling for undefined functions
+
+#### **Week 3-4: Two-Phase Template Architecture**
+**ROBUST TEMPLATE PROCESSING**
+
+- [ ] **Template Compilation Phase**:
+  - [ ] Study `compileTemplate()` in `~/projects/_hyperscript/src/template.js`
+  - [ ] Convert `@` lines to hyperscript commands
+  - [ ] Transform content lines to `meta.__ht_template_result.push()` calls
+  - [ ] Automatic HTML escaping: `${}` → `${escape html }`
+
+- [ ] **Template Execution Phase**:
+  - [ ] Execute compiled commands in proper hyperscript context  
+  - [ ] Use `context.meta.__ht_template_result` buffer pattern
+  - [ ] Support nested template execution and scoping
+
+#### **Week 5-6: Template System Completion**
+**PRODUCTION-READY TEMPLATES**
+
+- [ ] **Enhanced Directives**:
+  - [ ] @if/@else improvements for complex conditions
+  - [ ] @repeat enhancements for object iteration
+  - [ ] Error handling and debugging support
+
+- [ ] **Full Template.js Compatibility**:
+  - [ ] Run official template tests from `~/projects/_hyperscript/test/templates/`
+  - [ ] Achieve 100% template compatibility
+  - [ ] Performance optimization and edge case handling
+
+**Success Target**: Complete template system supporting real-world use cases like the color template example
+
+## Phase 5: Expression System Enhancements (DEFERRED)
+
+**Previous Phase 4**: These items were deprioritized in favor of template system completion but remain valuable for full compatibility:
+
+### 📋 **Deferred Expression System Items**
+
+#### **Priority 1: Core Operators**
+- [ ] **Modulo Operator**: `3 mod 2` → currently throws "Unsupported binary operator: mod"
+- [ ] **Equals Operator**: `1 equals 2` → currently throws "Unsupported binary operator: equals"  
+- [ ] **Contains/Includes**: `array contains item`, `array includes item` → not implemented
+- [ ] **String Templates**: `$variable`, `$window.foo` → currently throws "Unexpected token"
+
+#### **Priority 2: English-Style Operators**
+- [ ] **English Comparisons**: `is equal to`, `is greater than`, etc.
 - [ ] **Really Equals**: `1 really equals 2` → compound operator parsing
 
-#### **Priority 3: Array and Collection Operations**
+#### **Priority 3: Type and Existence Checking**
+- [ ] **Type Checking**: `is a String`, `is not a String`, `is an Object`
+- [ ] **Existence Operators**: `exists`, `does not exist`, `is empty`, `is not empty`
 
-- [ ] **Array Membership**: `1 is in [1, 2]` → array literal parsing +
-      membership test
-- [ ] **Array Exclusion**: `1 is not in [1, 2]` → negated membership
-- [ ] **CSS Selector Membership**: `.outer contains #d2`, `.outer includes #d2`
-      → DOM query + containment
-
-#### **Priority 4: Type and Existence Checking**
-
-- [ ] **Type Checking**:
-  - [ ] `is a String`: `null is a String`
-  - [ ] `is not a String`: `null is not a String`
-  - [ ] `is an Object`: `null is an Object`
-  - [ ] `is not an Object`: `null is not an Object`
-- [ ] **Existence Operators**:
-  - [ ] `exists`: `undefined exists` → check for defined values
-  - [ ] `does not exist`: `undefined does not exist` → negated existence
-  - [ ] `is empty`: `undefined is empty` → empty collection/string check
-  - [ ] `is not empty`: `undefined is not empty` → non-empty check
-
-#### **Priority 5: Context and Reference Improvements**
-
-- [ ] **Its Context**: `its foo` → currently throws "Unexpected token: foo"
-- [ ] **Complex CSS Selectors**:
-  - [ ] Colon support: `.c1:foo`, `.c1:foo:bar`
-  - [ ] Leading dashes: `.-c1`
-  - [ ] Escapes: `.group-\\[:nth-of-type\\(3\\)_\\&\\]:block`
-  - [ ] Slashes: `.-c1\\/22`
-
-#### **Priority 6: Advanced Type Conversions**
-
-- [ ] **Date Conversion**: `1 as Date` → proper Date constructor behavior
-- [ ] **Modified As**: `1 as a Date` → `as a Type` syntax support
-- [ ] **Form Processing**: Enhanced `as Values` for complex forms
-- [ ] **Fragment Conversion**: String/element to DocumentFragment conversion
-
-### 🎯 **Implementation Strategy**
-
-#### **Week 1-2: Core Operators**
-
-Focus on Priority 1 items - these are simple binary operators that can be added
-to existing expression evaluator:
-
-1. Add `mod` operator to mathematical operations
-2. Implement `equals` as alias for `==`
-3. Add `contains`/`includes` for arrays and DOM elements
-4. Implement basic string template parsing (`$variable`)
-
-#### **Week 3-4: English Operators**
-
-Extend parser to handle multi-word operators from Priority 2:
-
-1. Parse compound operators (`is equal to`, `is greater than`)
-2. Add operator precedence for English-style comparisons
-3. Implement `really equals` parsing and evaluation
-
-#### **Week 5-6: Advanced Features**
-
-Tackle Priority 3-4 for comprehensive compatibility:
-
-1. Array literal parsing and membership operations
-2. Type checking operators (`is a String`)
-3. Existence and emptiness operators
-4. Enhanced CSS selector support
-
-**Success Target**: 90%+ compatibility (165+/183 tests passing) by end of Phase
-4
+**Note**: These will be addressed after template system is production-ready (Phase 4 complete).
 
 ## 🎉 Fixed: JavaScript-Standard Operator Precedence
 
