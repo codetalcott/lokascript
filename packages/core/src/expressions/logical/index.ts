@@ -349,19 +349,52 @@ export const containsExpression: ExpressionImplementation = {
   operators: ['contains'],
   
   async evaluate(context: ExecutionContext, container: any, value: any): Promise<boolean> {
+    // Handle DOM element containment first
+    if (container && value) {
+      // If both are DOM elements, check containment
+      if (container.nodeType === 1 && value.nodeType === 1) {
+        return container.contains(value);
+      }
+      
+      // If container is CSS selector string, resolve to element
+      if (typeof container === 'string' && container.match(/^[.#][\w-]+$/)) {
+        const containerElement = document.querySelector(container);
+        if (containerElement && value.nodeType === 1) {
+          return containerElement.contains(value);
+        }
+        if (containerElement && typeof value === 'string' && value.match(/^[.#][\w-]+$/)) {
+          const valueElement = document.querySelector(value);
+          return valueElement ? containerElement.contains(valueElement) : false;
+        }
+      }
+      
+      // If value is CSS selector string, resolve to element
+      if (typeof value === 'string' && value.match(/^[.#][\w-]+$/) && container.nodeType === 1) {
+        const valueElement = document.querySelector(value);
+        return valueElement ? container.contains(valueElement) : false;
+      }
+    }
+    
+    // String containment
     if (typeof container === 'string' && typeof value === 'string') {
       return container.includes(value);
     }
+    
+    // Array containment
     if (Array.isArray(container)) {
       return container.includes(value);
     }
-    if (container instanceof NodeList) {
+    
+    // Check for NodeList (browser environment only)
+    if (typeof NodeList !== 'undefined' && container instanceof NodeList) {
       return Array.from(container).includes(value);
     }
+    
     // Check if object has property
     if (typeof container === 'object' && container !== null && typeof value === 'string') {
       return value in container;
     }
+    
     return false;
   },
   

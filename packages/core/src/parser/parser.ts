@@ -181,7 +181,7 @@ export class Parser {
   private parseEquality(): ASTNode {
     let expr = this.parseComparison();
 
-    while (this.matchTokenType(TokenType.COMPARISON_OPERATOR) || this.match('is', 'matches', 'contains', 'in', 'of', 'as', 'really')) {
+    while (this.matchTokenType(TokenType.COMPARISON_OPERATOR) || this.match('is', 'matches', 'contains', 'include', 'includes', 'in', 'of', 'as', 'really')) {
       const operator = this.previous().value;
       const right = this.parseComparison();
       expr = this.createBinaryExpression(operator, expr, right);
@@ -438,8 +438,27 @@ export class Parser {
     }
 
     if (this.matchTokenType(TokenType.BOOLEAN)) {
-      const value = this.previous().value === 'true';
-      return this.createLiteral(value, this.previous().value);
+      const tokenValue = this.previous().value;
+      let value: any;
+      
+      switch (tokenValue) {
+        case 'true':
+          value = true;
+          break;
+        case 'false':
+          value = false;
+          break;
+        case 'null':
+          value = null;
+          break;
+        case 'undefined':
+          value = undefined;
+          break;
+        default:
+          value = tokenValue === 'true'; // fallback to original logic
+      }
+      
+      return this.createLiteral(value, tokenValue);
     }
 
     // Handle time expressions

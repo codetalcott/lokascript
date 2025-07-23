@@ -1029,9 +1029,15 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
       return logicalExpressions.matches.evaluate(context, left, right);
     case 'contains':
       return logicalExpressions.contains.evaluate(context, left, right);
+    case 'include':
+      return logicalExpressions.contains.evaluate(context, left, right);
+    case 'includes':
+      return logicalExpressions.contains.evaluate(context, left, right);
     case 'in':
       return evaluateInOperator(left, right, context);
     case 'does not contain':
+      return logicalExpressions.doesNotContain.evaluate(context, left, right);
+    case 'does not include':
       return logicalExpressions.doesNotContain.evaluate(context, left, right);
     case 'exists':
       return logicalExpressions.exists.evaluate(context, left);

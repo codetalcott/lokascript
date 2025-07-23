@@ -319,6 +319,7 @@ export class ExpressionEvaluator {
         }
         return false;
       
+      case 'include':
       case 'includes':
         // Alias for contains
         if (Array.isArray(leftValue)) {
