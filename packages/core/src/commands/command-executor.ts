@@ -13,6 +13,7 @@ import { PutCommand } from './dom/put.js';
 import { AddCommand } from './dom/add.js';
 import { ShowCommand } from './dom/show.js';
 import { HideCommand } from './dom/hide.js';
+import { RenderCommand } from './templates/render.js';
 
 export interface Command {
   name: string;
@@ -115,6 +116,7 @@ registerCommand(new CommandAdapter(new PutCommand()));
 registerCommand(new CommandAdapter(new AddCommand()));
 registerCommand(new CommandAdapter(new ShowCommand()));
 registerCommand(new CommandAdapter(new HideCommand()));
+registerCommand(new CommandAdapter(new RenderCommand()));
 
 /**
  * Parse a command string into command name and arguments
@@ -132,6 +134,8 @@ function parseCommand(commandString: string): { name: string; args: string[] } {
     return parseAddCommand(trimmed);
   } else if (trimmed.startsWith('show ') || trimmed.startsWith('hide ')) {
     return parseShowHideCommand(trimmed);
+  } else if (trimmed.startsWith('render ')) {
+    return parseRenderCommand(trimmed);
   }
   
   // Default parsing for other commands
@@ -220,6 +224,23 @@ function parseShowHideCommand(command: string): { name: string; args: string[] }
   const name = tokens[0]; // 'show' or 'hide'
   const target = tokens.slice(1).join(' '); // everything after command name
   return { name, args: [target] };
+}
+
+/**
+ * Parse RENDER commands: "render #template" -> ["render", ["#template"]]
+ *                        "render #template with data" -> ["render", ["#template", "with", "data"]]
+ */
+function parseRenderCommand(command: string): { name: string; args: string[] } {
+  const withMatch = command.match(/^render\s+(.+?)\s+with\s+(.+)$/);
+  if (withMatch) {
+    const [, template, data] = withMatch;
+    return { name: 'render', args: [template.trim(), 'with', data.trim()] };
+  }
+  
+  // Simple render command: "render #template"
+  const tokens = command.split(/\s+/);
+  const template = tokens.slice(1).join(' '); // everything after 'render'
+  return { name: 'render', args: [template] };
 }
 
 /**

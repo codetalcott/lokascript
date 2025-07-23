@@ -1,0 +1,395 @@
+/**
+ * Render Command Tests
+ * Tests for _hyperscript template.js compatibility
+ */
+
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { RenderCommand } from './render';
+import { ExecutionContext } from '../../types/core';
+
+describe('Render Command', () => {
+  let renderCommand: RenderCommand;
+  let mockContext: ExecutionContext;
+  let mockTemplate: HTMLTemplateElement;
+
+  beforeEach(() => {
+    renderCommand = new RenderCommand();
+    
+    // Create mock execution context
+    mockContext = {
+      me: null,
+      it: null,
+      you: null,
+      result: null,
+      locals: new Map(),
+      globals: new Map()
+    };
+
+    // Create mock template element
+    mockTemplate = document.createElement('template');
+    
+    // Mock document.querySelector
+    vi.stubGlobal('document', {
+      createElement: vi.fn(() => document.createElement('div')),
+      querySelector: vi.fn(),
+      createTreeWalker: vi.fn(() => ({
+        nextNode: vi.fn(() => null)
+      }))
+    });
+  });
+
+  describe('Command Properties', () => {
+    it('should have correct metadata', () => {
+      expect(renderCommand.name).toBe('render');
+      expect(renderCommand.syntax).toBe('render <template> [with <data>]');
+      expect(renderCommand.description).toContain('template element');
+      expect(renderCommand.isBlocking).toBe(false);
+    });
+  });
+
+  describe('Basic Template Rendering', () => {
+    it('should render simple template without data', async () => {
+      // Setup template with simple content
+      mockTemplate.innerHTML = '<div>Hello World</div>';
+      
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      expect(result).toBeInstanceOf(DocumentFragment);
+      expect(mockContext.result).toBe(result);
+    });
+
+    it('should render template with data interpolation', async () => {
+      // Setup template with ${} interpolation
+      mockTemplate.innerHTML = '<div>Hello ${name}</div>';
+      const data = { name: 'Alice' };
+      
+      // Mock expression evaluator
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: vi.fn().mockResolvedValue('Alice')
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate, 'with', data);
+      
+      expect(result).toBeInstanceOf(DocumentFragment);
+      expect(mockContext.result).toBe(result);
+    });
+
+    it('should handle template selector strings', async () => {
+      const querySelector = vi.fn().mockReturnValue(mockTemplate);
+      vi.stubGlobal('document', { querySelector });
+      
+      await renderCommand.execute(mockContext, '#myTemplate');
+      
+      expect(querySelector).toHaveBeenCalledWith('#myTemplate');
+    });
+  });
+
+  describe('Data Context Integration', () => {
+    it('should merge data into template context', async () => {
+      mockTemplate.innerHTML = '<span>${user.name}</span>';
+      const data = { user: { name: 'Bob' } };
+
+      // Mock expression evaluator to check context
+      const mockEvalExpression = vi.fn().mockResolvedValue('Bob');
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      await renderCommand.execute(mockContext, mockTemplate, 'with', data);
+
+      // Verify that evalExpression was called with enhanced context
+      expect(mockEvalExpression).toHaveBeenCalled();
+      const [, contextArg] = mockEvalExpression.mock.calls[0];
+      expect(contextArg.templateData).toEqual(data);
+      expect(contextArg.locals.get('user')).toEqual({ name: 'Bob' });
+    });
+
+    it('should handle complex data structures', async () => {
+      const complexData = {
+        users: [
+          { name: 'Alice', age: 25 },
+          { name: 'Bob', age: 30 }
+        ],
+        config: {
+          theme: 'dark',
+          features: ['premium', 'advanced']
+        }
+      };
+
+      mockTemplate.innerHTML = '<div>${users.length} users</div>';
+      
+      const mockEvalExpression = vi.fn().mockResolvedValue('2');
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      await renderCommand.execute(mockContext, mockTemplate, 'with', complexData);
+
+      const [, contextArg] = mockEvalExpression.mock.calls[0];
+      expect(contextArg.templateData).toEqual(complexData);
+    });
+  });
+
+  describe('HTML Escaping', () => {
+    it('should escape HTML in interpolated values by default', async () => {
+      mockTemplate.innerHTML = '<div>${htmlContent}</div>';
+      
+      const mockEvalExpression = vi.fn().mockResolvedValue('<script>alert("xss")</script>');
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      // The HTML should be escaped in the result
+      const div = result.querySelector('div');
+      expect(div?.innerHTML).toContain('&lt;script&gt;');
+      expect(div?.innerHTML).not.toContain('<script>');
+    });
+
+    it('should handle special characters in interpolation', async () => {
+      const specialChars = '& < > " \'';
+      
+      const mockEvalExpression = vi.fn().mockResolvedValue(specialChars);
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      mockTemplate.innerHTML = '<p>${specialText}</p>';
+      
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      const p = result.querySelector('p');
+      
+      expect(p?.innerHTML).toBe('&amp; &lt; &gt; " \'');
+    });
+  });
+
+  describe('Hyperscript Directives', () => {
+    it('should process @if directives', async () => {
+      mockTemplate.innerHTML = `
+        <div>
+          <!-- @if showWelcome -->
+          <h1>Welcome!</h1>
+          <!-- @end -->
+        </div>
+      `;
+
+      const mockEvalExpression = vi.fn()
+        .mockResolvedValueOnce(true); // @if condition
+      
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      expect(mockEvalExpression).toHaveBeenCalledWith('showWelcome', expect.any(Object));
+    });
+
+    it('should process @repeat directives', async () => {
+      mockTemplate.innerHTML = `
+        <ul>
+          <!-- @repeat item in items -->
+          <li>${item.name}</li>
+          <!-- @end -->
+        </ul>
+      `;
+
+      const mockItems = [{ name: 'Item 1' }, { name: 'Item 2' }];
+      const mockEvalExpression = vi.fn()
+        .mockResolvedValueOnce(mockItems) // items array
+        .mockResolvedValueOnce('Item 1')  // first item.name
+        .mockResolvedValueOnce('Item 2'); // second item.name
+
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      await renderCommand.execute(mockContext, mockTemplate);
+
+      expect(mockEvalExpression).toHaveBeenCalledWith('items', expect.any(Object));
+    });
+
+    it('should handle @else directives', async () => {
+      mockTemplate.innerHTML = `
+        <div>
+          <!-- @if condition -->
+          <p>True branch</p>
+          <!-- @else -->
+          <p>False branch</p>
+          <!-- @end -->
+        </div>
+      `;
+
+      const mockEvalExpression = vi.fn().mockResolvedValueOnce(false);
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      expect(mockEvalExpression).toHaveBeenCalledWith('condition', expect.any(Object));
+    });
+  });
+
+  describe('Context References', () => {
+    it('should resolve "me" template reference', async () => {
+      const templateElement = document.createElement('template');
+      templateElement.innerHTML = '<div>Me Template</div>';
+      
+      mockContext.me = templateElement;
+      
+      const result = await renderCommand.execute(mockContext, 'me');
+      expect(result).toBeInstanceOf(DocumentFragment);
+    });
+
+    it('should resolve "it" template reference', async () => {
+      const templateElement = document.createElement('template');
+      templateElement.innerHTML = '<div>It Template</div>';
+      
+      mockContext.it = templateElement;
+      
+      const result = await renderCommand.execute(mockContext, 'it');
+      expect(result).toBeInstanceOf(DocumentFragment);
+    });
+
+    it('should resolve "you" template reference', async () => {
+      const templateElement = document.createElement('template');
+      templateElement.innerHTML = '<div>You Template</div>';
+      
+      mockContext.you = templateElement;
+      
+      const result = await renderCommand.execute(mockContext, 'you');
+      expect(result).toBeInstanceOf(DocumentFragment);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should throw error for missing template argument', async () => {
+      await expect(renderCommand.execute(mockContext))
+        .rejects.toThrow('Render command requires a template argument');
+    });
+
+    it('should throw error for template not found', async () => {
+      vi.stubGlobal('document', {
+        querySelector: vi.fn().mockReturnValue(null)
+      });
+
+      await expect(renderCommand.execute(mockContext, '#nonexistent'))
+        .rejects.toThrow('Template not found: #nonexistent');
+    });
+
+    it('should handle interpolation errors gracefully', async () => {
+      mockTemplate.innerHTML = '<div>${invalidExpression}</div>';
+      
+      const mockEvalExpression = vi.fn().mockRejectedValue(new Error('Invalid expression'));
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      // Should still return result with error placeholder
+      expect(result).toBeInstanceOf(DocumentFragment);
+    });
+
+    it('should handle directive processing errors', async () => {
+      mockTemplate.innerHTML = `
+        <div>
+          <!-- @invalid directive -->
+          <p>Content</p>
+          <!-- @end -->
+        </div>
+      `;
+
+      // Should not throw, but handle gracefully
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      expect(result).toBeInstanceOf(DocumentFragment);
+    });
+  });
+
+  describe('Validation', () => {
+    it('should validate correct syntax', () => {
+      expect(renderCommand.validate(['#template'])).toBeNull();
+      expect(renderCommand.validate(['#template', 'with', {}])).toBeNull();
+    });
+
+    it('should reject invalid syntax', () => {
+      expect(renderCommand.validate([])).toBe('Render command requires a template argument');
+      expect(renderCommand.validate(['#template', 'invalid']))
+        .toBe('Invalid render syntax. Use: render template [with data]');
+      expect(renderCommand.validate(['#template', 'with']))
+        .toBe('Render "with" keyword requires data argument');
+    });
+  });
+
+  describe('_hyperscript Compatibility', () => {
+    it('should handle official _hyperscript render syntax', async () => {
+      // Test: render myTemplate with {name: "John", age: 30}
+      const templateData = { name: 'John', age: 30 };
+      mockTemplate.innerHTML = '<div>Hello ${name}, age ${age}</div>';
+
+      const mockEvalExpression = vi.fn()
+        .mockResolvedValueOnce('John')
+        .mockResolvedValueOnce('30');
+      
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate, 'with', templateData);
+      
+      expect(result).toBeInstanceOf(DocumentFragment);
+      expect(mockContext.result).toBe(result);
+      expect(mockEvalExpression).toHaveBeenCalledWith('name', expect.any(Object));
+      expect(mockEvalExpression).toHaveBeenCalledWith('age', expect.any(Object));
+    });
+
+    it('should store result in context for hyperscript access', async () => {
+      mockTemplate.innerHTML = '<div>Template Result</div>';
+      
+      const result = await renderCommand.execute(mockContext, mockTemplate);
+      
+      expect(mockContext.result).toBe(result);
+      expect(mockContext.result).toBeInstanceOf(DocumentFragment);
+    });
+
+    it('should support template.js extension patterns', async () => {
+      // Common _hyperscript template patterns
+      mockTemplate.innerHTML = `
+        <article class="post">
+          <h2>${title}</h2>
+          <p>By ${author} on ${date}</p>
+          <!-- @if featured -->
+          <span class="featured-badge">Featured</span>
+          <!-- @end -->
+          <div class="content">${content}</div>
+        </article>
+      `;
+
+      const postData = {
+        title: 'My Blog Post',
+        author: 'Jane Doe',
+        date: '2025-01-23',
+        featured: true,
+        content: 'This is the post content.'
+      };
+
+      const mockEvalExpression = vi.fn()
+        .mockResolvedValueOnce('My Blog Post')    // title
+        .mockResolvedValueOnce('Jane Doe')        // author
+        .mockResolvedValueOnce('2025-01-23')      // date
+        .mockResolvedValueOnce(true)              // featured condition
+        .mockResolvedValueOnce('This is the post content.'); // content
+
+      vi.doMock('../../core/expression-evaluator', () => ({
+        evalExpression: mockEvalExpression
+      }));
+
+      const result = await renderCommand.execute(mockContext, mockTemplate, 'with', postData);
+      
+      expect(result).toBeInstanceOf(DocumentFragment);
+      expect(mockEvalExpression).toHaveBeenCalledTimes(5);
+    });
+  });
+});
