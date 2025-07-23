@@ -20,7 +20,7 @@ test.describe('HyperFixi Command Integration Tests', () => {
       clearWorkArea();
       
       // Create element with hyperscript behavior using our make function
-      const div = make('<div id="test-put" _="on click put \\"hello world\\" into #test-put.innerHTML"></div>');
+      const div = make('<div id="test-put" _=\'on click put "hello world" into #test-put.innerHTML\'></div>');
       
       // Add to DOM temporarily for selector resolution
       document.body.appendChild(div);
@@ -52,7 +52,7 @@ test.describe('HyperFixi Command Integration Tests', () => {
       clearWorkArea();
       
       // Create element with hyperscript behavior
-      const div = make('<div id="test-set" _="on click set my innerHTML to \\"test content\\""></div>');
+      const div = make('<div id="test-set" _=\'on click set my innerHTML to "test content"\'></div>');
       
       // Add to DOM temporarily
       document.body.appendChild(div);
@@ -84,8 +84,8 @@ test.describe('HyperFixi Command Integration Tests', () => {
       clearWorkArea();
       
       // Create elements with different behaviors
-      const div1 = make('<div id="test-multi-1" _="on click put \\"first\\" into #test-multi-1.innerHTML"></div>');
-      const div2 = make('<div id="test-multi-2" _="on click set my innerHTML to \\"second\\""></div>');
+      const div1 = make('<div id="test-multi-1" _=\'on click put "first" into #test-multi-1.innerHTML\'></div>');
+      const div2 = make('<div id="test-multi-2" _=\'on click set my innerHTML to "second"\'></div>');
       
       // Add to DOM
       document.body.appendChild(div1);
