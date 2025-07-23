@@ -1046,23 +1046,38 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
  * Resolve identifier to its value in context
  */
 function resolveIdentifier(name: string, context: ExecutionContext): any {
-  // Check context variables first
+  // Special debugging for 'it' identifier
+  if (name === 'it') {
+    console.debug(`resolveIdentifier: Looking up 'it'`);
+    console.debug(`  context.it:`, context.it);
+    console.debug(`  context.locals has 'it':`, context.locals.has('it'));
+    console.debug(`  context.locals.get('it'):`, context.locals.get('it'));
+  }
+  
+  // Check locals first (this fixes the template iteration issue)
+  if (context.locals.has(name)) {
+    const value = context.locals.get(name);
+    if (name === 'it') {
+      console.debug(`  Found 'it' in locals:`, value);
+    }
+    return value;
+  }
+  
+  // Check context variables
   if (name === 'me') return context.me;
   if (name === 'you') return context.you;
   if (name === 'it') return context.it;
   if (name === 'result') return context.result;
   
-  // Check locals
-  if (context.locals.has(name)) {
-    return context.locals.get(name);
-  }
-  
   // Check globals
-  if (context.globals.has(name)) {
+  if (context.globals && context.globals.has(name)) {
     return context.globals.get(name);
   }
   
   // Return undefined for unknown identifiers
+  if (name === 'it') {
+    console.debug(`  'it' not found anywhere, returning undefined`);
+  }
   return undefined;
 }
 

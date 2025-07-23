@@ -150,7 +150,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
       console.log('=== Testing @repeat Directive ===');
       
       // Official test template: "begin\n@repeat in [1, 2, 3]\n${it}\n@end\nend\n"
-      const templateContent = 'begin\\n@repeat in [1, 2, 3]\\n${it}\\n@end\\nend\\n';
+      const templateContent = 'begin\n@repeat in [1, 2, 3]\n${it}\n@end\nend\n';
       const tmpl = make(`<template>${templateContent}</template>`);
       
       try {
@@ -171,7 +171,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
           actualContent = renderResult;
         }
         
-        const expectedContent = 'begin\\n1\\n2\\n3\\nend\\n';
+        const expectedContent = 'begin\n1\n2\n3\nend\n';
         
         return {
           success: actualContent === expectedContent,
@@ -183,7 +183,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
         return {
           success: false,
           error: error.message,
-          expected: 'begin\\n1\\n2\\n3\\nend\\n',
+          expected: 'begin\n1\n2\n3\nend\n',
           actual: ''
         };
       }
@@ -208,7 +208,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
       console.log('=== Testing @if/@else Directive ===');
       
       // Official test: "begin\n@if true\na\n@else\nb\n@end\nend\n"
-      const templateContent = 'begin\\n@if true\\na\\n@else\\nb\\n@end\\nend\\n';
+      const templateContent = 'begin\n@if true\na\n@else\nb\n@end\nend\n';
       const tmpl = make(`<template>${templateContent}</template>`);
       
       try {
@@ -229,7 +229,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
           actualContent = renderResult;
         }
         
-        const expectedContent = 'begin\\na\\nend\\n';
+        const expectedContent = 'begin\na\nend\n';
         
         return {
           success: actualContent === expectedContent,
@@ -241,7 +241,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
         return {
           success: false,
           error: error.message,
-          expected: 'begin\\na\\nend\\n',
+          expected: 'begin\na\nend\n',
           actual: ''
         };
       }
