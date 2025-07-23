@@ -2,19 +2,30 @@
 
 ## Executive Summary
 
-This plan integrates the best ideas from both runtime proposals to create a pragmatic, performance-focused architecture that advances hyperscript while maintaining its core philosophy of simplicity and Locality of Behaviour. The approach balances the compiler-first philosophy from runtime-alt with the advanced runtime features from runtime-plan, creating a phased implementation that delivers immediate value while building toward a revolutionary performance profile.
+This plan integrates the best ideas from both runtime proposals to create a
+pragmatic, performance-focused architecture that advances hyperscript while
+maintaining its core philosophy of simplicity and Locality of Behaviour. The
+approach balances the compiler-first philosophy from runtime-alt with the
+advanced runtime features from runtime-plan, creating a phased implementation
+that delivers immediate value while building toward a revolutionary performance
+profile.
 
 ## Core Architecture: Hybrid Compiler + Smart Runtime
 
 ### Philosophy: Progressive Enhancement Through Compilation
 
-Rather than choosing between a pure runtime interpreter or a pure compiler approach, we adopt a **hybrid architecture** that provides:
+Rather than choosing between a pure runtime interpreter or a pure compiler
+approach, we adopt a **hybrid architecture** that provides:
 
-1. **Immediate Mode**: Drop-in runtime that works without any build step (preserving current UX)
-2. **Compiled Mode**: Optional build-time compilation for production optimization
-3. **Smart Runtime**: Advanced features (GPU acceleration, fine-grained reactivity) available in both modes
+1. **Immediate Mode**: Drop-in runtime that works without any build step
+   (preserving current UX)
+2. **Compiled Mode**: Optional build-time compilation for production
+   optimization
+3. **Smart Runtime**: Advanced features (GPU acceleration, fine-grained
+   reactivity) available in both modes
 
-This approach respects hyperscript's simplicity while enabling modern performance optimizations.
+This approach respects hyperscript's simplicity while enabling modern
+performance optimizations.
 
 ## Phase 1: Modular TypeScript Foundation (4 weeks)
 
@@ -44,10 +55,10 @@ Building on the validated Fixi.ts pattern, create a minimal core that handles:
 export interface HyperFixiRuntime {
   // Essential event delegation
   process(root: Element): void;
-  
+
   // Command execution queue
   execute(commands: Command[], context: ExecutionContext): Promise<void>;
-  
+
   // Lifecycle hooks for compiler integration
   onCompiled?: (element: Element, compiledFn: Function) => void;
   onInterpreted?: (element: Element, script: string) => void;
@@ -75,9 +86,9 @@ export function toggleAttribute(element: Element, attr: string): void {
 }
 
 // @hyperfixi/runtime/commands/index.ts
-export * from './toggle';
-export * from './add';
-export * from './remove';
+export * from "./toggle";
+export * from "./add";
+export * from "./remove";
 // ... all commands as individual exports
 ```
 
@@ -85,7 +96,8 @@ export * from './remove';
 
 ### 2.1 TypeScript-First Parser
 
-Start with a TypeScript implementation for rapid iteration, with clear interfaces for future Rust/WASM optimization:
+Start with a TypeScript implementation for rapid iteration, with clear
+interfaces for future Rust/WASM optimization:
 
 ```typescript
 // @hyperfixi/parser/incremental-parser.ts
@@ -93,18 +105,18 @@ export interface IncrementalParser {
   // Tree-sitter style incremental parsing
   parse(source: string): HyperScriptAST;
   edit(tree: HyperScriptAST, edit: TextEdit): HyperScriptAST;
-  
+
   // Error recovery and suggestions
   recover(tree: HyperScriptAST, error: ParseError): HyperScriptAST;
   suggest(error: ParseError): Fix[];
-  
+
   // Query system for analysis
   query(tree: HyperScriptAST, pattern: string): QueryResult[];
 }
 
 // AST designed for both interpretation and compilation
 export interface HyperScriptAST {
-  type: 'Program';
+  type: "Program";
   features: Feature[];
   metadata: {
     source: string;
@@ -120,7 +132,8 @@ export interface HyperScriptAST {
 2. **Week 3-4**: Error recovery and incremental parsing
 3. **Week 5-6**: AST optimization and query system
 
-Key innovation: Design AST to support both runtime interpretation and compile-time code generation.
+Key innovation: Design AST to support both runtime interpretation and
+compile-time code generation.
 
 ## Phase 3: Static Analysis & Compiler (8 weeks)
 
@@ -131,16 +144,16 @@ Key innovation: Design AST to support both runtime interpretation and compile-ti
 export class DependencyAnalyzer {
   analyze(ast: HyperScriptAST): DependencyGraph {
     const graph = new DependencyGraph();
-    
+
     // Traverse AST and identify:
     // 1. Used commands (toggle, add, fetch)
     // 2. Used expressions (me, it, closest)
     // 3. DOM query patterns for optimization
     // 4. Async operation sequences
-    
+
     return graph;
   }
-  
+
   // Identify optimization opportunities
   findOptimizations(graph: DependencyGraph): Optimization[] {
     return [
@@ -160,7 +173,7 @@ export class CodeGenerator {
   generate(ast: HyperScriptAST, analysis: AnalysisResult): string {
     // Generate optimized JavaScript
     return `
-      import { ${analysis.imports.join(', ')} } from '@hyperfixi/runtime';
+      import { ${analysis.imports.join(", ")} } from '@hyperfixi/runtime';
       import { accelerate } from '@hyperfixi/accelerator';
       
       export default function(element) {
@@ -168,9 +181,12 @@ export class CodeGenerator {
       }
     `;
   }
-  
+
   // Smart optimization based on patterns
-  private generateOptimizedCode(ast: HyperScriptAST, analysis: AnalysisResult): string {
+  private generateOptimizedCode(
+    ast: HyperScriptAST,
+    analysis: AnalysisResult,
+  ): string {
     if (analysis.hasGPUCandidates) {
       return this.generateGPUAcceleratedCode(ast);
     }
@@ -194,19 +210,19 @@ export class GPUAccelerator {
   // Detect GPU-suitable operations
   canAccelerate(operation: Operation): boolean {
     return (
-      operation.type === 'BULK_QUERY' ||
-      operation.type === 'PARALLEL_TRANSFORM' ||
-      (operation.type === 'DOM_BATCH' && operation.count > 1000)
+      operation.type === "BULK_QUERY" ||
+      operation.type === "PARALLEL_TRANSFORM" ||
+      (operation.type === "DOM_BATCH" && operation.count > 1000)
     );
   }
-  
+
   // Compile to GPU shader
   async accelerate(operation: Operation): Promise<AcceleratedOperation> {
     const shader = this.compileToWGSL(operation);
     const pipeline = await this.device.createComputePipeline({
-      compute: { module: shader, entryPoint: 'main' }
+      compute: { module: shader, entryPoint: "main" },
     });
-    
+
     return new AcceleratedOperation(pipeline, operation);
   }
 }
@@ -222,20 +238,20 @@ export class ReactiveSystem {
   // Signal-based state management
   createSignal<T>(value: T): [getter: () => T, setter: (v: T) => void] {
     const subscribers = new Set<() => void>();
-    
+
     const getter = () => {
       if (currentEffect) subscribers.add(currentEffect);
       return value;
     };
-    
+
     const setter = (newValue: T) => {
       value = newValue;
-      subscribers.forEach(effect => effect());
+      subscribers.forEach((effect) => effect());
     };
-    
+
     return [getter, setter];
   }
-  
+
   // Integrate with hyperscript commands
   makeReactive(element: Element, script: string): void {
     const [state, setState] = this.createSignal(element);
@@ -252,26 +268,26 @@ export class ReactiveSystem {
 // @hyperfixi/vite-plugin/index.ts
 export default function hyperFixiPlugin(): Plugin {
   return {
-    name: 'hyperfixi',
-    
+    name: "hyperfixi",
+
     transform(code: string, id: string) {
-      if (!id.endsWith('.html')) return;
-      
+      if (!id.endsWith(".html")) return;
+
       // Find all _ attributes
       const scripts = extractHyperScripts(code);
-      
+
       // Compile each script
-      const compiled = scripts.map(script => 
-        compiler.compile(script, { 
-          mode: 'production',
+      const compiled = scripts.map((script) =>
+        compiler.compile(script, {
+          mode: "production",
           optimize: true,
-          treeShake: true 
+          treeShake: true,
         })
       );
-      
+
       // Replace with compiled versions
       return replaceWithCompiled(code, compiled);
-    }
+    },
   };
 }
 ```
@@ -288,13 +304,13 @@ export class HyperScriptLanguageServer {
     const tokens = this.parser.parse(document.getText());
     return this.highlighter.highlight(tokens);
   }
-  
+
   // Intelligent completions
   provideCompletions(position: Position): CompletionItem[] {
     const context = this.analyzer.getContext(position);
     return this.getRelevantCompletions(context);
   }
-  
+
   // Real-time error checking
   provideDiagnostics(document: TextDocument): Diagnostic[] {
     const ast = this.parser.parse(document.getText());
@@ -305,43 +321,17 @@ export class HyperScriptLanguageServer {
 
 ## Implementation Checklist & Timeline
 
-*This step-by-step checklist ensures systematic delivery of the hybrid compiler + runtime architecture. Each item should be checked off as completed to maintain project momentum and context.*
-
-### 🔧 Development Process Guidelines
-
-**Test-Driven Development (TDD) Pattern**:
-1. **Red**: Write failing tests first based on _hyperscript behavior
-2. **Green**: Implement minimal code to pass tests
-3. **Refactor**: Optimize and clean up implementation
-4. **Validate**: Ensure compatibility with official test suite
-
-**Reference Materials**:
-- **Local _hyperscript Repository**: `~/projects/_hyperscript/`
-  - Source code: `~/projects/_hyperscript/src/`
-  - Test suite: `~/projects/_hyperscript/test/`
-  - Documentation: `~/projects/_hyperscript/www/`
-  - Examples: `~/projects/_hyperscript/test/` and online docs
-
-**Phase Completion Protocol**:
-1. **Complete all checklist items** for the phase
-2. **Run full test suite** to ensure no regressions
-3. **Update this document** with completion status and lessons learned
-4. **Document any architectural decisions** or deviations from plan
-5. **Update performance benchmarks** and compatibility metrics
-
-**Each Week Should Include**:
-- [ ] **TDD Cycle**: Write tests → Implement → Refactor → Validate
-- [ ] **Reference Check**: Compare behavior against `~/projects/_hyperscript/`
-- [ ] **Integration Testing**: Ensure new features work with existing code
-- [ ] **Documentation Update**: Keep inline comments and API docs current
-- [ ] **Performance Validation**: Benchmark against targets for the phase
+_This step-by-step checklist ensures systematic delivery of the hybrid
+compiler + runtime architecture. Each item should be checked off as completed to
+maintain project momentum and context._
 
 ### 📋 Phase 1: Modular TypeScript Foundation (4 weeks)
 
 #### Week 1-2: Monorepo Setup & Core Runtime
+
 - [ ] **Monorepo Architecture**
   - [ ] Set up Lerna/Nx workspace with @hyperfixi packages
-  - [ ] Configure TypeScript build pipeline across packages  
+  - [ ] Configure TypeScript build pipeline across packages
   - [ ] Set up testing infrastructure with Vitest
   - [ ] Create initial package structure (core, runtime, parser, compiler)
 - [ ] **Core Runtime Refactor**
@@ -351,6 +341,7 @@ export class HyperScriptLanguageServer {
   - [ ] Preserve _hyperscript.processNode() backward compatibility
 
 #### Week 3-4: Modular Command System
+
 - [ ] **Tree-Shakable Commands**
   - [ ] Convert monolithic commands to individual functions
   - [ ] Implement toggle, add, remove, put commands as separate exports
@@ -362,31 +353,10 @@ export class HyperScriptLanguageServer {
   - [ ] Create migration testing for existing projects
   - [ ] Document API compatibility guarantees
 
-#### Phase 1 Completion Status
-```
-Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Completion Date: ___________
-Key Achievements:
-- [ ] Monorepo architecture established
-- [ ] 2KB core runtime extracted and validated
-- [ ] Tree-shakable command system working
-- [ ] 100% test compatibility maintained
-
-Lessons Learned:
-[Update when phase completes]
-
-Performance Benchmarks:
-- Bundle size: _____ KB (Target: <5KB)
-- Test suite: _____ % passing (Target: 100%)
-- Performance vs original: _____ x (Target: 1x minimum)
-
-Architectural Decisions:
-[Document any deviations from plan]
-```
-
 ### 📋 Phase 2: Incremental Parser Infrastructure (6 weeks)
 
 #### Week 5-6: TypeScript Parser Foundation
+
 - [ ] **Parser Architecture**
   - [ ] Implement IncrementalParser interface with parse/edit methods
   - [ ] Design HyperScriptAST for both interpretation and compilation
@@ -398,7 +368,8 @@ Architectural Decisions:
   - [ ] Implement AST serialization/deserialization
   - [ ] Create AST validation and type checking
 
-#### Week 7-8: Error Recovery & Incremental Parsing  
+#### Week 7-8: Error Recovery & Incremental Parsing
+
 - [ ] **Error Handling**
   - [ ] Implement parse error detection and classification
   - [ ] Add intelligent error recovery mechanisms
@@ -411,6 +382,7 @@ Architectural Decisions:
   - [ ] Add performance benchmarking for parsing speed
 
 #### Week 9-10: Query System & Optimization
+
 - [ ] **AST Query System**
   - [ ] Implement S-expression pattern matching
   - [ ] Add AST traversal and search capabilities
@@ -422,31 +394,10 @@ Architectural Decisions:
   - [ ] Implement parser caching and memoization
   - [ ] Create comprehensive parser test suite
 
-#### Phase 2 Completion Status
-```
-Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Completion Date: ___________
-Key Achievements:
-- [ ] Incremental parser with Tree-sitter patterns working
-- [ ] Error recovery and intelligent suggestions functional
-- [ ] AST query system operational
-- [ ] Performance targets met
-
-Lessons Learned:
-[Update when phase completes]
-
-Performance Benchmarks:
-- Full parse time: _____ ms (Target: <10ms)
-- Incremental update: _____ ms (Target: <1ms)
-- Error recovery rate: _____ % (Target: >95%)
-
-Reference Implementation Insights:
-[Document findings from ~/projects/_hyperscript/ analysis]
-```
-
 ### 📋 Phase 3: Static Analysis & Compiler (8 weeks)
 
 #### Week 11-12: Dependency Analysis Engine
+
 - [ ] **Dependency Analysis**
   - [ ] Implement DependencyAnalyzer with AST traversal
   - [ ] Detect used commands, expressions, DOM patterns
@@ -454,11 +405,12 @@ Reference Implementation Insights:
   - [ ] Create dependency graph representation
 - [ ] **Optimization Detection**
   - [ ] Find batchable DOM operations
-  - [ ] Detect parallelizable queries  
+  - [ ] Detect parallelizable queries
   - [ ] Identify GPU acceleration candidates
   - [ ] Add optimization scoring and prioritization
 
 #### Week 13-14: Code Generation Pipeline
+
 - [ ] **Code Generator**
   - [ ] Implement CodeGenerator with optimized JavaScript output
   - [ ] Add smart import generation based on usage
@@ -471,6 +423,7 @@ Reference Implementation Insights:
   - [ ] Add dead code elimination and tree shaking
 
 #### Week 15-16: Build Integration & Testing
+
 - [ ] **Build Pipeline**
   - [ ] Create compilation API with optimize/treeShake options
   - [ ] Add development vs production mode handling
@@ -483,6 +436,7 @@ Reference Implementation Insights:
   - [ ] Create comprehensive compiler benchmark suite
 
 #### Week 17-18: Advanced Optimizations
+
 - [ ] **GPU Acceleration Integration**
   - [ ] Integrate WebGPU compute shader generation
   - [ ] Add WASM SIMD optimization detection
@@ -494,32 +448,10 @@ Reference Implementation Insights:
   - [ ] Create advanced bundle splitting strategies
   - [ ] Add runtime performance monitoring integration
 
-#### Phase 3 Completion Status
-```
-Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Completion Date: ___________
-Key Achievements:
-- [ ] Dependency analysis engine operational
-- [ ] Code generation pipeline with optimizations working
-- [ ] Build integration and compilation tooling complete
-- [ ] GPU acceleration integration functional
-
-Lessons Learned:
-[Update when phase completes]
-
-Performance Benchmarks:
-- Compilation time: _____ ms (Target: <100ms for typical file)
-- Generated code performance: _____ x original (Target: 2x+)
-- Bundle size reduction: _____ % (Target: 50%+)
-- GPU acceleration detection: _____ % accuracy (Target: >90%)
-
-Compiler Architecture Insights:
-[Document code generation patterns and optimization strategies]
-```
-
 ### 📋 Phase 4: Advanced Runtime Features (6 weeks)
 
 #### Week 19-20: GPU Acceleration Layer
+
 - [ ] **WebGPU Integration**
   - [ ] Implement GPUAccelerator with operation detection
   - [ ] Add WGSL compute shader compilation
@@ -532,6 +464,7 @@ Compiler Architecture Insights:
   - [ ] Create comprehensive GPU acceleration test suite
 
 #### Week 21-22: Fine-Grained Reactivity System
+
 - [ ] **Reactivity Foundation**
   - [ ] Implement signal-based reactive system
   - [ ] Add effect tracking and subscription management
@@ -544,6 +477,7 @@ Compiler Architecture Insights:
   - [ ] Implement performance testing vs virtual DOM
 
 #### Week 23-24: Performance Optimization & Validation
+
 - [ ] **Performance Validation**
   - [ ] Achieve 2x performance improvement over original
   - [ ] Validate 100x+ GPU speedup for bulk operations
@@ -555,32 +489,10 @@ Compiler Architecture Insights:
   - [ ] Add comprehensive performance regression testing
   - [ ] Create production-ready performance monitoring
 
-#### Phase 4 Completion Status
-```
-Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Completion Date: ___________
-Key Achievements:
-- [ ] WebGPU acceleration layer operational
-- [ ] Fine-grained reactivity system integrated
-- [ ] Performance targets achieved and validated
-- [ ] Production-ready runtime features complete
-
-Lessons Learned:
-[Update when phase completes]
-
-Performance Benchmarks:
-- GPU acceleration speedup: _____ x (Target: 100x+ for bulk ops)
-- Reactivity update performance: _____ ms (Target: <16ms)
-- Memory usage: _____ MB (Target: <5MB for large apps)
-- Cold start time: _____ ms (Target: <50ms)
-
-Advanced Runtime Insights:
-[Document GPU integration patterns and reactivity optimizations]
-```
-
 ### 📋 Phase 5: Developer Experience (4 weeks)
 
 #### Week 25-26: Build Tool Integration
+
 - [ ] **Vite Plugin**
   - [ ] Implement @hyperfixi/vite-plugin with auto-compilation
   - [ ] Add development mode with fast refresh
@@ -592,7 +504,8 @@ Advanced Runtime Insights:
   - [ ] Implement project analysis and optimization suggestions
   - [ ] Create migration tooling from _hyperscript
 
-#### Week 27-28: Language Server & IDE Support  
+#### Week 27-28: Language Server & IDE Support
+
 - [ ] **Language Server Protocol**
   - [ ] Implement HyperScriptLanguageServer with full LSP support
   - [ ] Add syntax highlighting and semantic tokens
@@ -604,32 +517,10 @@ Advanced Runtime Insights:
   - [ ] Implement go-to-definition and find references
   - [ ] Create comprehensive IDE feature testing
 
-#### Phase 5 Completion Status
-```
-Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Completion Date: ___________
-Key Achievements:
-- [ ] Vite plugin with zero-config compilation working
-- [ ] CLI tool with migration capabilities complete
-- [ ] Language Server Protocol fully functional
-- [ ] VS Code extension with full IDE support published
-
-Lessons Learned:
-[Update when phase completes]
-
-Developer Experience Metrics:
-- Setup time: _____ minutes (Target: <5 minutes)
-- Error message clarity: _____ /10 (Target: 8+)
-- IDE feature completeness: _____ % (Target: 95%+)
-- Migration tool success rate: _____ % (Target: 95%+)
-
-Tooling Architecture Insights:
-[Document build integration patterns and LSP implementation]
-```
-
 ### 📋 Success Validation Checklist
 
 #### Performance Targets
+
 - [ ] **Bundle Size**: <5KB minimal, <20KB full features achieved
 - [ ] **Parse Performance**: <1ms incremental, <10ms full parse
 - [ ] **Runtime Performance**: 2x faster than original validated
@@ -637,43 +528,18 @@ Tooling Architecture Insights:
 - [ ] **Cold Start**: <50ms with compiled output
 
 #### Compatibility & Quality
+
 - [ ] **Test Suite**: 100% official _hyperscript compatibility
 - [ ] **API Compatibility**: Full backward compatibility validated
 - [ ] **Migration Path**: Automated tooling working
 - [ ] **Documentation**: Comprehensive guides with examples
 
 #### Developer Experience
+
 - [ ] **Zero Config**: Vite/Next.js integration working
 - [ ] **IDE Support**: Full IntelliSense in VS Code
 - [ ] **Error Messages**: Clear, actionable descriptions
 - [ ] **Build Integration**: Seamless compilation pipeline
-
-#### Overall Project Completion Status
-```
-Project Status: [ ] Not Started / [ ] In Progress / [ ] Complete
-Project Start Date: ___________
-Project Completion Date: ___________
-
-Phase Completion Summary:
-- [ ] Phase 1: Modular TypeScript Foundation (Weeks 1-4)
-- [ ] Phase 2: Incremental Parser Infrastructure (Weeks 5-10)  
-- [ ] Phase 3: Static Analysis & Compiler (Weeks 11-18)
-- [ ] Phase 4: Advanced Runtime Features (Weeks 19-24)
-- [ ] Phase 5: Developer Experience (Weeks 25-28)
-
-Final Success Metrics Achieved:
-- Bundle Size: _____ KB minimal / _____ KB full (Target: <5KB / <20KB)
-- Performance: _____ x faster than original (Target: 2x+)
-- Test Compatibility: _____ % (Target: 100%)
-- GPU Acceleration: _____ x speedup (Target: 100x+)
-- Developer Setup Time: _____ minutes (Target: <5 minutes)
-
-Major Architectural Insights:
-[Document key learnings and architectural decisions across all phases]
-
-Recommendations for Future Development:
-[Note areas for continued optimization and enhancement]
-```
 
 ---
 
@@ -702,6 +568,7 @@ Recommendations for Future Development:
 ## Success Metrics
 
 ### Performance Targets
+
 - **Bundle Size**: <5KB for minimal usage, <20KB for full features
 - **Parse Time**: <1ms incremental updates, <10ms full parse
 - **Runtime Performance**: 2x faster than current for standard operations
@@ -709,11 +576,13 @@ Recommendations for Future Development:
 - **Cold Start**: <50ms with compiled output
 
 ### Compatibility Goals
+
 - **Test Suite**: 100% official _hyperscript test compatibility
 - **API Surface**: Full backward compatibility with legacy mode
 - **Migration Path**: Automated tooling for existing projects
 
 ### Developer Experience
+
 - **Zero Config**: Works out-of-box with Vite/Next.js
 - **IDE Support**: Full IntelliSense in VS Code
 - **Error Messages**: Clear, actionable error descriptions
@@ -722,19 +591,32 @@ Recommendations for Future Development:
 ## Risk Mitigation
 
 ### Technical Risks
+
 1. **Parser Complexity**: Start with TypeScript, optimize later with Rust/WASM
 2. **GPU Compatibility**: Graceful fallback to CPU for unsupported hardware
 3. **Bundle Size**: Aggressive tree-shaking and modular architecture
 
 ### Adoption Risks
+
 1. **Breaking Changes**: Maintain 100% backward compatibility mode
 2. **Learning Curve**: Provide incremental adoption path
 3. **Performance Regression**: Comprehensive benchmarking suite
 
 ## Conclusion
 
-This integrated plan combines the pragmatic compiler-first approach from runtime-alt with the advanced runtime features from runtime-plan. By starting with a modular TypeScript foundation and progressively adding compilation and acceleration features, we can deliver immediate value while building toward a revolutionary performance profile.
+This integrated plan combines the pragmatic compiler-first approach from
+runtime-alt with the advanced runtime features from runtime-plan. By starting
+with a modular TypeScript foundation and progressively adding compilation and
+acceleration features, we can deliver immediate value while building toward a
+revolutionary performance profile.
 
-The hybrid architecture respects hyperscript's philosophy of simplicity while enabling cutting-edge optimizations. Users can start with the familiar drop-in runtime and progressively adopt build-time compilation as their needs grow.
+The hybrid architecture respects hyperscript's philosophy of simplicity while
+enabling cutting-edge optimizations. Users can start with the familiar drop-in
+runtime and progressively adopt build-time compilation as their needs grow.
 
-Most importantly, this plan is actionable and achievable. Each phase delivers concrete value, and the modular architecture ensures that work can proceed in parallel across different aspects of the system. The result will be a hyperscript implementation that is not just compatible with the original, but significantly advances the state of the art in declarative DOM scripting languages.
+Most importantly, this plan is actionable and achievable. Each phase delivers
+concrete value, and the modular architecture ensures that work can proceed in
+parallel across different aspects of the system. The result will be a
+hyperscript implementation that is not just compatible with the original, but
+significantly advances the state of the art in declarative DOM scripting
+languages.
