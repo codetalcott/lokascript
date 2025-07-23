@@ -12,14 +12,18 @@ that works exactly like the original, with modern TypeScript benefits.
 
 **HyperFixi has successfully implemented all core hyperscript functionality!**
 
-- ✅ **Expression System**: 388/388 tests passing (comprehensive evaluation engine)
-- ✅ **Core Infrastructure**: Tokenizer + Parser + API structure complete (Phase 1 ✅)
-- ✅ **Command System**: Phase 2 COMPLETE! All 6 essential DOM commands fully implemented:
+- ✅ **Expression System**: 388/388 tests passing (comprehensive evaluation
+  engine)
+- ✅ **Core Infrastructure**: Tokenizer + Parser + API structure complete (Phase
+  1 ✅)
+- ✅ **Command System**: Phase 2 COMPLETE! All 6 essential DOM commands fully
+  implemented:
   - PUT (16/16) ✅ | ADD (29/29) ✅ | REMOVE (30/30) ✅
   - TOGGLE (22/22) ✅ | SHOW (21/21) ✅ | HIDE (17/17) ✅
 - ✅ **Event System**: Phase 3 COMPLETE! Full event handling capability:
   - ON Feature (18/18) ✅ | SEND Command (45/45) ✅
-- ✅ **Official Test Suite**: 73% compatibility (134/183 tests passing) - **MAJOR PROGRESS!**
+- ✅ **Official Test Suite**: 73% compatibility (134/183 tests passing) -
+  **MAJOR PROGRESS!**
 
 ## Implementation Plan: Get the Basics Right (4-6 weeks)
 
@@ -67,7 +71,8 @@ that works exactly like the original, with modern TypeScript benefits.
 
 #### Week 3: Essential Commands
 
-- [x] **PUT Command** (`~/projects/_hyperscript/test/commands/put.js`) ✅ **COMPLETE**
+- [x] **PUT Command** (`~/projects/_hyperscript/test/commands/put.js`) ✅
+      **COMPLETE**
   - [x] Study `~/projects/_hyperscript/src/hyperscript.js` put implementation
   - [x] Implement `put X into Y` syntax and behavior
   - [x] Add support for innerHTML, textContent, attributes, styles
@@ -83,7 +88,8 @@ that works exactly like the original, with modern TypeScript benefits.
 
 #### Week 4: Interactive Commands ✅ **COMPLETE**
 
-- [x] **TOGGLE Command** (`~/projects/_hyperscript/test/commands/toggle.js`) ✅ **COMPLETE**
+- [x] **TOGGLE Command** (`~/projects/_hyperscript/test/commands/toggle.js`) ✅
+      **COMPLETE**
   - [x] Implement `toggle .class` syntax and behavior
   - [x] Add attribute and visibility toggling
   - [x] **Result**: 22/22 tests passing
@@ -94,7 +100,8 @@ that works exactly like the original, with modern TypeScript benefits.
   - [x] Add CSS display property handling
   - [x] **Result**: SHOW (21/21), HIDE (17/17) tests passing
 
-- [x] **Validation**: Command compatibility tests passing - **Phase 2 Complete!**
+- [x] **Validation**: Command compatibility tests passing - **Phase 2
+      Complete!**
 
 ### Phase 3: Event System (Weeks 5-6) ✅ **COMPLETE**
 
@@ -104,14 +111,16 @@ that works exactly like the original, with modern TypeScript benefits.
 
 #### Week 5: Event Handling Foundation ✅ **COMPLETE**
 
-- [x] **ON Events** (`~/projects/_hyperscript/test/features/on.js`) ✅ **COMPLETE**
+- [x] **ON Events** (`~/projects/_hyperscript/test/features/on.js`) ✅
+      **COMPLETE**
   - [x] Study `~/projects/_hyperscript/src/hyperscript.js` event delegation
   - [x] Implement `on click` event handling syntax
   - [x] Add event delegation and bubbling support
   - [x] Reference: `~/projects/_hyperscript/www/features/on`
   - [x] **Result**: 18/18 tests passing
 
-- [x] **Event Context** (`~/projects/_hyperscript/test/core/bootstrap.js`) ✅ **COMPLETE**
+- [x] **Event Context** (`~/projects/_hyperscript/test/core/bootstrap.js`) ✅
+      **COMPLETE**
   - [x] Implement `me`, `it`, `event` context variables
   - [x] Add proper event object handling and propagation
 
@@ -134,29 +143,40 @@ that works exactly like the original, with modern TypeScript benefits.
 
 ## Phase 4: Official Test Suite Compatibility ⚡ **CURRENT FOCUS**
 
-**Goal**: Address missing functionality identified by running the full official _hyperscript test suite
+**Goal**: Address missing functionality identified by running the full official
+_hyperscript test suite
 
-**Current Status**: 73% compatibility (134/183 tests passing) - Strong foundation, targeted improvements needed
+**Current Status**: 73% compatibility (134/183 tests passing) - Strong
+foundation, targeted improvements needed
 
-### 🔍 **Official Test Results Analysis** 
+### 🔍 **Official Test Results Analysis**
 
 **Test Categories Examined**:
-- **expressions/**: 14 test files covering string templates, operators, type conversion, DOM queries
-- **Total Tests**: 183 individual test cases from official _hyperscript repository
+
+- **expressions/**: 14 test files covering string templates, operators, type
+  conversion, DOM queries
+- **Total Tests**: 183 individual test cases from official _hyperscript
+  repository
 - **Success Rate**: 73% (134 passing, 49 failing)
 
 ### 📋 **Missing Functionality Checklist**
 
 #### **Priority 1: Critical Operators (Quick Wins)**
-- [ ] **Modulo Operator**: `3 mod 2` → currently throws "Unsupported binary operator: mod"
-- [ ] **Equals Operator**: `1 equals 2` → currently throws "Unsupported binary operator: equals"
-- [ ] **Contains/Includes**: `array contains item`, `array includes item` → not implemented
-- [ ] **String Templates**: `$variable`, `$window.foo` → currently throws "Unexpected token"
+
+- [ ] **Modulo Operator**: `3 mod 2` → currently throws "Unsupported binary
+      operator: mod"
+- [ ] **Equals Operator**: `1 equals 2` → currently throws "Unsupported binary
+      operator: equals"
+- [ ] **Contains/Includes**: `array contains item`, `array includes item` → not
+      implemented
+- [ ] **String Templates**: `$variable`, `$window.foo` → currently throws
+      "Unexpected token"
 
 #### **Priority 2: English-Style Operators (Parser Extensions)**
+
 - [ ] **English Comparisons**:
   - [ ] `is equal to`: `1 is equal to 2`
-  - [ ] `is really equal to`: `1 is really equal to 2` 
+  - [ ] `is really equal to`: `1 is really equal to 2`
   - [ ] `is not equal to`: `1 is not equal to 2`
   - [ ] `is greater than`: `1 is greater than 2`
   - [ ] `is less than`: `1 is less than 2`
@@ -165,11 +185,15 @@ that works exactly like the original, with modern TypeScript benefits.
 - [ ] **Really Equals**: `1 really equals 2` → compound operator parsing
 
 #### **Priority 3: Array and Collection Operations**
-- [ ] **Array Membership**: `1 is in [1, 2]` → array literal parsing + membership test
+
+- [ ] **Array Membership**: `1 is in [1, 2]` → array literal parsing +
+      membership test
 - [ ] **Array Exclusion**: `1 is not in [1, 2]` → negated membership
-- [ ] **CSS Selector Membership**: `.outer contains #d2`, `.outer includes #d2` → DOM query + containment
+- [ ] **CSS Selector Membership**: `.outer contains #d2`, `.outer includes #d2`
+      → DOM query + containment
 
 #### **Priority 4: Type and Existence Checking**
+
 - [ ] **Type Checking**:
   - [ ] `is a String`: `null is a String`
   - [ ] `is not a String`: `null is not a String`
@@ -182,74 +206,96 @@ that works exactly like the original, with modern TypeScript benefits.
   - [ ] `is not empty`: `undefined is not empty` → non-empty check
 
 #### **Priority 5: Context and Reference Improvements**
+
 - [ ] **Its Context**: `its foo` → currently throws "Unexpected token: foo"
-- [ ] **Complex CSS Selectors**: 
+- [ ] **Complex CSS Selectors**:
   - [ ] Colon support: `.c1:foo`, `.c1:foo:bar`
   - [ ] Leading dashes: `.-c1`
   - [ ] Escapes: `.group-\\[:nth-of-type\\(3\\)_\\&\\]:block`
   - [ ] Slashes: `.-c1\\/22`
 
 #### **Priority 6: Advanced Type Conversions**
+
 - [ ] **Date Conversion**: `1 as Date` → proper Date constructor behavior
-- [ ] **Modified As**: `1 as a Date` → `as a Type` syntax support  
+- [ ] **Modified As**: `1 as a Date` → `as a Type` syntax support
 - [ ] **Form Processing**: Enhanced `as Values` for complex forms
 - [ ] **Fragment Conversion**: String/element to DocumentFragment conversion
 
 ### 🎯 **Implementation Strategy**
 
-#### **Week 1-2: Core Operators** 
-Focus on Priority 1 items - these are simple binary operators that can be added to existing expression evaluator:
+#### **Week 1-2: Core Operators**
+
+Focus on Priority 1 items - these are simple binary operators that can be added
+to existing expression evaluator:
+
 1. Add `mod` operator to mathematical operations
 2. Implement `equals` as alias for `==`
 3. Add `contains`/`includes` for arrays and DOM elements
 4. Implement basic string template parsing (`$variable`)
 
 #### **Week 3-4: English Operators**
+
 Extend parser to handle multi-word operators from Priority 2:
+
 1. Parse compound operators (`is equal to`, `is greater than`)
 2. Add operator precedence for English-style comparisons
 3. Implement `really equals` parsing and evaluation
 
 #### **Week 5-6: Advanced Features**
+
 Tackle Priority 3-4 for comprehensive compatibility:
+
 1. Array literal parsing and membership operations
 2. Type checking operators (`is a String`)
 3. Existence and emptiness operators
 4. Enhanced CSS selector support
 
-**Success Target**: 90%+ compatibility (165+/183 tests passing) by end of Phase 4
+**Success Target**: 90%+ compatibility (165+/183 tests passing) by end of Phase
+4
 
-## 🎉 MAJOR BREAKTHROUGH: JavaScript-Standard Operator Precedence
+## 🎉 Fixed: JavaScript-Standard Operator Precedence
 
-**Key Achievement**: Successfully implemented JavaScript-standard operator precedence - a major developer experience improvement!
+**Key Achievement**: Successfully implemented JavaScript-standard operator
+precedence - a developer experience improvement!
 
 ### ✅ **Precedence Fix Summary**
-- **Problem**: Mixed operators like `2 + 3 * 4` were requiring parentheses (developer-unfriendly)
-- **Solution**: Implemented proper precedence climbing algorithm with JavaScript standards
-- **Result**: All mixed operator expressions now work correctly without parentheses
+
+- **Problem**: Mixed operators like `2 + 3 * 4` were requiring parentheses
+  (developer-unfriendly)
+- **Solution**: Implemented proper precedence climbing algorithm with JavaScript
+  standards
+- **Result**: All mixed operator expressions now work correctly without
+  parentheses
 - **Examples Now Working**:
   - `2 + 3 * 4` = 14 (multiplication first) ✅
-  - `10 - 2 * 3` = 4 (multiplication first) ✅  
+  - `10 - 2 * 3` = 4 (multiplication first) ✅
   - `true and false or true` = true (and before or) ✅
   - `8 / 2 + 3` = 7 (division first) ✅
 
 ### 🔧 **Additional Command Completions**
-- **SET Command**: 27/27 tests passing ✅ (variable assignment, properties, object literals)
+
+- **SET Command**: 27/27 tests passing ✅ (variable assignment, properties,
+  object literals)
 - **All Core Commands Working**: PUT, ADD, REMOVE, TOGGLE, SHOW, HIDE, SET
-- **✅ FAKE TESTS REMOVED**: Eliminated misleading mock tests that showed false 28% compatibility
+- **✅ FAKE TESTS REMOVED**: Eliminated misleading mock tests that showed false
+  28% compatibility
 
 ## Success Metrics (Simple & Clear)
 
 ### Functional Completeness ✅ **SOLID FOUNDATION ACHIEVED**
 
 - ✅ **Internal Tests**: Expression System 100% complete (388/388 passing)
-- ✅ **Command Tests**: Phase 2 COMPLETE! All 6 core commands implemented and passing
+- ✅ **Command Tests**: Phase 2 COMPLETE! All 6 core commands implemented and
+  passing
   - PUT: 16/16 tests ✅ | ADD: 29/29 tests ✅ | REMOVE: 30/30 tests ✅
   - TOGGLE: 22/22 tests ✅ | SHOW: 21/21 tests ✅ | HIDE: 17/17 tests ✅
-- ✅ **Event Tests**: Phase 3 COMPLETE! ON Feature (18/18) + SEND Command (45/45) ✅
+- ✅ **Event Tests**: Phase 3 COMPLETE! ON Feature (18/18) + SEND Command
+  (45/45) ✅
 - ⚡ **Official _hyperscript Compatibility**: 73% (134/183 tests passing)
-  - **Strong Areas**: Math (9/9), Logic (7/7), Basic Comparisons (25/43), Boolean (2/2)
-  - **Improvement Areas**: String templates, English operators, type checking, array operations
+  - **Strong Areas**: Math (9/9), Logic (7/7), Basic Comparisons (25/43),
+    Boolean (2/2)
+  - **Improvement Areas**: String templates, English operators, type checking,
+    array operations
   - **Next Target**: 90%+ compatibility by end of Phase 4
 
 ### Quality & Performance

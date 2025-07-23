@@ -115,13 +115,15 @@ npm run test:coverage                      # Generate coverage reports
 
 ```bash
 npm run test:browser                       # Run compatibility tests vs _hyperscript
+npx playwright test --grep "Complete Official _hyperscript Test Suite"  # Run all 81 official test files
 npx playwright test --grep "Command Tests"  # Test command compatibility  
 npx playwright test --grep "Expression Tests"  # Test expression compatibility
 ```
 
 **Current Compatibility Status:**
-- **Expression compatibility**: 100% (15/15 tests passing)
-- **Command compatibility**: ~60% (9/15 tests passing)
+- **Full test suite**: 81 official _hyperscript test files (hundreds of test cases)
+- **Expression compatibility**: High success rate (expressions well-implemented)
+- **Command compatibility**: Moderate success rate (commands partially implemented)
 - **Overall compatibility**: ~80% across all hyperscript features
 
 ### Build
@@ -175,6 +177,7 @@ expression evaluation**:
 
 - **src/expressions/\*/index.test.ts** - Unit tests for each expression category
 - **src/expressions/integration\*.test.ts** - Real-world usage pattern tests
+- **src/compatibility/browser-tests/full-official-suite.spec.ts** - Complete official _hyperscript test suite (81 files)
 
 ## Current Testing Infrastructure
 

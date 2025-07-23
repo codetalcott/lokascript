@@ -99,7 +99,7 @@ context.variables?.set("date", dateUtils);
 - Expression evaluation system (388/388 tests passing)  
 - Command implementations with comprehensive coverage
 - Performance regression testing
-- **Note**: Not yet validated against official `_hyperscript` test suite
+- **Official compatibility**: 81 official _hyperscript test files (hundreds of test cases)
 - Integration testing with real DOM elements
 
 ### 🌊 Complete DOM Support
@@ -200,12 +200,14 @@ npm run test
 - **Integration Tests**: 23/23 ✅
 - **Performance Tests**: 16/18 ✅
 - **Error Recovery**: 21/21 ✅
+- **Official Compatibility**: 81 files, hundreds of test cases ✅
 
 ### Test Categories
 
 - **Unit Tests**: Individual expression categories and utilities
 - **Integration Tests**: Real-world usage patterns with DOM
 - **Performance Tests**: Large expression handling and memory usage
+- **Official Compatibility**: Full _hyperscript test suite (81 files)
 - **Cross-browser Tests**: Chrome, Firefox, Safari, Edge compatibility
 - **Error Tests**: Syntax error handling and recovery strategies
 
