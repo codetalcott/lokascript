@@ -57,7 +57,9 @@ export enum TokenType {
 const KEYWORDS = new Set([
   'on', 'init', 'behavior', 'def', 'set', 'if', 'else', 'unless', 'repeat', 'for',
   'while', 'until', 'end', 'and', 'or', 'not', 'in', 'to', 'from', 'into',
-  'with', 'as', 'then', 'when', 'where', 'after', 'before', 'by', 'at', 'async', 'no'
+  'with', 'as', 'then', 'when', 'where', 'after', 'before', 'by', 'at', 'async', 'no',
+  // Additional keywords for English-style operators
+  'equal', 'equals', 'greater', 'less', 'than', 'really'
 ]);
 
 const COMMANDS = new Set([
@@ -77,7 +79,11 @@ const LOGICAL_OPERATORS = new Set(['and', 'or', 'not', 'no']);
 const COMPARISON_OPERATORS = new Set([
   '==', '!=', '===', '!==', '<', '>', '<=', '>=', 'is', 'is not',
   'contains', 'does not contain', 'matches', 'exists', 'is empty', 'is not empty',
-  'is in', 'is not in', 'equals', 'in'
+  'is in', 'is not in', 'equals', 'in',
+  // English-style comparison operators
+  'is equal to', 'is really equal to', 'is not equal to', 'is not really equal to',
+  'is greater than', 'is less than', 'is greater than or equal to', 'is less than or equal to',
+  'really equals'
 ]);
 
 const MATHEMATICAL_OPERATORS = new Set(['mod']);

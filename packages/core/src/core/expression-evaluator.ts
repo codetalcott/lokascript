@@ -198,6 +198,35 @@ export class ExpressionEvaluator {
         const equalsExpr = this.expressionRegistry.get('equals');
         return equalsExpr ? equalsExpr.evaluate(context, leftValue, rightValue) : leftValue === rightValue;
       
+      case 'is equal to':
+        // Same as regular equals - loose equality
+        return leftValue == rightValue;
+      
+      case 'is really equal to':
+      case 'really equals':
+        // Strict equality - type and value must match
+        return leftValue === rightValue;
+      
+      case 'is not equal to':
+        // Negated loose equality
+        return leftValue != rightValue;
+      
+      case 'is not really equal to':
+        // Negated strict equality
+        return leftValue !== rightValue;
+      
+      case 'is greater than':
+        return leftValue > rightValue;
+      
+      case 'is less than':
+        return leftValue < rightValue;
+      
+      case 'is greater than or equal to':
+        return leftValue >= rightValue;
+      
+      case 'is less than or equal to':
+        return leftValue <= rightValue;
+      
       case '!=':
       case '!==':
         const notEqualsExpr = this.expressionRegistry.get('notEquals');
@@ -319,7 +348,7 @@ export class ExpressionEvaluator {
         return rightValue;
       
       default:
-        throw new Error(`Unsupported binary operator: ${operator}`);
+        throw new Error(`Unsupported binary operator: "${operator}" (length: ${operator.length})`);
     }
   }
 

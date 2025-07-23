@@ -181,7 +181,7 @@ export class Parser {
   private parseEquality(): ASTNode {
     let expr = this.parseComparison();
 
-    while (this.matchTokenType(TokenType.COMPARISON_OPERATOR) || this.match('is', 'matches', 'contains', 'in', 'of', 'as')) {
+    while (this.matchTokenType(TokenType.COMPARISON_OPERATOR) || this.match('is', 'matches', 'contains', 'in', 'of', 'as', 'really')) {
       const operator = this.previous().value;
       const right = this.parseComparison();
       expr = this.createBinaryExpression(operator, expr, right);

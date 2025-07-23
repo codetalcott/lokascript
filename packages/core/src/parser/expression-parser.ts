@@ -1043,6 +1043,30 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
       return logicalExpressions.contains.evaluate(context, right, left); // Note: reversed args for membership
     case 'is not in':
       return logicalExpressions.doesNotContain.evaluate(context, right, left); // Note: reversed args
+    
+    // English-style comparison operators
+    case 'is equal to':
+      // Loose equality (coercive)
+      return left == right;
+    case 'is really equal to':
+    case 'really equals':
+      // Strict equality
+      return left === right;
+    case 'is not equal to':
+      // Loose inequality
+      return left != right;
+    case 'is not really equal to':
+      // Strict inequality
+      return left !== right;
+    case 'is greater than':
+      return left > right;
+    case 'is less than':
+      return left < right;
+    case 'is greater than or equal to':
+      return left >= right;
+    case 'is less than or equal to':
+      return left <= right;
+    
     default:
       throw new ExpressionParseError(`Unknown binary operator: ${operator}`);
   }
