@@ -21,6 +21,7 @@ export type {
 export { parse } from './parser/parser.js';
 export { Runtime, type RuntimeOptions } from './runtime/runtime.js';
 export { createContext, createChildContext } from './core/context.js';
+export { Lexer, Tokens, type Token } from './tokenizer.js';
 
 // Export the main API as default
 export { default } from './api/hyperscript-api.js';
