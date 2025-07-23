@@ -75,17 +75,35 @@ export class RenderCommand implements CommandImplementation {
     data: any, 
     context: ExecutionContext
   ): Promise<DocumentFragment> {
-    // Clone template content
-    const fragment = templateElement.content.cloneNode(true) as DocumentFragment;
+    // Use the new two-phase template system
+    const { TemplateCompiler } = await import('./template-compiler.js');
+    const { OptimizedTemplateExecutor } = await import('./template-executor-optimized.js');
     
-    // Create enhanced context with template data
+    const compiler = new TemplateCompiler();
+    const executor = new OptimizedTemplateExecutor();
+    
+    // Get template content as string
+    const templateContent = templateElement.innerHTML;
+    
+    // Phase 1: Compile the template
+    const compiled = compiler.compileTemplate(templateContent);
+    
+    // Phase 2: Create execution context
     const templateContext = this.createTemplateContext(data, context);
+    const executionContext = compiler.createTemplateExecutionContext(templateContext);
     
-    // Process hyperscript directives FIRST (@ lines) - they control structure
-    await this.processDirectives(fragment, templateContext);
+    // Phase 3: Execute the template
+    const html = await executor.executeTemplate(compiled, executionContext);
     
-    // Then process all text nodes for interpolation
-    await this.processTextNodes(fragment, templateContext);
+    // Convert HTML string back to DocumentFragment
+    const fragment = document.createDocumentFragment();
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    
+    // Move all child nodes to the fragment
+    while (div.firstChild) {
+      fragment.appendChild(div.firstChild);
+    }
     
     return fragment;
   }
