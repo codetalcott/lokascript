@@ -3,7 +3,31 @@
  * Common utilities for testing enhanced implementations
  */
 
-import type { TypedExecutionContext, TypedExpressionContext } from './types/enhanced-core.js';
+import type { TypedExecutionContext } from './types/enhanced-core.js';
+
+// Define TypedExpressionContext for expression testing
+export interface TypedExpressionContext {
+  // Core context data
+  [key: string]: unknown;
+  
+  // Standard hyperscript context
+  me: HTMLElement;
+  you: HTMLElement | null;
+  it: unknown;
+  
+  // Variable storage
+  locals: Map<string, unknown>;
+  globals: Map<string, unknown>;
+  variables: Map<string, unknown>;
+  
+  // Performance tracking
+  evaluationHistory: unknown[];
+  performanceMetrics: {
+    totalEvaluations: number;
+    averageExecutionTime: number;
+    lastEvaluationTime: number;
+  };
+}
 
 /**
  * Create a mock HTMLElement for testing
@@ -171,6 +195,9 @@ export function createTypedExecutionContext(options: {
     locals: options.locals || new Map(),
     globals: options.globals || new Map(),
     variables: options.variables || new Map(),
+    
+    // Meta object for template compilation and execution
+    meta: new Map(),
     
     // Performance tracking
     evaluationHistory: [],

@@ -229,7 +229,7 @@ describe('Enhanced Expression Performance Benchmarks', () => {
       const result = await benchmark.benchmark(
         'FirstExpression.evaluate.dom',
         'expression',
-        () => firstExpression.evaluate(context, mockNodeList as any),
+        () => firstExpression.evaluate(context, mockNodeList as unknown as NodeList),
         {
           iterations: 800,
           complexity: 'medium',

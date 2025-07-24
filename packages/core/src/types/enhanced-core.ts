@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import type { CommandImplementation } from './core.js';
 
 // ============================================================================
 // Enhanced Type System for LLM Agents
@@ -21,8 +22,8 @@ export type HyperScriptValue =
   | HTMLElement 
   | HTMLElement[]
   | NodeList
-  | Record<string, HyperScriptValue>
-  | HyperScriptValue[];
+  | Record<string, unknown>
+  | unknown[];
 
 /**
  * Strongly typed evaluation results with error handling
@@ -350,15 +351,488 @@ export interface DocumentationExample {
 }
 
 // ============================================================================
+// HyperScript Program Types - Complete Program Representation
+// ============================================================================
+
+/**
+ * Complete hyperscript program type for comprehensive type coverage
+ * Represents a full hyperscript program from source to executable form
+ * Designed for LLM agents with rich metadata and type safety
+ */
+export interface HyperScriptProgram {
+  /** Original hyperscript source code */
+  readonly source: string;
+  
+  /** Parsed features that compose this program */
+  readonly features: HyperScriptFeature[];
+  
+  /** Program compilation and execution metadata */
+  readonly metadata: ProgramMetadata;
+  
+  /** Source location information for debugging */
+  readonly sourceInfo?: SourceLocation;
+  
+  /** Program execution state */
+  readonly state: ProgramState;
+}
+
+/**
+ * Individual hyperscript feature within a program
+ * Features are the building blocks of hyperscript (event handlers, behaviors, etc.)
+ */
+export interface HyperScriptFeature {
+  /** Type of hyperscript feature */
+  readonly type: HyperScriptFeatureType;
+  
+  /** Feature identifier for debugging and tooling */
+  readonly id: string;
+  
+  /** Event trigger configuration (for event-based features) */
+  readonly trigger?: EventTrigger;
+  
+  /** Commands that execute when this feature is triggered */
+  readonly commands: ParsedCommand[];
+  
+  /** Feature-specific configuration and options */
+  readonly config: FeatureConfig;
+  
+  /** Source location within the program */
+  readonly sourceRange: SourceRange;
+  
+  /** Feature execution metadata */
+  readonly metadata: FeatureMetadata;
+}
+
+/**
+ * Parsed command that bridges parser output to executable implementations
+ * Connects hyperscript syntax to enhanced TypeScript implementations
+ */
+export interface ParsedCommand {
+  /** Command identifier and type information */
+  readonly type: ParsedCommandType;
+  readonly name: string;
+  
+  /** Reference to executable implementation */
+  readonly implementation?: CommandImplementation | TypedExpressionImplementation<any, any>;
+  
+  /** Parsed arguments with type information */
+  readonly args: ParsedArgument[];
+  
+  /** Command execution options and metadata */
+  readonly options: CommandOptions;
+  
+  /** Source location for debugging */
+  readonly sourceRange: SourceRange;
+  
+  /** Static analysis results */
+  readonly analysis?: CommandAnalysis;
+}
+
+/**
+ * Parsed argument with rich type information
+ */
+export interface ParsedArgument {
+  /** Argument value and type */
+  readonly value: HyperScriptValue;
+  readonly type: HyperScriptValueType;
+  
+  /** Whether this argument is a literal or expression */
+  readonly kind: 'literal' | 'expression' | 'reference';
+  
+  /** Source location for this argument */
+  readonly sourceRange?: SourceRange;
+  
+  /** Static analysis of argument usage */
+  readonly analysis?: ArgumentAnalysis;
+}
+
+// ============================================================================
+// Supporting Type Definitions
+// ============================================================================
+
+/**
+ * Types of hyperscript features based on official specification
+ */
+export type HyperScriptFeatureType = 
+  | 'event'        // on click, on load, etc.
+  | 'behavior'     // behavior definitions
+  | 'definition'   // def myFunction(), etc.
+  | 'init'         // init scripts
+  | 'worker'       // web worker integration
+  | 'socket'       // websocket integration
+  | 'eventsource'  // server-sent events
+  | 'set'          // variable definitions
+  | 'js'           // JavaScript integration
+  | 'custom';      // Extension features
+
+/**
+ * Types of parsed commands
+ */
+export type ParsedCommandType = 
+  | 'dom-manipulation'  // hide, show, add, remove, etc.
+  | 'content'          // put, take, settle
+  | 'navigation'       // go, back, forward
+  | 'event'            // send, trigger
+  | 'async'            // wait, fetch
+  | 'control-flow'     // if, repeat, while
+  | 'data'             // set, increment, decrement
+  | 'expression'       // pure expressions
+  | 'custom';          // Extension commands
+
+/**
+ * Event trigger configuration for event-based features
+ */
+export interface EventTrigger {
+  /** Event name (click, load, customEvent, etc.) */
+  readonly event: string;
+  
+  /** Event target selector or reference */
+  readonly target?: string | HTMLElement;
+  
+  /** Event options (once, passive, capture, etc.) */
+  readonly options: EventListenerOptions & {
+    readonly once?: boolean;
+    readonly debounce?: number;
+    readonly throttle?: number;
+  };
+  
+  /** Event filter conditions */
+  readonly filter?: EventFilter;
+}
+
+/**
+ * Event filter for conditional event handling
+ */
+export interface EventFilter {
+  /** CSS selector that must match the event target */
+  readonly selector?: string;
+  
+  /** Key combinations for keyboard events */
+  readonly keys?: string[];
+  
+  /** Custom filter function */
+  readonly condition?: string; // hyperscript expression
+}
+
+/**
+ * Feature configuration and options
+ */
+export interface FeatureConfig {
+  /** Whether this feature is enabled */
+  readonly enabled: boolean;
+  
+  /** Execution priority (higher = executes first) */
+  readonly priority: number;
+  
+  /** Feature-specific options */
+  readonly options: Record<string, HyperScriptValue>;
+  
+  /** Dependencies on other features */
+  readonly dependencies: string[];
+  
+  /** Feature capabilities and requirements */
+  readonly capabilities: FeatureCapabilities;
+}
+
+/**
+ * Feature capabilities and requirements
+ */
+export interface FeatureCapabilities {
+  /** Whether this feature requires DOM access */
+  readonly requiresDOM: boolean;
+  
+  /** Whether this feature uses async operations */
+  readonly isAsync: boolean;
+  
+  /** Whether this feature modifies global state */
+  readonly modifiesGlobalState: boolean;
+  
+  /** Required browser APIs */
+  readonly requiredAPIs: string[];
+  
+  /** Performance characteristics */
+  readonly performance: PerformanceCharacteristics;
+}
+
+/**
+ * Performance characteristics for features and commands
+ */
+export interface PerformanceCharacteristics {
+  /** Expected execution complexity */
+  readonly complexity: 'low' | 'medium' | 'high';
+  
+  /** Memory usage characteristics */
+  readonly memoryUsage: 'minimal' | 'moderate' | 'heavy';
+  
+  /** Whether operation is CPU intensive */
+  readonly cpuIntensive: boolean;
+  
+  /** Expected execution time range (ms) */
+  readonly executionTime: {
+    readonly min: number;
+    readonly max: number;
+    readonly typical: number;
+  };
+}
+
+/**
+ * Program metadata for compilation and execution
+ */
+export interface ProgramMetadata {
+  /** Compilation information */
+  readonly compilation: {
+    readonly compiled: boolean;
+    readonly compiledAt?: Date;
+    readonly compiler: string;
+    readonly version: string;
+  };
+  
+  /** Static analysis results */
+  readonly analysis: {
+    readonly complexity: number;
+    readonly estimatedExecutionTime: number;
+    readonly memoryRequirements: number;
+    readonly warnings: AnalysisWarning[];
+    readonly optimizations: string[];
+  };
+  
+  /** Performance profiling data */
+  readonly performance?: {
+    readonly lastExecutionTime: number;
+    readonly averageExecutionTime: number;
+    readonly executionCount: number;
+    readonly errorCount: number;
+  };
+}
+
+/**
+ * Feature execution metadata
+ */
+export interface FeatureMetadata {
+  /** When this feature was last compiled */
+  readonly compiledAt: Date;
+  
+  /** Execution statistics */
+  readonly stats: {
+    readonly executionCount: number;
+    readonly totalExecutionTime: number;
+    readonly averageExecutionTime: number;
+    readonly errorCount: number;
+    readonly lastExecuted?: Date;
+  };
+  
+  /** Dependencies resolved at compile time */
+  readonly resolvedDependencies: string[];
+  
+  /** Static analysis warnings specific to this feature */
+  readonly warnings: AnalysisWarning[];
+}
+
+/**
+ * Command execution options
+ */
+export interface CommandOptions {
+  /** Whether to validate inputs at runtime */
+  readonly validateInputs: boolean;
+  
+  /** Whether to track performance metrics */
+  readonly trackPerformance: boolean;
+  
+  /** Error handling strategy */
+  readonly errorHandling: 'throw' | 'return' | 'ignore';
+  
+  /** Timeout for async operations (ms) */
+  readonly timeout?: number;
+  
+  /** Retry configuration for failed operations */
+  readonly retry?: {
+    readonly attempts: number;
+    readonly delay: number;
+    readonly backoff: 'linear' | 'exponential';
+  };
+}
+
+/**
+ * Static analysis results for commands
+ */
+export interface CommandAnalysis {
+  /** Estimated execution complexity */
+  readonly complexity: number;
+  
+  /** Required permissions or capabilities */
+  readonly requirements: string[];
+  
+  /** Potential side effects */
+  readonly sideEffects: string[];
+  
+  /** Type inference results */
+  readonly typeInference: {
+    readonly inputTypes: HyperScriptValueType[];
+    readonly outputType: HyperScriptValueType;
+    readonly confidence: number;
+  };
+  
+  /** Optimization opportunities */
+  readonly optimizations: string[];
+}
+
+/**
+ * Static analysis results for arguments
+ */
+export interface ArgumentAnalysis {
+  /** Whether this argument is used by the command */
+  readonly isUsed: boolean;
+  
+  /** Type compatibility with command requirements */
+  readonly typeCompatibility: number; // 0-1 score
+  
+  /** Potential issues or improvements */
+  readonly suggestions: string[];
+}
+
+/**
+ * Source location information for debugging
+ */
+export interface SourceLocation {
+  /** Source element where program is defined */
+  readonly element?: HTMLElement;
+  
+  /** Attribute name containing the program */
+  readonly attribute?: string; // '_', 'script', 'data-script'
+  
+  /** File path (if loaded from external file) */
+  readonly file?: string;
+  
+  /** Line and column information */
+  readonly position?: {
+    readonly line: number;
+    readonly column: number;
+  };
+}
+
+/**
+ * Source range for specific code segments
+ */
+export interface SourceRange {
+  /** Start position in source */
+  readonly start: number;
+  
+  /** End position in source */
+  readonly end: number;
+  
+  /** Line and column ranges */
+  readonly lines?: {
+    readonly start: { line: number; column: number };
+    readonly end: { line: number; column: number };
+  };
+}
+
+/**
+ * Program execution state
+ */
+export interface ProgramState {
+  /** Current execution status */
+  readonly status: 'ready' | 'running' | 'completed' | 'error' | 'suspended';
+  
+  /** Currently executing feature (if any) */
+  readonly currentFeature?: string;
+  
+  /** Execution context information */
+  readonly context: {
+    readonly element: HTMLElement | null;
+    readonly variables: Map<string, HyperScriptValue>;
+    readonly callStack: string[];
+  };
+  
+  /** Error information (if in error state) */
+  readonly error?: HyperScriptError;
+  
+  /** Execution start time */
+  readonly startedAt?: Date;
+  
+  /** Execution completion time */
+  readonly completedAt?: Date;
+}
+
+/**
+ * Static analysis warning
+ */
+export interface AnalysisWarning {
+  /** Warning severity level */
+  readonly level: 'info' | 'warning' | 'error';
+  
+  /** Warning message */
+  readonly message: string;
+  
+  /** Source location of the issue */
+  readonly location: SourceRange;
+  
+  /** Suggested fix or improvement */
+  readonly suggestion?: string;
+  
+  /** Warning category */
+  readonly category: 'performance' | 'compatibility' | 'security' | 'style' | 'type-safety';
+}
+
+// ============================================================================
+// Runtime Validation Schemas for HyperScript Programs
+// ============================================================================
+
+/**
+ * Zod schema for runtime validation of HyperScript programs
+ */
+export const HyperScriptProgramSchema = z.object({
+  source: z.string(),
+  features: z.array(z.object({
+    type: z.enum(['event', 'behavior', 'definition', 'init', 'worker', 'socket', 'eventsource', 'set', 'js', 'custom']),
+    id: z.string(),
+    trigger: z.object({
+      event: z.string(),
+      target: z.union([z.string(), z.instanceof(HTMLElement)]).optional(),
+      options: z.object({
+        once: z.boolean().optional(),
+        debounce: z.number().optional(),
+        throttle: z.number().optional(),
+      }),
+      filter: z.object({
+        selector: z.string().optional(),
+        keys: z.array(z.string()).optional(),
+        condition: z.string().optional(),
+      }).optional(),
+    }).optional(),
+    commands: z.array(z.object({
+      type: z.enum(['dom-manipulation', 'content', 'navigation', 'event', 'async', 'control-flow', 'data', 'expression', 'custom']),
+      name: z.string(),
+      args: z.array(z.object({
+        value: HyperScriptValueSchema,
+        type: z.string(),
+        kind: z.enum(['literal', 'expression', 'reference']),
+      })),
+    })),
+    config: z.object({
+      enabled: z.boolean(),
+      priority: z.number(),
+      options: z.record(z.string(), HyperScriptValueSchema),
+      dependencies: z.array(z.string()),
+    }),
+  })),
+  metadata: z.object({
+    compilation: z.object({
+      compiled: z.boolean(),
+      compiledAt: z.date().optional(),
+      compiler: z.string(),
+      version: z.string(),
+    }),
+  }),
+  state: z.object({
+    status: z.enum(['ready', 'running', 'completed', 'error', 'suspended']),
+    currentFeature: z.string().optional(),
+  }),
+});
+
+// ============================================================================
 // Export Enhanced Types
 // ============================================================================
 
-export type {
-  HyperScriptValue,
-  EvaluationResult,
-  TypedExecutionContext,
-  TypedCommandImplementation,
-  TypedExpressionImplementation,
-  ValidationResult,
-  HyperScriptError
-};
+// Note: Types are exported via interface declarations above
+// Additional exports can be added here if needed for specific use cases
