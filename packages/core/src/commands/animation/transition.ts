@@ -324,13 +324,22 @@ export class TransitionCommand implements CommandImplementation {
 
   private setStyleProperty(element: HTMLElement, property: string, value: string): void {
     try {
-      // Always use setProperty for better compatibility with Happy-DOM and complex CSS values
-      element.style.setProperty(property, value);
-    } catch (error) {
-      // Fallback to camelCase property assignment
+      // For Happy-DOM compatibility, use camelCase property assignment first
       const camelProperty = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+      
+      // Try camelCase first (more reliable in Happy-DOM)
       if (camelProperty in element.style) {
         (element.style as any)[camelProperty] = value;
+      } else {
+        // Fallback to setProperty for complex CSS values
+        element.style.setProperty(property, value);
+      }
+    } catch (error) {
+      // Final fallback - try both approaches
+      try {
+        element.style.setProperty(property, value);
+      } catch {
+        // Silent failure - some properties may not be supported
       }
     }
   }

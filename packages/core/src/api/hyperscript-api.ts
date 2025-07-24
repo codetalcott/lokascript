@@ -26,6 +26,10 @@ export interface HyperscriptAPI {
   execute(ast: ASTNode, context?: ExecutionContext): Promise<any>;
   run(code: string, context?: ExecutionContext): Promise<any>;
   
+  // DOM processing (HTMX compatibility)
+  processNode(element: Element): void;
+  process(element: Element): void; // Alias for processNode
+  
   // Context management
   createContext(element?: HTMLElement | null): ExecutionContext;
   createChildContext(parent: ExecutionContext, element?: HTMLElement | null): ExecutionContext;
@@ -156,11 +160,31 @@ function getVersion(): string {
 // Public API Object
 // ============================================================================
 
+/**
+ * Process DOM elements to initialize hyperscript behaviors
+ */
+function processNode(element: Element): void {
+  // TODO: Implement DOM node processing for hyperscript attributes
+  // This would scan for hyperscript attributes and initialize event handlers
+  console.warn('processNode not yet fully implemented');
+}
+
+/**
+ * Alias for processNode for HTMX API compatibility
+ */
+function process(element: Element): void {
+  return processNode(element);
+}
+
 export const hyperscript: HyperscriptAPI = {
   // Core compilation and execution
   compile,
   execute,
   run,
+  
+  // DOM processing (HTMX compatibility)
+  processNode,
+  process,
   
   // Context management
   createContext,

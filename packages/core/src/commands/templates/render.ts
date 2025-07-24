@@ -140,13 +140,22 @@ export class RenderCommand implements CommandImplementation {
     // Process ${expression} interpolations
     const interpolationRegex = /\$\{([^}]+)\}/g;
     let result = text;
-    let match;
 
+    // Collect all matches first to avoid regex state issues
+    const matches: RegExpMatchArray[] = [];
+    let match;
     while ((match = interpolationRegex.exec(text)) !== null) {
-      const expression = match[1].trim();
+      matches.push(match);
+    }
+    
+    // Process matches in reverse order to avoid position shifting
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const currentMatch = matches[i];
+      const expression = currentMatch[1].trim();
       console.debug(`=== INTERPOLATION DEBUG START ===`);
       console.debug(`Processing expression: "${expression}"`);
-      console.debug(`Full match: "${match[0]}"`);
+      console.debug(`Full match: "${currentMatch[0]}"`);
+      
       try {
         let value: any;
         let shouldEscape = true;
@@ -178,17 +187,14 @@ export class RenderCommand implements CommandImplementation {
 
         const processedValue = shouldEscape ? this.escapeHtml(String(value)) : String(value);
         console.debug(`Processed value: "${processedValue}"`);
-        result = result.replace(match[0], processedValue);
+        result = result.replace(currentMatch[0], processedValue);
         console.debug(`Result after replacement:`, result);
       } catch (error) {
         console.warn(`Template interpolation error for "${expression}":`, error);
-        result = result.replace(match[0], `[Error: ${expression}]`);
+        result = result.replace(currentMatch[0], `[Error: ${expression}]`);
       }
       console.debug(`=== INTERPOLATION DEBUG END ===`);
     }
-
-    // Reset regex for next use
-    interpolationRegex.lastIndex = 0;
     return result;
   }
 
@@ -538,9 +544,13 @@ export class RenderCommand implements CommandImplementation {
   }
 
   private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    // More robust HTML escaping for cross-browser compatibility
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private async executeHyperscriptCommand(command: string, context: ExecutionContext): Promise<any> {

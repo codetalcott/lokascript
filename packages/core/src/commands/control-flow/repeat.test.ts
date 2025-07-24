@@ -464,4 +464,105 @@ describe('Repeat Command', () => {
       expect(output).toBe('Fun Fun Fun Fun Fun ');
     });
   });
+
+  describe('Object Property Iteration (New Official _hyperscript Feature)', () => {
+    it('should iterate over object properties for non-iterable objects', async () => {
+      // Official example: set x to {foo:1, bar:2, baz:3} for prop in x put x[prop] at end of me end
+      const testObject = { foo: 1, bar: 2, baz: 3 };
+      const capturedProps: string[] = [];
+      
+      const mockCommand = vi.fn().mockImplementation((ctx) => {
+        const prop = ctx.locals!.get('prop') as string;
+        capturedProps.push(prop);
+        return Promise.resolve('executed');
+      });
+      
+      await command.execute(context, 'for', 'prop', 'in', testObject, mockCommand);
+      
+      expect(mockCommand).toHaveBeenCalledTimes(3);
+      expect(capturedProps.sort()).toEqual(['bar', 'baz', 'foo']);
+    });
+
+    it('should iterate over object properties with implicit iteration', async () => {
+      const testObject = { alpha: 10, beta: 20 };
+      const capturedProps: string[] = [];
+      
+      const mockCommand = vi.fn().mockImplementation((ctx) => {
+        capturedProps.push(ctx.it as string);
+        return Promise.resolve('executed');
+      });
+      
+      await command.execute(context, 'in', testObject, mockCommand);
+      
+      expect(mockCommand).toHaveBeenCalledTimes(2);
+      expect(capturedProps.sort()).toEqual(['alpha', 'beta']);
+    });
+
+    it('should prioritize Symbol.iterator over object keys', async () => {
+      const iterableObject = {
+        foo: 1,
+        bar: 2,
+        [Symbol.iterator]: function* () {
+          yield 'custom1';
+          yield 'custom2';
+        }
+      };
+      
+      const capturedValues: string[] = [];
+      const mockCommand = vi.fn().mockImplementation((ctx) => {
+        capturedValues.push(ctx.it as string);
+        return Promise.resolve('executed');
+      });
+      
+      await command.execute(context, 'in', iterableObject, mockCommand);
+      
+      expect(mockCommand).toHaveBeenCalledTimes(2);
+      expect(capturedValues).toEqual(['custom1', 'custom2']);
+    });
+
+    it('should handle empty objects gracefully', async () => {
+      const emptyObject = {};
+      const mockCommand = vi.fn().mockResolvedValue('executed');
+      
+      await command.execute(context, 'for', 'prop', 'in', emptyObject, mockCommand);
+      
+      expect(mockCommand).not.toHaveBeenCalled();
+    });
+
+    it('should handle objects with numeric properties', async () => {
+      const numericObject = { 0: 'zero', 1: 'one', 2: 'two' };
+      const capturedProps: string[] = [];
+      
+      const mockCommand = vi.fn().mockImplementation((ctx) => {
+        capturedProps.push(ctx.locals!.get('key') as string);
+        return Promise.resolve('executed');
+      });
+      
+      await command.execute(context, 'for', 'key', 'in', numericObject, mockCommand);
+      
+      expect(mockCommand).toHaveBeenCalledTimes(3);
+      expect(capturedProps.sort()).toEqual(['0', '1', '2']);
+    });
+
+    it('should handle complex objects with mixed property types', async () => {
+      const complexObject = {
+        stringProp: 'value',
+        numberProp: 42,
+        booleanProp: true,
+        objectProp: { nested: true },
+        arrayProp: [1, 2, 3]
+      };
+      
+      const capturedProps: string[] = [];
+      const mockCommand = vi.fn().mockImplementation((ctx) => {
+        capturedProps.push(ctx.it as string);
+        return Promise.resolve('executed');
+      });
+      
+      await command.execute(context, 'in', complexObject, mockCommand);
+      
+      expect(mockCommand).toHaveBeenCalledTimes(5);
+      expect(capturedProps.sort()).toEqual(['arrayProp', 'booleanProp', 'numberProp', 'objectProp', 'stringProp']);
+    });
+  });
 });

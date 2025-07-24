@@ -373,6 +373,9 @@ export class RepeatCommand implements CommandImplementation {
       items = collection.split('');
     } else if (typeof collection[Symbol.iterator] === 'function') {
       items = Array.from(collection);
+    } else if (collection && typeof collection === 'object') {
+      // Support iterating over object properties for non-iterable objects
+      items = Object.keys(collection);
     } else {
       throw new Error(`Collection is not iterable: ${typeof collection}`);
     }

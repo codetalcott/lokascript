@@ -35,6 +35,7 @@ export interface HyperscriptInternals {
 export interface HyperscriptAPI {
   // Core methods
   processNode(element: Element): void;
+  process(element: Element): void; // Alias for processNode for HTMX compatibility
   evaluate(src: string, ctx?: any): Promise<any>;
   parse(src: string): any;
   
@@ -91,6 +92,10 @@ export function createHyperscriptAPI(): HyperscriptAPI {
     processNode(element: Element): void {
       // TODO: Implement DOM node processing
       console.warn('processNode not yet implemented');
+    },
+    process(element: Element): void {
+      // Alias for processNode for HTMX API compatibility
+      return api.processNode(element);
     },
 
     async evaluate(src: string, ctx?: any): Promise<any> {
