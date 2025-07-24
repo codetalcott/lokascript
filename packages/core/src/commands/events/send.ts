@@ -1,191 +1,527 @@
 /**
- * Send Command Implementation
+ * Enhanced Send Command - Deep TypeScript Integration
  * The send command sends an event to the given target. Arguments can optionally be provided
  * in a named argument list and will be passed in the event.detail object.
  * You can alternatively use the equivalent trigger syntax.
- * Generated from LSP data with TDD implementation
+ * Enhanced for LLM code agents with full type safety
  */
 
-import { CommandImplementation, ExecutionContext } from '../../types/core';
+import { z } from 'zod';
+import type { 
+  TypedCommandImplementation,
+  TypedExecutionContext,
+  EvaluationResult,
+  ValidationResult,
+  CommandMetadata,
+  LLMDocumentation,
+} from '../../types/enhanced-core.ts';
 
-export class SendCommand implements CommandImplementation {
-  name = 'send';
-  syntax = 'send <event-name>[(<named arguments>)] [to <expression>]\ntrigger <event-name>[(<named arguments>)] [on <expression>]';
-  description = 'The send command sends an event to the given target. Arguments can optionally be provided in a named argument list and will be passed in the event.detail object.\nYou can alternatively use the equivalent trigger syntax.';
-  isBlocking = false;
-  hasBody = false;
+/**
+ * Input validation schema for LLM understanding
+ */
+const SendCommandInputSchema = z.tuple([
+  z.string().min(1), // Event name (required)
+  z.any().optional(), // Event detail/arguments (optional)
+  z.union([
+    z.literal('to'),
+    z.literal('on')
+  ]).optional(), // Target keyword
+  z.union([
+    z.instanceof(HTMLElement),
+    z.array(z.instanceof(HTMLElement)),
+    z.string(), // CSS selector or context reference
+    z.null(),
+    z.undefined()
+  ]).optional() // Target element(s)
+]).rest(z.any()); // Allow additional arguments
 
-  async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
-    if (args.length === 0) {
-      throw new Error('Send command requires an event name');
-    }
+type SendCommandInput = z.infer<typeof SendCommandInputSchema>;
 
-    const [eventName, ...rest] = args;
-    
-    // Validate event name
-    if (typeof eventName !== 'string') {
-      throw new Error('Event name must be a string');
-    }
-    
-    if (!eventName.trim()) {
-      throw new Error('Event name cannot be empty');
-    }
-    
-    // Validate event name format (no spaces or invalid characters)
-    if (eventName.includes(' ')) {
-      throw new Error('Invalid event name format');
-    }
-    
-    // Parse arguments for event details and target
-    let eventDetail: any = {};
-    let target: any = null;
-    let targetKeyword: string | null = null;
-
-    // Find target keyword position
-    let targetKeywordIndex = -1;
-    for (let i = 0; i < rest.length; i++) {
-      if (rest[i] === 'to' || rest[i] === 'on') {
-        targetKeywordIndex = i;
-        targetKeyword = rest[i];
-        target = rest[i + 1];
-        break;
+/**
+ * Enhanced Send Command with full type safety for LLM agents
+ */
+export class SendCommand implements TypedCommandImplementation<
+  SendCommandInput,
+  CustomEvent,  // Returns the dispatched event
+  TypedExecutionContext
+> {
+  public readonly name = 'send' as const;
+  public readonly syntax = 'send <event-name>[(<named arguments>)] [to <expression>]\ntrigger <event-name>[(<named arguments>)] [on <expression>]';
+  public readonly description = 'Sends custom events to target elements with optional data payload';
+  public readonly inputSchema = SendCommandInputSchema;
+  public readonly outputType = 'event' as const;
+  
+  public readonly metadata: CommandMetadata = {
+    category: 'event-handling',
+    complexity: 'medium',
+    sideEffects: ['event-emission'],
+    examples: [
+      {
+        code: 'send click to <#button/>',
+        description: 'Send click event to button element',
+        expectedOutput: {}
+      },
+      {
+        code: 'send customEvent {data: "test"} to me',
+        description: 'Send custom event with data to current element',
+        expectedOutput: {}
+      },
+      {
+        code: 'trigger dataLoaded on <.components/>',
+        description: 'Trigger dataLoaded event on all component elements',
+        expectedOutput: {}
       }
-    }
+    ],
+    relatedCommands: ['trigger', 'on', 'dispatch']
+  };
 
-    // Parse event detail arguments (everything before the target keyword)
-    const detailArgs = targetKeywordIndex >= 0 ? rest.slice(0, targetKeywordIndex) : rest;
-    
-    for (const arg of detailArgs) {
-      if (arg === null || arg === undefined) {
-        continue; // Skip null/undefined arguments
+  public readonly documentation: LLMDocumentation = {
+    summary: 'Dispatches custom events to HTML elements with optional data payload',
+    parameters: [
+      {
+        name: 'eventName',
+        type: 'string',
+        description: 'Name of the event to dispatch',
+        optional: false,
+        examples: ['click', 'customEvent', 'dataLoaded', 'userAction']
+      },
+      {
+        name: 'eventDetail',
+        type: 'object | any',
+        description: 'Optional data to include in event.detail',
+        optional: true,
+        examples: ['{data: "value"}', '{count: 5}', 'null']
+      },
+      {
+        name: 'targetKeyword',
+        type: '"to" | "on"',
+        description: 'Keyword indicating target specification',
+        optional: true,
+        examples: ['to', 'on']
+      },
+      {
+        name: 'target',
+        type: 'element',
+        description: 'Element(s) to send event to. If omitted, sends to current element (me)',
+        optional: true,
+        examples: ['me', '<#modal/>', '<.buttons/>', 'document']
+      }
+    ],
+    returns: {
+      type: 'event',
+      description: 'The CustomEvent that was dispatched',
+      examples: [{}]
+    },
+    examples: [
+      {
+        title: 'Simple event dispatch',
+        code: 'on click send customEvent to <#target/>',
+        explanation: 'When clicked, sends a customEvent to the target element',
+        output: {}
+      },
+      {
+        title: 'Event with data payload',
+        code: 'send userAction {action: "save", id: 123} to me',
+        explanation: 'Sends userAction event with data to current element',
+        output: {}
+      },
+      {
+        title: 'Trigger syntax alternative',
+        code: 'trigger dataLoaded on <.widgets/>',
+        explanation: 'Alternative trigger syntax - sends dataLoaded to all widgets',
+        output: {}
+      }
+    ],
+    seeAlso: ['trigger', 'on', 'addEventListener', 'dispatchEvent'],
+    tags: ['events', 'custom-events', 'dispatch', 'communication']
+  };
+
+  async execute(
+    context: TypedExecutionContext,
+    ...args: any[]
+  ): Promise<EvaluationResult<CustomEvent>> {
+    try {
+      // Runtime validation for type safety
+      const validationResult = this.validate(args);
+      if (!validationResult.isValid) {
+        return {
+          success: false,
+          error: {
+            name: 'ValidationError',
+            message: validationResult.errors[0]?.message || 'Invalid input',
+            code: 'SEND_VALIDATION_FAILED',
+            suggestions: validationResult.suggestions
+          },
+          type: 'error'
+        };
       }
       
-      if (typeof arg === 'object' && !Array.isArray(arg)) {
-        eventDetail = { ...eventDetail, ...arg };
-      } else if (typeof arg === 'string' && arg.includes(':')) {
-        // Parse name:value pairs
-        const [key, value] = arg.split(':');
-        eventDetail[key] = this.parseValue(value);
+      const [eventName, ...rest] = args;
+      
+      // Parse arguments for event details and target
+      const parseResult = this.parseArguments(rest);
+      if (!parseResult.success) {
+        return {
+          success: false,
+          error: {
+            name: 'SendCommandError',
+            message: parseResult.error || 'Failed to parse arguments',
+            code: 'ARGUMENT_PARSE_FAILED',
+            suggestions: ['Check argument syntax', 'Use proper to/on keyword placement']
+          },
+          type: 'error'
+        };
       }
-      // Skip other types of arguments that aren't event details
-    }
-
-    // Resolve the target element(s)
-    let targetElements: HTMLElement[] = [];
-    
-    if (target) {
-      targetElements = this.resolveTargets(target, context);
-    } else {
-      // Default to current element (me)
-      if (context.me) {
-        targetElements = [context.me];
-      } else {
-        throw new Error('No target element available for event dispatch');
+      
+      const { eventDetail, target } = parseResult;
+      
+      // Resolve target elements
+      const targetResult = await this.resolveTargetElements(target, context);
+      if (!targetResult.success) {
+        return {
+          success: false,
+          error: {
+            name: 'SendCommandError',
+            message: targetResult.error || 'Failed to resolve target elements',
+            code: 'TARGET_RESOLUTION_FAILED',
+            suggestions: ['Check if target elements exist', 'Verify selector syntax']
+          },
+          type: 'error'
+        };
       }
-    }
-
-    // Create and dispatch the event
-    const event = new CustomEvent(eventName, {
-      bubbles: true,
-      cancelable: true,
-      detail: Object.keys(eventDetail).length > 0 ? eventDetail : {}
-    });
-
-    let dispatchedCount = 0;
-    let lastError: Error | null = null;
-    
-    for (const element of targetElements) {
-      try {
-        element.dispatchEvent(event);
-        dispatchedCount++;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`Failed to dispatch event ${eventName} to element:`, error);
+      
+      const targetElements = targetResult.elements;
+      
+      // Create and dispatch the event
+      const eventResult = await this.createAndDispatchEvent(
+        eventName,
+        eventDetail,
+        targetElements,
+        context
+      );
+      
+      if (!eventResult.success) {
+        return {
+          success: false,
+          error: {
+            name: 'SendCommandError',
+            message: eventResult.error || 'Failed to dispatch event',
+            code: 'EVENT_DISPATCH_FAILED',
+            suggestions: ['Check if target elements are valid', 'Verify event name format']
+          },
+          type: 'error'
+        };
       }
+      
+      const event = eventResult.event;
+      
+      // Store result in context
+      context.result = event;
+      
+      return {
+        success: true,
+        value: event,
+        type: 'event'
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'SendCommandError',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          code: 'SEND_EXECUTION_FAILED',
+          suggestions: ['Check event name and arguments', 'Verify target elements exist']
+        },
+        type: 'error'
+      };
     }
-    
-    // If no elements were successfully dispatched to, throw the last error
-    if (dispatchedCount === 0 && lastError) {
-      throw lastError;
-    }
-
-    // Store result in context
-    context.it = event;
-
-    return event;
   }
 
-  validate(args: any[]): string | null {
-    if (args.length === 0) {
-      return 'Send command requires an event name';
-    }
-
-    const [eventName] = args;
-    if (typeof eventName !== 'string') {
-      return 'Event name must be a string';
-    }
-    
-    if (!eventName.trim()) {
-      return 'Event name cannot be empty';
-    }
-
-    // Check for proper keyword usage
-    let toIndex = -1;
-    let onIndex = -1;
-    let hasInvalidKeyword = false;
-    
-    for (let i = 1; i < args.length; i++) {
-      if (args[i] === 'to') {
-        toIndex = i;
-      } else if (args[i] === 'on') {
-        onIndex = i;
-      } else if (typeof args[i] === 'string' && args[i] !== null && 
-                 !['to', 'on'].includes(args[i]) && 
-                 i > 1 && 
-                 (args[i-1] === null || typeof args[i-1] === 'object')) {
-        // Check if this looks like a keyword in the wrong place
-        if (args[i].startsWith('#') || args[i].startsWith('.') || args[i] === 'invalid') {
-          // If we have a target-like string without 'to' or 'on', it's invalid syntax
-          if (toIndex === -1 && onIndex === -1 && i > 1) {
-            hasInvalidKeyword = true;
-          }
+  private parseArguments(args: any[]): {
+    success: boolean;
+    eventDetail?: any;
+    target?: any;
+    error?: string;
+  } {
+    try {
+      let eventDetail: any = {};
+      let target: any = null;
+      
+      // Find target keyword position
+      let targetKeywordIndex = -1;
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === 'to' || args[i] === 'on') {
+          targetKeywordIndex = i;
+          target = args[i + 1];
+          break;
         }
       }
-    }
-
-    // Check for invalid keyword placement
-    if (hasInvalidKeyword && toIndex === -1 && onIndex === -1) {
-      return 'Invalid send syntax. Expected "to" or "on" keyword';
-    }
-
-    // Can't have both 'to' and 'on'
-    if (toIndex !== -1 && onIndex !== -1) {
-      return 'Cannot use both "to" and "on" keywords in the same send command';
-    }
-
-    // If 'to' or 'on' is used, must have a target
-    if (toIndex !== -1 && toIndex === args.length - 1) {
-      return 'Send command requires target after "to"';
-    }
-    if (onIndex !== -1 && onIndex === args.length - 1) {
-      return 'Send command requires target after "on"';
-    }
-
-    // Validate argument types - event detail arguments should be objects or null
-    for (let i = 1; i < args.length; i++) {
-      const arg = args[i];
-      if (arg !== null && arg !== undefined && 
-          args[i] !== 'to' && args[i] !== 'on' &&
-          typeof arg === 'string' && 
-          arg !== 'invalid' && 
-          !arg.startsWith('#') && !arg.startsWith('.') &&
-          i !== toIndex + 1 && i !== onIndex + 1) {
-        // This looks like an invalid argument type
-        return 'Event arguments must be an object or null';
+      
+      // Parse event detail arguments (everything before the target keyword)
+      const detailArgs = targetKeywordIndex >= 0 ? args.slice(0, targetKeywordIndex) : args;
+      
+      for (const arg of detailArgs) {
+        if (arg === null || arg === undefined) {
+          continue; // Skip null/undefined arguments
+        }
+        
+        if (typeof arg === 'object' && !Array.isArray(arg)) {
+          eventDetail = { ...eventDetail, ...arg };
+        } else if (typeof arg === 'string' && arg.includes(':')) {
+          // Parse name:value pairs
+          const [key, value] = arg.split(':');
+          eventDetail[key] = this.parseValue(value);
+        }
+        // Skip other types of arguments that aren't event details
       }
+      
+      return {
+        success: true,
+        eventDetail,
+        target
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to parse arguments'
+      };
     }
+  }
+  
+  private async resolveTargetElements(
+    target: any,
+    context: TypedExecutionContext
+  ): Promise<{
+    success: boolean;
+    elements?: HTMLElement[];
+    error?: string;
+  }> {
+    try {
+      let targetElements: HTMLElement[] = [];
+      
+      if (target) {
+        targetElements = this.resolveTargets(target, context);
+      } else {
+        // Default to current element (me)
+        if (context.me) {
+          targetElements = [context.me];
+        } else {
+          return {
+            success: false,
+            error: 'No target element available for event dispatch'
+          };
+        }
+      }
+      
+      if (targetElements.length === 0) {
+        return {
+          success: false,
+          error: 'No valid target elements found'
+        };
+      }
+      
+      return {
+        success: true,
+        elements: targetElements
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to resolve target elements'
+      };
+    }
+  }
+  
+  private async createAndDispatchEvent(
+    eventName: string,
+    eventDetail: any,
+    targetElements: HTMLElement[],
+    context: TypedExecutionContext
+  ): Promise<{
+    success: boolean;
+    event?: CustomEvent;
+    error?: string;
+  }> {
+    try {
+      // Create the event
+      const event = new CustomEvent(eventName, {
+        bubbles: true,
+        cancelable: true,
+        detail: Object.keys(eventDetail).length > 0 ? eventDetail : {}
+      });
+      
+      let dispatchedCount = 0;
+      const errors: string[] = [];
+      
+      for (const element of targetElements) {
+        try {
+          element.dispatchEvent(event);
+          dispatchedCount++;
+          
+          // Dispatch enhanced send event with rich metadata
+          const sendEvent = new CustomEvent('hyperscript:send', {
+            detail: {
+              element,
+              context,
+              command: this.name,
+              eventName,
+              eventDetail,
+              timestamp: Date.now(),
+              metadata: this.metadata,
+              result: 'success'
+            }
+          });
+          element.dispatchEvent(sendEvent);
+          
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          errors.push(`Failed to dispatch to element: ${errorMsg}`);
+        }
+      }
+      
+      // If no elements were successfully dispatched to, return error
+      if (dispatchedCount === 0) {
+        return {
+          success: false,
+          error: errors.length > 0 ? errors.join(', ') : 'No events were dispatched'
+        };
+      }
+      
+      return {
+        success: true,
+        event
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create or dispatch event'
+      };
+    }
+  }
 
-    return null;
+  validate(args: unknown[]): ValidationResult {
+    try {
+      // Basic argument validation
+      if (args.length === 0) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'missing-argument',
+            message: 'Send command requires an event name',
+            suggestion: 'Provide an event name as the first argument'
+          }],
+          suggestions: ['Use: send "eventName" to target', 'Use: trigger "eventName" on target']
+        };
+      }
+      
+      const [eventName] = args;
+      if (typeof eventName !== 'string') {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'invalid-type',
+            message: 'Event name must be a string',
+            suggestion: 'Use a string for the event name'
+          }],
+          suggestions: ['Use quotes around event name', 'Example: send "click" to element']
+        };
+      }
+      
+      if (!eventName.trim()) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'empty-value',
+            message: 'Event name cannot be empty',
+            suggestion: 'Provide a valid event name'
+          }],
+          suggestions: ['Use meaningful event names like "click", "custom", etc.']
+        };
+      }
+      
+      // Validate event name format
+      if (eventName.includes(' ')) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'invalid-format',
+            message: 'Event name cannot contain spaces',
+            suggestion: 'Use camelCase or kebab-case for event names'
+          }],
+          suggestions: ['Use "customEvent" instead of "custom event"']
+        };
+      }
+      
+      // Check for proper keyword usage
+      let toIndex = -1;
+      let onIndex = -1;
+      
+      for (let i = 1; i < args.length; i++) {
+        if (args[i] === 'to') {
+          toIndex = i;
+        } else if (args[i] === 'on') {
+          onIndex = i;
+        }
+      }
+      
+      // Can't have both 'to' and 'on'
+      if (toIndex !== -1 && onIndex !== -1) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'conflicting-keywords',
+            message: 'Cannot use both "to" and "on" keywords in the same send command',
+            suggestion: 'Use either "to" or "on", not both'
+          }],
+          suggestions: ['Use "send event to target"', 'Use "trigger event on target"']
+        };
+      }
+      
+      // If 'to' or 'on' is used, must have a target
+      if (toIndex !== -1 && toIndex === args.length - 1) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'missing-target',
+            message: 'Send command requires target after "to"',
+            suggestion: 'Specify target element after "to" keyword'
+          }],
+          suggestions: ['Use: send event to <#element/>', 'Use: send event to me']
+        };
+      }
+      if (onIndex !== -1 && onIndex === args.length - 1) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'missing-target',
+            message: 'Send command requires target after "on"',
+            suggestion: 'Specify target element after "on" keyword'
+          }],
+          suggestions: ['Use: trigger event on <#element/>', 'Use: trigger event on me']
+        };
+      }
+      
+      return {
+        isValid: true,
+        errors: [],
+        suggestions: []
+      };
+      
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{
+          type: 'runtime-error',
+          message: 'Validation failed with exception',
+          suggestion: 'Check input types and values'
+        }],
+        suggestions: ['Ensure arguments match expected types']
+      };
+    }
   }
 
   private parseValue(value: string): any {
@@ -214,7 +550,7 @@ export class SendCommand implements CommandImplementation {
     return value;
   }
 
-  private resolveTargets(target: any, context: ExecutionContext): HTMLElement[] {
+  private resolveTargets(target: any, context: TypedExecutionContext): HTMLElement[] {
     // If target is already an element, return it
     if (target instanceof HTMLElement) {
       return [target];
@@ -270,7 +606,7 @@ export class SendCommand implements CommandImplementation {
     throw new Error(`Unable to resolve target: ${target}`);
   }
 
-  private getVariableValue(name: string, context: ExecutionContext): any {
+  private getVariableValue(name: string, context: TypedExecutionContext): any {
     // Check local variables first
     if (context.locals && context.locals.has(name)) {
       return context.locals.get(name);
@@ -279,11 +615,6 @@ export class SendCommand implements CommandImplementation {
     // Check global variables
     if (context.globals && context.globals.has(name)) {
       return context.globals.get(name);
-    }
-
-    // Check general variables
-    if (context.variables && context.variables.has(name)) {
-      return context.variables.get(name);
     }
 
     return undefined;
@@ -336,4 +667,18 @@ export class SendCommand implements CommandImplementation {
   }
 }
 
+// ============================================================================
+// Plugin Export for Tree-Shaking
+// ============================================================================
+
+/**
+ * Plugin factory for modular imports
+ * @llm-bundle-size 6KB
+ * @llm-description Type-safe send command for custom event dispatching with validation
+ */
+export function createSendCommand(): SendCommand {
+  return new SendCommand();
+}
+
+// Default export for convenience
 export default SendCommand;

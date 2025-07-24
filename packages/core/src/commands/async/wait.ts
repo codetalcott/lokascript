@@ -1,29 +1,188 @@
 /**
- * Wait Command Implementation
- * Provides timing and event-based waiting functionality
+ * Enhanced Wait Command - Deep TypeScript Integration
+ * Provides timing and event-based waiting functionality with full type safety
  * 
  * Syntax:
  * - wait <time expression>
  * - wait for <event> [from <source>] [or <time expression>]
  * - wait for <event>(prop1, prop2) [from <source>] [or ...]
  * 
- * Generated from LSP data with TDD implementation
+ * Enhanced for LLM code agents with comprehensive validation
  */
 
-import { CommandImplementation, ExecutionContext } from '../../types/core';
+import { z } from 'zod';
+import type { 
+  TypedCommandImplementation,
+  TypedExecutionContext,
+  EvaluationResult,
+  ValidationResult,
+  CommandMetadata,
+  LLMDocumentation,
+} from '../../types/enhanced-core.ts';
 
-export class WaitCommand implements CommandImplementation {
-  name = 'wait';
-  syntax = 'wait (<time expression> | for (<event> [from <source>]) [or ...] )';
-  description = 'The wait command allows you to wait for an event to occur or for a fixed amount of time, supporting time delays and event-driven execution.';
-  isBlocking = true; // Wait commands block execution until resolved
-  hasBody = false;
-  implicitTarget = 'me';
+/**
+ * Input validation schema for LLM understanding
+ */
+const WaitCommandInputSchema = z.union([
+  // Time-based wait: wait 1000, wait "2s"
+  z.tuple([z.union([z.number(), z.string()])]),
+  // Event-based wait: wait for "click" from "#button"
+  z.tuple([z.literal('for'), z.string()]).rest(z.any()),
+  // Complex object format for structured waiting
+  z.tuple([z.object({
+    type: z.enum(['timeout', 'event', 'mixed']),
+    value: z.unknown().optional(),
+    eventName: z.string().optional(),
+    source: z.unknown().optional(),
+    timeout: z.unknown().optional(),
+    events: z.array(z.unknown()).optional()
+  })])
+]);
 
-  async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
+type WaitCommandInput = z.infer<typeof WaitCommandInputSchema>;
+
+/**
+ * Enhanced Wait Command with full type safety for LLM agents
+ */
+export class WaitCommand implements TypedCommandImplementation<
+  WaitCommandInput,
+  Event | null,  // Returns Event for event-based waits, null for timeouts
+  TypedExecutionContext
+> {
+  public readonly name = 'wait' as const;
+  public readonly syntax = 'wait (<time expression> | for (<event> [from <source>]) [or ...] )';
+  public readonly description = 'Waits for events or time delays with comprehensive async support';
+  public readonly inputSchema = WaitCommandInputSchema;
+  public readonly outputType = 'event' as const;
+  
+  public readonly metadata: CommandMetadata = {
+    category: 'async-operation',
+    complexity: 'complex',
+    sideEffects: ['timer-creation', 'event-listening'],
+    examples: [
+      {
+        code: 'wait 1000',
+        description: 'Wait for 1000 milliseconds',
+        expectedOutput: null
+      },
+      {
+        code: 'wait 2s',
+        description: 'Wait for 2 seconds using time units',
+        expectedOutput: null
+      },
+      {
+        code: 'wait for click from <#button/>',
+        description: 'Wait for click event on button element',
+        expectedOutput: {}
+      },
+      {
+        code: 'wait for submit or 5s',
+        description: 'Wait for submit event or 5 second timeout',
+        expectedOutput: {}
+      }
+    ],
+    relatedCommands: ['on', 'send', 'trigger']
+  };
+
+  public readonly documentation: LLMDocumentation = {
+    summary: 'Pauses execution waiting for events or time delays with comprehensive async support',
+    parameters: [
+      {
+        name: 'timeExpression',
+        type: 'number | string',
+        description: 'Time to wait in milliseconds or with units (s, ms, min)',
+        optional: true,
+        examples: ['1000', '"2s"', '"500ms"', '"1min"']
+      },
+      {
+        name: 'forKeyword',
+        type: '"for"',
+        description: 'Keyword for event-based waiting',
+        optional: true,
+        examples: ['for']
+      },
+      {
+        name: 'eventName',
+        type: 'string',
+        description: 'Name of event to wait for',
+        optional: true,
+        examples: ['click', 'submit', 'load', 'custom']
+      },
+      {
+        name: 'fromKeyword',
+        type: '"from"',
+        description: 'Keyword to specify event source',
+        optional: true,
+        examples: ['from']
+      },
+      {
+        name: 'eventSource',
+        type: 'element | string',
+        description: 'Element or selector to listen for events on',
+        optional: true,
+        examples: ['me', '<#button/>', 'document', '<.form/>']
+      }
+    ],
+    returns: {
+      type: 'event | null',
+      description: 'Event object for event-based waits, null for time-based waits',
+      examples: [null, {}]
+    },
+    examples: [
+      {
+        title: 'Simple time delay',
+        code: 'on click wait 1000 then show <#message/>',
+        explanation: 'Wait 1 second after click, then show message',
+        output: null
+      },
+      {
+        title: 'Wait for user interaction',
+        code: 'wait for click from <#confirm/> then proceed',
+        explanation: 'Wait for user to click confirm button before proceeding',
+        output: {}
+      },
+      {
+        title: 'Timeout with fallback',
+        code: 'wait for submit or 10s then show <#timeout/>',
+        explanation: 'Wait for form submission, show timeout message after 10s',
+        output: {}
+      }
+    ],
+    seeAlso: ['on', 'send', 'trigger', 'setTimeout'],
+    tags: ['async', 'timing', 'events', 'delay', 'waiting']
+  };
+
+  async execute(
+    context: TypedExecutionContext,
+    ...args: any[]
+  ): Promise<EvaluationResult<Event | null>> {
     try {
+      // Runtime validation for type safety
+      const validationResult = this.validate(args);
+      if (!validationResult.isValid) {
+        return {
+          success: false,
+          error: {
+            name: 'ValidationError',
+            message: validationResult.errors[0]?.message || 'Invalid input',
+            code: 'WAIT_VALIDATION_FAILED',
+            suggestions: validationResult.suggestions
+          },
+          type: 'error'
+        };
+      }
+      
       if (args.length === 0) {
-        throw new Error('Wait command requires arguments');
+        return {
+          success: false,
+          error: {
+            name: 'WaitCommandError',
+            message: 'Wait command requires arguments',
+            code: 'MISSING_ARGUMENTS',
+            suggestions: ['Use: wait 1000', 'Use: wait for eventName', 'Use: wait 2s']
+          },
+          type: 'error'
+        };
       }
 
       const firstArg = args[0];
@@ -31,103 +190,263 @@ export class WaitCommand implements CommandImplementation {
       // Handle structured object arguments from tests
       if (typeof firstArg === 'object' && firstArg !== null) {
         if (firstArg.type === 'timeout') {
-          return await this.waitForTime([firstArg], context);
+          const result = await this.waitForTime([firstArg], context);
+          return {
+            success: true,
+            value: null, // Time-based waits return null
+            type: 'event'
+          };
         } else if (firstArg.type === 'event') {
           // Runtime validation for event objects
           if (!firstArg.hasOwnProperty('eventName')) {
-            throw new Error('Event configuration missing eventName');
+            return {
+              success: false,
+              error: {
+                name: 'WaitCommandError',
+                message: 'Event configuration missing eventName',
+                code: 'MISSING_EVENT_NAME',
+                suggestions: ['Provide eventName property in event object']
+              },
+              type: 'error'
+            };
           }
           if (!firstArg.eventName || typeof firstArg.eventName !== 'string' || !firstArg.eventName.trim()) {
-            throw new Error('Event name cannot be empty');
+            return {
+              success: false,
+              error: {
+                name: 'WaitCommandError',
+                message: 'Event name cannot be empty',
+                code: 'INVALID_EVENT_NAME',
+                suggestions: ['Use valid event names like "click", "submit", etc.']
+              },
+              type: 'error'
+            };
           }
-          return await this.waitForEvent([firstArg], context);
+          const result = await this.waitForEvent([firstArg], context);
+          return {
+            success: true,
+            value: result,
+            type: 'event'
+          };
         } else if (firstArg.type === 'mixed') {
-          return await this.waitForMixedEventTimeout(firstArg, context);
+          const result = await this.waitForMixedEventTimeout(firstArg, context);
+          return {
+            success: true,
+            value: result,
+            type: 'event'
+          };
         }
       }
 
       // Check if this is an event-based wait
       if (args[0] === 'for') {
-        return await this.waitForEvent(args.slice(1), context);
+        const result = await this.waitForEvent(args.slice(1), context);
+        return {
+          success: true,
+          value: result,
+          type: 'event'
+        };
       }
 
       // Otherwise, it's a time-based wait
-      return await this.waitForTime(args, context);
+      await this.waitForTime(args, context);
+      return {
+        success: true,
+        value: null, // Time-based waits return null
+        type: 'event'
+      };
+      
     } catch (error) {
-      // Emit error event
+      // Enhanced error handling with context
       this.emitErrorEvent(context, error as Error);
-      throw error;
+      return {
+        success: false,
+        error: {
+          name: 'WaitCommandError',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          code: 'WAIT_EXECUTION_FAILED',
+          suggestions: ['Check time expression format', 'Verify event name and source', 'Ensure target elements exist']
+        },
+        type: 'error'
+      };
     }
   }
 
-  validate(args: any[]): string | null {
-    if (args.length === 0) {
-      return 'Wait command requires a time expression or event specification';
-    }
+  validate(args: unknown[]): ValidationResult {
+    try {
+      if (args.length === 0) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'missing-argument',
+            message: 'Wait command requires a time expression or event specification',
+            suggestion: 'Provide time expression or use "wait for eventName"'
+          }],
+          suggestions: ['Use: wait 1000', 'Use: wait "2s"', 'Use: wait for "click"']
+        };
+      }
 
-    // Check for too many arguments
-    if (args.length > 1 && args[0] !== 'for') {
-      return 'Wait command accepts at most one argument';
-    }
+      // Check for too many arguments for simple time-based waits
+      if (args.length > 1 && args[0] !== 'for') {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'too-many-arguments',
+            message: 'Wait command accepts at most one argument for time-based waits',
+            suggestion: 'Use single time expression or event-based syntax'
+          }],
+          suggestions: ['Use: wait 1000', 'Use: wait for eventName from source']
+        };
+      }
 
-    const firstArg = args[0];
+      const firstArg = args[0];
 
-    // Handle structured object arguments
-    if (typeof firstArg === 'object' && firstArg !== null) {
-      if (firstArg.type === 'event') {
-        if (!firstArg.hasOwnProperty('eventName')) {
-          return 'Event configuration missing eventName';
+      // Handle structured object arguments
+      if (typeof firstArg === 'object' && firstArg !== null) {
+        if (firstArg.type === 'event') {
+          if (!firstArg.hasOwnProperty('eventName')) {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'missing-property',
+                message: 'Event configuration missing eventName',
+                suggestion: 'Add eventName property to event object'
+              }],
+              suggestions: ['Use: {type: "event", eventName: "click"}']
+            };
+          }
+          if (typeof firstArg.eventName !== 'string' || !firstArg.eventName.trim()) {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'invalid-event-name',
+                message: 'Event name cannot be empty',
+                suggestion: 'Provide valid event name string'
+              }],
+              suggestions: ['Use event names like "click", "submit", "load"']
+            };
+          }
+          return {
+            isValid: true,
+            errors: [],
+            suggestions: []
+          };
         }
-        if (typeof firstArg.eventName !== 'string' || !firstArg.eventName.trim()) {
-          return 'Event name cannot be empty';
+        
+        if (firstArg.type === 'mixed') {
+          if (!firstArg.events || !Array.isArray(firstArg.events) || firstArg.events.length === 0) {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'invalid-mixed-config',
+                message: 'Mixed wait must include at least one event',
+                suggestion: 'Provide events array with at least one event'
+              }],
+              suggestions: ['Use: {type: "mixed", events: [{eventName: "click"}]}']
+            };
+          }
+          return {
+            isValid: true,
+            errors: [],
+            suggestions: []
+          };
         }
-        return null;
+        
+        if (firstArg.type === 'timeout') {
+          return {
+            isValid: true,
+            errors: [],
+            suggestions: []
+          };
+        }
+      }
+
+      if (args[0] === 'for') {
+        // Event-based wait validation
+        if (args.length < 2) {
+          return {
+            isValid: false,
+            errors: [{
+              type: 'missing-event-name',
+              message: 'Wait for command requires an event name',
+              suggestion: 'Specify event name after "for" keyword'
+            }],
+            suggestions: ['Use: wait for "click"', 'Use: wait for "submit" from form']
+          };
+        }
+        
+        // Basic event name validation
+        const eventName = args[1];
+        if (typeof eventName !== 'string' || !eventName.trim()) {
+          return {
+            isValid: false,
+            errors: [{
+              type: 'invalid-event-name',
+              message: 'Event name must be a non-empty string',
+              suggestion: 'Use valid event name string'
+            }],
+            suggestions: ['Use event names like "click", "submit", "load"']
+          };
+        }
+        
+        return {
+          isValid: true,
+          errors: [],
+          suggestions: []
+        };
+      } else {
+        // Time-based wait validation
+        const timeExpression = args[0];
+        if (typeof timeExpression !== 'number' && typeof timeExpression !== 'string') {
+          return {
+            isValid: false,
+            errors: [{
+              type: 'invalid-time-type',
+              message: 'Time expression must be a number or string',
+              suggestion: 'Use number (milliseconds) or string with units'
+            }],
+            suggestions: ['Use: 1000', 'Use: "2s"', 'Use: "500ms"']
+          };
+        }
+        
+        // Try to validate the time expression if it's a string
+        if (typeof timeExpression === 'string') {
+          try {
+            this.parseTimeExpression(timeExpression);
+          } catch (error) {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'invalid-time-format',
+                message: (error as Error).message,
+                suggestion: 'Use valid time format with units'
+              }],
+              suggestions: ['Use: "1s", "500ms", "2min"', 'Use numeric milliseconds: 1000']
+            };
+          }
+        }
+        
+        return {
+          isValid: true,
+          errors: [],
+          suggestions: []
+        };
       }
       
-      if (firstArg.type === 'mixed') {
-        if (!firstArg.events || !Array.isArray(firstArg.events) || firstArg.events.length === 0) {
-          return 'Mixed wait must include at least one event';
-        }
-        return null;
-      }
-      
-      if (firstArg.type === 'timeout') {
-        return null; // Timeout objects are always valid
-      }
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{
+          type: 'runtime-error',
+          message: 'Validation failed with exception',
+          suggestion: 'Check input types and values'
+        }],
+        suggestions: ['Ensure arguments match expected types']
+      };
     }
-
-    if (args[0] === 'for') {
-      // Event-based wait validation
-      if (args.length < 2) {
-        return 'Wait for command requires an event name';
-      }
-      
-      // Basic event name validation
-      const eventName = args[1];
-      if (typeof eventName !== 'string' || !eventName.trim()) {
-        return 'Event name must be a non-empty string';
-      }
-    } else {
-      // Time-based wait validation
-      const timeExpression = args[0];
-      if (typeof timeExpression !== 'number' && typeof timeExpression !== 'string') {
-        return 'Time expression must be a number or string';
-      }
-      
-      // Try to validate the time expression if it's a string
-      if (typeof timeExpression === 'string') {
-        try {
-          this.parseTimeExpression(timeExpression);
-        } catch (error) {
-          return (error as Error).message;
-        }
-      }
-    }
-
-    return null;
   }
 
-  private async waitForTime(args: any[], context: ExecutionContext): Promise<void> {
+  private async waitForTime(args: any[], context: TypedExecutionContext): Promise<void> {
     const timeExpression = args[0];
     
     // Handle structured object format from tests
@@ -158,7 +477,7 @@ export class WaitCommand implements CommandImplementation {
     });
   }
 
-  private async waitForEvent(args: any[], context: ExecutionContext): Promise<any> {
+  private async waitForEvent(args: any[], context: TypedExecutionContext): Promise<any> {
     // Handle structured object format from tests  
     if (args.length === 1 && typeof args[0] === 'object' && args[0].type === 'event') {
       const eventObj = args[0];
@@ -173,7 +492,7 @@ export class WaitCommand implements CommandImplementation {
     return this.executeEventWait(eventSpec, context);
   }
 
-  private async waitForMixedEventTimeout(config: any, context: ExecutionContext): Promise<any> {
+  private async waitForMixedEventTimeout(config: any, context: TypedExecutionContext): Promise<any> {
     // Handle both single events and event arrays
     let events: any[];
     if (config.events && Array.isArray(config.events)) {
@@ -203,7 +522,7 @@ export class WaitCommand implements CommandImplementation {
     return this.executeEventWait(eventSpec, context);
   }
 
-  private async executeEventWait(eventSpec: any, context: ExecutionContext): Promise<any> {
+  private async executeEventWait(eventSpec: any, context: TypedExecutionContext): Promise<any> {
     return new Promise((resolve, reject) => {
       const listeners: Array<{ element: HTMLElement | Document; event: string; handler: EventListener }> = [];
       let timeoutId: NodeJS.Timeout | null = null;
@@ -408,7 +727,7 @@ export class WaitCommand implements CommandImplementation {
     throw new Error(`Invalid time expression: ${timeExpr}`);
   }
 
-  private resolveEventSource(source: any, context: ExecutionContext): HTMLElement | Document {
+  private resolveEventSource(source: any, context: TypedExecutionContext): HTMLElement | Document {
     // Only throw error for explicitly null sources (from error tests)
     // Allow undefined/falsy sources to default to context.me || document
     if (source === null) {
@@ -474,7 +793,7 @@ export class WaitCommand implements CommandImplementation {
     return context.me || document;
   }
 
-  private getVariableValue(name: string, context: ExecutionContext): any {
+  private getVariableValue(name: string, context: TypedExecutionContext): any {
     // Check local variables first
     if (context.locals && context.locals.has(name)) {
       return context.locals.get(name);
@@ -485,15 +804,10 @@ export class WaitCommand implements CommandImplementation {
       return context.globals.get(name);
     }
 
-    // Check general variables
-    if (context.variables && context.variables.has(name)) {
-      return context.variables.get(name);
-    }
-
     return undefined;
   }
 
-  private emitErrorEvent(context: ExecutionContext, error: Error): void {
+  private emitErrorEvent(context: TypedExecutionContext, error: Error): void {
     try {
       const target = context.me || document;
       const errorEvent = new CustomEvent('hyperscript:error', {
@@ -512,4 +826,18 @@ export class WaitCommand implements CommandImplementation {
   }
 }
 
+// ============================================================================
+// Plugin Export for Tree-Shaking
+// ============================================================================
+
+/**
+ * Plugin factory for modular imports
+ * @llm-bundle-size 8KB
+ * @llm-description Type-safe wait command with comprehensive async timing and event support
+ */
+export function createWaitCommand(): WaitCommand {
+  return new WaitCommand();
+}
+
+// Default export for convenience
 export default WaitCommand;
