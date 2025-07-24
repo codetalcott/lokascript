@@ -68,7 +68,7 @@
     "tsx": "^4.0.0",
     "typescript": "^5.8.3",
     "vitest": "^1.0.0",
-    "zod": "^3.22.0"
+    "zod": "^3.25.76"
   },
   "keywords": [
     "hyperscript",

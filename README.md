@@ -1,15 +1,15 @@
 # HyperFixi Monorepo
 
-🚀 **Production-ready hyperscript implementation with 400+ tests**
+🚀 **Production-ready hyperscript implementation with 440+ tests**
 
 A modern, comprehensive hyperscript implementation with **complete feature system**,
-advanced expressions, and 100% _hyperscript feature compatibility. Built for production use.
+**Tailwind CSS extension**, and 100% _hyperscript compatibility. Built for production use.
 
 ## Packages
 
 | Package                              | Description                       | Bundle Size | Status            |
 | ------------------------------------ | --------------------------------- | ----------- | ----------------- |
-| [`@hyperfixi/core`](./packages/core) | Full hyperscript implementation | ~12KB       | ✅ 400+ Tests, 9/9 Features |
+| [`@hyperfixi/core`](./packages/core) | Full hyperscript implementation | ~12KB       | ✅ 440+ Tests, 9/9 Features + Extensions |
 | [`@hyperfixi/fixi`](./packages/fixi) | Utility functions & helpers       | ~8KB        | 🚧 In Development |
 | [`hyperfixi`](./packages/integrated) | Complete solution (core + fixi)   | ~20KB       | 🚧 In Development |
 
@@ -94,10 +94,11 @@ context.variables?.set("date", dateUtils);
 
 ### 🧪 Thoroughly Tested
 
-- **400+ internal tests** with 100% pass rate (our implementation)
+- **440+ internal tests** with 100% pass rate (our implementation)
 - Complete hyperscript AST parser (56/56 tests passing)
 - Expression evaluation system (388/388 tests passing)
-- **All 9 official _hyperscript features** implemented and tested  
+- **All 9 official _hyperscript features** implemented and tested
+- **Tailwind CSS extension** with 3 hide/show strategies (37+ tests)  
 - Command implementations with comprehensive coverage
 - Performance regression testing
 - **Official compatibility**: 81 official _hyperscript test files (hundreds of test cases)
@@ -128,6 +129,7 @@ context.variables?.set("date", dateUtils);
     ├── runtime/    - Expression evaluator, context management  
     ├── commands/   - DOM manipulation (hide, show, add, remove)
     ├── features/   - All 9 official features (behavior, def, js, set, etc.)
+    ├── extensions/ - Plugin system (Tailwind CSS extension)
     └── api/        - Public API and type definitions
 
 @hyperfixi/fixi     - Utility functions (depends on core)

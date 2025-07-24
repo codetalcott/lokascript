@@ -6,6 +6,7 @@
 import { evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart, type HyperScriptContext } from './eval-hyperscript.js';
 import { hyperscript } from '../api/hyperscript-api.js';
 import { defaultAttributeProcessor } from '../dom/attribute-processor.js';
+import { tailwindExtension } from '../extensions/tailwind.js';
 
 // Export to global scope for browser testing
 declare global {
@@ -14,6 +15,7 @@ declare global {
       evalHyperScript: typeof evalHyperScript;
       evalHyperScriptAsync: typeof evalHyperScriptAsync;
       evalHyperScriptSmart: typeof evalHyperScriptSmart;
+      tailwindExtension: typeof tailwindExtension;
     };
   }
 }
@@ -33,7 +35,10 @@ const hyperfixi = {
   run: hyperscript.run,
   createContext: hyperscript.createContext,
   
-  // Version info
+  // Extensions
+  tailwindExtension,
+  
+  // Version info  
   version: '1.0.0-compatibility'
 };
 

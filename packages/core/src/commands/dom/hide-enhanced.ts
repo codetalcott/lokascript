@@ -1,24 +1,24 @@
 /**
- * Enhanced Hide Command - Deep TypeScript Integration
- * Hides elements by setting display: none or adding CSS classes
- * Enhanced for LLM code agents with full type safety
+ * Enhanced Hide Command - Deep TypeScript Integration Example
+ * Demonstrates LLM-friendly typing with runtime validation
  */
 
 import { z } from 'zod';
-import type { 
+import { 
   TypedCommandImplementation,
   TypedExecutionContext,
+  HyperScriptValue,
   EvaluationResult,
   ValidationResult,
   CommandMetadata,
-  LLMDocumentation,
-} from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.ts';
+  HyperScriptValueSchema,
+  TypeChecker,
+  LLMDocumentation
+} from '../../types/enhanced-core';
 
-export interface HideCommandOptions {
-  useClass?: boolean;
-  className?: string;
-}
+// ============================================================================
+// Enhanced Type-Safe Hide Command
+// ============================================================================
 
 /**
  * Input validation schema for LLM understanding
@@ -38,18 +38,22 @@ type HideCommandInput = z.infer<typeof HideCommandInputSchema>;
 /**
  * Enhanced Hide Command with full type safety for LLM agents
  */
-export class HideCommand implements TypedCommandImplementation<
+export class EnhancedHideCommand implements TypedCommandImplementation<
   HideCommandInput,
   HTMLElement[],  // Returns list of hidden elements
   TypedExecutionContext
 > {
-  public readonly name = 'hide' as const;
-  public readonly syntax = 'hide [<target-expression>]';
-  public readonly description = 'Hides one or more elements by setting display: none or adding CSS classes';
-  public readonly inputSchema = HideCommandInputSchema;
-  public readonly outputType = 'element-list' as const;
+  // ============================================================================
+  // LLM-Friendly Metadata
+  // ============================================================================
+  
+  readonly name = 'hide' as const;
+  readonly syntax = 'hide [<target-expression>]';
+  readonly description = 'Hides one or more elements by setting display: none or adding CSS classes';
+  readonly inputSchema = HideCommandInputSchema;
+  readonly outputType = 'element-list' as const;
 
-  public readonly metadata: CommandMetadata = {
+  readonly metadata: CommandMetadata = {
     category: 'dom-manipulation',
     complexity: 'simple',
     sideEffects: ['dom-mutation'],
@@ -57,7 +61,7 @@ export class HideCommand implements TypedCommandImplementation<
       {
         code: 'hide me',
         description: 'Hide the current element',
-        expectedOutput: []
+        expectedOutput: []  // Returns array of hidden elements
       },
       {
         code: 'hide <.modal/>',
@@ -68,7 +72,7 @@ export class HideCommand implements TypedCommandImplementation<
     relatedCommands: ['show', 'toggle']
   };
 
-  public readonly documentation: LLMDocumentation = {
+  readonly documentation: LLMDocumentation = {
     summary: 'Hides HTML elements from view using CSS display property or classes',
     parameters: [
       {
@@ -82,7 +86,7 @@ export class HideCommand implements TypedCommandImplementation<
     returns: {
       type: 'element-list',
       description: 'Array of elements that were hidden',
-      examples: [[]]
+      examples: [[]]  // Array of HTMLElements
     },
     examples: [
       {
@@ -101,23 +105,17 @@ export class HideCommand implements TypedCommandImplementation<
     seeAlso: ['show', 'toggle', 'add-class'],
     tags: ['dom', 'visibility', 'css']
   };
-  
-  private options: HideCommandOptions;
 
-  constructor(options: HideCommandOptions = {}) {
-    this.options = {
-      useClass: false,
-      className: 'hyperscript-hidden',
-      ...options,
-    };
-  }
+  // ============================================================================
+  // Type-Safe Execution with Runtime Validation
+  // ============================================================================
 
   async execute(
     context: TypedExecutionContext,
     target?: HideCommandInput[0]
   ): Promise<EvaluationResult<HTMLElement[]>> {
     try {
-      // Runtime validation for type safety
+      // Runtime input validation for safety
       const validationResult = this.validate([target]);
       if (!validationResult.isValid) {
         return {
@@ -132,14 +130,14 @@ export class HideCommand implements TypedCommandImplementation<
         };
       }
 
-      // Type-safe target resolution
-      const elements = this.resolveTargets(context, target);
+      // Resolve target elements with type safety
+      const elements = await this.resolveTargets(context, target);
       
-      // Process elements with enhanced error handling
+      // Type-safe element hiding
       const hiddenElements: HTMLElement[] = [];
       
       for (const element of elements) {
-        const hideResult = this.hideElement(element, context);
+        const hideResult = await this.hideElement(element);
         if (hideResult.success) {
           hiddenElements.push(element);
         }
@@ -165,92 +163,9 @@ export class HideCommand implements TypedCommandImplementation<
     }
   }
 
-  private resolveTargets(
-    context: TypedExecutionContext,
-    target?: HideCommandInput[0]
-  ): HTMLElement[] {
-    // Default to context.me if no target specified
-    if (target === undefined || target === null) {
-      return context.me ? [context.me] : [];
-    }
-
-    // Handle HTMLElement directly
-    if (target instanceof HTMLElement) {
-      return [target];
-    }
-
-    // Handle HTMLElement array
-    if (Array.isArray(target)) {
-      return target.filter((el): el is HTMLElement => el instanceof HTMLElement);
-    }
-
-    // Handle CSS selector string
-    if (typeof target === 'string') {
-      try {
-        const elements = document.querySelectorAll(target);
-        return Array.from(elements) as HTMLElement[];
-      } catch (_error) {
-        throw new Error(`Invalid CSS selector: "${target}"`);
-      }
-    }
-
-    return [];
-  }
-
-  private hideElement(element: HTMLElement, context: TypedExecutionContext): EvaluationResult<HTMLElement> {
-    try {
-      if (this.options.useClass) {
-        this.hideWithClass(element);
-      } else {
-        this.hideWithDisplay(element);
-      }
-
-      // Dispatch enhanced hide event with rich metadata
-      dispatchCustomEvent(element, 'hyperscript:hidden', {
-        element,
-        context,
-        command: this.name,
-        timestamp: Date.now(),
-        metadata: this.metadata,
-        result: 'success'
-      });
-
-      return {
-        success: true,
-        value: element,
-        type: 'element'
-      };
-
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          name: 'HideElementError',
-          message: error instanceof Error ? error.message : 'Failed to hide element',
-          code: 'ELEMENT_HIDE_FAILED',
-          suggestions: ['Check if element is still in DOM', 'Verify element is not null']
-        },
-        type: 'error'
-      };
-    }
-  }
-
-  private hideWithDisplay(element: HTMLElement): void {
-    // Preserve original display value if not already stored
-    if (!element.dataset.originalDisplay) {
-      const currentDisplay = element.style.display;
-      element.dataset.originalDisplay = currentDisplay === 'none' ? '' : currentDisplay;
-    }
-
-    // Hide the element
-    element.style.display = 'none';
-  }
-
-  private hideWithClass(element: HTMLElement): void {
-    if (this.options.className) {
-      element.classList.add(this.options.className);
-    }
-  }
+  // ============================================================================
+  // Enhanced Validation for LLM Static Analysis
+  // ============================================================================
 
   validate(args: unknown[]): ValidationResult {
     try {
@@ -303,7 +218,85 @@ export class HideCommand implements TypedCommandImplementation<
     }
   }
 
-  private getValidationSuggestion(errorCode: string, _path: (string | number)[]): string {
+  // ============================================================================
+  // Type-Safe Helper Methods
+  // ============================================================================
+
+  private async resolveTargets(
+    context: TypedExecutionContext,
+    target?: HideCommandInput[0]
+  ): Promise<HTMLElement[]> {
+    // Default to context.me if no target specified
+    if (target === undefined || target === null) {
+      return context.me ? [context.me] : [];
+    }
+
+    // Handle HTMLElement directly
+    if (target instanceof HTMLElement) {
+      return [target];
+    }
+
+    // Handle HTMLElement array
+    if (Array.isArray(target)) {
+      return target.filter((el): el is HTMLElement => el instanceof HTMLElement);
+    }
+
+    // Handle CSS selector string
+    if (typeof target === 'string') {
+      try {
+        const elements = document.querySelectorAll(target);
+        return Array.from(elements) as HTMLElement[];
+      } catch (error) {
+        throw new Error(`Invalid CSS selector: "${target}"`);
+      }
+    }
+
+    return [];
+  }
+
+  private async hideElement(element: HTMLElement): Promise<EvaluationResult<HTMLElement>> {
+    try {
+      // Store original display value for show command
+      if (!element.dataset.originalDisplay) {
+        const computedStyle = window.getComputedStyle(element);
+        element.dataset.originalDisplay = computedStyle.display === 'none' 
+          ? 'block' 
+          : computedStyle.display;
+      }
+
+      // Hide the element
+      element.style.display = 'none';
+
+      // Dispatch custom event for other systems
+      element.dispatchEvent(new CustomEvent('hyperscript:hidden', {
+        detail: { command: 'hide', timestamp: Date.now() }
+      }));
+
+      return {
+        success: true,
+        value: element,
+        type: 'element'
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'HideElementError',
+          message: error instanceof Error ? error.message : 'Failed to hide element',
+          code: 'ELEMENT_HIDE_FAILED',
+          suggestions: ['Check if element is still in DOM', 'Verify element is not null']
+        },
+        type: 'error'
+      };
+    }
+  }
+
+  // ============================================================================
+  // LLM Helper Methods
+  // ============================================================================
+
+  private getValidationSuggestion(errorCode: string, path: (string | number)[]): string {
     const suggestions: Record<string, string> = {
       'invalid_type': 'Use HTMLElement, string (CSS selector), or omit argument',
       'invalid_union': 'Target must be an element, CSS selector, or null',
@@ -332,9 +325,9 @@ export class HideCommand implements TypedCommandImplementation<
  * @llm-bundle-size 2KB
  * @llm-description Type-safe hide command with validation
  */
-export function createHideCommand(options?: HideCommandOptions): HideCommand {
-  return new HideCommand(options);
+export function createHideCommand(): EnhancedHideCommand {
+  return new EnhancedHideCommand();
 }
 
 // Default export for convenience
-export default HideCommand;
+export default EnhancedHideCommand;

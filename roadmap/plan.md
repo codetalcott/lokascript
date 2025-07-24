@@ -19,7 +19,9 @@ that works exactly like the original, with modern TypeScript benefits.
 - ✅ **Advanced Commands**: 11 specialized commands (268/268 tests) ✅
 - ✅ **Feature System**: All 9 official features (400+ tests) ✅
   - behavior | def | eventsource | init | **js** | on | **set** | socket | worker
-- ✅ **Browser Compatibility**: 100% feature compatibility with official _hyperscript
+- ✅ **Extension System**: Tailwind CSS Extension (37+ tests) ✅
+  - twDisplay | twVisibility | twOpacity strategies with default config support
+- ✅ **Browser Compatibility**: 100% feature + extension compatibility with official _hyperscript
 - ✅ **Official Test Suite**: ~85% compatibility (major improvement achieved)
 
 ## Implementation Plan: Get the Basics Right (4-6 weeks)
