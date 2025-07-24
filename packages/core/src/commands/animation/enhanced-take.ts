@@ -6,8 +6,6 @@
 
 import { z } from 'zod';
 import type { 
-  CommandImplementation, 
-  ExecutionContext,
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -47,21 +45,16 @@ const TakeCommandInputSchema = z.tuple([
 type TakeCommandInput = z.infer<typeof TakeCommandInputSchema>;
 
 /**
- * Enhanced Take Command with dual interface support for backward compatibility
+ * Enhanced Take Command with full type safety for LLM agents
  */
-export class TakeCommand implements CommandImplementation, TypedCommandImplementation<
+export class EnhancedTakeCommand implements TypedCommandImplementation<
   TakeCommandInput,
   HTMLElement,  // Returns the target element that received the property
   TypedExecutionContext
 > {
-  // Legacy CommandImplementation interface
-  name = 'take';
-  syntax = 'take <property> from <source> [and put it on <target>]';
-  description = 'Moves classes, attributes, and properties from one element to another with validation';
-  isBlocking = false;
-  hasBody = false;
-  
-  // Enhanced TypedCommandImplementation interface
+  public readonly name = 'take' as const;
+  public readonly syntax = 'take <property> from <source> [and put it on <target>]';
+  public readonly description = 'Moves classes, attributes, and properties from one element to another with validation';
   public readonly inputSchema = TakeCommandInputSchema;
   public readonly outputType = 'element' as const;
 
@@ -78,6 +71,11 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
       {
         code: 'take @data-value from <.source/> and put it on <#target/>',
         description: 'Move data attribute from source to target element',
+        expectedOutput: 'HTMLElement'
+      },
+      {
+        code: 'take title from <#old-button/>',
+        description: 'Take title attribute from old button (put on current element)',
         expectedOutput: 'HTMLElement'
       }
     ],
@@ -126,6 +124,18 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         code: 'take @data-config from <.source/> and put it on me',
         explanation: 'Moves data-config attribute from source element to current element',
         output: 'HTMLElement'
+      },
+      {
+        title: 'Transfer to implicit target',
+        code: 'take title from <#tooltip-source/>',
+        explanation: 'Takes title attribute from source and puts it on current element',
+        output: 'HTMLElement'
+      },
+      {
+        title: 'Transfer CSS property',
+        code: 'take background-color from <.theme-source/> and put it on <.theme-target/>',
+        explanation: 'Moves background-color style property between elements',
+        output: 'HTMLElement'
       }
     ],
     seeAlso: ['put', 'add-class', 'remove-class', 'copy-attribute'],
@@ -142,26 +152,13 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
     };
   }
 
-  // Enhanced execute method with full type safety
   async execute(
-    context: ExecutionContext | TypedExecutionContext,
-    ...args: unknown[]
-  ): Promise<HTMLElement | EvaluationResult<HTMLElement>> {
-    // Detect if we're using enhanced context
-    if ('locals' in context && 'globals' in context && 'variables' in context) {
-      return this.executeEnhanced(context as TypedExecutionContext, ...args);
-    } else {
-      return this.executeLegacy(context as ExecutionContext, ...args as any[]);
-    }
-  }
-
-  private async executeEnhanced(
     context: TypedExecutionContext,
     ...args: unknown[]
   ): Promise<EvaluationResult<HTMLElement>> {
     try {
       // Runtime validation for type safety
-      const validationResult = this.validateEnhanced(args);
+      const validationResult = this.validate(args);
       if (!validationResult.isValid) {
         return {
           success: false,
@@ -176,7 +173,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
       }
 
       // Parse arguments using enhanced parsing
-      const parseResult = this.parseArgumentsEnhanced(args, context);
+      const parseResult = this.parseArguments(args, context);
       if (!parseResult.success) {
         return parseResult as EvaluationResult<HTMLElement>;
       }
@@ -184,7 +181,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
       const { property, source, target } = parseResult.value;
 
       // Take the property from source
-      const takeResult = await this.takePropertyEnhanced(source, property, context);
+      const takeResult = await this.takeProperty(source, property, context);
       if (!takeResult.success) {
         return takeResult as EvaluationResult<HTMLElement>;
       }
@@ -192,7 +189,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
       const takenValue = takeResult.value;
 
       // Put it on target
-      const putResult = await this.putPropertyEnhanced(target, property, takenValue, context);
+      const putResult = await this.putProperty(target, property, takenValue, context);
       if (!putResult.success) {
         return putResult as EvaluationResult<HTMLElement>;
       }
@@ -231,26 +228,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
     }
   }
 
-  // Legacy execute method for backward compatibility  
-  private async executeLegacy(context: ExecutionContext, ...args: any[]): Promise<HTMLElement> {
-    const parsed = this.parseArguments(args, context);
-    
-    // Take the property from source
-    const value = this.takeProperty(parsed.source, parsed.property);
-    
-    // Put it on target if specified, otherwise on context.me
-    if (parsed.target) {
-      this.putProperty(parsed.target, parsed.property, value);
-    } else if (context.me) {
-      this.putProperty(context.me, parsed.property, value);
-    }
-    
-    // Return the target element
-    return parsed.target || context.me!;
-  }
-
-  // Enhanced validation method
-  validateEnhanced(args: unknown[]): ValidationResult {
+  validate(args: unknown[]): ValidationResult {
     try {
       // Basic argument count validation
       if (args.length < 3) {
@@ -292,6 +270,74 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         };
       }
 
+      // Validate source element
+      const source = args[2];
+      if (!this.isValidElementReference(source)) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'invalid-argument' as const,
+            message: 'Source must be an HTMLElement or valid CSS selector',
+            suggestion: 'Use HTMLElement or CSS selector like "#id", ".class", "tag"'
+          }],
+          suggestions: ['Use: <#element-id/>', 'Use: <.class-name/>', 'Use: HTMLElement references']
+        };
+      }
+
+      // Validate optional "and put it on" clause
+      if (args.length > 3) {
+        const expectedSequence = ['and', 'put', 'it', 'on'];
+        let index = 3;
+        let sequenceIndex = 0;
+
+        // Allow partial sequences like just providing target without full clause
+        if (args.length >= 4 && this.isValidElementReference(args[3])) {
+          // Direct target without full clause - acceptable
+          return {
+            isValid: true,
+            errors: [],
+            suggestions: []
+          };
+        }
+
+        // Check for full "and put it on" sequence
+        while (index < args.length && sequenceIndex < expectedSequence.length) {
+          if (args[index] === expectedSequence[sequenceIndex]) {
+            index++;
+            sequenceIndex++;
+          } else if (sequenceIndex === expectedSequence.length && this.isValidElementReference(args[index])) {
+            // Target element after sequence
+            break;
+          } else {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'invalid-syntax' as const,
+                message: `Invalid take syntax. Expected "${expectedSequence[sequenceIndex]}" but got "${args[index]}"`,
+                suggestion: 'Use: take <property> from <source> and put it on <target>'
+              }],
+              suggestions: ['Use full syntax: and put it on <target>', 'Or just provide target element directly']
+            };
+          }
+        }
+
+        // Validate target element if provided
+        if (index < args.length) {
+          const target = args[index];
+          if (!this.isValidElementReference(target)) {
+            return {
+              isValid: false,
+              errors: [{
+                type: 'invalid-argument' as const,
+                message: 'Target must be an HTMLElement or valid CSS selector',
+                suggestion: 'Use HTMLElement or CSS selector like "#id", ".class", "tag"'
+              }],
+              suggestions: ['Use: <#element-id/>', 'Use: <.class-name/>', 'Use: HTMLElement references']
+            };
+          }
+        }
+      }
+
       return {
         isValid: true,
         errors: [],
@@ -311,54 +357,14 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
     }
   }
 
-  // Legacy validation method for backward compatibility
-  validate(args: any[]): string | null {
-    if (args.length === 0) {
-      return 'Take command requires property and source element';
-    }
-    
-    let i = 0;
-    
-    // Expect property name
-    if (typeof args[i] !== 'string') {
-      return 'Expected property name';
-    }
-    i++;
-    
-    // Check for minimum length after property
-    if (i >= args.length) {
-      return 'Take command requires property and source element';
-    }
-    
-    // Expect "from" keyword
-    if (args[i] !== 'from') {
-      return 'Expected "from" keyword after property name';
-    }
-    i++;
-    
-    // Expect source element
-    if (i >= args.length) {
-      return 'Source element required after "from"';
-    }
-    i++;
-    
-    // Optional "and put it on" clause
-    if (i < args.length) {
-      if (args[i] === 'and' && i + 3 < args.length && 
-          args[i + 1] === 'put' && args[i + 2] === 'it' && args[i + 3] === 'on') {
-        if (i + 4 >= args.length) {
-          return 'Target element required after "and put it on"';
-        }
-      } else {
-        return 'Invalid take syntax. Expected "and put it on <target>" or end of command';
-      }
-    }
-    
-    return null;
+  private isValidElementReference(value: unknown): boolean {
+    return value instanceof HTMLElement || 
+           (typeof value === 'string' && value.trim().length > 0) ||
+           value === null || 
+           value === undefined;
   }
 
-  // Enhanced parsing method
-  private parseArgumentsEnhanced(
+  private parseArguments(
     args: unknown[], 
     context: TypedExecutionContext
   ): EvaluationResult<{ property: string; source: HTMLElement; target: HTMLElement }> {
@@ -450,13 +456,6 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         type: 'error'
       };
     }
-  }
-
-  private isValidElementReference(value: unknown): boolean {
-    return value instanceof HTMLElement || 
-           (typeof value === 'string' && value.trim().length > 0) ||
-           value === null || 
-           value === undefined;
   }
 
   private resolveElement(
@@ -561,8 +560,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
     }
   }
 
-  // Enhanced property transfer methods
-  private async takePropertyEnhanced(
+  private async takeProperty(
     element: HTMLElement, 
     property: string, 
     _context: TypedExecutionContext
@@ -713,7 +711,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
     }
   }
 
-  private async putPropertyEnhanced(
+  private async putProperty(
     element: HTMLElement, 
     property: string, 
     value: unknown, 
@@ -863,215 +861,20 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
 
     return validPatterns.some(pattern => pattern.test(property.trim()));
   }
-
-  private parseArguments(args: any[], context: ExecutionContext): TakeSpec {
-    let property: string;
-    let source: HTMLElement;
-    let target: HTMLElement | undefined;
-    
-    let i = 0;
-    
-    // Parse property name
-    property = String(args[i]);
-    i++;
-    
-    // Skip "from" keyword
-    i++; // "from"
-    
-    // Parse source element
-    if (args[i] instanceof HTMLElement) {
-      source = args[i];
-    } else if (typeof args[i] === 'string') {
-      source = this.resolveElement(args[i]);
-    } else {
-      throw new Error('Invalid source element');
-    }
-    i++;
-    
-    // Parse optional target
-    if (i < args.length && args[i] === 'and' && 
-        i + 3 < args.length && args[i + 1] === 'put' && 
-        args[i + 2] === 'it' && args[i + 3] === 'on') {
-      i += 4; // Skip "and put it on"
-      
-      if (args[i] instanceof HTMLElement) {
-        target = args[i];
-      } else if (typeof args[i] === 'string') {
-        target = this.resolveElement(args[i]);
-      } else {
-        throw new Error('Invalid target element');
-      }
-    }
-    
-    return { property, source, target };
-  }
-
-  private takeProperty(element: HTMLElement, property: string): any {
-    // Keep original case for CSS properties, but use lowercase for comparisons
-    const prop = property;
-    
-    const lowerProp = prop.toLowerCase();
-    
-    // Handle CSS classes
-    if (lowerProp === 'class' || lowerProp === 'classes') {
-      const classes = Array.from(element.classList);
-      element.className = ''; // Remove all classes
-      return classes;
-    }
-    
-    // Handle specific class
-    if (prop.startsWith('.')) {
-      const className = prop.substring(1);
-      if (element.classList.contains(className)) {
-        element.classList.remove(className);
-        return className;
-      }
-      return null;
-    }
-    
-    // Handle attributes
-    if (prop.startsWith('@') || prop.startsWith('data-')) {
-      const attrName = prop.startsWith('@') ? prop.substring(1) : prop;
-      const value = element.getAttribute(attrName);
-      element.removeAttribute(attrName);
-      return value;
-    }
-    
-    // Handle common attributes
-    if (lowerProp === 'id') {
-      const value = element.id;
-      element.id = '';
-      return value;
-    }
-    
-    if (lowerProp === 'title') {
-      const value = element.title;
-      element.title = '';
-      return value;
-    }
-    
-    if (lowerProp === 'value' && 'value' in element) {
-      const value = (element as HTMLInputElement).value;
-      (element as HTMLInputElement).value = '';
-      return value;
-    }
-    
-    // Handle CSS properties  
-    const camelProperty = prop.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    
-    // Check if it's a CSS property (either kebab-case or already camelCase)
-    if (prop.includes('-') || camelProperty in element.style || prop in element.style) {
-      let value: string;
-      
-      // Try camelCase first, then original property name, then kebab-case
-      if (camelProperty in element.style) {
-        value = (element.style as any)[camelProperty];
-        (element.style as any)[camelProperty] = '';
-      } else if (prop in element.style) {
-        value = (element.style as any)[prop];
-        (element.style as any)[prop] = '';
-      } else {
-        value = element.style.getPropertyValue(prop);
-        element.style.removeProperty(prop);
-      }
-      
-      return value;
-    }
-    
-    // Handle generic attributes
-    const value = element.getAttribute(property);
-    if (value !== null) {
-      element.removeAttribute(property);
-      return value;
-    }
-    
-    return null;
-  }
-
-  private putProperty(element: HTMLElement, property: string, value: any): void {
-    if (value === null || value === undefined) {
-      return; // Nothing to put
-    }
-    
-    const prop = property;
-    const lowerProp = prop.toLowerCase();
-    
-    // Handle CSS classes
-    if (lowerProp === 'class' || lowerProp === 'classes') {
-      if (Array.isArray(value)) {
-        value.forEach(className => {
-          if (className) element.classList.add(className);
-        });
-      } else if (typeof value === 'string') {
-        element.className = value;
-      }
-      return;
-    }
-    
-    // Handle specific class
-    if (prop.startsWith('.')) {
-      const className = prop.substring(1);
-      if (value) {
-        element.classList.add(className);
-      }
-      return;
-    }
-    
-    // Handle attributes
-    if (prop.startsWith('@') || prop.startsWith('data-')) {
-      const attrName = prop.startsWith('@') ? prop.substring(1) : prop;
-      if (value) {
-        element.setAttribute(attrName, String(value));
-      }
-      return;
-    }
-    
-    // Handle common attributes
-    if (lowerProp === 'id') {
-      element.id = String(value || '');
-      return;
-    }
-    
-    if (lowerProp === 'title') {
-      element.title = String(value || '');
-      return;
-    }
-    
-    if (lowerProp === 'value' && 'value' in element) {
-      (element as HTMLInputElement).value = String(value || '');
-      return;
-    }
-    
-    // Handle CSS properties
-    const camelProperty = prop.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (prop.includes('-') || camelProperty in element.style || prop in element.style) {
-      if (camelProperty in element.style) {
-        (element.style as any)[camelProperty] = value;
-      } else if (prop in element.style) {
-        (element.style as any)[prop] = value;
-      } else {
-        element.style.setProperty(prop, String(value));
-      }
-      return;
-    }
-    
-    // Handle generic attributes
-    if (value) {
-      element.setAttribute(property, String(value));
-    }
-  }
-
-  private resolveElement(selector: string): HTMLElement {
-    const element = document.querySelector(selector);
-    if (!element) {
-      throw new Error(`Take element not found: ${selector}`);
-    }
-    return element as HTMLElement;
-  }
 }
 
-interface TakeSpec {
-  property: string;
-  source: HTMLElement;
-  target?: HTMLElement;
+// ============================================================================
+// Plugin Export for Tree-Shaking
+// ============================================================================
+
+/**
+ * Plugin factory for modular imports
+ * @llm-bundle-size 5KB
+ * @llm-description Type-safe take command for property and attribute transfer
+ */
+export function createEnhancedTakeCommand(options?: TakeCommandOptions): EnhancedTakeCommand {
+  return new EnhancedTakeCommand(options);
 }
+
+// Default export for convenience
+export default EnhancedTakeCommand;

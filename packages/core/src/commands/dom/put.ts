@@ -52,7 +52,7 @@ export class PutCommand implements TypedCommandImplementation<
 
   public readonly metadata: CommandMetadata = {
     category: 'dom-manipulation',
-    complexity: 'intermediate',
+    complexity: 'medium',
     sideEffects: ['dom-mutation'],
     examples: [
       {
@@ -74,7 +74,7 @@ export class PutCommand implements TypedCommandImplementation<
     parameters: [
       {
         name: 'content',
-        type: 'any',
+        type: 'unknown',
         description: 'Content to insert (text, HTML, or values)',
         optional: false,
         examples: ['"Hello"', '<div>HTML</div>', 'variable']
@@ -167,7 +167,7 @@ export class PutCommand implements TypedCommandImplementation<
       const contentStr = content == null ? '' : String(content);
       
       // Execute the put operation
-      const putResult = await this.performPutOperation(
+      const putResult = this.performPutOperation(
         contentStr, 
         position, 
         targetElement, 
@@ -230,7 +230,7 @@ export class PutCommand implements TypedCommandImplementation<
       }
 
       // Additional semantic validation
-      const [content, position, target] = parsed.data;
+      const [_content, position, target] = parsed.data;
       
       // Validate position is supported
       const validPositions = ['into', 'before', 'after', 'at start of', 'at end of'];
@@ -238,7 +238,7 @@ export class PutCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-value' as const,
+            type: 'invalid-syntax' as const,
             message: `Invalid position: "${position}". Must be one of: ${validPositions.join(', ')}`,
             suggestion: 'Use supported position keywords'
           }],
@@ -265,7 +265,7 @@ export class PutCommand implements TypedCommandImplementation<
         suggestions: []
       };
 
-    } catch (error) {
+    } catch (_error) {
       return {
         isValid: false,
         errors: [{
@@ -406,19 +406,19 @@ export class PutCommand implements TypedCommandImplementation<
     return null;
   }
 
-  private async performPutOperation(
+  private performPutOperation(
     content: string,
     position: PutCommandInput[1],
     targetElement: HTMLElement,
     property: string | undefined,
-    context: TypedExecutionContext
-  ): Promise<EvaluationResult<HTMLElement>> {
+    _context: TypedExecutionContext
+  ): EvaluationResult<HTMLElement> {
     try {
       // If a specific property is targeted, handle it directly
       if (property) {
         switch (position) {
           case 'into':
-            (targetElement as any)[property] = content;
+            (targetElement as Record<string, unknown>)[property] = content;
             break;
           default:
             return {
@@ -436,19 +436,19 @@ export class PutCommand implements TypedCommandImplementation<
         // Execute based on position for the element itself
         switch (position) {
           case 'into':
-            await this.putInto(targetElement, content);
+            this.putInto(targetElement, content);
             break;
           case 'before':
-            await this.putBefore(targetElement, content);
+            this.putBefore(targetElement, content);
             break;
           case 'after':
-            await this.putAfter(targetElement, content);
+            this.putAfter(targetElement, content);
             break;
           case 'at start of':
-            await this.putAtStartOf(targetElement, content);
+            this.putAtStartOf(targetElement, content);
             break;
           case 'at end of':
-            await this.putAtEndOf(targetElement, content);
+            this.putAtEndOf(targetElement, content);
             break;
           default:
             return {
@@ -484,7 +484,7 @@ export class PutCommand implements TypedCommandImplementation<
     }
   }
 
-  private async putInto(element: HTMLElement, content: string): Promise<void> {
+  private putInto(element: HTMLElement, content: string): void {
     // Check if content contains HTML by looking for < and > characters
     if (this.containsHTML(content)) {
       if (this.options.sanitizeHTML) {
@@ -497,7 +497,7 @@ export class PutCommand implements TypedCommandImplementation<
     }
   }
 
-  private async putBefore(element: HTMLElement, content: string): Promise<void> {
+  private putBefore(element: HTMLElement, content: string): void {
     if (!element.parentNode) {
       throw new Error('Cannot insert before element - no parent node');
     }
@@ -514,7 +514,7 @@ export class PutCommand implements TypedCommandImplementation<
     }
   }
 
-  private async putAfter(element: HTMLElement, content: string): Promise<void> {
+  private putAfter(element: HTMLElement, content: string): void {
     if (!element.parentNode) {
       throw new Error('Cannot insert after element - no parent node');
     }
@@ -532,14 +532,14 @@ export class PutCommand implements TypedCommandImplementation<
     }
   }
 
-  private async putAtStartOf(element: HTMLElement, content: string): Promise<void> {
+  private putAtStartOf(element: HTMLElement, content: string): void {
     const sanitizedContent = this.options.sanitizeHTML && this.containsHTML(content) 
       ? this.sanitizeHTML(content) 
       : content;
     element.innerHTML = sanitizedContent + element.innerHTML;
   }
 
-  private async putAtEndOf(element: HTMLElement, content: string): Promise<void> {
+  private putAtEndOf(element: HTMLElement, content: string): void {
     const sanitizedContent = this.options.sanitizeHTML && this.containsHTML(content) 
       ? this.sanitizeHTML(content) 
       : content;
