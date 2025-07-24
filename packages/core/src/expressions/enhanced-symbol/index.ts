@@ -1,0 +1,332 @@
+/**
+ * Enhanced Symbol Expression - Variable Resolution
+ * Implements comprehensive symbol (variable) resolution with TypeScript integration
+ * Handles local, element, and global variable resolution with enhanced error handling
+ */
+
+import { z } from 'zod';
+import type {
+  HyperScriptValue,
+  HyperScriptValueType,
+  EvaluationResult,
+  TypedExpressionContext,
+  TypedExpressionImplementation,
+  LLMDocumentation,
+  ValidationResult,
+  HyperScriptError
+} from '../../types/enhanced-core.js';
+
+// ============================================================================
+// Input Validation Schema
+// ============================================================================
+
+/**
+ * Schema for symbol expression input validation
+ */
+export const SymbolExpressionInputSchema = z.tuple([
+  z.string()
+    .min(1, 'Symbol name cannot be empty')
+    .describe('Variable name to resolve from context')
+]);
+
+export type SymbolExpressionInput = z.infer<typeof SymbolExpressionInputSchema>;
+
+// ============================================================================
+// Enhanced Symbol Expression Implementation
+// ============================================================================
+
+/**
+ * Enhanced symbol expression for variable resolution
+ * Provides comprehensive context-aware variable lookup
+ */
+export class EnhancedSymbolExpression implements TypedExpressionImplementation<
+  SymbolExpressionInput,
+  HyperScriptValue,
+  TypedExpressionContext
+> {
+  public readonly inputSchema = SymbolExpressionInputSchema;
+  
+  public readonly documentation: LLMDocumentation = {
+    summary: 'Resolves variables from hyperscript execution context with comprehensive scope chain lookup',
+    parameters: [
+      {
+        name: 'symbolName',
+        type: 'string',
+        description: 'Name of the variable to resolve from context',
+        optional: false,
+        examples: ['foo', 'userName', 'count', 'element']
+      }
+    ],
+    returns: {
+      type: 'any',
+      description: 'The resolved variable value from context, or undefined if not found',
+      examples: ['42', '"hello"', 'HTMLElement', 'null']
+    },
+    examples: [
+      {
+        title: 'Local variable resolution',
+        code: 'foo',
+        explanation: 'Resolves "foo" from local context variables',
+        output: 42
+      },
+      {
+        title: 'Global variable resolution',
+        code: 'document',
+        explanation: 'Resolves "document" from global context (browser)',
+        output: 'HTMLDocument'
+      },
+      {
+        title: 'Element property resolution',
+        code: 'className',
+        explanation: 'Resolves "className" from current element context',
+        output: '"nav-item active"'
+      }
+    ],
+    seeAlso: ['my expression', 'property access', 'context variables'],
+    tags: ['variable', 'context', 'resolution', 'scope']
+  };
+
+  /**
+   * Validate symbol expression arguments
+   */
+  async validate(args: unknown[]): Promise<ValidationResult> {
+    try {
+      const validatedArgs = this.inputSchema.parse(args);
+      const [symbolName] = validatedArgs;
+
+      // Additional semantic validation
+      const issues: string[] = [];
+      
+      // Check for reserved keywords
+      const reservedKeywords = ['me', 'you', 'it', 'event', 'target', 'result'];
+      if (reservedKeywords.includes(symbolName)) {
+        issues.push(`"${symbolName}" is a reserved hyperscript keyword - use context references instead`);
+      }
+
+      // Check for potentially problematic names
+      if (symbolName.includes('.')) {
+        issues.push(`Symbol names with dots should use property access syntax instead: "${symbolName.split('.')[0]}'s ${symbolName.split('.').slice(1).join('.')}"`);
+      }
+
+      if (symbolName.startsWith('__')) {
+        issues.push(`Symbol names starting with "__" are typically internal - consider a different name`);
+      }
+
+      return {
+        isValid: issues.length === 0,
+        errors: issues,
+        suggestions: issues.length > 0 ? [
+          'Use standard variable naming conventions',
+          'Avoid reserved keywords for variable names',
+          'Use property access for nested properties'
+        ] : []
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [error instanceof Error ? error.message : 'Invalid symbol expression arguments'],
+        suggestions: [
+          'Provide a valid string for the symbol name',
+          'Ensure symbol name is not empty',
+          'Use alphanumeric characters and underscores for variable names'
+        ]
+      };
+    }
+  }
+
+  /**
+   * Evaluate symbol expression with enhanced context resolution
+   */
+  async evaluate(
+    context: TypedExpressionContext,
+    ...args: unknown[]
+  ): Promise<EvaluationResult<HyperScriptValue>> {
+    try {
+      // Validate input arguments
+      const validationResult = await this.validate(args);
+      if (!validationResult.isValid) {
+        return {
+          success: false,
+          error: {
+            name: 'SymbolValidationError',
+            message: `Symbol expression validation failed: ${validationResult.errors.join(', ')}`,
+            code: 'SYMBOL_VALIDATION_ERROR',
+            severity: 'error',
+            context: { args, validation: validationResult }
+          },
+          type: 'error'
+        };
+      }
+
+      const [symbolName] = this.inputSchema.parse(args);
+
+      // Enhanced context resolution with comprehensive scope chain
+      const resolvedValue = await this.resolveSymbol(symbolName, context);
+      const valueType = this.inferType(resolvedValue);
+
+      return {
+        success: true,
+        value: resolvedValue,
+        type: valueType
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'SymbolEvaluationError',
+          message: `Failed to evaluate symbol expression: ${error instanceof Error ? error.message : String(error)}`,
+          code: 'SYMBOL_EVALUATION_ERROR',
+          severity: 'error',
+          context: { args, error }
+        },
+        type: 'error'
+      };
+    }
+  }
+
+  /**
+   * Enhanced symbol resolution with comprehensive scope chain
+   * Follows hyperscript variable resolution order:
+   * 1. Meta context (template variables, local scope)
+   * 2. Local variables
+   * 3. Element properties (if current element exists)
+   * 4. Global variables (window/globalThis)
+   */
+  private async resolveSymbol(
+    symbolName: string,
+    context: TypedExpressionContext
+  ): Promise<HyperScriptValue> {
+    // 1. Check meta context first (for template variables, local scope)
+    if (context.meta && context.meta.has(symbolName)) {
+      return context.meta.get(symbolName) as HyperScriptValue;
+    }
+
+    // 2. Check local variables
+    if (context.locals && context.locals.has(symbolName)) {
+      return context.locals.get(symbolName) as HyperScriptValue;
+    }
+
+    // 3. Check variables map (alternative local storage)
+    if (context.variables && context.variables.has(symbolName)) {
+      return context.variables.get(symbolName) as HyperScriptValue;
+    }
+
+    // 4. Check direct context properties (for expressions like 'testValue')
+    if (symbolName in context) {
+      return (context as any)[symbolName] as HyperScriptValue;
+    }
+
+    // 5. Check current element properties (if element exists)
+    if (context.me && typeof context.me === 'object' && context.me !== null) {
+      if (symbolName in context.me) {
+        const elementProperty = (context.me as any)[symbolName];
+        
+        // Handle methods bound to element
+        if (typeof elementProperty === 'function') {
+          return elementProperty.bind(context.me);
+        }
+        
+        return elementProperty as HyperScriptValue;
+      }
+    }
+
+    // 6. Check global context (window/globalThis)
+    if (typeof globalThis !== 'undefined' && symbolName in globalThis) {
+      return (globalThis as any)[symbolName] as HyperScriptValue;
+    }
+
+    // If Node.js environment, check global
+    if (typeof global !== 'undefined' && symbolName in global) {
+      return (global as any)[symbolName] as HyperScriptValue;
+    }
+
+    // 7. Check common browser globals explicitly
+    if (typeof window !== 'undefined') {
+      const browserGlobals = ['document', 'window', 'console', 'location', 'navigator'];
+      if (browserGlobals.includes(symbolName) && symbolName in window) {
+        return (window as any)[symbolName] as HyperScriptValue;
+      }
+    }
+
+    // Symbol not found - return undefined (hyperscript behavior)
+    return undefined;
+  }
+
+  /**
+   * Infer the type of a resolved value
+   */
+  private inferType(value: HyperScriptValue): HyperScriptValueType {
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (typeof value === 'string') return 'string';
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'boolean') return 'boolean';
+    if (value instanceof HTMLElement) return 'element';
+    if (Array.isArray(value)) return 'array';
+    if (typeof value === 'object') return 'object';
+    if (typeof value === 'function') return 'function';
+    return 'unknown';
+  }
+
+  /**
+   * Get expression metadata for introspection
+   */
+  getMetadata() {
+    return {
+      name: 'SymbolExpression',
+      category: 'reference' as const,
+      version: '1.0.0',
+      description: 'Enhanced variable resolution with comprehensive scope chain lookup',
+      inputSchema: this.inputSchema,
+      supportedContexts: ['local', 'element', 'global', 'meta'],
+      performance: {
+        complexity: 'low',
+        averageExecutionTime: '< 1ms',
+        memoryUsage: 'minimal'
+      },
+      capabilities: {
+        contextAware: true,
+        supportsAsync: true,
+        sideEffects: false,
+        cacheable: true
+      }
+    };
+  }
+}
+
+// ============================================================================
+// Convenience Exports
+// ============================================================================
+
+/**
+ * Factory function for creating enhanced symbol expressions
+ */
+export function createSymbolExpression(): EnhancedSymbolExpression {
+  return new EnhancedSymbolExpression();
+}
+
+/**
+ * Type guard for symbol expression inputs
+ */
+export function isValidSymbolInput(args: unknown[]): args is SymbolExpressionInput {
+  try {
+    SymbolExpressionInputSchema.parse(args);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Quick symbol resolution utility for testing
+ */
+export async function resolveSymbol(
+  symbolName: string,
+  context: TypedExpressionContext
+): Promise<EvaluationResult<HyperScriptValue>> {
+  const expression = new EnhancedSymbolExpression();
+  return expression.evaluate(context, symbolName);
+}
+
+// Default export
+export default EnhancedSymbolExpression;

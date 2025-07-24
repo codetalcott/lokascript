@@ -20,6 +20,9 @@ export interface TypedExpressionContext {
   globals: Map<string, unknown>;
   variables: Map<string, unknown>;
   
+  // Meta context for template variables
+  meta: Map<string, unknown>;
+  
   // Performance tracking
   evaluationHistory: unknown[];
   performanceMetrics: {
@@ -238,6 +241,9 @@ export function createTypedExpressionContext(data: Record<string, any> = {}): Ty
     locals: new Map(Object.entries(data.locals || {})),
     globals: new Map(Object.entries(data.globals || {})),
     variables: new Map(Object.entries(data.variables || {})),
+    
+    // Meta context for template variables
+    meta: new Map(),
     
     // Performance tracking
     evaluationHistory: [],
