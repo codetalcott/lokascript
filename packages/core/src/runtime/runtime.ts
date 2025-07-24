@@ -73,6 +73,7 @@ export class Runtime {
       this.enhancedRegistry.register(createShowCommand());
       this.enhancedRegistry.register(createToggleCommand());
       this.enhancedRegistry.register(createAddCommand());
+      
       this.enhancedRegistry.register(createRemoveCommand());
       
       // Register event commands
@@ -142,6 +143,7 @@ export class Runtime {
     const evaluatedArgs = await Promise.all(
       args.map(arg => this.execute(arg, context))
     );
+
 
     // Execute through enhanced adapter
     return await adapter.execute(context, ...evaluatedArgs);

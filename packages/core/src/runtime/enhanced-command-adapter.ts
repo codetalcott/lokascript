@@ -10,7 +10,6 @@ import type {
   ValidationResult 
 } from '../types/core.js';
 
-import type { TypedCommandImplementation } from '../commands/base/types.js';
 
 /**
  * Runtime-compatible command interface
@@ -83,17 +82,17 @@ export class ContextBridge {
  * Wraps TypedCommandImplementation for runtime compatibility
  */
 export class EnhancedCommandAdapter implements RuntimeCommand {
-  constructor(private impl: TypedCommandImplementation<unknown, unknown, TypedExecutionContext>) {}
+  constructor(private impl: any) {}
 
   get name(): string {
-    return this.impl.metadata.name;
+    return this.impl.name;
   }
 
   get metadata() {
     return {
-      description: this.impl.metadata.description,
-      examples: this.impl.metadata.examples,
-      syntax: this.impl.metadata.syntax
+      description: this.impl.description,
+      examples: this.impl.metadata?.examples || [],
+      syntax: this.impl.syntax
     };
   }
 
@@ -105,30 +104,16 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
       // Convert to typed context
       const typedContext = ContextBridge.toTyped(context);
       
-      // Validate input if validation schema exists
-      if (args.length > 0 && this.impl.validation) {
-        const validationInput = this.parseArgsToInput(args);
-        const validationResult = this.impl.validation.validate(validationInput);
-        
-        if (!validationResult.success) {
-          throw new Error(`Command validation failed: ${validationResult.error?.message || 'Invalid input'}`);
-        }
-        
-        // Execute with validated input
-        const result = await this.impl.execute(validationResult.data, typedContext);
-        
-        // Update original context with changes
-        Object.assign(context, ContextBridge.fromTyped(typedContext, context));
-        
-        return result;
-      }
-      
-      // Execute without validation (fallback for legacy compatibility)
-      const input = this.parseArgsToInput(args);
-      const result = await this.impl.execute(input, typedContext);
+      // Execute enhanced command with typed context and spread args
+      const result = await this.impl.execute(typedContext, ...args);
       
       // Update original context with changes
       Object.assign(context, ContextBridge.fromTyped(typedContext, context));
+      
+      // Extract value from EvaluationResult if needed
+      if (result && typeof result === 'object' && 'success' in result) {
+        return result.success ? result.value : result;
+      }
       
       return result;
       
@@ -156,35 +141,22 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
    * Validate command input
    */
   validate(input: unknown): ValidationResult<unknown> {
-    if (!this.impl.validation) {
+    if (!this.impl.validate) {
       return { success: true, data: input };
     }
     
-    return this.impl.validation.validate(input);
-  }
-
-  /**
-   * Parse runtime args to command input format
-   * This is command-specific and should be overridden by specific adapters
-   */
-  private parseArgsToInput(args: unknown[]): unknown {
-    // Default: return first arg as input, or empty object
-    if (args.length === 0) {
-      return {};
-    }
-    
-    if (args.length === 1) {
-      return args[0];
-    }
-    
-    // For multiple args, create a generic input object
+    // Use the command's validate method
+    const result = this.impl.validate([input]);
     return {
-      args: args,
-      target: args[0],
-      value: args[1],
-      options: args.slice(2)
+      success: result.isValid,
+      data: input,
+      error: result.errors?.[0] ? {
+        message: result.errors[0].message,
+        suggestions: result.suggestions
+      } : undefined
     };
   }
+
 
   /**
    * Generate helpful suggestions for command usage
@@ -193,13 +165,15 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
     const suggestions: string[] = [];
     
     // Add basic syntax suggestion
-    if (this.impl.metadata.syntax) {
-      suggestions.push(`Correct syntax: ${this.impl.metadata.syntax}`);
+    if (this.impl.syntax) {
+      suggestions.push(`Correct syntax: ${this.impl.syntax}`);
     }
     
     // Add example usage
-    if (this.impl.metadata.examples.length > 0) {
-      suggestions.push(`Example: ${this.impl.metadata.examples[0]}`);
+    if (this.impl.metadata?.examples?.length > 0) {
+      const firstExample = this.impl.metadata.examples[0];
+      const exampleCode = typeof firstExample === 'object' ? firstExample.code : firstExample;
+      suggestions.push(`Example: ${exampleCode}`);
     }
     
     // Add argument count suggestion
@@ -217,17 +191,17 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
  */
 export class EnhancedCommandRegistry {
   private adapters = new Map<string, EnhancedCommandAdapter>();
-  private implementations = new Map<string, TypedCommandImplementation<unknown, unknown, TypedExecutionContext>>();
+  private implementations = new Map<string, any>();
 
   /**
    * Register an enhanced command
    */
   register<TInput, TOutput, TContext extends TypedExecutionContext>(
-    impl: TypedCommandImplementation<TInput, TOutput, TContext>
+    impl: any
   ): void {
-    const adapter = new EnhancedCommandAdapter(impl as TypedCommandImplementation<unknown, unknown, TypedExecutionContext>);
-    this.adapters.set(impl.metadata.name, adapter);
-    this.implementations.set(impl.metadata.name, impl as TypedCommandImplementation<unknown, unknown, TypedExecutionContext>);
+    const adapter = new EnhancedCommandAdapter(impl);
+    this.adapters.set(impl.name, adapter);
+    this.implementations.set(impl.name, impl);
   }
 
   /**
@@ -240,7 +214,7 @@ export class EnhancedCommandRegistry {
   /**
    * Get original enhanced implementation
    */
-  getImplementation(name: string): TypedCommandImplementation<unknown, unknown, TypedExecutionContext> | undefined {
+  getImplementation(name: string): any {
     return this.implementations.get(name);
   }
 
@@ -299,8 +273,6 @@ export class EnhancedCommandRegistry {
 /**
  * Factory function to create enhanced command adapters
  */
-export function createEnhancedAdapter<TInput, TOutput, TContext extends TypedExecutionContext>(
-  impl: TypedCommandImplementation<TInput, TOutput, TContext>
-): EnhancedCommandAdapter {
-  return new EnhancedCommandAdapter(impl as TypedCommandImplementation<unknown, unknown, TypedExecutionContext>);
+export function createEnhancedAdapter(impl: any): EnhancedCommandAdapter {
+  return new EnhancedCommandAdapter(impl);
 }

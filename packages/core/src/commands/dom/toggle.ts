@@ -1,6 +1,6 @@
 /**
  * Enhanced Toggle Command - Deep TypeScript Integration
- * Toggles element visibility using enhanced hide/show functionality
+ * Toggles CSS classes on elements
  * Enhanced for LLM code agents with full type safety
  */
 
@@ -14,19 +14,19 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
 import { dispatchCustomEvent } from '../../core/events.ts';
-import { HideCommand } from './hide.ts';
-import { ShowCommand } from './show.ts';
 
 export interface ToggleCommandOptions {
-  useClass?: boolean;
-  className?: string;
-  defaultDisplay?: string;
+  delimiter?: string;
 }
 
 /**
  * Input validation schema for LLM understanding
  */
 const ToggleCommandInputSchema = z.tuple([
+  z.union([
+    z.string(),                                    // Class names
+    z.array(z.string()),                          // Array of class names
+  ]),
   z.union([
     z.instanceof(HTMLElement),
     z.array(z.instanceof(HTMLElement)), 
@@ -43,12 +43,12 @@ type ToggleCommandInput = z.infer<typeof ToggleCommandInputSchema>;
  */
 export class ToggleCommand implements TypedCommandImplementation<
   ToggleCommandInput,
-  HTMLElement[],  // Returns list of toggled elements
+  HTMLElement[],  // Returns list of modified elements
   TypedExecutionContext
 > {
   public readonly name = 'toggle' as const;
-  public readonly syntax = 'toggle [<target-expression>]';
-  public readonly description = 'Toggles element visibility by switching between hide and show states';
+  public readonly syntax = 'toggle <class-expression> [from <target-expression>]';
+  public readonly description = 'Toggles CSS classes on elements';
   public readonly inputSchema = ToggleCommandInputSchema;
   public readonly outputType = 'element-list' as const;
   
@@ -58,84 +58,77 @@ export class ToggleCommand implements TypedCommandImplementation<
     sideEffects: ['dom-mutation'],
     examples: [
       {
-        code: 'toggle me',
-        description: 'Toggle the current element visibility',
+        code: 'toggle .active from me',
+        description: 'Toggle active class on current element',
         expectedOutput: []
       },
       {
-        code: 'toggle <.modal/>',
-        description: 'Toggle all elements with modal class',
+        code: 'toggle "loading spinner" from <.buttons/>',
+        description: 'Toggle multiple classes on elements with buttons class',
         expectedOutput: []
       }
     ],
-    relatedCommands: ['hide', 'show']
+    relatedCommands: ['add', 'remove', 'hide', 'show']
   };
 
   public readonly documentation: LLMDocumentation = {
-    summary: 'Toggles HTML element visibility by switching between hidden and visible states',
+    summary: 'Toggles CSS classes on HTML elements',
     parameters: [
+      {
+        name: 'classExpression',
+        type: 'string | string[]',
+        description: 'CSS class names to toggle',
+        optional: false,
+        examples: ['.active', 'highlighted', 'loading spinner']
+      },
       {
         name: 'target',
         type: 'element',
-        description: 'Element(s) to toggle. If omitted, toggles the current element (me)',
+        description: 'Element(s) to modify. If omitted, uses the current element (me)',
         optional: true,
-        examples: ['me', '<#sidebar/>', '<.dropdown/>']
+        examples: ['me', '<#sidebar/>', '<.buttons/>']
       }
     ],
     returns: {
       type: 'element-list',
-      description: 'Array of elements that were toggled',
+      description: 'Array of elements that were modified',
       examples: [[]]
     },
     examples: [
       {
-        title: 'Toggle current element',
-        code: 'on click toggle me',
-        explanation: 'When clicked, toggles the element between visible and hidden',
+        title: 'Toggle single class',
+        code: 'on click toggle .active from me',
+        explanation: 'When clicked, toggles the "active" class on the element',
         output: []
       },
       {
-        title: 'Toggle dropdown menu',
-        code: 'on click toggle <.dropdown-menu/>',
-        explanation: 'Click to show/hide dropdown menu',
+        title: 'Toggle multiple classes',
+        code: 'toggle "loading complete" from <#submit-btn/>',
+        explanation: 'Toggles both "loading" and "complete" classes on submit button',
         output: []
       }
     ],
-    seeAlso: ['hide', 'show', 'add-class', 'remove-class'],
-    tags: ['dom', 'visibility', 'toggle', 'css']
+    seeAlso: ['add', 'remove', 'hide', 'show'],
+    tags: ['dom', 'css', 'classes']
   };
   
-  private hideCommand: HideCommand;
-  private showCommand: ShowCommand;
   private options: ToggleCommandOptions;
 
   constructor(options: ToggleCommandOptions = {}) {
     this.options = {
-      useClass: false,
-      className: 'hyperscript-hidden',
-      defaultDisplay: 'block',
+      delimiter: ' ',
       ...options,
     };
-
-    this.hideCommand = new HideCommand({
-      useClass: this.options.useClass,
-      className: this.options.className,
-    });
-
-    this.showCommand = new ShowCommand({
-      useClass: this.options.useClass,
-      className: this.options.className,
-      defaultDisplay: this.options.defaultDisplay,
-    });
   }
 
   async execute(
     context: TypedExecutionContext,
-    target?: ToggleCommandInput[0]
+    classExpression: ToggleCommandInput[0],
+    target?: ToggleCommandInput[1]
   ): Promise<EvaluationResult<HTMLElement[]>> {
     try {
       // Runtime validation for type safety
-      const validationResult = this.validate([target]);
+      const validationResult = this.validate([classExpression, target]);
       if (!validationResult.isValid) {
         return {
           success: false,
@@ -149,22 +142,50 @@ export class ToggleCommand implements TypedCommandImplementation<
         };
       }
 
+      // Parse and validate classes
+      const classes = this.parseClasses(classExpression);
+      if (!classes.length) {
+        return {
+          success: false,
+          error: {
+            name: 'ToggleCommandError',
+            message: 'No valid classes provided to toggle',
+            code: 'NO_VALID_CLASSES',
+            suggestions: ['Provide valid CSS class names', 'Check class name syntax']
+          },
+          type: 'error'
+        };
+      }
+      
       // Type-safe target resolution
       const elements = this.resolveTargets(context, target);
       
+      if (!elements.length) {
+        return {
+          success: false,
+          error: {
+            name: 'ToggleCommandError',
+            message: 'No target elements found',
+            code: 'NO_TARGET_ELEMENTS',
+            suggestions: ['Check if target selector is valid', 'Ensure elements exist in DOM']
+          },
+          type: 'error'
+        };
+      }
+      
       // Process elements with enhanced error handling
-      const toggledElements: HTMLElement[] = [];
+      const modifiedElements: HTMLElement[] = [];
       
       for (const element of elements) {
-        const toggleResult = await this.toggleElement(element, context);
-        if (toggleResult.success) {
-          toggledElements.push(element);
+        const classResult = await this.toggleClassesOnElement(element, classes, context);
+        if (classResult.success) {
+          modifiedElements.push(element);
         }
       }
 
       return {
         success: true,
-        value: toggledElements,
+        value: modifiedElements,
         type: 'element-list'
       };
 
@@ -175,30 +196,58 @@ export class ToggleCommand implements TypedCommandImplementation<
           name: 'ToggleCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TOGGLE_EXECUTION_FAILED',
-          suggestions: ['Check if element exists', 'Verify element is not null']
+          suggestions: ['Check if elements exist', 'Verify class names are valid']
         },
         type: 'error'
       };
     }
   }
 
+  private parseClasses(classExpression: any): string[] {
+    if (!classExpression) {
+      return [];
+    }
+
+    if (typeof classExpression === 'string') {
+      // Split by various delimiters and filter out empty strings
+      return classExpression
+        .split(/[\s,]+/)
+        .map(cls => cls.trim())
+        .filter(cls => cls.length > 0);
+    }
+
+    if (Array.isArray(classExpression)) {
+      return classExpression
+        .map(cls => String(cls).trim())
+        .filter(cls => cls.length > 0);
+    }
+
+    // Convert other types to string
+    return [String(classExpression).trim()].filter(cls => cls.length > 0);
+  }
+
   private resolveTargets(
     context: TypedExecutionContext,
-    target?: ToggleCommandInput[0]
+    target?: ToggleCommandInput[1]
   ): HTMLElement[] {
     // If no target specified, use implicit target (me)
     if (target === undefined || target === null) {
       return context.me ? [context.me] : [];
     }
 
-    // Handle HTMLElement directly
+    // Handle HTMLElement
     if (target instanceof HTMLElement) {
       return [target];
     }
 
-    // Handle HTMLElement array
+    // Handle NodeList or HTMLCollection
+    if (target instanceof NodeList || target instanceof HTMLCollection) {
+      return Array.from(target) as HTMLElement[];
+    }
+
+    // Handle Array of elements
     if (Array.isArray(target)) {
-      return target.filter((el): el is HTMLElement => el instanceof HTMLElement);
+      return target.filter(item => item instanceof HTMLElement) as HTMLElement[];
     }
 
     // Handle CSS selector string
@@ -214,42 +263,47 @@ export class ToggleCommand implements TypedCommandImplementation<
     return [];
   }
 
-  private async toggleElement(
+  private async toggleClassesOnElement(
     element: HTMLElement, 
+    classes: string[], 
     context: TypedExecutionContext
   ): Promise<EvaluationResult<HTMLElement>> {
     try {
-      const isVisible = this.isElementVisible(element);
+      const toggledClasses: string[] = [];
       
-      // Execute appropriate command based on current visibility
-      const commandResult = isVisible 
-        ? await this.hideCommand.execute(context, element)
-        : await this.showCommand.execute(context, element);
-      
-      if (!commandResult.success) {
-        return {
-          success: false,
-          error: {
-            name: 'ToggleElementError',
-            message: `Failed to ${isVisible ? 'hide' : 'show'} element: ${commandResult.error?.message}`,
-            code: 'ELEMENT_TOGGLE_FAILED',
-            suggestions: ['Check if element is still in DOM', 'Verify element is not null']
-          },
-          type: 'error'
-        };
+      // Toggle classes with validation
+      for (const className of classes) {
+        if (this.isValidClassName(className)) {
+          element.classList.toggle(className);
+          toggledClasses.push(className);
+        } else {
+          return {
+            success: false,
+            error: {
+              name: 'ToggleClassError',
+              message: `Invalid class name: "${className}"`,
+              code: 'INVALID_CLASS_NAME',
+              suggestions: ['Use valid CSS class names', 'Check for special characters']
+            },
+            type: 'error'
+          };
+        }
       }
 
       // Dispatch enhanced toggle event with rich metadata
-      dispatchCustomEvent(element, 'hyperscript:toggle', {
-        element,
-        context,
-        command: this.name,
-        action: isVisible ? 'hide' : 'show',
-        visible: !isVisible,
-        timestamp: Date.now(),
-        metadata: this.metadata,
-        result: 'success'
-      });
+      if (toggledClasses.length > 0) {
+        dispatchCustomEvent(element, 'hyperscript:toggle', {
+          element,
+          context,
+          command: this.name,
+          type: 'classes',
+          classes: toggledClasses,
+          allClasses: classes,
+          timestamp: Date.now(),
+          metadata: this.metadata,
+          result: 'success'
+        });
+      }
 
       return {
         success: true,
@@ -261,38 +315,26 @@ export class ToggleCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ToggleElementError',
-          message: error instanceof Error ? error.message : 'Failed to toggle element',
-          code: 'ELEMENT_TOGGLE_FAILED',
-          suggestions: ['Check if element is still in DOM', 'Verify element is not null']
+          name: 'ToggleClassError',
+          message: error instanceof Error ? error.message : 'Failed to toggle classes',
+          code: 'CLASS_TOGGLE_FAILED',
+          suggestions: ['Check if element is still in DOM', 'Verify class names are valid']
         },
         type: 'error'
       };
     }
   }
 
-  private isElementVisible(element: HTMLElement): boolean {
-    // Check for class-based hiding first
-    if (this.options.useClass && this.options.className) {
-      if (element.classList.contains(this.options.className)) {
-        return false;
-      }
-    }
-
-    // Check for display-based hiding
-    if (element.style.display === 'none') {
+  private isValidClassName(className: string): boolean {
+    // CSS class names must not be empty and must not contain invalid characters
+    if (!className || className.trim().length === 0) {
       return false;
     }
 
-    // Check computed styles for completely hidden elements
-    if (typeof window !== 'undefined') {
-      const computedStyle = window.getComputedStyle(element);
-      if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
-        return false;
-      }
-    }
-
-    return true;
+    // Check for basic CSS class name validity
+    // Class names cannot start with a digit or contain certain special characters
+    const cssClassNameRegex = /^[a-zA-Z_-][a-zA-Z0-9_-]*$/;
+    return cssClassNameRegex.test(className.trim());
   }
 
   validate(args: unknown[]): ValidationResult {
@@ -308,13 +350,27 @@ export class ToggleCommand implements TypedCommandImplementation<
             message: `Invalid argument: ${err.message}`,
             suggestion: this.getValidationSuggestion(err.code, err.path)
           })),
-          suggestions: ['Use HTMLElement, CSS selector string, or omit for implicit target']
+          suggestions: ['Use string or string array for classes, and valid target selector']
         };
       }
 
       // Additional semantic validation
-      const [target] = parsed.data;
+      const [classExpression, target] = parsed.data;
       
+      // Validate class expression is not empty
+      if (!classExpression || (typeof classExpression === 'string' && classExpression.trim().length === 0)) {
+        return {
+          isValid: false,
+          errors: [{
+            type: 'empty-input',
+            message: 'Class expression cannot be empty',
+            suggestion: 'Provide valid CSS class names'
+          }],
+          suggestions: ['Use class names like "active"', 'Use space-separated class names like "loading error"']
+        };
+      }
+      
+      // Validate target selector if provided
       if (typeof target === 'string' && !this.isValidCSSSelector(target)) {
         return {
           isValid: false,
@@ -348,9 +404,10 @@ export class ToggleCommand implements TypedCommandImplementation<
 
   private getValidationSuggestion(errorCode: string, _path: (string | number)[]): string {
     const suggestions: Record<string, string> = {
-      'invalid_type': 'Use HTMLElement, string (CSS selector), or omit argument',
-      'invalid_union': 'Target must be an element, CSS selector, or null',
-      'too_big': 'Too many arguments - toggle command takes 0-1 arguments'
+      'invalid_type': 'Use string or string array for classes, HTMLElement or selector for target',
+      'invalid_union': 'Classes must be string or string array, target must be element or selector',
+      'too_small': 'Toggle command requires at least a class expression',
+      'too_big': 'Too many arguments - toggle command takes 1-2 arguments'
     };
     
     return suggestions[errorCode] || 'Check argument types and syntax';

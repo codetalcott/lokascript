@@ -16,22 +16,37 @@ describe('Runtime Integration with Enhanced Commands', () => {
     // Create runtime with enhanced commands enabled
     runtime = new Runtime({ 
       useEnhancedCommands: true,
-      enableErrorReporting: false // Quiet test output
+      enableErrorReporting: true // Debug output for remove command
     });
 
-    // Create mock DOM element
+    // Create mock DOM element with realistic classList behavior
+    const mockClassList = new Set<string>(['inactive']); // Pre-populate with 'inactive' for remove test
     mockElement = {
       classList: {
-        add: vi.fn(),
-        remove: vi.fn(),
-        toggle: vi.fn(),
-        contains: vi.fn().mockReturnValue(false)
+        add: vi.fn((className: string) => {
+          mockClassList.add(className);
+        }),
+        remove: vi.fn((className: string) => {
+          mockClassList.delete(className);
+        }),
+        toggle: vi.fn((className: string) => {
+          if (mockClassList.has(className)) {
+            mockClassList.delete(className);
+          } else {
+            mockClassList.add(className);
+          }
+        }),
+        contains: vi.fn((className: string) => {
+          return mockClassList.has(className);
+        })
       },
       style: {
         display: 'block'
       },
+      dataset: {},
       addEventListener: vi.fn(),
-      removeEventListener: vi.fn()
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
     } as HTMLElement;
 
     // Create execution context
@@ -51,6 +66,10 @@ describe('Runtime Integration with Enhanced Commands', () => {
 
   describe('Enhanced Command Execution', () => {
     it('should execute hide command through enhanced adapter', async () => {
+      // Debug: check if command is registered
+      expect(runtime.getEnhancedRegistry().has('hide')).toBe(true);
+      expect(runtime.getEnhancedRegistry().getCommandNames()).toContain('hide');
+      
       const commandNode: CommandNode = {
         type: 'command',
         name: 'hide',
@@ -89,6 +108,14 @@ describe('Runtime Integration with Enhanced Commands', () => {
     });
 
     it('should execute remove command through enhanced adapter', async () => {
+      // Debug: check registry contents
+      const hasRemove = runtime.getEnhancedRegistry().has('remove');
+      const commands = runtime.getEnhancedRegistry().getCommandNames();
+      
+      // Use assertion to see debug info
+      expect(hasRemove).toBe(true); // This should fail if remove is not registered
+      expect(commands).toContain('remove'); // This should fail if remove is not in the list
+      
       const commandNode: CommandNode = {
         type: 'command',
         name: 'remove',
