@@ -106,47 +106,26 @@ export class HyperscriptBehaviorParser implements BehaviorParser {
   private extractEventHandlers(behaviorCode: string): EventHandlerDefinition[] {
     const handlers: EventHandlerDefinition[] = [];
     
-    // Split behavior into sections and find event handlers
-    const lines = behaviorCode.split('\n').map(line => line.trim()).filter(line => line);
-    let currentHandler: EventHandlerDefinition | null = null;
-    let inEventHandler = false;
+    // Use regex to find all "on <event>" blocks, similar to init block parsing
+    const eventHandlerRegex = /\bon\s+(\w+)(?:\s+from\s+([^\n]+?))?\s*\n([\s\S]*?)(?=\n\s*(?:on\s+\w+|\bend\s*$))/gi;
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+    let match;
+    while ((match = eventHandlerRegex.exec(behaviorCode)) !== null) {
+      const event = match[1];
+      const eventSource = match[2]?.trim();
+      const commandsText = match[3];
       
-      // Start of event handler
-      if (line.startsWith('on ')) {
-        if (currentHandler) {
-          handlers.push(currentHandler);
-        }
-        
-        const match = line.match(/^on\s+(\w+)(?:\s+from\s+(.+))?$/);
-        if (match) {
-          currentHandler = {
-            event: match[1],
-            eventSource: match[2]?.trim(),
-            commands: []
-          };
-          inEventHandler = true;
-        }
-      } 
-      // End of current block
-      else if (line === 'end' && inEventHandler) {
-        if (currentHandler) {
-          handlers.push(currentHandler);
-          currentHandler = null;
-        }
-        inEventHandler = false;
-      }
-      // Command within event handler
-      else if (inEventHandler && currentHandler && line !== 'end') {
-        currentHandler.commands.push(line);
-      }
-    }
-    
-    // Add final handler if exists
-    if (currentHandler) {
-      handlers.push(currentHandler);
+      // Extract commands from the handler body
+      const commands = commandsText
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && line !== 'end');
+      
+      handlers.push({
+        event,
+        eventSource,
+        commands
+      });
     }
 
     return handlers;

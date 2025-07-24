@@ -8,6 +8,8 @@ import type {
   BehaviorInstance, 
   BehaviorRegistry as IBehaviorRegistry 
 } from './types.js';
+import { getDefaultOnFeature } from '../on.js';
+import type { ExecutionContext } from '../../types/core.js';
 
 export class BehaviorRegistry implements IBehaviorRegistry {
   private definitions = new Map<string, BehaviorDefinition>();
@@ -75,10 +77,13 @@ export class BehaviorRegistry implements IBehaviorRegistry {
       return;
     }
 
-    // Remove event listeners
-    for (const [listenerKey, listener] of instance.eventListeners) {
-      const eventType = listenerKey.split('-')[0];
-      element.removeEventListener(eventType, listener);
+    const onFeature = getDefaultOnFeature();
+
+    // Remove event listeners using OnFeature
+    for (const [listenerKey, listenerId] of instance.eventListeners) {
+      if (typeof listenerId === 'string') {
+        onFeature.unregister(listenerId);
+      }
     }
 
     // Remove instance
@@ -105,84 +110,197 @@ export class BehaviorRegistry implements IBehaviorRegistry {
       return;
     }
 
-    // Create execution context with behavior parameters
-    const context = this.createBehaviorContext(element, parameterValues);
+    const onFeature = getDefaultOnFeature();
 
-    // Execute init commands sequentially
-    for (const command of definition.initBlock.commands) {
-      if (typeof command === 'string') {
-        // Handle multi-line commands (split and execute each)
-        const commandLines = command.split('\n').map(line => line.trim()).filter(line => line);
-        for (const line of commandLines) {
-          await this.executeCommand(line, context);
-        }
-      } else {
-        await this.executeCommand(command, context);
-      }
+    // Create execution context with behavior parameters
+    const context: ExecutionContext = {
+      me: element,
+      it: null,
+      you: null,
+      result: null,
+      locals: new Map(),
+      globals: new Map(),
+      flags: { halted: false, breaking: false, continuing: false, returning: false, async: false },
+    };
+
+    // Add behavior parameters to context
+    for (const [key, value] of parameterValues) {
+      context.locals.set(key, value);
     }
+
+    // Convert commands to AST format and execute them
+    const commands = definition.initBlock.commands.map(cmd => this.convertToASTCommand(cmd));
+    
+    // Create a fake event for init execution
+    const initEvent = new CustomEvent('init', { detail: { source: 'behavior-init' } });
+    
+    await onFeature.handleEvent(initEvent, commands, context);
   }
 
   private async installEventHandlers(instance: BehaviorInstance): Promise<void> {
     const { definition, element } = instance;
+    const onFeature = getDefaultOnFeature();
 
     for (const handler of definition.eventHandlers) {
-      const listener = await this.createEventListener(instance, handler);
+      // Convert hyperscript commands to AST command nodes
+      const commands = handler.commands.map(cmd => this.convertToASTCommand(cmd));
+      
+      // Create execution context for behavior
+      const context: ExecutionContext = {
+        me: element,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+        flags: { halted: false, breaking: false, continuing: false, returning: false, async: false },
+      };
+
+      // Add behavior parameters to context
+      for (const [key, value] of instance.parameterValues) {
+        context.locals.set(key, value);
+      }
       
       // Determine event target (element or specified source)
       const eventTarget = handler.eventSource 
         ? this.resolveEventSource(handler.eventSource, element, instance.parameterValues)
         : element;
 
-      eventTarget.addEventListener(handler.event, listener);
+      // Use OnFeature to register the event handler
+      const listenerId = onFeature.register(eventTarget as HTMLElement, handler.event, commands, context);
       
-      // Store listener with unique key to handle multiple behaviors
+      // Store listener ID for cleanup
       const listenerKey = `${handler.event}-${definition.name}`;
-      instance.eventListeners.set(listenerKey, listener);
+      instance.eventListeners.set(listenerKey, listenerId as any);
     }
   }
 
-  private async createEventListener(
-    instance: BehaviorInstance, 
-    handler: EventHandlerDefinition
-  ): Promise<EventListener> {
-    return async (event: Event) => {
-      try {
-        const context = this.createBehaviorContext(
-          instance.element, 
-          instance.parameterValues,
-          { event, it: event }
-        );
-
-        // Execute handler commands sequentially
-        console.log('Executing behavior commands:', handler.commands);
-        for (const command of handler.commands) {
-          if (typeof command === 'string') {
-            console.log('Executing command:', command);
-            await this.executeCommand(command, context);
-          }
-        }
-      } catch (error) {
-        console.error('Error in behavior event handler:', error);
+  /**
+   * Convert hyperscript command string to AST command node for OnFeature
+   */
+  private convertToASTCommand(command: any): any {
+    if (typeof command === 'string') {
+      // Parse basic command patterns
+      const trimmed = command.trim();
+      
+      // Handle "increment my.property"
+      if (trimmed.startsWith('increment my.')) {
+        const property = trimmed.replace('increment my.', '');
+        return {
+          type: 'command',
+          name: 'increment',
+          args: [{ type: 'property', target: { type: 'identifier', name: 'me' }, property }]
+        };
       }
-    };
-  }
-
-  private createBehaviorContext(
-    element: HTMLElement, 
-    parameterValues: Map<string, any>,
-    additionalContext?: Record<string, any>
-  ): any {
-    const context = {
-      me: element,
-      ...additionalContext
-    };
-
-    // Add parameter values to context
-    for (const [key, value] of parameterValues) {
-      context[key] = value;
+      
+      // Handle "put X into Y"
+      if (trimmed.includes('put ') && trimmed.includes(' into ')) {
+        const match = trimmed.match(/put (.+) into (.+)/);
+        if (match) {
+          return {
+            type: 'command',
+            name: 'put',
+            args: [
+              this.parseExpression(match[1].trim()),
+              this.parseExpression(match[2].trim())
+            ]
+          };
+        }
+      }
+      
+      // Handle "set my.property to value"
+      if (trimmed.includes('set my.') && trimmed.includes(' to ')) {
+        const match = trimmed.match(/set my\.(\w+) to (.+)/);
+        if (match) {
+          return {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'property', target: { type: 'identifier', name: 'me' }, property: match[1] },
+              this.parseExpression(match[2].trim())
+            ]
+          };
+        }
+      }
+      
+      // Handle "toggle .class on me"
+      if (trimmed.includes('toggle .') && trimmed.includes(' on me')) {
+        const match = trimmed.match(/toggle \.(\w+) on me/);
+        if (match) {
+          return {
+            type: 'command',
+            name: 'toggle',
+            args: [{ type: 'literal', value: match[1] }]
+          };
+        }
+      }
+      
+      // Handle "add .class to me"
+      if (trimmed.includes('add .') && trimmed.includes(' to me')) {
+        const match = trimmed.match(/add \.(\w+) to me/);
+        if (match) {
+          return {
+            type: 'command',
+            name: 'add',
+            args: [{ type: 'literal', value: match[1] }]
+          };
+        }
+      }
+      
+      // Handle "remove .class from me"
+      if (trimmed.includes('remove .') && trimmed.includes(' from me')) {
+        const match = trimmed.match(/remove \.(\w+) from me/);
+        if (match) {
+          return {
+            type: 'command',
+            name: 'remove',
+            args: [{ type: 'literal', value: match[1] }]
+          };
+        }
+      }
+      
+      // Handle basic commands like "log message"
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 1) {
+        const commandName = parts[0];
+        const args = parts.slice(1).map(arg => this.parseExpression(arg));
+        
+        return {
+          type: 'command',
+          name: commandName,
+          args
+        };
+      }
     }
-
-    return context;
+    
+    return command;
+  }
+  
+  /**
+   * Parse expression into AST node
+   */
+  private parseExpression(expr: string): any {
+    const trimmed = expr.trim();
+    
+    // Handle quoted strings
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return { type: 'literal', value: trimmed.slice(1, -1) };
+    }
+    
+    // Handle numbers
+    if (/^\d+$/.test(trimmed)) {
+      return { type: 'literal', value: parseInt(trimmed) };
+    }
+    
+    // Handle property access like "my.property"
+    if (trimmed.startsWith('my.')) {
+      const property = trimmed.slice(3);
+      return { type: 'property', target: { type: 'identifier', name: 'me' }, property };
+    }
+    
+    // Handle identifiers
+    return { type: 'identifier', name: trimmed };
   }
 
   private resolveEventSource(eventSource: string, contextElement: HTMLElement, parameterValues?: Map<string, any>): EventTarget {
@@ -205,201 +323,22 @@ export class BehaviorRegistry implements IBehaviorRegistry {
 
     // Check if it's a parameter reference
     if (parameterValues && parameterValues.has(eventSource)) {
-      const paramValue = parameterValues.get(eventSource);
-      if (paramValue && paramValue.addEventListener) {
-        return paramValue;
+      const element = parameterValues.get(eventSource);
+      if (element && element.addEventListener) {
+        return element;
       }
     }
 
-    // Try as CSS selector
-    const element = document.querySelector(eventSource);
-    if (element) {
-      return element;
+    // Try CSS selector
+    if (eventSource.startsWith('#') || eventSource.startsWith('.') || eventSource.includes('[')) {
+      const element = document.querySelector(eventSource);
+      if (element) {
+        return element;
+      }
     }
 
     // Default to context element if source not found
     return contextElement;
-  }
-
-  private async executeCommand(command: any, context: any): Promise<void> {
-    // This is a placeholder - in real implementation, this would delegate
-    // to the hyperscript command execution system
-    
-    if (typeof command === 'string') {
-      // Mock implementation for testing
-      await this.mockExecuteHyperscriptCommand(command, context);
-    }
-  }
-
-  private async mockExecuteHyperscriptCommand(command: string, context: any): Promise<void> {
-    // Mock implementation for testing purposes
-    // This simulates hyperscript command execution
-    
-    const element = context.me;
-    
-    // Handle common commands for testing
-    if (command.includes('set my.') && command.includes('to')) {
-      const match = command.match(/set my\.(\w+) to (.+)/);
-      if (match) {
-        const property = match[1];
-        const value = this.evaluateMockExpression(match[2], context);
-        (element as any)[property] = value;
-      }
-    } else if (command.includes('increment my.')) {
-      const match = command.match(/increment my\.(\w+)/);
-      if (match) {
-        const property = match[1];
-        (element as any)[property] = ((element as any)[property] || 0) + 1;
-      }
-    } else if (command.includes('put') && command.includes('into me')) {
-      const match = command.match(/put (.+) into me/);
-      if (match) {
-        const value = this.evaluateMockExpression(match[1], context);
-        element.textContent = String(value);
-      }
-    } else if (command.includes('add .') && command.includes('to me')) {
-      const match = command.match(/add \.(\w+) to me/);
-      if (match) {
-        element.classList.add(match[1]);
-      }
-    } else if (command.includes('remove .') && command.includes('from me')) {
-      const match = command.match(/remove \.(\w+) from me/);
-      if (match) {
-        element.classList.remove(match[1]);
-      }
-    } else if (command.includes('remove me')) {
-      element.remove();
-    } else if (command.includes('toggle') && command.includes('on')) {
-      const match = command.match(/toggle (?:the )?(.+) on (.+)/);
-      if (match) {
-        const className = this.evaluateMockExpression(match[1], context);
-        const targetElement = this.evaluateMockExpression(match[2], context);
-        if (targetElement && targetElement.classList) {
-          targetElement.classList.toggle(className);
-        }
-      }
-    } else if (command.includes('toggle ') && command.includes(' on me')) {
-      const match = command.match(/toggle (?:the )?(.+) on me/);
-      if (match) {
-        const className = this.evaluateMockExpression(match[1], context);
-        context.me.classList.toggle(className);
-      }
-    } else if (command.includes('log')) {
-      const match = command.match(/log (.+)/);
-      if (match) {
-        const value = this.evaluateMockExpression(match[1], context);
-        console.log(value);
-      }
-    } else if (command.includes('if no ') && command.includes('set')) {
-      // Handle "if no param set param to value"
-      const match = command.match(/if no (\w+) set (?:the )?(\w+) to (.+)/);
-      if (match) {
-        const checkParam = match[1];
-        const setParam = match[2];
-        const value = this.evaluateMockExpression(match[3], context);
-        
-        if (!context[checkParam] || context[checkParam] === undefined || context[checkParam] === null) {
-          context[setParam] = value;
-        }
-      }
-    } else if (command.includes('if ') && command.includes('matches')) {
-      // Handle "if element matches Element then add .valid to me else add .invalid to me"
-      const match = command.match(/if (\w+) matches (\w+) then (.+) else (.+)/);
-      if (match) {
-        const element = context[match[1]];
-        const type = match[2];
-        const thenCommand = match[3];
-        const elseCommand = match[4];
-        
-        // Simple type checking for testing
-        const isElementType = element && element.nodeType === Node.ELEMENT_NODE;
-        
-        if (type === 'Element' && isElementType) {
-          await this.mockExecuteHyperscriptCommand(thenCommand, context);
-        } else {
-          await this.mockExecuteHyperscriptCommand(elseCommand, context);
-        }
-      }
-    } else if (command.includes('wait') && command.includes('then')) {
-      // Handle "wait X ms then Y"
-      const match = command.match(/wait (.+) ms then (.+)/);
-      if (match) {
-        const timeExpr = match[1];
-        const thenCommand = match[2];
-        const timeout = this.evaluateMockExpression(timeExpr, context);
-        
-        setTimeout(() => {
-          this.mockExecuteHyperscriptCommand(thenCommand, context);
-        }, timeout);
-      }
-    } else if (command.includes('add (') && command.includes('to me')) {
-      // Handle "add ("class-" + value) to me"
-      const match = command.match(/add \((.+)\) to me/);
-      if (match) {
-        const classExpr = match[1];
-        const className = this.evaluateMockExpression(classExpr, context);
-        element.classList.add(className);
-      }
-    }
-  }
-
-  private evaluateMockExpression(expression: string, context: any): any {
-    // Mock expression evaluation for testing
-    expression = expression.trim();
-    
-    if (expression.startsWith('"') && expression.endsWith('"')) {
-      return expression.slice(1, -1);
-    }
-    
-    if (expression.startsWith('my.')) {
-      const property = expression.slice(3);
-      return (context.me as any)[property];
-    }
-    
-    if (expression === 'Date.now()') {
-      return Date.now();
-    }
-    
-    if (expression === 'me') {
-      return context.me;
-    }
-    
-    // Handle numbers
-    if (/^\d+$/.test(expression)) {
-      return parseInt(expression);
-    }
-    
-    // Handle boolean literals  
-    if (expression === 'true') {
-      return true;
-    }
-    if (expression === 'false') {
-      return false;
-    }
-    
-    if (context.hasOwnProperty(expression)) {
-      return context[expression];
-    }
-    
-    // Handle string concatenation
-    if (expression.includes(' + ')) {
-      const parts = expression.split(' + ').map(part => {
-        part = part.trim();
-        if (part.startsWith('"') && part.endsWith('"')) {
-          return part.slice(1, -1);
-        }
-        if (part.startsWith('my.')) {
-          return (context.me as any)[part.slice(3)];
-        }
-        if (context.hasOwnProperty(part)) {
-          return context[part];
-        }
-        return part;
-      });
-      return parts.join('');
-    }
-    
-    return expression;
   }
 }
 

@@ -246,6 +246,39 @@ export class OnFeature {
         }
         break;
         
+      case 'set':
+        if (element && command.args.length >= 2) {
+          const target = command.args[0];
+          const value = this.evaluateArgument(command.args[1], context);
+          
+          if (target.type === 'property' && target.property) {
+            (element as any)[target.property] = value;
+          }
+        }
+        break;
+        
+      case 'increment':
+        if (element && command.args.length > 0) {
+          const target = command.args[0];
+          
+          if (target.type === 'property' && target.property) {
+            const currentValue = (element as any)[target.property] || 0;
+            (element as any)[target.property] = currentValue + 1;
+          }
+        }
+        break;
+        
+      case 'put':
+        if (command.args.length >= 2) {
+          const value = this.evaluateArgument(command.args[0], context);
+          const target = command.args[1];
+          
+          if (target.type === 'identifier' && target.name === 'me' && element) {
+            element.textContent = String(value);
+          }
+        }
+        break;
+        
       default:
         throw new Error(`Unknown command: ${command.name}`);
     }
@@ -279,6 +312,14 @@ export class OnFeature {
           default:
             return undefined;
         }
+        
+      case 'property':
+        // Handle property access like my.clickCount
+        if (arg.target && arg.target.type === 'identifier' && arg.target.name === 'me') {
+          const element = context.me as HTMLElement;
+          return (element as any)[arg.property];
+        }
+        return undefined;
         
       default:
         return undefined;
