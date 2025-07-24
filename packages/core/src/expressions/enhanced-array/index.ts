@@ -100,38 +100,38 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
   /**
    * Validate array literal expression arguments
    */
-  async validate(args: unknown[]): Promise<ValidationResult> {
+  validate(args: unknown[]): ValidationResult {
     try {
       const validatedArgs = this.inputSchema.parse(args);
       
       // Array literals are always valid, but we can check for potential issues
-      const issues: string[] = [];
+      const errors: ValidationError[] = [];
       
       // Check for extremely large arrays
       if (validatedArgs.length > 10000) {
-        issues.push(`Array literal with ${validatedArgs.length} elements may impact performance`);
-      }
-      
-      // Check for null/undefined elements that might be unintentional (warning only)
-      const nullCount = validatedArgs.filter(el => el === null || el === undefined).length;
-      if (nullCount > 0 && nullCount < validatedArgs.length) {
-        // This is just a warning, not an error - mixed null/undefined is common in JavaScript
-        // issues.push(`Array contains ${nullCount} null/undefined elements - this may be unintentional`);
+        errors.push({
+          type: 'runtime-error',
+          message: `Array literal with ${validatedArgs.length} elements may impact performance`,
+          suggestion: 'Consider breaking large arrays into smaller chunks'
+        });
       }
 
       return {
-        isValid: issues.length === 0,
-        errors: issues,
-        suggestions: issues.length > 0 ? [
+        isValid: errors.length === 0,
+        errors,
+        suggestions: errors.length > 0 ? [
           'Consider breaking large arrays into smaller chunks',
-          'Verify that null/undefined elements are intentional',
           'Use consistent element types when possible'
         ] : []
       };
     } catch (error) {
       return {
         isValid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid array literal arguments'],
+        errors: [{
+          type: 'invalid-syntax',
+          message: error instanceof Error ? error.message : 'Invalid array literal arguments',
+          suggestion: 'Provide elements as an array'
+        }],
         suggestions: [
           'Provide elements as an array',
           'Ensure all elements are valid hyperscript values'
@@ -144,7 +144,7 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
    * Evaluate array literal expression
    */
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     ...args: unknown[]
   ): Promise<EvaluationResult<HyperScriptValue[]>> {
     try {
@@ -155,10 +155,9 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
           success: false,
           error: {
             name: 'ArrayLiteralValidationError',
-            message: `Array literal validation failed: ${validationResult.errors.join(', ')}`,
+            message: `Array literal validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'ARRAY_LITERAL_VALIDATION_ERROR',
-            severity: 'error',
-            context: { args, validation: validationResult }
+            suggestions: validationResult.suggestions
           },
           type: 'error'
         };
@@ -188,8 +187,7 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
           name: 'ArrayLiteralEvaluationError',
           message: `Failed to evaluate array literal: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_LITERAL_EVALUATION_ERROR',
-          severity: 'error',
-          context: { args, error }
+          suggestions: ['Check array element values', 'Ensure all elements are valid']
         },
         type: 'error'
       };
@@ -291,30 +289,38 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
   /**
    * Validate array index expression arguments
    */
-  async validate(args: unknown[]): Promise<ValidationResult> {
+  validate(args: unknown[]): ValidationResult {
     try {
       const validatedArgs = this.inputSchema.parse(args);
       const [target, index] = validatedArgs;
       
-      const issues: string[] = [];
+      const errors: ValidationError[] = [];
       
       // Basic validation for target
       if (target === null || target === undefined) {
-        issues.push('Cannot index null or undefined value');
+        errors.push({
+          type: 'type-mismatch',
+          message: 'Cannot index null or undefined value',
+          suggestion: 'Provide an array or array-like object'
+        });
       }
       
       // Validate index type
       if (typeof index === 'object' && index !== null) {
         const rangeObj = index as { start?: number; end?: number };
         if (rangeObj.start !== undefined && rangeObj.end !== undefined && rangeObj.start > rangeObj.end) {
-          issues.push('Range start index cannot be greater than end index');
+          errors.push({
+            type: 'invalid-syntax',
+            message: 'Range start index cannot be greater than end index',
+            suggestion: 'Ensure start <= end in range objects'
+          });
         }
       }
 
       return {
-        isValid: issues.length === 0,
-        errors: issues,
-        suggestions: issues.length > 0 ? [
+        isValid: errors.length === 0,
+        errors,
+        suggestions: errors.length > 0 ? [
           'Ensure target is an array or array-like object',
           'Use valid numeric indices or range objects',
           'Check that range start is less than or equal to end'
@@ -323,7 +329,11 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
     } catch (error) {
       return {
         isValid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid array index arguments'],
+        errors: [{
+          type: 'invalid-syntax',
+          message: error instanceof Error ? error.message : 'Invalid array index arguments',
+          suggestion: 'Provide valid arguments for array indexing'
+        }],
         suggestions: [
           'Provide an array-like target as the first argument',
           'Provide a numeric index or range object as the second argument'
@@ -336,7 +346,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
    * Evaluate array index expression
    */
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     ...args: unknown[]
   ): Promise<EvaluationResult<HyperScriptValue>> {
     try {
@@ -347,10 +357,9 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
           success: false,
           error: {
             name: 'ArrayIndexValidationError',
-            message: `Array index validation failed: ${validationResult.errors.join(', ')}`,
+            message: `Array index validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'ARRAY_INDEX_VALIDATION_ERROR',
-            severity: 'error',
-            context: { args, validation: validationResult }
+            suggestions: validationResult.suggestions
           },
           type: 'error'
         };
