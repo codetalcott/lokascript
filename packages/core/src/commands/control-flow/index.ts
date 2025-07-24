@@ -7,6 +7,7 @@ export { BreakCommand } from './break';
 export { ContinueCommand } from './continue';
 export { HaltCommand } from './halt';
 export { IfCommand } from './if';
+export { UnlessCommand } from './unless';
 export { RepeatCommand } from './repeat';
 export { ReturnCommand } from './return';
 export { ThrowCommand } from './throw';
