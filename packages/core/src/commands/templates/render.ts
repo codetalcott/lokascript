@@ -75,25 +75,19 @@ export class RenderCommand implements CommandImplementation {
     data: any, 
     context: ExecutionContext
   ): Promise<DocumentFragment> {
-    // Use the new two-phase template system
-    const { TemplateCompiler } = await import('./template-compiler.js');
-    const { OptimizedTemplateExecutor } = await import('./template-executor-optimized.js');
+    // Use the fixed template processor
+    const { FixedTemplateProcessor } = await import('./template-processor-fixed.js');
     
-    const compiler = new TemplateCompiler();
-    const executor = new OptimizedTemplateExecutor();
+    const processor = new FixedTemplateProcessor();
     
     // Get template content as string
     const templateContent = templateElement.innerHTML;
     
-    // Phase 1: Compile the template
-    const compiled = compiler.compileTemplate(templateContent);
-    
-    // Phase 2: Create execution context
+    // Create template context with data
     const templateContext = this.createTemplateContext(data, context);
-    const executionContext = compiler.createTemplateExecutionContext(templateContext);
     
-    // Phase 3: Execute the template
-    const html = await executor.executeTemplate(compiled, executionContext);
+    // Process the template to HTML
+    const html = await processor.processTemplate(templateContent, templateContext);
     
     // Convert HTML string back to DocumentFragment
     const fragment = document.createDocumentFragment();
