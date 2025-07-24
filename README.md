@@ -1,15 +1,15 @@
 # HyperFixi Monorepo
 
-🚀 **Modular hyperscript expression engine with utilities**
+🚀 **Production-ready hyperscript implementation with 800+ tests**
 
-A modern, high-performance hyperscript implementation with comprehensive utility
-functions. Built for modularity, performance, and developer experience.
+A modern, comprehensive hyperscript implementation with full command system,
+advanced expressions, and high _hyperscript compatibility. Built for production use.
 
 ## Packages
 
 | Package                              | Description                       | Bundle Size | Status            |
 | ------------------------------------ | --------------------------------- | ----------- | ----------------- |
-| [`@hyperfixi/core`](./packages/core) | Pure hyperscript parser & runtime | ~12KB       | ✅ Internal Tests |
+| [`@hyperfixi/core`](./packages/core) | Full hyperscript implementation | ~12KB       | ✅ 800+ Tests |
 | [`@hyperfixi/fixi`](./packages/fixi) | Utility functions & helpers       | ~8KB        | 🚧 In Development |
 | [`hyperfixi`](./packages/integrated) | Complete solution (core + fixi)   | ~20KB       | 🚧 In Development |
 
