@@ -485,7 +485,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
     tags: ['mathematical', 'arithmetic', 'addition', 'operator']
   };
 
-  async evaluate(context: TypedExecutionContext, left: any, right: any): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, left: unknown, right: unknown): Promise<EvaluationResult<number>> {
     try {
       const leftNum = this.ensureNumber(left, 'Left operand');
       const rightNum = this.ensureNumber(right, 'Right operand');
@@ -522,7 +522,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
     }
   }
 
-  private ensureNumber(value: any, context: string): EvaluationResult<number> {
+  private ensureNumber(value: unknown, context: string): EvaluationResult<number> {
     if (typeof value === 'number') {
       if (!isFinite(value)) {
         return {
@@ -630,7 +630,7 @@ export class EnhancedSubtractionExpression implements TypedExpressionImplementat
     tags: ['mathematical', 'arithmetic', 'subtraction', 'operator']
   };
 
-  async evaluate(context: TypedExecutionContext, left: any, right: any): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, left: unknown, right: unknown): Promise<EvaluationResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     const leftResult = (additionExpr as any).ensureNumber(left, 'Left operand');
     const rightResult = (additionExpr as any).ensureNumber(right, 'Right operand');
@@ -712,7 +712,7 @@ export class EnhancedMultiplicationExpression implements TypedExpressionImplemen
     tags: ['mathematical', 'arithmetic', 'multiplication', 'operator']
   };
 
-  async evaluate(context: TypedExecutionContext, left: any, right: any): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, left: unknown, right: unknown): Promise<EvaluationResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     const leftResult = (additionExpr as any).ensureNumber(left, 'Left operand');
     const rightResult = (additionExpr as any).ensureNumber(right, 'Right operand');
@@ -794,7 +794,7 @@ export class EnhancedDivisionExpression implements TypedExpressionImplementation
     tags: ['mathematical', 'arithmetic', 'division', 'operator']
   };
 
-  async evaluate(context: TypedExecutionContext, left: any, right: any): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, left: unknown, right: unknown): Promise<EvaluationResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     const leftResult = (additionExpr as any).ensureNumber(left, 'Left operand');
     const rightResult = (additionExpr as any).ensureNumber(right, 'Right operand');
@@ -882,7 +882,7 @@ export class EnhancedParenthesesExpression implements TypedExpressionImplementat
     tags: ['grouping', 'parentheses', 'precedence', 'order']
   };
 
-  async evaluate(context: TypedExecutionContext, expression: HyperScriptValue): Promise<EvaluationResult<HyperScriptValue>> {
+  async evaluate(_context: TypedExecutionContext, expression: HyperScriptValue): Promise<EvaluationResult<HyperScriptValue>> {
     return {
       success: true,
       value: expression,
@@ -964,8 +964,8 @@ export async function evaluateNumberLiteral(
 }
 
 export async function evaluateAddition(
-  left: any,
-  right: any,
+  left: unknown,
+  right: unknown,
   context: TypedExecutionContext
 ): Promise<EvaluationResult<number>> {
   const expression = new EnhancedAdditionExpression();
@@ -973,8 +973,8 @@ export async function evaluateAddition(
 }
 
 export async function evaluateDivision(
-  left: any,
-  right: any,
+  left: unknown,
+  right: unknown,
   context: TypedExecutionContext
 ): Promise<EvaluationResult<number>> {
   const expression = new EnhancedDivisionExpression();
