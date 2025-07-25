@@ -16,7 +16,7 @@ and passing the original test suite.
 
 ## Analysis of Official Test Suite
 
-Located at: `/Users/williamtalcott/projects/_hyperscript/test/`
+Located at: `_hyperscript/test/` (requires official _hyperscript repository)
 
 ### Test Structure
 

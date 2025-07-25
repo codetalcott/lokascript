@@ -1,7 +1,7 @@
 /**
  * Template Compatibility Tests
  * Tests our render command implementation against official _hyperscript template.js patterns
- * Based on: /Users/williamtalcott/projects/_hyperscript/test/templates/templates.js
+ * Based on: official _hyperscript test/templates/templates.js
  */
 
 import { test, expect, Page } from '@playwright/test';

@@ -109,15 +109,13 @@ mcp-server-hyperscript/node_modules/
 # Lock files (keep package-lock.json)
 deno.lock
 
-# Analysis outputs
-hyperscript_i18n_analysis.md
-lsp-reference
+# Development tools and archives
+/tools/lsp-development/
+/tools/legacy/i18n-prototypes/
+analyze_hyperscript_keywords.js
 
-# i18n development files
-hyperscript-i18n*.js
-hyperscript-i18n*.html
-test-hyperscript-i18n.js
-README-hyperscript-i18n.md
+# Generated LSP data files (contain local paths)
+packages/core/scripts/lsp-data/*.json
 
 # i18n package outputs
 packages/i18n/dist/

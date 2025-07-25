@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Paths
-const HYPERSCRIPT_ROOT = '/Users/williamtalcott/projects/_hyperscript';
+const HYPERSCRIPT_ROOT = process.env.HYPERSCRIPT_ROOT || '../_hyperscript';
 const HYPERFIXI_ROOT = join(__dirname, '..');
 const TEST_OUTPUT_DIR = join(HYPERFIXI_ROOT, 'tmp', 'hyperscript-tests');
 

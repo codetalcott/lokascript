@@ -482,7 +482,7 @@ describe("Put Command", () => {
 ### **Hyperscript Language Specification Sources**
 
 - **hyperscript-lsp database**:
-  `/Users/williamtalcott/projects/hyperscript-lsp/data/extracted/json/`
+  `hyperscript-lsp/data/extracted/json/`
   - `markdown_commands.json` - 30 commands with syntax and examples
   - `markdown_expressions.json` - 22 expression categories
   - `markdown_features.json` - 8 top-level features

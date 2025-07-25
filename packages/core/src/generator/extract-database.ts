@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Database paths
-const LSP_PROJECT_PATH = '/Users/williamtalcott/projects/hyperscript-lsp';
+const LSP_PROJECT_PATH = process.env.LSP_PROJECT_PATH || '../hyperscript-lsp';
 const LSP_DB_PATH = join(LSP_PROJECT_PATH, 'data/database/hyperscript.db');
 const LOCAL_DB_PATH = join(__dirname, '../../data/hyperscript.db');
 

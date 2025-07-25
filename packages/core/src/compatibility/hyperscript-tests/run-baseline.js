@@ -16,7 +16,7 @@ console.log('🎯 HyperFixi vs _hyperscript Baseline Test Runner');
 console.log('=' .repeat(60));
 
 // Step 1: Check if we have the required files
-const hyperscriptPath = '/Users/williamtalcott/projects/_hyperscript';
+const hyperscriptPath = process.env.HYPERSCRIPT_ROOT || '../_hyperscript';
 const testPath = path.join(hyperscriptPath, 'test');
 
 if (!fs.existsSync(testPath)) {

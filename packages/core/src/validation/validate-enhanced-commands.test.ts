@@ -85,31 +85,31 @@ describe('Enhanced Command Pattern Validation', () => {
       const commands = [
         {
           name: 'HideCommand',
-          filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/hide.ts',
+          filePath: './src/commands/dom/hide.ts',
           CommandClass: HideCommand,
           factoryFunction: createHideCommand
         },
         {
           name: 'ShowCommand', 
-          filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/show.ts',
+          filePath: './src/commands/dom/show.ts',
           CommandClass: ShowCommand,
           factoryFunction: createShowCommand
         },
         {
           name: 'ToggleCommand',
-          filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/toggle.ts',
+          filePath: './src/commands/dom/toggle.ts',
           CommandClass: ToggleCommand,
           factoryFunction: createToggleCommand
         },
         {
           name: 'AddCommand',
-          filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/add.ts',
+          filePath: './src/commands/dom/add.ts',
           CommandClass: AddCommand,
           factoryFunction: createAddCommand
         },
         {
           name: 'RemoveCommand',
-          filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/remove.ts',
+          filePath: './src/commands/dom/remove.ts',
           CommandClass: RemoveCommand,
           factoryFunction: createRemoveCommand
         }

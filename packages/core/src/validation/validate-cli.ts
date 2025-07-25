@@ -17,35 +17,35 @@ import { RemoveCommand, createRemoveCommand } from '../commands/dom/remove.ts';
 const COMMAND_REGISTRY = [
   {
     name: 'HideCommand',
-    filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/hide.ts',
+    filePath: './src/commands/dom/hide.ts',
     CommandClass: HideCommand,
     factoryFunction: createHideCommand,
     category: 'dom'
   },
   {
     name: 'ShowCommand', 
-    filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/show.ts',
+    filePath: './src/commands/dom/show.ts',
     CommandClass: ShowCommand,
     factoryFunction: createShowCommand,
     category: 'dom'
   },
   {
     name: 'ToggleCommand',
-    filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/toggle.ts',
+    filePath: './src/commands/dom/toggle.ts',
     CommandClass: ToggleCommand,
     factoryFunction: createToggleCommand,
     category: 'dom'
   },
   {
     name: 'AddCommand',
-    filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/add.ts',
+    filePath: './src/commands/dom/add.ts',
     CommandClass: AddCommand,
     factoryFunction: createAddCommand,
     category: 'dom'
   },
   {
     name: 'RemoveCommand',
-    filePath: '/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/dom/remove.ts',
+    filePath: './src/commands/dom/remove.ts',
     CommandClass: RemoveCommand,
     factoryFunction: createRemoveCommand,
     category: 'dom'
