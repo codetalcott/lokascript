@@ -39,6 +39,19 @@ export type NotExpressionInput = z.infer<typeof NotExpressionInputSchema>;
 export class EnhancedNotExpression implements TypedExpressionImplementation<
   boolean
 > {
+  public readonly name = 'not';
+  public readonly category = 'logical' as const;
+  public readonly precedence = 9; // High precedence for unary operators
+  public readonly associativity = 'right' as const; // Right associative for unary
+  public readonly outputType = 'boolean' as const;
+  
+  public readonly analysisInfo = {
+    isPure: true,
+    canThrow: false,  
+    complexity: 'O(1)' as const,
+    dependencies: []
+  };
+
   public readonly inputSchema = NotExpressionInputSchema;
   
   public readonly documentation: LLMDocumentation = {
@@ -113,7 +126,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
   /**
    * Evaluate 'not' expression
    */
-  async evaluate(
+  evaluate(
     _context: TypedExecutionContext,
     ...args: HyperScriptValue[]
   ): Promise<EvaluationResult<boolean>> {
@@ -121,7 +134,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
       // Validate input arguments
       const validationResult = this.validate(args);
       if (!validationResult.isValid) {
-        return {
+        return Promise.resolve({
           success: false,
           error: {
             name: 'NotExpressionValidationError',
@@ -130,7 +143,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
             suggestions: validationResult.suggestions
           },
           type: 'error'
-        };
+        });
       }
 
       const [value] = this.inputSchema.parse(args);
@@ -139,13 +152,13 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
       const truthiness = this.evaluateTruthiness(value);
       const negated = !truthiness;
       
-      return {
+      return Promise.resolve({
         success: true,
         value: negated,
         type: 'boolean'
-      };
+      });
     } catch (error) {
-      return {
+      return Promise.resolve({
         success: false,
         error: {
           name: 'NotExpressionEvaluationError',
@@ -154,7 +167,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
           suggestions: ['Check the input value', 'Ensure the value is evaluable']
         },
         type: 'error'
-      };
+      });
     }
   }
 

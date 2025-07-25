@@ -76,6 +76,19 @@ export const SUPPORTED_CONVERSION_TYPES = {
 export class EnhancedAsExpression implements TypedExpressionImplementation<
   HyperScriptValue
 > {
+  public readonly name = 'as';
+  public readonly category = 'conversion' as const;
+  public readonly precedence = 5; // Medium precedence for type conversion
+  public readonly associativity = 'left' as const;
+  public readonly outputType = 'object' as const;
+  
+  public readonly analysisInfo = {
+    isPure: true, // Type conversion is pure
+    canThrow: false, // We handle errors gracefully
+    complexity: 'O(n)' as const, // May need to process complex data
+    dependencies: ['type-conversion']
+  };
+
   public readonly inputSchema = AsExpressionInputSchema;
   
   public readonly documentation: LLMDocumentation = {

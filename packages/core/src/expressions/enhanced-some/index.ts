@@ -39,6 +39,19 @@ export type SomeExpressionInput = z.infer<typeof SomeExpressionInputSchema>;
 export class EnhancedSomeExpression implements TypedExpressionImplementation<
   boolean
 > {
+  public readonly name = 'some';
+  public readonly category = 'logical' as const;
+  public readonly precedence = 8; // Medium precedence for existence checks
+  public readonly associativity = 'left' as const;
+  public readonly outputType = 'boolean' as const;
+  
+  public readonly analysisInfo = {
+    isPure: false, // DOM queries are not pure
+    canThrow: false,
+    complexity: 'O(n)' as const, // May need to query DOM
+    dependencies: ['DOM']
+  };
+
   public readonly inputSchema = SomeExpressionInputSchema;
   
   public readonly documentation: LLMDocumentation = {
@@ -250,7 +263,7 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
   /**
    * Evaluate DOM selector to see if it matches any elements
    */
-  private async evaluateDOMSelector(selector: string, context: TypedExecutionContext): Promise<boolean> {
+  private evaluateDOMSelector(selector: string, context: TypedExecutionContext): Promise<boolean> {
     try {
       let cssSelector = selector;
       
@@ -260,15 +273,15 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
       }
       
       // Use context.me as search root if available, otherwise search from document
-      let searchRoot: Element | Document = context.me || document;
+      const searchRoot: Element | Document = context.me || document;
       
       // Query for elements
       const elements = searchRoot.querySelectorAll(cssSelector);
-      return elements.length > 0;
+      return Promise.resolve(elements.length > 0);
       
-    } catch (error) {
+    } catch (_error) {
       // If selector is invalid, treat as non-existent
-      return false;
+      return Promise.resolve(false);
     }
   }
 
@@ -277,7 +290,7 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
    */
   private convertHyperscriptSelector(selector: string): string {
     // Remove < and />
-    let cssSelector = selector.slice(1, -2);
+    const cssSelector = selector.slice(1, -2);
     
     // Handle class selectors: p.foo -> p.foo
     // Handle ID selectors: div#myId -> div#myId

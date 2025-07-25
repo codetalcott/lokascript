@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import type {
   HyperScriptValue,
+  HyperScriptValueType,
   EvaluationResult,
   TypedExpressionImplementation,
   LLMDocumentation,
@@ -40,6 +41,19 @@ export type PossessiveExpressionInput = z.infer<typeof PossessiveExpressionInput
 export class EnhancedPossessiveExpression implements TypedExpressionImplementation<
   HyperScriptValue
 > {
+  public readonly name = 'possessive';
+  public readonly category = 'object' as const;
+  public readonly precedence = 10; // High precedence for property access
+  public readonly associativity = 'left' as const;
+  public readonly outputType = 'object' as const;
+  
+  public readonly analysisInfo = {
+    isPure: false, // Property access can have side effects
+    canThrow: false, // We handle errors gracefully
+    complexity: 'O(1)' as const, // Direct property access
+    dependencies: ['object-properties']
+  };
+
   public readonly inputSchema = PossessiveExpressionInputSchema;
   
   public readonly documentation: LLMDocumentation = {
