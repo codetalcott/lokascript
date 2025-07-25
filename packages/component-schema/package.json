@@ -1,0 +1,75 @@
+{
+  "name": "@hyperfixi/component-schema",
+  "version": "0.1.0",
+  "description": "Universal component definition schema and validation for HyperFixi server-side hyperscript compilation",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "schemas/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "validate-schemas": "node scripts/validate-schemas.js",
+    "generate-examples": "node scripts/generate-examples.js",
+    "prepublishOnly": "npm run build && npm run validate-schemas"
+  },
+  "keywords": [
+    "hyperscript",
+    "component",
+    "schema",
+    "validation",
+    "server-side",
+    "hyperfixi",
+    "json-schema"
+  ],
+  "author": "HyperFixi Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyperfixi/hyperfixi.git",
+    "directory": "packages/component-schema"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.54.0",
+    "rollup": "^4.6.1",
+    "rollup-plugin-dts": "^6.1.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schemas": {
+      "import": "./schemas/index.json",
+      "require": "./schemas/index.json"
+    }
+  }
+}
