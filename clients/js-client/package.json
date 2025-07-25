@@ -1,7 +1,7 @@
 {
   "name": "@hyperfixi/client",
   "version": "0.1.0",
-  "description": "JavaScript/TypeScript client library for HyperFixi server-side hyperscript compilation",
+  "description": "JavaScript/TypeScript client library for HyperFixi server-side hyperscript compilation with Express and Elysia support",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -27,6 +27,8 @@
     "server-side",
     "compilation",
     "express",
+    "elysia",
+    "bun",
     "middleware",
     "typescript",
     "hyperfixi"
@@ -59,10 +61,14 @@
     "vitest": "^1.0.4"
   },
   "peerDependencies": {
-    "express": "^4.18.0"
+    "express": "^4.18.0",
+    "elysia": "^0.8.0"
   },
   "peerDependenciesMeta": {
     "express": {
+      "optional": true
+    },
+    "elysia": {
       "optional": true
     }
   },
@@ -79,6 +85,11 @@
       "import": "./dist/express.mjs",
       "require": "./dist/express.js",
       "types": "./dist/express.d.ts"
+    },
+    "./elysia": {
+      "import": "./dist/elysia.mjs",
+      "require": "./dist/elysia.js",
+      "types": "./dist/elysia.d.ts"
     }
   }
 }

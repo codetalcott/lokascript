@@ -1,16 +1,17 @@
 # HyperFixi JavaScript/TypeScript Client
 
-A comprehensive JavaScript/TypeScript client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) server-side hyperscript compilation, with native Express.js integration and full TypeScript support.
+A comprehensive JavaScript/TypeScript client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) server-side hyperscript compilation, with native Express.js and ElysiaJS integration and full TypeScript support.
 
 ## Features
 
 - **HTTP Client** with automatic retry logic and comprehensive error handling  
 - **Express Middleware** for automatic hyperscript compilation in HTML responses
+- **ElysiaJS Plugin** for modern Bun-based server integration with full type safety
 - **Template Helpers** for server-side rendering with hyperscript support
 - **TypeScript Support** with complete type definitions and strict typing
 - **Template Variables** with `{{variable}}` substitution support
 - **Error Handling** with custom error classes and detailed error information
-- **Modular Architecture** with tree-shakable exports and optional Express integration
+- **Modular Architecture** with tree-shakable exports and optional framework integration
 
 ## Installation
 
@@ -25,6 +26,11 @@ pnpm add @hyperfixi/client
 For Express integration:
 ```bash
 npm install @hyperfixi/client express
+```
+
+For ElysiaJS integration:
+```bash
+npm install @hyperfixi/client elysia
 ```
 
 ## Quick Start
@@ -110,6 +116,171 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3000);
+```
+
+## ElysiaJS Integration
+
+### Plugin Setup
+
+```typescript
+import { Elysia } from 'elysia';
+import { createClient, hyperfixiPlugin, createElysiaConfig } from '@hyperfixi/client/elysia';
+
+// Create HyperFixi client
+const client = createClient({ baseURL: 'http://localhost:3000' });
+
+// Create and use HyperFixi plugin
+const app = new Elysia()
+  .use(hyperfixiPlugin({
+    client,
+    compileOnResponse: true,
+    compilationOptions: {
+      minify: true,
+      compatibility: 'modern'
+    },
+    skipPaths: ['/api/', '/static/'],
+    basePath: '/hyperscript'
+  }))
+  .get('/', () => `
+    <!DOCTYPE html>
+    <html>
+    <body>
+      <!-- This hyperscript will be automatically compiled -->
+      <button _="on click toggle .active">Toggle Active</button>
+      
+      <!-- This will also be compiled -->
+      <form data-hs="on submit fetch /api/save then put result into #status">
+        <input type="text" name="message">
+        <button type="submit">Save</button>
+      </form>
+      
+      <div id="status"></div>
+    </body>
+    </html>
+  `)
+  .listen(3000);
+
+console.log('🦊 Elysia is running at http://localhost:3000');
+```
+
+### Advanced ElysiaJS Configuration
+
+```typescript
+import { hyperfixiPlugin, ElysiaPluginConfig } from '@hyperfixi/client/elysia';
+
+const config: ElysiaPluginConfig = {
+  client,
+  compileOnResponse: true,
+  templateVarsHeader: 'x-hyperscript-template-vars',
+  compilationOptions: {
+    minify: true,
+    compatibility: 'modern',
+    sourceMap: false
+  },
+  skipPaths: ['/api/', '/static/', '/assets/'],
+  onlyContentTypes: ['text/html', 'application/xhtml+xml'],
+  basePath: '/hyperscript',
+  errorHandler: (context, error) => {
+    console.error('HyperFixi ElysiaJS plugin error:', error);
+    // Custom error handling logic
+  }
+};
+
+const app = new Elysia().use(hyperfixiPlugin(config));
+```
+
+### Template Variables with ElysiaJS
+
+```typescript
+import { getTemplateVars, getElysiaHyperfixiClient } from '@hyperfixi/client/elysia';
+
+const app = new Elysia()
+  .use(hyperfixiPlugin({ client }))
+  .get('/user/:id', ({ params, set }) => {
+    // Set template variables via header
+    set.headers['x-hyperscript-template-vars'] = JSON.stringify({ 
+      userId: params.id 
+    });
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <body>
+        <h1>User Profile</h1>
+        <!-- Template variables will be substituted before compilation -->
+        <button _="on click fetch /api/users/{{userId}} then put result into #profile">
+          Load Profile
+        </button>
+        <div id="profile"></div>
+      </body>
+      </html>
+    `;
+  });
+```
+
+### ElysiaJS Template Helpers
+
+```typescript
+import { createElysiaTemplateHelpers } from '@hyperfixi/client/elysia';
+
+// Create template helpers
+const helpers = createElysiaTemplateHelpers(client);
+
+const app = new Elysia()
+  .use(hyperfixiPlugin({ client }))
+  .get('/interactive', async ({ params }) => {
+    const userId = params.id;
+    
+    // Compile hyperscript with template variables
+    const onclickAttr = await helpers.compileHyperscript(
+      'on click fetch /api/users/{{userId}} then put result into #profile',
+      { userId }
+    );
+    
+    return `
+      <button ${onclickAttr}>Load User Profile</button>
+      <div id="profile"></div>
+    `;
+  })
+  .get('/custom-compile', async ({ request }) => {
+    const client = getElysiaHyperfixiClient({ request } as any);
+    
+    if (!client) {
+      return new Response(
+        JSON.stringify({ error: 'HyperFixi client not available' }), 
+        { status: 500 }
+      );
+    }
+
+    try {
+      const result = await client.compileScript('on click log "Custom compilation"');
+      return { compiled: result.compiled };
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }), 
+        { status: 500 }
+      );
+    }
+  });
+```
+
+### Standalone ElysiaJS API App
+
+```typescript
+import { createHyperfixiApp } from '@hyperfixi/client/elysia';
+
+// Create standalone app with HyperFixi API routes only
+const api = createHyperfixiApp(client, '/hyperscript');
+
+// This creates the following endpoints:
+// POST /hyperscript/compile
+// POST /hyperscript/validate  
+// POST /hyperscript/batch
+// GET  /hyperscript/health
+// GET  /hyperscript/cache/stats
+// POST /hyperscript/cache/clear
+
+api.listen(3001);
 ```
 
 ### Advanced Middleware Configuration

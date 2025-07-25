@@ -2,7 +2,7 @@
  * HyperFixi JavaScript/TypeScript Client
  * 
  * A comprehensive client library for HyperFixi server-side hyperscript compilation
- * with Express.js middleware integration and TypeScript support.
+ * with Express.js, ElysiaJS middleware integration and TypeScript support.
  */
 
 // Core client exports
@@ -38,6 +38,27 @@ export {
   ValidationError,
   CompilationFailedError,
 } from './types';
+
+// Express.js integration
+export {
+  hyperfixiMiddleware,
+  createTemplateHelpers,
+  createApiRoutes,
+  getHyperfixiClient,
+  getTemplateVars,
+  createMiddlewareConfig,
+} from './express';
+
+// ElysiaJS integration
+export {
+  hyperfixiPlugin,
+  createElysiaTemplateHelpers,
+  createHyperfixiApp,
+  createElysiaConfig,
+  getHyperfixiClient as getElysiaHyperfixiClient,
+  getTemplateVars as getElysiaTemplateVars,
+} from './elysia';
+export type { ElysiaPluginConfig } from './elysia';
 
 // Constants
 export const DEFAULT_BASE_URL = 'http://localhost:3000';
