@@ -380,7 +380,7 @@ export class TemplateCompiler {
     let result = html;
 
     for (const [name, value] of Object.entries(variables)) {
-      const pattern = new RegExp(`\\{\\{${name}\\}\\}`, 'g');
+      const pattern = new RegExp(`\\{\\{\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\}\\}`, 'g');
       const stringValue = this.valueToString(value);
       result = result.replace(pattern, stringValue);
     }

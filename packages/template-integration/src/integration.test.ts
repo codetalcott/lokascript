@@ -24,7 +24,7 @@ describe('Template Integration Tests', () => {
         <div class="product-page" _="init fetch /api/product/{{productId}} then put result into me">
           <div class="product-header">
             <h1>{{product.name}}</h1>
-            <div class="price">${{product.price}}</div>
+            <div class="price">$\{{product.price}}</div>
           </div>
           
           <div class="product-images">
@@ -92,7 +92,7 @@ describe('Template Integration Tests', () => {
           <div class="dashboard-content">
             <div class="stats-grid">
               <stat-card title="Total Orders" value="{{stats.orders}}" icon="shopping-cart" />
-              <stat-card title="Revenue" value="${{stats.revenue}}" icon="dollar" />
+              <stat-card title="Revenue" value="$\{{stats.revenue}}" icon="dollar" />
               <stat-card title="Customers" value="{{stats.customers}}" icon="users" />
             </div>
 
@@ -286,7 +286,7 @@ describe('Template Integration Tests', () => {
 
     it('should handle multiple simultaneous compilations', async () => {
       const templates = Array.from({ length: 50 }, (_, i) => 
-        `<div class="item-${i}">{{message${i}}}</div>`
+        `<div class="item-${i}">\{{message${i}}}</div>`
       );
 
       const startTime = performance.now();
@@ -402,7 +402,7 @@ describe('Template Integration Tests', () => {
       let template = '<div>';
       
       for (let i = 0; i < depth; i++) {
-        template += `<nested-component level="${i}">`;
+        template += `<nested-component level="\${i}">`;
       }
       
       template += 'Deep content';

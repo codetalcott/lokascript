@@ -4,17 +4,29 @@ import { Dictionary } from '../types';
 import { es } from './es';
 import { ko } from './ko';
 import { zh } from './zh';
+import { fr } from './fr';
+import { de } from './de';
+import { ja } from './ja';
+import { ar } from './ar';
 
 export const dictionaries: Record<string, Dictionary> = {
   es,
   ko,
   zh,
+  fr,
+  de,
+  ja,
+  ar,
 };
 
 // Export individual dictionaries for direct import
 export { es } from './es';
 export { ko } from './ko';
 export { zh } from './zh';
+export { fr } from './fr';
+export { de } from './de';
+export { ja } from './ja';
+export { ar } from './ar';
 
 // Helper to get all supported locales
 export const supportedLocales = Object.keys(dictionaries);

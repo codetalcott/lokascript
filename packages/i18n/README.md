@@ -1,6 +1,6 @@
 # @hyperfixi/i18n
 
-Internationalization (i18n) support for Hyperscript, enabling developers to write hyperscript in their native languages.
+Comprehensive internationalization (i18n) support for HyperFixi and _hyperscript applications.
 
 ## Installation
 
@@ -10,13 +10,17 @@ npm install @hyperfixi/i18n
 
 ## Features
 
-- 🌍 **Multi-language support**: Write hyperscript in Spanish, Korean, Chinese, and more
-- 🔄 **Bidirectional translation**: Translate between any supported languages
-- 🛠️ **Build tool integration**: Vite, Webpack, and Rollup plugins
-- 🔍 **Language detection**: Automatically detect the language of hyperscript code
-- 📝 **LSP integration**: Full IDE support with completions and diagnostics
-- ✅ **Validation**: Ensure translations are complete and correct
-- 🎯 **Type-safe**: Full TypeScript support
+- **🌍 Multi-language Support**: Built-in dictionaries for 8 languages (English, Spanish, French, German, Japanese, Korean, Chinese, Arabic)
+- **🔄 Runtime Locale Switching**: Dynamic language switching in browser environments with automatic detection
+- **⚡ SSR Integration**: Server-side rendering with locale detection, SEO optimization, and hydration support
+- **📊 Pluralization**: CLDR-compliant pluralization rules for complex languages (Russian, Arabic, etc.)
+- **💰 Formatting**: Locale-aware number, date, currency, and unit formatting with fallbacks
+- **🛠️ Build Tool Integration**: Vite and Webpack plugins for build-time translation
+- **🔍 Language Detection**: Automatically detect the language of hyperscript code from content
+- **✅ Validation**: Comprehensive dictionary validation with coverage reports and warnings
+- **🎯 Type Safety**: Full TypeScript support with comprehensive type definitions
+- **⚡ Performance**: Caching, lazy loading, and optimized translation algorithms
+- **📱 Browser Support**: Modern APIs with graceful fallbacks for legacy environments
 
 ## Quick Start
 
@@ -88,19 +92,16 @@ module.exports = {
 
 ## Supported Languages
 
-| Language | Code | Example |
-|----------|------|---------|
-| English | `en` | `on click toggle .active` |
-| Spanish | `es` | `en clic alternar .activo` |
-| Korean | `ko` | `클릭 토글 .active` |
-| Chinese (Simplified) | `zh` | `当 点击 切换 .active` |
-| Chinese (Traditional) | `zh-TW` | `當 點擊 切換 .active` |
-| Japanese | `ja` | Coming soon |
-| French | `fr` | Coming soon |
-| German | `de` | Coming soon |
-| Portuguese | `pt` | Coming soon |
-| Hindi | `hi` | Coming soon |
-| Arabic | `ar` | Coming soon |
+| Language | Code | Status | Features | Example |
+|----------|------|--------|----------|---------|
+| English | `en` | ✅ Complete | Base language | `on click toggle .active` |
+| Spanish | `es` | ✅ Complete | Full dictionary, pluralization | `en clic alternar .activo` |
+| French | `fr` | ✅ Complete | Full dictionary, pluralization | `sur clic basculer .actif` |
+| German | `de` | ✅ Complete | Full dictionary, pluralization | `bei klick umschalten .aktiv` |
+| Japanese | `ja` | ✅ Complete | Full dictionary | `で クリック 切り替え .active` |
+| Korean | `ko` | ✅ Complete | Full dictionary | `클릭 토글 .active` |
+| Chinese | `zh` | ✅ Complete | Full dictionary | `当 点击 切换 .active` |
+| Arabic | `ar` | ✅ Complete | Full dictionary, RTL support, pluralization | `على نقر بدل .active` |
 
 ## API Reference
 

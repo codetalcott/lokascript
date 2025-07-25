@@ -49,15 +49,8 @@ export class TemplateParser {
    * Parse a single template node
    */
   private parseNode(): TemplateNode | null {
-    this.skipWhitespace();
-
     if (this.isAtEnd()) {
       return null;
-    }
-
-    // Check for template variable
-    if (this.matches(this.options.delimiters?.start ?? '{{')) {
-      return this.parseTemplateVariable();
     }
 
     // Check for HTML tag
@@ -65,7 +58,7 @@ export class TemplateParser {
       return this.parseElement();
     }
 
-    // Parse text content
+    // Parse text content (including template variables)
     return this.parseText();
   }
 
@@ -86,7 +79,14 @@ export class TemplateParser {
 
     // Handle self-closing tags and closing tags
     if (this.peek() === '/') {
-      throw this.error('Unexpected closing tag');
+      // This is a closing tag, skip it gracefully and return null
+      while (!this.isAtEnd() && this.peek() !== '>') {
+        this.advance();
+      }
+      if (!this.isAtEnd()) {
+        this.advance(); // consume '>'
+      }
+      return null; // indicate this tag was handled
     }
 
     const tagName = this.parseTagName();
@@ -246,45 +246,15 @@ export class TemplateParser {
     return value;
   }
 
-  /**
-   * Parse template variable {{variable}}
-   */
-  private parseTemplateVariable(): TemplateNode {
-    const location = { line: this.currentLine, column: this.currentColumn };
-    const start = this.options.delimiters?.start ?? '{{';
-    const end = this.options.delimiters?.end ?? '}}';
-
-    if (!this.consume(start)) {
-      throw this.error(`Expected ${start}`);
-    }
-
-    let content = '';
-    while (!this.isAtEnd() && !this.matches(end)) {
-      content += this.advance();
-    }
-
-    if (!this.consume(end)) {
-      throw this.error(`Expected ${end}`);
-    }
-
-    return {
-      type: 'text',
-      content: content.trim(),
-      location,
-    };
-  }
 
   /**
-   * Parse text content
+   * Parse text content (including template variables)
    */
   private parseText(): TemplateNode {
     const location = { line: this.currentLine, column: this.currentColumn };
     let content = '';
-    const start = this.options.delimiters?.start ?? '{{';
 
-    while (!this.isAtEnd() && 
-           this.peek() !== '<' && 
-           !this.matches(start)) {
+    while (!this.isAtEnd() && this.peek() !== '<') {
       content += this.advance();
     }
 
