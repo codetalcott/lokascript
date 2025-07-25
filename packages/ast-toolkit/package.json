@@ -1,0 +1,79 @@
+{
+  "name": "@hyperfixi/ast-toolkit",
+  "version": "0.1.0",
+  "description": "Advanced AST toolkit for hyperscript with AI-friendly APIs",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./visitor": {
+      "types": "./dist/visitor/index.d.ts",
+      "import": "./dist/visitor/index.js"
+    },
+    "./query": {
+      "types": "./dist/query/index.d.ts",
+      "import": "./dist/query/index.js"
+    },
+    "./analyzer": {
+      "types": "./dist/analyzer/index.d.ts",
+      "import": "./dist/analyzer/index.js"
+    },
+    "./transformer": {
+      "types": "./dist/transformer/index.d.ts",
+      "import": "./dist/transformer/index.js"
+    },
+    "./generator": {
+      "types": "./dist/generator/index.d.ts",
+      "import": "./dist/generator/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "import": "./dist/ai/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "ast",
+    "hyperscript",
+    "parser",
+    "code-analysis",
+    "ai",
+    "llm",
+    "typescript"
+  ],
+  "author": "HyperFixi Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@hyperfixi/core": "file:../core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "happy-dom": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
