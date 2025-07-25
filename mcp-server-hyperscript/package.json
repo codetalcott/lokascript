@@ -6,17 +6,19 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "test": "vitest"
   },
   "keywords": [
     "mcp",
-    "model-context-protocol",
     "hyperscript",
     "ai",
-    "llm",
-    "claude"
+    "assistant",
+    "development-tools"
   ],
+  "author": "Hyperfixi Team",
+  "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
     "@hyperfixi/core": "workspace:*"
@@ -24,9 +26,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }
