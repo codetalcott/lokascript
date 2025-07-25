@@ -81,7 +81,7 @@ export {
  * Quick registration with minimal preset (most common)
  * @param {Object} hyperscript - Hyperscript instance
  */
-export function registerMinimal(hyperscript) {
+export async function registerMinimal(hyperscript) {
     const { minimal } = await import('./presets/minimal.js');
     minimal.register(hyperscript);
 }
@@ -90,7 +90,7 @@ export function registerMinimal(hyperscript) {
  * Quick registration with standard preset (recommended)
  * @param {Object} hyperscript - Hyperscript instance
  */
-export function registerStandard(hyperscript) {
+export async function registerStandard(hyperscript) {
     const { standard } = await import('./presets/standard.js');
     standard.register(hyperscript);
 }
@@ -99,7 +99,7 @@ export function registerStandard(hyperscript) {
  * Quick registration with events preset (full compatibility)
  * @param {Object} hyperscript - Hyperscript instance
  */
-export function registerEvents(hyperscript) {
+export async function registerEvents(hyperscript) {
     const { events } = await import('./presets/events.js');
     events.register(hyperscript);
 }
@@ -108,7 +108,7 @@ export function registerEvents(hyperscript) {
  * Quick registration with complete preset (everything)
  * @param {Object} hyperscript - Hyperscript instance
  */
-export function registerComplete(hyperscript) {
+export async function registerComplete(hyperscript) {
     const { complete } = await import('./presets/complete.js');
     complete.register(hyperscript);
 }
