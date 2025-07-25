@@ -7,14 +7,13 @@
 import { z } from 'zod';
 import type {
   HyperScriptValue,
-  HyperScriptValueType,
   EvaluationResult,
   TypedExpressionImplementation,
   LLMDocumentation,
   ValidationResult,
-  ValidationError
+  ValidationError,
+  TypedExecutionContext
 } from '../../types/enhanced-core.ts';
-import type { TypedExpressionContext } from '../../test-utilities.ts';
 
 // ============================================================================
 // Input Validation Schemas
@@ -84,7 +83,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
     parameters: [
       {
         name: 'value',
-        type: 'any',
+        type: 'object',
         description: 'Value to convert to target type',
         optional: false,
         examples: ['42', '"hello"', 'formElement', '[1, 2, 3]', 'null']
@@ -98,7 +97,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
       }
     ],
     returns: {
-      type: 'any',
+      type: 'object',
       description: 'Converted value in target type format',
       examples: ['"42"', '42', '{"key": "value"}', 'true', '<div>content</div>']
     },
@@ -145,7 +144,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
       // Validate target type
       if (typeof targetType !== 'string' || targetType.length === 0) {
         errors.push({
-          type: 'invalid-type',
+          type: 'type-mismatch',
           message: 'Target type must be a non-empty string',
           suggestion: 'Provide a valid type like "String", "Int", "JSON", or "Values"'
         });
@@ -154,7 +153,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
         const normalizedType = this.normalizeTypeName(targetType);
         if (!this.isValidConversionType(normalizedType)) {
           errors.push({
-            type: 'unsupported-type',
+            type: 'runtime-error',
             message: `Conversion type "${targetType}" is not supported`,
             suggestion: 'Use supported types: String, Int, JSON, Values, HTML, Boolean, Fixed, etc.'
           });
@@ -190,8 +189,8 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
    * Evaluate 'as' expression
    */
   async evaluate(
-    context: TypedExpressionContext,
-    ...args: unknown[]
+    context: TypedExecutionContext,
+    ...args: HyperScriptValue[]
   ): Promise<EvaluationResult<HyperScriptValue>> {
     try {
       // Validate input arguments
@@ -212,7 +211,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
       const [value, targetType] = this.inputSchema.parse(args);
       
       // Perform type conversion
-      const convertedValue = await this.convertValue(value, targetType, context);
+      const convertedValue = this.convertValue(value, targetType, context);
       
       return {
         success: true,
@@ -236,11 +235,11 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
   /**
    * Convert value to target type
    */
-  private async convertValue(
+  private convertValue(
     value: unknown,
     targetType: string,
-    _context: TypedExpressionContext
-  ): Promise<HyperScriptValue> {
+    _context: TypedExecutionContext
+  ): HyperScriptValue {
     // Handle null values - most conversions preserve null
     if (value === null || value === undefined) {
       const type = this.normalizeTypeName(targetType);
@@ -662,10 +661,10 @@ export function isValidAsExpressionInput(args: unknown[]): args is AsExpressionI
 /**
  * Quick utility function for testing
  */
-export async function evaluateAs(
-  value: unknown,
+export function evaluateAs(
+  value: HyperScriptValue,
   targetType: string,
-  context: TypedExpressionContext
+  context: TypedExecutionContext
 ): Promise<EvaluationResult<HyperScriptValue>> {
   const expression = new EnhancedAsExpression();
   return expression.evaluate(context, value, targetType);

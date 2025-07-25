@@ -7,14 +7,13 @@
 import { z } from 'zod';
 import type {
   HyperScriptValue,
-  HyperScriptValueType,
   EvaluationResult,
   TypedExpressionImplementation,
   LLMDocumentation,
   ValidationResult,
-  ValidationError
+  ValidationError,
+  TypedExecutionContext
 } from '../../types/enhanced-core.ts';
-import type { TypedExpressionContext } from '../../test-utilities.ts';
 
 // ============================================================================
 // Input Validation Schemas
@@ -47,7 +46,7 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
     parameters: [
       {
         name: 'value',
-        type: 'any',
+        type: 'object',
         description: 'Value to check for existence (arrays, selectors, or any value)',
         optional: false,
         examples: ['null', '"hello"', '[]', '[1, 2, 3]', '<div/>', '.myClass']
@@ -121,8 +120,8 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
    * Evaluate 'some' expression
    */
   async evaluate(
-    context: TypedExpressionContext,
-    ...args: unknown[]
+    context: TypedExecutionContext,
+    ...args: HyperScriptValue[]
   ): Promise<EvaluationResult<boolean>> {
     try {
       // Validate input arguments
@@ -167,7 +166,7 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
   /**
    * Evaluate existence/non-emptiness of a value
    */
-  private async evaluateExistence(value: unknown, context: TypedExpressionContext): Promise<boolean> {
+  private async evaluateExistence(value: unknown, context: TypedExecutionContext): Promise<boolean> {
     // Handle null and undefined - they don't exist
     if (value === null || value === undefined) {
       return false;
@@ -251,7 +250,7 @@ export class EnhancedSomeExpression implements TypedExpressionImplementation<
   /**
    * Evaluate DOM selector to see if it matches any elements
    */
-  private async evaluateDOMSelector(selector: string, context: TypedExpressionContext): Promise<boolean> {
+  private async evaluateDOMSelector(selector: string, context: TypedExecutionContext): Promise<boolean> {
     try {
       let cssSelector = selector;
       
@@ -347,9 +346,9 @@ export function isValidSomeExpressionInput(args: unknown[]): args is SomeExpress
 /**
  * Quick utility function for testing
  */
-export async function evaluateSome(
-  value: unknown,
-  context: TypedExpressionContext
+export function evaluateSome(
+  value: HyperScriptValue,
+  context: TypedExecutionContext
 ): Promise<EvaluationResult<boolean>> {
   const expression = new EnhancedSomeExpression();
   return expression.evaluate(context, value);

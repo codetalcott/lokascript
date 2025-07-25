@@ -7,14 +7,13 @@
 import { z } from 'zod';
 import type {
   HyperScriptValue,
-  HyperScriptValueType,
   EvaluationResult,
   TypedExpressionImplementation,
   LLMDocumentation,
   ValidationResult,
-  ValidationError
+  ValidationError,
+  TypedExecutionContext
 } from '../../types/enhanced-core.ts';
-import type { TypedExpressionContext } from '../../test-utilities.ts';
 
 // ============================================================================
 // Input Validation Schemas
@@ -47,7 +46,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
     parameters: [
       {
         name: 'value',
-        type: 'any',
+        type: 'object',
         description: 'Value to negate (evaluated for truthiness)',
         optional: false,
         examples: ['true', 'false', '0', '""', 'null', 'undefined', '[]', '{}']
@@ -115,8 +114,8 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
    * Evaluate 'not' expression
    */
   async evaluate(
-    _context: TypedExpressionContext,
-    ...args: unknown[]
+    _context: TypedExecutionContext,
+    ...args: HyperScriptValue[]
   ): Promise<EvaluationResult<boolean>> {
     try {
       // Validate input arguments
@@ -165,7 +164,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
   private evaluateTruthiness(value: unknown): boolean {
     // JavaScript falsy values: false, 0, -0, 0n, "", null, undefined, NaN
     if (value === false) return false;
-    if (value === 0 || value === -0) return false;
+    if (value === 0 || Object.is(value, -0)) return false;
     if (value === 0n) return false;
     if (value === '') return false;
     if (value === null) return false;
@@ -246,9 +245,9 @@ export function isValidNotExpressionInput(args: unknown[]): args is NotExpressio
 /**
  * Quick utility function for testing
  */
-export async function evaluateNot(
-  value: unknown,
-  context: TypedExpressionContext
+export function evaluateNot(
+  value: HyperScriptValue,
+  context: TypedExecutionContext
 ): Promise<EvaluationResult<boolean>> {
   const expression = new EnhancedNotExpression();
   return expression.evaluate(context, value);

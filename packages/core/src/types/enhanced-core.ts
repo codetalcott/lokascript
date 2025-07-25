@@ -23,7 +23,9 @@ export type HyperScriptValue =
   | HTMLElement[]
   | NodeList
   | Record<string, unknown>
-  | unknown[];
+  | unknown[]
+  | Date
+  | DocumentFragment;
 
 /**
  * Strongly typed evaluation results with error handling
@@ -216,7 +218,8 @@ export type HyperScriptValueType =
   | 'object'
   | 'array'
   | 'function'
-  | 'promise';
+  | 'promise'
+  | 'fragment';
 
 export type ExpressionCategory = 
   | 'reference'

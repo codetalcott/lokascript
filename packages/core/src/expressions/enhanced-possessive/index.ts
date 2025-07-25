@@ -7,14 +7,13 @@
 import { z } from 'zod';
 import type {
   HyperScriptValue,
-  HyperScriptValueType,
   EvaluationResult,
   TypedExpressionImplementation,
   LLMDocumentation,
   ValidationResult,
-  ValidationError
+  ValidationError,
+  TypedExecutionContext
 } from '../../types/enhanced-core.ts';
-import type { TypedExpressionContext } from '../../test-utilities.ts';
 
 // ============================================================================
 // Input Validation Schemas
@@ -48,7 +47,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
     parameters: [
       {
         name: 'object',
-        type: 'any',
+        type: 'object',
         description: 'Object or element to access property from',
         optional: false,
         examples: ['element', 'my', 'its', '#selector', '.class']
@@ -62,7 +61,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
       }
     ],
     returns: {
-      type: 'any',
+      type: 'object',
       description: 'Property value, attribute string, or style value',
       examples: ['string', 'number', 'boolean', 'array', 'CSSStyleDeclaration']
     },
@@ -103,14 +102,14 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
     try {
       this.inputSchema.parse(args);
       
-      const [object, property] = args as PossessiveExpressionInput;
+      const [_object, property] = args as PossessiveExpressionInput;
       const errors: ValidationError[] = [];
       
       // Validate property string format (this check runs after Zod parsing)
       // If we get here, the second argument should be validated by Zod as a string
       if (typeof property !== 'string' || property.length === 0) {
         errors.push({
-          type: 'invalid-property',
+          type: 'type-mismatch',
           message: 'Property name must be a non-empty string',
           suggestion: 'Provide a valid property name like "value", "@data-foo", or "*color"'
         });
@@ -121,7 +120,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
         const dangerousProps = ['__proto__', 'constructor', 'prototype'];
         if (dangerousProps.includes(property)) {
           errors.push({
-            type: 'security-warning',
+            type: 'runtime-error',
             message: `Accessing "${property}" property may be unsafe`,
             suggestion: 'Avoid accessing prototype chain properties for security'
           });
@@ -157,8 +156,8 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
    * Evaluate possessive expression
    */
   async evaluate(
-    context: TypedExpressionContext,
-    ...args: unknown[]
+    context: TypedExecutionContext,
+    ...args: HyperScriptValue[]
   ): Promise<EvaluationResult<HyperScriptValue>> {
     try {
       // Validate input arguments
@@ -206,7 +205,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
   private async accessProperty(
     object: unknown,
     property: string,
-    context: TypedExpressionContext
+    context: TypedExecutionContext
   ): Promise<HyperScriptValue> {
     // Handle null/undefined objects
     if (object === null || object === undefined) {
@@ -254,7 +253,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
     // Handle computed styles for certain properties
     if (styleProp.startsWith('computed-')) {
       const computedProp = styleProp.slice(9); // Remove 'computed-' prefix
-      const styles = window.getComputedStyle(element);
+      const styles = globalThis.getComputedStyle(element);
       return styles.getPropertyValue(computedProp) || null;
     }
 
@@ -290,7 +289,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
 
     // Handle DOM elements
     if (this.isElement(object)) {
-      const element = object as any;
+      const element = object as Element & Record<string, unknown>;
       
       // Special handling for common DOM properties
       if (property in element) {
@@ -306,7 +305,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
     }
 
     // Handle regular objects
-    const obj = object as Record<string, any>;
+    const obj = object as Record<string, unknown>;
     return obj[property] ?? null;
   }
 
@@ -392,10 +391,10 @@ export function isValidPossessiveExpressionInput(args: unknown[]): args is Posse
 /**
  * Quick utility function for testing
  */
-export async function evaluatePossessive(
-  object: unknown,
+export function evaluatePossessive(
+  object: HyperScriptValue,
   property: string,
-  context: TypedExpressionContext
+  context: TypedExecutionContext
 ): Promise<EvaluationResult<HyperScriptValue>> {
   const expression = new EnhancedPossessiveExpression();
   return expression.evaluate(context, object, property);
