@@ -1,0 +1,96 @@
+{
+  "name": "@hyperfixi/testing-framework",
+  "version": "0.1.0",
+  "description": "Cross-platform behavior testing suite for HyperFixi applications",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hyperfixi-test": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./runner": {
+      "import": "./dist/runner.mjs",
+      "require": "./dist/runner.js",
+      "types": "./dist/runner.d.ts"
+    },
+    "./assertions": {
+      "import": "./dist/assertions.mjs",
+      "require": "./dist/assertions.js",
+      "types": "./dist/assertions.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser.mjs",
+      "require": "./dist/browser.js",
+      "types": "./dist/browser.d.ts"
+    },
+    "./e2e": {
+      "import": "./dist/e2e.mjs",
+      "require": "./dist/e2e.js",
+      "types": "./dist/e2e.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx",
+    "lint:fix": "eslint src --ext ts,tsx --fix"
+  },
+  "keywords": [
+    "hyperscript",
+    "testing",
+    "behavior-testing",
+    "e2e",
+    "cross-platform",
+    "test-runner",
+    "assertions",
+    "browser-testing",
+    "hyperfixi"
+  ],
+  "author": "HyperFixi Team",
+  "license": "MIT",
+  "dependencies": {
+    "@hyperfixi/core": "workspace:*",
+    "puppeteer": "^21.0.0",
+    "playwright": "^1.40.0",
+    "jsdom": "^23.0.0",
+    "diff": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/diff": "^5.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "puppeteer": "^21.0.0",
+    "playwright": "^1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "puppeteer": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
