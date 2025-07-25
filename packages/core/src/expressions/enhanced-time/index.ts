@@ -10,8 +10,6 @@ import type {
   TypedExecutionContext,
   HyperScriptValue,
   EvaluationResult,
-  ValidationResult,
-  HyperScriptError,
   LLMDocumentation
 } from '../../types/enhanced-core.js';
 
