@@ -50,6 +50,18 @@ export const pluralRules: Record<string, PluralRule> = {
   ja: () => 'other',
   ko: () => 'other',
   
+  // Turkish
+  tr: (n) => n === 1 ? 'one' : 'other',
+  
+  // Indonesian (no pluralization, but has different forms)
+  id: () => 'other',
+  
+  // Quechua (simple plural rule)
+  qu: (n) => n === 1 ? 'one' : 'other',
+  
+  // Swahili
+  sw: (n) => n === 1 ? 'one' : 'other',
+  
   // Czech
   cs: (n) => {
     if (n === 1) return 'one';
@@ -228,6 +240,78 @@ export const pluralTimeExpressions: Record<string, Record<string, PluralForms>> 
       other: 'يوم',
     },
   },
+  
+  tr: {
+    second: {
+      one: 'saniye',
+      other: 'saniye',
+    },
+    minute: {
+      one: 'dakika',
+      other: 'dakika',
+    },
+    hour: {
+      one: 'saat',
+      other: 'saat',
+    },
+    day: {
+      one: 'gün',
+      other: 'gün',
+    },
+  },
+  
+  id: {
+    second: {
+      other: 'detik',
+    },
+    minute: {
+      other: 'menit',
+    },
+    hour: {
+      other: 'jam',
+    },
+    day: {
+      other: 'hari',
+    },
+  },
+  
+  qu: {
+    second: {
+      one: 'sikundu',
+      other: 'sikundukuna',
+    },
+    minute: {
+      one: 'minutu',
+      other: 'minutukuna',
+    },
+    hour: {
+      one: 'hora',
+      other: 'horakuna',
+    },
+    day: {
+      one: 'p_unchaw',
+      other: 'p_unchawkuna',
+    },
+  },
+  
+  sw: {
+    second: {
+      one: 'sekunde',
+      other: 'sekunde',
+    },
+    minute: {
+      one: 'dakika',
+      other: 'dakika',
+    },
+    hour: {
+      one: 'saa',
+      other: 'masaa',
+    },
+    day: {
+      one: 'siku',
+      other: 'siku',
+    },
+  },
 };
 
 /**
@@ -293,6 +377,10 @@ export class PluralAwareTranslator {
       zh: (n) => `第${n}`,
       ja: (n) => `${n}番目`,
       ko: (n) => `${n}번째`,
+      tr: (n) => `${n}.`,
+      id: (n) => `ke-${n}`,
+      qu: (n) => `${n}-ñiqin`,
+      sw: (n) => `wa ${n}`,
     };
 
     const ordinalFn = ordinals[locale] || ordinals.en;

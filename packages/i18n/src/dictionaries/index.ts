@@ -8,6 +8,10 @@ import { fr } from './fr';
 import { de } from './de';
 import { ja } from './ja';
 import { ar } from './ar';
+import { tr } from './tr';
+import { id } from './id';
+import { qu } from './qu';
+import { sw } from './sw';
 
 export const dictionaries: Record<string, Dictionary> = {
   es,
@@ -17,6 +21,10 @@ export const dictionaries: Record<string, Dictionary> = {
   de,
   ja,
   ar,
+  tr,
+  id,
+  qu,
+  sw,
 };
 
 // Export individual dictionaries for direct import
@@ -27,6 +35,10 @@ export { fr } from './fr';
 export { de } from './de';
 export { ja } from './ja';
 export { ar } from './ar';
+export { tr } from './tr';
+export { id } from './id';
+export { qu } from './qu';
+export { sw } from './sw';
 
 // Helper to get all supported locales
 export const supportedLocales = Object.keys(dictionaries);

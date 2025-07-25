@@ -1,0 +1,42 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: {
+    index: 'src/index.ts',
+    analyzer: 'src/analyzer.ts',
+    optimizer: 'src/optimizer.ts',
+    bundler: 'src/bundler.ts',
+    'quick-start': 'src/quick-start.ts',
+  },
+  format: ['cjs', 'esm'],
+  dts: true,
+  clean: true,
+  sourcemap: true,
+  target: 'es2020',
+  minify: false,
+  splitting: false,
+  treeshake: true,
+  external: [
+    '@hyperfixi/core',
+    'esbuild',
+    'rollup',
+    'terser',
+    'fs-extra',
+    'glob',
+    'semver',
+    'source-map',
+    'acorn',
+    'acorn-walk',
+    'magic-string',
+    'zlib',
+    'brotli',
+    '@rollup/plugin-node-resolve',
+    '@rollup/plugin-commonjs',
+    '@rollup/plugin-typescript',
+    'rollup-plugin-terser',
+    'chokidar',
+  ],
+  banner: {
+    js: '/* HyperFixi Smart Bundling System */',
+  },
+});
