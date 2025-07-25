@@ -1,9 +1,18 @@
 /**
- * Reference expressions for hyperscript
- * Handles me, you, it, CSS selectors, and element references
+ * Enhanced Reference expressions for hyperscript
+ * Handles me, you, it, CSS selectors, and element references with enhanced TypeScript integration
  */
 
 import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import type { 
+  TypedExpressionImplementation, 
+  TypedExecutionContext, 
+  HyperScriptValue, 
+  EvaluationResult,
+  ValidationResult,
+  HyperScriptError,
+  LLMDocumentation
+} from '../../types/enhanced-core.js';
 
 // ============================================================================
 // Core Reference Variables
