@@ -355,11 +355,7 @@ export function benchmarkASTOperations(ast: ASTNode): BenchmarkResult[] {
     {
       name: 'AST Traversal',
       operation: () => {
-        let nodeCount = 0;
-        visit(ast, {
-          enter: () => { nodeCount++; }
-        });
-        return nodeCount;
+        return countNodes(ast);
       }
     }
   ];
@@ -545,9 +541,25 @@ function generateASTHash(ast: ASTNode): string {
  */
 function countNodes(ast: ASTNode): number {
   let count = 0;
-  visit(ast, {
-    enter: () => { count++; }
-  });
+  
+  function traverse(node: any) {
+    if (!node || typeof node !== 'object') return;
+    
+    count++;
+    
+    // Traverse all properties that might contain child nodes
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'features' || key === 'commands' || key === 'then' || key === 'else' || key === 'body' || key === 'args') {
+        if (Array.isArray(value)) {
+          value.forEach(child => traverse(child));
+        } else if (value) {
+          traverse(value);
+        }
+      }
+    }
+  }
+  
+  traverse(ast);
   return count;
 }
 

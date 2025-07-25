@@ -109,3 +109,26 @@ export type {
   SemanticRelationship,
   SemanticComplexity
 } from './semantic/index.js';
+
+// Performance Optimization functionality - WORKING
+export {
+  benchmarkOperation,
+  benchmarkASTOperations,
+  calculateComplexityOptimized,
+  analyzeMetricsOptimized,
+  findNodesOptimized,
+  processASTsBatch,
+  setPerformanceConfig,
+  getPerformanceConfig,
+  analyzePerformance,
+  getCacheStats,
+  clearAllCaches,
+  formatBenchmarkResults,
+  formatOptimizationSuggestions
+} from './performance/index.js';
+
+export type {
+  BenchmarkResult,
+  PerformanceConfig,
+  OptimizationSuggestion
+} from './performance/index.js';

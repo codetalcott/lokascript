@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Hyperscript I18n Demo - Español</title>
+    <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
+    <script src="hyperscript-i18n.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .demo-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        .clicked {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hyperscript Internacionalización - Español</h1>
+    
+    <div class="demo-section">
+        <h2>Ejemplo 1: Alternar clase</h2>
+        <p>Código original en español:</p>
+        <pre><code>&lt;button _="en clic alternar .clicked"&gt;
+    Haz clic en mí
+&lt;/button&gt;</code></pre>
+        
+        <button _="en clic alternar .clicked">
+            Haz clic en mí
+        </button>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Ejemplo 2: Esperar y mostrar</h2>
+        <p>Código original en español:</p>
+        <pre><code>&lt;button _="en clic 
+    establecer yo.innerText a 'Esperando...'
+    esperar 2 segundos
+    establecer yo.innerText a '¡Listo!'"&gt;
+    Esperar 2 segundos
+&lt;/button&gt;</code></pre>
+        
+        <button _="en clic 
+            establecer yo.innerText a 'Esperando...'
+            esperar 2 segundos
+            establecer yo.innerText a '¡Listo!'">
+            Esperar 2 segundos
+        </button>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Ejemplo 3: Condicionales</h2>
+        <p>Código original en español:</p>
+        <pre><code>&lt;button _="en clic 
+    si yo.classList.contains('activo')
+        quitar .activo de yo
+        establecer yo.innerText a 'Inactivo'
+    sino
+        agregar .activo a yo
+        establecer yo.innerText a 'Activo'
+    fin"&gt;
+    Estado: Inactivo
+&lt;/button&gt;</code></pre>
+        
+        <button _="en clic 
+            si yo.classList.contains('activo')
+                quitar .activo de yo
+                establecer yo.innerText a 'Estado: Inactivo'
+            sino
+                agregar .activo a yo
+                establecer yo.innerText a 'Estado: Activo'
+            fin">
+            Estado: Inactivo
+        </button>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Ejemplo 4: Mostrar y ocultar</h2>
+        <p>Código original en español:</p>
+        <pre><code>&lt;button _="en clic alternar .hidden en #mensaje"&gt;
+    Alternar mensaje
+&lt;/button&gt;
+&lt;div id="mensaje" class="hidden"&gt;
+    ¡Este es un mensaje secreto!
+&lt;/div&gt;</code></pre>
+        
+        <button _="en clic alternar .hidden en #mensaje">
+            Alternar mensaje
+        </button>
+        <div id="mensaje" class="hidden" style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 4px;">
+            ¡Este es un mensaje secreto!
+        </div>
+    </div>
+    
+    <script>
+        // Initialize the i18n plugin
+        const i18n = new HyperscriptI18n('es');
+        i18n.install(_hyperscript);
+        
+        // Re-process the page to apply translations
+        _hyperscript.processNode(document.body);
+    </script>
+</body>
+</html>
