@@ -4,11 +4,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.pnpm-store/
 
 # Build outputs
 dist/
 build/
 *.tsbuildinfo
+lib/
+out/
 
 # Environment variables
 .env
@@ -37,6 +40,10 @@ Thumbs.db
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Runtime data
 pids/
@@ -47,6 +54,7 @@ pids/
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+.nyc_output/
 
 # Temporary folders
 tmp/
@@ -115,3 +123,60 @@ README-hyperscript-i18n.md
 packages/i18n/dist/
 packages/i18n/coverage/
 packages/i18n/scripts/validate-dictionaries.js
+
+# Server-side integration
+packages/server-integration/dist/
+packages/server-integration/coverage/
+packages/server-integration/.nyc_output/
+
+# Client libraries
+clients/*/dist/
+clients/*/build/
+clients/*/coverage/
+clients/*/lib/
+clients/*/.nyc_output/
+clients/*/node_modules/
+clients/*/*.tsbuildinfo
+
+# Python specific
+clients/python-client/__pycache__/
+clients/python-client/*.pyc
+clients/python-client/*.pyo
+clients/python-client/*.pyd
+clients/python-client/.Python
+clients/python-client/env/
+clients/python-client/venv/
+clients/python-client/ENV/
+clients/python-client/env.bak/
+clients/python-client/venv.bak/
+clients/python-client/.pytest_cache/
+clients/python-client/htmlcov/
+clients/python-client/.coverage
+clients/python-client/.coverage.*
+clients/python-client/coverage.xml
+clients/python-client/*.cover
+clients/python-client/.hypothesis/
+clients/python-client/.tox/
+clients/python-client/build/
+clients/python-client/develop-eggs/
+clients/python-client/downloads/
+clients/python-client/eggs/
+clients/python-client/.eggs/
+clients/python-client/parts/
+clients/python-client/sdist/
+clients/python-client/var/
+clients/python-client/wheels/
+clients/python-client/*.egg-info/
+clients/python-client/.installed.cfg
+clients/python-client/*.egg
+
+# Go specific
+clients/go-client/vendor/
+clients/go-client/*.test
+clients/go-client/*.prof
+clients/go-client/coverage.out
+clients/go-client/coverage.html
+
+# JavaScript/TypeScript specific
+clients/js-client/.rollup.cache/
+clients/js-client/.vitest/
