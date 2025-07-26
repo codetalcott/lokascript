@@ -11,6 +11,7 @@ export class TellCommand implements CommandImplementation {
   syntax = 'tell <target> <command> [<command> ...]';
   description = 'Execute commands in the context of a target element with you/your/yourself references';
   isBlocking = false;
+  hasBody = false;
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
     if (args.length < 2) {

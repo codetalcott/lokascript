@@ -11,6 +11,7 @@ export class BeepCommand implements CommandImplementation {
   syntax = 'beep! <expression> [, <expression> ...]';
   description = 'Debug expressions by printing their values and types to console';
   isBlocking = false;
+  hasBody = false;
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<void> {
     // If no arguments, do nothing (valid case)

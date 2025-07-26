@@ -345,6 +345,10 @@
     <div class="header">
       <h1>🚀 HyperFixi Interactive Demo</h1>
       <p>Experience the power of hyperscript expressions and commands</p>
+      <!-- Debug Status Display -->
+      <div id="debug-status" style="background: rgba(0,0,0,0.2); color: white; padding: 0.5rem; margin-top: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">
+        Loading HyperFixi...
+      </div>
     </div>
 
     <!-- Navigation -->
@@ -352,37 +356,37 @@
       <div class="nav-container">
         <div class="nav-item">
           <button class="nav-button active" 
-                  _="on click call showCategory('expressions') then add .active to me then remove .active from .nav-button then add .active to me">
-            📊 Expressions
+                  _="on click hide .category then show #expressions">
+            📊 Expressions  
           </button>
         </div>
         <div class="nav-item">
-          <button class="nav-button" 
-                  _="on click call showCategory('dom-commands') then add .active to me then remove .active from .nav-button then add .active to me">
+          <button class="nav-button"
+                  _="on click show #dom-commands">
             🎯 DOM Commands
           </button>
         </div>
         <div class="nav-item">
-          <button class="nav-button" 
-                  _="on click call showCategory('events') then add .active to me then remove .active from .nav-button then add .active to me">
+          <button class="nav-button"
+                  _="on click show #events">
             ⚡ Events & Async
           </button>
         </div>
         <div class="nav-item">
-          <button class="nav-button" 
-                  _="on click call showCategory('forms') then add .active to me then remove .active from .nav-button then add .active to me">
+          <button class="nav-button"
+                  _="on click show #forms">
             📝 Forms & Validation
           </button>
         </div>
         <div class="nav-item">
-          <button class="nav-button" 
-                  _="on click call showCategory('i18n') then add .active to me then remove .active from .nav-button then add .active to me">
+          <button class="nav-button"
+                  _="on click show #i18n">
             🌍 Internationalization
           </button>
         </div>
         <div class="nav-item">
-          <button class="nav-button" 
-                  _="on click call showCategory('advanced') then add .active to me then remove .active from .nav-button then add .active to me">
+          <button class="nav-button"
+                  _="on click show #advanced">
             🔧 Advanced Features
           </button>
         </div>
@@ -600,7 +604,7 @@
                 </button>
                 <button class="interactive-button" 
                         _="on click 
-                           put 'Counter: <span id=\"counter\">0</span>' into #content-target's innerHTML then
+                           put 'Counter: <span id=&quot;counter&quot;>0</span>' into #content-target's innerHTML then
                            add .flash-warning to closest .demo-card">
                   Create Counter
                 </button>
@@ -693,7 +697,7 @@
                            put '🔄 Loading data...' into #async-result then
                            add .flash-warning to closest .demo-card then
                            wait 1s then
-                           put '📦 Mock data loaded: {\"users\": 42, \"status\": \"success\"}' into #async-result then
+                           put '📦 Mock data loaded: {&quot;users&quot;: 42, &quot;status&quot;: &quot;success&quot;}' into #async-result then
                            add .flash-success to closest .demo-card">
                   Simulate API Call
                 </button>
@@ -1013,7 +1017,7 @@
   <!-- Debug Panel -->
   <div class="debug-panel" id="debug-panel">
     <div class="debug-header" 
-         _="on click toggle .open on #debug-panel">
+         _="on click toggle .open from #debug-panel">
       <span>🐛 Debug Console</span>
       <span>▲</span>
     </div>

@@ -305,7 +305,8 @@ export class Parser {
                    this.checkTokenType(TokenType.STRING) ||
                    this.checkTokenType(TokenType.NUMBER) ||
                    this.checkTokenType(TokenType.CONTEXT_VAR) ||
-                   this.checkTokenType(TokenType.IDENTIFIER)) {
+                   this.checkTokenType(TokenType.IDENTIFIER) ||
+                   this.checkTokenType(TokenType.KEYWORD)) {  // Add KEYWORD support for words like "from", "into"
           
           // Convert identifier back to command if it's actually a command
           if (expr.type === 'identifier' && this.isCommand((expr as IdentifierNode).name)) {
@@ -725,6 +726,7 @@ export class Parser {
       // For simple arguments like identifiers, selectors, literals
       if (this.checkTokenType(TokenType.CONTEXT_VAR) || 
           this.checkTokenType(TokenType.IDENTIFIER) ||
+          this.checkTokenType(TokenType.KEYWORD) ||  // Add KEYWORD support for words like "into", "from"
           this.checkTokenType(TokenType.CSS_SELECTOR) ||
           this.checkTokenType(TokenType.ID_SELECTOR) ||
           this.checkTokenType(TokenType.CLASS_SELECTOR) ||

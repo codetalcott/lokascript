@@ -26,6 +26,44 @@ import { createSendCommand } from '../commands/events/send.js';
 import { createTriggerCommand } from '../commands/events/trigger.js';
 import { createWaitCommand } from '../commands/async/wait.js';
 import { createFetchCommand } from '../commands/async/fetch.js';
+import { createPutCommand } from '../commands/dom/put.js';
+
+// Additional command imports
+import { IncrementCommand } from '../commands/data/increment.js';
+import { DecrementCommand } from '../commands/data/decrement.js';
+import { MakeCommand } from '../commands/creation/make.js';
+import { AppendCommand } from '../commands/content/append.js';
+import { CallCommand } from '../commands/execution/call.js';
+import { JSCommand } from '../commands/advanced/js.js';
+import { TellCommand } from '../commands/advanced/tell.js';
+import { PickCommand } from '../commands/utility/pick.js';
+import { GoCommand } from '../commands/navigation/go.js';
+
+// Control flow commands
+import { IfCommand } from '../commands/control-flow/if.js';
+import { HaltCommand } from '../commands/control-flow/halt.js';
+import { BreakCommand } from '../commands/control-flow/break.js';
+import { ContinueCommand } from '../commands/control-flow/continue.js';
+import { ReturnCommand } from '../commands/control-flow/return.js';
+import { ThrowCommand } from '../commands/control-flow/throw.js';
+import { UnlessCommand } from '../commands/control-flow/unless.js';
+import { RepeatCommand } from '../commands/control-flow/repeat.js';
+
+// Animation commands
+import { MeasureCommand } from '../commands/animation/measure.js';
+import { SettleCommand } from '../commands/animation/settle.js';
+import { TakeCommand } from '../commands/animation/take.js';
+import { TransitionCommand } from '../commands/animation/transition.js';
+
+// Data commands
+import { DefaultCommand } from '../commands/data/default.js';
+
+// Advanced commands
+import { BeepCommand } from '../commands/advanced/beep.js';
+import { AsyncCommand } from '../commands/advanced/async.js';
+
+// Template commands
+import { RenderCommand } from '../commands/templates/render.js';
 
 export interface RuntimeOptions {
   enableAsyncCommands?: boolean;
@@ -60,6 +98,42 @@ export class Runtime {
   }
 
   /**
+   * Register legacy command by adapting it to the enhanced registry
+   */
+  private registerLegacyCommand(command: any): void {
+    // Create an adapter for legacy commands to work with enhanced registry
+    const adapter = {
+      name: command.name,
+      syntax: command.syntax || `${command.name} [args...]`,
+      description: command.description || `${command.name} command`,
+      inputSchema: null, // Legacy commands don't have schemas
+      outputType: 'unknown' as const,
+      
+      async execute(context: any, ...args: any[]): Promise<any> {
+        return await command.execute(context, ...args);
+      },
+      
+      validate(args: unknown[]): { isValid: boolean; errors: any[]; suggestions: string[] } {
+        try {
+          const validationResult = command.validate ? command.validate(args) : null;
+          if (validationResult) {
+            return {
+              isValid: false,
+              errors: [{ message: validationResult }],
+              suggestions: []
+            };
+          }
+          return { isValid: true, errors: [], suggestions: [] };
+        } catch {
+          return { isValid: true, errors: [], suggestions: [] };
+        }
+      }
+    };
+    
+    this.enhancedRegistry.register(adapter);
+  }
+
+  /**
    * Initialize enhanced commands in the registry
    */
   private initializeEnhancedCommands(): void {
@@ -73,8 +147,8 @@ export class Runtime {
       this.enhancedRegistry.register(createShowCommand());
       this.enhancedRegistry.register(createToggleCommand());
       this.enhancedRegistry.register(createAddCommand());
-      
       this.enhancedRegistry.register(createRemoveCommand());
+      this.enhancedRegistry.register(createPutCommand());
       
       // Register event commands
       this.enhancedRegistry.register(createSendCommand());
@@ -83,6 +157,53 @@ export class Runtime {
       // Register async commands
       this.enhancedRegistry.register(createWaitCommand());
       this.enhancedRegistry.register(createFetchCommand());
+      
+      // Register data commands (legacy interface - need adapters)
+      this.registerLegacyCommand(new IncrementCommand());
+      this.registerLegacyCommand(new DecrementCommand());
+      
+      // Register content/creation commands
+      this.registerLegacyCommand(new MakeCommand());
+      this.registerLegacyCommand(new AppendCommand());
+      
+      // Register execution commands
+      this.registerLegacyCommand(new CallCommand());
+      
+      // Register advanced commands
+      this.registerLegacyCommand(new JSCommand());
+      this.registerLegacyCommand(new TellCommand());
+      
+      // Register utility commands
+      this.registerLegacyCommand(new PickCommand());
+      
+      // Register navigation commands (has TypedCommandImplementation)
+      this.enhancedRegistry.register(new GoCommand());
+      
+      // Register control flow commands
+      this.registerLegacyCommand(new IfCommand());
+      this.registerLegacyCommand(new HaltCommand());
+      this.registerLegacyCommand(new BreakCommand());
+      this.registerLegacyCommand(new ContinueCommand());
+      this.registerLegacyCommand(new ReturnCommand());
+      this.registerLegacyCommand(new ThrowCommand());
+      this.registerLegacyCommand(new UnlessCommand());
+      this.registerLegacyCommand(new RepeatCommand());
+      
+      // Register animation commands
+      this.registerLegacyCommand(new MeasureCommand());
+      this.registerLegacyCommand(new SettleCommand());
+      this.registerLegacyCommand(new TakeCommand());
+      this.registerLegacyCommand(new TransitionCommand());
+      
+      // Register additional data commands
+      this.registerLegacyCommand(new DefaultCommand());
+      
+      // Register advanced commands
+      this.registerLegacyCommand(new BeepCommand());
+      this.registerLegacyCommand(new AsyncCommand());
+      
+      // Register template commands
+      this.registerLegacyCommand(new RenderCommand());
       
       if (this.options.enableErrorReporting) {
         console.log(`Enhanced commands initialized: ${this.enhancedRegistry.getCommandNames().join(', ')}`);
@@ -110,6 +231,10 @@ export class Runtime {
           return await this.executeEventHandler(node as EventHandlerNode, context);
         }
         
+        case 'CommandSequence': {
+          return await this.executeCommandSequence(node as any, context);
+        }
+        
         default: {
           // For all other node types, use the expression evaluator
           const result = await this.expressionEvaluator.evaluate(node, context);
@@ -128,6 +253,33 @@ export class Runtime {
       }
       throw error;
     }
+  }
+
+  /**
+   * Execute a command sequence (multiple commands in order)
+   */
+  private async executeCommandSequence(node: { commands: ASTNode[] }, context: ExecutionContext): Promise<unknown> {
+    if (!node.commands || !Array.isArray(node.commands)) {
+      console.warn('CommandSequence node has no commands array:', node);
+      return;
+    }
+
+    let lastResult: unknown = undefined;
+    
+    // Execute each command in sequence
+    for (const command of node.commands) {
+      try {
+        lastResult = await this.execute(command, context);
+      } catch (error) {
+        if (this.options.enableErrorReporting) {
+          console.error('Error executing command in sequence:', error, command);
+        }
+        throw error;
+      }
+    }
+    
+    // Return the result of the last command
+    return lastResult;
   }
 
   /**

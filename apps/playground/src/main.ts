@@ -121,48 +121,6 @@ class ExpressionEvaluator {
 
 const evaluator = new ExpressionEvaluator();
 
-// Navigation system for demo categories
-class NavigationManager {
-  private currentCategory = 'expressions';
-  
-  constructor() {
-    this.initializeNavigation();
-  }
-  
-  initializeNavigation() {
-    // Global function for navigation (called by hyperscript in HTML)
-    (window as any).showCategory = (categoryId: string) => {
-      this.showCategory(categoryId);
-    };
-  }
-  
-  showCategory(categoryId: string) {
-    // Hide all categories
-    const categories = document.querySelectorAll('.category');
-    categories.forEach(cat => cat.classList.remove('active'));
-    
-    // Show selected category
-    const targetCategory = document.getElementById(categoryId);
-    if (targetCategory) {
-      targetCategory.classList.add('active');
-      this.currentCategory = categoryId;
-      debugLogger.log(`Switched to ${categoryId} category`, 'info');
-    }
-    
-    // Update navigation buttons
-    const navButtons = document.querySelectorAll('.nav-button');
-    navButtons.forEach(btn => btn.classList.remove('active'));
-    
-    // Find and activate the correct button
-    const activeButton = Array.from(navButtons).find(btn => 
-      btn.getAttribute('onclick')?.includes(categoryId) ||
-      btn.textContent?.toLowerCase().includes(categoryId.replace('-', ' '))
-    );
-    if (activeButton) {
-      activeButton.classList.add('active');
-    }
-  }
-}
 
 // I18n demo - keep this as it provides essential functionality for language switching
 class I18nDemo {
@@ -300,22 +258,57 @@ class HyperFixiEngine {
     try {
       debugLogger.log('Starting HyperFixi engine initialization...', 'info');
       
-      // Check if hyperscript object has required methods
-      if (!hyperscript || typeof hyperscript.init !== 'function') {
-        throw new Error('HyperFixi hyperscript object is not properly initialized');
-      }
-      
-      // Initialize HyperFixi to process all hyperscript in the DOM
-      await hyperscript.init();
-      
-      const endTime = performance.now();
-      this.performanceTracker.trackOperation('HyperFixi initialization', startTime, endTime);
-      
-      debugLogger.log('HyperFixi engine initialized successfully', 'success');
+      // Check what's available in the hyperscript object
+      debugLogger.log(`Available hyperscript methods: ${Object.keys(hyperscript || {}).join(', ')}`, 'info');
       
       // Process any existing hyperscript elements
       const hyperscriptElements = document.querySelectorAll('[_]');
       debugLogger.log(`Found ${hyperscriptElements.length} elements with hyperscript`, 'info');
+      
+      if (hyperscriptElements.length === 0) {
+        debugLogger.log('No hyperscript elements found - this might indicate a timing issue', 'warning');
+        return;
+      }
+      
+      // Try to initialize HyperFixi DOM processing
+      if (hyperscript && typeof hyperscript.processNode === 'function') {
+        debugLogger.log('Processing DOM with hyperscript.processNode()...', 'info');
+        
+        // Process the entire document
+        hyperscript.processNode(document.body);
+        debugLogger.log('HyperFixi DOM processing completed', 'success');
+        
+      } else if (hyperscript && typeof hyperscript.init === 'function') {
+        debugLogger.log('Calling hyperscript.init()...', 'info');
+        await hyperscript.init();
+        debugLogger.log('HyperFixi init() completed', 'success');
+        
+      } else {
+        debugLogger.log('No processNode() or init() method found, trying manual processing...', 'warning');
+        
+        // Try to process elements manually if no DOM processing method
+        if (hyperscript && typeof hyperscript.run === 'function') {
+          debugLogger.log('Attempting to process hyperscript elements manually...', 'info');
+          
+          hyperscriptElements.forEach(async (element, index) => {
+            const script = element.getAttribute('_');
+            if (script) {
+              try {
+                debugLogger.log(`Processing element ${index + 1}: ${script.substring(0, 50)}...`, 'info');
+                // This won't work for event handlers, but will work for expressions
+                await hyperscript.run(script, context);
+              } catch (error) {
+                debugLogger.log(`Failed to process element ${index + 1}: ${error}`, 'error');
+              }
+            }
+          });
+        } else {
+          debugLogger.log('No run() method available either', 'error');
+        }
+      }
+      
+      const endTime = performance.now();
+      this.performanceTracker.trackOperation('HyperFixi initialization', startTime, endTime);
       
       // Enhanced hyperscript syntax logging with validation
       hyperscriptElements.forEach((element, index) => {
@@ -326,10 +319,11 @@ class HyperFixiEngine {
             const preview = script.length > 100 ? script.substring(0, 100) + '...' : script;
             debugLogger.log(`Element ${index + 1} hyperscript: ${preview}`, 'info');
             
-            // Basic syntax validation
-            if (script.includes('on ') && script.includes(' do')) {
-              // Old-style hyperscript syntax detected
-              debugLogger.log(`Element ${index + 1}: Legacy hyperscript syntax detected`, 'warning');
+            // Check if it looks like valid hyperscript
+            if (script.includes('on ') && (script.includes(' then ') || script.includes(' hide ') || script.includes(' show '))) {
+              debugLogger.log(`Element ${index + 1}: Valid hyperscript syntax detected`, 'success');
+            } else {
+              debugLogger.log(`Element ${index + 1}: Possible syntax issue`, 'warning');
             }
             
           } catch (error) {
@@ -348,11 +342,12 @@ class HyperFixiEngine {
       debugLogger.log(`HyperFixi engine initialization failed: ${error}`, 'error');
       console.error('HyperFixi initialization error:', error);
       
-      // Provide helpful debugging information
+      // Provide comprehensive debugging information
       debugLogger.log('Debugging information:', 'info');
       debugLogger.log(`- hyperscript object available: ${!!hyperscript}`, 'info');
-      debugLogger.log(`- hyperscript.init function: ${typeof hyperscript?.init}`, 'info');
+      debugLogger.log(`- hyperscript keys: ${hyperscript ? Object.keys(hyperscript).join(', ') : 'N/A'}`, 'info');
       debugLogger.log(`- Elements with _="" attribute: ${document.querySelectorAll('[_]').length}`, 'info');
+      debugLogger.log(`- Document ready state: ${document.readyState}`, 'info');
     }
   }
   
@@ -377,27 +372,91 @@ class HyperFixiEngine {
   }
 }
 
-// Initialize HyperFixi Demo
+
+// Visual debug status updater
+function updateDebugStatus(message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') {
+  const statusElement = document.getElementById('debug-status');
+  if (statusElement) {
+    const colors = {
+      info: '#3b82f6',
+      success: '#10b981', 
+      error: '#ef4444',
+      warning: '#f59e0b'
+    };
+    statusElement.style.background = `rgba(0,0,0,0.2)`;
+    statusElement.style.borderLeft = `4px solid ${colors[type]}`;
+    statusElement.textContent = message;
+  }
+}
+
+// Initialize HyperFixi Demo - Pure HyperFixi Implementation
 document.addEventListener('DOMContentLoaded', async () => {
-  debugLogger.log('🚀 HyperFixi Demo starting initialization', 'success');
+  updateDebugStatus('🚀 HyperFixi Demo starting - PURE HYPERFIXI MODE', 'info');
+  debugLogger.log('🚀 HyperFixi Demo starting - PURE HYPERFIXI MODE', 'success');
   
-  // Initialize core demo components that don't conflict with hyperscript
-  new NavigationManager();
+  // Check what we have available
+  updateDebugStatus(`HyperFixi object: ${hyperscript ? 'FOUND' : 'MISSING'}`, hyperscript ? 'success' : 'error');
+  
+  if (hyperscript) {
+    const methods = Object.keys(hyperscript);
+    updateDebugStatus(`HyperFixi methods: ${methods.join(', ')}`, 'info');
+    debugLogger.log(`Available hyperscript methods: ${methods.join(', ')}`, 'info');
+  }
+  
+  // Count hyperscript elements
+  const hyperscriptElements = document.querySelectorAll('[_]');
+  updateDebugStatus(`Found ${hyperscriptElements.length} hyperscript elements`, hyperscriptElements.length > 0 ? 'success' : 'warning');
+  
+  // Only initialize I18n as it doesn't conflict with hyperscript
   new I18nDemo();
   
-  // Initialize HyperFixi engine to handle all hyperscript in HTML
+  // Initialize HyperFixi engine to handle ALL hyperscript in HTML
   const engine = new HyperFixiEngine();
   
-  // Show welcome message
-  debugLogger.log('HyperFixi Demo ready - all hyperscript will be handled by HyperFixi engine', 'success');
+  // Test HyperFixi basic functionality
+  try {
+    updateDebugStatus('Testing HyperFixi expression: 2 + 3', 'info');
+    const testResult = await hyperscript.run('2 + 3', context);
+    const success = testResult === 5;
+    updateDebugStatus(`Expression test: 2 + 3 = ${testResult} ${success ? '✅' : '❌'}`, success ? 'success' : 'error');
+    debugLogger.log(`HyperFixi expression test: 2 + 3 = ${testResult}`, success ? 'success' : 'error');
+  } catch (error) {
+    updateDebugStatus(`❌ Expression test failed: ${error}`, 'error');
+    debugLogger.log(`❌ HyperFixi expression test failed: ${error}`, 'error');
+  }
+  
+  // Test HyperFixi compilation with detailed AST logging
+  try {
+    updateDebugStatus('Testing HyperFixi compilation: on click hide me', 'info');
+    const compileResult = hyperscript.compile('on click hide me');
+    const success = compileResult?.success === true;
+    updateDebugStatus(`Compilation test: ${success ? 'SUCCESS ✅' : 'FAILED ❌'}`, success ? 'success' : 'error');
+    debugLogger.log(`HyperFixi compilation test: ${success ? 'SUCCESS' : 'FAILED'}`, success ? 'success' : 'error');
+    
+    // Log detailed AST structure for debugging
+    if (success && compileResult.ast) {
+      debugLogger.log(`AST structure: ${JSON.stringify(compileResult.ast, null, 2)}`, 'info');
+      console.log('🔍 Full AST:', compileResult.ast);
+    }
+    
+    if (!success && compileResult?.errors) {
+      debugLogger.log(`Compilation errors: ${compileResult.errors.map((e: any) => e.message).join(', ')}`, 'error');
+    }
+  } catch (error) {
+    updateDebugStatus(`❌ Compilation test failed: ${error}`, 'error');
+    debugLogger.log(`❌ HyperFixi compilation test failed: ${error}`, 'error');
+  }
   
   // Add HyperFixi to global scope for debugging
   (window as any).hyperscript = hyperscript;
   (window as any).context = context;
   (window as any).debugLogger = debugLogger;
   
-  console.log('🎯 HyperFixi Demo Environment Ready');
+  updateDebugStatus('🎯 HyperFixi Demo ready - Check debug panel for details', 'success');
+  debugLogger.log('🎯 HyperFixi Demo ready - All functionality depends on HyperFixi working correctly', 'success');
+  
+  console.log('🎯 HyperFixi Demo Environment Ready - PURE HYPERFIXI MODE');
   console.log('Available globals: hyperscript, context, debugLogger');
-  console.log('All DOM interactions handled by HyperFixi hyperscript engine');
+  console.log('All navigation and interactions handled by HyperFixi');
   console.log('Try: hyperscript.run("5 + 3 * 2", context)');
 });

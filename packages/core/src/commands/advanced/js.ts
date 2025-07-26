@@ -11,6 +11,7 @@ export class JSCommand implements CommandImplementation {
   syntax = 'js([param1, param2, ...]) <javascript_code> end';
   description = 'Execute inline JavaScript code with access to hyperscript context and parameters';
   isBlocking = false;
+  hasBody = true;
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
     if (args.length === 0) {

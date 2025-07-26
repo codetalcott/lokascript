@@ -11,6 +11,7 @@ export class AsyncCommand implements CommandImplementation {
   syntax = 'async <command> [<command> ...]';
   description = 'Execute commands asynchronously without blocking the main execution flow';
   isBlocking = false;
+  hasBody = false;
 
   async execute(context: ExecutionContext, ...args: any[]): Promise<any> {
     if (args.length === 0) {

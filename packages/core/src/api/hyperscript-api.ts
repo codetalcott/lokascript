@@ -164,9 +164,171 @@ function getVersion(): string {
  * Process DOM elements to initialize hyperscript behaviors
  */
 function processNode(element: Element): void {
-  // TODO: Implement DOM node processing for hyperscript attributes
-  // This would scan for hyperscript attributes and initialize event handlers
-  console.warn('processNode not yet fully implemented');
+  try {
+    // Process the element itself if it has hyperscript
+    const hyperscriptAttr = element.getAttribute('_');
+    if (hyperscriptAttr) {
+      processHyperscriptAttribute(element, hyperscriptAttr);
+    }
+    
+    // Process all child elements with hyperscript attributes
+    const hyperscriptElements = element.querySelectorAll('[_]');
+    hyperscriptElements.forEach(child => {
+      const childHyperscriptAttr = child.getAttribute('_');
+      if (childHyperscriptAttr) {
+        processHyperscriptAttribute(child, childHyperscriptAttr);
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error processing hyperscript node:', error);
+  }
+}
+
+/**
+ * Process a single hyperscript attribute on an element
+ */
+function processHyperscriptAttribute(element: Element, hyperscriptCode: string): void {
+  try {
+    console.log('🔍 Processing hyperscript attribute:', hyperscriptCode, 'on element:', element);
+    
+    // Compile the hyperscript code
+    const compileResult = compile(hyperscriptCode);
+    
+    if (!compileResult.success) {
+      console.error(`❌ Failed to compile hyperscript on element:`, element);
+      console.error(`❌ Hyperscript code: "${hyperscriptCode}"`);
+      console.error(`❌ Parse errors:`, compileResult.errors);
+      compileResult.errors.forEach((error, index) => {
+        console.error(`❌ Error ${index + 1}: ${error.message} at line ${error.line}, column ${error.column}`);
+      });
+      return;
+    }
+    
+    if (!compileResult.ast) {
+      console.warn('⚠️ No AST generated for hyperscript:', hyperscriptCode);
+      return;
+    }
+    
+    console.log('✅ Successfully compiled hyperscript:', hyperscriptCode);
+    console.log('📊 Generated AST:', compileResult.ast);
+    
+    // Create execution context for this element
+    const context = createHyperscriptContext(element as HTMLElement);
+    
+    // Check if this is an event handler (starts with "on ")
+    if (hyperscriptCode.trim().startsWith('on ')) {
+      console.log('🎯 Setting up event handler for:', hyperscriptCode);
+      setupEventHandler(element, compileResult.ast, context);
+    } else {
+      console.log('⚡ Executing immediate hyperscript:', hyperscriptCode);
+      // Execute immediately for non-event code
+      executeHyperscriptAST(compileResult.ast, context);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error processing hyperscript attribute:', error, 'on element:', element);
+  }
+}
+
+/**
+ * Set up event handler for hyperscript "on" statements
+ */
+function setupEventHandler(element: Element, ast: ASTNode, context: ExecutionContext): void {
+  try {
+    // Parse the event from the AST (simplified - assumes "on eventName" structure)
+    const eventInfo = extractEventInfo(ast);
+    if (!eventInfo) {
+      console.error('Could not extract event information from AST:', ast);
+      return;
+    }
+    
+    // Add event listener
+    element.addEventListener(eventInfo.eventType, async (event) => {
+      try {
+        // Set event context
+        context.variables?.set('event', event);
+        context.variables?.set('target', event.target);
+        
+        // Execute the event handler body
+        await executeHyperscriptAST(eventInfo.body, context);
+      } catch (error) {
+        console.error('Error executing hyperscript event handler:', error);
+      }
+    });
+    
+    console.log(`Set up ${eventInfo.eventType} event handler on element:`, element);
+    
+  } catch (error) {
+    console.error('Error setting up event handler:', error);
+  }
+}
+
+/**
+ * Extract event information from AST
+ */
+function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | null {
+  try {
+    console.log('🔍 Extracting event info from AST:', ast);
+    
+    // Handle the actual HyperFixi AST structure
+    if (ast.type === 'eventHandler') {
+      const eventType = (ast as any).event || 'click';
+      const commands = (ast as any).commands;
+      
+      console.log(`✅ Found event handler: ${eventType} with ${commands?.length || 0} commands`);
+      
+      // Create a body node from the commands
+      const body: ASTNode = {
+        type: 'CommandSequence',
+        commands: commands || [],
+        start: ast.start || 0,
+        end: ast.end || 0,
+        line: ast.line || 1,
+        column: ast.column || 1
+      };
+      
+      return { eventType, body };
+    }
+    
+    // Handle legacy AST structures
+    if (ast.type === 'FeatureNode' && (ast as any).name === 'on') {
+      const eventType = (ast as any).args?.[0]?.value || 'click';
+      const body = (ast as any).body || ast;
+      return { eventType, body };
+    }
+    
+    // Handle direct command sequences
+    if (ast.type === 'CommandSequence' || ast.type === 'Block') {
+      return { eventType: 'click', body: ast }; // Default to click
+    }
+    
+    console.warn('⚠️ Unknown AST structure for event extraction:', ast.type);
+    return null;
+    
+  } catch (error) {
+    console.error('❌ Error extracting event info:', error);
+    return null;
+  }
+}
+
+/**
+ * Execute hyperscript AST
+ */
+async function executeHyperscriptAST(ast: ASTNode, context: ExecutionContext): Promise<any> {
+  try {
+    return await defaultRuntime.execute(ast, context);
+  } catch (error) {
+    console.error('Error executing hyperscript AST:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create hyperscript execution context for an element
+ */
+function createHyperscriptContext(element?: HTMLElement | null): ExecutionContext {
+  return createContext(element);
 }
 
 /**
