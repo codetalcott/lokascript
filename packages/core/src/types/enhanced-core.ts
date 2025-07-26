@@ -843,5 +843,18 @@ export const HyperScriptProgramSchema = z.object({
 // Export Enhanced Types
 // ============================================================================
 
-// Note: Types are exported via interface declarations above
+// Export additional EvaluationType for enhanced features
+export type EvaluationType = 
+  | 'Element'        // HTMLElement or null
+  | 'ElementList'    // HTMLElement[]
+  | 'String'         // string
+  | 'Number'         // number
+  | 'Boolean'        // boolean
+  | 'Object'         // any object
+  | 'Array'          // any[]
+  | 'Context'        // enhanced context object
+  | 'Null'           // null
+  | 'Any';           // unknown
+
+// Note: ValidationResult is exported via interface declaration above (line 241)
 // Additional exports can be added here if needed for specific use cases
