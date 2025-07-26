@@ -303,6 +303,28 @@
       animation: flashBlue 0.6s ease;
     }
 
+    .flash-warning {
+      animation: flashYellow 0.6s ease;
+    }
+
+    /* Test Classes for Keyword Demo */
+    .hidden {
+      opacity: 0.3;
+      transform: scale(0.95);
+    }
+
+    .highlight-active {
+      background: #fef3c7 !important;
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    .highlight-success {
+      background: #dcfce7 !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+
     @keyframes flashGreen {
       0%, 100% { background-color: transparent; }
       50% { background-color: rgba(16, 185, 129, 0.2); }
@@ -316,6 +338,11 @@
     @keyframes flashBlue {
       0%, 100% { background-color: transparent; }
       50% { background-color: rgba(59, 130, 246, 0.2); }
+    }
+
+    @keyframes flashYellow {
+      0%, 100% { background-color: transparent; }
+      50% { background-color: rgba(245, 158, 11, 0.2); }
     }
 
     /* Responsive */
@@ -641,6 +668,68 @@
                            add .flash-info to closest .demo-card">
                   Clear All
                 </button>
+              </div>
+            </div>
+
+            <!-- Keyword Syntax Testing -->
+            <div class="demo-card">
+              <div class="demo-title">Keyword Syntax Support</div>
+              <div class="demo-description">Test 'into' and 'from' keyword parsing in commands</div>
+              <div class="demo-area">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #374151;">PUT with INTO</h4>
+                    <div id="put-target" 
+                         style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 1rem; border-radius: 6px; min-height: 60px;">
+                      Original content
+                    </div>
+                    <button class="interactive-button" style="margin-top: 0.5rem;"
+                            _="on click put 'New content via INTO keyword!' into #put-target">
+                      Test PUT INTO
+                    </button>
+                  </div>
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #374151;">TOGGLE with FROM</h4>
+                    <div id="toggle-target-new" 
+                         style="background: #f0fdf4; border: 1px solid #22c55e; padding: 1rem; border-radius: 6px; min-height: 60px; transition: all 0.3s;">
+                      Toggle target element
+                    </div>
+                    <button class="interactive-button" style="margin-top: 0.5rem;"
+                            _="on click toggle .hidden from #toggle-target-new">
+                      Test TOGGLE FROM
+                    </button>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #374151;">REMOVE with FROM</h4>
+                    <div id="remove-target" 
+                         class="highlight-active"
+                         style="background: #fef3c7; border: 1px solid #f59e0b; padding: 1rem; border-radius: 6px; min-height: 60px;">
+                      Has highlight-active class
+                    </div>
+                    <button class="interactive-button" style="margin-top: 0.5rem;"
+                            _="on click remove .highlight-active from #remove-target">
+                      Test REMOVE FROM
+                    </button>
+                  </div>
+                  <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #374151;">ADD with TO (baseline)</h4>
+                    <div id="add-target" 
+                         style="background: #fdf2f8; border: 1px solid #ec4899; padding: 1rem; border-radius: 6px; min-height: 60px;">
+                      Add target element
+                    </div>
+                    <button class="interactive-button" style="margin-top: 0.5rem;"
+                            _="on click add .highlight-success to #add-target">
+                      Test ADD TO
+                    </button>
+                  </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f8fafc; border-radius: 6px;">
+                  <div style="font-size: 0.875rem; color: #64748b;">
+                    <strong>Testing Status:</strong> Click buttons above to test keyword parsing
+                  </div>
+                </div>
               </div>
             </div>
           </div>

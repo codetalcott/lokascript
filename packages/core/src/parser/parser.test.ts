@@ -376,10 +376,6 @@ describe('Hyperscript AST Parser', () => {
     });
 
     it('should parse toggle commands with from keyword', () => {
-      // Debug: Let's see what the parser actually returns
-      const result = parse('toggle .active from me');
-      console.log('Parse result:', JSON.stringify(result, null, 2));
-      
       expectAST('toggle .active from me', {
         type: 'command',
         name: 'toggle',
