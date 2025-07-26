@@ -7,14 +7,13 @@ import { z } from 'zod';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
   TypedResult,
-  LLMDocumentation,
-  HyperScriptValueType
+  LLMDocumentation
 } from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas
@@ -61,13 +60,12 @@ type UnaryOperationInput = z.infer<typeof UnaryOperationInputSchema>;
 // Enhanced String Literal Expression
 // ============================================================================
 
-export class EnhancedStringLiteralExpression implements TypedExpressionImplementation<StringLiteralInput, string> {
+export class EnhancedStringLiteralExpression implements BaseTypedExpression<string> {
   public readonly name = 'stringLiteral';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = '"string" or \'string\'';
-  public readonly description = 'String literal with template interpolation support';
-  public readonly inputSchema = StringLiteralInputSchema;
   public readonly outputType: EvaluationType = 'String';
+  public readonly inputSchema = StringLiteralInputSchema;
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
@@ -137,7 +135,7 @@ export class EnhancedStringLiteralExpression implements TypedExpressionImplement
   async evaluate(
     context: TypedExpressionContext,
     input: StringLiteralInput
-  ): Promise<EvaluationResult<string>> {
+  ): Promise<TypedResult<string>> {
     const startTime = Date.now();
 
     try {
@@ -297,7 +295,7 @@ export class EnhancedStringLiteralExpression implements TypedExpressionImplement
 // Enhanced Number Literal Expression
 // ============================================================================
 
-export class EnhancedNumberLiteralExpression implements TypedExpressionImplementation<NumberLiteralInput, number> {
+export class EnhancedNumberLiteralExpression implements BaseTypedExpression<number> {
   public readonly name = 'numberLiteral';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = '123 or 3.14';
@@ -373,7 +371,7 @@ export class EnhancedNumberLiteralExpression implements TypedExpressionImplement
   async evaluate(
     context: TypedExpressionContext,
     input: NumberLiteralInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const startTime = Date.now();
 
     try {
@@ -494,7 +492,7 @@ export class EnhancedNumberLiteralExpression implements TypedExpressionImplement
 // Enhanced Boolean Literal Expression
 // ============================================================================
 
-export class EnhancedBooleanLiteralExpression implements TypedExpressionImplementation<BooleanLiteralInput, boolean> {
+export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'booleanLiteral';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'true or false';
@@ -564,7 +562,7 @@ export class EnhancedBooleanLiteralExpression implements TypedExpressionImplemen
   async evaluate(
     context: TypedExpressionContext,
     input: BooleanLiteralInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -656,7 +654,7 @@ export class EnhancedBooleanLiteralExpression implements TypedExpressionImplemen
 // Enhanced Addition Expression
 // ============================================================================
 
-export class EnhancedAdditionExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
   public readonly name = 'addition';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left + right';
@@ -740,7 +738,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const startTime = Date.now();
 
     try {
@@ -864,7 +862,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
 // Enhanced Multiplication Expression
 // ============================================================================
 
-export class EnhancedMultiplicationExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedMultiplicationExpression implements BaseTypedExpression<number> {
   public readonly name = 'multiplication';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left * right';
@@ -948,7 +946,7 @@ export class EnhancedMultiplicationExpression implements TypedExpressionImplemen
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const startTime = Date.now();
 
     try {

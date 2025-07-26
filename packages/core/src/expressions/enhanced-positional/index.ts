@@ -7,14 +7,13 @@ import { z } from 'zod';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
   TypedResult,
-  LLMDocumentation,
-  HyperScriptValueType
+  LLMDocumentation
 } from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas

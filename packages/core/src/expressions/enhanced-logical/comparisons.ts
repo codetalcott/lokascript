@@ -7,14 +7,13 @@ import { z } from 'zod';
 import type {
   BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
   TypedResult,
-  LLMDocumentation,
-  HyperScriptValueType
+  LLMDocumentation
 } from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas
@@ -32,7 +31,7 @@ type ComparisonInput = z.infer<typeof ComparisonInputSchema>;
 // Enhanced Equals Expression
 // ============================================================================
 
-export class EnhancedEqualsExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'equals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left == right';
@@ -122,7 +121,7 @@ export class EnhancedEqualsExpression implements TypedExpressionImplementation<C
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -233,7 +232,7 @@ export class EnhancedEqualsExpression implements TypedExpressionImplementation<C
 // Enhanced Not Equals Expression
 // ============================================================================
 
-export class EnhancedNotEqualsExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'notEquals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left != right';
@@ -305,7 +304,7 @@ export class EnhancedNotEqualsExpression implements TypedExpressionImplementatio
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -413,7 +412,7 @@ export class EnhancedNotEqualsExpression implements TypedExpressionImplementatio
 // Enhanced Greater Than Expression
 // ============================================================================
 
-export class EnhancedGreaterThanExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'greaterThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left > right';
@@ -496,7 +495,7 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -604,7 +603,7 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
 // Enhanced Less Than Expression
 // ============================================================================
 
-export class EnhancedLessThanExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'lessThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left < right';
@@ -676,7 +675,7 @@ export class EnhancedLessThanExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -783,7 +782,7 @@ export class EnhancedLessThanExpression implements TypedExpressionImplementation
 // Enhanced Greater Than Or Equal Expression
 // ============================================================================
 
-export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'greaterThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left >= right';
@@ -855,7 +854,7 @@ export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImpl
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -962,7 +961,7 @@ export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImpl
 // Enhanced Less Than Or Equal Expression
 // ============================================================================
 
-export class EnhancedLessThanOrEqualExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'lessThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left <= right';
@@ -1034,7 +1033,7 @@ export class EnhancedLessThanOrEqualExpression implements TypedExpressionImpleme
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {

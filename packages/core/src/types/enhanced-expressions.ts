@@ -376,5 +376,4 @@ export const CommonInputSchemas = {
   })
 } as const;
 
-// Re-export types from enhanced-core for convenience
-export type { ValidationResult, LLMDocumentation } from './enhanced-core.ts';
+// ValidationResult and LLMDocumentation already exported from base-types.js above

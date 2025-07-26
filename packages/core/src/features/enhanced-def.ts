@@ -5,14 +5,13 @@
 
 import { z } from 'zod';
 import type { 
-  TypedContextImplementation,
-  ContextMetadata,
   ValidationResult,
-  EvaluationResult,
-  EnhancedContextBase
-} from '../types/enhanced-context.js';
-import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core.js';
-import type { ExecutionContext } from '../types/core.js';
+  LLMDocumentation, 
+  EvaluationType,
+  ExecutionContext
+} from '../types/base-types.js';
+import type { ContextMetadata } from '../types/enhanced-context.js';
+import type { EvaluationResult } from '../types/enhanced-core.js';
 
 // ============================================================================
 // Enhanced Def Feature Input/Output Schemas
