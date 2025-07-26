@@ -249,7 +249,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           name: 'SettleCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SETTLE_EXECUTION_FAILED',
-          suggestion: 'Check if element exists', 'Verify animation properties', 'Check timeout value'
+          suggestion: ['Check if element exists', 'Verify animation properties', 'Check timeout value']
         },
         type: 'error'
       };
@@ -322,7 +322,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
                 message: `Invalid timeout format: "${timeoutValue}"`,
                 suggestion: 'Use numeric milliseconds, or format like "3s", "500ms"'
               }],
-              suggestion: 'Use: 5000', 'Use: 3s', 'Use: 500ms'
+              suggestion: ['Use: 5000', 'Use: 3s', 'Use: 500ms']
             };
           }
         }
@@ -331,7 +331,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
       return {
         isValid: true,
         errors: [],
-        suggestion: 
+        suggestion: []
       };
 
     } catch (error) {
@@ -365,7 +365,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
-              suggestion: 'Ensure command is called within element context', 'Provide explicit target element'
+              suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
             },
             type: 'error'
           };
@@ -381,7 +381,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: `Cannot resolve target element: ${elementResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
-              suggestion: 'Check if element exists in DOM', 'Verify selector syntax'
+              suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
             },
             type: 'error'
           };
@@ -396,7 +396,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
-              suggestion: 'Ensure command is called within element context', 'Provide explicit target element'
+              suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
             },
             type: 'error'
           };
@@ -411,7 +411,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: `Invalid timeout: ${timeoutResult.error?.message}`,
               code: 'TIMEOUT_PARSE_FAILED',
-              suggestion: 'Use numeric milliseconds', 'Use format like "3s" or "500ms"'
+              suggestion: ['Use numeric milliseconds', 'Use format like "3s" or "500ms"']
             },
             type: 'error'
           };
@@ -427,7 +427,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: `Cannot resolve target element: ${elementResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
-              suggestion: 'Check if element exists in DOM', 'Verify selector syntax'
+              suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
             },
             type: 'error'
           };
@@ -442,7 +442,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'SettleParseError',
               message: `Invalid timeout: ${timeoutResult.error?.message}`,
               code: 'TIMEOUT_PARSE_FAILED',
-              suggestion: 'Use numeric milliseconds', 'Use format like "3s" or "500ms"'
+              suggestion: ['Use numeric milliseconds', 'Use format like "3s" or "500ms"']
             },
             type: 'error'
           };
@@ -539,7 +539,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
                 name: 'ElementResolutionError',
                 message: `Invalid CSS selector: "${trimmed}"`,
                 code: 'INVALID_SELECTOR',
-                suggestion: 'Use valid CSS selector syntax', 'Check for typos in selector'
+                suggestion: ['Use valid CSS selector syntax', 'Check for typos in selector']
               },
               type: 'error'
             };
@@ -552,7 +552,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             name: 'ElementResolutionError',
             message: `Element not found: "${trimmed}"`,
             code: 'ELEMENT_NOT_FOUND',
-            suggestion: 'Check if element exists in DOM', 'Verify selector matches existing elements'
+            suggestion: ['Check if element exists in DOM', 'Verify selector matches existing elements']
           },
           type: 'error'
         };
@@ -605,7 +605,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               name: 'TimeoutParseError',
               message: 'Timeout exceeds maximum allowed (60 seconds)',
               code: 'TIMEOUT_TOO_LARGE',
-              suggestion: 'Use timeout values under 60000ms', 'Consider shorter animation durations'
+              suggestion: ['Use timeout values under 60000ms', 'Consider shorter animation durations']
             },
             type: 'error'
           };
@@ -722,7 +722,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           name: 'SettleWaitError',
           message: error instanceof Error ? error.message : 'Wait for settle failed',
           code: 'SETTLE_WAIT_FAILED',
-          suggestion: 'Check if element has animations', 'Verify timeout is sufficient', 'Check element is in DOM'
+          suggestion: ['Check if element has animations', 'Verify timeout is sufficient', 'Check element is in DOM']
         },
         type: 'error'
       };
