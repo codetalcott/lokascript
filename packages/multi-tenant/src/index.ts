@@ -13,6 +13,18 @@ export { TenantManager, createTenantManager } from './tenant-manager';
 export { TenantIsolation, IsolationViolationError, createTenantIsolation } from './isolation';
 export { TenantCustomizationEngine, createCustomizationEngine } from './customization';
 
+// Enhanced Pattern exports
+export {
+  TypedMultiTenantContextImplementation,
+  createMultiTenantContext,
+  createEnhancedMultiTenant,
+  enhancedMultiTenantImplementation,
+  EnhancedMultiTenantInputSchema,
+  EnhancedMultiTenantOutputSchema,
+  type EnhancedMultiTenantInput,
+  type EnhancedMultiTenantOutput
+} from './enhanced-multi-tenant';
+
 // Middleware exports
 export {
   createExpressMiddleware,

@@ -25,7 +25,7 @@ export class BeepCommand implements CommandImplementation {
     }
   }
 
-  validate(args: any[]): string | null {
+  validate(_args: any[]): string | null {
     // Beep command accepts any number of arguments, including zero
     return null;
   }
@@ -90,7 +90,7 @@ export class BeepCommand implements CommandImplementation {
       
       return String(value);
     } catch (error) {
-      return `[Error: ${error.message}]`;
+      return `[Error: ${error instanceof Error ? error.message : String(error)}]`;
     }
   }
 
@@ -112,7 +112,7 @@ export class BeepCommand implements CommandImplementation {
             try {
               safeObj[key] = value[key];
             } catch (propError) {
-              safeObj[key] = `[Error: ${propError.message}]`;
+              safeObj[key] = `[Error: ${propError instanceof Error ? propError.message : String(propError)}]`;
             }
           }
           return safeObj;
@@ -121,7 +121,7 @@ export class BeepCommand implements CommandImplementation {
       
       return value;
     } catch (error) {
-      return `[Error: ${error.message}]`;
+      return `[Error: ${error instanceof Error ? error.message : String(error)}]`;
     }
   }
 

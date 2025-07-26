@@ -130,8 +130,9 @@ export class CommandRuntime {
     const [itemExpr, targetExpr] = command.args;
     const item = await this.evaluateExpression(itemExpr, context);
     const targets = targetExpr ? await this.resolveTargets(targetExpr, context) : [context.me];
+    const validTargets = Array.isArray(targets) ? targets.filter((t): t is Element => t != null) : targets;
 
-    await this.implicitLoop(targets, async (target: Element) => {
+    await this.implicitLoop(validTargets, async (target: Element) => {
       if (typeof item === 'string') {
         if (item.startsWith('.')) {
           // Toggle CSS class
@@ -215,28 +216,28 @@ export class CommandRuntime {
     }
   }
 
-  private async putBefore(value: any, target: Element, context: ExecutionContext): Promise<void> {
+  private async putBefore(value: any, target: Element, _context: ExecutionContext): Promise<void> {
     if (!target) return;
     const fragment = this.convertValue(value, 'Fragment');
     target.before(fragment);
     this.processNode(fragment);
   }
 
-  private async putAfter(value: any, target: Element, context: ExecutionContext): Promise<void> {
+  private async putAfter(value: any, target: Element, _context: ExecutionContext): Promise<void> {
     if (!target) return;
     const fragment = this.convertValue(value, 'Fragment');
     target.after(fragment);
     this.processNode(fragment);
   }
 
-  private async putAtStart(value: any, target: Element, context: ExecutionContext): Promise<void> {
+  private async putAtStart(value: any, target: Element, _context: ExecutionContext): Promise<void> {
     if (!target) return;
     const fragment = this.convertValue(value, 'Fragment');
     target.prepend(fragment);
     this.processNode(fragment);
   }
 
-  private async putAtEnd(value: any, target: Element, context: ExecutionContext): Promise<void> {
+  private async putAtEnd(value: any, target: Element, _context: ExecutionContext): Promise<void> {
     if (!target) return;
     const fragment = this.convertValue(value, 'Fragment');
     target.append(fragment);

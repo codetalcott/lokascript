@@ -59,7 +59,7 @@ export class TellCommand implements CommandImplementation {
     return null;
   }
 
-  private resolveTarget(target: any, context: ExecutionContext): HTMLElement[] {
+  private resolveTarget(target: any, _context: ExecutionContext): HTMLElement[] {
     // Handle null/undefined targets
     if (target === null || target === undefined) {
       return [];
@@ -109,8 +109,6 @@ export class TellCommand implements CommandImplementation {
     
     // Store original context values to restore later
     const originalYou = context.you;
-    const originalYour = context.your;
-    const originalYourself = context.yourself;
 
     try {
       // Execute all commands in the tell context
@@ -126,8 +124,6 @@ export class TellCommand implements CommandImplementation {
     } finally {
       // Restore original context
       context.you = originalYou;
-      context.your = originalYour;
-      context.yourself = originalYourself;
     }
   }
 

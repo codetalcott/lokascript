@@ -763,11 +763,16 @@ export class Runtime {
     // Try enhanced validation first
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
       const result = this.enhancedRegistry.validateCommand(name.toLowerCase(), input);
-      return {
-        valid: result.success,
-        error: result.error?.message,
-        suggestions: result.error?.suggestions
+      const returnObj: { valid: boolean; error?: string; suggestions?: string[] } = {
+        valid: result.success
       };
+      if (result.error?.message) {
+        returnObj.error = result.error.message;
+      }
+      if (result.error?.suggestions) {
+        returnObj.suggestions = result.error.suggestions;
+      }
+      return returnObj;
     }
     
     // Basic validation for legacy commands

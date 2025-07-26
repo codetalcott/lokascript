@@ -60,3 +60,14 @@ export const defaultTranslator = new HyperscriptTranslator({ locale: 'en' });
 // Create and export default runtime instance for browser usage
 import { RuntimeI18nManager } from './runtime';
 export const defaultRuntime = new RuntimeI18nManager({ locale: 'en' });
+
+// Enhanced I18n Implementation (following enhanced pattern)
+export {
+  TypedI18nContextImplementation,
+  createI18nContext,
+  createEnhancedI18n,
+  enhancedI18nImplementation,
+  EnhancedI18nInputSchema,
+  EnhancedI18nOutputSchema
+} from './enhanced-i18n';
+export type { EnhancedI18nInput, EnhancedI18nOutput } from './enhanced-i18n';

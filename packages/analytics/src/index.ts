@@ -13,6 +13,18 @@
 export { AnalyticsTracker, createAnalyticsTracker, getTracker, initAnalytics } from './tracker';
 export { EventCollector, createEventCollector } from './collector';
 
+// Enhanced Pattern exports
+export {
+  TypedAnalyticsContextImplementation,
+  createAnalyticsContext,
+  createEnhancedAnalytics,
+  enhancedAnalyticsImplementation,
+  EnhancedAnalyticsInputSchema,
+  EnhancedAnalyticsOutputSchema,
+  type EnhancedAnalyticsInput,
+  type EnhancedAnalyticsOutput
+} from './enhanced-analytics';
+
 // Type exports
 export type {
   // Event types
