@@ -199,7 +199,7 @@ export class GoCommand implements TypedCommandImplementation<
           name: 'GoCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'GO_EXECUTION_FAILED',
-          suggestion: 'Check navigation parameters', 'Verify target elements exist', 'Ensure URLs are valid'
+          suggestion: ['Check navigation parameters', 'Verify target elements exist', 'Ensure URLs are valid']
         },
         type: 'error'
       };
@@ -341,7 +341,7 @@ export class GoCommand implements TypedCommandImplementation<
             name: 'NavigationError',
             message: `Invalid URL: "${resolvedUrl}"`,
             code: 'INVALID_URL',
-            suggestion: 'Use valid URL format', 'Include protocol for absolute URLs'
+            suggestion: ['Use valid URL format', 'Include protocol for absolute URLs']
           },
           type: 'error'
         };
@@ -378,7 +378,7 @@ export class GoCommand implements TypedCommandImplementation<
                 name: 'NavigationError',
                 message: `Navigation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'NAVIGATION_FAILED',
-                suggestion: 'Check if URL is accessible', 'Verify network connectivity'
+                suggestion: ['Check if URL is accessible', 'Verify network connectivity']
               },
               type: 'error'
             };
@@ -434,7 +434,7 @@ export class GoCommand implements TypedCommandImplementation<
             name: 'ScrollError',
             message: `Target element not found: ${target}`,
             code: 'TARGET_NOT_FOUND',
-            suggestion: 'Check if element exists in DOM', 'Verify selector syntax'
+            suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
           },
           type: 'error'
         };
@@ -514,7 +514,7 @@ export class GoCommand implements TypedCommandImplementation<
                 name: 'ScrollError',
                 message: `Scroll with offset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_OFFSET_FAILED',
-                suggestion: 'Check if element is visible', 'Verify scroll container'
+                suggestion: ['Check if element is visible', 'Verify scroll container']
               },
               type: 'error'
             };
@@ -538,7 +538,7 @@ export class GoCommand implements TypedCommandImplementation<
                 name: 'ScrollError',
                 message: `Scroll failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_FAILED',
-                suggestion: 'Check if element is visible', 'Verify element is scrollable'
+                suggestion: ['Check if element is visible', 'Verify element is scrollable']
               },
               type: 'error'
             };
@@ -573,7 +573,7 @@ export class GoCommand implements TypedCommandImplementation<
           name: 'ScrollError',
           message: error instanceof Error ? error.message : 'Element scrolling failed',
           code: 'SCROLL_EXECUTION_FAILED',
-          suggestion: 'Check target element validity', 'Verify scroll parameters'
+          suggestion: ['Check target element validity', 'Verify scroll parameters']
         },
         type: 'error'
       };
@@ -854,7 +854,7 @@ export class GoCommand implements TypedCommandImplementation<
           name: 'HistoryError',
           message: error instanceof Error ? error.message : 'History navigation failed',
           code: 'HISTORY_NAVIGATION_FAILED',
-          suggestion: 'Check browser history support', 'Verify navigation context'
+          suggestion: ['Check browser history support', 'Verify navigation context']
         },
         type: 'error'
       };
@@ -883,7 +883,7 @@ export class GoCommand implements TypedCommandImplementation<
           message: 'URL is required after "url" keyword',
           suggestion: 'Provide URL string after "url" keyword'
         }],
-        suggestion: 'Use: go to url "https://example.com"', 'Include URL string as next argument'
+        suggestion: ['Use: go to url "https://example.com"', 'Include URL string as next argument']
       };
     }
 
@@ -898,7 +898,7 @@ export class GoCommand implements TypedCommandImplementation<
             message: `Invalid URL format: "${url}"`,
             suggestion: 'Use valid URL format like "https://example.com"'
           }],
-          suggestion: 'Include protocol (http:// or https://)', 'Check URL syntax'
+          suggestion: ['Include protocol (http:// or https://)', 'Check URL syntax']
         };
       }
     }
@@ -928,7 +928,7 @@ export class GoCommand implements TypedCommandImplementation<
             message: 'Invalid go command syntax',
             suggestion: 'Use valid go command patterns'
           }],
-          suggestion: 'Use: go to top of <element>', 'Use: go to <element>', 'Use: go back'
+          suggestion: ['Use: go to top of <element>', 'Use: go to <element>', 'Use: go back']
         };
       }
     }

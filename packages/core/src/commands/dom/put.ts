@@ -204,7 +204,7 @@ export class PutCommand implements TypedCommandImplementation<
           name: 'PutCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'PUT_EXECUTION_FAILED',
-          suggestion: 'Check if target element exists', 'Verify content is valid', 'Ensure position is supported'
+          suggestion: ['Check if target element exists', 'Verify content is valid', 'Ensure position is supported']
         },
         type: 'error'
       };
@@ -224,7 +224,7 @@ export class PutCommand implements TypedCommandImplementation<
             message: `Invalid argument: ${err.message}`,
             suggestion: this.getValidationSuggestion(err.code, err.path)
           })),
-          suggestion: 'Provide content, position, and target', 'Use valid position keywords', 'Ensure target is element or selector'
+          suggestion: ['Provide content, position, and target', 'Use valid position keywords', 'Ensure target is element or selector']
         };
       }
 
@@ -254,7 +254,7 @@ export class PutCommand implements TypedCommandImplementation<
             message: `Invalid CSS selector: "${target}"`,
             suggestion: 'Use valid CSS selector syntax like "#id", ".class", or "element"'
           }],
-          suggestion: 'Check CSS selector syntax', 'Test with document.querySelector()'
+          suggestion: ['Check CSS selector syntax', 'Test with document.querySelector()']
         };
       }
 
@@ -291,7 +291,7 @@ export class PutCommand implements TypedCommandImplementation<
               name: 'PutTargetError',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
-              suggestion: 'Ensure command is called within element context', 'Provide explicit target element'
+              suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
             },
             type: 'error'
           };
@@ -328,7 +328,7 @@ export class PutCommand implements TypedCommandImplementation<
                 name: 'PutTargetError',
                 message: `Target element not found: ${selector}`,
                 code: 'TARGET_NOT_FOUND',
-                suggestion: 'Check if element exists in DOM', 'Verify selector syntax'
+                suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
               },
               type: 'error'
             };
@@ -350,7 +350,7 @@ export class PutCommand implements TypedCommandImplementation<
                 name: 'PutTargetError',
                 message: `Target element not found: ${target}`,
                 code: 'TARGET_NOT_FOUND',
-                suggestion: 'Check if element exists in DOM', 'Verify selector syntax'
+                suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
               },
               type: 'error'
             };

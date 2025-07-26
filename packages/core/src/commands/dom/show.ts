@@ -160,7 +160,7 @@ export class ShowCommand implements TypedCommandImplementation<
           name: 'ShowCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SHOW_EXECUTION_FAILED',
-          suggestion: 'Check if element exists', 'Verify element is not null'
+          suggestion: [suggestion: 'Check if element exists', 'Verify element is not null']
         },
         type: 'error'
       };
@@ -230,7 +230,7 @@ export class ShowCommand implements TypedCommandImplementation<
           name: 'ShowElementError',
           message: error instanceof Error ? error.message : 'Failed to show element',
           code: 'ELEMENT_SHOW_FAILED',
-          suggestion: 'Check if element is still in DOM', 'Verify element is not null'
+          suggestion: [suggestion: 'Check if element is still in DOM', 'Verify element is not null']
         },
         type: 'error'
       };
@@ -289,7 +289,7 @@ export class ShowCommand implements TypedCommandImplementation<
             message: `Invalid CSS selector: "${target}"`,
             suggestion: 'Use valid CSS selector syntax like "#id", ".class", or "element"'
           }],
-          suggestion: 'Check CSS selector syntax', 'Use document.querySelector() test'
+          suggestion: [suggestion: 'Check CSS selector syntax', 'Use document.querySelector() test']
         };
       }
 

@@ -478,7 +478,7 @@ export class AddCommand implements TypedCommandImplementation<
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch' as const,
             message: `Invalid argument: ${err.message}`,
-            suggestion: [][]this.getValidationSuggestion(err.code, err.path)
+            suggestion: this.getValidationSuggestion(err.code, err.path)
           })),
           suggestion: ['Use string or string array for classes, and valid target selector'
         };
@@ -527,7 +527,7 @@ export class AddCommand implements TypedCommandImplementation<
           message: 'Validation failed with exception',
           suggestion: ['Check input types and values'
         }],
-        suggestion: []'Ensure arguments match expected types'
+        suggestion: 'Ensure arguments match expected types'
       };
     }
   }

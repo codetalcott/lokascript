@@ -163,7 +163,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             name: 'TriggerCommandError',
             message: parseResult.error || 'Failed to parse arguments',
             code: 'ARGUMENT_PARSE_FAILED',
-            suggestion: 'Use: trigger eventName on target', 'Use: trigger eventName data on target'
+            suggestion: [suggestion: 'Use: trigger eventName on target', 'Use: trigger eventName data on target']
           },
           type: 'error'
         };
@@ -180,7 +180,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             name: 'TriggerCommandError',
             message: targetResult.error || 'Failed to resolve target elements',
             code: 'TARGET_RESOLUTION_FAILED',
-            suggestion: 'Check if target elements exist', 'Verify selector syntax'
+            suggestion: [suggestion: 'Check if target elements exist', 'Verify selector syntax']
           },
           type: 'error'
         };
@@ -203,7 +203,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             name: 'TriggerCommandError',
             message: eventResult.error || 'Failed to trigger event',
             code: 'EVENT_TRIGGER_FAILED',
-            suggestion: 'Check if target elements are valid', 'Verify event name format'
+            suggestion: [suggestion: 'Check if target elements are valid', 'Verify event name format']
           },
           type: 'error'
         };
@@ -227,7 +227,7 @@ export class TriggerCommand implements TypedCommandImplementation<
           name: 'TriggerCommandError',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TRIGGER_EXECUTION_FAILED',
-          suggestion: 'Check event name and arguments', 'Verify target elements exist'
+          suggestion: [suggestion: 'Check event name and arguments', 'Verify target elements exist']
         },
         type: 'error'
       };
@@ -510,7 +510,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             message: 'Trigger command requires at least: eventName, "on", target',
             suggestion: 'Use: trigger eventName on target'
           }],
-          suggestion: 'Use: trigger "click" on element', 'Use: trigger "custom" data on target'
+          suggestion: [suggestion: 'Use: trigger "click" on element', 'Use: trigger "custom" data on target']
         };
       }
       
@@ -523,7 +523,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             message: 'Event name must be a string',
             suggestion: 'Use a string for the event name'
           }],
-          suggestion: 'Use quotes around event name', 'Example: trigger "click" on element'
+          suggestion: [suggestion: 'Use quotes around event name', 'Example: trigger "click" on element']
         };
       }
       
@@ -554,7 +554,7 @@ export class TriggerCommand implements TypedCommandImplementation<
                 message: 'Trigger command requires target after "on"',
                 suggestion: 'Specify target element after "on" keyword'
               }],
-              suggestion: 'Use: trigger event on <#element/>', 'Use: trigger event on me'
+              suggestion: [suggestion: 'Use: trigger event on <#element/>', 'Use: trigger event on me']
             };
           }
           break;
@@ -569,7 +569,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             message: 'Trigger command requires "on" keyword to specify target',
             suggestion: 'Use "on" keyword before target specification'
           }],
-          suggestion: 'Use: trigger eventName on target', 'Use: trigger eventName data on target'
+          suggestion: [suggestion: 'Use: trigger eventName on target', 'Use: trigger eventName data on target']
         };
       }
       
