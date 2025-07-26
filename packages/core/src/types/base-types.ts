@@ -335,9 +335,91 @@ export interface BaseCommand {
  */
 export interface ASTNode {
   readonly type: string;
-  readonly start: number;
-  readonly end: number;
-  readonly raw: string;
+  readonly start?: number | undefined;
+  readonly end?: number | undefined;
+  readonly raw?: string | undefined;
+  // Allow additional properties for different node types
+  [key: string]: unknown;
+}
+
+/**
+ * Binary expression AST node
+ */
+export interface BinaryExpressionNode extends ASTNode {
+  readonly type: 'binaryExpression';
+  readonly operator: string;
+  readonly left: ASTNode;
+  readonly right: ASTNode;
+}
+
+/**
+ * Unary expression AST node
+ */
+export interface UnaryExpressionNode extends ASTNode {
+  readonly type: 'unaryExpression';
+  readonly operator: string;
+  readonly operand: ASTNode;
+}
+
+/**
+ * Property access AST node
+ */
+export interface PropertyAccessNode extends ASTNode {
+  readonly type: 'propertyAccess';
+  readonly object: ASTNode;
+  readonly property: string;
+}
+
+/**
+ * Member expression AST node
+ */
+export interface MemberExpressionNode extends ASTNode {
+  readonly type: 'memberExpression';
+  readonly expression: ASTNode;
+  readonly member: string;
+}
+
+/**
+ * Context reference AST node
+ */
+export interface ContextReferenceNode extends ASTNode {
+  readonly type: 'contextReference';
+  readonly contextType: 'me' | 'you' | 'it' | 'target' | 'event';
+}
+
+/**
+ * Command AST node
+ */
+export interface CommandNode extends ASTNode {
+  readonly type: 'command';
+  readonly name: string;
+  readonly args?: ASTNode[];
+}
+
+/**
+ * Expression AST node
+ */
+export interface ExpressionNode extends ASTNode {
+  readonly type: 'expression';
+  readonly value?: unknown;
+}
+
+/**
+ * Literal AST node  
+ */
+export interface LiteralNode extends ASTNode {
+  readonly type: 'literal';
+  readonly value: string | number | boolean;
+}
+
+/**
+ * Event handler AST node
+ */
+export interface EventHandlerNode extends ASTNode {
+  readonly type: 'eventHandler';
+  readonly event: string;
+  readonly target?: string;
+  readonly commands: ASTNode[];
 }
 
 /**

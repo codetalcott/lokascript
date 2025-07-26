@@ -6,7 +6,19 @@
  */
 
 import { z } from 'zod';
-// Import unified types from base-types system
+// Import unified types from base-types system for local use and re-export
+import type { 
+  ValidationResult, 
+  LLMDocumentation,
+  ExecutionContext,
+  TypedExecutionContext,
+  TypedExpressionContext,
+  EvaluationType,
+  HyperScriptValueType,
+  TypedResult
+} from './base-types.js';
+
+// Re-export for external consumers
 export type { 
   ValidationResult, 
   LLMDocumentation,

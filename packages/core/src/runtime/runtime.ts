@@ -9,7 +9,7 @@ import type {
   CommandNode, 
   ExpressionNode,
   EventHandlerNode
-} from '../types/core.js';
+} from '../types/base-types.js';
 
 import { ExpressionEvaluator } from '../core/expression-evaluator.js';
 import { PutCommand } from '../commands/dom/put.js';
@@ -24,8 +24,7 @@ import { createAddCommand } from '../commands/dom/add.js';
 import { createRemoveCommand } from '../commands/dom/remove.js';
 import { createSendCommand } from '../commands/events/send.js';
 import { createTriggerCommand } from '../commands/events/trigger.js';
-import { createWaitCommand } from '../commands/async/wait.js';
-import { createFetchCommand } from '../commands/async/fetch.js';
+// Note: Wait and Fetch commands to be implemented
 import { createPutCommand } from '../commands/dom/put.js';
 
 // Additional command imports

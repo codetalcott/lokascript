@@ -6,18 +6,15 @@
 
 import { z } from 'zod';
 import type {
-  TypedExpressionImplementation,
+  BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
-  ValidationResult
-} from '../../types/enhanced-expressions.ts';
-import type { 
-  EvaluationResult,
-  LLMDocumentation,
-  HyperScriptValue
-} from '../../types/enhanced-core.ts';
+  ValidationResult,
+  TypedResult,
+  LLMDocumentation
+} from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas
@@ -34,7 +31,7 @@ type BinaryOperationInput = z.infer<typeof BinaryOperationInputSchema>;
 // Enhanced Addition Expression
 // ============================================================================
 
-export class EnhancedAdditionExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedAdditionExpression implements BaseTypedExpression<BinaryOperationInput, number> {
   public readonly name = 'addition';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left + right';
@@ -129,7 +126,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const startTime = Date.now();
 
     try {
@@ -138,8 +135,12 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -330,7 +331,7 @@ export class EnhancedAdditionExpression implements TypedExpressionImplementation
 // Enhanced Subtraction Expression
 // ============================================================================
 
-export class EnhancedSubtractionExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedSubtractionExpression implements BaseTypedExpression<BinaryOperationInput, number> {
   public readonly name = 'subtraction';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left - right';
@@ -414,7 +415,7 @@ export class EnhancedSubtractionExpression implements TypedExpressionImplementat
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     // Reuse the same logic as addition but with subtraction operation
     const additionExpr = new EnhancedAdditionExpression();
     
@@ -424,8 +425,12 @@ export class EnhancedSubtractionExpression implements TypedExpressionImplementat
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -477,7 +482,7 @@ export class EnhancedSubtractionExpression implements TypedExpressionImplementat
 // Enhanced Multiplication Expression
 // ============================================================================
 
-export class EnhancedMultiplicationExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedMultiplicationExpression implements BaseTypedExpression<BinaryOperationInput, number> {
   public readonly name = 'multiplication';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left * right';
@@ -561,7 +566,7 @@ export class EnhancedMultiplicationExpression implements TypedExpressionImplemen
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     
     try {
@@ -569,8 +574,12 @@ export class EnhancedMultiplicationExpression implements TypedExpressionImplemen
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -617,7 +626,7 @@ export class EnhancedMultiplicationExpression implements TypedExpressionImplemen
 // Enhanced Division Expression
 // ============================================================================
 
-export class EnhancedDivisionExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedDivisionExpression implements BaseTypedExpression<BinaryOperationInput, number> {
   public readonly name = 'division';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left / right';
@@ -701,7 +710,7 @@ export class EnhancedDivisionExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     
     try {
@@ -709,8 +718,12 @@ export class EnhancedDivisionExpression implements TypedExpressionImplementation
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -774,7 +787,7 @@ export class EnhancedDivisionExpression implements TypedExpressionImplementation
 // Enhanced Modulo Expression
 // ============================================================================
 
-export class EnhancedModuloExpression implements TypedExpressionImplementation<BinaryOperationInput, number> {
+export class EnhancedModuloExpression implements BaseTypedExpression<BinaryOperationInput, number> {
   public readonly name = 'modulo';
   public readonly category: ExpressionCategory = 'Special';
   public readonly syntax = 'left mod right';
@@ -858,7 +871,7 @@ export class EnhancedModuloExpression implements TypedExpressionImplementation<B
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<EvaluationResult<number>> {
+  ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
     
     try {
@@ -866,8 +879,12 @@ export class EnhancedModuloExpression implements TypedExpressionImplementation<B
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 

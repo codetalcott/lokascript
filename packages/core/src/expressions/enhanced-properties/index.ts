@@ -7,7 +7,6 @@ import { z } from 'zod';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
@@ -15,6 +14,7 @@ import type {
   LLMDocumentation,
   HyperScriptValueType
 } from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas
@@ -49,7 +49,7 @@ type AttributeWithValueInput = z.infer<typeof AttributeWithValueInputSchema>;
 // Enhanced Possessive Expression (element's property)
 // ============================================================================
 
-export class EnhancedPossessiveExpression implements TypedExpressionImplementation<PropertyAccessInput, unknown> {
+export class EnhancedPossessiveExpression implements BaseTypedExpression<PropertyAccessInput, unknown> {
   public readonly name = 'possessive';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = "element's property";
@@ -320,7 +320,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
 // Enhanced My Expression (my property)
 // ============================================================================
 
-export class EnhancedMyExpression implements TypedExpressionImplementation<ContextPropertyInput, unknown> {
+export class EnhancedMyExpression implements BaseTypedExpression<ContextPropertyInput, unknown> {
   public readonly name = 'my';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = 'my property';
@@ -501,7 +501,7 @@ export class EnhancedMyExpression implements TypedExpressionImplementation<Conte
 // Enhanced Its Expression (its property)
 // ============================================================================
 
-export class EnhancedItsExpression implements TypedExpressionImplementation<ContextPropertyInput, unknown> {
+export class EnhancedItsExpression implements BaseTypedExpression<ContextPropertyInput, unknown> {
   public readonly name = 'its';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = 'its property';
@@ -671,7 +671,7 @@ export class EnhancedItsExpression implements TypedExpressionImplementation<Cont
 // Enhanced Your Expression (your property)
 // ============================================================================
 
-export class EnhancedYourExpression implements TypedExpressionImplementation<ContextPropertyInput, unknown> {
+export class EnhancedYourExpression implements BaseTypedExpression<ContextPropertyInput, unknown> {
   public readonly name = 'your';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = 'your property';
@@ -841,7 +841,7 @@ export class EnhancedYourExpression implements TypedExpressionImplementation<Con
 // Enhanced Attribute Expression (@attribute)
 // ============================================================================
 
-export class EnhancedAttributeExpression implements TypedExpressionImplementation<AttributeAccessInput, string | null> {
+export class EnhancedAttributeExpression implements BaseTypedExpression<AttributeAccessInput, string | null> {
   public readonly name = 'attribute';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = '@attribute or @attribute of element';
@@ -1028,7 +1028,7 @@ export class EnhancedAttributeExpression implements TypedExpressionImplementatio
 // Enhanced Attribute With Value Expression (@attribute=value)
 // ============================================================================
 
-export class EnhancedAttributeWithValueExpression implements TypedExpressionImplementation<AttributeWithValueInput, boolean> {
+export class EnhancedAttributeWithValueExpression implements BaseTypedExpression<AttributeWithValueInput, boolean> {
   public readonly name = 'attributeWithValue';
   public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = '@attribute=value';

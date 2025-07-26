@@ -42,9 +42,9 @@ type AttributeAccessInput = z.infer<typeof AttributeAccessInputSchema>;
 // Enhanced My Expression (Context Property Access)
 // ============================================================================
 
-export class EnhancedMyExpression implements TypedExpressionImplementation<PropertyAccessInput, HyperScriptValue> {
+export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
   public readonly name = 'my';
-  public readonly category: ExpressionCategory = 'Properties';
+  public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = 'my property';
   public readonly description = 'Accesses properties of the current context element (me) with validation';
   public readonly inputSchema = PropertyAccessInputSchema;
@@ -135,7 +135,7 @@ export class EnhancedMyExpression implements TypedExpressionImplementation<Prope
   async evaluate(
     context: TypedExpressionContext,
     input: PropertyAccessInput
-  ): Promise<EvaluationResult<HyperScriptValue>> {
+  ): Promise<TypedResult<HyperScriptValue>> {
     const startTime = Date.now();
 
     try {
@@ -308,9 +308,9 @@ export class EnhancedMyExpression implements TypedExpressionImplementation<Prope
 // Enhanced Its Expression (Generic Property Access)
 // ============================================================================
 
-export class EnhancedItsExpression implements TypedExpressionImplementation<PossessiveAccessInput, HyperScriptValue> {
+export class EnhancedItsExpression implements BaseTypedExpression<PossessiveAccessInput, HyperScriptValue> {
   public readonly name = 'its';
-  public readonly category: ExpressionCategory = 'Properties';
+  public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = 'target its property';
   public readonly description = 'Generic possessive property access with comprehensive validation';
   public readonly inputSchema = PossessiveAccessInputSchema;
@@ -398,7 +398,7 @@ export class EnhancedItsExpression implements TypedExpressionImplementation<Poss
   async evaluate(
     context: TypedExpressionContext,
     input: PossessiveAccessInput
-  ): Promise<EvaluationResult<HyperScriptValue>> {
+  ): Promise<TypedResult<HyperScriptValue>> {
     const startTime = Date.now();
 
     try {
@@ -523,9 +523,9 @@ export class EnhancedItsExpression implements TypedExpressionImplementation<Poss
 // Enhanced Attribute Expression (@attribute syntax)
 // ============================================================================
 
-export class EnhancedAttributeExpression implements TypedExpressionImplementation<AttributeAccessInput, string | null> {
+export class EnhancedAttributeExpression implements BaseTypedExpression<AttributeAccessInput, string | null> {
   public readonly name = 'attribute';
-  public readonly category: ExpressionCategory = 'Properties';
+  public readonly category: ExpressionCategory = 'Property';
   public readonly syntax = '@attribute or element@attribute';
   public readonly description = 'Accesses HTML attributes with comprehensive DOM validation';
   public readonly inputSchema = AttributeAccessInputSchema;
@@ -612,7 +612,7 @@ export class EnhancedAttributeExpression implements TypedExpressionImplementatio
   async evaluate(
     context: TypedExpressionContext,
     input: AttributeAccessInput
-  ): Promise<EvaluationResult<string | null>> {
+  ): Promise<TypedResult<string | null>> {
     const startTime = Date.now();
 
     try {

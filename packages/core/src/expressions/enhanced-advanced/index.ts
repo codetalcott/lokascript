@@ -4,14 +4,18 @@
  * Enhanced for LLM code agents with maximum type safety
  */
 
+// Advanced expressions implementation
 import { z } from 'zod';
 import type {
-  TypedExpressionImplementation,
+  BaseTypedExpression,
   TypedExecutionContext,
-  HyperScriptValue,
-  EvaluationResult,
-  LLMDocumentation
-} from '../../types/enhanced-core.js';
+  TypedResult,
+  LLMDocumentation,
+  EvaluationType,
+  ValidationResult,
+  ExpressionMetadata
+} from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Enhanced Lambda Expression
@@ -20,12 +24,29 @@ import type {
 /**
  * Enhanced lambda expression with type-safe function creation
  */
-export class EnhancedLambdaExpression implements TypedExpressionImplementation<Function> {
+export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
   public readonly name = 'lambda';
-  public readonly category = 'function' as const;
-  public readonly precedence = 1;
-  public readonly associativity = 'right' as const;
-  public readonly outputType = 'function' as const;
+  public readonly category: ExpressionCategory = 'Special';
+  public readonly syntax = '\\(params) -> expression';
+  public readonly outputType: EvaluationType = 'Any';
+  public readonly inputSchema = z.object({
+    parameters: z.array(z.string()).describe('Function parameter names'),
+    body: z.string().describe('Function body expression')
+  });
+  
+  public readonly metadata: ExpressionMetadata = {
+    category: 'Special',
+    complexity: 'medium',
+    sideEffects: [],
+    dependencies: ['context'],
+    returnTypes: ['Any'],
+    examples: [],
+    relatedExpressions: [],
+    performance: {
+      averageTime: 1,
+      complexity: 'O(1)'
+    }
+  };
 
   public readonly analysisInfo = {
     isPure: true,
@@ -75,7 +96,31 @@ export class EnhancedLambdaExpression implements TypedExpressionImplementation<F
     tags: ['function', 'lambda', 'closure', 'higher-order']
   };
 
-  async evaluate(context: TypedExecutionContext, parameters: string[], body: string): Promise<EvaluationResult<Function>> {
+  validate(input: unknown): ValidationResult {
+    try {
+      const parsed = this.inputSchema.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isValid: false,
+          errors: parsed.error.errors.map(err => ({
+            type: 'type-mismatch',
+            message: `Invalid lambda input: ${err.message}`,
+            suggestion: 'Provide parameters array and body string'
+          })),
+          suggestions: ['Provide valid parameters and body']
+        };
+      }
+      return { isValid: true, errors: [], suggestions: [] };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestion: 'Check input' }],
+        suggestions: ['Check input structure']
+      };
+    }
+  }
+
+  async evaluate(context: TypedExecutionContext, parameters: string[], body: string): Promise<TypedResult<Function>> {
     try {
       if (!Array.isArray(parameters)) {
         return {
@@ -104,7 +149,7 @@ export class EnhancedLambdaExpression implements TypedExpressionImplementation<F
       }
 
       // Create a lambda function that captures the current context
-      const lambdaFunction = (...args: HyperScriptValue[]) => {
+      const lambdaFunction = (...args: unknown[]) => {
         // Create new context for lambda execution
         const lambdaContext: TypedExecutionContext = {
           ...context,
@@ -141,7 +186,7 @@ export class EnhancedLambdaExpression implements TypedExpressionImplementation<F
     }
   }
 
-  private evaluateLambdaBody(body: string, context: TypedExecutionContext, args: HyperScriptValue[]): HyperScriptValue {
+  private evaluateLambdaBody(body: string, context: TypedExecutionContext, args: unknown[]): unknown {
     // Simple expression evaluation for common patterns
     if (body.includes('+') && body.split('+').length === 2) {
       const [left, right] = body.split('+').map(s => s.trim());
@@ -184,18 +229,27 @@ export class EnhancedLambdaExpression implements TypedExpressionImplementation<F
 /**
  * Enhanced promise creation with type safety
  */
-export class EnhancedPromiseExpression implements TypedExpressionImplementation<Promise<HyperScriptValue>> {
+export class EnhancedPromiseExpression implements BaseTypedExpression<Promise<unknown>> {
   public readonly name = 'promise';
-  public readonly category = 'async' as const;
-  public readonly precedence = 1;
-  public readonly associativity = 'left' as const;
-  public readonly outputType = 'object' as const;
+  public readonly category: ExpressionCategory = 'Special';
+  public readonly syntax = 'promise(executor)';
+  public readonly inputSchema = z.object({
+    executor: z.string().describe('Executor expression')
+  });
+  public readonly outputType: EvaluationType = 'Any';
 
-  public readonly analysisInfo = {
-    isPure: false, // Promises can have side effects
-    canThrow: false,
-    complexity: 'O(1)' as const,
-    dependencies: []
+  public readonly metadata: ExpressionMetadata = {
+    category: 'Special',
+    complexity: 'medium',
+    sideEffects: ['async'],
+    dependencies: [],
+    returnTypes: ['Any'],
+    examples: [],
+    relatedExpressions: ['await'],
+    performance: {
+      averageTime: 1,
+      complexity: 'O(1)'
+    }
   };
 
   public readonly documentation: LLMDocumentation = {
@@ -232,9 +286,33 @@ export class EnhancedPromiseExpression implements TypedExpressionImplementation<
     tags: ['async', 'promise', 'concurrent']
   };
 
-  evaluate(context: TypedExecutionContext, executor: string): Promise<EvaluationResult<Promise<HyperScriptValue>>> {
+  validate(input: unknown): ValidationResult {
     try {
-      const promise = new Promise<HyperScriptValue>((resolve, reject) => {
+      const parsed = this.inputSchema.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isValid: false,
+          errors: parsed.error.errors.map(err => ({
+            type: 'type-mismatch',
+            message: `Invalid promise input: ${err.message}`,
+            suggestion: 'Provide executor string'
+          })),
+          suggestions: ['Provide valid executor string']
+        };
+      }
+      return { isValid: true, errors: [], suggestions: [] };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestion: 'Check input' }],
+        suggestions: ['Check input structure']
+      };
+    }
+  }
+
+  async evaluate(context: TypedExecutionContext, executor: string): Promise<TypedResult<Promise<unknown>>> {
+    try {
+      const promise = new Promise<unknown>((resolve, reject) => {
         try {
           // Handle resolve calls
           const resolveMatch = executor.match(/resolve\((.+?)\)/);
@@ -271,7 +349,7 @@ export class EnhancedPromiseExpression implements TypedExpressionImplementation<
       return Promise.resolve({
         success: true,
         value: promise,
-        type: 'object'
+        type: 'any'
       });
 
     } catch (error) {
@@ -288,7 +366,7 @@ export class EnhancedPromiseExpression implements TypedExpressionImplementation<
     }
   }
 
-  private parseValue(valueStr: string): HyperScriptValue {
+  private parseValue(valueStr: string): unknown {
     const trimmed = valueStr.trim();
     
     // String literals
@@ -318,18 +396,27 @@ export class EnhancedPromiseExpression implements TypedExpressionImplementation<
 /**
  * Enhanced await expression with proper error handling
  */
-export class EnhancedAwaitExpression implements TypedExpressionImplementation<HyperScriptValue> {
+export class EnhancedAwaitExpression implements BaseTypedExpression<unknown> {
   public readonly name = 'await';
-  public readonly category = 'async' as const;
-  public readonly precedence = 15;
-  public readonly associativity = 'right' as const;
-  public readonly outputType = 'unknown' as const;
+  public readonly category: ExpressionCategory = 'Special';
+  public readonly syntax = 'await promise';
+  public readonly inputSchema = z.object({
+    promise: z.unknown().describe('Promise to await')
+  });
+  public readonly outputType: EvaluationType = 'Any';
 
-  public readonly analysisInfo = {
-    isPure: false, // Await can have side effects
-    canThrow: true, // Promises can reject
-    complexity: 'O(1)' as const,
-    dependencies: ['async-context']
+  public readonly metadata: ExpressionMetadata = {
+    category: 'Special',
+    complexity: 'medium',
+    sideEffects: ['async'],
+    dependencies: ['promise'],
+    returnTypes: ['Any'],
+    examples: [],
+    relatedExpressions: ['promise'],
+    performance: {
+      averageTime: 1,
+      complexity: 'O(1)'
+    }
   };
 
   public readonly documentation: LLMDocumentation = {
@@ -366,7 +453,31 @@ export class EnhancedAwaitExpression implements TypedExpressionImplementation<Hy
     tags: ['async', 'await', 'promise']
   };
 
-  async evaluate(context: TypedExecutionContext, promise: HyperScriptValue): Promise<EvaluationResult<HyperScriptValue>> {
+  validate(input: unknown): ValidationResult {
+    try {
+      const parsed = this.inputSchema.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isValid: false,
+          errors: parsed.error.errors.map(err => ({
+            type: 'type-mismatch',
+            message: `Invalid await input: ${err.message}`,
+            suggestion: 'Provide promise to await'
+          })),
+          suggestions: ['Provide valid promise']
+        };
+      }
+      return { isValid: true, errors: [], suggestions: [] };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestion: 'Check input' }],
+        suggestions: ['Check input structure']
+      };
+    }
+  }
+
+  async evaluate(context: TypedExecutionContext, promise: unknown): Promise<TypedResult<unknown>> {
     try {
       if (promise instanceof Promise) {
         const result = await promise;
@@ -406,18 +517,29 @@ export class EnhancedAwaitExpression implements TypedExpressionImplementation<Hy
 /**
  * Enhanced error creation with comprehensive error handling
  */
-export class EnhancedErrorExpression implements TypedExpressionImplementation<Error> {
+export class EnhancedErrorExpression implements BaseTypedExpression<Error> {
   public readonly name = 'error';
-  public readonly category = 'error' as const;
-  public readonly precedence = 1;
-  public readonly associativity = 'left' as const;
-  public readonly outputType = 'object' as const;
+  public readonly category: ExpressionCategory = 'Special';
+  public readonly syntax = 'error(message, name?, code?)';
+  public readonly inputSchema = z.object({
+    message: z.string().describe('Error message'),
+    name: z.string().optional().describe('Error name'),
+    code: z.string().optional().describe('Error code')
+  });
+  public readonly outputType: EvaluationType = 'Any';
 
-  public readonly analysisInfo = {
-    isPure: true,
-    canThrow: false,
-    complexity: 'O(1)' as const,
-    dependencies: []
+  public readonly metadata: ExpressionMetadata = {
+    category: 'Special',
+    complexity: 'simple',
+    sideEffects: [],
+    dependencies: [],
+    returnTypes: ['Any'],
+    examples: [],
+    relatedExpressions: [],
+    performance: {
+      averageTime: 0.1,
+      complexity: 'O(1)'
+    }
   };
 
   public readonly documentation: LLMDocumentation = {
@@ -468,7 +590,31 @@ export class EnhancedErrorExpression implements TypedExpressionImplementation<Er
     tags: ['error', 'exception', 'validation']
   };
 
-  async evaluate(context: TypedExecutionContext, message: string, name?: string, code?: string): Promise<EvaluationResult<Error>> {
+  validate(input: unknown): ValidationResult {
+    try {
+      const parsed = this.inputSchema.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isValid: false,
+          errors: parsed.error.errors.map(err => ({
+            type: 'type-mismatch',
+            message: `Invalid error input: ${err.message}`,
+            suggestion: 'Provide message string'
+          })),
+          suggestions: ['Provide valid error message']
+        };
+      }
+      return { isValid: true, errors: [], suggestions: [] };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestion: 'Check input' }],
+        suggestions: ['Check input structure']
+      };
+    }
+  }
+
+  async evaluate(context: TypedExecutionContext, message: string, name?: string, code?: string): Promise<TypedResult<Error>> {
     try {
       const error = new Error(String(message));
       
@@ -483,7 +629,7 @@ export class EnhancedErrorExpression implements TypedExpressionImplementation<Er
       return {
         success: true,
         value: error,
-        type: 'object'
+        type: 'any'
       };
 
     } catch (error) {
@@ -508,18 +654,27 @@ export class EnhancedErrorExpression implements TypedExpressionImplementation<Er
 /**
  * Enhanced typeof expression with comprehensive type checking
  */
-export class EnhancedTypeofExpression implements TypedExpressionImplementation<string> {
+export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
   public readonly name = 'typeof';
-  public readonly category = 'type' as const;
-  public readonly precedence = 15;
-  public readonly associativity = 'right' as const;
-  public readonly outputType = 'string' as const;
+  public readonly category: ExpressionCategory = 'Special';
+  public readonly syntax = 'typeof value';
+  public readonly inputSchema = z.object({
+    value: z.unknown().describe('Value to check type of')
+  });
+  public readonly outputType: EvaluationType = 'String';
 
-  public readonly analysisInfo = {
-    isPure: true,
-    canThrow: false,
-    complexity: 'O(1)' as const,
-    dependencies: []
+  public readonly metadata: ExpressionMetadata = {
+    category: 'Special',
+    complexity: 'simple',
+    sideEffects: [],
+    dependencies: [],
+    returnTypes: ['String'],
+    examples: [],
+    relatedExpressions: [],
+    performance: {
+      averageTime: 0.1,
+      complexity: 'O(1)'
+    }
   };
 
   public readonly documentation: LLMDocumentation = {
@@ -556,7 +711,31 @@ export class EnhancedTypeofExpression implements TypedExpressionImplementation<s
     tags: ['type', 'check', 'validation']
   };
 
-  async evaluate(context: TypedExecutionContext, value: HyperScriptValue): Promise<EvaluationResult<string>> {
+  validate(input: unknown): ValidationResult {
+    try {
+      const parsed = this.inputSchema.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isValid: false,
+          errors: parsed.error.errors.map(err => ({
+            type: 'type-mismatch',
+            message: `Invalid typeof input: ${err.message}`,
+            suggestion: 'Provide value to check'
+          })),
+          suggestions: ['Provide valid value']
+        };
+      }
+      return { isValid: true, errors: [], suggestions: [] };
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestion: 'Check input' }],
+        suggestions: ['Check input structure']
+      };
+    }
+  }
+
+  async evaluate(context: TypedExecutionContext, value: unknown): Promise<TypedResult<string>> {
     try {
       let typeResult: string;
 
@@ -638,27 +817,27 @@ export function createEnhancedTypeof(): EnhancedTypeofExpression {
 /**
  * Utility functions for advanced operations
  */
-export async function createLambda(parameters: string[], body: string, context: TypedExecutionContext): Promise<EvaluationResult<Function>> {
+export async function createLambda(parameters: string[], body: string, context: TypedExecutionContext): Promise<TypedResult<Function>> {
   const expr = new EnhancedLambdaExpression();
   return expr.evaluate(context, parameters, body);
 }
 
-export async function createPromise(executor: string, context: TypedExecutionContext): Promise<EvaluationResult<Promise<HyperScriptValue>>> {
+export async function createPromise(executor: string, context: TypedExecutionContext): Promise<TypedResult<Promise<unknown>>> {
   const expr = new EnhancedPromiseExpression();
   return expr.evaluate(context, executor);
 }
 
-export async function awaitPromise(promise: HyperScriptValue, context: TypedExecutionContext): Promise<EvaluationResult<HyperScriptValue>> {
+export async function awaitPromise(promise: unknown, context: TypedExecutionContext): Promise<TypedResult<unknown>> {
   const expr = new EnhancedAwaitExpression();
   return expr.evaluate(context, promise);
 }
 
-export async function createError(message: string, context: TypedExecutionContext, name?: string, code?: string): Promise<EvaluationResult<Error>> {
+export async function createError(message: string, context: TypedExecutionContext, name?: string, code?: string): Promise<TypedResult<Error>> {
   const expr = new EnhancedErrorExpression();
   return expr.evaluate(context, message, name, code);
 }
 
-export async function getTypeOf(value: HyperScriptValue, context: TypedExecutionContext): Promise<EvaluationResult<string>> {
+export async function getTypeOf(value: unknown, context: TypedExecutionContext): Promise<TypedResult<string>> {
   const expr = new EnhancedTypeofExpression();
   return expr.evaluate(context, value);
 }

@@ -8,62 +8,63 @@
 // ============================================================================
 
 export type {
-  // Enhanced core types for LLM agents
-  TypedCommandImplementation,
+  // Unified types from base-types.ts
+  BaseTypedExpression,
   TypedExecutionContext,
-  TypedExpressionImplementation,
-  EvaluationResult,
+  TypedResult,
   ValidationResult,
-  HyperScriptError,
-  HyperScriptValue,
-  CommandMetadata,
+  ExecutionContext,
   LLMDocumentation,
-} from './types/enhanced-core.ts';
+  EvaluationType,
+  HyperScriptValueType,
+  BaseTypedFeature,
+  FeatureMetadata,
+  CommandResult,
+  BaseCommand,
+} from './types/base-types.js';
 
 export type {
   // Legacy compatibility types
   CommandImplementation,
-  ExecutionContext,
   ExpressionImplementation,
-} from './types/core.ts';
+} from './types/core.js';
 
 // ============================================================================
 // Commands - DOM Manipulation
 // ============================================================================
 
-export { HideCommand, createHideCommand } from './commands/dom/hide.ts';
-export { ShowCommand } from './commands/dom/show.ts';
-export { ToggleCommand } from './commands/dom/toggle.ts';
-export { AddCommand } from './commands/dom/add.ts';
-export { RemoveCommand } from './commands/dom/remove.ts';
+export { HideCommand, createHideCommand } from './commands/dom/hide.js';
+export { ShowCommand } from './commands/dom/show.js';
+export { ToggleCommand } from './commands/dom/toggle.js';
+export { AddCommand } from './commands/dom/add.js';
+export { RemoveCommand } from './commands/dom/remove.js';
 
 // ============================================================================
 // Commands - Events
 // ============================================================================
 
-export { OnCommand } from './commands/events/on.ts';
-export { TriggerCommand } from './commands/events/trigger.ts';
-export { SendCommand } from './commands/events/send.ts';
+// OnCommand to be implemented
+export { TriggerCommand } from './commands/events/trigger.js';
+export { SendCommand } from './commands/events/send.js';
 
 // ============================================================================
 // Commands - Navigation
 // ============================================================================
 
-export { GoCommand } from './commands/navigation/go.ts';
+export { GoCommand } from './commands/navigation/go.js';
 
 // ============================================================================
 // Commands - Async Operations
 // ============================================================================
 
-export { FetchCommand } from './commands/async/fetch.ts';
-export { WaitCommand } from './commands/async/wait.ts';
+// FetchCommand and WaitCommand to be implemented
 
 // ============================================================================
 // Commands - Control Flow
 // ============================================================================
 
-export { IfCommand } from './commands/control/if.ts';
-export { RepeatCommand } from './commands/control/repeat.ts';
+export { IfCommand } from './commands/control/if.js';
+export { RepeatCommand } from './commands/control/repeat.js';
 
 // ============================================================================
 // Expressions - All Categories
@@ -73,51 +74,51 @@ export {
   // Reference expressions (me, you, it, CSS selectors)
   evaluateReference,
   type ReferenceExpression,
-} from './expressions/references/index.ts';
+} from './expressions/references/index.js';
 
 export {
   // Logical expressions (and, or, not, comparisons)
   evaluateLogical,
   type LogicalExpression,
-} from './expressions/logical/index.ts';
+} from './expressions/logical/index.js';
 
 export {
   // Type conversion expressions (as keyword)
   evaluateConversion,
   type ConversionExpression,
-} from './expressions/conversion/index.ts';
+} from './expressions/conversion/index.js';
 
 export {
   // Positional expressions (first, last, etc.)
   evaluatePositional,
   type PositionalExpression,
-} from './expressions/positional/index.ts';
+} from './expressions/positional/index.js';
 
 export {
   // Property expressions (possessive syntax)
   evaluateProperties,
   type PropertyExpression,
-} from './expressions/properties/index.ts';
+} from './expressions/properties/index.js';
 
 export {
   // Special expressions (literals, math)
   evaluateSpecial,
   type SpecialExpression,
-} from './expressions/special/index.ts';
+} from './expressions/special/index.js';
 
 // ============================================================================
 // Features - Top-level hyperscript features
 // ============================================================================
 
-export { BehaviorFeature } from './features/behavior.ts';
-export { InitFeature } from './features/init.ts';
-export { InstallFeature } from './features/install.ts';
-export { WorkerFeature } from './features/worker.ts';
-export { EverywhereFeature } from './features/everywhere.ts';
-export { DefFeature } from './features/def.ts';
-export { ClassFeature, type ClassFeatureOptions } from './features/class.ts';
-export { JSFeature } from './features/js.ts';
-export { SetFeature } from './features/set.ts';
+export { BehaviorFeature } from './features/behavior.js';
+export { InitFeature } from './features/init.js';
+export { InstallFeature } from './features/install.js';
+export { WorkerFeature } from './features/worker.js';
+export { EverywhereFeature } from './features/everywhere.js';
+export { DefFeature } from './features/def.js';
+export { ClassFeature, type ClassFeatureOptions } from './features/class.js';
+export { JSFeature } from './features/js.js';
+export { SetFeature } from './features/set.js';
 
 // ============================================================================
 // Extensions
@@ -127,15 +128,15 @@ export {
   TailwindExtension,
   type TailwindExtensionOptions,
   type TailwindStrategy,
-} from './extensions/tailwind.ts';
+} from './extensions/tailwind.js';
 
 // ============================================================================
 // Core Runtime and Utilities
 // ============================================================================
 
-export { createContext } from './core/context.ts';
-export { Parser } from './parser/parser.ts';
-export { Tokenizer } from './parser/tokenizer.ts';
+export { createContext } from './core/context.js';
+export { Parser } from './parser/parser.js';
+export { Tokenizer } from './parser/tokenizer.js';
 
 // ============================================================================
 // Runtime Environment Detection
@@ -150,7 +151,7 @@ export {
   logger,
   performance,
   UniversalEventTarget,
-} from './runtime/environment.ts';
+} from './runtime/environment.js';
 
 /**
  * Get environment-specific information for LLM agents

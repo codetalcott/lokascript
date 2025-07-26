@@ -6,17 +6,15 @@
 
 import { z } from 'zod';
 import type {
-  TypedExpressionImplementation,
+  BaseTypedExpression,
   TypedExpressionContext,
-  ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
-  ValidationResult
-} from '../../types/enhanced-expressions.ts';
-import type { 
-  EvaluationResult,
+  ValidationResult,
+  TypedResult,
   LLMDocumentation
-} from '../../types/enhanced-core.ts';
+} from '../../types/base-types.js';
+import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
 
 // ============================================================================
 // Input Schemas
@@ -33,7 +31,7 @@ type ComparisonInput = z.infer<typeof ComparisonInputSchema>;
 // Enhanced Greater Than Expression
 // ============================================================================
 
-export class EnhancedGreaterThanExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedGreaterThanExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'greaterThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left > right';
@@ -128,7 +126,7 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -137,8 +135,12 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -181,7 +183,8 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide both left and right operands',
@@ -201,7 +204,8 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -281,7 +285,7 @@ export class EnhancedGreaterThanExpression implements TypedExpressionImplementat
 // Enhanced Less Than Expression
 // ============================================================================
 
-export class EnhancedLessThanExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedLessThanExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'lessThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left < right';
@@ -359,7 +363,7 @@ export class EnhancedLessThanExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     // Reuse greater than logic but invert the comparison
     const greaterThanExpr = new EnhancedGreaterThanExpression();
     
@@ -368,8 +372,12 @@ export class EnhancedLessThanExpression implements TypedExpressionImplementation
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -446,7 +454,7 @@ export class EnhancedLessThanExpression implements TypedExpressionImplementation
 // Enhanced Greater Than Or Equal Expression
 // ============================================================================
 
-export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'greaterThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left >= right';
@@ -524,14 +532,18 @@ export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImpl
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -605,7 +617,7 @@ export class EnhancedGreaterThanOrEqualExpression implements TypedExpressionImpl
 // Enhanced Less Than Or Equal Expression
 // ============================================================================
 
-export class EnhancedLessThanOrEqualExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'lessThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left <= right';
@@ -683,14 +695,18 @@ export class EnhancedLessThanOrEqualExpression implements TypedExpressionImpleme
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -764,7 +780,7 @@ export class EnhancedLessThanOrEqualExpression implements TypedExpressionImpleme
 // Enhanced Equality Expression
 // ============================================================================
 
-export class EnhancedEqualityExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedEqualityExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'equals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left == right';
@@ -848,14 +864,18 @@ export class EnhancedEqualityExpression implements TypedExpressionImplementation
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -928,7 +948,7 @@ export class EnhancedEqualityExpression implements TypedExpressionImplementation
 // Enhanced Inequality Expression
 // ============================================================================
 
-export class EnhancedInequalityExpression implements TypedExpressionImplementation<ComparisonInput, boolean> {
+export class EnhancedInequalityExpression implements BaseTypedExpression<ComparisonInput, boolean> {
   public readonly name = 'notEquals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left != right';
@@ -1006,7 +1026,7 @@ export class EnhancedInequalityExpression implements TypedExpressionImplementati
   async evaluate(
     context: TypedExpressionContext,
     input: ComparisonInput
-  ): Promise<EvaluationResult<boolean>> {
+  ): Promise<TypedResult<boolean>> {
     try {
       // Use equality expression and invert the result
       const equalityExpr = new EnhancedEqualityExpression();

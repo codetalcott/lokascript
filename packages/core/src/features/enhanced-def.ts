@@ -200,7 +200,7 @@ export class TypedDefFeatureImplementation {
     },
     performance: {
       averageTime: 12.8,
-      complexity: 'O(n + m)' // n = function complexity, m = parameter count
+      complexity: 'O(n)' // n = function complexity, m = parameter count
     }
   };
 
@@ -262,8 +262,12 @@ export class TypedDefFeatureImplementation {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 

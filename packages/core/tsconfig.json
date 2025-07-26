@@ -56,7 +56,8 @@
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/legacy/**/*"
   ],
   
   "ts-node": {

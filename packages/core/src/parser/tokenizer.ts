@@ -5,6 +5,9 @@
 
 import type { Token } from '../types/core';
 
+// Re-export Token for use in other parser files
+export type { Token } from '../types/core';
+
 // Token types based on hyperscript language elements
 export enum TokenType {
   // Language elements

@@ -199,6 +199,7 @@ export class TypedOnFeatureImplementation {
         expectedOutput: 'Optimized scroll handler with debounce control'
       }
     ],
+    relatedExpressions: ['onCommand', 'eventTrigger', 'listenerManagement'],
     relatedContexts: ['defFeature', 'behaviorFeature', 'executionContext'],
     frameworkDependencies: ['hyperscript-runtime', 'event-system'],
     environmentRequirements: {
@@ -270,8 +271,12 @@ export class TypedOnFeatureImplementation {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 

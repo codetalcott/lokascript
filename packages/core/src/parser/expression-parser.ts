@@ -3,17 +3,39 @@
  * Bridges string input to expression evaluation via AST parsing
  */
 
-import type { ExecutionContext, ASTNode } from '../types/core.js';
+import type { 
+  ExecutionContext, 
+  TypedExecutionContext,
+  ASTNode
+} from '../types/base-types.js';
 import { tokenize } from './tokenizer.js';
 import { TokenType, type Token } from './tokenizer.js';
 
-// Import our expression implementations
-import { referenceExpressions } from '../expressions/references/index.js';
-import { logicalExpressions } from '../expressions/logical/index.js';
-import { conversionExpressions } from '../expressions/conversion/index.js';
-import { positionalExpressions } from '../expressions/positional/index.js';
-import { propertyExpressions } from '../expressions/properties/index.js';
-import { specialExpressions } from '../expressions/special/index.js';
+// Import enhanced expression implementations
+import { enhancedComparisonExpressions } from '../expressions/enhanced-comparison/index.js';
+import { enhancedMathematicalExpressions } from '../expressions/enhanced-mathematical/index.js';
+import { enhancedPropertyExpressions } from '../expressions/enhanced-property/index.js';
+import { enhancedConversionExpressions } from '../expressions/enhanced-conversion/index.js';
+import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index.js';
+import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index.js';
+
+// Create aliases for backward compatibility
+const logicalExpressions = enhancedComparisonExpressions;
+const specialExpressions = enhancedMathematicalExpressions;
+const propertyExpressions = enhancedPropertyExpressions;
+const conversionExpressions = enhancedConversionExpressions;
+// const referenceExpressions = enhancedReferenceExpressions; // Unused for now
+const positionalExpressions = enhancedPositionalExpressions;
+
+// Helper function to convert ExecutionContext to TypedExecutionContext
+function toTypedContext(context: ExecutionContext): TypedExecutionContext {
+  return {
+    ...context,
+    evaluationHistory: (context as any).evaluationHistory || []
+  } as TypedExecutionContext;
+}
+
+// Expression implementations would be imported when needed for evaluation
 
 interface ParseState {
   tokens: Token[];
@@ -987,7 +1009,7 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
       return evaluateTemplateLiteral(node, context);
       
     case 'identifier':
-      return resolveIdentifier(node.name, context);
+      return resolveIdentifier(String(node.name), context);
       
     case 'binaryExpression':
       return evaluateBinaryExpression(node, context);
@@ -1110,65 +1132,63 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
   // Map operators to our expression implementations
   switch (operator) {
     case 'and':
-      return logicalExpressions.and.evaluate(context, left, right);
+      return left && right;
     case 'or':
-      return logicalExpressions.or.evaluate(context, left, right);
+      return left || right;
     case 'is':
     case 'equals':
     case '==':
-      return logicalExpressions.equals.evaluate(context, left, right);
+      return logicalExpressions.equals.evaluate(toTypedContext(context), { left, right });
     case 'is not':
     case '!=':
-      return logicalExpressions.notEquals.evaluate(context, left, right);
+      return logicalExpressions.notEquals.evaluate(toTypedContext(context), { left, right });
     case '===':
-      return logicalExpressions.strictEquals.evaluate(context, left, right);
+      return left === right;
     case '!==':
-      return logicalExpressions.strictNotEquals.evaluate(context, left, right);
+      return left !== right;
     case '>':
-      return logicalExpressions.greaterThan.evaluate(context, left, right);
+      return logicalExpressions.greaterThan.evaluate(toTypedContext(context), { left, right });
     case '<':
-      return logicalExpressions.lessThan.evaluate(context, left, right);
+      return logicalExpressions.lessThan.evaluate(toTypedContext(context), { left, right });
     case '>=':
-      return logicalExpressions.greaterThanOrEqual.evaluate(context, left, right);
+      return logicalExpressions.greaterThanOrEqual.evaluate(toTypedContext(context), { left, right });
     case '<=':
-      return logicalExpressions.lessThanOrEqual.evaluate(context, left, right);
+      return logicalExpressions.lessThanOrEqual.evaluate(toTypedContext(context), { left, right });
     case '+':
       return evaluateAddition(left, right);
     case '-':
-      return specialExpressions.subtraction.evaluate(context, left, right);
+      return specialExpressions.subtraction.evaluate(toTypedContext(context), { left, right });
     case '*':
-      return specialExpressions.multiplication.evaluate(context, left, right);
+      return specialExpressions.multiplication.evaluate(toTypedContext(context), { left, right });
     case '/':
-      return specialExpressions.division.evaluate(context, left, right);
+      return specialExpressions.division.evaluate(toTypedContext(context), { left, right });
     case 'mod':
-      return specialExpressions.modulo.evaluate(context, left, right);
+      return specialExpressions.modulo.evaluate(toTypedContext(context), { left, right });
     case '^':
     case '**':
-      return specialExpressions.exponentiation.evaluate(context, left, right);
+      return Math.pow(Number(left), Number(right));
     case 'matches':
-      return logicalExpressions.matches.evaluate(context, left, right);
+      return String(left).match(new RegExp(String(right))) !== null;
     case 'contains':
-      return logicalExpressions.contains.evaluate(context, left, right);
     case 'include':
-      return logicalExpressions.contains.evaluate(context, left, right);
     case 'includes':
-      return logicalExpressions.contains.evaluate(context, left, right);
+      return String(left).includes(String(right));
     case 'in':
       return evaluateInOperator(left, right, context);
     case 'does not contain':
-      return logicalExpressions.doesNotContain.evaluate(context, left, right);
+      return !String(left).includes(String(right));
     case 'does not include':
-      return logicalExpressions.doesNotContain.evaluate(context, left, right);
+      return !String(left).includes(String(right));
     case 'exists':
-      return logicalExpressions.exists.evaluate(context, left);
+      return left != null;
     case 'is empty':
-      return logicalExpressions.isEmpty.evaluate(context, left);
+      return !left || (typeof left === 'string' && left.length === 0) || (Array.isArray(left) && left.length === 0);
     case 'is not empty':
-      return logicalExpressions.isNotEmpty.evaluate(context, left);
+      return left && (typeof left !== 'string' || left.length > 0) && (!Array.isArray(left) || left.length > 0);
     case 'is in':
-      return logicalExpressions.contains.evaluate(context, right, left); // Note: reversed args for membership
+      return String(right).includes(String(left)); // Note: reversed args for membership
     case 'is not in':
-      return logicalExpressions.doesNotContain.evaluate(context, right, left); // Note: reversed args
+      return !String(right).includes(String(left)); // Note: reversed args
     
     // English-style comparison operators
     case 'is equal to':
@@ -1229,7 +1249,7 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   // Handle different types of property access
   if (propertyNode.type === 'identifier') {
     const propertyName = propertyNode.name;
-    return propertyExpressions.possessive.evaluate(context, object, propertyName);
+    return propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: propertyName });
   } else if (propertyNode.type === 'attributeAccess') {
     // Handle [@attr] syntax - access attribute on the object
     const attributeName = propertyNode.attributeName;
@@ -1240,7 +1260,7 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   } else if (propertyNode.type === 'bracketExpression') {
     // Handle [expr] syntax - evaluate expression as property key
     const propertyKey = await evaluateASTNode(propertyNode.expression, context);
-    return propertyExpressions.possessive.evaluate(context, object, String(propertyKey));
+    return propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: String(propertyKey) });
   } else {
     throw new ExpressionParseError(`Unsupported property access type: ${propertyNode.type}`);
   }
@@ -1264,11 +1284,11 @@ async function evaluateContextPossessive(node: any, context: ExecutionContext): 
   // Use our context-specific expressions
   switch (contextType) {
     case 'my':
-      return propertyExpressions.my.evaluate(context, propertyName);
+      return propertyExpressions.my.evaluate(toTypedContext(context), { property: propertyName });
     case 'its':
-      return propertyExpressions.its.evaluate(context, propertyName);
+      return propertyExpressions.its.evaluate(toTypedContext(context), { target: context.me, property: propertyName });
     case 'your':
-      return propertyExpressions.your.evaluate(context, propertyName);
+      return propertyExpressions.its.evaluate(toTypedContext(context), { target: context.you, property: propertyName });
     default:
       throw new ExpressionParseError(`Unknown context type: ${contextType}`);
   }
@@ -1316,21 +1336,21 @@ async function evaluateAsExpression(node: any, context: ExecutionContext): Promi
   const targetType = node.targetType;
   
   // Use our unified 'as' expression which handles all conversions
-  return conversionExpressions.as.evaluate(context, value, targetType);
+  return conversionExpressions.as.evaluate(toTypedContext(context), { value, type: targetType });
 }
 
 /**
  * Evaluate CSS selector expressions (#id, .class)
  */
-async function evaluateCSSSelector(node: any, context: ExecutionContext): Promise<any> {
+async function evaluateCSSSelector(node: any, _context: ExecutionContext): Promise<any> {
   const selector = node.selector;
   
   if (node.selectorType === 'id') {
     // ID selector returns single element or null
-    return propertyExpressions.idReference.evaluate(context, selector);
+    return document.getElementById(selector);
   } else if (node.selectorType === 'class') {
     // Class selector returns array of elements
-    return propertyExpressions.classReference.evaluate(context, selector);
+    return Array.from(document.getElementsByClassName(selector));
   }
   
   throw new ExpressionParseError(`Unknown CSS selector type: ${node.selectorType}`);
@@ -1348,16 +1368,16 @@ async function evaluateQueryReference(node: any, context: ExecutionContext): Pro
   // Handle different query types - Query references ALWAYS return collections
   if (cleanSelector.startsWith('#')) {
     // ID query: <#id/> returns collection (unlike direct #id which returns single element)
-    return referenceExpressions.querySelectorAll.evaluate(context, cleanSelector);
+    return Array.from(document.querySelectorAll(cleanSelector));
   } else if (cleanSelector.startsWith('.')) {
     // Class query: <.class/> returns array of elements  
-    return propertyExpressions.classReference.evaluate(context, cleanSelector);
+    return Array.from(document.querySelectorAll(cleanSelector));
   } else if (cleanSelector.startsWith('[') && cleanSelector.endsWith(']')) {
     // Attribute query: <[attr="value"]/> 
-    return referenceExpressions.querySelectorAll.evaluate(context, cleanSelector);
+    return Array.from(document.querySelectorAll(cleanSelector));
   } else {
     // Complex selector query: <input.foo:checked/>
-    return referenceExpressions.querySelectorAll.evaluate(context, cleanSelector);
+    return Array.from(document.querySelectorAll(cleanSelector));
   }
 }
 

@@ -11,7 +11,10 @@ import { logicalExpressions } from '../expressions/logical/index.js';
 import { conversionExpressions } from '../expressions/conversion/index.js';
 import { positionalExpressions } from '../expressions/positional/index.js';
 import { propertyExpressions } from '../expressions/properties/index.js';
-import { specialExpressions } from '../expressions/special/index.js';
+import { enhancedSpecialExpressions } from '../expressions/enhanced-special/index.js';
+
+// Create alias for backward compatibility  
+const specialExpressions = enhancedSpecialExpressions;
 
 /**
  * Evaluates an AST node using the Phase 3 expression system
@@ -183,10 +186,12 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
       return logicalExpressions.matches.evaluate(context, left, right);
       
     case 'in':
-      return positionalExpressions.in.evaluate(context, left, right);
+      // Simple 'in' operator - check if left exists in right
+      return Array.isArray(right) ? right.includes(left) : left in right;
       
     case 'of':
-      return positionalExpressions.of.evaluate(context, left, right);
+      // Simple 'of' operator - get property/index of object/array
+      return right && typeof right === 'object' ? right[left] : undefined;
       
     default:
       throw new Error(`Unknown binary operator: ${operator}`);

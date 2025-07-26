@@ -152,7 +152,8 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestion: 'Check operand values and ensure they are comparable'
         }],
         suggestions: [
           'Ensure operands are valid values',
@@ -171,7 +172,8 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands',
@@ -185,7 +187,7 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Equals expression expects == operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -206,7 +208,8 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -353,7 +356,8 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands',
@@ -366,7 +370,7 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Not equals expression expects != operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -386,7 +390,8 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -544,7 +549,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands',
@@ -557,7 +563,7 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Greater than expression expects > operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -577,7 +583,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -724,7 +731,8 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands'
@@ -736,7 +744,7 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Less than expression expects < operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -756,7 +764,8 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -903,7 +912,8 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands'
@@ -915,7 +925,7 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Greater than or equal expression expects >= operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -935,7 +945,8 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };
@@ -1082,7 +1093,8 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestion: 'Provide valid left and right operands for comparison'
           })),
           suggestions: [
             'Provide left and right operands'
@@ -1094,7 +1106,7 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-argument',
+            type: 'missing-argument',
             message: `Less than or equal expression expects <= operator, got ${parsed.data.operator}`
           }],
           suggestions: [
@@ -1114,7 +1126,8 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestion: 'Check input structure and types'
         }],
         suggestions: ['Check input structure and types']
       };

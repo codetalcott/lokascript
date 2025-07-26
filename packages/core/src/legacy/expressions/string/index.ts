@@ -4,7 +4,12 @@
  * Generated from LSP data with TDD implementation
  */
 
-import { ExpressionImplementation, ExecutionContext } from '../../types/core';
+import type { ExecutionContext } from '../../types/base-types.js';
+// Legacy ExpressionImplementation interface maintained for compatibility
+interface ExpressionImplementation {
+  name: string;
+  evaluate: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>;
+}
 
 /**
  * String interpolation expression

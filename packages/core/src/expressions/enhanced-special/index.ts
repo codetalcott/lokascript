@@ -51,10 +51,7 @@ const UnaryOperationInputSchema = z.object({
 type StringLiteralInput = z.infer<typeof StringLiteralInputSchema>;
 type NumberLiteralInput = z.infer<typeof NumberLiteralInputSchema>;
 type BooleanLiteralInput = z.infer<typeof BooleanLiteralInputSchema>;
-type ArrayLiteralInput = z.infer<typeof ArrayLiteralInputSchema>;
-type ObjectLiteralInput = z.infer<typeof ObjectLiteralInputSchema>;
 type BinaryOperationInput = z.infer<typeof BinaryOperationInputSchema>;
-type UnaryOperationInput = z.infer<typeof UnaryOperationInputSchema>;
 
 // ============================================================================
 // Enhanced String Literal Expression
@@ -143,8 +140,12 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -160,7 +161,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
       return {
         success: true,
         value: result,
-        type: 'String'
+        type: 'string'
       };
 
     } catch (error) {
@@ -379,8 +380,12 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -403,7 +408,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
       return {
         success: true,
         value: input.value,
-        type: 'Number'
+        type: 'number'
       };
 
     } catch (error) {
@@ -570,8 +575,12 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -580,7 +589,7 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
       return {
         success: true,
         value: input.value,
-        type: 'Boolean'
+        type: 'boolean'
       };
 
     } catch (error) {
@@ -746,8 +755,12 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -761,7 +774,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
       return {
         success: true,
         value: result,
-        type: 'Number'
+        type: 'number'
       };
 
     } catch (error) {
@@ -954,8 +967,12 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions
+          error: {
+            name: 'ValidationError',
+            message: validation.errors.map(e => e.message).join(', '),
+            code: 'VALIDATION_FAILED',
+            suggestions: validation.suggestions
+          }
         };
       }
 
@@ -969,7 +986,7 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
       return {
         success: true,
         value: result,
-        type: 'Number'
+        type: 'number'
       };
 
     } catch (error) {
