@@ -4,13 +4,15 @@
  */
 
 import { z } from 'zod';
-import type {
+import {
   EnhancedContextBase,
-  BaseContextInput,
-  BaseContextOutput,
-  ContextMetadata,
-  ValidationResult,
-  EvaluationResult
+  BaseContextInputSchema,
+  BaseContextOutputSchema,
+  type BaseContextInput,
+  type BaseContextOutput,
+  type ContextMetadata,
+  type ValidationResult,
+  type EvaluationResult
 } from '../types/enhanced-context.js';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core.js';
 
@@ -46,7 +48,7 @@ export const BackendContextInputSchema = z.object({
     version: z.string().optional(),
     context: z.any().optional(), // Framework-specific request/response objects
   }).optional(),
-}).merge(BaseContextInput);
+}).merge(BaseContextInputSchema);
 
 export const BackendContextOutputSchema = z.object({
   /** Backend-specific capabilities */
@@ -76,7 +78,7 @@ export const BackendContextOutputSchema = z.object({
       debug: z.function(),
     }),
   }),
-}).merge(BaseContextOutput);
+}).merge(BaseContextOutputSchema);
 
 export type BackendContextInput = z.infer<typeof BackendContextInputSchema>;
 export type BackendContextOutput = z.infer<typeof BackendContextOutputSchema>;
@@ -487,7 +489,7 @@ export function createFlaskContext(request: any): Promise<EvaluationResult<Backe
       method: request.method,
       url: request.url,
       headers: Object.fromEntries(request.headers || []),
-      body: request.get_json(silent=true),
+      body: request.get_json({ silent: true }),
     }
   });
 }

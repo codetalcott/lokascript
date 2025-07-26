@@ -4,13 +4,15 @@
  */
 
 import { z } from 'zod';
-import type {
+import {
   EnhancedContextBase,
-  BaseContextInput,
-  BaseContextOutput,
-  ContextMetadata,
-  ValidationResult,
-  EvaluationResult
+  BaseContextInputSchema,
+  BaseContextOutputSchema,
+  type BaseContextInput,
+  type BaseContextOutput,
+  type ContextMetadata,
+  type ValidationResult,
+  type EvaluationResult
 } from '../types/enhanced-context.js';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core.js';
 
@@ -37,7 +39,7 @@ export const FrontendContextInputSchema = z.object({
     permissions: z.array(z.string()).optional(),
     preferences: z.record(z.string(), z.unknown()).optional(),
   }).optional(),
-}).merge(BaseContextInput);
+}).merge(BaseContextInputSchema);
 
 export const FrontendContextOutputSchema = z.object({
   /** Frontend-specific capabilities */
@@ -56,7 +58,7 @@ export const FrontendContextOutputSchema = z.object({
       forward: z.function(),
     }),
   }),
-}).merge(BaseContextOutput);
+}).merge(BaseContextOutputSchema);
 
 export type FrontendContextInput = z.infer<typeof FrontendContextInputSchema>;
 export type FrontendContextOutput = z.infer<typeof FrontendContextOutputSchema>;
