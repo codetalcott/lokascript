@@ -260,6 +260,55 @@ describe('Hyperscript AST Parser', () => {
     });
   });
 
+  describe('Object Literal Parsing', () => {
+    it('should parse empty objects', () => {
+      expectAST('{}', {
+        type: 'objectLiteral',
+        properties: []
+      });
+    });
+
+    it('should parse simple object literals', () => {
+      expectAST('{color: "red"}', {
+        type: 'objectLiteral',
+        properties: [{
+          key: { type: 'identifier', name: 'color' },
+          value: { type: 'literal', value: 'red' }
+        }]
+      });
+    });
+
+    it('should parse object literals with multiple properties', () => {
+      expectAST('{color: "red", fontSize: "14px", margin: 0}', {
+        type: 'objectLiteral',
+        properties: [
+          {
+            key: { type: 'identifier', name: 'color' },
+            value: { type: 'literal', value: 'red' }
+          },
+          {
+            key: { type: 'identifier', name: 'fontSize' },
+            value: { type: 'literal', value: '14px' }
+          },
+          {
+            key: { type: 'identifier', name: 'margin' },
+            value: { type: 'literal', value: 0 }
+          }
+        ]
+      });
+    });
+
+    it('should parse object literals with quoted keys', () => {
+      expectAST('{"background-color": "blue"}', {
+        type: 'objectLiteral',
+        properties: [{
+          key: { type: 'literal', value: 'background-color' },
+          value: { type: 'literal', value: 'blue' }
+        }]
+      });
+    });
+  });
+
   describe('CSS Selector Parsing', () => {
     it('should parse simple CSS selectors', () => {
       expectAST('<button/>', {

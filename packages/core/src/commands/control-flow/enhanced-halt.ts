@@ -1,0 +1,78 @@
+/**
+ * Enhanced Halt Command Implementation
+ * Stops execution of the current command sequence
+ * 
+ * Syntax: halt
+ * 
+ * Modernized with TypedCommandImplementation interface
+ */
+
+import type { TypedCommandImplementation, ValidationResult } from '../../types/core.js';
+import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+
+// Input type definition (halt takes no arguments)
+export interface HaltCommandInput {
+  // No input required
+}
+
+// Output type definition  
+export interface HaltCommandOutput {
+  halted: true;
+  timestamp: number;
+}
+
+/**
+ * Enhanced Halt Command with full type safety and validation
+ */
+export class EnhancedHaltCommand implements TypedCommandImplementation<
+  HaltCommandInput,
+  HaltCommandOutput,
+  TypedExecutionContext
+> {
+  metadata = {
+    name: 'halt',
+    description: 'The halt command stops execution of the current command sequence. It provides a way to immediately terminate processing without throwing an error.',
+    examples: [
+      'halt',
+      'if error then halt',
+      'unless user.isValid then halt'
+    ],
+    syntax: 'halt',
+    category: 'flow' as const,
+    version: '2.0.0'
+  };
+
+  validation = {
+    validate(input: unknown): ValidationResult<HaltCommandInput> {
+      // Halt command accepts any input or no input
+      return {
+        success: true,
+        data: {}
+      };
+    }
+  };
+
+  async execute(
+    input: HaltCommandInput,
+    context: TypedExecutionContext
+  ): Promise<HaltCommandOutput> {
+    // Set a halt flag in the context if it supports it
+    if ('halted' in context) {
+      (context as any).halted = true;
+    }
+
+    // Throw a special halt error that can be caught and handled by the runtime
+    const haltError = new Error('HALT_EXECUTION');
+    (haltError as any).isHalt = true;
+    throw haltError;
+  }
+}
+
+/**
+ * Factory function to create the enhanced halt command
+ */
+export function createEnhancedHaltCommand(): EnhancedHaltCommand {
+  return new EnhancedHaltCommand();
+}
+
+export default EnhancedHaltCommand;

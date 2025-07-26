@@ -235,6 +235,10 @@ export class Runtime {
           return await this.executeCommandSequence(node as any, context);
         }
         
+        case 'objectLiteral': {
+          return await this.executeObjectLiteral(node as any, context);
+        }
+        
         default: {
           // For all other node types, use the expression evaluator
           const result = await this.expressionEvaluator.evaluate(node, context);
@@ -280,6 +284,52 @@ export class Runtime {
     
     // Return the result of the last command
     return lastResult;
+  }
+
+  /**
+   * Execute an object literal node (convert to JavaScript object)
+   */
+  private async executeObjectLiteral(node: { properties: Array<{ key: ASTNode; value: ASTNode }> }, context: ExecutionContext): Promise<Record<string, unknown>> {
+    if (!node.properties || !Array.isArray(node.properties)) {
+      console.warn('ObjectLiteral node has no properties array:', node);
+      return {};
+    }
+
+    const result: Record<string, unknown> = {};
+    
+    // Evaluate each property
+    for (const property of node.properties) {
+      try {
+        // Evaluate the key
+        let key: string;
+        if (property.key.type === 'identifier') {
+          // For object literal keys that are identifiers, we usually want the name directly
+          // unless it's meant to be evaluated as a variable
+          // In hyperscript, {name: value} uses 'name' as literal key
+          // But {[name]: value} or {(name): value} would evaluate 'name' as variable
+          key = (property.key as any).name;
+        } else if (property.key.type === 'literal') {
+          key = String((property.key as any).value);
+        } else {
+          // For other key types, evaluate them
+          const evaluatedKey = await this.execute(property.key, context);
+          key = String(evaluatedKey);
+        }
+        
+        // Evaluate the value
+        const value = await this.execute(property.value, context);
+        
+        // Add to result object
+        result[key] = value;
+      } catch (error) {
+        if (this.options.enableErrorReporting) {
+          console.error('Error executing object property:', error, property);
+        }
+        throw error;
+      }
+    }
+    
+    return result;
   }
 
   /**

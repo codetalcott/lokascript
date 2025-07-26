@@ -68,6 +68,11 @@ interface PossessiveExpressionNode extends ASTNode {
   property: ASTNode;
 }
 
+interface ObjectLiteralNode extends ASTNode {
+  type: 'objectLiteral';
+  properties: Array<{ key: ASTNode; value: ASTNode }>;
+}
+
 interface EventHandlerNode extends ASTNode {
   type: 'eventHandler';
   event: string;
@@ -499,6 +504,11 @@ export class Parser {
       return expr;
     }
 
+    // Handle object literals
+    if (this.match('{')) {
+      return this.parseObjectLiteral();
+    }
+
     // Handle identifiers, keywords, and commands
     if (this.matchTokenType(TokenType.IDENTIFIER) || 
         this.matchTokenType(TokenType.KEYWORD) || 
@@ -594,6 +604,73 @@ export class Parser {
     this.consume('>', "Expected '>' after '/' in hyperscript selector");
     
     return this.createSelector(selector);
+  }
+
+  private parseObjectLiteral(): ASTNode {
+    const properties: Array<{ key: ASTNode; value: ASTNode }> = [];
+    const pos = this.getPosition();
+
+    // Handle empty object
+    if (this.check('}')) {
+      this.advance(); // consume '}'
+      return {
+        type: 'objectLiteral',
+        properties,
+        start: pos.start,
+        end: this.getPosition().end,
+        line: pos.line,
+        column: pos.column
+      };
+    }
+
+    // Parse key-value pairs
+    do {
+      // Parse property key
+      let key: ASTNode;
+      
+      if (this.matchTokenType(TokenType.IDENTIFIER)) {
+        // Unquoted property name
+        key = this.createIdentifier(this.previous().value);
+      } else if (this.matchTokenType(TokenType.STRING)) {
+        // Quoted property name
+        const raw = this.previous().value;
+        const value = raw.slice(1, -1); // Remove quotes
+        key = this.createLiteral(value, raw);
+      } else {
+        this.addError("Expected property name in object literal");
+        return this.createErrorNode();
+      }
+
+      // Expect colon
+      this.consume(':', "Expected ':' after property name in object literal");
+
+      // Parse property value
+      const value = this.parseExpression();
+      properties.push({ key, value });
+
+      // Check for comma or end
+      if (this.match(',')) {
+        // Continue to next property
+        if (this.check('}')) {
+          // Allow trailing comma
+          break;
+        }
+      } else {
+        // Must be end of object
+        break;
+      }
+    } while (!this.isAtEnd());
+
+    this.consume('}', "Expected '}' after object literal properties");
+
+    return {
+      type: 'objectLiteral',
+      properties,
+      start: pos.start,
+      end: this.getPosition().end,
+      line: pos.line,
+      column: pos.column
+    };
   }
 
   private parseEventHandler(): EventHandlerNode {
