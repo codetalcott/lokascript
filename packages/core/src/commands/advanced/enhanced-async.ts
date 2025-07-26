@@ -84,7 +84,9 @@ export class EnhancedAsyncCommand implements TypedCommandImplementation<
 
       // Validate that all items are command objects
       for (const command of inputObj.commands) {
-        if (!this.isValidCommand(command)) {
+        if (!command || typeof command !== 'object' || 
+            typeof command.name !== 'string' || 
+            typeof command.execute !== 'function') {
           return {
             success: false,
             error: {
@@ -130,19 +132,10 @@ export class EnhancedAsyncCommand implements TypedCommandImplementation<
       };
 
     } catch (error) {
-      const duration = Date.now() - startTime;
       throw new Error(`Async command execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  private isValidCommand(command: any): boolean {
-    return (
-      command &&
-      typeof command === 'object' &&
-      typeof command.name === 'string' &&
-      typeof command.execute === 'function'
-    );
-  }
 
   private async executeCommandsAsync(
     context: TypedExecutionContext, 

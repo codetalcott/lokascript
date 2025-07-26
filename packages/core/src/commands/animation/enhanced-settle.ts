@@ -61,7 +61,8 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
       // Validate timeout if provided
       if (inputObj.timeout !== undefined) {
         if (typeof inputObj.timeout === 'string') {
-          if (!this.isValidTimeoutString(inputObj.timeout)) {
+          const trimmed = inputObj.timeout.trim();
+          if (!/^\d*\.?\d+(s|ms)?$/i.test(trimmed)) {
             return {
               success: false,
               error: {
@@ -203,10 +204,6 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
     return 5000; // Default timeout
   }
 
-  private isValidTimeoutString(value: string): boolean {
-    const trimmed = value.trim();
-    return /^\d*\.?\d+(s|ms)?$/i.test(trimmed);
-  }
 
   private async waitForSettle(element: HTMLElement, timeout: number): Promise<boolean> {
     return new Promise<boolean>((resolve) => {

@@ -12,8 +12,8 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.ts';
+} from '../../types/enhanced-core.js';
+import { dispatchCustomEvent } from '../../core/events.js';
 
 export interface TakeCommandOptions {
   validateProperties?: boolean;

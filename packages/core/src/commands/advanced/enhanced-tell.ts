@@ -208,33 +208,23 @@ export class EnhancedTellCommand implements TypedCommandImplementation<
     // Create new context with target as 'you'
     const tellContext = this.createTellContext(context, target);
     
-    // Store original context values to restore later
-    const originalYou = context.you;
-    const originalMe = context.me;
-
-    try {
-      // Execute all commands in the tell context
-      const results: any[] = [];
-      
-      for (const command of commands) {
-        if (command && typeof command.execute === 'function') {
-          const result = await command.execute(tellContext);
-          results.push(result);
-        } else if (typeof command === 'function') {
-          const result = await command();
-          results.push(result);
-        } else {
-          // Handle literal commands
-          results.push(command);
-        }
+    // Execute all commands in the tell context
+    const results: any[] = [];
+    
+    for (const command of commands) {
+      if (command && typeof command.execute === 'function') {
+        const result = await command.execute(tellContext);
+        results.push(result);
+      } else if (typeof command === 'function') {
+        const result = await command();
+        results.push(result);
+      } else {
+        // Handle literal commands
+        results.push(command);
       }
-
-      return results;
-    } finally {
-      // Restore original context
-      context.you = originalYou;
-      context.me = originalMe;
     }
+
+    return results;
   }
 
   private createTellContext(originalContext: TypedExecutionContext, target: HTMLElement): TypedExecutionContext {

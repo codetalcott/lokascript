@@ -199,29 +199,16 @@ export function createTypedExecutionContext(options: {
     globals: options.globals || new Map(),
     variables: options.variables || new Map(),
     
-    // Meta object for template compilation and execution
-    meta: new Map(),
-    
-    // Performance tracking
-    evaluationHistory: [],
-    performanceMetrics: {
-      totalEvaluations: 0,
-      averageExecutionTime: 0,
-      lastEvaluationTime: 0
-    },
-    
-    // Flags for control flow
-    flags: {
-      halted: false,
-      breaking: false,
-      continuing: false,
-      returning: false,
-      async: false
-    },
-    
     // Result handling
-    result: null
-  } as TypedExecutionContext;
+    result: null,
+    
+    // Execution metadata
+    meta: {
+      startTime: Date.now(),
+      commandStack: [],
+      debugMode: false
+    }
+  };
 }
 
 /**

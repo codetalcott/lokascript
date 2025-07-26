@@ -71,13 +71,16 @@ export interface TypedExecutionContext<
   readonly you: TYou;
   
   /** Previous result - strongly typed */
-  readonly it: TIt;
+  it: TIt;
   
   /** Local variables - strongly typed */
   readonly locals: Map<string, HyperScriptValue>;
   
   /** Global variables - strongly typed */
   readonly globals: Map<string, HyperScriptValue>;
+
+  /** General variables storage - strongly typed */
+  readonly variables: Map<string, HyperScriptValue>;
   
   /** Current result - strongly typed */
   result: HyperScriptValue;
@@ -98,6 +101,9 @@ export interface SourceLocation {
   readonly column: number;
   readonly source: string;
 }
+
+// Re-export TypedExpressionContext from enhanced-expressions
+export type { TypedExpressionContext } from './enhanced-expressions.js';
 
 // ============================================================================
 // Enhanced Command Interface for LLM Type Safety

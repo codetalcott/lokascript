@@ -160,6 +160,42 @@ export interface CommandImplementation {
   validate?: (args: any[]) => string | null;
 }
 
+// ============================================================================
+// Enhanced Command Types
+// ============================================================================
+
+export interface ValidationError {
+  type: 'missing-argument' | 'invalid-syntax' | 'type-mismatch' | 'invalid-argument' | 'runtime-error' | 'security-warning';
+  message: string;
+  suggestions: string[];
+}
+
+export interface ValidationResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: ValidationError;
+}
+
+export interface TypedCommandImplementation<TInput = any, TOutput = any, TContext = ExecutionContext> {
+  metadata: {
+    name: string;
+    description: string;
+    examples: string[];
+    syntax: string;
+    category: string;
+    version: string;
+  };
+  
+  validation: {
+    validate(input: unknown): ValidationResult<TInput>;
+  };
+  
+  execute(input: TInput, context: TContext): Promise<TOutput>;
+}
+
+// Re-export TypedExecutionContext from enhanced-core
+export type { TypedExecutionContext } from './enhanced-core.js';
+
 export interface ExpressionImplementation {
   name: string;
   category: ExpressionCategory;
