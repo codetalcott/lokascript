@@ -242,7 +242,7 @@ export class GoCommand implements TypedCommandImplementation<
           return {
             isValid: false,
             errors: [{
-              type: 'invalid-syntax' as const,
+              type: 'syntax-error' as const,
               message: 'Go back command does not accept additional arguments',
               suggestions: ['Use "go back" without additional parameters']
             }],
@@ -867,7 +867,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         isValid: false,
         errors: [{
-          type: 'invalid-syntax' as const,
+          type: 'syntax-error' as const,
           message: 'URL navigation requires "url" keyword',
           suggestions: ['Use syntax: go to url <url>']
         }],
@@ -924,7 +924,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax' as const,
+            type: 'syntax-error' as const,
             message: 'Invalid go command syntax',
             suggestions: ['Use valid go command patterns']
           }],

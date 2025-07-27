@@ -128,7 +128,7 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
       return {
         isValid: false,
         errors: [{
-          type: 'invalid-syntax',
+          type: 'syntax-error',
           message: error instanceof Error ? error.message : 'Invalid array literal arguments',
           suggestion: 'Provide elements as an array'
         }],
@@ -310,7 +310,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
         const rangeObj = index as { start?: number; end?: number };
         if (rangeObj.start !== undefined && rangeObj.end !== undefined && rangeObj.start > rangeObj.end) {
           errors.push({
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Range start index cannot be greater than end index',
             suggestion: 'Ensure start <= end in range objects'
           });
@@ -330,7 +330,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
       return {
         isValid: false,
         errors: [{
-          type: 'invalid-syntax',
+          type: 'syntax-error',
           message: error instanceof Error ? error.message : 'Invalid array index arguments',
           suggestion: 'Provide valid arguments for array indexing'
         }],

@@ -7,12 +7,9 @@
 
 import type { 
   UnifiedExecutionContext as ExecutionContext,
-  UnifiedASTNode as ASTNode
+  ExpressionNode,
+  CommandNode
 } from './types/index.js';
-
-// Type aliases for backward compatibility
-type ExpressionNode = ASTNode;
-type CommandNode = ASTNode;
 
 /**
  * Runtime for executing hyperscript commands
@@ -60,8 +57,8 @@ export class CommandRuntime {
   private async executePutCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [valueExpr, targetExpr] = args;
-    const value = await this.evaluateExpression(valueExpr, context);
-    const target = await this.resolveTarget(targetExpr, context);
+    const value = await this.evaluateExpression(valueExpr as ExpressionNode, context);
+    const target = await this.resolveTarget(targetExpr as ExpressionNode, context);
 
     // Handle different PUT variations based on command structure
     if (this.hasKeyword(command, 'before')) {
@@ -86,8 +83,8 @@ export class CommandRuntime {
   private async executeAddCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [itemExpr, targetExpr] = args;
-    const item = await this.evaluateExpression(itemExpr, context);
-    const targets = await this.resolveTargets(targetExpr, context);
+    const item = await this.evaluateExpression(itemExpr as ExpressionNode, context);
+    const targets = await this.resolveTargets(targetExpr as ExpressionNode, context);
 
     await this.implicitLoop(targets, async (target: Element) => {
       if (typeof item === 'string') {
@@ -112,8 +109,8 @@ export class CommandRuntime {
   private async executeRemoveCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [itemExpr, targetExpr] = args;
-    const item = await this.evaluateExpression(itemExpr, context);
-    const targets = await this.resolveTargets(targetExpr, context);
+    const item = await this.evaluateExpression(itemExpr as ExpressionNode, context);
+    const targets = await this.resolveTargets(targetExpr as ExpressionNode, context);
 
     await this.implicitLoop(targets, async (target: Element) => {
       if (typeof item === 'string') {
@@ -138,8 +135,8 @@ export class CommandRuntime {
   private async executeToggleCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [itemExpr, targetExpr] = args;
-    const item = await this.evaluateExpression(itemExpr, context);
-    const targets = targetExpr ? await this.resolveTargets(targetExpr, context) : [context.me];
+    const item = await this.evaluateExpression(itemExpr as ExpressionNode, context);
+    const targets = targetExpr ? await this.resolveTargets(targetExpr as ExpressionNode, context) : [context.me];
     const validTargets = Array.isArray(targets) ? targets.filter((t): t is Element => t != null) : targets;
 
     await this.implicitLoop(validTargets, async (target: Element) => {
@@ -169,11 +166,12 @@ export class CommandRuntime {
   private async executeSetCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [variableExpr, valueExpr] = args;
-    const value = await this.evaluateExpression(valueExpr, context);
+    const value = await this.evaluateExpression(valueExpr as ExpressionNode, context);
     
     // Handle variable assignment
-    if (variableExpr.type === 'expression' && typeof variableExpr.value === 'string') {
-      this.setSymbol(variableExpr.value, value, context);
+    const variable = variableExpr as ExpressionNode;
+    if (variable.type === 'expression' && typeof variable.value === 'string') {
+      this.setSymbol(variable.value, value, context);
     }
   }
 
@@ -183,7 +181,7 @@ export class CommandRuntime {
   private async executeLogCommand(command: CommandNode, context: ExecutionContext): Promise<void> {
     const args = command.args as unknown[];
     const [expressionArg] = args;
-    const value = await this.evaluateExpression(expressionArg, context);
+    const value = await this.evaluateExpression(expressionArg as ExpressionNode, context);
     console.log(value);
   }
 
@@ -265,8 +263,8 @@ export class CommandRuntime {
 
     // Handle possessive expressions first
     if (expr.operator === 'possessive' && expr.operands?.length === 2) {
-      const object = await this.evaluateExpression(expr.operands[0], context);
-      const property = await this.evaluateExpression(expr.operands[1], context);
+      const object = await this.evaluateExpression(expr.operands[0] as ExpressionNode, context);
+      const property = await this.evaluateExpression(expr.operands[1] as ExpressionNode, context);
       return object?.[property];
     }
 
@@ -338,8 +336,8 @@ export class CommandRuntime {
     }
 
     if (expr.operator === 'possessive' && expr.operands?.length === 2) {
-      const object = await this.evaluateExpression(expr.operands[0], context);
-      const property = await this.evaluateExpression(expr.operands[1], context);
+      const object = await this.evaluateExpression(expr.operands[0] as ExpressionNode, context);
+      const property = await this.evaluateExpression(expr.operands[1] as ExpressionNode, context);
       
       if (object instanceof Element || 
           (object && typeof object === 'object' && 'innerHTML' in object)) {
@@ -351,7 +349,7 @@ export class CommandRuntime {
       }
     }
 
-    return await this.evaluateExpression(expr, context);
+    return await this.evaluateExpression(expr as ExpressionNode, context);
   }
 
   private async resolveTargets(expr: ExpressionNode, context: ExecutionContext): Promise<Element[]> {
@@ -371,10 +369,10 @@ export class CommandRuntime {
   private async implicitLoop<T>(targets: T | T[], callback: (target: T) => Promise<void> | void): Promise<void> {
     if (Array.isArray(targets) || targets instanceof NodeList) {
       for (const target of targets) {
-        await callback(target);
+        await callback(target as T);
       }
     } else if (targets != null) {
-      await callback(targets);
+      await callback(targets as T);
     }
   }
 

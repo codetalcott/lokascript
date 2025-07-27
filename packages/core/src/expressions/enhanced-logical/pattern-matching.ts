@@ -211,7 +211,8 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid matches input: ${err.message}`
+            message: `Invalid matches input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide value and pattern',
@@ -229,7 +230,7 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
           return {
             isValid: false,
             errors: [{
-              type: 'invalid-syntax',
+              type: 'syntax-error',
               message: `Invalid CSS selector: ${pattern}`
             }],
             suggestions: [
@@ -476,7 +477,8 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid contains input: ${err.message}`
+            message: `Invalid contains input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide container and item',
@@ -655,7 +657,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid in input: ${err.message}`
+            message: `Invalid in input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide item and container',

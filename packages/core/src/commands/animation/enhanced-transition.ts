@@ -58,12 +58,13 @@ export class EnhancedTransitionCommand implements TypedCommandImplementation<
     validate(input: unknown): ValidationResult<TransitionCommandInput> {
       if (!input || typeof input !== 'object') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'Transition command requires property and value',
-            suggestions: 'Provide CSS property and target value'
-          }
+            suggestions: ['Provide CSS property and target value']
+          }],
+          suggestions: ['Provide CSS property and target value']
         };
       }
 
@@ -71,23 +72,25 @@ export class EnhancedTransitionCommand implements TypedCommandImplementation<
 
       if (!inputObj.property || typeof inputObj.property !== 'string') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'Transition command requires a CSS property',
-            suggestions: 'Provide a CSS property name like "opacity", "width", "left"'
-          }
+            suggestions: ['Provide a CSS property name like "opacity", "width", "left"']
+          }],
+          suggestions: ['Provide a CSS property name like "opacity", "width", "left"']
         };
       }
 
       if (inputObj.value === undefined) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'Transition command requires a target value',
-            suggestions: 'Provide a target value for the CSS property'
-          }
+            suggestions: ['Provide a target value for the CSS property']
+          }],
+          suggestions: ['Provide a target value for the CSS property']
         };
       }
 

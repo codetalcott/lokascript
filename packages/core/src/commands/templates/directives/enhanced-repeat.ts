@@ -335,11 +335,11 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Template content cannot be empty',
-            suggestions: 'Provide content to render for each iteration'
+            suggestions: ['Provide content to render for each iteration']
           }],
-          suggestions: 'Add content between @repeat and @end directives'
+          suggestions: ['Add content between @repeat and @end directives']
         };
       }
 
@@ -355,9 +355,9 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
         errors: [{
           type: 'runtime-error',
           message: 'Validation failed with exception',
-          suggestions: 'Check @repeat directive input structure'
+          suggestions: ['Check @repeat directive input structure']
         }],
-        suggestions: 'Ensure input matches expected format'
+        suggestions: ['Ensure input matches expected format']
       };
     }
   }
@@ -376,7 +376,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       errors.push({
         type: 'context-error',
         message: 'Template buffer not initialized',
-        suggestions: 'Ensure template context is properly created'
+        suggestions: ['Ensure template context is properly created']
       });
     }
     
@@ -385,7 +385,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       errors.push({
         type: 'nesting-error',
         message: `Template nesting too deep (${context.templateDepth})`,
-        suggestions: 'Reduce template nesting complexity'
+        suggestions: ['Reduce template nesting complexity']
       });
     }
     
@@ -407,9 +407,9 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
         errors: [{
           type: 'collection-error',
           message: 'Collection is null or undefined',
-          suggestions: 'Provide a valid array or iterable collection'
+          suggestions: ['Provide a valid array or iterable collection']
         }],
-        suggestions: 'Check collection exists before template execution'
+        suggestions: ['Check collection exists before template execution']
       };
     }
 
@@ -433,7 +433,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       errors: [{
         type: 'collection-error',
         message: `Collection type ${typeof collection} is not iterable`,
-        suggestions: 'Provide an array, NodeList, or other iterable collection'
+        suggestions: ['Provide an array, NodeList, or other iterable collection']
       }],
       suggestions: [
         'Convert to array using Array.from()',

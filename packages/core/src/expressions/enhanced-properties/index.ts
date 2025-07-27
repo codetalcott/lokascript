@@ -193,7 +193,8 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<Propert
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid possessive input: ${err.message}`
+            message: `Invalid possessive input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide element and property parameters',
@@ -455,7 +456,8 @@ export class EnhancedMyExpression implements BaseTypedExpression<ContextProperty
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid my input: ${err.message}`
+            message: `Invalid my input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide property parameter',
@@ -625,7 +627,8 @@ export class EnhancedItsExpression implements BaseTypedExpression<ContextPropert
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid its input: ${err.message}`
+            message: `Invalid its input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide property parameter',
@@ -795,7 +798,8 @@ export class EnhancedYourExpression implements BaseTypedExpression<ContextProper
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid your input: ${err.message}`
+            message: `Invalid your input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide property parameter',
@@ -982,7 +986,8 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<Attribut
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid attribute input: ${err.message}`
+            message: `Invalid attribute input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide element and attribute parameters',
@@ -1166,7 +1171,8 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid attribute with value input: ${err.message}`
+            message: `Invalid attribute with value input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide element, attribute, and value parameters',

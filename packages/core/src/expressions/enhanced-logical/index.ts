@@ -206,7 +206,8 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid AND operation input: ${err.message}`
+            message: `Invalid AND operation input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide both left and right operands',
@@ -613,7 +614,8 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid NOT operation input: ${err.message}`
+            message: `Invalid NOT operation input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a single operand',

@@ -265,7 +265,7 @@ export class HideCommand implements TypedCommandImplementation<
             message: `Invalid argument: ${err.message}`,
             suggestions: this.getValidationSuggestion(err.code, err.path)
           })),
-          suggestions: 'Use HTMLElement, CSS selector string, or omit for implicit target'
+          suggestions: ['Use HTMLElement, CSS selector string, or omit for implicit target']
         };
       }
 
@@ -276,7 +276,7 @@ export class HideCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: `Invalid CSS selector: "${target}"`,
             suggestions: ['Use valid CSS selector syntax like "#id", ".class", or "element"']
           }],
@@ -296,9 +296,9 @@ export class HideCommand implements TypedCommandImplementation<
         errors: [{
           type: 'runtime-error',
           message: 'Validation failed with exception',
-          suggestions: 'Check input types and values'
+          suggestions: ['Check input types and values']
         }],
-        suggestions: 'Ensure arguments match expected types'
+        suggestions: ['Ensure arguments match expected types']
       };
     }
   }

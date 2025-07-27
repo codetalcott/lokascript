@@ -65,6 +65,12 @@ export type {
   UnifiedLLMDocumentation as LLMDocumentation
 } from './unified-types.js';
 
+// Export base types for runtime usage
+export type {
+  ExpressionNode,
+  CommandNode
+} from './base-types.js';
+
 // ============================================================================
 // Convenience Type Aliases
 // ============================================================================

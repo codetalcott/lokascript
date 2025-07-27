@@ -237,11 +237,11 @@ export class PutCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax' as const,
+            type: 'syntax-error' as const,
             message: `Invalid position: "${position}". Must be one of: ${validPositions.join(', ')}`,
-            suggestions: 'Use supported position keywords'
+            suggestions: ['Use supported position keywords']
           }],
-          suggestions: 'Use: into, before, after, at start of, at end of'
+          suggestions: ['Use: into, before, after, at start of, at end of']
         };
       }
 
@@ -250,9 +250,9 @@ export class PutCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax' as const,
+            type: 'syntax-error' as const,
             message: `Invalid CSS selector: "${target}"`,
-            suggestions: 'Use valid CSS selector syntax like "#id", ".class", or "element"'
+            suggestions: ['Use valid CSS selector syntax like "#id", ".class", or "element"']
           }],
           suggestions: ['Check CSS selector syntax', 'Test with document.querySelector()']
         };
@@ -270,9 +270,9 @@ export class PutCommand implements TypedCommandImplementation<
         errors: [{
           type: 'runtime-error' as const,
           message: 'Validation failed with exception',
-          suggestions: 'Check input types and values'
+          suggestions: ['Check input types and values']
         }],
-        suggestions: 'Ensure arguments match expected types'
+        suggestions: ['Ensure arguments match expected types']
       };
     }
   }

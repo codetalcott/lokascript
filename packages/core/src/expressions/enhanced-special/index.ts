@@ -190,7 +190,8 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid string literal input: ${err.message}`
+            message: `Invalid string literal input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a value parameter',
@@ -437,7 +438,8 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid number literal input: ${err.message}`
+            message: `Invalid number literal input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a value parameter',
@@ -617,7 +619,8 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid boolean literal input: ${err.message}`
+            message: `Invalid boolean literal input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a value parameter',
@@ -803,7 +806,8 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid addition input: ${err.message}`
+            message: `Invalid addition input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands'
@@ -1015,7 +1019,8 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid multiplication input: ${err.message}`
+            message: `Invalid multiplication input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands'

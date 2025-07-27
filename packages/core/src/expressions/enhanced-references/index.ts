@@ -145,7 +145,7 @@ export class EnhancedMeExpression implements TypedExpressionImplementation<
         errors: [{
           type: 'type-mismatch',
           message: '"me" expression takes no arguments',
-          suggestions: 'Use "me" without any parameters'
+          suggestions: ['Use "me" without any parameters']
         }],
         suggestions: ['Use: me', 'Not: me(something)']
       };
@@ -281,7 +281,7 @@ export class EnhancedYouExpression implements TypedExpressionImplementation<
         errors: [{
           type: 'type-mismatch',
           message: '"you" expression takes no arguments',
-          suggestions: 'Use "you" without any parameters'
+          suggestions: ['Use "you" without any parameters']
         }],
         suggestions: ['Use: you', 'Not: you(something)']
       };
@@ -423,7 +423,7 @@ export class EnhancedItExpression implements TypedExpressionImplementation<
         errors: [{
           type: 'type-mismatch',
           message: '"it" expression takes no arguments',
-          suggestions: 'Use "it" without any parameters'
+          suggestions: ['Use "it" without any parameters']
         }],
         suggestions: ['Use: it', 'Not: it(something)']
       };
@@ -648,7 +648,7 @@ export class EnhancedCSSSelectorExpression implements TypedExpressionImplementat
           errors: [{
             type: 'syntax-error',
             message: `Invalid CSS selector syntax: "${selector}"`,
-            suggestions: 'Use valid CSS selector patterns'
+            suggestions: ['Use valid CSS selector patterns']
           }],
           suggestions: [
             'Use .class for class selectors',
@@ -671,7 +671,7 @@ export class EnhancedCSSSelectorExpression implements TypedExpressionImplementat
         errors: [{
           type: 'runtime-error',
           message: 'Validation failed with exception',
-          suggestions: 'Check input structure and types'
+          suggestions: ['Check input structure and types']
         }],
         suggestions: ['Ensure input matches expected format']
       };

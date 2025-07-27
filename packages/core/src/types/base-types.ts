@@ -409,6 +409,7 @@ export interface CommandNode extends ASTNode {
   readonly type: 'command';
   readonly name: string;
   readonly args?: ASTNode[];
+  readonly source?: string;
 }
 
 /**
@@ -417,6 +418,8 @@ export interface CommandNode extends ASTNode {
 export interface ExpressionNode extends ASTNode {
   readonly type: 'expression';
   readonly value?: unknown;
+  readonly operator?: string;
+  readonly operands?: ExpressionNode[];
 }
 
 /**

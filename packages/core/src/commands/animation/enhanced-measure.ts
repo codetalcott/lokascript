@@ -66,24 +66,26 @@ export class EnhancedMeasureCommand implements TypedCommandImplementation<
       // Validate property if provided
       if (inputObj.property && typeof inputObj.property !== 'string') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'type-mismatch',
             message: 'Property must be a string',
-            suggestions: 'Use property names like "width", "height", "top", "left"'
-          }
+            suggestions: ['Use property names like "width", "height", "top", "left"']
+          }],
+          suggestions: ['Use property names like "width", "height", "top", "left"']
         };
       }
 
       // Validate variable name if provided
       if (inputObj.variable && typeof inputObj.variable !== 'string') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'type-mismatch',
             message: 'Variable name must be a string',
-            suggestions: 'Use valid variable names'
-          }
+            suggestions: ['Use valid variable names']
+          }],
+          suggestions: ['Use valid variable names']
         };
       }
 

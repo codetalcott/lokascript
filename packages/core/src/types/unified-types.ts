@@ -88,6 +88,7 @@ export interface UnifiedExecutionContext {
   readonly me: HTMLElement | null;
   it: unknown;
   readonly you: HTMLElement | null;
+  readonly event: Event | null;
   readonly locals: Map<string, unknown>;
   readonly globals: Map<string, unknown>;
   readonly variables: Map<string, unknown>;

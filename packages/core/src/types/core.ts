@@ -20,7 +20,10 @@ export type {
   ValidationError,
   TypedResult,
   EnhancedError,
-  PerformanceCharacteristics
+  PerformanceCharacteristics,
+  ASTNode,
+  ParseError,
+  ExpressionNode
 } from './base-types.js';
 
 // ============================================================================
@@ -73,16 +76,10 @@ export interface ExtendedExecutionContext extends import('./base-types.js').Exec
 }
 
 // ============================================================================
-// AST Node Types
+// AST Node Types (Using Unified Base Definition)
 // ============================================================================
 
-export interface ASTNode {
-  type: string;
-  start: number;
-  end: number;
-  line: number;
-  column: number;
-}
+// ASTNode is now imported from base-types.ts for consistency
 
 export interface CommandNode extends ASTNode {
   type: 'command';
@@ -93,12 +90,7 @@ export interface CommandNode extends ASTNode {
   isBlocking: boolean;
 }
 
-export interface ExpressionNode extends ASTNode {
-  type: 'expression';
-  category: ExpressionCategory;
-  evaluatesTo: EvaluationType;
-  value?: any;
-}
+// ExpressionNode is now imported from base-types.ts for consistency
 
 export interface FeatureNode extends ASTNode {
   type: 'feature';
@@ -225,14 +217,7 @@ export interface ParseResult<T = ASTNode> {
   tokens: Token[];
 }
 
-export interface ParseError {
-  message: string;
-  position: number;
-  line: number;
-  column: number;
-  expected?: string[];
-  actual?: string;
-}
+// ParseError is now imported from base-types.ts for consistency
 
 export interface Parser {
   /** Parse a complete hyperscript program */

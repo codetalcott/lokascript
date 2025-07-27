@@ -55,9 +55,9 @@ export class EnhancedDecrementCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Decrement command requires an object input',
-            suggestions: 'Provide an object with target property'
+            suggestions: ['Provide an object with target property']
           }
         };
       }
@@ -71,7 +71,7 @@ export class EnhancedDecrementCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Decrement command requires a target',
-            suggestions: 'Provide a target variable, element, or property to decrement'
+            suggestions: ['Provide a target variable, element, or property to decrement']
           }
         };
       }
@@ -85,7 +85,7 @@ export class EnhancedDecrementCommand implements TypedCommandImplementation<
           error: {
             type: 'type-mismatch',
             message: 'Target must be a string (variable name), number, or HTMLElement',
-            suggestions: 'Use a variable name like "counter" or an element reference'
+            suggestions: ['Use a variable name like "counter" or an element reference']
           }
         };
       }
@@ -100,7 +100,7 @@ export class EnhancedDecrementCommand implements TypedCommandImplementation<
             error: {
               type: 'type-mismatch',
               message: 'Amount must be a number',
-              suggestions: 'Provide a numeric value like 1, 5, or 10.5'
+              suggestions: ['Provide a numeric value like 1, 5, or 10.5']
             }
           };
         }
@@ -112,9 +112,9 @@ export class EnhancedDecrementCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Scope must be "global" or "local"',
-            suggestions: 'Use "global" or "local" scope, or omit for default behavior'
+            suggestions: ['Use "global" or "local" scope, or omit for default behavior']
           }
         };
       }

@@ -288,11 +288,11 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Template content cannot be empty',
-            suggestions: 'Provide content to render in else branch'
+            suggestions: ['Provide content to render in else branch']
           }],
-          suggestions: 'Add content between @else and @end directives'
+          suggestions: ['Add content between @else and @end directives']
         };
       }
 
@@ -308,9 +308,9 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
         errors: [{
           type: 'runtime-error',
           message: 'Validation failed with exception',
-          suggestions: 'Check @else directive input structure'
+          suggestions: ['Check @else directive input structure']
         }],
-        suggestions: 'Ensure input matches expected format'
+        suggestions: ['Ensure input matches expected format']
       };
     }
   }
@@ -329,7 +329,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
       errors.push({
         type: 'context-error',
         message: 'Template buffer not initialized',
-        suggestions: 'Ensure template context is properly created'
+        suggestions: ['Ensure template context is properly created']
       });
     }
     
@@ -338,7 +338,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
       errors.push({
         type: 'conditional-error',
         message: '@else directive requires preceding @if directive',
-        suggestions: 'Ensure @else follows @if in the same scope'
+        suggestions: ['Ensure @else follows @if in the same scope']
       });
     }
     
@@ -347,7 +347,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
       errors.push({
         type: 'nesting-error',
         message: `Template nesting too deep (${context.templateDepth})`,
-        suggestions: 'Reduce template nesting complexity'
+        suggestions: ['Reduce template nesting complexity']
       });
     }
     

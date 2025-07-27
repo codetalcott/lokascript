@@ -66,33 +66,36 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
           const trimmed = inputObj.timeout.trim();
           if (!/^\d*\.?\d+(s|ms)?$/i.test(trimmed)) {
             return {
-              success: false,
-              error: {
-                type: 'invalid-syntax',
+              isValid: false,
+              errors: [{
+                type: 'syntax-error',
                 message: 'Invalid timeout format',
-                suggestions: 'Use format like "3s", "500ms", or numeric milliseconds'
-              }
+                suggestions: ['Use format like "3s", "500ms", or numeric milliseconds']
+              }],
+              suggestions: ['Use format like "3s", "500ms", or numeric milliseconds']
             };
           }
         } else if (typeof inputObj.timeout === 'number') {
           if (inputObj.timeout < 0) {
             return {
-              success: false,
-              error: {
-                type: 'invalid-syntax',
+              isValid: false,
+              errors: [{
+                type: 'syntax-error',
                 message: 'Timeout cannot be negative',
-                suggestions: 'Use positive timeout values'
-              }
+                suggestions: ['Use positive timeout values']
+              }],
+              suggestions: ['Use positive timeout values']
             };
           }
         } else {
           return {
-            success: false,
-            error: {
+            isValid: false,
+            errors: [{
               type: 'type-mismatch',
               message: 'Timeout must be a number or string',
-              suggestions: 'Use numeric milliseconds or string with unit like "3s"'
-            }
+              suggestions: ['Use numeric milliseconds or string with unit like "3s"']
+            }],
+            suggestions: ['Use numeric milliseconds or string with unit like "3s"']
           };
         }
       }

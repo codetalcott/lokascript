@@ -375,7 +375,7 @@ export class ToggleCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: `Invalid CSS selector: "${target}"`,
             suggestions: ['Use valid CSS selector syntax like "#id", ".class", or "element"']
           }],

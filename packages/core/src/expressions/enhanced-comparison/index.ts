@@ -191,7 +191,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide both left and right operands',

@@ -413,7 +413,7 @@ export class TypedInitFeatureImplementation {
       // Check for invalid delay values
       if (inputData.initialization?.timing?.delay !== undefined && inputData.initialization.timing.delay < 0) {
         errors.push({
-          type: 'invalid-syntax',
+          type: 'syntax-error',
           message: 'Initialization delay must be non-negative',
           path: 'initialization.timing.delay'
         });
@@ -438,7 +438,7 @@ export class TypedInitFeatureImplementation {
       if (data.initialization.target) {
         if (typeof data.initialization.target === 'string' && !this.isValidSelector(data.initialization.target)) {
           errors.push({
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: `Invalid CSS selector: "${data.initialization.target}"`,
             path: 'initialization.target'
           });
@@ -449,7 +449,7 @@ export class TypedInitFeatureImplementation {
       // Validate execution timeout
       if (data.execution.timeout < 1000) {
         errors.push({
-          type: 'invalid-syntax',
+          type: 'syntax-error',
           message: 'Execution timeout must be at least 1000ms',
           path: 'execution.timeout'
         });
@@ -460,7 +460,7 @@ export class TypedInitFeatureImplementation {
       if (data.execution.retries.enabled) {
         if (data.execution.retries.maxAttempts < 1) {
           errors.push({
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Max retry attempts must be at least 1',
             path: 'execution.retries.maxAttempts'
           });
@@ -469,7 +469,7 @@ export class TypedInitFeatureImplementation {
 
         if (data.execution.retries.delay < 0) {
           errors.push({
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Retry delay must be non-negative',
             path: 'execution.retries.delay'
           });
@@ -480,7 +480,7 @@ export class TypedInitFeatureImplementation {
       // Validate concurrent initialization limits
       if (data.options.maxConcurrentInits < 1) {
         errors.push({
-          type: 'invalid-syntax',
+          type: 'syntax-error',
           message: 'Max concurrent initializations must be at least 1',
           path: 'options.maxConcurrentInits'
         });

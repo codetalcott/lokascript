@@ -289,11 +289,11 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
         return {
           isValid: false,
           errors: [{
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Template content cannot be empty',
-            suggestions: 'Provide content to render when condition is true'
+            suggestions: ['Provide content to render when condition is true']
           }],
-          suggestions: 'Add content between @if and @end directives'
+          suggestions: ['Add content between @if and @end directives']
         };
       }
 
@@ -309,9 +309,9 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
         errors: [{
           type: 'runtime-error',
           message: 'Validation failed with exception',
-          suggestions: 'Check @if directive input structure'
+          suggestions: ['Check @if directive input structure']
         }],
-        suggestions: 'Ensure input matches expected format'
+        suggestions: ['Ensure input matches expected format']
       };
     }
   }

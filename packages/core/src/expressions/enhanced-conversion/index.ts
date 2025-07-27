@@ -539,7 +539,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
     } catch (_error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error' as const, message: 'Validation failed', suggestions: 'Check input structure' }],
+        errors: [{ type: 'runtime-error' as const, message: 'Validation failed', suggestions: ['Check input structure'] }],
         suggestions: ['Check input structure']
       };
     }
@@ -773,7 +773,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
     } catch (_error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error' as const, message: 'Validation failed', suggestions: 'Check input structure' }],
+        errors: [{ type: 'runtime-error' as const, message: 'Validation failed', suggestions: ['Check input structure'] }],
         suggestions: ['Check input structure']
       };
     }

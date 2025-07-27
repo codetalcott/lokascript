@@ -184,7 +184,8 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid first input: ${err.message}`
+            message: `Invalid first input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a collection parameter',
@@ -387,7 +388,8 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid last input: ${err.message}`
+            message: `Invalid last input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a collection parameter',
@@ -605,7 +607,8 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid at input: ${err.message}`
+            message: `Invalid at input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide collection and index parameters',
@@ -832,7 +835,8 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid random input: ${err.message}`
+            message: `Invalid random input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a collection parameter',

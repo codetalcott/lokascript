@@ -183,7 +183,8 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands',
@@ -365,7 +366,8 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands',
@@ -556,7 +558,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands',
@@ -736,7 +739,8 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands'
@@ -915,7 +919,8 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands'
@@ -1094,7 +1099,8 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid comparison input: ${err.message}`
+            message: `Invalid comparison input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide left and right operands'

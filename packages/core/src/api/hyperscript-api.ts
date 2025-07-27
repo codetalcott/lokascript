@@ -90,8 +90,8 @@ function compile(code: string): CompilationResult {
     return {
       success: false,
       errors: [{
+        name: 'CompilationError',
         message: error instanceof Error ? error.message : 'Unknown compilation error',
-        position: 0,
         line: 1,
         column: 1
       }],

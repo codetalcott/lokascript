@@ -54,9 +54,9 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Call command requires an object input',
-            suggestions: 'Provide an object with expression property'
+            suggestions: ['Provide an object with expression property']
           }
         };
       }
@@ -70,7 +70,7 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Call command requires an expression to evaluate',
-            suggestions: 'Provide a function, Promise, or value to evaluate'
+            suggestions: ['Provide a function, Promise, or value to evaluate']
           }
         };
       }
@@ -81,9 +81,9 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Call command alias must be "call" or "get"',
-            suggestions: 'Use "call" or "get" as the command alias'
+            suggestions: ['Use "call" or "get" as the command alias']
           }
         };
       }

@@ -54,9 +54,9 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: 'Append command requires an object input',
-            suggestions: 'Provide an object with content property'
+            suggestions: ['Provide an object with content property']
           }
         };
       }
@@ -70,7 +70,7 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Append command requires content to append',
-            suggestions: 'Provide content to append as the first argument'
+            suggestions: ['Provide content to append as the first argument']
           }
         };
       }
@@ -86,7 +86,7 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
             error: {
               type: 'type-mismatch',
               message: 'Target must be a string (variable name/selector), HTMLElement, or Array',
-              suggestions: 'Use a variable name, CSS selector, element reference, or array'
+              suggestions: ['Use a variable name, CSS selector, element reference, or array']
             }
           };
         }

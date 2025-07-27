@@ -217,7 +217,8 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid property access input: ${err.message}`
+            message: `Invalid property access input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide a valid property name as a string',
@@ -464,7 +465,8 @@ export class EnhancedItsExpression implements BaseTypedExpression<HyperScriptVal
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid possessive access input: ${err.message}`
+            message: `Invalid possessive access input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide both target and property parameters',
@@ -694,7 +696,8 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid attribute access input: ${err.message}`
+            message: `Invalid attribute access input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: [
             'Provide both element and attribute parameters',

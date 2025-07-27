@@ -61,7 +61,7 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Repeat command requires loop configuration',
-            suggestions: 'Provide loop type and parameters'
+            suggestions: ['Provide loop type and parameters']
           }
         };
       }
@@ -74,7 +74,7 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Repeat command requires a loop type',
-            suggestions: 'Use types: for, times, while, until, forever'
+            suggestions: ['Use types: for, times, while, until, forever']
           }
         };
       }
@@ -84,9 +84,9 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-syntax',
+            type: 'syntax-error',
             message: `Invalid repeat type: ${inputObj.type}`,
-            suggestions: 'Use types: for, times, while, until, forever'
+            suggestions: ['Use types: for, times, while, until, forever']
           }
         };
       }
@@ -98,7 +98,7 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'For loops require variable and collection',
-            suggestions: 'Use: repeat for item in items'
+            suggestions: ['Use: repeat for item in items']
           }
         };
       }
@@ -109,7 +109,7 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
           error: {
             type: 'missing-argument',
             message: 'Times loops require a count number',
-            suggestions: 'Use: repeat 5 times'
+            suggestions: ['Use: repeat 5 times']
           }
         };
       }

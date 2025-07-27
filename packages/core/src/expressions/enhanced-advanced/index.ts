@@ -116,7 +116,8 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid lambda input: ${err.message}`
+            message: `Invalid lambda input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: ['Provide valid parameters and body']
         };
@@ -305,7 +306,8 @@ export class EnhancedPromiseExpression implements BaseTypedExpression<Promise<un
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid promise input: ${err.message}`
+            message: `Invalid promise input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: ['Provide valid executor string']
         };
@@ -471,7 +473,8 @@ export class EnhancedAwaitExpression implements BaseTypedExpression<unknown> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid await input: ${err.message}`
+            message: `Invalid await input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: ['Provide valid promise']
         };
@@ -607,7 +610,8 @@ export class EnhancedErrorExpression implements BaseTypedExpression<Error> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid error input: ${err.message}`
+            message: `Invalid error input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: ['Provide valid error message']
         };
@@ -727,7 +731,8 @@ export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
           isValid: false,
           errors: parsed.error.errors.map(err => ({
             type: 'type-mismatch',
-            message: `Invalid typeof input: ${err.message}`
+            message: `Invalid typeof input: ${err.message}`,
+            suggestions: []
           })),
           suggestions: ['Provide valid value']
         };
