@@ -3,7 +3,7 @@
  * Provides all execution commands for hyperscript
  */
 
-export { EnhancedCallCommand as CallCommand } from './enhanced-call';
+export { EnhancedCallCommand as CallCommand } from './enhanced-call.js';
 
 // Create instances with default options for easy access
 export const executionCommands = {
