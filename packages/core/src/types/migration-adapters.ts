@@ -93,8 +93,7 @@ export class TypeMigrationAdapter {
         return {
           isValid: false,
           errors: legacyObj.error ? [this.adaptError(legacyObj.error)] : [],
-          suggestions: this.extractSuggestions(legacyObj.error || legacyObj),
-          data: undefined
+          suggestions: this.extractSuggestions(legacyObj.error || legacyObj)
         };
       }
     }
@@ -161,6 +160,7 @@ export class TypeMigrationAdapter {
       me: legacyObj.me || null,
       it: legacyObj.it || null,
       you: legacyObj.you || null,
+      event: legacyObj.event || null,
       locals: this.ensureMap(legacyObj.locals),
       globals: this.ensureMap(legacyObj.globals),
       variables: this.ensureMap(legacyObj.variables),
@@ -289,6 +289,7 @@ export class TypeMigrationAdapter {
       me: null,
       it: null,
       you: null,
+      event: null,
       locals: new Map(),
       globals: new Map(),
       variables: new Map(),
@@ -332,7 +333,7 @@ export function createUnifiedResult<T>(
     isValid,
     errors: errors.map(err => TypeMigrationAdapter.adaptError(err)),
     suggestions,
-    data
+    ...(data !== undefined && { data })
   };
 }
 

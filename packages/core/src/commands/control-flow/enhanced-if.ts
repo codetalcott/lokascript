@@ -50,12 +50,13 @@ export class EnhancedIfCommand implements TypedCommandImplementation<
     validate(input: unknown): ValidationResult<IfCommandInput> {
       if (!input || typeof input !== 'object') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'syntax-error',
             message: 'If command requires an object input',
             suggestions: ['Provide an object with condition and thenCommands properties']
-          }
+          }],
+          suggestions: ['Provide an object with condition and thenCommands properties']
         };
       }
 
@@ -64,47 +65,51 @@ export class EnhancedIfCommand implements TypedCommandImplementation<
       // Validate condition is present
       if (inputObj.condition === undefined) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'If command requires a condition to evaluate',
             suggestions: ['Provide a boolean expression as the condition']
-          }
+          }],
+          suggestions: ['Provide a boolean expression as the condition']
         };
       }
 
       // Validate thenCommands
       if (!inputObj.thenCommands) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'If command requires commands for the then branch',
             suggestions: ['Provide commands to execute when condition is true']
-          }
+          }],
+          suggestions: ['Provide commands to execute when condition is true']
         };
       }
 
       if (!Array.isArray(inputObj.thenCommands)) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'type-mismatch',
             message: 'Then commands must be an array',
             suggestions: ['Provide an array of commands for the then branch']
-          }
+          }],
+          suggestions: ['Provide an array of commands for the then branch']
         };
       }
 
       // Validate elseCommands if provided
       if (inputObj.elseCommands !== undefined && !Array.isArray(inputObj.elseCommands)) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'type-mismatch',
             message: 'Else commands must be an array',
             suggestions: ['Provide an array of commands for the else branch']
-          }
+          }],
+          suggestions: ['Provide an array of commands for the else branch']
         };
       }
 

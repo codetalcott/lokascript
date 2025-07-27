@@ -13,14 +13,14 @@ import type { TypedExecutionContext } from '../../types/enhanced-core.js';
 
 // Input type definition
 export interface AppendCommandInput {
-  content: any;
-  target?: string | HTMLElement | any[];
+  content: unknown;
+  target?: string | HTMLElement | unknown[];
   toKeyword?: 'to'; // For syntax validation
 }
 
 // Output type definition  
 export interface AppendCommandOutput {
-  result: any;
+  result: unknown;
   targetType: 'result' | 'variable' | 'array' | 'element' | 'string';
   target?: string | HTMLElement;
 }
@@ -52,12 +52,13 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
     validate(input: unknown): ValidationResult<AppendCommandInput> {
       if (!input || typeof input !== 'object') {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'syntax-error',
             message: 'Append command requires an object input',
             suggestions: ['Provide an object with content property']
-          }
+          }],
+          suggestions: ['Provide an object with content property']
         };
       }
 
@@ -66,12 +67,13 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
       // Validate content is present
       if (inputObj.content === undefined) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
             type: 'missing-argument',
             message: 'Append command requires content to append',
             suggestions: ['Provide content to append as the first argument']
-          }
+          }],
+          suggestions: ['Provide content to append as the first argument']
         };
       }
 
@@ -82,12 +84,13 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
             !(target instanceof HTMLElement) && 
             !Array.isArray(target)) {
           return {
-            success: false,
-            error: {
+            isValid: false,
+            errors: [{
               type: 'type-mismatch',
               message: 'Target must be a string (variable name/selector), HTMLElement, or Array',
               suggestions: ['Use a variable name, CSS selector, element reference, or array']
-            }
+            }],
+            suggestions: ['Use a variable name, CSS selector, element reference, or array']
           };
         }
       }
@@ -191,8 +194,7 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
       target.push(content);
       return {
         result: target,
-        targetType: 'array',
-        target
+        targetType: 'array'
       };
     } else if (target instanceof HTMLElement) {
       // Direct element target
@@ -213,7 +215,7 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
     }
   }
 
-  private resolveDOMElement(selector: string, context: TypedExecutionContext): HTMLElement {
+  private resolveDOMElement(selector: string, _context: TypedExecutionContext): HTMLElement {
     if (typeof document === 'undefined') {
       throw new Error('DOM not available - cannot resolve element selector');
     }
@@ -284,9 +286,6 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
     }
     
     // Create new local variable
-    if (!context.locals) {
-      context.locals = new Map();
-    }
     context.locals.set(name, value);
   }
 }

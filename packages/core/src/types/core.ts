@@ -23,7 +23,17 @@ export type {
   PerformanceCharacteristics,
   ASTNode,
   ParseError,
-  ExpressionNode
+  ExpressionNode,
+  CommandNode as BaseCommandNode
+} from './base-types.js';
+
+// Import types for use within this file
+import type {
+  ExecutionContext,
+  ASTNode,
+  ExpressionNode,
+  EvaluationType,
+  ParseError
 } from './base-types.js';
 
 // ============================================================================
@@ -52,7 +62,7 @@ export type Associativity = 'Left' | 'Right' | 'None';
  * Extended ExecutionContext interface for legacy compatibility
  * Preserves all existing functionality while using unified base types
  */
-export interface ExtendedExecutionContext extends import('./base-types.js').ExecutionContext {
+export interface ExtendedExecutionContext extends ExecutionContext {
   /** General variables storage (for simple use cases) */
   variables?: Map<string, any>;
   

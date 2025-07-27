@@ -175,10 +175,14 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       // Parse arguments using enhanced parsing
       const parseResult = this.parseArguments(args, context);
       if (!parseResult.success) {
-        return parseResult as EvaluationResult<HTMLElement>;
+        return {
+          success: false,
+          error: parseResult.error,
+          type: 'error'
+        } as EvaluationResult<HTMLElement>;
       }
 
-      const { property, source, target } = parseResult.value;
+      const { property, source, target } = parseResult.value!;
 
       // Take the property from source
       const takeResult = await this.takeProperty(source, property, context);
@@ -404,7 +408,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         }
 
         const targetResult = this.resolveElement(targetArg, context);
-        if (!targetResult.success) {
+        if (!targetResult.success || !targetResult.value) {
           return {
             success: false,
             error: {
@@ -438,7 +442,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         success: true,
         value: {
           property,
-          source: sourceResult.value,
+          source: sourceResult.value!,
           target: targetElement
         },
         type: 'object'
@@ -663,11 +667,11 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         let value: string;
         
         if (camelProperty in element.style) {
-          value = (element.style as Record<string, string>)[camelProperty];
-          (element.style as Record<string, string>)[camelProperty] = '';
+          value = (element.style as unknown as Record<string, string>)[camelProperty];
+          (element.style as unknown as Record<string, string>)[camelProperty] = '';
         } else if (prop in element.style) {
-          value = (element.style as Record<string, string>)[prop];
-          (element.style as Record<string, string>)[prop] = '';
+          value = (element.style as unknown as Record<string, string>)[prop];
+          (element.style as unknown as Record<string, string>)[prop] = '';
         } else {
           value = element.style.getPropertyValue(prop);
           element.style.removeProperty(prop);
@@ -806,9 +810,9 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       const camelProperty = prop.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
       if (prop.includes('-') || camelProperty in element.style || prop in element.style) {
         if (camelProperty in element.style) {
-          (element.style as Record<string, string>)[camelProperty] = String(value);
+          (element.style as unknown as Record<string, string>)[camelProperty] = String(value);
         } else if (prop in element.style) {
-          (element.style as Record<string, string>)[prop] = String(value);
+          (element.style as unknown as Record<string, string>)[prop] = String(value);
         } else {
           element.style.setProperty(prop, String(value));
         }

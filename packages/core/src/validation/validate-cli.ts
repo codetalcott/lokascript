@@ -4,14 +4,14 @@
  * Usage: deno run --allow-read src/validation/validate-cli.ts [command-name]
  */
 
-import { CommandPatternValidator, CommandSuiteValidator, ValidationReporter } from './command-pattern-validator.ts';
+import { CommandPatternValidator, CommandSuiteValidator, ValidationReporter } from './command-pattern-validator.js';
 
 // Import all commands for validation
-import { HideCommand, createHideCommand } from '../commands/dom/hide.ts';
-import { ShowCommand, createShowCommand } from '../commands/dom/show.ts';
-import { ToggleCommand, createToggleCommand } from '../commands/dom/toggle.ts';
-import { AddCommand, createAddCommand } from '../commands/dom/add.ts';
-import { RemoveCommand, createRemoveCommand } from '../commands/dom/remove.ts';
+import { HideCommand, createHideCommand } from '../commands/dom/hide.js';
+import { ShowCommand, createShowCommand } from '../commands/dom/show.js';
+import { ToggleCommand, createToggleCommand } from '../commands/dom/toggle.js';
+import { AddCommand, createAddCommand } from '../commands/dom/add.js';
+import { RemoveCommand, createRemoveCommand } from '../commands/dom/remove.js';
 
 // Command registry for validation
 const COMMAND_REGISTRY = [
@@ -172,7 +172,7 @@ Available Commands:
  * Main CLI entry point
  */
 async function main(): Promise<void> {
-  const args = Deno.args;
+  const args = process.argv.slice(2);
   
   if (args.length === 0 || args.includes('--all')) {
     await validateCommandSuite();
@@ -202,7 +202,7 @@ async function main(): Promise<void> {
 }
 
 // Run CLI if this is the main module
-if (import.meta.main) {
+if (require.main === module) {
   main().catch(error => {
     console.error('❌ Validation failed:', error);
     process.exit(1);

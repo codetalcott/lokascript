@@ -15,7 +15,7 @@ import { z } from 'zod';
  * Unified validation error interface - replaces all fragmented error types
  */
 export interface UnifiedValidationError {
-  readonly type: 'type-mismatch' | 'missing-argument' | 'runtime-error' | 'validation-error';
+  readonly type: 'type-mismatch' | 'missing-argument' | 'runtime-error' | 'validation-error' | 'syntax-error' | 'invalid-argument';
   readonly message: string;
   readonly suggestions: string[]; // Always array, never string
   readonly path?: string;
@@ -170,7 +170,8 @@ export type UnifiedSideEffect =
   | 'navigation' 
   | 'dom-query' 
   | 'history'
-  | 'async';
+  | 'async'
+  | 'attribute-transfer';
 
 // ============================================================================
 // Core Expression Types
@@ -337,8 +338,8 @@ export class UnifiedValidator {
       type,
       message,
       suggestions,
-      path,
-      code
+      ...(path !== undefined && { path }),
+      ...(code !== undefined && { code })
     };
   }
 
