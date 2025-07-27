@@ -13,7 +13,7 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.ts';
+} from '../../types/enhanced-core.js';
 
 /**
  * Input validation schema for LLM understanding
@@ -169,7 +169,7 @@ export class TriggerCommand implements TypedCommandImplementation<
         };
       }
       
-      const { eventName, eventData, target } = parseResult;
+      const { eventName = '', eventData, target } = parseResult;
       
       // Resolve target elements
       const targetResult = await this.resolveTargetElements(target, context);
@@ -212,7 +212,7 @@ export class TriggerCommand implements TypedCommandImplementation<
       const event = eventResult.event;
       
       // Store result in context
-      context.result = event;
+      context.it = event;
       
       return {
         success: true,
@@ -422,8 +422,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return [context.me];
       } else if (target === 'you' && context.you) {
         return [context.you];
-      } else if (target === 'it' && context.result instanceof HTMLElement) {
-        return [context.result];
+      } else if (target === 'it' && context.it instanceof HTMLElement) {
+        return [context.it];
       }
 
       // Handle variable references
@@ -550,7 +550,7 @@ export class TriggerCommand implements TypedCommandImplementation<
             return {
               isValid: false,
               errors: [{
-                type: 'missing-target',
+                type: 'missing-argument',
                 message: 'Trigger command requires target after "on"',
                 suggestions: ['Specify target element after "on" keyword']
               }],

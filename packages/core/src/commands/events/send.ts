@@ -14,7 +14,7 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.ts';
+} from '../../types/enhanced-core.js';
 
 /**
  * Input validation schema for LLM understanding
@@ -190,7 +190,7 @@ export class SendCommand implements TypedCommandImplementation<
         };
       }
       
-      const targetElements = targetResult.elements;
+      const targetElements = targetResult.elements || [];
       
       // Create and dispatch the event
       const eventResult = await this.createAndDispatchEvent(
@@ -216,7 +216,7 @@ export class SendCommand implements TypedCommandImplementation<
       const event = eventResult.event;
       
       // Store result in context
-      context.result = event;
+      context.it = event;
       
       return {
         success: true,
@@ -486,7 +486,7 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'missing-target',
+            type: 'missing-argument',
             message: 'Send command requires target after "to"',
             suggestions: ['Specify target element after "to" keyword']
           }],
@@ -497,7 +497,7 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           isValid: false,
           errors: [{
-            type: 'missing-target',
+            type: 'missing-argument',
             message: 'Send command requires target after "on"',
             suggestions: ['Specify target element after "on" keyword']
           }],
