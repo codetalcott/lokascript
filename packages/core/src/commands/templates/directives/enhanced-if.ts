@@ -42,7 +42,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
     complexity: 'simple',
     sideEffects: ['template-rendering'],
     dependencies: [],
-    returnTypes: ['string'],
+    returnTypes: ['String'],
     examples: [
       {
         input: '@if user.isLoggedIn\nWelcome back!\n@end',

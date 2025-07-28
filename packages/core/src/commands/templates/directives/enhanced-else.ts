@@ -42,7 +42,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
     complexity: 'simple',
     sideEffects: ['template-rendering'],
     dependencies: ['@if'],
-    returnTypes: ['string'],
+    returnTypes: ['String'],
     examples: [
       {
         input: '@if user.isLoggedIn\nWelcome back!\n@else\nPlease log in\n@end',

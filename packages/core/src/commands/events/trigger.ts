@@ -188,6 +188,19 @@ export class TriggerCommand implements TypedCommandImplementation<
       
       const targetElements = targetResult.elements;
       
+      if (!targetElements) {
+        return {
+          success: false,
+          error: {
+            name: 'TriggerCommandError',
+            message: 'No target elements found',
+            code: 'NO_TARGET_ELEMENTS',
+            suggestions: ['Check if target elements exist', 'Verify selector syntax']
+          },
+          type: 'error'
+        };
+      }
+      
       // Create and trigger the event
       const eventResult = await this.createAndTriggerEvent(
         eventName,

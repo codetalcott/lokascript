@@ -44,7 +44,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
     complexity: 'medium',
     sideEffects: ['template-rendering', 'context-scoping'],
     dependencies: [],
-    returnTypes: ['string'],
+    returnTypes: ['String'],
     examples: [
       {
         input: '@repeat in items\n<li>${it.name}</li>\n@end',
@@ -405,7 +405,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       return {
         isValid: false,
         errors: [{
-          type: 'collection-error',
+          type: 'validation-error',
           message: 'Collection is null or undefined',
           suggestions: ['Provide a valid array or iterable collection']
         }],
@@ -431,7 +431,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
     return {
       isValid: false,
       errors: [{
-        type: 'collection-error',
+        type: 'validation-error',
         message: `Collection type ${typeof collection} is not iterable`,
         suggestions: ['Provide an array, NodeList, or other iterable collection']
       }],
