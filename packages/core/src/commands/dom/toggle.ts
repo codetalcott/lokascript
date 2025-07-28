@@ -112,13 +112,17 @@ export class ToggleCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes']
   };
   
-  private readonly _options: ToggleCommandOptions; // Used for future enhancements
+  private readonly _options: ToggleCommandOptions; // Reserved for future enhancements - configuration storage
 
   constructor(options: ToggleCommandOptions = {}) {
     this._options = {
       delimiter: ' ',
       ...options,
     };
+  }
+
+  get options(): ToggleCommandOptions {
+    return this._options;
   }
 
   async execute(

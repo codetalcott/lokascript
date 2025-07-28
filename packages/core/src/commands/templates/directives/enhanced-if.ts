@@ -17,7 +17,7 @@ import type {
   TypedResult,
   ExpressionMetadata
 } from '../../../types/enhanced-expressions.ts';
-import type { UnifiedValidationResult, UnifiedValidationError } from '../../../types/unified-types.ts';
+import type { UnifiedValidationResult } from '../../../types/unified-types.ts';
 import { TemplateContextUtils } from '../enhanced-template-context';
 
 /**
@@ -283,7 +283,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
       }
 
       // Additional semantic validation
-      const { condition, templateContent } = parsed.data;
+      const { condition: _condition, templateContent } = parsed.data;
       
       if (!templateContent.trim()) {
         return {

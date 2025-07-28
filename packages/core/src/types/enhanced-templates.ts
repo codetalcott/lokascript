@@ -44,7 +44,7 @@ export interface TemplateExecutionContext extends TypedExpressionContext {
     conditionMet: boolean;
     elseAllowed: boolean;
     branchExecuted: boolean;
-  };
+  } | undefined;
   
   /** Template execution metadata */
   readonly templateMeta: {

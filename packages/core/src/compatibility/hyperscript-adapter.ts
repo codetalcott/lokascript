@@ -60,7 +60,7 @@ export async function evalHyperScript(
     result: undefined,
     locals: new Map(),
     globals: new Map(),
-    parent: null,
+    parent: undefined,
     halted: false,
     returned: false,
     broke: false,
@@ -68,17 +68,17 @@ export async function evalHyperScript(
     async: false
   };
   
-  // Set up context variables
+  // Set up context variables (avoid readonly mutations)
   if (contextOptions?.locals) {
-    context.locals = new Map(Object.entries(contextOptions.locals));
+    Object.assign(context, { locals: new Map(Object.entries(contextOptions.locals)) });
   }
   
   if (contextOptions?.globals) {
-    context.globals = new Map(Object.entries(contextOptions.globals));
+    Object.assign(context, { globals: new Map(Object.entries(contextOptions.globals)) });
   }
   
   if (contextOptions?.it !== undefined) {
-    context.it = contextOptions.it;
+    Object.assign(context, { it: contextOptions.it });
   }
   
   if (contextOptions?.you) {

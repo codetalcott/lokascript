@@ -329,7 +329,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       }
 
       // Additional semantic validation
-      const { collection, templateContent } = parsed.data;
+      const { collection: _collection, templateContent } = parsed.data;
       
       if (!templateContent.trim()) {
         return {
@@ -367,7 +367,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
    */
   validateTemplateContext(
     context: TemplateExecutionContext,
-    input: RepeatDirectiveInput
+    _input: RepeatDirectiveInput
   ): UnifiedValidationResult {
     const errors: UnifiedValidationError[] = [];
     

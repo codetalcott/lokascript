@@ -746,7 +746,7 @@ export class GoCommand implements TypedCommandImplementation<
     }
 
     // Handle variable references
-    const variable = this.getVariableValue(target, context);
+    const variable = this.getVariableValue(String(target), context);
     if (variable instanceof HTMLElement) {
       return variable;
     }

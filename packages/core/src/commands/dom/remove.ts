@@ -112,13 +112,17 @@ export class RemoveCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes']
   };
   
-  private readonly _options: RemoveCommandOptions; // Used for future enhancements
+  private readonly _options: RemoveCommandOptions; // Reserved for future enhancements - configuration storage
 
   constructor(options: RemoveCommandOptions = {}) {
     this._options = {
       delimiter: ' ',
       ...options,
     };
+  }
+
+  get options(): RemoveCommandOptions {
+    return this._options;
   }
 
   async execute(

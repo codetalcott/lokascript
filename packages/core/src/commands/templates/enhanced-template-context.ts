@@ -72,7 +72,7 @@ export class EnhancedTemplateContextBridge implements TemplateContextBridge {
       // Template-specific properties
       templateBuffer: options.initialBuffer || [],
       templateDepth: 0,
-      iterationContext: options.iterationContext,
+      ...(options.iterationContext && { iterationContext: options.iterationContext }),
       conditionalContext: undefined,
       
       templateMeta: {
@@ -263,19 +263,19 @@ export class TemplateContextUtils {
     
     // Add locals
     for (const [key, value] of context.locals.entries()) {
-      variables[key] = value;
+      variables[key] = value as any;
     }
     
     // Add globals
     for (const [key, value] of context.globals.entries()) {
-      variables[`global.${key}`] = value;
+      variables[`global.${key}`] = value as any;
     }
     
     // Add context elements
-    if (context.me) variables['me'] = context.me;
-    if (context.it !== undefined) variables['it'] = context.it;
-    if (context.you) variables['you'] = context.you;
-    if (context.result !== undefined) variables['result'] = context.result;
+    if (context.me) variables['me'] = context.me as any;
+    if (context.it !== undefined) variables['it'] = context.it as any;
+    if (context.you) variables['you'] = context.you as any;
+    if (context.result !== undefined) variables['result'] = context.result as any;
     
     // Add iteration context
     if (context.iterationContext) {

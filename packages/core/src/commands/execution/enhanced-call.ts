@@ -158,7 +158,7 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
  * Enhanced Get Command (alias for Call)
  */
 export class EnhancedGetCommand extends EnhancedCallCommand {
-  override metadata = {
+  override metadata: typeof this.metadata = {
     ...this.metadata,
     name: 'get',
     description: 'The get command is an alias for call and can be used if it more clearly expresses the meaning of the code. It allows you to evaluate an expression and put the value into the it variable.',

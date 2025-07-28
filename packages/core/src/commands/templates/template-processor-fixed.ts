@@ -223,7 +223,7 @@ export class FixedTemplateProcessor {
    * Process string interpolation (${variable})
    */
   private processInterpolation(content: string, context: ExecutionContext): string {
-    return content.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+    return content.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
       const trimmed = expression.trim();
       
       if (trimmed.startsWith('unescaped ')) {
@@ -287,13 +287,14 @@ export class FixedTemplateProcessor {
   /**
    * Process @set command
    */
-  private async processSetCommand(command: string, context: ExecutionContext): Promise<void> {
+  private async _processSetCommand(command: string, context: ExecutionContext): Promise<void> {
     const match = command.match(/^(\w+)\s+to\s+(.+)$/);
     if (match) {
       const [, varName, expression] = match;
       const value = this.resolveVariable(expression, context);
-      if (!context.locals) context.locals = new Map();
-      context.locals.set(varName, value);
+      const newLocals = new Map(context.locals);
+      newLocals.set(varName, value);
+      Object.assign(context, { locals: newLocals });
     }
   }
 

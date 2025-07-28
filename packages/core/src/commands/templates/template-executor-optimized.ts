@@ -6,14 +6,14 @@
 import type { ExecutionContext } from '../../types/core';
 import type { CompiledTemplate } from './template-compiler';
 
-interface ExecutionState {
+interface _ExecutionState {
   commandIndex: number;
   depth: number;
   iterationCount: number;
 }
 
 export class OptimizedTemplateExecutor {
-  private readonly MAX_DEPTH = 10;
+  private readonly _MAX_DEPTH = 10;
   private readonly MAX_ITERATIONS = 1000;
 
   /**
@@ -165,7 +165,7 @@ export class OptimizedTemplateExecutor {
   /**
    * Process basic content without any directive processing (error recovery)
    */
-  private async processBasicContent(content: string, context: ExecutionContext): Promise<void> {
+  private async _processBasicContent(content: string, context: ExecutionContext): Promise<void> {
     const buffer = context.meta?.__ht_template_result;
     if (!Array.isArray(buffer) || !content?.trim()) return;
 
@@ -391,18 +391,17 @@ export class OptimizedTemplateExecutor {
     const [, varName, expression] = match;
     const value = await this.evaluateExpression(expression, context);
     
-    // Set the variable in locals
-    if (!context.locals) {
-      context.locals = new Map();
-    }
-    context.locals.set(varName, value);
+    // Set the variable in locals (create new context to avoid readonly issues)
+    const newLocals = new Map(context.locals);
+    newLocals.set(varName, value);
+    Object.assign(context, { locals: newLocals });
   }
 
   /**
    * Process content interpolation (${variable} expressions)
    */
   private async processContentInterpolation(content: string, context: ExecutionContext): Promise<string> {
-    return content.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+    return content.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
       const trimmedExpr = expression.trim();
       
       try {

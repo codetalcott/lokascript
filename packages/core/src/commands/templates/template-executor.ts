@@ -225,17 +225,16 @@ export class TemplateExecutor {
     const [, varName, expression] = match;
     const value = await this.evaluateExpression(expression, context);
     
-    // Set the variable in locals
-    if (!context.locals) {
-      context.locals = new Map();
-    }
-    context.locals.set(varName, value);
+    // Set the variable in locals (create new context to avoid readonly issues)
+    const newLocals = new Map(context.locals);
+    newLocals.set(varName, value);
+    Object.assign(context, { locals: newLocals });
   }
 
   /**
-   * Execute a block of commands
+   * Execute a block of commands recursively
    */
-  private async executeBlockCommands(
+  private async _executeBlockCommandsRecursive(
     blockCommands: string[],
     blockContent: string,
     context: ExecutionContext
@@ -366,7 +365,7 @@ export class TemplateExecutor {
    * Process content interpolation (${variable} expressions)
    */
   private async processContentInterpolation(content: string, context: ExecutionContext): Promise<string> {
-    return content.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+    return content.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
       const trimmedExpr = expression.trim();
       
       try {

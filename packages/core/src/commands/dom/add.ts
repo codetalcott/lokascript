@@ -123,13 +123,17 @@ export class AddCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes', 'attributes']
   };
   
-  private readonly _options: AddCommandOptions; // Used for future enhancements
+  private readonly _options: AddCommandOptions; // Reserved for future enhancements - configuration storage
 
   constructor(options: AddCommandOptions = {}) {
     this._options = {
       delimiter: ' ',
       ...options,
     };
+  }
+
+  get options(): AddCommandOptions {
+    return this._options;
   }
 
   async execute(
@@ -532,7 +536,7 @@ export class AddCommand implements TypedCommandImplementation<
     }
   }
 
-  private getValidationSuggestion(errorCode: string, _path: (string | number)[]): string {
+  private getValidationSuggestion(errorCode: string, _path?: (string | number)[]): string {
     const suggestions: Record<string, string> = {
       'invalid_type': 'Use string or string array for classes, HTMLElement or selector for target',
       'invalid_union': 'Classes must be string or string array, target must be element or selector',

@@ -281,10 +281,10 @@ export class TemplateCompiler {
    * Process content with context interpolation (temporary implementation)
    */
   private async processContentWithContext(content: string, context: ExecutionContext): Promise<string> {
-    return content.replace(/\$\{escape html (\w+)\}/g, (match, varName) => {
+    return content.replace(/\$\{escape html (\w+)\}/g, (_match, varName) => {
       const value = context.locals?.get(varName);
       return this.escapeHtml(String(value || ''));
-    }).replace(/\$\{(\w+)\}/g, (match, varName) => {
+    }).replace(/\$\{(\w+)\}/g, (_match, varName) => {
       const value = context.locals?.get(varName);
       return String(value || '');
     });

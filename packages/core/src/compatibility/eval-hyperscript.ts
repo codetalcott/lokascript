@@ -43,7 +43,7 @@ function convertContext(hyperScriptContext?: HyperScriptContext | ExecutionConte
     result: hyperScriptContext?.result,
     locals: new Map(),
     globals: new Map(),
-    parent: null,
+    parent: undefined,
     halted: false,
     returned: false,
     broke: false,
