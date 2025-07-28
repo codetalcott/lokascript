@@ -1124,4 +1124,7 @@ export const enhancedSpecialExpressions = {
   multiplication: createEnhancedMultiplicationExpression()
 } as const;
 
+// Legacy export for compatibility with expression-evaluator
+export const specialExpressions = enhancedSpecialExpressions;
+
 export type EnhancedSpecialExpressionName = keyof typeof enhancedSpecialExpressions;

@@ -21,7 +21,7 @@ import {
   emitFinallyEvent, 
   emitSwappedEvent,
   dispatchCustomEvent 
-} from '../../core/events.ts';
+} from '../../../core/events';
 
 export interface FetchCommandOptions {
   method?: string;

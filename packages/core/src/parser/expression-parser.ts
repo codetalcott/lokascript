@@ -35,6 +35,34 @@ function toTypedContext(context: ExecutionContext): TypedExecutionContext {
   } as TypedExecutionContext;
 }
 
+// Helper function to extract value from TypedResult objects
+async function extractValue(result: any): Promise<any> {
+  // If it's already a primitive value, return as-is
+  if (typeof result !== 'object' || result === null) {
+    return result;
+  }
+  
+  // If it's a Promise, await it first
+  if (result && typeof result.then === 'function') {
+    result = await result;
+  }
+  
+  // If it's a TypedResult object, extract the value
+  if (result && typeof result === 'object' && 'success' in result && 'value' in result) {
+    if (result.success) {
+      return result.value;
+    } else {
+      // If the result failed, throw an error
+      const errors = result.errors || [];
+      const errorMessage = errors.length > 0 ? errors[0].message : 'Expression evaluation failed';
+      throw new Error(errorMessage);
+    }
+  }
+  
+  // Otherwise, return the result as-is
+  return result;
+}
+
 // Expression implementations would be imported when needed for evaluation
 
 interface ParseState {
@@ -1138,32 +1166,32 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
     case 'is':
     case 'equals':
     case '==':
-      return logicalExpressions.equals.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.equals.evaluate(toTypedContext(context), { left, right }));
     case 'is not':
     case '!=':
-      return logicalExpressions.notEquals.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.notEquals.evaluate(toTypedContext(context), { left, right }));
     case '===':
       return left === right;
     case '!==':
       return left !== right;
     case '>':
-      return logicalExpressions.greaterThan.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.greaterThan.evaluate(toTypedContext(context), { left, right }));
     case '<':
-      return logicalExpressions.lessThan.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.lessThan.evaluate(toTypedContext(context), { left, right }));
     case '>=':
-      return logicalExpressions.greaterThanOrEqual.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.greaterThanOrEqual.evaluate(toTypedContext(context), { left, right }));
     case '<=':
-      return logicalExpressions.lessThanOrEqual.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(logicalExpressions.lessThanOrEqual.evaluate(toTypedContext(context), { left, right }));
     case '+':
       return evaluateAddition(left, right);
     case '-':
-      return specialExpressions.subtraction.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(specialExpressions.subtraction.evaluate(toTypedContext(context), { left, right }));
     case '*':
-      return specialExpressions.multiplication.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(specialExpressions.multiplication.evaluate(toTypedContext(context), { left, right }));
     case '/':
-      return specialExpressions.division.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(specialExpressions.division.evaluate(toTypedContext(context), { left, right }));
     case 'mod':
-      return specialExpressions.modulo.evaluate(toTypedContext(context), { left, right });
+      return await extractValue(specialExpressions.modulo.evaluate(toTypedContext(context), { left, right }));
     case '^':
     case '**':
       return Math.pow(Number(left), Number(right));
@@ -1249,7 +1277,7 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   // Handle different types of property access
   if (propertyNode.type === 'identifier') {
     const propertyName = propertyNode.name;
-    return propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: propertyName });
+    return await extractValue(propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: propertyName }));
   } else if (propertyNode.type === 'attributeAccess') {
     // Handle [@attr] syntax - access attribute on the object
     const attributeName = propertyNode.attributeName;
@@ -1260,7 +1288,7 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   } else if (propertyNode.type === 'bracketExpression') {
     // Handle [expr] syntax - evaluate expression as property key
     const propertyKey = await evaluateASTNode(propertyNode.expression, context);
-    return propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: String(propertyKey) });
+    return await extractValue(propertyExpressions.its.evaluate(toTypedContext(context), { target: object, property: String(propertyKey) }));
   } else {
     throw new ExpressionParseError(`Unsupported property access type: ${propertyNode.type}`);
   }
@@ -1284,11 +1312,11 @@ async function evaluateContextPossessive(node: any, context: ExecutionContext): 
   // Use our context-specific expressions
   switch (contextType) {
     case 'my':
-      return propertyExpressions.my.evaluate(toTypedContext(context), { property: propertyName });
+      return await extractValue(propertyExpressions.my.evaluate(toTypedContext(context), { property: propertyName }));
     case 'its':
-      return propertyExpressions.its.evaluate(toTypedContext(context), { target: context.me, property: propertyName });
+      return await extractValue(propertyExpressions.its.evaluate(toTypedContext(context), { target: context.me, property: propertyName }));
     case 'your':
-      return propertyExpressions.its.evaluate(toTypedContext(context), { target: context.you, property: propertyName });
+      return await extractValue(propertyExpressions.its.evaluate(toTypedContext(context), { target: context.you, property: propertyName }));
     default:
       throw new ExpressionParseError(`Unknown context type: ${contextType}`);
   }
@@ -1336,7 +1364,7 @@ async function evaluateAsExpression(node: any, context: ExecutionContext): Promi
   const targetType = node.targetType;
   
   // Use our unified 'as' expression which handles all conversions
-  return conversionExpressions.as.evaluate(toTypedContext(context), { value, type: targetType });
+  return await extractValue(conversionExpressions.as.evaluate(toTypedContext(context), { value, type: targetType }));
 }
 
 /**
@@ -1390,17 +1418,31 @@ async function evaluateUnaryExpression(node: any, context: ExecutionContext): Pr
   
   switch (operator) {
     case 'not':
-      return logicalExpressions.not.evaluate(context, operand);
+      // Fallback implementation for logical not
+      return !operand;
     case 'no':
-      return logicalExpressions.no.evaluate(context, operand);
+      // Fallback implementation for 'no' - similar to 'not'
+      return !operand;
     case 'exists':
-      return logicalExpressions.exists.evaluate(context, operand);
+      // Fallback implementation for existence check
+      return operand !== null && operand !== undefined;
     case 'does not exist':
-      return logicalExpressions.doesNotExist.evaluate(context, operand);
+      // Fallback implementation for non-existence check
+      return operand === null || operand === undefined;
     case 'is empty':
-      return logicalExpressions.isEmpty.evaluate(context, operand);
+      // Fallback implementation for emptiness check
+      if (operand === null || operand === undefined) return true;
+      if (typeof operand === 'string') return operand.length === 0;
+      if (Array.isArray(operand)) return operand.length === 0;
+      if (typeof operand === 'object') return Object.keys(operand).length === 0;
+      return false;
     case 'is not empty':
-      return logicalExpressions.isNotEmpty.evaluate(context, operand);
+      // Fallback implementation for non-emptiness check
+      if (operand === null || operand === undefined) return false;
+      if (typeof operand === 'string') return operand.length > 0;
+      if (Array.isArray(operand)) return operand.length > 0;
+      if (typeof operand === 'object') return Object.keys(operand).length > 0;
+      return true;
     case '-':
       // Unary minus: negate the number
       const negativeValue = typeof operand === 'number' ? operand : parseFloat(operand);

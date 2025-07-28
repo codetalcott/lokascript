@@ -24,7 +24,8 @@ import { createAddCommand } from '../commands/dom/add';
 import { createRemoveCommand } from '../commands/dom/remove';
 import { createSendCommand } from '../commands/events/send';
 import { createTriggerCommand } from '../commands/events/trigger';
-// Note: Wait and Fetch commands to be implemented
+import { createWaitCommand } from '../legacy/commands/async/wait';
+import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 
 // Additional command imports
