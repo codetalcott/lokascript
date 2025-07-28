@@ -10,7 +10,7 @@
 import type {
   TypedContextImplementation,
   ValidationResult
-} from '../types/enhanced-context.js';
+} from '../types/enhanced-context';
 
 export type {
   ContextCategory,
@@ -23,13 +23,13 @@ export type {
   BaseContextInput,
   BaseContextOutput,
   EnhancedTypedExpressionContext
-} from '../types/enhanced-context.js';
+} from '../types/enhanced-context';
 
 export {
   EnhancedContextBase,
   BaseContextInputSchema,
   BaseContextOutputSchema
-} from '../types/enhanced-context.js';
+} from '../types/enhanced-context';
 
 // ============================================================================
 // Context Registry
@@ -40,7 +40,7 @@ export {
   defaultContextRegistry,
   createContextRegistry,
   registerContexts
-} from './enhanced-context-registry.js';
+} from './enhanced-context-registry';
 
 // ============================================================================
 // Frontend Context Implementation
@@ -49,7 +49,7 @@ export {
 export type {
   FrontendContextInput,
   FrontendContextOutput
-} from './frontend-context.js';
+} from './frontend-context';
 
 export {
   TypedFrontendContextImplementation,
@@ -57,7 +57,7 @@ export {
   FrontendContextOutputSchema,
   createFrontendContext,
   frontendContextImplementation
-} from './frontend-context.js';
+} from './frontend-context';
 
 // ============================================================================
 // Backend Context Implementation
@@ -66,7 +66,7 @@ export {
 export type {
   BackendContextInput,
   BackendContextOutput
-} from './backend-context.js';
+} from './backend-context';
 
 export {
   TypedBackendContextImplementation,
@@ -77,7 +77,7 @@ export {
   createExpressContext,
   createFlaskContext,
   backendContextImplementation
-} from './backend-context.js';
+} from './backend-context';
 
 // ============================================================================
 // LLM Generation Context Implementation
@@ -86,7 +86,7 @@ export {
 export type {
   LLMGenerationInput,
   LLMGenerationOutput
-} from './llm-generation-context.js';
+} from './llm-generation-context';
 
 export {
   TypedLLMGenerationContextImplementation,
@@ -95,16 +95,16 @@ export {
   createLLMGenerationContext,
   generateHyperscript,
   llmGenerationContextImplementation
-} from './llm-generation-context.js';
+} from './llm-generation-context';
 
 // ============================================================================
 // Complete Context System Setup
 // ============================================================================
 
-import { defaultContextRegistry } from './enhanced-context-registry.js';
-import { frontendContextImplementation, TypedFrontendContextImplementation, type FrontendContextInput } from './frontend-context.js';
-import { backendContextImplementation, TypedBackendContextImplementation, type BackendContextInput } from './backend-context.js';
-import { llmGenerationContextImplementation, TypedLLMGenerationContextImplementation, type LLMGenerationInput } from './llm-generation-context.js';
+import { defaultContextRegistry } from './enhanced-context-registry';
+import { frontendContextImplementation, TypedFrontendContextImplementation, type FrontendContextInput } from './frontend-context';
+import { backendContextImplementation, TypedBackendContextImplementation, type BackendContextInput } from './backend-context';
+import { llmGenerationContextImplementation, TypedLLMGenerationContextImplementation, type LLMGenerationInput } from './llm-generation-context';
 
 /**
  * Initialize the complete enhanced context system with all implementations

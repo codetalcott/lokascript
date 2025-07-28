@@ -3,8 +3,8 @@
  * Runs official _hyperscript tests against hyperfixi implementation
  */
 
-import type { ExecutionContext } from '../../types/core.js';
-import { parseAndEvaluateExpression } from '../../parser/expression-parser.js';
+import type { ExecutionContext } from '../../types/core';
+import { parseAndEvaluateExpression } from '../../parser/expression-parser';
 
 // Mock the global _hyperscript function that tests expect
 export function createHyperScriptTestAdapter() {

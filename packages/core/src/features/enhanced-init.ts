@@ -9,9 +9,9 @@ import type {
   ContextMetadata,
   EvaluationResult,
   EnhancedContextBase
-} from '../types/enhanced-context.js';
-import type { LLMDocumentation, EvaluationType, ValidationResult } from '../types/enhanced-core.js';
-import type { ExecutionContext } from '../types/core.js';
+} from '../types/enhanced-context';
+import type { LLMDocumentation, EvaluationType, ValidationResult } from '../types/enhanced-core';
+import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced Init Feature Input/Output Schemas

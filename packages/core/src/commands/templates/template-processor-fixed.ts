@@ -3,7 +3,7 @@
  * Replaces the complex compiler/executor approach with a simpler direct processor
  */
 
-import type { ExecutionContext } from '../../types/core.js';
+import type { ExecutionContext } from '../../types/core';
 
 export interface TemplateSection {
   type: 'content' | 'repeat' | 'if';

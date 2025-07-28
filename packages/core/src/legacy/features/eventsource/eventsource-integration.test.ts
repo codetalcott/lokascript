@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '../../test-setup.js';
-import type { ExecutionContext } from '../../types/core.js';
-import { createMockHyperscriptContext, createTestElement } from '../../test-setup.js';
+import type { ExecutionContext } from '../../types/core';
+import { createMockHyperscriptContext, createTestElement } from '../../test-setup';
 
 // Mock EventSource for testing
 class MockEventSource {
@@ -531,4 +531,4 @@ describe('EventSource Integration', () => {
 });
 
 // Import actual implementations
-import { parseAndDefineEventSource, connectToEventSource } from './index.js';
+import { parseAndDefineEventSource, connectToEventSource } from './index';

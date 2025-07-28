@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '../../test-setup.js';
-import { TransitionCommand } from './transition.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { TransitionCommand } from './transition';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Transition Command', () => {
   let transitionCommand: TransitionCommand;

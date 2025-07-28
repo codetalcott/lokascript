@@ -9,7 +9,7 @@ import type {
   UnifiedExecutionContext as ExecutionContext,
   ExpressionNode,
   CommandNode
-} from './types/index.js';
+} from './types/index';
 
 /**
  * Runtime for executing hyperscript commands

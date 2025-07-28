@@ -14,7 +14,7 @@ import type {
   UnifiedEvaluationType as EvaluationType,
   UnifiedExpressionMetadata as ExpressionMetadata,
   UnifiedExpressionCategory as ExpressionCategory
-} from '../../types/index.js';
+} from '../../types/index';
 
 // Define BaseTypedExpression locally for now
 interface BaseTypedExpression<T> {

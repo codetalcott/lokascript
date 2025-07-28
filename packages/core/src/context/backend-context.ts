@@ -13,8 +13,8 @@ import {
   type ContextMetadata,
   type ValidationResult,
   type EvaluationResult
-} from '../types/enhanced-context.js';
-import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core.js';
+} from '../types/enhanced-context';
+import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
 // ============================================================================
 // Backend Context Input/Output Schemas

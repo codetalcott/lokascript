@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { parse } from './parser.js';
-import { tokenizeOptimized } from './tokenizer-optimized.js';
+import { parse } from './parser';
+import { tokenizeOptimized } from './tokenizer-optimized';
 
 describe('Parser Performance Optimization', () => {
   let performanceBaseline: { [key: string]: number } = {};

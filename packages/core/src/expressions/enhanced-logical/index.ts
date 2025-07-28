@@ -17,7 +17,7 @@ import type {
   HyperScriptValueType,
   TypedExpressionImplementation,
   EvaluationResult
-} from '../../types/base-types.js';
+} from '../../types/base-types';
 
 // ============================================================================
 // Input Schemas

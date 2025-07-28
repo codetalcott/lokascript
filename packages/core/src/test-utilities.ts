@@ -3,7 +3,7 @@
  * Common utilities for testing enhanced implementations
  */
 
-import type { TypedExecutionContext } from './types/enhanced-core.js';
+import type { TypedExecutionContext } from './types/enhanced-core';
 
 // Define TypedExpressionContext for expression testing
 export interface TypedExpressionContext {

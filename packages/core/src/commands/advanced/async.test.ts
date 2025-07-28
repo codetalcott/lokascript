@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import '../../test-setup.js';
-import { AsyncCommand } from './async.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { AsyncCommand } from './async';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Async Command', () => {
   let asyncCommand: AsyncCommand;

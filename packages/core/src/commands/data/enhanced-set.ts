@@ -7,13 +7,13 @@
  * Modernized with TypedCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core.js';
-import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
 export interface SetCommandInput {
   target: string | HTMLElement;
-  value: any;
+  value: unknown;
   toKeyword?: 'to'; // For syntax validation
   scope?: 'global' | 'local';
 }
@@ -21,8 +21,8 @@ export interface SetCommandInput {
 // Output type definition  
 export interface SetCommandOutput {
   target: string | HTMLElement;
-  value: any;
-  previousValue?: any;
+  value: unknown;
+  previousValue?: unknown;
   targetType: 'variable' | 'attribute' | 'property' | 'element';
 }
 
@@ -62,7 +62,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
         };
       }
 
-      const inputObj = input as any;
+      const inputObj = input as { target?: string | HTMLElement; value?: unknown; toKeyword?: 'to'; scope?: 'global' | 'local' };
 
       if (!inputObj.target) {
         return {
@@ -93,9 +93,9 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
         errors: [],
         suggestions: [],
         data: {
-          target: inputObj.target,
-          value: inputObj.value,
-          toKeyword: inputObj.toKeyword,
+          target: inputObj.target!,
+          value: inputObj.value!,
+          toKeyword: inputObj.toKeyword as 'to' | undefined,
           scope: inputObj.scope
         }
       };
@@ -272,25 +272,25 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     };
   }
 
-  private getElementProperty(element: HTMLElement, property: string): any {
+  private getElementProperty(element: HTMLElement, property: string): unknown {
     // Handle common properties
     if (property === 'textContent') return element.textContent;
     if (property === 'innerHTML') return element.innerHTML;
     if (property === 'innerText') return element.innerText;
-    if (property === 'value' && 'value' in element) return (element as any).value;
+    if (property === 'value' && 'value' in element) return (element as HTMLInputElement).value;
     if (property === 'id') return element.id;
     if (property === 'className') return element.className;
 
     // Handle style properties
     if (property.includes('-') || property in element.style) {
-      return element.style.getPropertyValue(property) || (element.style as any)[property];
+      return element.style.getPropertyValue(property) || (element.style as unknown as Record<string, string>)[property];
     }
 
     // Handle generic property
-    return (element as any)[property];
+    return (element as unknown as Record<string, unknown>)[property];
   }
 
-  private setElementPropertyValue(element: HTMLElement, property: string, value: any): void {
+  private setElementPropertyValue(element: HTMLElement, property: string, value: unknown): void {
     // Handle common properties
     if (property === 'textContent') {
       element.textContent = String(value);
@@ -305,7 +305,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
       return;
     }
     if (property === 'value' && 'value' in element) {
-      (element as any).value = value;
+      (element as HTMLInputElement).value = String(value);
       return;
     }
     if (property === 'id') {
@@ -324,19 +324,19 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     }
 
     // Handle generic property
-    (element as any)[property] = value;
+    (element as unknown as Record<string, unknown>)[property] = value;
   }
 
-  private getElementValue(element: HTMLElement): any {
+  private getElementValue(element: HTMLElement): unknown {
     if ('value' in element) {
-      return (element as any).value;
+      return (element as HTMLInputElement).value;
     }
     return element.textContent;
   }
 
-  private setElementValueDirect(element: HTMLElement, value: any): void {
+  private setElementValueDirect(element: HTMLElement, value: unknown): void {
     if ('value' in element) {
-      (element as any).value = value;
+      (element as HTMLInputElement).value = String(value);
     } else {
       element.textContent = String(value);
     }

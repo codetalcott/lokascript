@@ -10,7 +10,7 @@ import type {
   EventSourceListener,
   EventSourceRegistry as IEventSourceRegistry,
   MessageHandlerDefinition
-} from './types.js';
+} from './types';
 
 export class EventSourceRegistry implements IEventSourceRegistry {
   private definitions = new Map<string, EventSourceDefinition>();

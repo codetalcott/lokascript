@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createMockHyperscriptContext } from '../../test-setup.js';
-import { logicalExpressions } from './index.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { createMockHyperscriptContext } from '../../test-setup';
+import { logicalExpressions } from './index';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Logical Expressions', () => {
   let context: ExecutionContext;

@@ -15,9 +15,11 @@ import { z } from 'zod';
  * Unified to use suggestions: string[] for consistency with HyperScriptError
  */
 export interface ValidationError {
-  readonly type: 'syntax-error' | 'type-mismatch' | 'runtime-error' | 'missing-argument' | 'invalid-reference';
+  readonly type: 'type-mismatch' | 'missing-argument' | 'runtime-error' | 'validation-error' | 'syntax-error' | 'invalid-argument';
   readonly message: string;
   readonly suggestions: string[];
+  readonly path?: string;
+  readonly code?: string;
 }
 
 /**
@@ -488,7 +490,7 @@ export class TypeSystemBridge {
   /**
    * Normalize ValidationResult from any source
    */
-  static normalizeValidationResult(result: any): ValidationResult {
+  static normalizeValidationResult(result: unknown): ValidationResult {
     return {
       isValid: Boolean(result?.isValid),
       errors: Array.isArray(result?.errors) ? result.errors : [],

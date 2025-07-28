@@ -13,7 +13,7 @@ import type {
   LLMDocumentation,
   ValidationResult,
   ValidationError
-} from '../../types/enhanced-core.js';
+} from '../../types/enhanced-core';
 import type { TypedExpressionContext } from '../../test-utilities.ts';
 
 // ============================================================================

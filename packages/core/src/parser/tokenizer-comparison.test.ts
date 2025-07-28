@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { tokenize } from './tokenizer.js';
-import { tokenizeOptimized } from './tokenizer-optimized.js';
+import { tokenize } from './tokenizer';
+import { tokenizeOptimized } from './tokenizer-optimized';
 
 describe('Tokenizer Performance Comparison', () => {
   // Test expressions of varying complexity

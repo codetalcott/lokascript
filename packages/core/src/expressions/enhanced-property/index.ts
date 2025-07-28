@@ -14,7 +14,7 @@ import type {
   UnifiedLLMDocumentation as LLMDocumentation,
   UnifiedExpressionCategory as ExpressionCategory,
   UnifiedHyperScriptValue as HyperScriptValue
-} from '../../types/index.js';
+} from '../../types/index';
 
 // Define BaseTypedExpression locally for now
 interface BaseTypedExpression<T> {

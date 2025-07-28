@@ -3,8 +3,8 @@
  * Outputs values to the console for debugging and inspection
  */
 
-import type { ExecutionContext } from '../../types/core.js';
-import { parseAndEvaluateExpression } from '../../parser/expression-parser.js';
+import type { ExecutionContext } from '../../types/core';
+import { parseAndEvaluateExpression } from '../../parser/expression-parser';
 
 export interface Command {
   name: string;

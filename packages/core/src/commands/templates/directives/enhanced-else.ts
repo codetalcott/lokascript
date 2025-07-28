@@ -11,14 +11,14 @@ import type {
   TemplateDirectiveType,
   TemplateRenderStrategy,
   TemplateLLMDocumentation
-} from '../../../types/enhanced-templates.js';
-import { ElseDirectiveInputSchema } from '../../../types/enhanced-templates.js';
+} from '../../../types/enhanced-templates';
+import { ElseDirectiveInputSchema } from '../../../types/enhanced-templates';
 import type {
   TypedResult,
   ExpressionMetadata,
   ValidationResult
-} from '../../../types/enhanced-expressions.js';
-import { TemplateContextUtils } from '../enhanced-template-context.js';
+} from '../../../types/enhanced-expressions';
+import { TemplateContextUtils } from '../enhanced-template-context';
 
 /**
  * Enhanced @else directive with full type safety for LLM agents

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parseAndEvaluateExpression } from './expression-parser.js';
-import type { ExecutionContext } from '../types/core.js';
+import { parseAndEvaluateExpression } from './expression-parser';
+import type { ExecutionContext } from '../types/core';
 
 describe('Expression Parser Integration', () => {
   let context: ExecutionContext;

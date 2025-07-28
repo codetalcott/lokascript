@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface RemoveCommandOptions {
   delimiter?: string;
@@ -112,7 +112,7 @@ export class RemoveCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes']
   };
   
-  private _options: RemoveCommandOptions;
+  private readonly _options: RemoveCommandOptions; // Used for future enhancements
 
   constructor(options: RemoveCommandOptions = {}) {
     this._options = {

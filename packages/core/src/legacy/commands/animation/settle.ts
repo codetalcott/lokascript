@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import type { CommandImplementation, ExecutionContext } from '../../types/core.js';
+import type { CommandImplementation, ExecutionContext } from '../../types/core';
 import { dispatchCustomEvent } from '../../core/events.ts';
 
 export interface SettleCommandOptions {

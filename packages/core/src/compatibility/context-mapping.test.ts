@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { evalHyperScript } from './eval-hyperscript.js';
+import { evalHyperScript } from './eval-hyperscript';
 
 describe('Context Mapping Issues', () => {
   describe('its result pattern', () => {

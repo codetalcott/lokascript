@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTypedExecutionContext } from '../../test-setup.js';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.js';
+import { createTypedExecutionContext } from '../../test-setup';
+import type { TypedExpressionContext } from '../../types/enhanced-expressions';
 import {
   EnhancedStringLiteralExpression,
   EnhancedNumberLiteralExpression,
@@ -13,7 +13,7 @@ import {
   EnhancedAdditionExpression,
   EnhancedMultiplicationExpression,
   enhancedSpecialExpressions
-} from './index.js';
+} from './index';
 
 describe('Enhanced Special Expressions', () => {
   let context: TypedExpressionContext;

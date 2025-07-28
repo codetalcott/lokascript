@@ -3,7 +3,7 @@
  * Types for _hyperscript behavior definitions and installation
  */
 
-import type { ExecutionContext } from '../../types/core.js';
+import type { ExecutionContext } from '../../types/core';
 
 export interface BehaviorDefinition {
   name: string;

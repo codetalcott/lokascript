@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { hyperscript } from './api/hyperscript-api.js';
-import { createMockHyperscriptContext } from './test-setup.js';
+import { hyperscript } from './api/hyperscript-api';
+import { createMockHyperscriptContext } from './test-setup';
 
 describe('Includes Integration Test', () => {
   let mockElement: HTMLElement;

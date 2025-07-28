@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { evalHyperScript } from './eval-hyperscript.js';
+import { evalHyperScript } from './eval-hyperscript';
 
 describe('evalHyperScript API Compatibility', () => {
   

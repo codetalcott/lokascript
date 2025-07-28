@@ -3,9 +3,9 @@
  * Main entry point for socket functionality
  */
 
-import { HyperscriptSocketParser } from './parser.js';
-import { globalSocketRegistry } from './registry.js';
-import type { SocketDefinition } from './types.js';
+import { HyperscriptSocketParser } from './parser';
+import { globalSocketRegistry } from './registry';
+import type { SocketDefinition } from './types';
 
 // Initialize parser
 const socketParser = new HyperscriptSocketParser();
@@ -56,4 +56,4 @@ export function getSocket(socketName: string): any {
 
 // Export for testing and integration
 export { socketParser, globalSocketRegistry };
-export * from './types.js';
+export * from './types';

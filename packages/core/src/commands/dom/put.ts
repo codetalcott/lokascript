@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface PutCommandOptions {
   sanitizeHTML?: boolean;
@@ -24,7 +24,16 @@ export interface PutCommandOptions {
  * Input validation schema for LLM understanding
  */
 const PutCommandInputSchema = z.tuple([
-  z.unknown().describe('Content to insert'),
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.instanceof(HTMLElement),
+    z.array(z.unknown()),
+    z.record(z.unknown()),
+    z.null(),
+    z.undefined()
+  ]).describe('Content to insert'),
   z.enum(['into', 'before', 'after', 'at start of', 'at end of']).describe('Insertion position'),
   z.union([
     z.instanceof(HTMLElement),
@@ -157,10 +166,19 @@ export class PutCommand implements TypedCommandImplementation<
       // Resolve target element and optional property
       const targetResult = this.resolveTarget(target, context);
       if (!targetResult.success) {
-        return targetResult as EvaluationResult<HTMLElement>;
+        return {
+          success: false,
+          error: targetResult.error || {
+            name: 'UnknownError',
+            message: 'Unknown error occurred',
+            code: 'UNKNOWN_ERROR',
+            suggestions: []
+          },
+          type: 'error'
+        };
       }
 
-      const { element: targetElement, property } = targetResult.value;
+      const { element: targetElement, property } = targetResult.value!
       
       // Convert content to string, handling null/undefined
       const contentStr = content == null ? '' : String(content);

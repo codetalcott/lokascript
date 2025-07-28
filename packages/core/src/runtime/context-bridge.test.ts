@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ContextBridge } from './enhanced-command-adapter.js';
-import type { ExecutionContext } from '../types/core.js';
+import { ContextBridge } from './enhanced-command-adapter';
+import type { ExecutionContext } from '../types/core';
 
 describe('ContextBridge', () => {
   let mockElement: HTMLElement;

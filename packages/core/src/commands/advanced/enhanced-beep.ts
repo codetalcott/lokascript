@@ -7,7 +7,7 @@
  * Modernized with TypedCommandImplementation interface
  */
 
-import type { ValidationResult, TypedExecutionContext } from '../../types/index.js';
+import type { ValidationResult, TypedExecutionContext } from '../../types/index';
 
 // Define TypedCommandImplementation locally for now
 interface TypedCommandImplementation<TInput, TOutput, TContext> {

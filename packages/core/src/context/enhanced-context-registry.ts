@@ -11,7 +11,7 @@ import type {
   ContextFilter,
   ContextCategory,
   ValidationResult
-} from '../types/enhanced-context.js';
+} from '../types/enhanced-context';
 
 // ============================================================================
 // Context Registry Implementation

@@ -4,14 +4,14 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTypedExecutionContext } from '../../test-setup.js';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.js';
+import { createTypedExecutionContext } from '../../test-setup';
+import type { TypedExpressionContext } from '../../types/enhanced-expressions';
 import {
   EnhancedMatchesExpression,
   EnhancedContainsExpression,
   EnhancedInExpression,
   enhancedPatternMatchingExpressions
-} from './pattern-matching.js';
+} from './pattern-matching';
 
 describe('Enhanced Pattern Matching Expressions', () => {
   let context: TypedExpressionContext;

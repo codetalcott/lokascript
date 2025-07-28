@@ -4,16 +4,16 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../test-setup.js';
-import type { ExecutionContext } from '../types/core.js';
+import { createTestElement, createMockHyperscriptContext } from '../test-setup';
+import type { ExecutionContext } from '../types/core';
 
 // Import all expression categories
-import { referenceExpressions } from './references/index.js';
-import { logicalExpressions } from './logical/index.js';
-import { conversionExpressions } from './conversion/index.js';
-import { positionalExpressions } from './positional/index.js';
-import { propertyExpressions } from './properties/index.js';
-import { specialExpressions } from './special/index.js';
+import { referenceExpressions } from './references/index';
+import { logicalExpressions } from './logical/index';
+import { conversionExpressions } from './conversion/index';
+import { positionalExpressions } from './positional/index';
+import { propertyExpressions } from './properties/index';
+import { specialExpressions } from './special/index';
 
 describe('Expression Integration Tests', () => {
   let context: ExecutionContext;

@@ -7,8 +7,8 @@
  * Modernized with TypedCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core.js';
-import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
 export interface ThrowCommandInput {

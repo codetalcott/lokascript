@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { hyperscript } from './hyperscript-api.js';
+import { hyperscript } from './hyperscript-api';
 
 describe('Hyperscript Public API', () => {
   let mockElement: HTMLElement;

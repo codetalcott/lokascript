@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { OptimizedTemplateExecutor } from './template-executor-optimized.js';
-import { TemplateCompiler } from './template-compiler.js';
+import { OptimizedTemplateExecutor } from './template-executor-optimized';
+import { TemplateCompiler } from './template-compiler';
 import '../../test-setup.js';
 
 describe('Optimized Template Execution', () => {

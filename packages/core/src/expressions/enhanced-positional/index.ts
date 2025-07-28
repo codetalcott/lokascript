@@ -14,8 +14,8 @@ import type {
   LLMDocumentation,
   TypedExpressionImplementation,
   EvaluationResult
-} from '../../types/base-types.js';
-import type { ExpressionCategory } from '../../types/enhanced-expressions.js';
+} from '../../types/base-types';
+import type { ExpressionCategory } from '../../types/enhanced-expressions';
 
 // ============================================================================
 // Input Schemas

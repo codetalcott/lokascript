@@ -3,7 +3,7 @@
  * Handles type conversions using the 'as' keyword and built-in conversion types
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
 
 // ============================================================================
 // Built-in Conversion Types
@@ -19,26 +19,26 @@ type ConversionType =
 // ============================================================================
 
 export interface ConversionFunction {
-  (value: any, context: ExecutionContext): any;
+  (value: unknown, context: ExecutionContext): unknown;
 }
 
 export const defaultConversions: Record<string, ConversionFunction> = {
   // Basic type conversions
-  Array: (value: any) => {
+  Array: (value: unknown) => {
     if (Array.isArray(value)) return value;
     if (value instanceof NodeList) return Array.from(value);
     if (value == null) return [];
     return [value];
   },
 
-  String: (value: any) => {
+  String: (value: unknown) => {
     if (value == null) return '';
     if (typeof value === 'string') return value;
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value);
   },
 
-  Boolean: (value: any) => {
+  Boolean: (value: unknown) => {
     if (typeof value === 'boolean') return value;
     if (value == null) return false; // null and undefined are falsy
     if (typeof value === 'string') {
@@ -54,24 +54,24 @@ export const defaultConversions: Record<string, ConversionFunction> = {
     return Boolean(value);
   },
 
-  Number: (value: any) => {
+  Number: (value: unknown) => {
     if (typeof value === 'number') return value;
     if (value == null) return 0;
     const num = Number(value);
     return isNaN(num) ? 0 : num;
   },
 
-  Int: (value: any) => {
+  Int: (value: unknown) => {
     const num = defaultConversions.Number(value);
     return Math.trunc(num);
   },
 
-  Float: (value: any) => {
+  Float: (value: unknown) => {
     const num = defaultConversions.Number(value);
     return parseFloat(num.toString());
   },
 
-  Date: (value: any) => {
+  Date: (value: unknown) => {
     if (value instanceof Date) return value;
     if (value == null) return new Date(NaN); // Returns Invalid Date 
     
@@ -88,7 +88,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   // JSON conversions
-  JSON: (value: any) => {
+  JSON: (value: unknown) => {
     try {
       return JSON.stringify(value);
     } catch (error) {
@@ -96,7 +96,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
     }
   },
 
-  Object: (value: any) => {
+  Object: (value: unknown) => {
     if (typeof value === 'object' && value !== null) return value;
     if (typeof value === 'string') {
       try {
@@ -109,7 +109,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   // HTML/DOM conversions
-  Fragment: (value: any) => {
+  Fragment: (value: unknown) => {
     if (typeof value !== 'string') {
       value = defaultConversions.String(value);
     }
@@ -119,7 +119,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
     return template.content;
   },
 
-  HTML: (value: any) => {
+  HTML: (value: unknown) => {
     if (typeof value === 'string') return value;
     if (value instanceof NodeList) {
       return Array.from(value).map(node => 
@@ -138,18 +138,18 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   // Form value conversions
-  Values: (value: any, context: ExecutionContext) => {
+  Values: (value: unknown, context: ExecutionContext) => {
     if (value instanceof HTMLFormElement) {
       return getFormValuesProcessed(value);
     }
     if (value instanceof HTMLElement) {
       // Try to find form values from any element
       const inputs = value.querySelectorAll('input, select, textarea');
-      const values: Record<string, any> = {};
+      const values: Record<string, unknown> = {};
       inputs.forEach((input: Element) => {
         const htmlInput = input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-        if ((htmlInput as any).name) {
-          values[(htmlInput as any).name] = getInputValue(htmlInput);
+        if ((htmlInput as HTMLInputElement).name) {
+          values[(htmlInput as HTMLInputElement).name] = getInputValue(htmlInput);
         }
       });
       return values;
@@ -157,12 +157,12 @@ export const defaultConversions: Record<string, ConversionFunction> = {
     return {};
   },
 
-  'Values:Form': (value: any, context: ExecutionContext) => {
+  'Values:Form': (value: unknown, context: ExecutionContext) => {
     const values = defaultConversions.Values(value, context);
     return new URLSearchParams(values).toString();
   },
 
-  'Values:JSON': (value: any, context: ExecutionContext) => {
+  'Values:JSON': (value: unknown, context: ExecutionContext) => {
     const values = defaultConversions.Values(value, context);
     return JSON.stringify(values);
   },
@@ -172,9 +172,9 @@ export const defaultConversions: Record<string, ConversionFunction> = {
 // Helper Functions
 // ============================================================================
 
-function getFormValues(form: HTMLFormElement): Record<string, any> {
+function getFormValues(form: HTMLFormElement): Record<string, unknown> {
   const formData = new FormData(form);
-  const values: Record<string, any> = {};
+  const values: Record<string, unknown> = {};
   
   for (const [key, value] of formData.entries()) {
     if (values[key] !== undefined) {
@@ -191,8 +191,8 @@ function getFormValues(form: HTMLFormElement): Record<string, any> {
   return values;
 }
 
-function getFormValuesProcessed(form: HTMLFormElement): Record<string, any> {
-  const values: Record<string, any> = {};
+function getFormValuesProcessed(form: HTMLFormElement): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
   const elements = form.querySelectorAll('input, select, textarea');
   
   elements.forEach((element) => {
@@ -216,7 +216,7 @@ function getFormValuesProcessed(form: HTMLFormElement): Record<string, any> {
   return values;
 }
 
-function getInputValue(input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): any {
+function getInputValue(input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): unknown {
   if (input instanceof HTMLInputElement) {
     switch (input.type) {
       case 'checkbox':
@@ -266,7 +266,7 @@ export const asExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['as'],
   
-  async evaluate(context: ExecutionContext, value: any, type: string): Promise<any> {
+  async evaluate(context: ExecutionContext, value: unknown, type: string): Promise<unknown> {
     if (typeof type !== 'string') {
       throw new Error('Conversion type must be a string');
     }
@@ -319,7 +319,7 @@ export const asExpression: ExpressionImplementation = {
     return value;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'as expression requires exactly two arguments (value, type)';
     }
@@ -342,7 +342,7 @@ export const isExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['is a', 'is an'],
   
-  async evaluate(context: ExecutionContext, value: any, type: string): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown, type: string): Promise<boolean> {
     if (typeof type !== 'string') {
       throw new Error('Type check requires a string type');
     }
@@ -382,7 +382,7 @@ export const isExpression: ExpressionImplementation = {
     }
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'is expression requires exactly two arguments (value, type)';
     }
@@ -405,13 +405,13 @@ export const asyncExpression: ExpressionImplementation = {
   associativity: 'Right',
   operators: ['async'],
   
-  async evaluate(context: ExecutionContext, expression: any): Promise<any> {
+  async evaluate(context: ExecutionContext, expression: unknown): Promise<unknown> {
     // In hyperscript, async prevents automatic promise synchronization
     // Here we just return the value without awaiting if it's a promise
     return expression;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'async requires exactly one argument (expression)';
     }

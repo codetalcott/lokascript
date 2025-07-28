@@ -3,9 +3,9 @@
  * Provides all content manipulation commands for hyperscript
  */
 
-import { EnhancedAppendCommand } from './enhanced-append.js';
+import { EnhancedAppendCommand } from './enhanced-append';
 
-export { EnhancedAppendCommand as AppendCommand } from './enhanced-append.js';
+export { EnhancedAppendCommand as AppendCommand } from './enhanced-append';
 
 // Create instances with default options for easy access
 export const contentCommands = {

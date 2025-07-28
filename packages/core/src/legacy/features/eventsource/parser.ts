@@ -3,7 +3,7 @@
  * Parses _hyperscript EventSource definition syntax
  */
 
-import type { EventSourceDefinition, MessageHandlerDefinition, EventSourceParser } from './types.js';
+import type { EventSourceDefinition, MessageHandlerDefinition, EventSourceParser } from './types';
 
 export class HyperscriptEventSourceParser implements EventSourceParser {
   parse(eventSourceCode: string): EventSourceDefinition {

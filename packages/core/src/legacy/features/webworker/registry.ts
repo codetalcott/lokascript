@@ -10,7 +10,7 @@ import type {
   WebWorkerListener,
   WebWorkerRegistry as IWebWorkerRegistry,
   MessageHandlerDefinition
-} from './types.js';
+} from './types';
 
 export class WebWorkerRegistry implements IWebWorkerRegistry {
   private definitions = new Map<string, WebWorkerDefinition>();

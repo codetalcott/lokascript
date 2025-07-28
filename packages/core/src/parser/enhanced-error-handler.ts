@@ -3,8 +3,8 @@
  * Provides better error messages, recovery strategies, and detailed error detection
  */
 
-import type { Token, ParseError } from '../types/core.js';
-import { TokenType } from './tokenizer.js';
+import type { Token, ParseError } from '../types/core';
+import { TokenType } from './tokenizer';
 
 export interface ErrorContext {
   parsing: 'expression' | 'binary_op' | 'unary_op' | 'call' | 'member' | 'primary' | 'parentheses' | 'string' | 'command';

@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TemplateCompiler } from './template-compiler.js';
-import { OptimizedTemplateExecutor } from './template-executor-optimized.js';
-import { RenderCommand } from './render.js';
+import { TemplateCompiler } from './template-compiler';
+import { OptimizedTemplateExecutor } from './template-executor-optimized';
+import { RenderCommand } from './render';
 import '../../test-setup.js';
 
 describe('Template System Integration', () => {

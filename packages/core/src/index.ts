@@ -4,7 +4,7 @@
  */
 
 // Export the main API
-export { hyperscript, type HyperscriptAPI, type CompilationResult } from './api/hyperscript-api.js';
+export { hyperscript, type HyperscriptAPI, type CompilationResult } from './api/hyperscript-api';
 
 // Export core types for advanced usage
 export type { 
@@ -15,13 +15,13 @@ export type {
   Token,
   CommandNode,
   ExpressionNode
-} from './types/core.js';
+} from './types/core';
 
 // Export utilities for direct usage
-export { parse } from './parser/parser.js';
-export { Runtime, type RuntimeOptions } from './runtime/runtime.js';
-export { createContext, createChildContext } from './core/context.js';
-export { Lexer, Tokens, type Token } from './tokenizer.js';
+export { parse } from './parser/parser';
+export { Runtime, type RuntimeOptions } from './runtime/runtime';
+export { createContext, createChildContext } from './core/context';
+export { Lexer, Tokens, type Token } from './tokenizer';
 
 // Export enhanced feature implementations
 export {
@@ -31,7 +31,7 @@ export {
   enhancedDefImplementation,
   type EnhancedDefInput,
   type EnhancedDefOutput
-} from './features/enhanced-def.js';
+} from './features/enhanced-def';
 
 export {
   TypedOnFeatureImplementation,
@@ -40,7 +40,7 @@ export {
   enhancedOnImplementation,
   type EnhancedOnInput,
   type EnhancedOnOutput
-} from './features/on.js';
+} from './features/on';
 
 export {
   TypedBehaviorsFeatureImplementation,
@@ -49,7 +49,7 @@ export {
   enhancedBehaviorsImplementation,
   type EnhancedBehaviorsInput,
   type EnhancedBehaviorsOutput
-} from './features/enhanced-behaviors.js';
+} from './features/enhanced-behaviors';
 
 export {
   TypedSocketsFeatureImplementation,
@@ -58,7 +58,7 @@ export {
   enhancedSocketsImplementation,
   type EnhancedSocketsInput,
   type EnhancedSocketsOutput
-} from './features/enhanced-sockets.js';
+} from './features/enhanced-sockets';
 
 export {
   TypedWebWorkerFeatureImplementation,
@@ -67,7 +67,7 @@ export {
   enhancedWebWorkerImplementation,
   type EnhancedWebWorkerInput,
   type EnhancedWebWorkerOutput
-} from './features/enhanced-webworker.js';
+} from './features/enhanced-webworker';
 
 export {
   TypedEventSourceFeatureImplementation,
@@ -76,7 +76,7 @@ export {
   enhancedEventSourceImplementation,
   type EnhancedEventSourceInput,
   type EnhancedEventSourceOutput
-} from './features/enhanced-eventsource.js';
+} from './features/enhanced-eventsource';
 
 // Export enhanced context types
 export type {
@@ -85,12 +85,12 @@ export type {
   ValidationResult,
   EvaluationResult,
   EnhancedContextBase
-} from './types/enhanced-context.js';
+} from './types/enhanced-context';
 
 export type {
   LLMDocumentation,
   EvaluationType
-} from './types/enhanced-core.js';
+} from './types/enhanced-core';
 
 // Export the main API as default
-export { default } from './api/hyperscript-api.js';
+export { default } from './api/hyperscript-api';

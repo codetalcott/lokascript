@@ -3,8 +3,8 @@
  * Addresses performance issues and prevents infinite loops
  */
 
-import type { ExecutionContext } from '../../types/core.js';
-import type { CompiledTemplate } from './template-compiler.js';
+import type { ExecutionContext } from '../../types/core';
+import type { CompiledTemplate } from './template-compiler';
 
 interface ExecutionState {
   commandIndex: number;

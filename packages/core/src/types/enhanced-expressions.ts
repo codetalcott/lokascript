@@ -16,7 +16,7 @@ import type {
   EvaluationType,
   HyperScriptValueType,
   TypedResult
-} from './base-types.js';
+} from './base-types';
 
 // Re-export for external consumers
 export type { 
@@ -28,7 +28,7 @@ export type {
   EvaluationType,
   HyperScriptValueType,
   TypedResult
-} from './base-types.js';
+} from './base-types';
 
 // Core types now imported from base-types.ts above
 

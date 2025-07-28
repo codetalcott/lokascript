@@ -12,8 +12,8 @@ import {
   interpolateString,
   concatenateStrings,
   getStringLength
-} from './index.js';
-import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+} from './index';
+import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Mock context for testing
 function createMockContext(): TypedExecutionContext {

@@ -11,7 +11,7 @@ import {
   enhancedDefImplementation,
   type EnhancedDefInput,
   type EnhancedDefOutput
-} from './enhanced-def.js';
+} from './enhanced-def';
 
 describe('Enhanced Def Feature Implementation', () => {
   let defFeature: TypedDefFeatureImplementation;

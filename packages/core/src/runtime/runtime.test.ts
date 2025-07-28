@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Runtime } from './runtime.js';
-import { parse } from '../parser/parser.js';
-import type { ExecutionContext } from '../types/core.js';
+import { Runtime } from './runtime';
+import { parse } from '../parser/parser';
+import type { ExecutionContext } from '../types/core';
 
 // Mock DOM for testing
 const createMockElement = () => ({

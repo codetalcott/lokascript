@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import '../../test-setup.js';
-import { TellCommand } from './tell.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { TellCommand } from './tell';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Tell Command', () => {
   let tellCommand: TellCommand;

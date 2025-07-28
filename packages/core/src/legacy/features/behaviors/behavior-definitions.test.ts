@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '../../test-setup.js';
-import type { ExecutionContext } from '../../types/core.js';
-import { createMockHyperscriptContext, createTestElement } from '../../test-setup.js';
+import type { ExecutionContext } from '../../types/core';
+import { createMockHyperscriptContext, createTestElement } from '../../test-setup';
 
 describe('Behavior Definitions', () => {
   let context: ExecutionContext;
@@ -373,4 +373,4 @@ describe('Behavior Definitions', () => {
 });
 
 // Import actual implementations
-import { parseAndDefineBehavior, executeHyperscript } from './index.js';
+import { parseAndDefineBehavior, executeHyperscript } from './index';

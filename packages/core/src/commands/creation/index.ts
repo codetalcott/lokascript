@@ -3,9 +3,9 @@
  * Provides all creation commands for hyperscript
  */
 
-import { EnhancedMakeCommand } from './enhanced-make.js';
+import { EnhancedMakeCommand } from './enhanced-make';
 
-export { EnhancedMakeCommand as MakeCommand } from './enhanced-make.js';
+export { EnhancedMakeCommand as MakeCommand } from './enhanced-make';
 
 // Create instances with default options for easy access
 export const creationCommands = {

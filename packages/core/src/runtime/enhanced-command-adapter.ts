@@ -8,7 +8,7 @@ import type {
   ExecutionContext, 
   TypedExecutionContext,
   ValidationResult 
-} from '../types/core.js';
+} from '../types/core';
 
 
 /**

@@ -11,7 +11,7 @@ import type {
   BaseTypedExpression,
   ValidationResult, 
   LLMDocumentation
-} from '../../types/base-types.js';
+} from '../../types/base-types';
 
 // ============================================================================
 // Enhanced Type Conversion Registry

@@ -6,7 +6,7 @@
  * Phase 2: Execution - runs compiled commands in template context
  */
 
-import type { ExecutionContext } from '../../types/core.js';
+import type { ExecutionContext } from '../../types/core';
 
 export interface CompiledTemplate {
   /** Hyperscript commands extracted from @ lines */

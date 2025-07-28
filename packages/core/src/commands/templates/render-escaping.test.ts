@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import '../../test-setup.js';
-import { RenderCommand } from './render.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { RenderCommand } from './render';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Template HTML Escaping', () => {
   let renderCommand: RenderCommand;

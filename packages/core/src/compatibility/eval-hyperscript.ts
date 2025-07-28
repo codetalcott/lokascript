@@ -3,11 +3,11 @@
  * Provides evalHyperScript() function that matches the original _hyperscript API
  */
 
-import { parseAndEvaluateExpression } from '../parser/expression-parser.js';
-import { Parser } from '../parser/parser.js';
-import { Runtime } from '../runtime/runtime.js';
-import { tokenize } from '../parser/tokenizer.js';
-import type { ExecutionContext } from '../types/core.js';
+import { parseAndEvaluateExpression } from '../parser/expression-parser';
+import { Parser } from '../parser/parser';
+import { Runtime } from '../runtime/runtime';
+import { tokenize } from '../parser/tokenizer';
+import type { ExecutionContext } from '../types/core';
 
 /**
  * Context interface matching _hyperscript's expected format
@@ -115,7 +115,7 @@ export async function evalHyperScript(
     // Determine if this is a command or expression
     if (isCommand(script)) {
       // Use command executor for commands
-      const { executeCommand } = await import('../commands/command-executor.js');
+      const { executeCommand } = await import('../commands/command-executor');
       return await executeCommand(script, executionContext);
     } else {
       // Use expression parser for expressions

@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseAndEvaluateExpression } from './expression-parser.js';
-import type { ExecutionContext } from '../types/core.js';
+import { parseAndEvaluateExpression } from './expression-parser';
+import type { ExecutionContext } from '../types/core';
 
 describe('Dot Notation Property Access - TDD Fix', () => {
   describe('Basic Dot Notation', () => {

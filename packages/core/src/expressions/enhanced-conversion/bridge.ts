@@ -3,8 +3,8 @@
  * Enables gradual migration from legacy to enhanced expressions while maintaining compatibility
  */
 
-import type { ExecutionContext, TypedExpressionContext, ExpressionEvaluationOptions } from '../../types/base-types.js';
-import { enhancedConversionExpressions } from './index.js';
+import type { ExecutionContext, TypedExpressionContext, ExpressionEvaluationOptions } from '../../types/base-types';
+import { enhancedConversionExpressions } from './index';
 
 /**
  * Convert ExecutionContext to TypedExpressionContext for enhanced expressions

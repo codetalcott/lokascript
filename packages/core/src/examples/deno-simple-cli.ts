@@ -11,7 +11,7 @@ import {
   getLLMRuntimeInfo,
   logger,
   performance,
-} from '../deno-mod.js';
+} from '../deno-mod';
 
 function printBanner() {
   console.log(`

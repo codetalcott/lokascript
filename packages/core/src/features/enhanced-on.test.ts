@@ -11,7 +11,7 @@ import {
   enhancedOnImplementation,
   type EnhancedOnInput,
   type EnhancedOnOutput
-} from './enhanced-on.js';
+} from './enhanced-on';
 
 describe('Enhanced On Feature Implementation', () => {
   let onFeature: TypedOnFeatureImplementation;

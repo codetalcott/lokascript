@@ -4,13 +4,13 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createMockHyperscriptContext } from '../../test-setup.js';
+import { createMockHyperscriptContext } from '../../test-setup';
 import { 
   specialExpressions, 
   ensureNumber, 
   interpolateString 
-} from './index.js';
-import type { ExecutionContext } from '../../types/core.js';
+} from './index';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Special Expressions', () => {
   let context: ExecutionContext;

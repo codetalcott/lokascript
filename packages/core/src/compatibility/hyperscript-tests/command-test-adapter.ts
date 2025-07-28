@@ -3,11 +3,11 @@
  * Runs official _hyperscript command tests against our existing implementation
  */
 
-import type { ExecutionContext } from '../../types/core.js';
-import { parseAndEvaluateExpression } from '../../parser/expression-parser.js';
+import type { ExecutionContext } from '../../types/core';
+import { parseAndEvaluateExpression } from '../../parser/expression-parser';
 
 // Import our existing command implementations
-import { executeCommand } from '../../commands/command-executor.js';
+import { executeCommand } from '../../commands/command-executor';
 
 /**
  * Create a _hyperscript-compatible command execution environment

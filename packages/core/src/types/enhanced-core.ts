@@ -28,7 +28,7 @@ import type {
   UnifiedParseError,
   UnifiedResult,
   UnifiedTypedResult
-} from './index.js';
+} from './index';
 
 // ============================================================================
 // Re-export Unified Types with Legacy Names
@@ -49,7 +49,7 @@ export type {
   UnifiedParseError as ParseError,
   UnifiedASTNode as ASTNode,
   UnifiedHyperScriptValue as HyperScriptValue
-} from './index.js';
+} from './index';
 
 // ============================================================================
 // Enhanced Type System for LLM Agents

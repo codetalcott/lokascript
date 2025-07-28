@@ -3,9 +3,9 @@
  * Main entry point for behavior definitions functionality
  */
 
-import { HyperscriptBehaviorParser } from './parser.js';
-import { globalBehaviorRegistry } from './registry.js';
-import type { BehaviorDefinition } from './types.js';
+import { HyperscriptBehaviorParser } from './parser';
+import { globalBehaviorRegistry } from './registry';
+import type { BehaviorDefinition } from './types';
 
 // Initialize parser
 const behaviorParser = new HyperscriptBehaviorParser();
@@ -152,4 +152,4 @@ function parseParameterValue(value: string, context: any): any {
 
 // Export for testing and integration
 export { behaviorParser, globalBehaviorRegistry };
-export * from './types.js';
+export * from './types';

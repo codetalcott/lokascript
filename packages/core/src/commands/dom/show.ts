@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface ShowCommandOptions {
   useClass?: boolean;

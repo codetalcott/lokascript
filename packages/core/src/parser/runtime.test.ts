@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createMockHyperscriptContext } from '../test-setup.js';
-import { evaluateAST } from './runtime.js';
-import { parse } from './parser.js';
+import { createMockHyperscriptContext } from '../test-setup';
+import { evaluateAST } from './runtime';
+import { parse } from './parser';
 
 describe('Hyperscript Runtime Evaluator', () => {
   

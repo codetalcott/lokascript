@@ -2,9 +2,9 @@
  * Tests for Expression Evaluator with assignment operators
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ExpressionEvaluator } from './expression-evaluator.js';
-import { parse } from '../parser/parser.js';
-import type { ExecutionContext } from '../types/core.js';
+import { ExpressionEvaluator } from './expression-evaluator';
+import { parse } from '../parser/parser';
+import type { ExecutionContext } from '../types/core';
 
 describe('Expression Evaluator - Assignment Operators', () => {
   let evaluator: ExpressionEvaluator;

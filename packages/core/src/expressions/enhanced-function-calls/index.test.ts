@@ -4,9 +4,9 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import { EnhancedFunctionCallExpression, createFunctionCallExpression, callFunction } from './index.js';
-import { createTypedExpressionContext } from '../../test-utilities.js';
-import type { TypedExpressionContext } from '../../types/enhanced-core.js';
+import { EnhancedFunctionCallExpression, createFunctionCallExpression, callFunction } from './index';
+import { createTypedExpressionContext } from '../../test-utilities';
+import type { TypedExpressionContext } from '../../types/enhanced-core';
 
 describe('Enhanced Function Call Expression', () => {
   let functionCallExpression: EnhancedFunctionCallExpression;

@@ -3,9 +3,9 @@
  * Integrates caching and optimization systems with core hyperscript components
  */
 
-import type { ExecutionContext, ExpressionImplementation } from '../types/core.js';
-import { globalCache } from './expression-cache.js';
-import { createOptimizedTokenizer, tokenizeOptimized } from '../parser/tokenizer-optimized.js';
+import type { ExecutionContext, ExpressionImplementation } from '../types/core';
+import { globalCache } from './expression-cache';
+import { createOptimizedTokenizer, tokenizeOptimized } from '../parser/tokenizer-optimized';
 
 // Performance monitoring interface
 export interface PerformanceMetrics {

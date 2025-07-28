@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import '../../test-setup.js';
-import type { ExecutionContext } from '../../types/core.js';
-import { createMockHyperscriptContext, createTestElement } from '../../test-setup.js';
+import '../../test-setup';
+import type { ExecutionContext } from '../../types/core';
+import { createMockHyperscriptContext, createTestElement } from '../../test-setup';
 
 // Mock Worker for testing
 class MockWorker {
@@ -586,4 +586,4 @@ import {
   disconnectWebWorker,
   sendToWebWorker,
   getWebWorker
-} from './index.js';
+} from './index';

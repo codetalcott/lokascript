@@ -76,7 +76,7 @@ export class RenderCommand implements CommandImplementation {
     context: ExecutionContext
   ): Promise<DocumentFragment> {
     // Use the fixed template processor which handles HTML escaping correctly
-    const { FixedTemplateProcessor } = await import('./template-processor-fixed.js');
+    const { FixedTemplateProcessor } = await import('./template-processor-fixed');
     
     const processor = new FixedTemplateProcessor();
     
@@ -558,7 +558,7 @@ export class RenderCommand implements CommandImplementation {
       console.debug(`Executing hyperscript command: "${command}"`);
       
       // Use the hyperscript evaluator to execute the command
-      const { evalHyperscript } = await import('../../compatibility/eval-hyperscript.js');
+      const { evalHyperscript } = await import('../../compatibility/eval-hyperscript');
       const result = await evalHyperscript(command, context);
       
       console.debug(`Command result:`, result);
@@ -595,7 +595,7 @@ export class RenderCommand implements CommandImplementation {
       }
       
       // For complex expressions, use the parser
-      const { parseAndEvaluateExpression } = await import('../../parser/expression-parser.js');
+      const { parseAndEvaluateExpression } = await import('../../parser/expression-parser');
       return await parseAndEvaluateExpression(expression, context);
     } catch (error) {
       throw new Error(`Expression evaluation failed: ${expression} - ${error}`);

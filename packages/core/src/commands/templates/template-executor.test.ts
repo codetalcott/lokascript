@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TemplateExecutor } from './template-executor.js';
-import { TemplateCompiler, type CompiledTemplate } from './template-compiler.js';
+import { TemplateExecutor } from './template-executor';
+import { TemplateCompiler, type CompiledTemplate } from './template-compiler';
 import '../../test-setup.js'; // Import DOM setup
 
 describe('Template Execution Phase', () => {

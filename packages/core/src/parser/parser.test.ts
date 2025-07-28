@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { ASTNode } from '../types/core.js';
-import { parse } from './parser.js';
-import { tokenize } from './tokenizer.js';
+import type { ASTNode } from '../types/core';
+import { parse } from './parser';
+import { tokenize } from './tokenizer';
 
 describe('Hyperscript AST Parser', () => {
   

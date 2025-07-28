@@ -11,7 +11,7 @@ import {
   enhancedEventSourceImplementation,
   type EnhancedEventSourceInput,
   type EnhancedEventSourceOutput
-} from './enhanced-eventsource.js';
+} from './enhanced-eventsource';
 
 // Mock EventSource for testing
 class MockEventSource {

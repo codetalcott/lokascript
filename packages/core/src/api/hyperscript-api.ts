@@ -3,10 +3,10 @@
  * Provides a clean, type-safe public interface for hyperscript compilation and execution
  */
 
-import { parse } from '../parser/parser.js';
-import { Runtime, type RuntimeOptions } from '../runtime/runtime.js';
-import { createContext, createChildContext } from '../core/context.js';
-import type { ASTNode, ExecutionContext, ParseError } from '../types/base-types.js';
+import { parse } from '../parser/parser';
+import { Runtime, type RuntimeOptions } from '../runtime/runtime';
+import { createContext, createChildContext } from '../core/context';
+import type { ASTNode, ExecutionContext, ParseError } from '../types/base-types';
 
 // ============================================================================
 // API Types
@@ -16,15 +16,15 @@ export interface CompilationResult {
   success: boolean;
   ast?: ASTNode;
   errors: ParseError[];
-  tokens: import('../types/core.js').Token[];
+  tokens: import('../types/core').Token[];
   compilationTime: number;
 }
 
 export interface HyperscriptAPI {
   // Core compilation and execution
   compile(code: string): CompilationResult;
-  execute(ast: ASTNode, context?: ExecutionContext): Promise<any>;
-  run(code: string, context?: ExecutionContext): Promise<any>;
+  execute(ast: ASTNode, context?: ExecutionContext): Promise<unknown>;
+  run(code: string, context?: ExecutionContext): Promise<unknown>;
   
   // DOM processing (HTMX compatibility)
   processNode(element: Element): void;
@@ -104,7 +104,7 @@ function compile(code: string): CompilationResult {
 /**
  * Execute a compiled AST with the given execution context
  */
-async function execute(ast: ASTNode, context?: ExecutionContext): Promise<any> {
+async function execute(ast: ASTNode, context?: ExecutionContext): Promise<unknown> {
   if (!ast) {
     throw new Error('AST is required for execution');
   }
@@ -116,7 +116,7 @@ async function execute(ast: ASTNode, context?: ExecutionContext): Promise<any> {
 /**
  * Compile and execute hyperscript code in one operation
  */
-async function run(code: string, context?: ExecutionContext): Promise<any> {
+async function run(code: string, context?: ExecutionContext): Promise<unknown> {
   const compiled = compile(code);
   
   if (!compiled.success) {
@@ -273,8 +273,8 @@ function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | 
     
     // Handle the actual HyperFixi AST structure
     if (ast.type === 'eventHandler') {
-      const eventType = (ast as any).event || 'click';
-      const commands = (ast as any).commands;
+      const eventType = (ast as { event?: string }).event || 'click';
+      const commands = (ast as { commands?: ASTNode[] }).commands;
       
       console.log(`✅ Found event handler: ${eventType} with ${commands?.length || 0} commands`);
       
@@ -292,9 +292,9 @@ function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | 
     }
     
     // Handle legacy AST structures
-    if (ast.type === 'FeatureNode' && (ast as any).name === 'on') {
-      const eventType = (ast as any).args?.[0]?.value || 'click';
-      const body = (ast as any).body || ast;
+    if (ast.type === 'FeatureNode' && (ast as { name?: string }).name === 'on') {
+      const eventType = (ast as { args?: Array<{ value?: string }> }).args?.[0]?.value || 'click';
+      const body = (ast as { body?: ASTNode }).body || ast;
       return { eventType, body };
     }
     
@@ -315,7 +315,7 @@ function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | 
 /**
  * Execute hyperscript AST
  */
-async function executeHyperscriptAST(ast: ASTNode, context: ExecutionContext): Promise<any> {
+async function executeHyperscriptAST(ast: ASTNode, context: ExecutionContext): Promise<unknown> {
   try {
     return await defaultRuntime.execute(ast, context);
   } catch (error) {

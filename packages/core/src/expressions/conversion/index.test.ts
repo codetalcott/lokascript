@@ -4,15 +4,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../../test-setup.js';
+import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
 import { 
   conversionExpressions, 
   defaultConversions, 
   getFormValues, 
   getInputValue, 
   parseFixedPrecision 
-} from './index.js';
-import type { ExecutionContext } from '../../types/core.js';
+} from './index';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Conversion Expressions', () => {
   let context: ExecutionContext;

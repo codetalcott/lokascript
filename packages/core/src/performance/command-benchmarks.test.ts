@@ -4,15 +4,15 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { EnhancedBenchmark, BenchmarkResult } from './enhanced-benchmarks.js';
-import { HideCommand } from '../commands/dom/hide.js';
-import { ShowCommand } from '../commands/dom/show.js';
-import { AddCommand } from '../commands/dom/add.js';
-import { PutCommand } from '../commands/dom/put.js';
-import { TakeCommand } from '../commands/animation/take.js';
-import { SettleCommand } from '../commands/animation/settle.js';
-import { GoCommand } from '../commands/navigation/go.js';
-import { createMockElement, createTypedExecutionContext } from '../test-utilities.js';
+import { EnhancedBenchmark, BenchmarkResult } from './enhanced-benchmarks';
+import { HideCommand } from '../commands/dom/hide';
+import { ShowCommand } from '../commands/dom/show';
+import { AddCommand } from '../commands/dom/add';
+import { PutCommand } from '../commands/dom/put';
+import { TakeCommand } from '../commands/animation/take';
+import { SettleCommand } from '../commands/animation/settle';
+import { GoCommand } from '../commands/navigation/go';
+import { createMockElement, createTypedExecutionContext } from '../test-utilities';
 
 describe('Enhanced Command Performance Benchmarks', () => {
   let benchmark: EnhancedBenchmark;

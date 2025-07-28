@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '../../test-setup.js';
-import { BeepCommand } from './beep.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { BeepCommand } from './beep';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Beep Command', () => {
   let beepCommand: BeepCommand;

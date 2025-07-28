@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { hyperscript } from '../api/hyperscript-api.js';
-import { createMockHyperscriptContext } from '../test-setup.js';
+import { hyperscript } from '../api/hyperscript-api';
+import { createMockHyperscriptContext } from '../test-setup';
 
 // Compatibility wrapper for our tests
 const evalHyperScript = async (code: string, context?: any) => {

@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface ToggleCommandOptions {
   delimiter?: string;
@@ -112,7 +112,7 @@ export class ToggleCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes']
   };
   
-  private _options: ToggleCommandOptions;
+  private readonly _options: ToggleCommandOptions; // Used for future enhancements
 
   constructor(options: ToggleCommandOptions = {}) {
     this._options = {

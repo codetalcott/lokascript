@@ -11,7 +11,7 @@ import {
   enhancedBehaviorsImplementation,
   type EnhancedBehaviorsInput,
   type EnhancedBehaviorsOutput
-} from './enhanced-behaviors.js';
+} from './enhanced-behaviors';
 
 describe('Enhanced Behaviors Feature Implementation', () => {
   let behaviorsFeature: TypedBehaviorsFeatureImplementation;

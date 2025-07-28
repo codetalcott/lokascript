@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import '../../test-setup.js';
-import { PickCommand } from './pick.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { PickCommand } from './pick';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Pick Command', () => {
   let pickCommand: PickCommand;

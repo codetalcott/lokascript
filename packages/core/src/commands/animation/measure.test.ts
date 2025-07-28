@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '../../test-setup.js';
-import { MeasureCommand } from './measure.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { MeasureCommand } from './measure';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Measure Command', () => {
   let measureCommand: MeasureCommand;

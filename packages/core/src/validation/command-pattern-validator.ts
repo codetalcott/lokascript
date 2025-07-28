@@ -45,7 +45,7 @@ export class CommandPatternValidator {
    * Validates if a command follows the enhanced TypeScript pattern
    */
   static validateCommand(
-    CommandClass: any,
+    CommandClass: new () => unknown,
     factoryFunction?: Function,
     sourceCode?: string
   ): PatternValidationResult {
@@ -57,7 +57,7 @@ export class CommandPatternValidator {
     const maxScore = 8; // Total number of checks
     
     // Create instance for testing
-    let instance: any;
+    let instance: Record<string, unknown>;
     try {
       instance = new CommandClass();
     } catch (error) {
@@ -184,7 +184,7 @@ export class CommandPatternValidator {
     };
   }
 
-  private static validateInterface(instance: any): boolean {
+  private static validateInterface(instance: Record<string, unknown>): boolean {
     return (
       typeof instance.name === 'string' &&
       typeof instance.syntax === 'string' &&
@@ -196,7 +196,7 @@ export class CommandPatternValidator {
     );
   }
 
-  private static validateRequiredProperties(instance: any): boolean {
+  private static validateRequiredProperties(instance: Record<string, unknown>): boolean {
     return (
       typeof instance.name === 'string' && instance.name.length > 0 &&
       typeof instance.syntax === 'string' && instance.syntax.length > 0 &&
@@ -206,7 +206,7 @@ export class CommandPatternValidator {
     );
   }
 
-  private static validateMetadata(metadata: any): boolean {
+  private static validateMetadata(metadata: Record<string, unknown>): boolean {
     if (!metadata || typeof metadata !== 'object') return false;
     
     return (
@@ -215,14 +215,14 @@ export class CommandPatternValidator {
       Array.isArray(metadata.sideEffects) &&
       Array.isArray(metadata.examples) &&
       Array.isArray(metadata.relatedCommands) &&
-      metadata.examples.every((ex: any) => 
+      Array.isArray(metadata.examples) && metadata.examples.every((ex: Record<string, unknown>) => 
         typeof ex.code === 'string' && 
         typeof ex.description === 'string'
       )
     );
   }
 
-  private static validateLLMDocumentation(documentation: any): boolean {
+  private static validateLLMDocumentation(documentation: Record<string, unknown>): boolean {
     if (!documentation || typeof documentation !== 'object') return false;
     
     return (
@@ -232,7 +232,7 @@ export class CommandPatternValidator {
       Array.isArray(documentation.examples) &&
       Array.isArray(documentation.seeAlso) &&
       Array.isArray(documentation.tags) &&
-      documentation.parameters.every((param: any) =>
+      Array.isArray(documentation.parameters) && documentation.parameters.every((param: Record<string, unknown>) =>
         typeof param.name === 'string' &&
         typeof param.type === 'string' &&
         typeof param.description === 'string' &&
@@ -242,7 +242,7 @@ export class CommandPatternValidator {
     );
   }
 
-  private static validateValidationMethod(instance: any): boolean {
+  private static validateValidationMethod(instance: Record<string, unknown>): boolean {
     if (typeof instance.validate !== 'function') return false;
     
     try {
@@ -266,7 +266,7 @@ export class CommandPatternValidator {
     );
   }
 
-  private static validateStructuredErrors(instance: any): boolean {
+  private static validateStructuredErrors(instance: Record<string, unknown>): boolean {
     // This is harder to test without actually executing, but we can check method signature
     const executeMethod = instance.execute.toString();
     return (

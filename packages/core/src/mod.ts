@@ -21,41 +21,41 @@ export type {
   FeatureMetadata,
   CommandResult,
   BaseCommand,
-} from './types/base-types.js';
+} from './types/base-types';
 
 export type {
   // Legacy compatibility types
   CommandImplementation,
   ExpressionImplementation,
-} from './types/core.js';
+} from './types/core';
 
 // ============================================================================
 // Commands - DOM Manipulation
 // ============================================================================
 
-import { HideCommand } from './commands/dom/hide.js';
-import { ShowCommand } from './commands/dom/show.js';
-import { ToggleCommand } from './commands/dom/toggle.js';
+import { HideCommand } from './commands/dom/hide';
+import { ShowCommand } from './commands/dom/show';
+import { ToggleCommand } from './commands/dom/toggle';
 
-export { HideCommand, createHideCommand } from './commands/dom/hide.js';
-export { ShowCommand } from './commands/dom/show.js';
-export { ToggleCommand } from './commands/dom/toggle.js';
-export { AddCommand } from './commands/dom/add.js';
-export { RemoveCommand } from './commands/dom/remove.js';
+export { HideCommand, createHideCommand } from './commands/dom/hide';
+export { ShowCommand } from './commands/dom/show';
+export { ToggleCommand } from './commands/dom/toggle';
+export { AddCommand } from './commands/dom/add';
+export { RemoveCommand } from './commands/dom/remove';
 
 // ============================================================================
 // Commands - Events
 // ============================================================================
 
 // OnCommand to be implemented
-export { TriggerCommand } from './commands/events/trigger.js';
-export { SendCommand } from './commands/events/send.js';
+export { TriggerCommand } from './commands/events/trigger';
+export { SendCommand } from './commands/events/send';
 
 // ============================================================================
 // Commands - Navigation
 // ============================================================================
 
-export { GoCommand } from './commands/navigation/go.js';
+export { GoCommand } from './commands/navigation/go';
 
 // ============================================================================
 // Commands - Async Operations
@@ -67,8 +67,8 @@ export { GoCommand } from './commands/navigation/go.js';
 // Commands - Control Flow
 // ============================================================================
 
-export { IfCommand } from './commands/control-flow/index.js';
-export { RepeatCommand } from './commands/control-flow/index.js';
+export { IfCommand } from './commands/control-flow/index';
+export { RepeatCommand } from './commands/control-flow/index';
 
 // ============================================================================
 // Expressions - All Categories
@@ -78,53 +78,53 @@ export {
   // Reference expressions (me, you, it, CSS selectors)
   evaluateReference,
   type ReferenceExpression,
-} from './expressions/references/index.js';
+} from './expressions/references/index';
 
 export {
   // Logical expressions (and, or, not, comparisons)
   evaluateLogical,
   type LogicalExpression,
-} from './expressions/logical/index.js';
+} from './expressions/logical/index';
 
 export {
   // Type conversion expressions (as keyword)
   evaluateConversion,
   type ConversionExpression,
-} from './expressions/conversion/index.js';
+} from './expressions/conversion/index';
 
 export {
   // Positional expressions (first, last, etc.)
   evaluatePositional,
   type PositionalExpression,
-} from './expressions/positional/index.js';
+} from './expressions/positional/index';
 
 export {
   // Property expressions (possessive syntax)
   evaluateProperties,
   type PropertyExpression,
-} from './expressions/properties/index.js';
+} from './expressions/properties/index';
 
 export {
   // Special expressions (literals, math)
   evaluateSpecial,
   type SpecialExpression,
-} from './expressions/enhanced-special/index.js';
+} from './expressions/enhanced-special/index';
 
 // ============================================================================
 // Features - Top-level hyperscript features
 // ============================================================================
 
-export { EnhancedBehaviorFeature as BehaviorFeature } from './features/enhanced-behaviors.js';
-export { EnhancedInitFeature as InitFeature } from './features/enhanced-init.js';
-export { EnhancedDefFeature as DefFeature } from './features/enhanced-def.js';
-export { EnhancedWebWorkerFeature as WorkerFeature } from './features/enhanced-webworker.js';
+export { EnhancedBehaviorFeature as BehaviorFeature } from './features/enhanced-behaviors';
+export { EnhancedInitFeature as InitFeature } from './features/enhanced-init';
+export { EnhancedDefFeature as DefFeature } from './features/enhanced-def';
+export { EnhancedWebWorkerFeature as WorkerFeature } from './features/enhanced-webworker';
 // Note: Install, Everywhere, Class, JS, Set features need enhanced implementations
 // Temporarily commenting out until enhanced versions are created
-// export { InstallFeature } from './features/install.js';
-// export { EverywhereFeature } from './features/everywhere.js';
-// export { ClassFeature, type ClassFeatureOptions } from './features/class.js';
-// export { JSFeature } from './features/js.js';
-// export { SetFeature } from './features/set.js';
+// export { InstallFeature } from './features/install';
+// export { EverywhereFeature } from './features/everywhere';
+// export { ClassFeature, type ClassFeatureOptions } from './features/class';
+// export { JSFeature } from './features/js';
+// export { SetFeature } from './features/set';
 
 // ============================================================================
 // Extensions
@@ -134,15 +134,15 @@ export {
   TailwindExtension,
   type TailwindExtensionOptions,
   type TailwindStrategy,
-} from './extensions/tailwind.js';
+} from './extensions/tailwind';
 
 // ============================================================================
 // Core Runtime and Utilities
 // ============================================================================
 
-export { createContext } from './core/context.js';
-export { Parser } from './parser/parser.js';
-export { Tokenizer } from './parser/tokenizer.js';
+export { createContext } from './core/context';
+export { Parser } from './parser/parser';
+export { Tokenizer } from './parser/tokenizer';
 
 // ============================================================================
 // Runtime Environment Detection
@@ -157,7 +157,7 @@ export {
   logger,
   performance,
   UniversalEventTarget,
-} from './runtime/environment.js';
+} from './runtime/environment';
 
 /**
  * Get environment-specific information for LLM agents

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Runtime } from './runtime.js';
-import { createTypedExecutionContext } from '../test-utilities.js';
+import { Runtime } from './runtime';
+import { createTypedExecutionContext } from '../test-utilities';
 
 describe('Runtime Object Literal Evaluation', () => {
   let runtime: Runtime;

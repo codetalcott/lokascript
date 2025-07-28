@@ -3,7 +3,7 @@
  * Measures DOM element dimensions and positions
  */
 
-import type { CommandImplementation, ExecutionContext } from '../../types/core.js';
+import type { CommandImplementation, ExecutionContext } from '../../types/core';
 
 export class MeasureCommand implements CommandImplementation {
   name = 'measure';

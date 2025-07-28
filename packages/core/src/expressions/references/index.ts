@@ -3,7 +3,7 @@
  * Handles me, you, it, CSS selectors, and element references with enhanced TypeScript integration
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
 import type { 
   TypedExpressionImplementation, 
   TypedExecutionContext, 
@@ -12,7 +12,7 @@ import type {
   ValidationResult,
   HyperScriptError,
   LLMDocumentation
-} from '../../types/enhanced-core.js';
+} from '../../types/enhanced-core';
 
 // ============================================================================
 // Core Reference Variables
@@ -51,7 +51,7 @@ export const itExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Any',
   
-  async evaluate(context: ExecutionContext): Promise<any> {
+  async evaluate(context: ExecutionContext): Promise<unknown> {
     return context.it;
   },
   
@@ -65,7 +65,7 @@ export const resultExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Any',
   
-  async evaluate(context: ExecutionContext): Promise<any> {
+  async evaluate(context: ExecutionContext): Promise<unknown> {
     return context.result;
   },
   
@@ -93,7 +93,7 @@ export const querySelectorExpression: ExpressionImplementation = {
     return document.querySelector(selector) as HTMLElement | null;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'querySelector requires exactly one argument (selector)';
     }
@@ -120,7 +120,7 @@ export const querySelectorAllExpression: ExpressionImplementation = {
     return Array.from(nodeList) as HTMLElement[];
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'querySelectorAll requires exactly one argument (selector)';
     }
@@ -148,7 +148,7 @@ export const idExpression: ExpressionImplementation = {
     return document.getElementById(id);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'getElementById requires exactly one argument (ID)';
     }
@@ -175,7 +175,7 @@ export const classExpression: ExpressionImplementation = {
     return Array.from(collection) as HTMLElement[];
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'getElementsByClassName requires exactly one argument (className)';
     }
@@ -207,7 +207,7 @@ export const closestExpression: ExpressionImplementation = {
     return context.me.closest(selector) as HTMLElement | null;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'closest requires exactly one argument (selector)';
     }
@@ -282,7 +282,7 @@ export const elementWithSelectorExpression: ExpressionImplementation = {
     return Array.from(elements) as HTMLElement[];
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'elementWithSelector requires exactly one argument (selector)';
     }
@@ -324,7 +324,7 @@ export const styleRefExpression: ExpressionImplementation = {
     return value || undefined;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length === 0 || args.length > 2) {
       return 'styleRef requires 1-2 arguments (property, optional element)';
     }
@@ -372,7 +372,7 @@ export const possessiveStyleRefExpression: ExpressionImplementation = {
     return value || undefined;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'possessiveStyleRef requires exactly 2 arguments (possessor, property)';
     }
@@ -420,7 +420,7 @@ export const ofStyleRefExpression: ExpressionImplementation = {
     return value || undefined;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'ofStyleRef requires exactly 2 arguments (property, reference)';
     }

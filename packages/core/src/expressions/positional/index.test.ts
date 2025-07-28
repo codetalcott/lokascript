@@ -4,14 +4,14 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../../test-setup.js';
+import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
 import { 
   positionalExpressions, 
   findNextElementInDOM, 
   findPreviousElementInDOM, 
   getElementPosition 
-} from './index.js';
-import type { ExecutionContext } from '../../types/core.js';
+} from './index';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Positional Expressions', () => {
   let context: ExecutionContext;

@@ -9,8 +9,8 @@
  * Modernized with TypedCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core.js';
-import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
 export interface CallCommandInput {
@@ -154,7 +154,7 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
  * Enhanced Get Command (alias for Call)
  */
 export class EnhancedGetCommand extends EnhancedCallCommand {
-  metadata = {
+  override metadata = {
     ...this.metadata,
     name: 'get',
     description: 'The get command is an alias for call and can be used if it more clearly expresses the meaning of the code. It allows you to evaluate an expression and put the value into the it variable.',

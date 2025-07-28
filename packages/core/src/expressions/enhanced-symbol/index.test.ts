@@ -4,9 +4,9 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { EnhancedSymbolExpression, createSymbolExpression, resolveSymbol } from './index.js';
-import { createTypedExpressionContext } from '../../test-utilities.js';
-import type { TypedExpressionContext } from '../../types/enhanced-core.js';
+import { EnhancedSymbolExpression, createSymbolExpression, resolveSymbol } from './index';
+import { createTypedExpressionContext } from '../../test-utilities';
+import type { TypedExpressionContext } from '../../types/enhanced-core';
 
 describe('Enhanced Symbol Expression', () => {
   let symbolExpression: EnhancedSymbolExpression;

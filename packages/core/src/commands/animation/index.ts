@@ -3,15 +3,15 @@
  * Provides all animation commands for hyperscript
  */
 
-import { EnhancedMeasureCommand } from './enhanced-measure.js';
-import { EnhancedSettleCommand } from './enhanced-settle.js';
-import { EnhancedTakeCommand } from './enhanced-take.js';
-import { EnhancedTransitionCommand } from './enhanced-transition.js';
+import { EnhancedMeasureCommand } from './enhanced-measure';
+import { EnhancedSettleCommand } from './enhanced-settle';
+import { EnhancedTakeCommand } from './enhanced-take';
+import { EnhancedTransitionCommand } from './enhanced-transition';
 
-export { EnhancedMeasureCommand as MeasureCommand } from './enhanced-measure.js';
-export { EnhancedSettleCommand as SettleCommand } from './enhanced-settle.js';
-export { EnhancedTakeCommand as TakeCommand } from './enhanced-take.js';
-export { EnhancedTransitionCommand as TransitionCommand } from './enhanced-transition.js';
+export { EnhancedMeasureCommand as MeasureCommand } from './enhanced-measure';
+export { EnhancedSettleCommand as SettleCommand } from './enhanced-settle';
+export { EnhancedTakeCommand as TakeCommand } from './enhanced-take';
+export { EnhancedTransitionCommand as TransitionCommand } from './enhanced-transition';
 
 // Create instances with default options for easy access
 export const animationCommands = {

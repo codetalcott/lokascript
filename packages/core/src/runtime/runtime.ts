@@ -9,32 +9,32 @@ import type {
   CommandNode, 
   ExpressionNode,
   EventHandlerNode
-} from '../types/base-types.js';
+} from '../types/base-types';
 
-import { ExpressionEvaluator } from '../core/expression-evaluator.js';
-import { PutCommand } from '../commands/dom/put.js';
+import { ExpressionEvaluator } from '../core/expression-evaluator';
+import { PutCommand } from '../commands/dom/put';
 // SetCommand now imported from data/index.js above
 
 // Enhanced command imports
-import { EnhancedCommandRegistry } from './enhanced-command-adapter.js';
-import { createHideCommand } from '../commands/dom/hide.js';
-import { createShowCommand } from '../commands/dom/show.js';
-import { createToggleCommand } from '../commands/dom/toggle.js';
-import { createAddCommand } from '../commands/dom/add.js';
-import { createRemoveCommand } from '../commands/dom/remove.js';
-import { createSendCommand } from '../commands/events/send.js';
-import { createTriggerCommand } from '../commands/events/trigger.js';
+import { EnhancedCommandRegistry } from './enhanced-command-adapter';
+import { createHideCommand } from '../commands/dom/hide';
+import { createShowCommand } from '../commands/dom/show';
+import { createToggleCommand } from '../commands/dom/toggle';
+import { createAddCommand } from '../commands/dom/add';
+import { createRemoveCommand } from '../commands/dom/remove';
+import { createSendCommand } from '../commands/events/send';
+import { createTriggerCommand } from '../commands/events/trigger';
 // Note: Wait and Fetch commands to be implemented
-import { createPutCommand } from '../commands/dom/put.js';
+import { createPutCommand } from '../commands/dom/put';
 
 // Additional command imports
 // IncrementCommand and DecrementCommand now imported from data/index.js above
-import { MakeCommand } from '../commands/creation/index.js';
-import { AppendCommand } from '../commands/content/index.js';
-import { CallCommand } from '../commands/execution/index.js';
+import { MakeCommand } from '../commands/creation/index';
+import { AppendCommand } from '../commands/content/index';
+import { CallCommand } from '../commands/execution/index';
 // JSCommand and TellCommand now imported from advanced/index.js above
-import { PickCommand } from '../commands/utility/index.js';
-import { GoCommand } from '../commands/navigation/go.js';
+import { PickCommand } from '../commands/utility/index';
+import { GoCommand } from '../commands/navigation/go';
 
 // Control flow commands
 import { 
@@ -46,7 +46,7 @@ import {
   ThrowCommand, 
   UnlessCommand, 
   RepeatCommand 
-} from '../commands/control-flow/index.js';
+} from '../commands/control-flow/index';
 
 // Animation commands
 import { 
@@ -54,16 +54,16 @@ import {
   SettleCommand, 
   TakeCommand, 
   TransitionCommand 
-} from '../commands/animation/index.js';
+} from '../commands/animation/index';
 
 // Data commands
-import { DefaultCommand, SetCommand, IncrementCommand, DecrementCommand } from '../commands/data/index.js';
+import { DefaultCommand, SetCommand, IncrementCommand, DecrementCommand } from '../commands/data/index';
 
 // Advanced commands
-import { BeepCommand, AsyncCommand, TellCommand, JSCommand } from '../commands/advanced/index.js';
+import { BeepCommand, AsyncCommand, TellCommand, JSCommand } from '../commands/advanced/index';
 
 // Template commands
-import { RenderCommand } from '../commands/templates/index.js';
+import { RenderCommand } from '../commands/templates/index';
 
 export interface RuntimeOptions {
   enableAsyncCommands?: boolean;
@@ -100,7 +100,7 @@ export class Runtime {
   /**
    * Register legacy command by adapting it to the enhanced registry
    */
-  private registerLegacyCommand(command: any): void {
+  private registerLegacyCommand(command: { name: string; execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>; validate?: (args: unknown[]) => { isValid: boolean; errors: unknown[]; suggestions: string[] } }): void {
     // Create an adapter for legacy commands to work with enhanced registry
     const adapter = {
       name: command.name,
@@ -109,11 +109,11 @@ export class Runtime {
       inputSchema: null, // Legacy commands don't have schemas
       outputType: 'unknown' as const,
       
-      async execute(context: any, ...args: any[]): Promise<any> {
+      async execute(context: ExecutionContext, ...args: unknown[]): Promise<unknown> {
         return await command.execute(context, ...args);
       },
       
-      validate(args: unknown[]): { isValid: boolean; errors: any[]; suggestions: string[] } {
+      validate(args: unknown[]): { isValid: boolean; errors: unknown[]; suggestions: string[] } {
         try {
           const validationResult = command.validate ? command.validate(args) : null;
           if (validationResult) {
@@ -232,11 +232,11 @@ export class Runtime {
         }
         
         case 'CommandSequence': {
-          return await this.executeCommandSequence(node as any, context);
+          return await this.executeCommandSequence(node as { commands: ASTNode[] }, context);
         }
         
         case 'objectLiteral': {
-          return await this.executeObjectLiteral(node as any, context);
+          return await this.executeObjectLiteral(node as { properties: Array<{ key: ASTNode; value: ASTNode }> }, context);
         }
         
         default: {
@@ -307,9 +307,9 @@ export class Runtime {
           // unless it's meant to be evaluated as a variable
           // In hyperscript, {name: value} uses 'name' as literal key
           // But {[name]: value} or {(name): value} would evaluate 'name' as variable
-          key = (property.key as any).name;
+          key = (property.key as { name: string }).name;
         } else if (property.key.type === 'literal') {
-          key = String((property.key as any).value);
+          key = String((property.key as { value: unknown }).value);
         } else {
           // For other key types, evaluate them
           const evaluatedKey = await this.execute(property.key, context);
@@ -725,7 +725,7 @@ export class Runtime {
   /**
    * Check if an object is an HTML element (works in both browser and Node.js)
    */
-  private isElement(obj: any): obj is HTMLElement {
+  private isElement(obj: unknown): obj is HTMLElement {
     // First check if it's a real HTMLElement (in browser environment)
     if (typeof HTMLElement !== 'undefined' && obj instanceof HTMLElement) {
       return true;

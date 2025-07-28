@@ -18,7 +18,7 @@ import {
   type FrontendContextInput,
   type BackendContextInput,
   type LLMGenerationInput
-} from '../index.js';
+} from '../index';
 
 describe('Enhanced Context System Integration', () => {
   let registry: EnhancedContextRegistry;

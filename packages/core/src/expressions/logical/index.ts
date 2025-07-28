@@ -5,13 +5,13 @@
  */
 
 import { z } from 'zod';
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
 import type { 
   TypedExpressionContext, 
   ExpressionMetadata, 
   LLMDocumentation 
-} from '../../types/enhanced-expressions.js';
-import { matchesWithCache } from '../../performance/integration.js';
+} from '../../types/enhanced-expressions';
+import { matchesWithCache } from '../../performance/integration';
 
 // ============================================================================
 // Enhanced Expression Interface
@@ -23,7 +23,7 @@ import { matchesWithCache } from '../../performance/integration.js';
 interface EnhancedExpressionImplementation extends ExpressionImplementation {
   metadata?: ExpressionMetadata;
   documentation?: LLMDocumentation;
-  inputSchema?: z.ZodSchema<any>;
+  inputSchema?: z.ZodSchema<unknown>;
 }
 
 /**
@@ -32,7 +32,7 @@ interface EnhancedExpressionImplementation extends ExpressionImplementation {
 function trackEvaluation<T>(
   expression: ExpressionImplementation,
   context: ExecutionContext,
-  args: any[],
+  args: unknown[],
   result: T,
   startTime: number,
   success: boolean = true,
@@ -40,7 +40,7 @@ function trackEvaluation<T>(
 ): T {
   // Add evaluation tracking if context supports it
   if ('evaluationHistory' in context && Array.isArray(context.evaluationHistory)) {
-    (context as any).evaluationHistory.push({
+    (context as unknown as { evaluationHistory: Array<{ expressionName: string; category: string; input: unknown; output: unknown; timestamp: number; duration: number; success: boolean; error?: Error }> }).evaluationHistory.push({
       expressionName: expression.name,
       category: expression.category,
       input: args,
@@ -58,9 +58,9 @@ function trackEvaluation<T>(
 // Enhanced Input Schemas
 // ============================================================================
 
-const ComparisonInputSchema = z.tuple([z.any(), z.any()]);
-const UnaryInputSchema = z.tuple([z.any()]);
-const PatternMatchingInputSchema = z.tuple([z.any(), z.string()]);
+const ComparisonInputSchema = z.tuple([z.unknown(), z.unknown()]);
+const UnaryInputSchema = z.tuple([z.unknown()]);
+const PatternMatchingInputSchema = z.tuple([z.unknown(), z.string()]);
 
 // ============================================================================
 // Comparison Operators
@@ -74,7 +74,7 @@ export const equalsExpression: EnhancedExpressionImplementation = {
   associativity: 'Left',
   operators: ['is', '==', 'equals'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     const startTime = Date.now();
     try {
       // Hyperscript uses loose equality for 'is' and strict equality for other operators
@@ -86,7 +86,7 @@ export const equalsExpression: EnhancedExpressionImplementation = {
     }
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'equals requires exactly two arguments (left, right)';
     }
@@ -126,14 +126,14 @@ export const equalsExpression: EnhancedExpressionImplementation = {
     parameters: [
       {
         name: 'left',
-        type: 'any',
+        type: 'unknown',
         description: 'Left operand for comparison',
         optional: false,
         examples: ['5', '"hello"', 'true', 'null']
       },
       {
         name: 'right', 
-        type: 'any',
+        type: 'unknown',
         description: 'Right operand for comparison',
         optional: false,
         examples: ['5', '"hello"', 'true', 'null']
@@ -177,11 +177,11 @@ export const strictEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['==='],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left === right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'strictEquals requires exactly two arguments (left, right)';
     }
@@ -197,11 +197,11 @@ export const notEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=', 'is not', 'does not equal'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left != right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'notEquals requires exactly two arguments (left, right)';
     }
@@ -217,11 +217,11 @@ export const strictNotEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=='],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left !== right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'strictNotEquals requires exactly two arguments (left, right)';
     }
@@ -237,11 +237,11 @@ export const lessThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<', 'is less than'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left < right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'lessThan requires exactly two arguments (left, right)';
     }
@@ -257,11 +257,11 @@ export const lessThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<=', 'is less than or equal to'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left <= right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'lessThanOrEqual requires exactly two arguments (left, right)';
     }
@@ -277,11 +277,11 @@ export const greaterThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>', 'is greater than'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left > right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'greaterThan requires exactly two arguments (left, right)';
     }
@@ -297,11 +297,11 @@ export const greaterThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>=', 'is greater than or equal to'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left >= right;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'greaterThanOrEqual requires exactly two arguments (left, right)';
     }
@@ -321,7 +321,7 @@ export const andExpression: EnhancedExpressionImplementation = {
   associativity: 'Left',
   operators: ['and', '&&'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     const startTime = Date.now();
     try {
       // Convert to boolean using truthy/falsy rules
@@ -333,7 +333,7 @@ export const andExpression: EnhancedExpressionImplementation = {
     }
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'and requires exactly two arguments (left, right)';
     }
@@ -373,14 +373,14 @@ export const andExpression: EnhancedExpressionImplementation = {
     parameters: [
       {
         name: 'left',
-        type: 'any',
+        type: 'unknown',
         description: 'Left operand (evaluated for truthiness)',
         optional: false,
         examples: ['true', 'name', '5', '"hello"']
       },
       {
         name: 'right',
-        type: 'any',
+        type: 'unknown',
         description: 'Right operand (evaluated for truthiness)',
         optional: false,
         examples: ['false', 'age', '0', '""']
@@ -424,12 +424,12 @@ export const orExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['or', '||'],
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     // Convert to boolean using truthy/falsy rules
     return Boolean(left) || Boolean(right);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'or requires exactly two arguments (left, right)';
     }
@@ -445,12 +445,12 @@ export const notExpression: ExpressionImplementation = {
   associativity: 'Right',
   operators: ['not', '!'],
   
-  async evaluate(context: ExecutionContext, operand: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, operand: unknown): Promise<boolean> {
     // Convert to boolean using truthy/falsy rules
     return !Boolean(operand);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'not requires exactly one argument (operand)';
     }
@@ -468,7 +468,7 @@ export const isEmptyExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['is empty', 'isEmpty'],
   
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
     if (value == null) return true;
     if (typeof value === 'string') return value.length === 0;
     if (Array.isArray(value)) return value.length === 0;
@@ -477,7 +477,7 @@ export const isEmptyExpression: ExpressionImplementation = {
     return false;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'isEmpty requires exactly one argument (value)';
     }
@@ -491,12 +491,12 @@ export const noExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['no'],
   
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
     // The 'no' operator is equivalent to 'is empty' according to hyperscript docs
     return await isEmptyExpression.evaluate(context, value);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'no requires exactly one argument (value)';
     }
@@ -510,11 +510,11 @@ export const isNotEmptyExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['is not empty', 'isNotEmpty'],
   
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
     return !(await isEmptyExpression.evaluate(context, value));
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'isNotEmpty requires exactly one argument (value)';
     }
@@ -528,11 +528,11 @@ export const existsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['exists'],
   
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
     return value != null;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'exists requires exactly one argument (value)';
     }
@@ -546,11 +546,11 @@ export const doesNotExistExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['does not exist', 'doesNotExist'],
   
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
     return value == null;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 1) {
       return 'doesNotExist requires exactly one argument (value)';
     }
@@ -568,7 +568,7 @@ export const containsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['contains', 'includes', 'include'],
   
-  async evaluate(context: ExecutionContext, container: any, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
     // Handle DOM element containment first
     if (container && value) {
       // If both are DOM elements, check containment
@@ -618,7 +618,7 @@ export const containsExpression: ExpressionImplementation = {
     return false;
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'contains requires exactly two arguments (container, value)';
     }
@@ -632,11 +632,11 @@ export const doesNotContainExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['does not contain', 'doesNotContain', 'does not include', 'doesNotInclude'],
   
-  async evaluate(context: ExecutionContext, container: any, value: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
     return !(await containsExpression.evaluate(context, container, value));
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'doesNotContain requires exactly two arguments (container, value)';
     }
@@ -650,14 +650,14 @@ export const startsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['starts with', 'startsWith'],
   
-  async evaluate(context: ExecutionContext, str: any, prefix: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, str: unknown, prefix: unknown): Promise<boolean> {
     if (typeof str !== 'string' || typeof prefix !== 'string') {
       return false;
     }
     return str.startsWith(prefix);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'startsWith requires exactly two arguments (str, prefix)';
     }
@@ -671,14 +671,14 @@ export const endsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['ends with', 'endsWith'],
   
-  async evaluate(context: ExecutionContext, str: any, suffix: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, str: unknown, suffix: unknown): Promise<boolean> {
     if (typeof str !== 'string' || typeof suffix !== 'string') {
       return false;
     }
     return str.endsWith(suffix);
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'endsWith requires exactly two arguments (str, suffix)';
     }
@@ -692,7 +692,7 @@ export const matchesExpression: EnhancedExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['matches'],
   
-  async evaluate(context: ExecutionContext, element: any, selector: any): Promise<boolean> {
+  async evaluate(context: ExecutionContext, element: unknown, selector: unknown): Promise<boolean> {
     const startTime = Date.now();
     try {
       let result: boolean;
@@ -733,7 +733,7 @@ export const matchesExpression: EnhancedExpressionImplementation = {
     }
   },
   
-  validate(args: any[]): string | null {
+  validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'matches requires exactly two arguments (element, selector)';
     }

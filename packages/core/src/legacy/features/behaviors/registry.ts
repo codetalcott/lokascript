@@ -7,9 +7,9 @@ import type {
   BehaviorDefinition, 
   BehaviorInstance, 
   BehaviorRegistry as IBehaviorRegistry 
-} from './types.js';
-import { getDefaultOnFeature } from '../on.js';
-import type { ExecutionContext } from '../../types/core.js';
+} from './types';
+import { getDefaultOnFeature } from '../on';
+import type { ExecutionContext } from '../../types/core';
 
 export class BehaviorRegistry implements IBehaviorRegistry {
   private definitions = new Map<string, BehaviorDefinition>();

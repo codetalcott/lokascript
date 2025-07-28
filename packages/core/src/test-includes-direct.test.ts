@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createMockHyperscriptContext } from './test-setup.js';
-import { logicalExpressions } from './expressions/logical/index.js';
-import type { ExecutionContext } from './types/core.js';
+import { createMockHyperscriptContext } from './test-setup';
+import { logicalExpressions } from './expressions/logical/index';
+import type { ExecutionContext } from './types/core';
 import { writeFileSync } from 'fs';
 
 describe('Includes Expression Direct Test', () => {

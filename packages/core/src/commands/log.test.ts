@@ -6,8 +6,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // We'll need to create these modules
-import { executeCommand } from './command-executor.js';
-import type { ExecutionContext } from '../types/core.js';
+import { executeCommand } from './command-executor';
+import type { ExecutionContext } from '../types/core';
 
 describe('LOG Command', () => {
   let consoleSpy: any;

@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface AddCommandOptions {
   delimiter?: string;
@@ -123,7 +123,7 @@ export class AddCommand implements TypedCommandImplementation<
     tags: ['dom', 'css', 'classes', 'attributes']
   };
   
-  private _options: AddCommandOptions;
+  private readonly _options: AddCommandOptions; // Used for future enhancements
 
   constructor(options: AddCommandOptions = {}) {
     this._options = {
@@ -224,7 +224,7 @@ export class AddCommand implements TypedCommandImplementation<
     }
   }
 
-  private parseClasses(classExpression: any): string[] {
+  private parseClasses(classExpression: unknown): string[] {
     if (!classExpression) {
       return [];
     }

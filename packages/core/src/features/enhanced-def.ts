@@ -9,9 +9,9 @@ import type {
   LLMDocumentation, 
   EvaluationType,
   ExecutionContext
-} from '../types/base-types.js';
-import type { ContextMetadata } from '../types/enhanced-context.js';
-import type { EvaluationResult } from '../types/enhanced-core.js';
+} from '../types/base-types';
+import type { ContextMetadata } from '../types/enhanced-context';
+import type { EvaluationResult } from '../types/enhanced-core';
 
 // ============================================================================
 // Enhanced Def Feature Input/Output Schemas

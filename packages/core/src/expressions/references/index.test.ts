@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../../test-setup.js';
-import { referenceExpressions } from './index.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
+import { referenceExpressions } from './index';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Reference Expressions', () => {
   let context: ExecutionContext;

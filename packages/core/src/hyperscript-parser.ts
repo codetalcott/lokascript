@@ -5,8 +5,8 @@
  * Compatible with _hyperscript parser patterns
  */
 
-import { Lexer, Tokens, Token } from './tokenizer.js';
-import type { ASTNode, ParseError, ParseResult } from './types/core.js';
+import { Lexer, Tokens, Token } from './tokenizer';
+import type { ASTNode, ParseError, ParseResult } from './types/core';
 
 /**
  * AST Node types for hyperscript

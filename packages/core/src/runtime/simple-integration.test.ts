@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { Runtime } from './runtime.js';
-import { ContextBridge, EnhancedCommandRegistry } from './enhanced-command-adapter.js';
+import { Runtime } from './runtime';
+import { ContextBridge, EnhancedCommandRegistry } from './enhanced-command-adapter';
 
 describe('Simple Integration Test', () => {
   it('should create runtime with enhanced commands enabled', () => {

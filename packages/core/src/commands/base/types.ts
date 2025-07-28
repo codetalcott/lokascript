@@ -3,7 +3,7 @@
  * Defines core interfaces and types used across all enhanced commands
  */
 
-import type { TypedExecutionContext, ValidationResult } from '../../types/core.js';
+import type { TypedExecutionContext, ValidationResult } from '../../types/core';
 
 /**
  * Enhanced command implementation interface

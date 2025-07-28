@@ -4,7 +4,7 @@
  */
 
 import type { Token } from '../types/core';
-import { TokenType } from './tokenizer.js';
+import { TokenType } from './tokenizer';
 
 // Pre-compute character codes for faster checks
 const CHAR_A = 'a'.charCodeAt(0);

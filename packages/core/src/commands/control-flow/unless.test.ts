@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import '../../test-setup.js';
-import { UnlessCommand } from './unless.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { UnlessCommand } from './unless';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Unless Command', () => {
   let unlessCommand: UnlessCommand;

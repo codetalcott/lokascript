@@ -11,7 +11,7 @@ import {
   enhancedWebWorkerImplementation,
   type EnhancedWebWorkerInput,
   type EnhancedWebWorkerOutput
-} from './enhanced-webworker.js';
+} from './enhanced-webworker';
 
 // Mock Worker for testing
 class MockWorker {
@@ -954,7 +954,7 @@ describe('Enhanced WebWorker Feature Implementation', () => {
       const result = await webworkerFeature.initialize({
         worker: {
           script: `
-            import { calculateComplexMath } from './math-utils.js';
+            import { calculateComplexMath } from './math-utils';
             
             self.onmessage = function(e) {
               const { operation, data } = e.data;

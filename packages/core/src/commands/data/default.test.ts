@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import '../../test-setup.js';
-import { DefaultCommand } from './default.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { DefaultCommand } from './default';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Default Command', () => {
   let defaultCommand: DefaultCommand;

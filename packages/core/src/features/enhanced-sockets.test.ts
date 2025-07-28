@@ -11,7 +11,7 @@ import {
   enhancedSocketsImplementation,
   type EnhancedSocketsInput,
   type EnhancedSocketsOutput
-} from './enhanced-sockets.js';
+} from './enhanced-sockets';
 
 // Mock WebSocket for testing
 class MockWebSocket {

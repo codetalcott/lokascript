@@ -12,7 +12,7 @@ import type {
   UnifiedHyperScriptValue,
   UnifiedResult,
   UnifiedTypedResult
-} from './unified-types.js';
+} from './unified-types';
 
 // ============================================================================
 // Legacy Type Definitions (for compatibility)

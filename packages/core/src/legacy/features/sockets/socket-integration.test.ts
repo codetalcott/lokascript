@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '../../test-setup.js';
-import type { ExecutionContext } from '../../types/core.js';
-import { createMockHyperscriptContext, createTestElement } from '../../test-setup.js';
+import type { ExecutionContext } from '../../types/core';
+import { createMockHyperscriptContext, createTestElement } from '../../test-setup';
 
 // Mock WebSocket for testing
 class MockWebSocket {
@@ -403,4 +403,4 @@ describe('Socket Integration', () => {
 });
 
 // Import actual implementations
-import { parseAndDefineSocket, connectToSocket, sendToSocket, makeRpcCall } from './index.js';
+import { parseAndDefineSocket, connectToSocket, sendToSocket, makeRpcCall } from './index';

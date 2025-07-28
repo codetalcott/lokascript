@@ -3,15 +3,15 @@
  * Connects parsed AST nodes to the comprehensive expression implementations
  */
 
-import type { ASTNode, ExecutionContext } from '../types/core.js';
+import type { ASTNode, ExecutionContext } from '../types/core';
 
 // Import all expression categories
-import { referenceExpressions } from '../expressions/references/index.js';
-import { logicalExpressions } from '../expressions/logical/index.js';
-import { conversionExpressions } from '../expressions/conversion/index.js';
-import { positionalExpressions } from '../expressions/positional/index.js';
-import { propertyExpressions } from '../expressions/properties/index.js';
-import { specialExpressions } from '../expressions/enhanced-special/index.js';
+import { referenceExpressions } from '../expressions/references/index';
+import { logicalExpressions } from '../expressions/logical/index';
+import { conversionExpressions } from '../expressions/conversion/index';
+import { positionalExpressions } from '../expressions/positional/index';
+import { propertyExpressions } from '../expressions/properties/index';
+import { specialExpressions } from '../expressions/enhanced-special/index';
 
 export class ExpressionEvaluator {
   private expressionRegistry: Map<string, any>;

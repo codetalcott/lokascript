@@ -3,7 +3,7 @@
  * Handles variable scoping, context switching, and execution state
  */
 
-import type { ExecutionContext } from '../types/core.js';
+import type { ExecutionContext } from '../types/core';
 
 /**
  * Creates a new execution context

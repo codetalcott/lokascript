@@ -3,17 +3,17 @@
  * Parses and executes _hyperscript-compatible commands
  */
 
-import type { ExecutionContext } from '../types/core.js';
-import { parseAndEvaluateExpression } from '../parser/expression-parser.js';
+import type { ExecutionContext } from '../types/core';
+import { parseAndEvaluateExpression } from '../parser/expression-parser';
 
 // Command implementations
-import { logCommand } from './implementations/log.js';
-import { SetCommand } from './data/index.js';
-import { PutCommand } from './dom/put.js';
-import { AddCommand } from './dom/add.js';
-import { ShowCommand } from './dom/show.js';
-import { HideCommand } from './dom/hide.js';
-import { RenderCommand } from './templates/index.js';
+import { logCommand } from './implementations/log';
+import { SetCommand } from './data/index';
+import { PutCommand } from './dom/put';
+import { AddCommand } from './dom/add';
+import { ShowCommand } from './dom/show';
+import { HideCommand } from './dom/hide';
+import { RenderCommand } from './templates/index';
 
 export interface Command {
   name: string;

@@ -5,46 +5,46 @@
  */
 
 // Data Commands
-import { createEnhancedIncrementCommand, EnhancedIncrementCommand } from './data/enhanced-increment.js';
-import { createEnhancedDecrementCommand, EnhancedDecrementCommand } from './data/enhanced-decrement.js';
-import { createEnhancedSetCommand, EnhancedSetCommand } from './data/enhanced-set.js';
-import { createEnhancedDefaultCommand, EnhancedDefaultCommand } from './data/enhanced-default.js';
+import { createEnhancedIncrementCommand, EnhancedIncrementCommand } from './data/enhanced-increment';
+import { createEnhancedDecrementCommand, EnhancedDecrementCommand } from './data/enhanced-decrement';
+import { createEnhancedSetCommand, EnhancedSetCommand } from './data/enhanced-set';
+import { createEnhancedDefaultCommand, EnhancedDefaultCommand } from './data/enhanced-default';
 
 // Creation Commands
-import { createEnhancedMakeCommand, EnhancedMakeCommand } from './creation/enhanced-make.js';
+import { createEnhancedMakeCommand, EnhancedMakeCommand } from './creation/enhanced-make';
 
 // Content Commands
-import { createEnhancedAppendCommand, EnhancedAppendCommand } from './content/enhanced-append.js';
+import { createEnhancedAppendCommand, EnhancedAppendCommand } from './content/enhanced-append';
 
 // Execution Commands
-import { createEnhancedCallCommand, createEnhancedGetCommand, EnhancedCallCommand, EnhancedGetCommand } from './execution/enhanced-call.js';
+import { createEnhancedCallCommand, createEnhancedGetCommand, EnhancedCallCommand, EnhancedGetCommand } from './execution/enhanced-call';
 
 // Control Flow Commands
-import { createEnhancedIfCommand, EnhancedIfCommand } from './control-flow/enhanced-if.js';
-import { createEnhancedHaltCommand, EnhancedHaltCommand } from './control-flow/enhanced-halt.js';
-import { createEnhancedReturnCommand, EnhancedReturnCommand } from './control-flow/enhanced-return.js';
-import { createEnhancedThrowCommand, EnhancedThrowCommand } from './control-flow/enhanced-throw.js';
-import { createEnhancedRepeatCommand, EnhancedRepeatCommand } from './control-flow/enhanced-repeat.js';
-import { createEnhancedUnlessCommand, EnhancedUnlessCommand } from './control-flow/enhanced-unless.js';
-import { createEnhancedContinueCommand, EnhancedContinueCommand } from './control-flow/enhanced-continue.js';
-import { createEnhancedBreakCommand, EnhancedBreakCommand } from './control-flow/enhanced-break.js';
+import { createEnhancedIfCommand, EnhancedIfCommand } from './control-flow/enhanced-if';
+import { createEnhancedHaltCommand, EnhancedHaltCommand } from './control-flow/enhanced-halt';
+import { createEnhancedReturnCommand, EnhancedReturnCommand } from './control-flow/enhanced-return';
+import { createEnhancedThrowCommand, EnhancedThrowCommand } from './control-flow/enhanced-throw';
+import { createEnhancedRepeatCommand, EnhancedRepeatCommand } from './control-flow/enhanced-repeat';
+import { createEnhancedUnlessCommand, EnhancedUnlessCommand } from './control-flow/enhanced-unless';
+import { createEnhancedContinueCommand, EnhancedContinueCommand } from './control-flow/enhanced-continue';
+import { createEnhancedBreakCommand, EnhancedBreakCommand } from './control-flow/enhanced-break';
 
 // Utility Commands
-import { createEnhancedPickCommand, EnhancedPickCommand } from './utility/enhanced-pick.js';
+import { createEnhancedPickCommand, EnhancedPickCommand } from './utility/enhanced-pick';
 
 // Advanced Commands
-import { createEnhancedTellCommand, EnhancedTellCommand } from './advanced/enhanced-tell.js';
-import { createEnhancedJSCommand, EnhancedJSCommand } from './advanced/enhanced-js.js';
-import { createEnhancedBeepCommand, EnhancedBeepCommand } from './advanced/enhanced-beep.js';
-import { createEnhancedAsyncCommand, EnhancedAsyncCommand } from './advanced/enhanced-async.js';
+import { createEnhancedTellCommand, EnhancedTellCommand } from './advanced/enhanced-tell';
+import { createEnhancedJSCommand, EnhancedJSCommand } from './advanced/enhanced-js';
+import { createEnhancedBeepCommand, EnhancedBeepCommand } from './advanced/enhanced-beep';
+import { createEnhancedAsyncCommand, EnhancedAsyncCommand } from './advanced/enhanced-async';
 
 // Animation Commands
-import { createEnhancedSettleCommand, EnhancedSettleCommand } from './animation/enhanced-settle.js';
-import { createEnhancedMeasureCommand, EnhancedMeasureCommand } from './animation/enhanced-measure.js';
-import { createEnhancedTransitionCommand, EnhancedTransitionCommand } from './animation/enhanced-transition.js';
+import { createEnhancedSettleCommand, EnhancedSettleCommand } from './animation/enhanced-settle';
+import { createEnhancedMeasureCommand, EnhancedMeasureCommand } from './animation/enhanced-measure';
+import { createEnhancedTransitionCommand, EnhancedTransitionCommand } from './animation/enhanced-transition';
 
 // Template Commands
-import { createEnhancedRenderCommand, EnhancedRenderCommand } from './templates/enhanced-render.js';
+import { createEnhancedRenderCommand, EnhancedRenderCommand } from './templates/enhanced-render';
 
 // Re-export everything
 export {
@@ -91,8 +91,8 @@ export {
   createEnhancedRenderCommand, EnhancedRenderCommand,
 };
 
-import type { TypedCommandImplementation } from '../types/core.js';
-import type { TypedExecutionContext } from '../types/enhanced-core.js';
+import type { TypedCommandImplementation } from '../types/core';
+import type { TypedExecutionContext } from '../types/enhanced-core';
 
 /**
  * Enhanced Command Factory Registry

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { EnhancedErrorHandler, ErrorContext } from './enhanced-error-handler.js';
-import { tokenize, TokenType } from './tokenizer.js';
+import { EnhancedErrorHandler, ErrorContext } from './enhanced-error-handler';
+import { tokenize, TokenType } from './tokenizer';
 
 describe('Enhanced Error Handler', () => {
   function createTestTokens(input: string) {

@@ -4,14 +4,14 @@
  * Usage: deno run --allow-read src/validation/validate-cli.ts [command-name]
  */
 
-import { CommandPatternValidator, CommandSuiteValidator, ValidationReporter } from './command-pattern-validator.js';
+import { CommandPatternValidator, CommandSuiteValidator, ValidationReporter } from './command-pattern-validator';
 
 // Import all commands for validation
-import { HideCommand, createHideCommand } from '../commands/dom/hide.js';
-import { ShowCommand, createShowCommand } from '../commands/dom/show.js';
-import { ToggleCommand, createToggleCommand } from '../commands/dom/toggle.js';
-import { AddCommand, createAddCommand } from '../commands/dom/add.js';
-import { RemoveCommand, createRemoveCommand } from '../commands/dom/remove.js';
+import { HideCommand, createHideCommand } from '../commands/dom/hide';
+import { ShowCommand, createShowCommand } from '../commands/dom/show';
+import { ToggleCommand, createToggleCommand } from '../commands/dom/toggle';
+import { AddCommand, createAddCommand } from '../commands/dom/add';
+import { RemoveCommand, createRemoveCommand } from '../commands/dom/remove';
 
 // Command registry for validation
 const COMMAND_REGISTRY = [

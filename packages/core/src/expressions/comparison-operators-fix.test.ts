@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parseAndEvaluateExpression } from '../parser/expression-parser.js';
-import type { ExecutionContext } from '../types/core.js';
+import { parseAndEvaluateExpression } from '../parser/expression-parser';
+import type { ExecutionContext } from '../types/core';
 
 describe('Comparison Operators Fix - Official Test Patterns', () => {
   let context: ExecutionContext;

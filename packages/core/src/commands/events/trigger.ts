@@ -13,7 +13,7 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.js';
+} from '../../types/enhanced-core';
 
 /**
  * Input validation schema for LLM understanding

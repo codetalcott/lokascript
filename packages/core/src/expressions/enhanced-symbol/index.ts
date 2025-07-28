@@ -14,7 +14,7 @@ import type {
   LLMDocumentation,
   ValidationResult,
   HyperScriptError
-} from '../../types/enhanced-core.js';
+} from '../../types/enhanced-core';
 
 // ============================================================================
 // Input Validation Schema

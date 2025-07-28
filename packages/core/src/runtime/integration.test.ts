@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Runtime } from './runtime.js';
-import type { ExecutionContext, CommandNode } from '../types/core.js';
+import { Runtime } from './runtime';
+import type { ExecutionContext, CommandNode } from '../types/core';
 
 describe('Runtime Integration with Enhanced Commands', () => {
   let runtime: Runtime;

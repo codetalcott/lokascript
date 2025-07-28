@@ -7,8 +7,8 @@
  * Modernized with TypedCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core.js';
-import type { TypedExecutionContext } from '../../types/enhanced-core.js';
+import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
 export interface IncrementCommandInput {
@@ -302,7 +302,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     const elementRef = parts[0];
     const property = parts[1];
     
-    let element: any = null;
+    let element: HTMLElement | unknown = null;
     
     // Resolve element reference
     if (elementRef === 'me') {
@@ -321,7 +321,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     }
     
     // Get property value
-    const value = element[property];
+    const value = (element as Record<string, unknown>)[property];
     return this.convertToNumber(value);
   }
 
@@ -330,7 +330,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     const elementRef = parts[0];
     const property = parts[1];
     
-    let element: any = null;
+    let element: HTMLElement | unknown = null;
     
     // Resolve element reference
     if (elementRef === 'me') {
@@ -345,11 +345,11 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     }
     
     if (element) {
-      element[property] = value;
+      (element as Record<string, unknown>)[property] = value;
     }
   }
 
-  private convertToNumber(value: any): number {
+  private convertToNumber(value: unknown): number {
     if (value === null || value === undefined) {
       return 0;
     }
@@ -389,7 +389,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     return 0;
   }
 
-  private getVariableValue(name: string, context: TypedExecutionContext, preferredScope?: string): any {
+  private getVariableValue(name: string, context: TypedExecutionContext, preferredScope?: string): unknown {
     // If preferred scope is specified, check that first
     if (preferredScope === 'global' && context.globals && context.globals.has(name)) {
       return context.globals.get(name);

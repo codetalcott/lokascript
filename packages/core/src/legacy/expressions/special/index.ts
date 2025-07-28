@@ -3,7 +3,7 @@
  * Handles literal values, calculations, and mathematical operations
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core.js';
+import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
 
 // ============================================================================
 // Literal Value Expressions

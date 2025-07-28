@@ -4,17 +4,17 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { EnhancedBenchmark } from './enhanced-benchmarks.js';
-import { createTypedExpressionContext } from '../test-utilities.js';
+import { EnhancedBenchmark } from './enhanced-benchmarks';
+import { createTypedExpressionContext } from '../test-utilities';
 
 // Import enhanced expressions
-import { EnhancedMeExpression } from '../expressions/enhanced-references/index.js';
-import { EnhancedEqualityExpression } from '../expressions/enhanced-comparison/index.js';
-import { EnhancedAndExpression } from '../expressions/enhanced-logical/index.js';
-import { EnhancedAsExpression } from '../expressions/enhanced-conversion/index.js';
-import { EnhancedFirstExpression } from '../expressions/enhanced-positional/index.js';
-import { EnhancedMyExpression } from '../expressions/enhanced-property/index.js';
-import { EnhancedAdditionExpression } from '../expressions/enhanced-mathematical/index.js';
+import { EnhancedMeExpression } from '../expressions/enhanced-references/index';
+import { EnhancedEqualityExpression } from '../expressions/enhanced-comparison/index';
+import { EnhancedAndExpression } from '../expressions/enhanced-logical/index';
+import { EnhancedAsExpression } from '../expressions/enhanced-conversion/index';
+import { EnhancedFirstExpression } from '../expressions/enhanced-positional/index';
+import { EnhancedMyExpression } from '../expressions/enhanced-property/index';
+import { EnhancedAdditionExpression } from '../expressions/enhanced-mathematical/index';
 
 describe('Enhanced Expression Performance Benchmarks', () => {
   let benchmark: EnhancedBenchmark;

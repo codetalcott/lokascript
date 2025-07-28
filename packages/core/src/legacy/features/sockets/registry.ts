@@ -11,7 +11,7 @@ import type {
   RpcMessage,
   RpcResponse,
   MessageListener
-} from './types.js';
+} from './types';
 
 export class SocketRegistry implements ISocketRegistry {
   private definitions = new Map<string, SocketDefinition>();

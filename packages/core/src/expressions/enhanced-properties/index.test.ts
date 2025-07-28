@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createTypedExecutionContext } from '../../test-setup.js';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.js';
+import { createTypedExecutionContext } from '../../test-setup';
+import type { TypedExpressionContext } from '../../types/enhanced-expressions';
 import {
   EnhancedPossessiveExpression,
   EnhancedMyExpression,
@@ -14,7 +14,7 @@ import {
   EnhancedAttributeExpression,
   EnhancedAttributeWithValueExpression,
   enhancedPropertyExpressions
-} from './index.js';
+} from './index';
 
 describe('Enhanced Property Expressions', () => {
   let context: TypedExpressionContext;

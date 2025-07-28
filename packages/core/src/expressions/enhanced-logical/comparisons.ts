@@ -12,7 +12,7 @@ import type {
   UnifiedTypedResult as TypedResult,
   UnifiedLLMDocumentation as LLMDocumentation,
   UnifiedExpressionCategory as ExpressionCategory
-} from '../../types/index.js';
+} from '../../types/index';
 
 // Define BaseTypedExpression locally for now
 interface BaseTypedExpression<T> {

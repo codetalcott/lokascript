@@ -4,7 +4,7 @@
  * Generated from LSP data with TDD implementation
  */
 
-import type { ExecutionContext } from '../../types/base-types.js';
+import type { ExecutionContext } from '../../types/base-types';
 // Legacy ExpressionImplementation interface maintained for compatibility
 interface ExpressionImplementation {
   name: string;

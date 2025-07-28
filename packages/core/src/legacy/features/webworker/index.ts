@@ -3,9 +3,9 @@
  * Main entry point for Web Worker functionality
  */
 
-import { HyperscriptWebWorkerParser } from './parser.js';
-import { globalWebWorkerRegistry } from './registry.js';
-import type { WebWorkerDefinition, WebWorkerStub } from './types.js';
+import { HyperscriptWebWorkerParser } from './parser';
+import { globalWebWorkerRegistry } from './registry';
+import type { WebWorkerDefinition, WebWorkerStub } from './types';
 
 // Initialize parser
 const webWorkerParser = new HyperscriptWebWorkerParser();
@@ -52,4 +52,4 @@ export function sendToWebWorker(webWorkerName: string, data: any, transfer?: Tra
 
 // Export for testing and integration
 export { webWorkerParser, globalWebWorkerRegistry };
-export * from './types.js';
+export * from './types';

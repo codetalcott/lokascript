@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createEnhancedIncrementCommand, createEnhancedSetCommand, createEnhancedCallCommand } from './enhanced-command-registry.js';
-import { createTypedExecutionContext } from '../test-utilities.js';
+import { createEnhancedIncrementCommand, createEnhancedSetCommand, createEnhancedCallCommand } from './enhanced-command-registry';
+import { createTypedExecutionContext } from '../test-utilities';
 
 describe('Enhanced Commands', () => {
   describe('Enhanced Increment Command', () => {

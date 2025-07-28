@@ -10,9 +10,9 @@ import type {
   ValidationResult,
   EvaluationResult,
   EnhancedContextBase
-} from '../types/enhanced-context.js';
-import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core.js';
-import type { ExecutionContext } from '../types/core.js';
+} from '../types/enhanced-context';
+import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
+import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced Sockets Feature Input/Output Schemas

@@ -3,9 +3,9 @@
  * Automatically detects and processes _="" attributes on elements
  */
 
-import { hyperscript } from '../api/hyperscript-api.js';
-import { createContext } from '../core/context.js';
-import type { ExecutionContext } from '../types/core.js';
+import { hyperscript } from '../api/hyperscript-api';
+import { createContext } from '../core/context';
+import type { ExecutionContext } from '../types/core';
 
 export interface AttributeProcessorOptions {
   attributeName?: string;

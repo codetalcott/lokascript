@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { hyperscript } from '../api/hyperscript-api.js';
+import { hyperscript } from '../api/hyperscript-api';
 
 describe('End-to-End Hyperscript Integration', () => {
   let container: HTMLElement;

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TemplateCompiler } from './template-compiler.js';
+import { TemplateCompiler } from './template-compiler';
 import '../../test-setup.js'; // Import DOM setup
 
 describe('Template Compiler - Two-Phase Processing', () => {

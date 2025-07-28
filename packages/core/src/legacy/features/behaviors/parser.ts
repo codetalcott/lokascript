@@ -3,7 +3,7 @@
  * Parses _hyperscript behavior definition syntax
  */
 
-import type { BehaviorDefinition, BehaviorBlock, EventHandlerDefinition, BehaviorParser } from './types.js';
+import type { BehaviorDefinition, BehaviorBlock, EventHandlerDefinition, BehaviorParser } from './types';
 
 export class HyperscriptBehaviorParser implements BehaviorParser {
   parse(behaviorCode: string): BehaviorDefinition {

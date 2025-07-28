@@ -11,7 +11,7 @@ import type {
   HyperScriptValue,
   EvaluationResult,
   LLMDocumentation
-} from '../../types/enhanced-core.js';
+} from '../../types/enhanced-core';
 
 // ============================================================================
 // Enhanced String Interpolation Expression

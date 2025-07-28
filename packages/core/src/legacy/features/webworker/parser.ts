@@ -3,7 +3,7 @@
  * Parses _hyperscript Web Worker definition syntax
  */
 
-import type { WebWorkerDefinition, MessageHandlerDefinition, WebWorkerParser } from './types.js';
+import type { WebWorkerDefinition, MessageHandlerDefinition, WebWorkerParser } from './types';
 
 export class HyperscriptWebWorkerParser implements WebWorkerParser {
   parse(webWorkerCode: string): WebWorkerDefinition {

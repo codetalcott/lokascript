@@ -10,8 +10,8 @@ import type {
   EvaluationType,
   ExpressionMetadata,
   ValidationResult
-} from './enhanced-expressions.js';
-import type { LLMDocumentation } from './enhanced-core.js';
+} from './enhanced-expressions';
+import type { LLMDocumentation } from './enhanced-core';
 
 // ============================================================================
 // Enhanced Context Result Types

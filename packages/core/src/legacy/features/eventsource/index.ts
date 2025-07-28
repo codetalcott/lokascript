@@ -3,9 +3,9 @@
  * Main entry point for EventSource functionality
  */
 
-import { HyperscriptEventSourceParser } from './parser.js';
-import { globalEventSourceRegistry } from './registry.js';
-import type { EventSourceDefinition, EventSourceStub } from './types.js';
+import { HyperscriptEventSourceParser } from './parser';
+import { globalEventSourceRegistry } from './registry';
+import type { EventSourceDefinition, EventSourceStub } from './types';
 
 // Initialize parser
 const eventSourceParser = new HyperscriptEventSourceParser();
@@ -42,4 +42,4 @@ export function getEventSource(eventSourceName: string): any {
 
 // Export for testing and integration
 export { eventSourceParser, globalEventSourceRegistry };
-export * from './types.js';
+export * from './types';

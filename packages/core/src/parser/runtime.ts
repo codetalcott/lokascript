@@ -3,15 +3,15 @@
  * Connects AST parser with Phase 3 expression evaluation system
  */
 
-import type { ASTNode, ExecutionContext } from '../types/core.js';
+import type { ASTNode, ExecutionContext } from '../types/core';
 
 // Import Phase 3 expression system
-import { referenceExpressions } from '../expressions/references/index.js';
-import { logicalExpressions } from '../expressions/logical/index.js';
-import { conversionExpressions } from '../expressions/conversion/index.js';
-import { positionalExpressions } from '../expressions/positional/index.js';
-import { propertyExpressions } from '../expressions/properties/index.js';
-import { enhancedSpecialExpressions } from '../expressions/enhanced-special/index.js';
+import { referenceExpressions } from '../expressions/references/index';
+import { logicalExpressions } from '../expressions/logical/index';
+import { conversionExpressions } from '../expressions/conversion/index';
+import { positionalExpressions } from '../expressions/positional/index';
+import { propertyExpressions } from '../expressions/properties/index';
+import { enhancedSpecialExpressions } from '../expressions/enhanced-special/index';
 
 // Create alias for backward compatibility  
 const specialExpressions = enhancedSpecialExpressions;

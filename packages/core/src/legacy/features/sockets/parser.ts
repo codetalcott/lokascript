@@ -3,7 +3,7 @@
  * Parses _hyperscript socket definition syntax
  */
 
-import type { SocketDefinition, MessageHandler, SocketParser } from './types.js';
+import type { SocketDefinition, MessageHandler, SocketParser } from './types';
 
 export class HyperscriptSocketParser implements SocketParser {
   parse(socketCode: string): SocketDefinition {

@@ -3,8 +3,8 @@
  * Bridges our implementation with their testing expectations
  */
 
-import type { ExecutionContext } from '../types/core.js';
-import { parseAndEvaluateExpression } from '../parser/expression-parser.js';
+import type { ExecutionContext } from '../types/core';
+import { parseAndEvaluateExpression } from '../parser/expression-parser';
 
 // Create a DOM element with hyperscript processing (simplified for testing)
 export function make(htmlString: string): HTMLElement {

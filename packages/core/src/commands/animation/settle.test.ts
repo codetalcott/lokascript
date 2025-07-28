@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '../../test-setup.js';
-import { SettleCommand } from './settle.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { SettleCommand } from './settle';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Settle Command', () => {
   let settleCommand: SettleCommand;

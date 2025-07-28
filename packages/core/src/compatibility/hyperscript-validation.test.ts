@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { evalHyperScript, make, clearWorkArea, getParseErrorFor } from './hyperscript-adapter.js';
+import { evalHyperScript, make, clearWorkArea, getParseErrorFor } from './hyperscript-adapter';
 
 describe('_hyperscript Compatibility Validation', () => {
   beforeEach(() => {

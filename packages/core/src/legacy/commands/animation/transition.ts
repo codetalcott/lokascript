@@ -3,7 +3,7 @@
  * Animates CSS properties with transitions
  */
 
-import type { CommandImplementation, ExecutionContext } from '../../types/core.js';
+import type { CommandImplementation, ExecutionContext } from '../../types/core';
 
 export class TransitionCommand implements CommandImplementation {
   name = 'transition';

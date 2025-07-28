@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { evalHyperScript } from './eval-hyperscript.js';
+import { evalHyperScript } from './eval-hyperscript';
 
 describe('JavaScript-Standard Precedence (Developer-Friendly)', () => {
   describe('Mathematical expressions', () => {

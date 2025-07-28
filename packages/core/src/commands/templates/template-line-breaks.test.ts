@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import '../../test-setup.js';
-import { FixedTemplateProcessor } from './template-processor-fixed.js';
-import type { ExecutionContext } from '../../types/core.js';
+import { FixedTemplateProcessor } from './template-processor-fixed';
+import type { ExecutionContext } from '../../types/core';
 
 describe('Template Line Break Handling', () => {
   let processor: FixedTemplateProcessor;

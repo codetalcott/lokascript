@@ -25,7 +25,7 @@ export type {
   ParseError,
   ExpressionNode,
   CommandNode as BaseCommandNode
-} from './base-types.js';
+} from './base-types';
 
 // Import types for use within this file
 import type {
@@ -34,7 +34,7 @@ import type {
   ExpressionNode,
   EvaluationType,
   ParseError
-} from './base-types.js';
+} from './base-types';
 
 // ============================================================================
 // Legacy Language Element Types (Domain-Specific)
@@ -64,7 +64,7 @@ export type Associativity = 'Left' | 'Right' | 'None';
  */
 export interface ExtendedExecutionContext extends ExecutionContext {
   /** General variables storage (for simple use cases) */
-  variables?: Map<string, any>;
+  variables?: Map<string, unknown>;
   
   /** Event handlers storage for cleanup */
   events?: Map<string, { target: HTMLElement; event: string; handler: Function }>;
@@ -73,7 +73,7 @@ export interface ExtendedExecutionContext extends ExecutionContext {
   parent?: ExtendedExecutionContext;
   
   /** Meta scope - template variables and internal hyperscript state */
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   
   /** Execution flags */
   flags?: {
@@ -122,10 +122,10 @@ export interface StatementNode extends ASTNode {
 
 export interface Runtime {
   /** Execute a command in the given context */
-  executeCommand(command: CommandNode, context: ExecutionContext): Promise<any>;
+  executeCommand(command: CommandNode, context: ExecutionContext): Promise<unknown>;
   
   /** Evaluate an expression in the given context */
-  evaluateExpression(expression: ExpressionNode, context: ExecutionContext): Promise<any>;
+  evaluateExpression(expression: ExpressionNode, context: ExecutionContext): Promise<unknown>;
   
   /** Create a new execution context */
   createContext(parent?: ExecutionContext): ExecutionContext;
@@ -147,12 +147,12 @@ export interface Runtime {
 export interface CommandImplementation {
   name: string;
   syntax: string;
-  execute: (context: ExecutionContext, ...args: any[]) => Promise<any>;
+  execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>;
   isBlocking: boolean;
   hasBody: boolean;
   implicitTarget?: string;
   implicitResult?: 'it' | 'result' | 'none';
-  validate?: (args: any[]) => string | null;
+  validate?: (args: unknown[]) => string | null;
 }
 
 // ============================================================================
@@ -163,13 +163,13 @@ export interface CommandImplementation {
  * Legacy ValidationResult interface for backward compatibility
  * Maps to the unified ValidationResult from base-types.ts
  */
-export interface LegacyValidationResult<T = any> {
+export interface LegacyValidationResult<T = unknown> {
   success: boolean;
   data?: T;
-  error?: import('./base-types.js').ValidationError;
+  error?: import('./base-types').ValidationError;
 }
 
-export interface TypedCommandImplementation<TInput = any, TOutput = any, TContext = import('./base-types.js').ExecutionContext> {
+export interface TypedCommandImplementation<TInput = unknown, TOutput = unknown, TContext = import('./base-types').ExecutionContext> {
   metadata: {
     name: string;
     description: string;
@@ -180,7 +180,7 @@ export interface TypedCommandImplementation<TInput = any, TOutput = any, TContex
   };
   
   validation: {
-    validate(input: unknown): import('./base-types.js').ValidationResult<TInput>;
+    validate(input: unknown): import('./base-types').ValidationResult<TInput>;
   };
   
   execute(input: TInput, context: TContext): Promise<TOutput>;
@@ -192,11 +192,11 @@ export interface ExpressionImplementation {
   name: string;
   category: ExpressionCategory;
   evaluatesTo: EvaluationType;
-  evaluate: (context: ExecutionContext, ...args: any[]) => Promise<any>;
+  evaluate: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>;
   precedence?: number;
   associativity?: Associativity;
   operators?: string[];
-  validate?: (args: any[]) => string | null;
+  validate?: (args: unknown[]) => string | null;
 }
 
 export interface FeatureImplementation {
@@ -295,7 +295,7 @@ export interface LSPArgument {
   type: string;
   description: string;
   optional: boolean;
-  default_value?: any;
+  default_value?: unknown;
 }
 
 // ============================================================================
@@ -307,7 +307,7 @@ export interface HyperscriptEvent extends CustomEvent {
     element: HTMLElement;
     context: ExecutionContext;
     command?: string;
-    result?: any;
+    result?: unknown;
     error?: Error;
   };
 }
@@ -333,7 +333,7 @@ export interface HyperscriptConfig {
   features?: Record<string, FeatureImplementation>;
   
   /** Global variables */
-  globals?: Record<string, any>;
+  globals?: Record<string, unknown>;
   
   /** Event handling configuration */
   events?: {

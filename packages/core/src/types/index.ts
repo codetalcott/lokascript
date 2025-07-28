@@ -26,13 +26,13 @@ export type {
   UnifiedASTNode,
   UnifiedParseError,
   UnifiedLLMDocumentation
-} from './unified-types.js';
+} from './unified-types';
 
 export {
   UnifiedValidator,
   isUnifiedValidationResult,
   isUnifiedExecutionContext
-} from './unified-types.js';
+} from './unified-types';
 
 // ============================================================================
 // Migration Support
@@ -46,7 +46,7 @@ export {
   normalizeValidationResult,
   assertUnifiedValidationResult,
   assertUnifiedExecutionContext
-} from './migration-adapters.js';
+} from './migration-adapters';
 
 // ============================================================================
 // Legacy Compatibility (temporary)
@@ -63,13 +63,13 @@ export type {
   UnifiedASTNode as ASTNode,
   UnifiedParseError as ParseError,
   UnifiedLLMDocumentation as LLMDocumentation
-} from './unified-types.js';
+} from './unified-types';
 
 // Export base types for runtime usage
 export type {
   ExpressionNode,
   CommandNode
-} from './base-types.js';
+} from './base-types';
 
 // ============================================================================
 // Convenience Type Aliases
@@ -118,5 +118,5 @@ export type AsyncValidationFunction<T> = (input: unknown) => Promise<UnifiedVali
 // Default Exports
 // ============================================================================
 
-export { default as UnifiedTypes } from './unified-types.js';
-export { default as MigrationAdapters } from './migration-adapters.js';
+export { default as UnifiedTypes } from './unified-types';
+export { default as MigrationAdapters } from './migration-adapters';

@@ -4,7 +4,7 @@
  * Handles hyperscript's unique natural language syntax
  */
 
-import { tokenize, TokenType } from './tokenizer.js';
+import { tokenize, TokenType } from './tokenizer';
 import type { 
   Token, 
   ASTNode,
@@ -12,7 +12,7 @@ import type {
   ExpressionNode,
   ParseResult as CoreParseResult, 
   ParseError as CoreParseError 
-} from '../types/core.js';
+} from '../types/core';
 
 // Use core types for consistency
 export type ParseResult = CoreParseResult;
@@ -21,7 +21,7 @@ export type ParseError = CoreParseError;
 // Additional AST node types for hyperscript-specific constructs
 interface LiteralNode extends ASTNode {
   type: 'literal';
-  value: any;
+  value: unknown;
   raw: string;
 }
 
@@ -349,7 +349,7 @@ export class Parser {
     return COMMANDS.has(name.toLowerCase());
   }
 
-  private createCommandFromIdentifier(identifierNode: any): any {
+  private createCommandFromIdentifier(identifierNode: IdentifierNode): CommandNode | null {
     const args: ASTNode[] = [];
     
     // Parse command arguments (space-separated, not comma-separated)
@@ -445,7 +445,7 @@ export class Parser {
 
     if (this.matchTokenType(TokenType.BOOLEAN)) {
       const tokenValue = this.previous().value;
-      let value: any;
+      let value: unknown;
       
       switch (tokenValue) {
         case 'true':
@@ -721,11 +721,11 @@ export class Parser {
           
           // Convert call expressions to commands
           if (expr && expr.type === 'callExpression') {
-            const callExpr = expr as any;
+            const callExpr = expr as CallExpressionNode;
             const commandNode: CommandNode = {
               type: 'command',
-              name: (callExpr.callee as any).name,
-              args: callExpr.arguments as any[],
+              name: (callExpr.callee as IdentifierNode).name,
+              args: callExpr.arguments as ExpressionNode[],
               isBlocking: false,
               start: expr.start,
               end: expr.end,
@@ -733,9 +733,9 @@ export class Parser {
               column: expr.column
             };
             commands.push(commandNode);
-          } else if (expr && expr.type === 'binaryExpression' && (expr as any).operator === ' ') {
+          } else if (expr && expr.type === 'binaryExpression' && (expr as BinaryExpressionNode).operator === ' ') {
             // Handle "command target" patterns
-            const binExpr = expr as any;
+            const binExpr = expr as BinaryExpressionNode;
             if (binExpr.left && binExpr.left.type === 'identifier' && this.isCommand(binExpr.left.name)) {
               const commandNode: CommandNode = {
                 type: 'command',
@@ -857,7 +857,7 @@ export class Parser {
       end: pos.end,
       line: pos.line,
       column: pos.column
-    } as any; // TypeScript helper for complex conditional types
+    } as CommandNode; // TypeScript helper for complex conditional types
   }
 
   private parseConditionalBranch(): ASTNode {
@@ -926,7 +926,7 @@ export class Parser {
   }
 
   // Helper methods for AST node creation
-  private createLiteral(value: any, raw: string): LiteralNode {
+  private createLiteral(value: unknown, raw: string): LiteralNode {
     const pos = this.getPosition();
     return {
       type: 'literal',

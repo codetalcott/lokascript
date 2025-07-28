@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTypedExecutionContext } from '../../test-setup.js';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.js';
+import { createTypedExecutionContext } from '../../test-setup';
+import type { TypedExpressionContext } from '../../types/enhanced-expressions';
 import {
   EnhancedEqualsExpression,
   EnhancedNotEqualsExpression,
@@ -14,7 +14,7 @@ import {
   EnhancedGreaterThanOrEqualExpression,
   EnhancedLessThanOrEqualExpression,
   enhancedComparisonExpressions
-} from './comparisons.js';
+} from './comparisons';
 
 describe('Enhanced Comparison Expressions', () => {
   let context: TypedExpressionContext;

@@ -7,17 +7,17 @@ import type {
   ExecutionContext, 
   TypedExecutionContext,
   ASTNode
-} from '../types/base-types.js';
-import { tokenize } from './tokenizer.js';
-import { TokenType, type Token } from './tokenizer.js';
+} from '../types/base-types';
+import { tokenize } from './tokenizer';
+import { TokenType, type Token } from './tokenizer';
 
 // Import enhanced expression implementations
-import { enhancedComparisonExpressions } from '../expressions/enhanced-comparison/index.js';
-import { enhancedMathematicalExpressions } from '../expressions/enhanced-mathematical/index.js';
-import { enhancedPropertyExpressions } from '../expressions/enhanced-property/index.js';
-import { enhancedConversionExpressions } from '../expressions/enhanced-conversion/index.js';
-import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index.js';
-import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index.js';
+import { enhancedComparisonExpressions } from '../expressions/enhanced-comparison/index';
+import { enhancedMathematicalExpressions } from '../expressions/enhanced-mathematical/index';
+import { enhancedPropertyExpressions } from '../expressions/enhanced-property/index';
+import { enhancedConversionExpressions } from '../expressions/enhanced-conversion/index';
+import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
+import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index';
 
 // Create aliases for backward compatibility
 const logicalExpressions = enhancedComparisonExpressions;

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parse } from './parser.js';
+import { parse } from './parser';
 
 describe('Parser API Investigation', () => {
   it('should understand actual parser return structure', () => {

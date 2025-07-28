@@ -13,7 +13,7 @@ import type {
   CommandMetadata,
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
-import { dispatchCustomEvent } from '../../core/events.js';
+import { dispatchCustomEvent } from '../../core/events';
 
 export interface GoCommandOptions {
   validateUrls?: boolean;
@@ -36,7 +36,14 @@ const GoCommandInputSchema = z.union([
   z.tuple([z.literal('back')]),
   
   // Element scrolling: complex pattern
-  z.array(z.unknown()).min(1).max(10)
+  z.array(z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.instanceof(HTMLElement),
+    z.null(),
+    z.undefined()
+  ])).min(1).max(10)
 ]);
 
 type GoCommandInput = z.infer<typeof GoCommandInputSchema>;

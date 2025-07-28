@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parse } from './parser.js';
+import { parse } from './parser';
 
 describe('Parser Error Recovery and Error Messages', () => {
   describe('Error Detection Tests', () => {

@@ -3,15 +3,15 @@
  * Provides all data manipulation commands for hyperscript
  */
 
-import { EnhancedSetCommand } from './enhanced-set.js';
-import { EnhancedDefaultCommand } from './enhanced-default.js';
-import { EnhancedIncrementCommand } from './enhanced-increment.js';
-import { EnhancedDecrementCommand } from './enhanced-decrement.js';
+import { EnhancedSetCommand } from './enhanced-set';
+import { EnhancedDefaultCommand } from './enhanced-default';
+import { EnhancedIncrementCommand } from './enhanced-increment';
+import { EnhancedDecrementCommand } from './enhanced-decrement';
 
-export { EnhancedSetCommand as SetCommand } from './enhanced-set.js';
-export { EnhancedDefaultCommand as DefaultCommand } from './enhanced-default.js';
-export { EnhancedIncrementCommand as IncrementCommand } from './enhanced-increment.js';
-export { EnhancedDecrementCommand as DecrementCommand } from './enhanced-decrement.js';
+export { EnhancedSetCommand as SetCommand } from './enhanced-set';
+export { EnhancedDefaultCommand as DefaultCommand } from './enhanced-default';
+export { EnhancedIncrementCommand as IncrementCommand } from './enhanced-increment';
+export { EnhancedDecrementCommand as DecrementCommand } from './enhanced-decrement';
 
 // Create instances with default options for easy access
 export const dataCommands = {
