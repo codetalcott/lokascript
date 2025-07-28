@@ -187,7 +187,7 @@ export class HyperfixiPluginRegistry implements PluginRegistry {
     }
   }
 
-  private processAttribute(element: Element, attr: Attr): void {
+  protected processAttribute(element: Element, attr: Attr): void {
     const value = attr.value;
     if (!value) return;
 

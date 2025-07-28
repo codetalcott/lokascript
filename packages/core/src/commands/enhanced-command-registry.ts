@@ -153,7 +153,7 @@ export function getEnhancedCommandNames(): string[] {
 /**
  * Create an enhanced command by name
  */
-export function createEnhancedCommand(name: string): TypedCommandImplementation<any, any, TypedExecutionContext> | null {
+export function createEnhancedCommand(name: string): TypedCommandImplementation<unknown, unknown, TypedExecutionContext> | null {
   const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
   return factory ? factory() : null;
 }
@@ -161,7 +161,7 @@ export function createEnhancedCommand(name: string): TypedCommandImplementation<
 /**
  * Create all enhanced commands and return as a Map
  */
-export function createAllEnhancedCommands(): Map<string, TypedCommandImplementation<any, any, TypedExecutionContext>> {
+export function createAllEnhancedCommands(): Map<string, TypedCommandImplementation<unknown, unknown, TypedExecutionContext>> {
   const commands = new Map();
   
   for (const [name, factory] of Object.entries(ENHANCED_COMMAND_FACTORIES)) {

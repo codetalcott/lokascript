@@ -169,17 +169,17 @@ export function createHybridLoader() {
     ],
     
     optionalPlugins: new Map([
-      ['websocket', async () => {
-        const { WebSocketPlugin } = await import('./plugins/websocket');
-        return WebSocketPlugin;
+      ['auto-fetch', async () => {
+        const { AutoFetchFeature } = await import('./plugins/features');
+        return AutoFetchFeature;
       }],
-      ['worker', async () => {
-        const { WorkerPlugin } = await import('./plugins/worker');
-        return WorkerPlugin;
+      ['intersection', async () => {
+        const { IntersectionFeature } = await import('./plugins/features');
+        return IntersectionFeature;
       }],
-      ['animation', async () => {
-        const { AnimationPlugin } = await import('./plugins/animation');
-        return AnimationPlugin;
+      ['reactive-state', async () => {
+        const { ReactiveStateFeature } = await import('./plugins/features');
+        return ReactiveStateFeature;
       }]
     ])
   });

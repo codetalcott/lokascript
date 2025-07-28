@@ -87,6 +87,7 @@ export interface RuntimeContext extends ExecutionContext {
   element: Element;
   args: any[];
   modifiers: Map<string, Set<string>>;
+  cleanup?: (() => void) | void;
 }
 
 export interface ElementContext {

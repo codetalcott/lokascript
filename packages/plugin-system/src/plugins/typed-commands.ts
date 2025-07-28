@@ -98,8 +98,8 @@ export const SendCommand = defineCommand('send', {
 
     const event = new CustomEvent(eventName, {
       detail,
-      bubbles: modifiers.has('bubbles' as any) || true,
-      cancelable: modifiers.has('cancelable' as any) || true
+      bubbles: modifiers.has('bubbles' as any) ? true : true,
+      cancelable: modifiers.has('cancelable' as any) ? true : true
     });
 
     element.dispatchEvent(event);

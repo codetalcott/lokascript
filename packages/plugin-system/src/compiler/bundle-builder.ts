@@ -3,10 +3,10 @@
  * Generates optimized bundles based on usage analysis
  */
 
-import { PluginAnalyzer } from './compiler/analyzer';
+import { PluginAnalyzer } from './analyzer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import type { Plugin } from './types';
+import type { Plugin } from '../types';
 
 export interface BuildConfig {
   // Source directories to analyze

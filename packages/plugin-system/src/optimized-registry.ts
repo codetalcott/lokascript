@@ -44,7 +44,7 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
   /**
    * Optimized attribute processing with caching
    */
-  protected processAttribute(element: Element, attr: Attr): void {
+  private processAttribute(element: Element, attr: Attr): void {
     const value = attr.value;
     if (!value) return;
 

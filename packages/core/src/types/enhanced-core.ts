@@ -17,7 +17,7 @@ import type {
   UnifiedValidationResult,
   UnifiedValidationError,
   UnifiedHyperScriptValue,
-  UnifiedHyperScriptValueType,
+  UnifiedUnifiedHyperScriptValueType,
   UnifiedEvaluationType,
   UnifiedCommandCategory,
   UnifiedSideEffect,
@@ -107,7 +107,7 @@ export interface SourceLocation {
 export interface TypedCommandImplementation<
   TInput extends readonly HyperScriptValue[] = readonly HyperScriptValue[],
   TOutput extends HyperScriptValue = HyperScriptValue,
-  TContext extends ExecutionContext = ExecutionContext
+  TContext extends UnifiedExecutionContext = UnifiedExecutionContext
 > {
   /** Command name - must be literal for LLM understanding */
   readonly name: string;
@@ -122,7 +122,7 @@ export interface TypedCommandImplementation<
   readonly inputSchema: z.ZodSchema<TInput>;
   
   /** Output type information for LLMs */
-  readonly outputType: UnifiedHyperScriptValueType;
+  readonly outputType: UnifiedUnifiedHyperScriptValueType;
   
   /** Type-safe execution with validated inputs */
   execute(context: TContext, ...args: TInput): Promise<UnifiedResult<TOutput>>;
@@ -166,7 +166,7 @@ export interface CommandExample {
  */
 export interface TypedExpressionImplementation<
   TOutput extends HyperScriptValue = HyperScriptValue,
-  TContext extends ExecutionContext = ExecutionContext
+  TContext extends UnifiedExecutionContext = UnifiedExecutionContext
 > {
   readonly name: string;
   readonly category: ExpressionCategory;
@@ -174,7 +174,7 @@ export interface TypedExpressionImplementation<
   readonly associativity: 'left' | 'right' | 'none';
   
   /** Output type for LLM inference */
-  readonly outputType: HyperScriptValueType;
+  readonly outputType: string;
   
   /** Type-safe evaluation */
   evaluate(context: TContext, ...args: HyperScriptValue[]): Promise<EvaluationResult<TOutput>>;
@@ -195,7 +195,7 @@ export interface ExpressionAnalysisInfo {
 // ============================================================================
 
 // Use UnifiedHyperScriptValueType from unified-types.ts instead of local definition
-export type { UnifiedHyperScriptValueType as HyperScriptValueType } from './index';
+export type { UnifiedHyperScriptValueType as HyperScriptValueType } from './unified-types';
 
 export type ExpressionCategory = 
   | 'reference'
@@ -235,7 +235,7 @@ export interface HyperScriptError {
  * Runtime type checking with detailed feedback for LLMs
  */
 export class TypeChecker {
-  static getType(value: unknown): HyperScriptValueType {
+  static getType(value: unknown): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     if (typeof value === 'string') return 'string';
@@ -253,7 +253,7 @@ export class TypeChecker {
     throw new Error(`Unknown type for value: ${value}`);
   }
 
-  static validateType(value: unknown, expectedType: HyperScriptValueType): UnifiedValidationResult {
+  static validateType(value: unknown, expectedType: string): UnifiedValidationResult {
     const actualType = this.getType(value);
     
     if (actualType === expectedType) {
@@ -271,7 +271,7 @@ export class TypeChecker {
     };
   }
   
-  private static getTypeSuggestion(actual: HyperScriptValueType, expected: HyperScriptValueType): string {
+  private static getTypeSuggestion(actual: string, expected: string): string {
     const conversions: Record<string, Record<string, string>> = {
       string: {
         number: 'Use parseFloat() or parseInt() to convert string to number',
@@ -306,7 +306,7 @@ export interface LLMDocumentation {
 
 export interface ParameterDoc {
   readonly name: string;
-  readonly type: HyperScriptValueType;
+  readonly type: string;
   readonly description: string;
   readonly optional: boolean;
   readonly defaultValue?: HyperScriptValue;
@@ -314,7 +314,7 @@ export interface ParameterDoc {
 }
 
 export interface ReturnDoc {
-  readonly type: HyperScriptValueType;
+  readonly type: string;
   readonly description: string;
   readonly examples: HyperScriptValue[];
 }
@@ -389,7 +389,7 @@ export interface ParsedCommand {
   readonly name: string;
   
   /** Reference to executable implementation */
-  readonly implementation?: CommandImplementation | TypedExpressionImplementation<any, any>;
+  readonly implementation?: unknown | TypedExpressionImplementation<unknown, unknown>;
   
   /** Parsed arguments with type information */
   readonly args: ParsedArgument[];
@@ -410,7 +410,7 @@ export interface ParsedCommand {
 export interface ParsedArgument {
   /** Argument value and type */
   readonly value: HyperScriptValue;
-  readonly type: HyperScriptValueType;
+  readonly type: string;
   
   /** Whether this argument is a literal or expression */
   readonly kind: 'literal' | 'expression' | 'reference';
@@ -643,8 +643,8 @@ export interface CommandAnalysis {
   
   /** Type inference results */
   readonly typeInference: {
-    readonly inputTypes: HyperScriptValueType[];
-    readonly outputType: HyperScriptValueType;
+    readonly inputTypes: string[];
+    readonly outputType: string;
     readonly confidence: number;
   };
   
