@@ -51,6 +51,18 @@ export interface ValidationResult<T = unknown> {
   readonly error?: ValidationError;
 }
 
+/**
+ * Evaluation result structure for expression evaluation
+ * Provides value and type information for hyperscript expressions
+ */
+export interface EvaluationResult<T = unknown> {
+  readonly value: T;
+  readonly type: HyperScriptValueType;
+  readonly success: boolean;
+  readonly error?: ValidationError;
+  readonly performance?: PerformanceCharacteristics;
+}
+
 // ============================================================================
 // Core Value Types (Unified System)
 // ============================================================================
@@ -98,12 +110,17 @@ export const evaluationToHyperScriptType: Record<EvaluationType, HyperScriptValu
  */
 export interface ExecutionContext {
   readonly me: Element | null;
-  readonly you: Element | null;
+  you: Element | null;
   readonly it: unknown;
   readonly result: unknown;
   readonly locals: Map<string, unknown>;
   readonly globals: Map<string, unknown>;
-  readonly event: Event | null;
+  readonly event?: Event | null;
+  readonly halted?: boolean;
+  readonly returned?: boolean;
+  readonly broke?: boolean;
+  readonly continued?: boolean;
+  readonly async?: boolean;
   
   // Legacy compatibility properties
   readonly variables?: Map<string, unknown>;

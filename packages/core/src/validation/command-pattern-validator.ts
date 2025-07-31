@@ -3,7 +3,7 @@
  * Validates that commands follow the enhanced TypeScript pattern for LLM agents
  */
 
-import { z } from 'zod';
+// Removed unused zod import
 import type { 
   TypedCommandImplementation,
   CommandMetadata,

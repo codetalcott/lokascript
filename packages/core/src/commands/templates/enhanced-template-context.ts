@@ -56,7 +56,7 @@ export class EnhancedTemplateContextBridge implements TemplateContextBridge {
       result: context.result,
       locals: context.locals || new Map(),
       globals: context.globals || new Map(),
-      event: context.event,
+      event: context.event ?? null,
       
       // Enhanced expression context properties
       expressionStack: [],
@@ -101,7 +101,7 @@ export class EnhancedTemplateContextBridge implements TemplateContextBridge {
       result: templateContext.result,
       locals: templateContext.locals,
       globals: templateContext.globals,
-      event: templateContext.event,
+      event: templateContext.event ?? null,
       
       // Preserve template results in meta
       meta: {

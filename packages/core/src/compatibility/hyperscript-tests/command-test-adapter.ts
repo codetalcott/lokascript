@@ -53,7 +53,7 @@ export function createHyperScriptCommandAdapter() {
 
   // Add _hyperscript-compatible methods
   (adapter as any).evaluate = adapter;
-  (adapter as any).processNode = function(node: Node) {
+  (adapter as any).processNode = function(_node: Node) {
     // Mock for now - would implement full DOM processing
     console.warn('processNode not fully implemented');
   };

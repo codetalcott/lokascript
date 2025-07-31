@@ -7,10 +7,10 @@ import { z } from 'zod';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
-  ValidationResult,
   EvaluationResult,
   EnhancedContextBase
 } from '../../core/src/types/enhanced-context.js';
+import type { ValidationResult } from '../../core/src/types/base-types.js';
 import type { LLMDocumentation, EvaluationType } from '../../core/src/types/enhanced-core.js';
 import type { 
   AnalyticsEvent, 
@@ -454,10 +454,8 @@ export class TypedAnalyticsContextImplementation {
   private async initializeSession(input: EnhancedAnalyticsInput): Promise<AnalyticsSession> {
     const sessionId = input.context?.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    return {
+    const session: AnalyticsSession = {
       id: sessionId,
-      userId: input.context?.userId,
-      tenantId: input.context?.tenantId,
       startTime: Date.now(),
       events: [],
       metadata: {
@@ -473,6 +471,15 @@ export class TypedAnalyticsContextImplementation {
         viewportSize: '1920x1080'
       }
     };
+    
+    if (input.context?.userId !== undefined) {
+      session.userId = input.context.userId;
+    }
+    if (input.context?.tenantId !== undefined) {
+      session.tenantId = input.context.tenantId;
+    }
+    
+    return session;
   }
 
   private createTrackFunction(config: any) {
@@ -484,11 +491,16 @@ export class TypedAnalyticsContextImplementation {
         type: eventType,
         timestamp: Date.now(),
         sessionId: this.currentSession?.id || 'unknown',
-        userId: this.currentSession?.userId,
-        tenantId: this.currentSession?.tenantId,
         data,
         metadata: this.currentSession?.metadata || {} as any
       };
+      
+      if (this.currentSession?.userId !== undefined) {
+        event.userId = this.currentSession.userId;
+      }
+      if (this.currentSession?.tenantId !== undefined) {
+        event.tenantId = this.currentSession.tenantId;
+      }
       
       this.eventQueue.push(event);
       

@@ -68,7 +68,11 @@ export type {
 // Export base types for runtime usage
 export type {
   ExpressionNode,
-  CommandNode
+  CommandNode,
+  ValidationResult,
+  ValidationError,
+  EvaluationResult,
+  ExecutionContext
 } from './base-types';
 
 // ============================================================================
@@ -78,17 +82,17 @@ export type {
 /**
  * Shorthand for unified validation result
  */
-export type ValidResult<T> = UnifiedValidationResult<T>;
+export type ValidResult<T> = ValidationResult<T>;
 
 /**
  * Shorthand for unified execution context
  */
-export type ExecContext = UnifiedExecutionContext;
+export type ExecContext = ExecutionContext;
 
 /**
  * Shorthand for unified validation error
  */
-export type ValidError = UnifiedValidationError;
+export type ValidError = ValidationError;
 
 // ============================================================================
 // Common Type Combinations
@@ -97,22 +101,22 @@ export type ValidError = UnifiedValidationError;
 /**
  * Common result type for async operations
  */
-export type AsyncResult<T> = Promise<UnifiedResult<T>>;
+export type AsyncResult<T> = Promise<EvaluationResult<T>>;
 
 /**
  * Common result type for async validation
  */
-export type AsyncValidResult<T> = Promise<UnifiedValidationResult<T>>;
+export type AsyncValidResult<T> = Promise<ValidationResult<T>>;
 
 /**
  * Function type for validation
  */
-export type ValidationFunction<T> = (input: unknown) => UnifiedValidationResult<T>;
+export type ValidationFunction<T> = (input: unknown) => ValidationResult<T>;
 
 /**
  * Function type for async validation
  */
-export type AsyncValidationFunction<T> = (input: unknown) => Promise<UnifiedValidationResult<T>>;
+export type AsyncValidationFunction<T> = (input: unknown) => Promise<ValidationResult<T>>;
 
 // ============================================================================
 // Default Exports

@@ -349,7 +349,7 @@ export class EventCollector implements AnalyticsCollector {
   /**
    * Evaluate alert condition
    */
-  private async evaluateAlertCondition(alert: AnalyticsAlert): boolean {
+  private async evaluateAlertCondition(alert: AnalyticsAlert): Promise<boolean> {
     const { condition } = alert;
     const endTime = Date.now();
     const startTime = endTime - condition.timeWindow;
@@ -520,14 +520,19 @@ export class EventCollector implements AnalyticsCollector {
     // Group events by session
     for (const event of events) {
       if (!sessions.has(event.sessionId)) {
-        sessions.set(event.sessionId, {
+        const session: AnalyticsSession = {
           id: event.sessionId,
-          userId: event.userId,
-          tenantId: event.tenantId,
           startTime: event.timestamp,
           events: [],
           metadata: {} as any,
-        });
+        };
+        if (event.userId !== undefined) {
+          session.userId = event.userId;
+        }
+        if (event.tenantId !== undefined) {
+          session.tenantId = event.tenantId;
+        }
+        sessions.set(event.sessionId, session);
       }
       
       const session = sessions.get(event.sessionId)!;

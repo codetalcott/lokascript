@@ -43,10 +43,7 @@ export default defineConfig({
     // Global test setup
     setupFiles: ['./src/test-setup.ts'],
     
-    // Watch options
-    watch: {
-      include: ['src/**/*.ts'],
-    },
+    // Watch disabled in config - use command line
     
     // Reporter configuration
     reporter: ['verbose', 'json', 'html'],

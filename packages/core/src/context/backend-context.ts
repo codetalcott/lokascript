@@ -8,12 +8,10 @@ import {
   EnhancedContextBase,
   BaseContextInputSchema,
   BaseContextOutputSchema,
-  type BaseContextInput,
-  type BaseContextOutput,
   type ContextMetadata,
-  type ValidationResult,
   type EvaluationResult
 } from '../types/enhanced-context';
+import type { ValidationResult } from '../types/base-types';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
 // ============================================================================

@@ -41,7 +41,7 @@ export function createHyperScriptTestAdapter() {
   };
 
   // Add any additional methods that _hyperscript tests might expect
-  (hyperfixiAdapter as any).processNode = function(node: Node) {
+  (hyperfixiAdapter as any).processNode = function(_node: Node) {
     // Placeholder - would implement DOM processing
     console.warn('processNode not implemented yet');
   };

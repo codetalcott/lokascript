@@ -6,14 +6,10 @@
 import type { ExecutionContext } from '../../types/core';
 import type { CompiledTemplate } from './template-compiler';
 
-interface _ExecutionState {
-  commandIndex: number;
-  depth: number;
-  iterationCount: number;
-}
+// Removed unused interface _ExecutionState
 
 export class OptimizedTemplateExecutor {
-  private readonly _MAX_DEPTH = 10;
+  // Removed unused _MAX_DEPTH
   private readonly MAX_ITERATIONS = 1000;
 
   /**

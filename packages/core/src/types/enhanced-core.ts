@@ -17,17 +17,8 @@ import type {
   UnifiedValidationResult,
   UnifiedValidationError,
   UnifiedHyperScriptValue,
-  UnifiedUnifiedHyperScriptValueType,
-  UnifiedEvaluationType,
-  UnifiedCommandCategory,
-  UnifiedSideEffect,
-  UnifiedExpressionCategory,
-  UnifiedExpressionMetadata,
-  UnifiedLLMDocumentation,
-  UnifiedASTNode,
-  UnifiedParseError,
-  UnifiedResult,
-  UnifiedTypedResult
+  UnifiedHyperScriptValueType,
+  UnifiedEvaluationType
 } from './index';
 
 // ============================================================================
@@ -265,7 +256,7 @@ export class TypeChecker {
       errors: [{
         type: 'type-mismatch',
         message: `Expected ${expectedType}, got ${actualType}`,
-        suggestion: this.getTypeSuggestion(actualType, expectedType)
+        suggestions: this.getTypeSuggestion(actualType, expectedType)
       }],
       suggestions: [this.getTypeSuggestion(actualType, expectedType)]
     };

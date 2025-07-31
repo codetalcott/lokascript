@@ -9,6 +9,7 @@ import { z } from 'zod';
 // Import unified types from base-types system for local use and re-export
 import type { 
   ValidationResult, 
+  EvaluationResult,
   LLMDocumentation,
   ExecutionContext,
   TypedExecutionContext,
@@ -21,6 +22,7 @@ import type {
 // Re-export for external consumers
 export type { 
   ValidationResult, 
+  EvaluationResult,
   LLMDocumentation,
   ExecutionContext,
   TypedExecutionContext,
@@ -162,7 +164,7 @@ export interface ExpressionValidationError {
     start?: number;
     end?: number;
   };
-  suggestion: string;
+  suggestions: string[];
   code?: string;
   severity: 'error' | 'warning' | 'info';
 }

@@ -3,7 +3,7 @@
  * Exports evalHyperScript for direct browser usage
  */
 
-import { evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart, type HyperScriptContext } from './eval-hyperscript';
+import { evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart } from './eval-hyperscript';
 import { hyperscript } from '../api/hyperscript-api';
 import { defaultAttributeProcessor } from '../dom/attribute-processor';
 import { tailwindExtension } from '../extensions/tailwind';
