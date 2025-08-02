@@ -9,21 +9,23 @@ import { parse } from '../parser/parser';
 import type { ExecutionContext } from '../types/core';
 
 // Mock DOM for testing
-const createMockElement = () => ({
-  style: { display: 'block' },
-  textContent: '',
-  innerHTML: '',
-  classList: {
-    add: vi.fn(),
-    remove: vi.fn(),
-    toggle: vi.fn(),
-    contains: vi.fn(() => false)
-  },
-  querySelector: vi.fn(),
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn()
-} as any);
+const createMockElement = () => {
+  // Create a real DOM element in Happy-DOM for proper style support
+  const element = document.createElement('div');
+  element.style.display = 'block';
+  
+  // Add vitest spies for testing
+  element.addEventListener = vi.fn();
+  element.removeEventListener = vi.fn();
+  element.dispatchEvent = vi.fn();
+  element.classList.add = vi.fn();
+  element.classList.remove = vi.fn();
+  element.classList.toggle = vi.fn();
+  element.classList.contains = vi.fn(() => false);
+  element.querySelector = vi.fn();
+  
+  return element;
+};
 
 describe('Hyperscript Runtime', () => {
   let runtime: Runtime;
@@ -38,6 +40,8 @@ describe('Hyperscript Runtime', () => {
       it: null,
       you: null,
       result: null,
+      locals: new Map(),
+      globals: new Map(),
       variables: new Map(),
       events: new Map()
     };

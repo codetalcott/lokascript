@@ -492,8 +492,15 @@ export const noExpression: ExpressionImplementation = {
   operators: ['no'],
   
   async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
-    // The 'no' operator is equivalent to 'is empty' according to hyperscript docs
-    return await isEmptyExpression.evaluate(context, value);
+    // The 'no' operator should return true for empty/null/undefined values
+    // but false for actual values including false and 0
+    if (value == null) return true;
+    if (typeof value === 'string') return value.length === 0;
+    if (Array.isArray(value)) return value.length === 0;
+    if (value instanceof NodeList) return value.length === 0;
+    if (typeof value === 'object') return Object.keys(value).length === 0;
+    // For primitives like false, 0, etc., they are actual values so return false
+    return false;
   },
   
   validate(args: unknown[]): string | null {

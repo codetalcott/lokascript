@@ -456,7 +456,6 @@ export class Runtime {
     
     // Try enhanced commands first if enabled
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
-      console.log(`🔧 Using enhanced command: ${name}`);
       return await this.executeEnhancedCommand(name.toLowerCase(), args || [], context);
     }
     

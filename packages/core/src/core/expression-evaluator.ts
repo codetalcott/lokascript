@@ -371,6 +371,10 @@ export class ExpressionEvaluator {
         const notExpr = this.expressionRegistry.get('not');
         return notExpr ? notExpr.evaluate(context, operandValue) : !operandValue;
       
+      case 'no':
+        const noExpr = this.expressionRegistry.get('no');
+        return noExpr ? noExpr.evaluate(context, operandValue) : false;
+      
       case '-':
         return -operandValue;
       
