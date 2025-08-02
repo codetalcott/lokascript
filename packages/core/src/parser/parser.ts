@@ -351,6 +351,12 @@ export class Parser {
 
   private createCommandFromIdentifier(identifierNode: IdentifierNode): CommandNode | null {
     const args: ASTNode[] = [];
+    const commandName = identifierNode.name.toLowerCase();
+    
+    // Handle compound command patterns
+    if (this.isCompoundCommand(commandName)) {
+      return this.parseCompoundCommand(identifierNode);
+    }
     
     // Parse command arguments (space-separated, not comma-separated)
     while (!this.isAtEnd() && 
@@ -372,6 +378,400 @@ export class Parser {
         args.push(this.parsePrimary());
       } else {
         // Stop parsing if we encounter an unrecognized token
+        break;
+      }
+    }
+
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start,
+      end: this.getPosition().end,
+      line: identifierNode.line,
+      column: identifierNode.column
+    };
+  }
+
+  private isCompoundCommand(commandName: string): boolean {
+    const compoundCommands = ['put', 'set', 'trigger', 'add', 'remove', 'take'];
+    return compoundCommands.includes(commandName);
+  }
+
+  private parseCompoundCommand(identifierNode: IdentifierNode): CommandNode | null {
+    const commandName = identifierNode.name.toLowerCase();
+    const args: ASTNode[] = [];
+    
+    switch (commandName) {
+      case 'put':
+        return this.parsePutCommand(identifierNode);
+      case 'set':
+        return this.parseSetCommand(identifierNode);
+      case 'trigger':
+        return this.parseTriggerCommand(identifierNode);
+      case 'add':
+        return this.parseAddCommand(identifierNode);
+      case 'remove':
+        return this.parseRemoveCommand(identifierNode);
+      default:
+        // Fallback to regular parsing
+        return this.parseRegularCommand(identifierNode);
+    }
+  }
+
+  private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
+    console.log('🔍 PARSER: parsePutCommand started', { 
+      commandName: identifierNode.name,
+      currentToken: this.peek(),
+      remainingTokens: this.tokens.slice(this.current).map(t => t.value)
+    });
+    
+    const args: ASTNode[] = [];
+    
+    // Use a more flexible approach similar to the original _hyperscript
+    // Parse all arguments until we hit a terminator, then identify the structure
+    const allArgs: ASTNode[] = [];
+    
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
+      
+      allArgs.push(this.parsePrimary());
+    }
+    
+    console.log('🔍 PARSER: collected all arguments', { 
+      allArgs: allArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    // Now find the operation keyword and restructure
+    let operationIndex = -1;
+    let operationKeyword = '';
+    
+    for (let i = 0; i < allArgs.length; i++) {
+      const arg = allArgs[i];
+      // Check for identifier, literal, AND keyword types for operation keywords
+      if ((arg.type === 'identifier' || arg.type === 'literal' || arg.type === 'keyword') && 
+          ['into', 'before', 'after', 'at'].includes((arg as any).name || (arg as any).value)) {
+        operationIndex = i;
+        operationKeyword = (arg as any).name || (arg as any).value;
+        console.log('🔍 PARSER: found operation keyword', { arg, operationKeyword, type: arg.type });
+        break;
+      }
+    }
+    
+    if (operationIndex === -1) {
+      console.log('⚠️ PARSER: no operation keyword found');
+      // Return all args as-is (fallback)
+      return {
+        type: 'command',
+        name: identifierNode.name,
+        args: allArgs as ExpressionNode[],
+        isBlocking: false,
+        start: identifierNode.start || 0,
+        end: this.getPosition().end,
+        line: identifierNode.line || 1,
+        column: identifierNode.column || 1
+      };
+    }
+    
+    console.log('🔍 PARSER: found operation keyword', { operationKeyword, operationIndex });
+    
+    // Restructure: [content_args...] + [operation] + [target_args...]
+    const contentArgs = allArgs.slice(0, operationIndex);
+    const targetArgs = allArgs.slice(operationIndex + 1);
+    
+    // Build final args: content, operation, target
+    const finalArgs: ASTNode[] = [];
+    
+    // Content (could be multiple parts, combine if needed)
+    if (contentArgs.length === 1) {
+      finalArgs.push(contentArgs[0]);
+    } else if (contentArgs.length > 1) {
+      // Multiple content parts - keep as separate args for now
+      finalArgs.push(...contentArgs);
+    }
+    
+    // Operation keyword
+    finalArgs.push(this.createLiteral(operationKeyword, operationKeyword));
+    
+    // Target (could be multiple parts, combine if needed)
+    if (targetArgs.length === 1) {
+      finalArgs.push(targetArgs[0]);
+    } else if (targetArgs.length > 1) {
+      // Multiple target parts - keep as separate args for now
+      finalArgs.push(...targetArgs);
+    }
+    
+    const result = {
+      type: 'command',
+      name: identifierNode.name,
+      args: finalArgs as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start || 0,
+      end: this.getPosition().end,
+      line: identifierNode.line || 1,
+      column: identifierNode.column || 1
+    };
+    
+    console.log('✅ PARSER: parsePutCommand completed', { 
+      result, 
+      argCount: finalArgs.length,
+      finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    return result;
+  }
+
+  private parseSetCommand(identifierNode: IdentifierNode): CommandNode | null {
+    console.log('🔍 PARSER: parseSetCommand started', { 
+      commandName: identifierNode.name,
+      currentToken: this.peek(),
+      remainingTokens: this.tokens.slice(this.current).map(t => t.value)
+    });
+    
+    // Use the same flexible approach as put command
+    const allArgs: ASTNode[] = [];
+    
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
+      
+      allArgs.push(this.parsePrimary());
+    }
+    
+    console.log('🔍 PARSER: collected all arguments for set', { 
+      allArgs: allArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    // Find the 'to' keyword
+    let operationIndex = -1;
+    for (let i = 0; i < allArgs.length; i++) {
+      const arg = allArgs[i];
+      if ((arg.type === 'identifier' || arg.type === 'literal' || arg.type === 'keyword') && 
+          ((arg as any).name === 'to' || (arg as any).value === 'to')) {
+        operationIndex = i;
+        console.log('🔍 PARSER: found "to" keyword', { arg, type: arg.type });
+        break;
+      }
+    }
+    
+    if (operationIndex === -1) {
+      console.log('⚠️ PARSER: no "to" keyword found in set command');
+      return {
+        type: 'command',
+        name: identifierNode.name,
+        args: allArgs as ExpressionNode[],
+        isBlocking: false,
+        start: identifierNode.start || 0,
+        end: this.getPosition().end,
+        line: identifierNode.line || 1,
+        column: identifierNode.column || 1
+      };
+    }
+    
+    // Restructure: variable + 'to' + value
+    const varArgs = allArgs.slice(0, operationIndex);
+    const valueArgs = allArgs.slice(operationIndex + 1);
+    
+    const finalArgs: ASTNode[] = [];
+    
+    // Variable name
+    if (varArgs.length === 1) {
+      finalArgs.push(varArgs[0]);
+    } else {
+      finalArgs.push(...varArgs);
+    }
+    
+    // 'to' keyword
+    finalArgs.push(this.createLiteral('to', 'to'));
+    
+    // Value (could be complex expression)
+    if (valueArgs.length === 1) {
+      finalArgs.push(valueArgs[0]);
+    } else {
+      finalArgs.push(...valueArgs);
+    }
+    
+    const result = {
+      type: 'command',
+      name: identifierNode.name,
+      args: finalArgs as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start || 0,
+      end: this.getPosition().end,
+      line: identifierNode.line || 1,
+      column: identifierNode.column || 1
+    };
+    
+    console.log('✅ PARSER: parseSetCommand completed', { 
+      result, 
+      argCount: finalArgs.length,
+      finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    return result;
+  }
+
+  private parseTriggerCommand(identifierNode: IdentifierNode): CommandNode | null {
+    console.log('🔍 PARSER: parseTriggerCommand started', { 
+      commandName: identifierNode.name,
+      currentToken: this.peek(),
+      remainingTokens: this.tokens.slice(this.current).map(t => t.value)
+    });
+    
+    // Use the same flexible approach as put/set commands
+    const allArgs: ASTNode[] = [];
+    
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
+      allArgs.push(this.parsePrimary());
+    }
+    
+    console.log('🔍 PARSER: collected all arguments for trigger', { 
+      allArgs: allArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    // Find the 'on' keyword
+    let operationIndex = -1;
+    for (let i = 0; i < allArgs.length; i++) {
+      const arg = allArgs[i];
+      if ((arg.type === 'identifier' || arg.type === 'literal' || arg.type === 'keyword') && 
+          ((arg as any).name === 'on' || (arg as any).value === 'on')) {
+        operationIndex = i;
+        console.log('🔍 PARSER: found "on" keyword', { arg, type: arg.type });
+        break;
+      }
+    }
+    
+    const finalArgs: ASTNode[] = [];
+    
+    if (operationIndex === -1) {
+      console.log('⚠️ PARSER: no "on" keyword found in trigger command');
+      finalArgs.push(...allArgs);
+    } else {
+      // Restructure: event + 'on' + target
+      const eventArgs = allArgs.slice(0, operationIndex);
+      const targetArgs = allArgs.slice(operationIndex + 1);
+      
+      finalArgs.push(...eventArgs);
+      finalArgs.push(this.createLiteral('on', 'on'));
+      finalArgs.push(...targetArgs);
+    }
+    
+    const result = {
+      type: 'command',
+      name: identifierNode.name,
+      args: finalArgs as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start || 0,
+      end: this.getPosition().end,
+      line: identifierNode.line || 1,
+      column: identifierNode.column || 1
+    };
+    
+    console.log('✅ PARSER: parseTriggerCommand completed', { 
+      result, 
+      argCount: finalArgs.length,
+      finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
+    });
+    
+    return result;
+  }
+
+  private parseAddCommand(identifierNode: IdentifierNode): CommandNode | null {
+    const args: ASTNode[] = [];
+    
+    // Parse: add <class> to <target>
+    // First argument: class
+    if (!this.isAtEnd() && !this.check('to')) {
+      args.push(this.parsePrimary());
+    }
+    
+    // Expect 'to' keyword
+    if (this.check('to')) {
+      this.advance(); // consume 'to'
+      args.push(this.createLiteral('to', 'to')); // Add 'to' as an argument
+    }
+    
+    // Third argument: target
+    if (!this.isAtEnd() && !this.check('then') && !this.check('and') && !this.check('else')) {
+      args.push(this.parsePrimary());
+    }
+    
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start,
+      end: this.getPosition().end,
+      line: identifierNode.line,
+      column: identifierNode.column
+    };
+  }
+
+  private parseRemoveCommand(identifierNode: IdentifierNode): CommandNode | null {
+    const args: ASTNode[] = [];
+    
+    // Parse: remove <class> from <target>
+    // First argument: class
+    if (!this.isAtEnd() && !this.check('from')) {
+      args.push(this.parsePrimary());
+    }
+    
+    // Expect 'from' keyword
+    if (this.check('from')) {
+      this.advance(); // consume 'from'
+      args.push(this.createLiteral('from', 'from')); // Add 'from' as an argument
+    }
+    
+    // Third argument: target
+    if (!this.isAtEnd() && !this.check('then') && !this.check('and') && !this.check('else')) {
+      args.push(this.parsePrimary());
+    }
+    
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start,
+      end: this.getPosition().end,
+      line: identifierNode.line,
+      column: identifierNode.column
+    };
+  }
+
+  private parseRegularCommand(identifierNode: IdentifierNode): CommandNode | null {
+    const args: ASTNode[] = [];
+    
+    // Parse command arguments (space-separated, not comma-separated)
+    while (!this.isAtEnd() && 
+           !this.check('then') && 
+           !this.check('and') && 
+           !this.check('else') && 
+           !this.checkTokenType(TokenType.COMMAND)) {
+      
+      if (this.checkTokenType(TokenType.CONTEXT_VAR) || 
+          this.checkTokenType(TokenType.IDENTIFIER) ||
+          this.checkTokenType(TokenType.KEYWORD) ||
+          this.checkTokenType(TokenType.CSS_SELECTOR) ||
+          this.checkTokenType(TokenType.ID_SELECTOR) ||
+          this.checkTokenType(TokenType.CLASS_SELECTOR) ||
+          this.checkTokenType(TokenType.STRING) ||
+          this.checkTokenType(TokenType.NUMBER) ||
+          this.checkTokenType(TokenType.TIME_EXPRESSION) ||
+          this.match('<')) {
+        args.push(this.parsePrimary());
+      } else {
         break;
       }
     }

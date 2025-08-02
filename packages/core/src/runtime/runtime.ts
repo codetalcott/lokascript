@@ -27,6 +27,7 @@ import { createTriggerCommand } from '../commands/events/trigger';
 import { createWaitCommand } from '../legacy/commands/async/wait';
 import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
+import { SetCommand } from '../commands/data/index';
 
 // Additional command imports
 // IncrementCommand and DecrementCommand now imported from data/index.js above
@@ -154,6 +155,9 @@ export class Runtime {
       // Register event commands
       this.enhancedRegistry.register(createSendCommand());
       this.enhancedRegistry.register(createTriggerCommand());
+      
+      // Register data commands (enhanced)
+      this.enhancedRegistry.register(new SetCommand());
       
       // Register async commands
       this.enhancedRegistry.register(createWaitCommand());
@@ -685,32 +689,93 @@ export class Runtime {
    * Execute put command (set content)
    */
   private async executePutCommand(rawArgs: ExpressionNode[], context: ExecutionContext): Promise<void> {
-    // Process arguments: content (evaluate), preposition (evaluate), target (special handling)
-    if (rawArgs.length >= 3) {
-      const content = await this.execute(rawArgs[0], context);
-      const preposition = await this.execute(rawArgs[1], context);
-      let target = rawArgs[2];
+    console.log('🚀 RUNTIME: executePutCommand started', { 
+      argCount: rawArgs.length,
+      rawArgs: rawArgs.map(arg => ({ 
+        type: arg?.type, 
+        value: (arg as any)?.value || (arg as any)?.name,
+        raw: arg
+      })),
+      contextMe: context.me?.tagName || context.me?.constructor?.name
+    });
+    
+    // Process arguments: find content, preposition, and target
+    let contentArg = null;
+    let prepositionArg = null;
+    let targetArg = null;
+    
+    // Find the preposition keyword to split the arguments
+    let prepositionIndex = -1;
+    for (let i = 0; i < rawArgs.length; i++) {
+      const arg = rawArgs[i];
+      if (arg?.type === 'literal' && 
+          ['into', 'before', 'after', 'at'].includes(arg.value as string)) {
+        prepositionIndex = i;
+        prepositionArg = arg.value;
+        break;
+      }
+    }
+    
+    if (prepositionIndex === -1) {
+      console.log('⚠️ RUNTIME: no preposition found in put command args');
+      // Fallback to old logic
+      if (rawArgs.length >= 3) {
+        contentArg = rawArgs[0];
+        prepositionArg = rawArgs[1];
+        targetArg = rawArgs[2];
+      }
+    } else {
+      // Split arguments around the preposition
+      const contentArgs = rawArgs.slice(0, prepositionIndex);
+      const targetArgs = rawArgs.slice(prepositionIndex + 1);
+      
+      // Use first content arg (or combine if multiple)
+      contentArg = contentArgs.length === 1 ? contentArgs[0] : contentArgs[0];
+      targetArg = targetArgs.length === 1 ? targetArgs[0] : targetArgs[0];
+    }
+    
+    if (contentArg && prepositionArg && targetArg) {
+      const content = await this.execute(contentArg, context);
+      console.log('🔍 RUNTIME: evaluated content', { content, type: typeof content });
+      
+      const preposition = prepositionArg;
+      console.log('🔍 RUNTIME: using preposition', { preposition, type: typeof preposition });
+      
+      let target = targetArg;
+      console.log('🔍 RUNTIME: target before processing', { 
+        target, 
+        type: target?.type,
+        name: (target as any)?.name,
+        value: (target as any)?.value
+      });
       
       // Handle target resolution - fix the [object Object] issue
-      if (target?.type === 'identifier' && target.name === 'me') {
+      if (target?.type === 'identifier' && (target as any).name === 'me') {
         target = context.me;
+        console.log('🔍 RUNTIME: resolved "me" to context.me', { target });
       } else if (target?.type === 'identifier') {
         // For other identifiers, keep as string for CSS selector or context lookup
-        target = target.name;
+        target = (target as any).name;
+        console.log('🔍 RUNTIME: resolved identifier to name', { target });
       } else if (target?.type === 'literal') {
-        target = target.value;
+        target = (target as any).value;
+        console.log('🔍 RUNTIME: resolved literal to value', { target });
       } else if (target?.type === 'selector') {
-        target = target.value;
+        target = (target as any).value;
+        console.log('🔍 RUNTIME: resolved selector to value', { target });
       } else {
         // Only evaluate if it's not already a target we can handle
         if (typeof target === 'object' && target?.type) {
           target = await this.execute(target, context);
+          console.log('🔍 RUNTIME: evaluated complex target', { target });
         }
       }
       
+      console.log('✅ RUNTIME: calling putCommand.execute', { content, preposition, target });
       return this.putCommand.execute(context, content, preposition, target);
     }
     
+    console.log('⚠️ RUNTIME: fallback to raw args', { rawArgs });
     // Fallback: use raw args
     return this.putCommand.execute(context, ...rawArgs);
   }

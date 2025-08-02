@@ -423,32 +423,308 @@
     <!-- Main Content -->
     <main class="main">
       <div class="content">
-        <!-- Expressions Category -->
+        <!-- HyperFixi Live Tests -->
         <section id="expressions" class="category active">
-          <h2>📊 Expression System</h2>
-          <p>HyperFixi provides a powerful expression system for mathematical operations, string manipulation, logical comparisons, and data transformations.</p>
+          <h2>🧪 HyperFixi Live Feature Tests</h2>
+          <p>Systematic testing of hyperscript features for parity verification.</p>
           
           <div class="demo-grid">
-            <!-- Mathematical Operations -->
+            <!-- Basic DOM Commands -->
             <div class="demo-card">
-              <div class="demo-title">Mathematical Operations</div>
-              <div class="demo-description">Perform arithmetic with proper operator precedence</div>
+              <div class="demo-title">✅ Basic DOM Commands</div>
+              <div class="demo-description">hide, show, toggle - Core visibility commands</div>
               <div class="demo-area">
-                <input type="text" class="interactive-input" value="(5 + 3) * 2 - 1" 
-                       id="math-input" _="on keyup trigger mathUpdate">
-                <button class="interactive-button" 
-                        _="on click put (#math-input's value as Math) into #math-result">
-                  🧮 Calculate Math Expression
+                <button class="interactive-button" id="hide-btn"
+                        _="on click beep! 'Hide test' then hide me">
+                  Hide Me
                 </button>
                 <button class="interactive-button" 
-                        _="on click put 'Result: ' + (#math-input's value as Math) into #math-result">
-                  📊 Calculate with Label
+                        _="on click beep! 'Show test' then show #hide-btn">
+                  Show Hidden Button
                 </button>
-                <button class="interactive-button" 
-                        _="on click put 'PUT THIRD!' into #math-result">
-                  Test PUT (third position)
+                <button class="interactive-button" id="toggle-target"
+                        _="on click beep! 'Toggle test' then toggle me">
+                  Toggle Me
                 </button>
-                <div class="result-display" id="math-result">Result will appear here...</div>
+              </div>
+            </div>
+
+            <!-- CSS Class Manipulation -->
+            <div class="demo-card">
+              <div class="demo-title">❓ CSS Class Commands</div>
+              <div class="demo-description">add, remove - CSS class manipulation</div>
+              <div class="demo-area">
+                <button class="interactive-button" id="class-target"
+                        _="on click beep! 'Add class test' then add .highlight-success to me then put 'Class added!' into #class-result">
+                  Add Success Class
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Remove class test' then remove .highlight-success from #class-target then put 'Class removed!' into #class-result">
+                  Remove Success Class
+                </button>
+                <div class="result-display" id="class-result">Click buttons to test class manipulation</div>
+              </div>
+            </div>
+
+            <!-- Content Manipulation -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Content Commands</div>
+              <div class="demo-description">put - Content insertion (testing compound syntax)</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Put self test' then put 'Self works!' into me">
+                  Put into Self
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Put target test' then put 'FIXED! Target works!' into #content-result">
+                  Put into Target (FIXED!)
+                </button>
+                <div class="result-display" id="content-result">Testing put commands...</div>
+              </div>
+            </div>
+
+            <!-- Event Handling -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Event Commands</div>
+              <div class="demo-description">trigger, send - Event dispatching</div>
+              <div class="demo-area">
+                <button class="interactive-button" id="event-listener"
+                        _="on customEvent beep! 'Custom event received!' then put 'Event received!' into #event-result">
+                  Event Listener
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Trigger test' then trigger customEvent on #event-listener then put 'Event triggered!' into #event-result">
+                  Trigger Custom Event (FIXED!)
+                </button>
+                <div class="result-display" id="event-result">Testing event system...</div>
+              </div>
+            </div>
+
+            <!-- Variables and Expressions -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Variables & Expressions</div>
+              <div class="demo-description">set, variables, math expressions</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Set variable test' then set x to 42 then put x into #var-result">
+                  Set Variable x=42 (FIXED!)
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Math test' then set result to 5 + 3 * 2 then put result into #var-result">
+                  Math: 5 + 3 * 2 (FIXED!)
+                </button>
+                <div class="result-display" id="var-result">Testing variables and math...</div>
+              </div>
+            </div>
+
+            <!-- Wait and Timing -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Async Commands</div>
+              <div class="demo-description">wait - Timing and delays</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Wait test' then put 'Waiting...' into #wait-result then wait 2s then put 'Done after 2s!' into #wait-result">
+                  Wait 2 Seconds
+                </button>
+                <div class="result-display" id="wait-result">Testing async operations...</div>
+              </div>
+            </div>
+
+            <!-- Form Handling -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Form Commands</div>
+              <div class="demo-description">Form values, take, as Values</div>
+              <div class="demo-area">
+                <input type="text" id="test-input" placeholder="Enter text here" style="width: 100%; margin-bottom: 10px;">
+                <button class="interactive-button"
+                        _="on click beep! 'Take test' then take my value from #test-input then put it into #form-result">
+                  Take Input Value
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Value test' then put #test-input's value into #form-result">
+                  Get Input Value
+                </button>
+                <div class="result-display" id="form-result">Testing form handling...</div>
+              </div>
+            </div>
+
+            <!-- Advanced Expressions -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Advanced Expressions</div>
+              <div class="demo-description">Possessive syntax, selectors, context</div>
+              <div class="demo-area">
+                <button class="interactive-button" data-test="advanced"
+                        _="on click beep! 'Possessive test' then put my @data-test into #expr-result">
+                  Test my @data-test
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Selector test' then put first <button/> into #expr-result">
+                  Test first &lt;button/&gt;
+                </button>
+                <div class="result-display" id="expr-result">Testing advanced expressions...</div>
+              </div>
+            </div>
+
+            <!-- Control Flow -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Control Flow</div>
+              <div class="demo-description">if/else, conditions, loops</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'If test' then if 5 > 3 put 'Condition true!' into #control-result else put 'Condition false!' into #control-result">
+                  Test if 5 > 3
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Unless test' then unless false put 'Unless works!' into #control-result">
+                  Test unless false
+                </button>
+                <div class="result-display" id="control-result">Testing control flow...</div>
+              </div>
+            </div>
+
+            <!-- Manual Debug Test -->
+            <div class="demo-card">
+              <div class="demo-title">🔧 Manual Debug Test</div>
+              <div class="demo-description">Trigger compound syntax debugging manually</div>
+              <div class="demo-area">
+                <button class="interactive-button" id="debug-test-btn"
+                        onclick="window.testCompoundSyntax()">
+                  🧪 Run Compound Syntax Debug Test
+                </button>
+                <button class="interactive-button"
+                        onclick="console.log('🔍 PARSER: Manual test log'); console.log('🚀 RUNTIME: Manual runtime test');">
+                  📝 Test Debug Console Capture
+                </button>
+                <div class="result-display" id="debug-test-result">Click to run debug tests...</div>
+              </div>
+            </div>
+
+            <!-- String Operations -->
+            <div class="demo-card">
+              <div class="demo-title">❓ String Operations</div>
+              <div class="demo-description">String manipulation, concatenation</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'String test' then set greeting to 'Hello' then set name to 'World' then put greeting + ' ' + name into #string-result">
+                  Test String Concat
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Template test' then set user to 'Alice' then put 'Welcome, ' + user + '!' into #string-result">
+                  Test String Template
+                </button>
+                <div class="result-display" id="string-result">Testing string operations...</div>
+              </div>
+            </div>
+
+            <!-- Array Operations -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Array & Collection</div>
+              <div class="demo-description">Arrays, iteration, collection handling</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Array test' then set items to [1, 2, 3] then put items into #array-result">
+                  Test Array Creation
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Length test' then set numbers to [10, 20, 30] then put numbers.length into #array-result">
+                  Test Array Length
+                </button>
+                <div class="result-display" id="array-result">Testing array operations...</div>
+              </div>
+            </div>
+
+            <!-- DOM Queries -->
+            <div class="demo-card">
+              <div class="demo-title">❓ DOM Queries</div>
+              <div class="demo-description">Element selection, traversal</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Query test' then put <.demo-card/>.length into #dom-result">
+                  Count .demo-card
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Closest test' then put closest .demo-card's className into #dom-result">
+                  Test closest .demo-card
+                </button>
+                <div class="result-display" id="dom-result">Testing DOM queries...</div>
+              </div>
+            </div>
+
+            <!-- Type Conversion -->
+            <div class="demo-card">
+              <div class="demo-title">❓ Type Conversion</div>
+              <div class="demo-description">as keyword, type casting</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'String conversion test' then set num to 42 then put num as String into #type-result">
+                  Test as String
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Number conversion test' then set text to '123' then put text as Number into #type-result">
+                  Test as Number
+                </button>
+                <div class="result-display" id="type-result">Testing type conversions...</div>
+              </div>
+            </div>
+
+            <!-- Simple Commands That Work -->
+            <div class="demo-card">
+              <div class="demo-title">✅ Working Commands</div>
+              <div class="demo-description">Commands that work with current parsing</div>
+              <div class="demo-area">
+                <button class="interactive-button"
+                        _="on click beep! 'Simple beep test' then put 'Beep works!' into #simple-result">
+                  Test Beep + Put
+                </button>
+                <button class="interactive-button"
+                        _="on click beep! 'Log test' then log 'Logging works!'">
+                  Test Beep + Log
+                </button>
+                <div class="result-display" id="simple-result">Testing simple commands...</div>
+              </div>
+            </div>
+
+            <!-- Compound Syntax Issues -->
+            <div class="demo-card">
+              <div class="demo-title">❌ Compound Syntax Issues</div>
+              <div class="demo-description">Commands that fail due to parsing issues</div>
+              <div class="demo-area">
+                <div style="background: #fef2f2; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                  <strong>🚨 Known Issues:</strong><br>
+                  • <code>put X into #target</code> - "into" parsed as separate command<br>
+                  • <code>set x to value</code> - "to" parsed as separate keyword<br>
+                  • <code>trigger event on target</code> - "on" parsed as separate keyword<br>
+                  • <code>add class to element</code> - "to" parsed as separate keyword<br>
+                  • <code>remove class from element</code> - "from" parsed as separate keyword
+                </div>
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 4px;">
+                  <strong>🎯 Root Cause:</strong> Parser treats "into", "to", "on", "from" as separate KEYWORD tokens instead of part of compound command syntax.
+                </div>
+              </div>
+            </div>
+
+            <!-- Test Status Summary -->
+            <div class="demo-card" style="grid-column: 1 / -1;">
+              <div class="demo-title">📊 Test Status Overview</div>
+              <div class="demo-description">Live feature compatibility tracking</div>
+              <div class="demo-area">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: center;">
+                  <div>✅ <strong>Basic DOM</strong><br>hide, show, toggle</div>
+                  <div>❓ <strong>CSS Classes</strong><br>add, remove</div>
+                  <div>❓ <strong>Content</strong><br>put into targets</div>
+                  <div>❓ <strong>Events</strong><br>trigger, custom events</div>
+                  <div>❓ <strong>Variables</strong><br>set, math, expressions</div>
+                  <div>❓ <strong>Async</strong><br>wait, timing</div>
+                  <div>❓ <strong>Forms</strong><br>take, values</div>
+                  <div>❓ <strong>Control Flow</strong><br>if/else, unless</div>
+                  <div>❓ <strong>Strings</strong><br>concatenation</div>
+                  <div>❓ <strong>Arrays</strong><br>collections</div>
+                  <div>❓ <strong>DOM Queries</strong><br>selectors</div>
+                  <div>❓ <strong>Types</strong><br>as keyword</div>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 4px;">
+                  <strong>Testing Guide:</strong> Click tests systematically. ✅ = Working, ❌ = Failed, ❓ = Not tested yet
+                </div>
               </div>
             </div>
           </div>
@@ -460,17 +736,104 @@
   <!-- Debug Panel -->
   <div class="debug-panel" id="debug-panel">
     <div class="debug-header" 
-         _="on click put 'Debug clicked!' into #test-result">
-      <span>🐛 Debug Console</span>
-      <span>▲</span>
+         _="on click toggle .open from closest .debug-panel">
+      <span>🐛 Debug Console (Compound Syntax)</span>
+      <span id="debug-toggle">▲</span>
     </div>
     <div class="debug-content" id="debug-content">
       <div class="debug-entry">
         <div class="debug-timestamp">System initialized</div>
-        <div>🚀 HyperFixi Demo loaded successfully</div>
+        <div>🚀 HyperFixi Demo loaded - watching compound syntax parsing</div>
       </div>
     </div>
   </div>
+
+  <script>
+    // Enhanced console logging for debugging compound syntax
+    (function() {
+      const debugContent = document.getElementById('debug-content');
+      const originalConsoleLog = console.log;
+      
+      function addDebugEntry(level, message, data) {
+        const entry = document.createElement('div');
+        entry.className = 'debug-entry';
+        
+        const timestamp = document.createElement('div');
+        timestamp.className = 'debug-timestamp';
+        timestamp.textContent = new Date().toLocaleTimeString();
+        
+        const content = document.createElement('div');
+        content.style.fontFamily = 'monospace';
+        content.style.fontSize = '12px';
+        content.style.lineHeight = '1.4';
+        
+        if (level === 'parser') {
+          content.style.color = '#60a5fa'; // Blue for parser
+        } else if (level === 'runtime') {
+          content.style.color = '#34d399'; // Green for runtime
+        } else if (level === 'error') {
+          content.style.color = '#f87171'; // Red for errors
+        }
+        
+        content.innerHTML = message;
+        if (data) {
+          const dataDiv = document.createElement('div');
+          dataDiv.style.marginLeft = '10px';
+          dataDiv.style.color = '#94a3b8';
+          dataDiv.style.fontSize = '11px';
+          dataDiv.textContent = JSON.stringify(data, null, 2);
+          content.appendChild(dataDiv);
+        }
+        
+        entry.appendChild(timestamp);
+        entry.appendChild(content);
+        debugContent.appendChild(entry);
+        
+        // Auto-scroll to bottom
+        debugContent.scrollTop = debugContent.scrollHeight;
+        
+        // Keep only last 50 entries
+        while (debugContent.children.length > 50) {
+          debugContent.removeChild(debugContent.firstChild);
+        }
+      }
+      
+      // Override console.log to capture HyperFixi debug messages
+      console.log = function(...args) {
+        originalConsoleLog.apply(console, args);
+        
+        const message = args[0];
+        if (typeof message === 'string') {
+          if (message.includes('🔍 PARSER:') || message.includes('✅ PARSER:') || message.includes('⚠️ PARSER:')) {
+            addDebugEntry('parser', message, args[1]);
+          } else if (message.includes('🚀 RUNTIME:') || message.includes('🔍 RUNTIME:') || message.includes('✅ RUNTIME:') || message.includes('⚠️ RUNTIME:')) {
+            addDebugEntry('runtime', message, args[1]);
+          } else if (message.includes('🔍 TOKENIZER:') || message.includes('✅ TOKENIZER:')) {
+            addDebugEntry('parser', message, args[1]);
+          } else if (message.includes('ERROR') || message.includes('FAIL') || message.includes('❌')) {
+            addDebugEntry('error', message, args[1]);
+          } else if (message.includes('🧪') || message.includes('📊') || message.includes('🔍 Testing')) {
+            addDebugEntry('system', message, args[1]);
+          }
+        }
+      };
+      
+      // Add initial debug message
+      addDebugEntry('system', '🔧 Debug console enhanced - tracking compound syntax parsing');
+      
+      // Auto-open debug panel when there are parser/runtime logs
+      let hasShownLogs = false;
+      const originalAddDebugEntry = addDebugEntry;
+      addDebugEntry = function(level, message, data) {
+        originalAddDebugEntry(level, message, data);
+        
+        if ((level === 'parser' || level === 'runtime') && !hasShownLogs) {
+          hasShownLogs = true;
+          document.getElementById('debug-panel').classList.add('open');
+        }
+      };
+    })();
+  </script>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

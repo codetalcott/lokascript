@@ -85,6 +85,9 @@ export class ExpressionEvaluator {
       case 'dollarExpression':
         return this.evaluateDollarExpression(node as any, context);
       
+      case 'possessiveExpression':
+        return this.evaluatePossessiveExpression(node as any, context);
+      
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
@@ -475,6 +478,47 @@ export class ExpressionEvaluator {
     
     // For member expressions, evaluate normally
     return value;
+  }
+
+  /**
+   * Evaluate possessive expressions (element's property)
+   */
+  private async evaluatePossessiveExpression(node: any, context: ExecutionContext): Promise<any> {
+    const { object, property } = node;
+    
+    // Evaluate the object first
+    const objectValue = await this.evaluate(object, context);
+    
+    if (!objectValue) {
+      return undefined;
+    }
+    
+    // Get property name
+    const propertyName = property.name || property.value || property;
+    
+    // Handle special possessive syntax patterns
+    if (typeof propertyName === 'string') {
+      // Handle attribute access (@data-attr becomes getAttribute)
+      if (propertyName.startsWith('@')) {
+        const attrName = propertyName.substring(1);
+        if (objectValue && typeof objectValue.getAttribute === 'function') {
+          return objectValue.getAttribute(attrName);
+        }
+      }
+      
+      // Handle style access (style.color)
+      if (propertyName.startsWith('style.')) {
+        const styleProp = propertyName.substring(6);
+        if (objectValue && objectValue.style) {
+          return objectValue.style[styleProp];
+        }
+      }
+      
+      // Regular property access
+      return objectValue[propertyName];
+    }
+    
+    return objectValue[propertyName];
   }
 
   /**

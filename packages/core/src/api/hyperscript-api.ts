@@ -191,7 +191,7 @@ function processNode(element: Element): void {
  */
 function processHyperscriptAttribute(element: Element, hyperscriptCode: string): void {
   try {
-    console.log('🔍 Processing hyperscript attribute:', hyperscriptCode, 'on element:', element);
+    console.log('Processing hyperscript:', hyperscriptCode);
     
     // Compile the hyperscript code
     const compileResult = compile(hyperscriptCode);

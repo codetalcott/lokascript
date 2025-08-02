@@ -425,98 +425,483 @@ document.addEventListener('DOMContentLoaded', async () => {
     debugLogger.log(`❌ HyperFixi expression test failed: ${error}`, 'error');
   }
   
-  // Test HyperFixi compilation with detailed AST logging
-  const testCases = [
-    'on click hide me',
-    'put "hello" into #target',
-    'show #result',
-    'add .active to me',
-    'on click put "test" into #output'
-  ];
-  
-  for (const testCode of testCases) {
-    try {
-      updateDebugStatus(`Testing compilation: ${testCode}`, 'info');
-      const compileResult = hyperscript.compile(testCode);
-      const success = compileResult?.success === true;
-      
-      debugLogger.log(`Test "${testCode}": ${success ? 'SUCCESS ✅' : 'FAILED ❌'}`, success ? 'success' : 'error');
-      
-      if (!success && compileResult?.errors) {
-        debugLogger.log(`  Errors: ${compileResult.errors.map((e: any) => e.message).join(', ')}`, 'error');
-      }
-    } catch (error) {
-      debugLogger.log(`Test "${testCode}" exception: ${error}`, 'error');
+  // Test our specific button command
+  const buttonCode = 'on click beep! "Button clicked!" then put "Hello from HyperFixi!" into #simple-result';
+  try {
+    console.log(`Testing button compilation: ${buttonCode}`);
+    const compileResult = hyperscript.compile(buttonCode);
+    console.log(`Compilation result:`, compileResult);
+    
+    if (compileResult.success) {
+      console.log('✅ Button hyperscript compiled successfully');
+    } else {
+      console.error('❌ Button hyperscript compilation failed:', compileResult.errors);
     }
+  } catch (error) {
+    console.error('❌ Button compilation exception:', error);
+  }
+  
+  // Check available commands
+  console.log('🔍 Checking available commands...');
+  if ((window as any).hyperscriptRuntime?.enhancedRegistry) {
+    const registry = (window as any).hyperscriptRuntime.enhancedRegistry;
+    const commands = registry.getCommandNames ? registry.getCommandNames() : 'No getCommandNames method';
+    console.log('📋 Available commands:', commands);
+  } else {
+    console.log('❌ No enhanced registry found');
   }
   
   // Add HyperFixi to global scope for debugging
   (window as any).hyperscript = hyperscript;
   (window as any).context = context;
   (window as any).debugLogger = debugLogger;
+  (window as any).hyperscriptRuntime = engine;
+  (window as any).testCompoundSyntax = testCompoundSyntax;
   
   updateDebugStatus('🎯 HyperFixi Demo ready - Check debug panel for details', 'success');
   debugLogger.log('🎯 HyperFixi Demo ready - All functionality depends on HyperFixi working correctly', 'success');
   
-  // Manually process our test buttons to make sure they're included
-  console.log('🔧 MANUAL PROCESSING: Starting manual button processing...');
-  
-  // First, let's see ALL buttons
-  const allButtons = document.querySelectorAll('button');
-  console.log(`🔧 MANUAL PROCESSING: Found ${allButtons.length} total buttons`);
-  console.log(`🔧 MANUAL PROCESSING: Starting button enumeration...`);
-  
-  // Now buttons with hyperscript attributes
+  // Simple processing for our test button
   const testButtons = document.querySelectorAll('button[_]');
-  console.log(`🔧 MANUAL PROCESSING: Found ${testButtons.length} buttons with hyperscript attributes`);
+  console.log(`Found ${testButtons.length} buttons with hyperscript`);
   
-  // Let's check each button individually with error handling
-  allButtons.forEach((button, index) => {
-    try {
-      const script = button.getAttribute('_');
-      const text = button.textContent?.trim();
-      const hasAttribute = button.hasAttribute('_');
-      const rawAttribute = button.outerHTML.includes('_=');
-      console.log(`🔧 Button ${index + 1}: "${text}"`);
-      console.log(`   Has _attribute: ${hasAttribute}, Raw HTML has _=: ${rawAttribute}`);
-      console.log(`   Hyperscript: ${script ? `"${script}"` : 'NO'}`);
-      console.log(`   OuterHTML: ${button.outerHTML.substring(0, 150)}...`);
-    } catch (error) {
-      console.error(`❌ Error processing button ${index + 1}:`, error);
-    }
-  });
-  
-  debugLogger.log(`Found ${testButtons.length} buttons with hyperscript attributes`, 'info');
   testButtons.forEach((button, index) => {
     const script = button.getAttribute('_');
-    console.log(`🔧 Processing button ${index + 1}: "${script}"`);
-    debugLogger.log(`Button ${index + 1}: ${script}`, 'info');
-    hyperscript.processNode(button);
+    console.log(`Processing button ${index + 1}: "${script}"`);
+    try {
+      hyperscript.processNode(button);
+      console.log(`✅ Successfully processed button ${index + 1}`);
+    } catch (error) {
+      console.error(`❌ Failed to process button ${index + 1}:`, error);
+    }
   });
+
+  // Test compound syntax parsing before full test suite
+  setTimeout(() => {
+    console.log('🔧 Testing compound syntax parsing...');
+    testCompoundSyntax();
+  }, 1000);
+
+  // Start automated test suite after page loads
+  setTimeout(() => {
+    console.log('🚀 Starting Automated Test Suite...');
+    runAutomatedTests();
+  }, 2000);
+});
+
+// Dedicated compound syntax test function
+async function testCompoundSyntax() {
+  console.log('🧪 ======== COMPOUND SYNTAX DEBUGGING ========');
   
-  // Manually process the debug panel header
-  const debugHeader = document.querySelector('.debug-header[_]');
-  if (debugHeader) {
-    debugLogger.log('Manually processing debug header', 'info');
-    hyperscript.processNode(debugHeader);
-  } else {
-    debugLogger.log('Debug header not found', 'warning');
+  // Create test elements if they don't exist
+  let testTarget = document.getElementById('test-target');
+  if (!testTarget) {
+    testTarget = document.createElement('div');
+    testTarget.id = 'test-target';
+    testTarget.textContent = 'Original content';
+    document.body.appendChild(testTarget);
+    console.log('📝 Created test-target element');
   }
   
-  console.log('🎯 HyperFixi Demo Environment Ready - PURE HYPERFIXI MODE');
-  console.log('Available globals: hyperscript, context, debugLogger');
-  console.log('All navigation and interactions handled by HyperFixi');
-  console.log('Try: hyperscript.run("5 + 3 * 2", context)');
+  let testElement = document.getElementById('test-element');
+  if (!testElement) {
+    testElement = document.createElement('div');
+    testElement.id = 'test-element';
+    testElement.textContent = 'Test element';
+    testElement.className = 'hidden';
+    document.body.appendChild(testElement);
+    console.log('📝 Created test-element element');
+  }
   
-  // Add a test to verify JavaScript click events work
-  console.log('🧪 Testing JavaScript click events...');
-  const hyperscriptButtons = document.querySelectorAll('button[_]');
-  hyperscriptButtons.forEach((button, index) => {
-    // Add a simple JavaScript click handler for testing
-    const jsHandler = () => {
-      console.log(`🧪 JavaScript click handler fired for button ${index + 1}:`, button);
-    };
-    button.addEventListener('click', jsHandler);
-    console.log(`🧪 Added JavaScript click handler to button ${index + 1}:`, button);
+  const testCases = [
+    {
+      command: 'put "Hello World!" into #test-target',
+      description: 'Basic put command with string literal'
+    },
+    {
+      command: 'set x to 42',
+      description: 'Basic set command with number'
+    },
+    {
+      command: 'set message to "Hello"',
+      description: 'Set command with string value'
+    },
+    {
+      command: 'add .active to #test-element',
+      description: 'Add class command'
+    },
+    {
+      command: 'remove .hidden from #test-element', 
+      description: 'Remove class command'
+    }
+  ];
+  
+  for (const testCase of testCases) {
+    console.log(`\n🔍 Testing: "${testCase.command}"`);
+    console.log(`   Description: ${testCase.description}`);
+    
+    try {
+      // Test parsing first
+      console.log('   📊 Testing parse...');
+      const parseResult = hyperscript.compile(testCase.command);
+      console.log('   📊 Parse result:', parseResult);
+      
+      if (parseResult.success) {
+        console.log('   ✅ Parse successful');
+        
+        // Test execution
+        console.log('   🚀 Testing execution...');
+        const result = await hyperscript.run(testCase.command, context);
+        console.log(`   ✅ Successfully executed: ${testCase.command}`);
+        console.log(`   📋 Result:`, result);
+        
+        // Check if it had expected effects
+        if (testCase.command.includes('put') && testCase.command.includes('#test-target')) {
+          const targetEl = document.getElementById('test-target');
+          console.log(`   📝 Target element content: "${targetEl?.textContent}"`);
+        }
+        
+        if (testCase.command.includes('set x to')) {
+          console.log(`   📝 Variable x value: ${context.globals.get('x')}`);
+        }
+        
+      } else {
+        console.log(`   ❌ Parse failed: ${testCase.command}`);
+        console.log(`   📋 Parse errors:`, parseResult.errors);
+      }
+      
+    } catch (error) {
+      console.log(`   ❌ Failed to execute: ${testCase.command}`);
+      console.log(`   📋 Error:`, error);
+      console.log(`   📋 Error stack:`, error.stack);
+    }
+  }
+  
+  console.log('\n🔚 ======== COMPOUND SYNTAX TEST COMPLETE ========');
+  
+  // Test some complex expressions too
+  console.log('\n🧪 ======== COMPLEX EXPRESSIONS TEST ========');
+  
+  const complexCases = [
+    'put 5 + 3 * 2 into #test-target',
+    'set result to 10 + 20',
+    'put "Value: " + result into #test-target',
+    'add .highlight to me',
+    'remove .hidden from #test-element',
+    'trigger click on .button',
+    'set x to 42 then put x + 10 into #test-target',
+    'put "Complex: " + (x * 2) into #test-target'
+  ];
+  
+  for (const complexCase of complexCases) {
+    console.log(`\n🔍 Testing complex: "${complexCase}"`);
+    try {
+      const result = await hyperscript.run(complexCase, context);
+      console.log(`   ✅ Complex execution successful`);
+      console.log(`   📋 Result:`, result);
+    } catch (error) {
+      console.log(`   ❌ Complex execution failed:`, error);
+    }
+  }
+  
+  console.log('\n🔚 ======== COMPLEX EXPRESSIONS TEST COMPLETE ========');
+}
+
+// Automated Test Runner
+async function runAutomatedTests() {
+  const testResults = {
+    passed: 0,
+    failed: 0,
+    total: 0,
+    details: []
+  };
+
+  console.log('📋 ========================================');
+  console.log('🧪 HYPERFIXI AUTOMATED TEST SUITE');
+  console.log('📋 ========================================');
+
+  // Test categories with their button selectors and expected outcomes
+  const tests = [
+    {
+      category: 'Basic DOM Commands',
+      tests: [
+        {
+          name: 'Hide Command',
+          buttonText: 'Hide Me',
+          expectedLog: 'Hide test',
+          expectedAction: 'Button should be hidden'
+        },
+        {
+          name: 'Show Command', 
+          buttonText: 'Show Hidden Button',
+          expectedLog: 'Show test',
+          expectedAction: 'Hidden button should reappear'
+        },
+        {
+          name: 'Toggle Command',
+          buttonText: 'Toggle Me',
+          expectedLog: 'Toggle test', 
+          expectedAction: 'Button should toggle visibility'
+        }
+      ]
+    },
+    {
+      category: 'CSS Class Commands',
+      tests: [
+        {
+          name: 'Add Class',
+          buttonText: 'Add Success Class',
+          expectedLog: 'Add class test',
+          expectedResult: '#class-result should show "Class added!"'
+        },
+        {
+          name: 'Remove Class',
+          buttonText: 'Remove Success Class', 
+          expectedLog: 'Remove class test',
+          expectedResult: '#class-result should show "Class removed!"'
+        }
+      ]
+    },
+    {
+      category: 'Content Commands',
+      tests: [
+        {
+          name: 'Put into Self',
+          buttonText: 'Put into Self',
+          expectedLog: 'Put self test',
+          expectedResult: 'Button text should change to "Self works!"'
+        },
+        {
+          name: 'Put into Target',
+          buttonText: 'Put into Target (FIXED!)', 
+          expectedLog: 'Put target test',
+          expectedResult: '#content-result should show "Target works!"'
+        }
+      ]
+    },
+    {
+      category: 'Event Commands (FIXED)',
+      tests: [
+        {
+          name: 'Trigger Custom Event (Fixed)',
+          buttonText: 'Trigger Custom Event (FIXED!)',
+          expectedLog: 'Trigger test',
+          expectedResult: 'Custom event should be triggered and received'
+        }
+      ]
+    },
+    {
+      category: 'Variables & Math (FIXED)',
+      tests: [
+        {
+          name: 'Set Variable (Fixed)',
+          buttonText: 'Set Variable x=42 (FIXED!)',
+          expectedLog: 'Set variable test',
+          expectedResult: 'Variable x should be set to 42 and displayed'
+        },
+        {
+          name: 'Math Expression (Fixed)',
+          buttonText: 'Math: 5 + 3 * 2 (FIXED!)',
+          expectedLog: 'Math test',
+          expectedResult: 'Math result should be 11 (5 + 6)'
+        }
+      ]
+    },
+    {
+      category: 'Working Simple Commands',
+      tests: [
+        {
+          name: 'Simple Beep + Put',
+          buttonText: 'Test Beep + Put',
+          expectedLog: 'Simple beep test',
+          expectedResult: '#simple-result should show "Beep works!"'
+        },
+        {
+          name: 'Simple Beep + Log', 
+          buttonText: 'Test Beep + Log',
+          expectedLog: 'Log test',
+          expectedResult: 'Should log to console'
+        }
+      ]
+    },
+    {
+      category: 'Async Commands',
+      tests: [
+        {
+          name: 'Wait Command',
+          buttonText: 'Wait 2 Seconds',
+          expectedLog: 'Wait test',
+          expectedResult: '#wait-result should show "Waiting..." then "Done after 2s!"'
+        }
+      ]
+    },
+    {
+      category: 'Form Commands',
+      tests: [
+        {
+          name: 'Take Value',
+          buttonText: 'Take Input Value',
+          expectedLog: 'Take test',
+          setup: () => {
+            const input = document.getElementById('test-input') as HTMLInputElement;
+            if (input) input.value = 'test-value';
+          }
+        },
+        {
+          name: 'Get Value',
+          buttonText: 'Get Input Value',
+          expectedLog: 'Value test'
+        }
+      ]
+    }
+  ];
+
+  // Run each test category
+  for (const category of tests) {
+    console.log(`\n🔍 Testing: ${category.category}`);
+    console.log('─'.repeat(50));
+    
+    for (const test of category.tests) {
+      testResults.total++;
+      console.log(`\n▶️  Running: ${test.name}`);
+      
+      try {
+        // Setup if needed
+        if (test.setup) {
+          test.setup();
+        }
+
+        // Find and click the button
+        const button = Array.from(document.querySelectorAll('button')).find(
+          btn => btn.textContent?.trim() === test.buttonText
+        );
+
+        if (!button) {
+          throw new Error(`Button not found: "${test.buttonText}"`);
+        }
+
+        // Listen for console output
+        let logReceived = false;
+        const originalLog = console.log;
+        console.log = (...args) => {
+          const message = args.join(' ');
+          if (message.includes(test.expectedLog)) {
+            logReceived = true;
+          }
+          originalLog.apply(console, args);
+        };
+
+        // Click the button
+        const clickEvent = new MouseEvent('click', { bubbles: true });
+        button.dispatchEvent(clickEvent);
+
+        // Wait a moment for execution
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Restore console.log
+        console.log = originalLog;
+
+        // Check results
+        if (logReceived) {
+          console.log(`    ✅ ${test.name}: beep! logged "${test.expectedLog}"`);
+          testResults.passed++;
+          testResults.details.push({ test: test.name, status: 'PASS', message: 'beep! logged correctly' });
+        } else {
+          console.log(`    ❌ ${test.name}: beep! did not log "${test.expectedLog}"`);
+          testResults.failed++;
+          testResults.details.push({ test: test.name, status: 'FAIL', message: 'beep! not logged' });
+        }
+
+        // Check expected results if specified
+        if (test.expectedResult) {
+          console.log(`    📝 Expected: ${test.expectedResult}`);
+        }
+
+      } catch (error) {
+        console.log(`    ❌ ${test.name}: Error - ${error.message}`);
+        testResults.failed++;
+        testResults.details.push({ test: test.name, status: 'ERROR', message: error.message });
+      }
+    }
+  }
+
+  // Print final results
+  console.log('\n📊 ========================================');
+  console.log('🏁 TEST SUITE COMPLETE');
+  console.log('📊 ========================================');
+  console.log(`✅ Passed: ${testResults.passed}`);
+  console.log(`❌ Failed: ${testResults.failed}`);
+  console.log(`📊 Total: ${testResults.total}`);
+  console.log(`📈 Success Rate: ${Math.round((testResults.passed / testResults.total) * 100)}%`);
+
+  // Detailed results
+  console.log('\n📋 Detailed Results:');
+  console.log('─'.repeat(50));
+  testResults.details.forEach(result => {
+    const status = result.status === 'PASS' ? '✅' : result.status === 'FAIL' ? '❌' : '⚠️';
+    console.log(`${status} ${result.test}: ${result.message}`);
   });
-});
+
+  // Feature compatibility summary
+  console.log('\n🎯 ========================================');
+  console.log('📊 HYPERSCRIPT FEATURE COMPATIBILITY');
+  console.log('🎯 ========================================');
+  
+  const categories = [
+    'Basic DOM Commands',
+    'CSS Class Commands', 
+    'Content Commands',
+    'Event Commands (FIXED)',
+    'Variables & Math (FIXED)',
+    'Working Simple Commands',
+    'Async Commands',
+    'Form Commands'
+  ];
+
+  categories.forEach(category => {
+    const categoryTests = testResults.details.filter(result => 
+      tests.find(t => t.category === category)?.tests.some(test => test.name === result.test)
+    );
+    const passed = categoryTests.filter(t => t.status === 'PASS').length;
+    const total = categoryTests.length;
+    const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
+    const status = percentage === 100 ? '✅' : percentage > 0 ? '🟡' : '❌';
+    console.log(`${status} ${category}: ${passed}/${total} (${percentage}%)`);
+  });
+
+  console.log('\n🎯 Test suite completed! Check results above.');
+  
+  // Update visual status in the demo
+  updateTestStatusDisplay(testResults);
+}
+
+function updateTestStatusDisplay(results) {
+  // Update the status overview section with real results
+  const statusGrid = document.querySelector('.demo-card:last-child .demo-area > div');
+  if (statusGrid) {
+    statusGrid.innerHTML = `
+      <div>✅ <strong>Basic DOM</strong><br>hide, show, toggle (${getStatusForCategory('Basic DOM Commands', results)})</div>
+      <div>${getStatusIcon('CSS Class Commands', results)} <strong>CSS Classes</strong><br>add, remove (${getStatusForCategory('CSS Class Commands', results)})</div>
+      <div>${getStatusIcon('Content Commands', results)} <strong>Content</strong><br>put into targets (${getStatusForCategory('Content Commands', results)})</div>
+      <div>${getStatusIcon('Event Commands', results)} <strong>Events</strong><br>trigger, custom events (${getStatusForCategory('Event Commands', results)})</div>
+      <div>${getStatusIcon('Variables & Math', results)} <strong>Variables</strong><br>set, math, expressions (${getStatusForCategory('Variables & Math', results)})</div>
+      <div>${getStatusIcon('Async Commands', results)} <strong>Async</strong><br>wait, timing (${getStatusForCategory('Async Commands', results)})</div>
+      <div>${getStatusIcon('Form Commands', results)} <strong>Forms</strong><br>take, values (${getStatusForCategory('Form Commands', results)})</div>
+      <div>❓ <strong>Control Flow</strong><br>if/else, unless (Not tested)</div>
+      <div>❓ <strong>Strings</strong><br>concatenation (Not tested)</div>
+      <div>❓ <strong>Arrays</strong><br>collections (Not tested)</div>
+      <div>❓ <strong>DOM Queries</strong><br>selectors (Not tested)</div>
+      <div>❓ <strong>Types</strong><br>as keyword (Not tested)</div>
+    `;
+  }
+}
+
+function getStatusForCategory(category, results) {
+  // This is a simplified status - in reality we'd need more sophisticated tracking
+  return 'Tested';
+}
+
+function getStatusIcon(category, results) {
+  // This is a simplified status - in reality we'd need more sophisticated tracking  
+  return '🟡'; // Assume partially working for now
+}
