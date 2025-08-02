@@ -297,31 +297,52 @@ export class Parser {
       
       // Check if current expression is an identifier from a command token
       if (expr.type === 'identifier') {
-        // If followed by a selector, create binary expression
-        if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
-            this.checkTokenType(TokenType.ID_SELECTOR) || 
-            this.checkTokenType(TokenType.CLASS_SELECTOR)) {
-          
-          const right = this.parseCall();
-          expr = this.createBinaryExpression(' ', expr, right);
-          
-        // If followed by other argument types and the identifier is a command, create command
-        } else if (this.checkTokenType(TokenType.TIME_EXPRESSION) ||
-                   this.checkTokenType(TokenType.STRING) ||
-                   this.checkTokenType(TokenType.NUMBER) ||
-                   this.checkTokenType(TokenType.CONTEXT_VAR) ||
-                   this.checkTokenType(TokenType.IDENTIFIER) ||
-                   this.checkTokenType(TokenType.KEYWORD)) {  // Add KEYWORD support for words like "from", "into"
-          
-          // Convert identifier back to command if it's actually a command
-          if (expr.type === 'identifier' && this.isCommand((expr as IdentifierNode).name)) {
-            expr = this.createCommandFromIdentifier(expr as IdentifierNode);
+        // First check if this identifier is a command
+        if (this.isCommand((expr as IdentifierNode).name)) {
+          // Check if this is a compound command (has keywords like from, to, into)
+          if (this.isCompoundCommand((expr as IdentifierNode).name.toLowerCase())) {
+            // For compound commands, convert to command node if followed by arguments
+            if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
+                this.checkTokenType(TokenType.ID_SELECTOR) || 
+                this.checkTokenType(TokenType.CLASS_SELECTOR) ||
+                this.checkTokenType(TokenType.TIME_EXPRESSION) ||
+                this.checkTokenType(TokenType.STRING) ||
+                this.checkTokenType(TokenType.NUMBER) ||
+                this.checkTokenType(TokenType.CONTEXT_VAR) ||
+                this.checkTokenType(TokenType.IDENTIFIER) ||
+                this.checkTokenType(TokenType.KEYWORD)) {
+              
+              expr = this.createCommandFromIdentifier(expr as IdentifierNode);
+            } else {
+              break;
+            }
+          } else {
+            // For simple commands, check if it takes non-selector arguments (like wait with time)
+            const commandName = (expr as IdentifierNode).name.toLowerCase();
+            if (commandName === 'wait' && this.checkTokenType(TokenType.TIME_EXPRESSION)) {
+              // wait with time expression should be a command
+              expr = this.createCommandFromIdentifier(expr as IdentifierNode);
+            } else if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
+                this.checkTokenType(TokenType.ID_SELECTOR) || 
+                this.checkTokenType(TokenType.CLASS_SELECTOR)) {
+              // Other simple commands with selectors become binary expressions
+              const right = this.parseCall();
+              expr = this.createBinaryExpression(' ', expr, right);
+            } else {
+              break;
+            }
+          }
+        } else {
+          // Not a command - handle as regular identifier followed by selector
+          if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
+              this.checkTokenType(TokenType.ID_SELECTOR) || 
+              this.checkTokenType(TokenType.CLASS_SELECTOR)) {
+            
+            const right = this.parseCall();
+            expr = this.createBinaryExpression(' ', expr, right);
           } else {
             break;
           }
-        } else {
-          // No arguments follow - keep as identifier even if it's a command name
-          break;
         }
       } else if (expr.type === 'literal' && 
                  (this.checkTokenType(TokenType.NUMBER) || this.checkTokenType(TokenType.IDENTIFIER))) {
@@ -395,7 +416,7 @@ export class Parser {
   }
 
   private isCompoundCommand(commandName: string): boolean {
-    const compoundCommands = ['put', 'set', 'trigger', 'add', 'remove', 'take'];
+    const compoundCommands = ['put', 'set', 'trigger', 'remove', 'take', 'toggle'];
     return compoundCommands.includes(commandName);
   }
 
@@ -410,10 +431,10 @@ export class Parser {
         return this.parseSetCommand(identifierNode);
       case 'trigger':
         return this.parseTriggerCommand(identifierNode);
-      case 'add':
-        return this.parseAddCommand(identifierNode);
       case 'remove':
         return this.parseRemoveCommand(identifierNode);
+      case 'toggle':
+        return this.parseToggleCommand(identifierNode);
       default:
         // Fallback to regular parsing
         return this.parseRegularCommand(identifierNode);
@@ -495,7 +516,7 @@ export class Parser {
     }
     
     // Operation keyword
-    finalArgs.push(this.createLiteral(operationKeyword, operationKeyword));
+    finalArgs.push(this.createIdentifier(operationKeyword));
     
     // Target (could be multiple parts, combine if needed)
     if (targetArgs.length === 1) {
@@ -588,7 +609,7 @@ export class Parser {
     }
     
     // 'to' keyword
-    finalArgs.push(this.createLiteral('to', 'to'));
+    finalArgs.push(this.createIdentifier('to'));
     
     // Value (could be complex expression)
     if (valueArgs.length === 1) {
@@ -662,7 +683,7 @@ export class Parser {
       const targetArgs = allArgs.slice(operationIndex + 1);
       
       finalArgs.push(...eventArgs);
-      finalArgs.push(this.createLiteral('on', 'on'));
+      finalArgs.push(this.createIdentifier('on'));
       finalArgs.push(...targetArgs);
     }
     
@@ -698,7 +719,7 @@ export class Parser {
     // Expect 'to' keyword
     if (this.check('to')) {
       this.advance(); // consume 'to'
-      args.push(this.createLiteral('to', 'to')); // Add 'to' as an argument
+      args.push(this.createIdentifier('to')); // Add 'to' as an argument
     }
     
     // Third argument: target
@@ -730,7 +751,39 @@ export class Parser {
     // Expect 'from' keyword
     if (this.check('from')) {
       this.advance(); // consume 'from'
-      args.push(this.createLiteral('from', 'from')); // Add 'from' as an argument
+      args.push(this.createIdentifier('from')); // Add 'from' as an argument
+    }
+    
+    // Third argument: target
+    if (!this.isAtEnd() && !this.check('then') && !this.check('and') && !this.check('else')) {
+      args.push(this.parsePrimary());
+    }
+    
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: identifierNode.start,
+      end: this.getPosition().end,
+      line: identifierNode.line,
+      column: identifierNode.column
+    };
+  }
+
+  private parseToggleCommand(identifierNode: IdentifierNode): CommandNode | null {
+    const args: ASTNode[] = [];
+    
+    // Parse: toggle <class> from <target>
+    // First argument: class
+    if (!this.isAtEnd() && !this.check('from')) {
+      args.push(this.parsePrimary());
+    }
+    
+    // Expect 'from' keyword
+    if (this.check('from')) {
+      this.advance(); // consume 'from'
+      args.push(this.createIdentifier('from')); // Add 'from' as an argument
     }
     
     // Third argument: target
