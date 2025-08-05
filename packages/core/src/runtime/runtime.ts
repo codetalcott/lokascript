@@ -714,6 +714,16 @@ export class Runtime {
     // Execute through enhanced adapter
     console.log(`🚀 Executing enhanced ${name} command with:`, evaluatedArgs);
     
+    // Debug for SET command to see what args we actually have
+    if (name === 'set') {
+      console.log(`🔍 SET COMMAND DEBUG:`, { 
+        evaluatedArgsLength: evaluatedArgs.length,
+        evaluatedArgs: evaluatedArgs,
+        conditionCheck: evaluatedArgs.length >= 2,
+        willUseStructuredPath: name === 'set' && evaluatedArgs.length >= 2
+      });
+    }
+    
     // Debug for add/remove commands to see class parsing
     if ((name === 'add' || name === 'remove') && evaluatedArgs.length >= 1) {
       console.log(`🔍 ${name.toUpperCase()} class argument type:`, typeof evaluatedArgs[0], evaluatedArgs[0]);

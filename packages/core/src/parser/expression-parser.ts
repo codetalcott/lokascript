@@ -19,11 +19,14 @@ import { enhancedConversionExpressions } from '../expressions/enhanced-conversio
 import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
 import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index';
 
+// Import legacy conversion system for Date conversion compatibility
+import { conversionExpressions as legacyConversionExpressions } from '../expressions/conversion/index';
+
 // Create aliases for backward compatibility
 const logicalExpressions = enhancedComparisonExpressions;
 const specialExpressions = enhancedMathematicalExpressions;
 const propertyExpressions = enhancedPropertyExpressions;
-const conversionExpressions = enhancedConversionExpressions;
+const conversionExpressions = legacyConversionExpressions; // Use legacy system for Date conversion
 // const referenceExpressions = enhancedReferenceExpressions; // Unused for now
 const positionalExpressions = enhancedPositionalExpressions;
 
@@ -1496,8 +1499,8 @@ async function evaluateAsExpression(node: any, context: ExecutionContext): Promi
   const value = await evaluateASTNode(node.expression, context);
   const targetType = node.targetType;
   
-  // Use our unified 'as' expression which handles all conversions
-  return await extractValue(conversionExpressions.as.evaluate(toTypedContext(context), { value, type: targetType }));
+  // Use our legacy conversion system which directly returns the converted value
+  return await conversionExpressions.as.evaluate(context, value, targetType);
 }
 
 /**
@@ -1508,10 +1511,14 @@ async function evaluateCSSSelector(node: any, _context: ExecutionContext): Promi
   
   if (node.selectorType === 'id') {
     // ID selector returns single element or null
-    return document.getElementById(selector);
+    // Remove the '#' prefix since getElementById expects just the ID
+    const id = selector.startsWith('#') ? selector.slice(1) : selector;
+    return document.getElementById(id);
   } else if (node.selectorType === 'class') {
     // Class selector returns array of elements
-    return Array.from(document.getElementsByClassName(selector));
+    // Remove the '.' prefix since getElementsByClassName expects just the class name
+    const className = selector.startsWith('.') ? selector.slice(1) : selector;
+    return Array.from(document.getElementsByClassName(className));
   }
   
   throw new ExpressionParseError(`Unknown CSS selector type: ${node.selectorType}`);

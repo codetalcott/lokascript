@@ -177,13 +177,30 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
   ): Promise<SetCommandOutput> {
     console.log('🔧 Enhanced SET command executing with:', { input, contextMe: context.me?.id });
     
+    // Add stack trace to identify where this is being called from
+    console.log('🔍 SET command call stack:');
+    console.trace();
+    
     // Handle legacy argument formats from command executor
     let normalizedInput: SetCommandInput;
     
     if (typeof input === 'string') {
-      // Single string argument - probably just the target, missing value
+      // Single string argument - could be just target, or could be a full command string
       console.log('🚨 SET command received single string argument:', input);
-      throw new Error('SET command requires both target and value. Use syntax: set <target> to <value>');
+      
+      // Try to parse as full command string first
+      const fullCommandMatch = input.match(/^set\s+(.+)\s+to\s+(.+)$/i);
+      if (fullCommandMatch) {
+        console.log('🔧 SET: Detected full command string, parsing:', fullCommandMatch);
+        normalizedInput = {
+          target: fullCommandMatch[1].trim(),
+          value: fullCommandMatch[2].trim(),
+          scope: undefined
+        };
+      } else {
+        // Just the target, missing value
+        throw new Error('SET command requires both target and value. Use syntax: set <target> to <value>');
+      }
     } else if (Array.isArray(input)) {
       // Array arguments from command executor: ['my innerHTML', 'to', 'test'] or similar
       console.log('🔧 SET command processing array arguments:', input);

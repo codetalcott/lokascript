@@ -101,6 +101,16 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
    */
   async execute(context: ExecutionContext, ...args: unknown[]): Promise<unknown> {
     try {
+      // Debug logging for SET command
+      if (this.impl.name === 'set') {
+        console.log('🔧 EnhancedCommandAdapter.execute() called with:', { 
+          commandName: this.impl.name, 
+          args, 
+          argsLength: args.length,
+          argsType: Array.isArray(args) ? 'array' : typeof args
+        });
+      }
+      
       // Convert to typed context
       const typedContext = ContextBridge.toTyped(context);
       
@@ -110,7 +120,33 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
       // Check if this is a TypedCommandImplementation (enhanced command)
       if (this.impl.execute && this.impl.execute.length === 2) {
         // Enhanced command expects (context, input) signature
-        const input = args.length === 1 ? args[0] : args;
+        let input: unknown;
+        
+        // Special handling for SET command arguments
+        if (this.impl.name === 'set' && Array.isArray(args) && args.length >= 3 && args[1] === 'to') {
+          console.log('🔧 SET: Converting structured arguments to input:', { args });
+          // Convert ['target', 'to', 'value'] to structured input
+          input = {
+            target: args[0],
+            value: args[2],
+            toKeyword: 'to' as const,
+            scope: undefined
+          };
+          console.log('🔧 SET: Structured input created:', input);
+        } else if (this.impl.name === 'render' && Array.isArray(args) && args.length >= 3 && args[1] === 'with') {
+          // Convert ['template', 'with', 'data'] to structured input  
+          input = {
+            template: args[0],
+            variables: args[2],
+            withKeyword: 'with' as const
+          };
+        } else {
+          // Default input handling
+          console.log('🔧 SET: Using default input handling:', { args, argsLength: args.length });
+          input = args.length === 1 ? args[0] : args;
+          console.log('🔧 SET: Default input result:', input);
+        }
+        
         result = await this.impl.execute(typedContext, input);
       } else {
         // Legacy command adapter expects (context, ...args) signature

@@ -85,9 +85,24 @@ export async function evalHyperScript(
   }
   
   try {
-    // Parse and evaluate the expression using our integrated parser
-    const result = await parseAndEvaluateExpression(expressionSource, context);
-    return result;
+    // Check if this is a command (starts with command keywords)
+    const commandKeywords = ['set', 'put', 'add', 'remove', 'hide', 'show', 'toggle', 'render', 'increment', 'decrement'];
+    const trimmedSource = expressionSource.trim();
+    const isCommand = commandKeywords.some(keyword => trimmedSource.toLowerCase().startsWith(keyword + ' '));
+    
+    if (isCommand) {
+      // Use the command execution system
+      const { Runtime } = await import('../runtime/runtime');
+      const { hyperscript } = await import('../api/hyperscript-api');
+      
+      // Parse and execute as a command using the full hyperscript system
+      const result = await hyperscript.run(expressionSource, context);
+      return result;
+    } else {
+      // Parse and evaluate as an expression using our integrated parser
+      const result = await parseAndEvaluateExpression(expressionSource, context);
+      return result;
+    }
   } catch (error) {
     // Convert our errors to match their expectations
     if (error instanceof Error) {
