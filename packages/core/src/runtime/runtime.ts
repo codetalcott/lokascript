@@ -30,6 +30,7 @@ import { createPutCommand } from '../commands/dom/put';
 import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
 import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
 import { createEnhancedDecrementCommand } from '../commands/data/enhanced-decrement';
+import { createEnhancedRenderCommand } from '../commands/templates/enhanced-render';
 
 // Additional command imports
 // IncrementCommand and DecrementCommand now imported from data/index.js above
@@ -229,8 +230,17 @@ export class Runtime {
       this.enhancedRegistry.register(new BeepCommand());
       this.registerLegacyCommand(new AsyncCommand());
       
-      // Register template commands
-      this.registerLegacyCommand(new RenderCommand());
+      // Register template commands (enhanced)
+      try {
+        const renderCommand = createEnhancedRenderCommand();
+        console.log('🔧 Registering Enhanced RENDER command:', renderCommand.name);
+        this.enhancedRegistry.register(renderCommand);
+        console.log('✅ Enhanced RENDER command registered successfully');
+      } catch (e) {
+        console.error('❌ Failed to register Enhanced RENDER command:', e);
+        // Fallback to legacy command
+        this.registerLegacyCommand(new RenderCommand());
+      }
       
       if (this.options.enableErrorReporting) {
         console.log(`Enhanced commands initialized: ${this.enhancedRegistry.getCommandNames().join(', ')}`);

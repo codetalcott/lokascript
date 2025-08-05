@@ -1,30 +1,49 @@
 /**
  * Enhanced Render Command Implementation
- * Processes HTML template elements with data interpolation and hyperscript directives
+ * Renders templates with @if, @else, and @repeat directives
  * 
- * Syntax: render <template> [with <data>]
+ * Syntax: render <template> [with (<variables>)]
  * 
- * Modernized with TypedCommandImplementation interface
+ * Integrates with the enhanced template directive system
  */
 
+import { z } from 'zod';
 import type { TypedCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
+import { EnhancedIfDirective } from './directives/enhanced-if';
+import { EnhancedElseDirective } from './directives/enhanced-else';
+import { EnhancedRepeatDirective } from './directives/enhanced-repeat';
+
+/**
+ * Zod schema for RENDER command input validation
+ */
+export const RenderCommandInputSchema = z.object({
+  template: z.union([
+    z.instanceof(HTMLTemplateElement),
+    z.string().min(1, 'Template must be a non-empty string'),
+  ]).describe('Template element or template string to render'),
+  
+  variables: z.record(z.unknown()).optional().describe('Variables to pass to template context'),
+  
+  withKeyword: z.literal('with').optional().describe('Syntax keyword "with"'),
+}).describe('RENDER command input parameters');
 
 // Input type definition
 export interface RenderCommandInput {
-  template: string | HTMLTemplateElement; // Template to render
-  data?: any; // Data context for interpolation
-  withKeyword?: 'with'; // Syntax support
+  template: HTMLTemplateElement | string;
+  variables?: Record<string, unknown>;
+  withKeyword?: 'with'; // For syntax validation
 }
 
-// Output type definition
+type RenderCommandInputType = z.infer<typeof RenderCommandInputSchema>;
+
+// Output type definition  
 export interface RenderCommandOutput {
-  element: HTMLElement;
-  template: string;
-  data?: any;
-  rendered: boolean;
-  interpolated: boolean;
+  rendered: string;
+  templateSource: string;
+  variablesUsed: string[];
+  directivesProcessed: string[];
 }
 
 /**
@@ -35,197 +54,684 @@ export class EnhancedRenderCommand implements TypedCommandImplementation<
   RenderCommandOutput,
   TypedExecutionContext
 > {
-  metadata = {
-    name: 'render',
-    description: 'The render command processes HTML template elements with optional data interpolation and hyperscript directives. It creates DOM elements from templates.',
+  public readonly name = 'render' as const;
+  public readonly syntax = 'render <template> [with (<variables>)]';
+  public readonly description = 'The render command processes templates with @if, @else, and @repeat directives, supporting variable interpolation and HTML escaping.';
+  public readonly inputSchema = RenderCommandInputSchema;
+  public readonly outputType = 'object' as const;
+  
+  public readonly metadata = {
+    category: 'template' as const,
+    complexity: 'high' as const,
+    sideEffects: ['template-rendering', 'context-modification'] as const,
     examples: [
-      'render <#userTemplate/>',
-      'render <#listTemplate/> with users',
-      'render myTemplate with { name: "John", age: 30 }',
-      'render <template/> with data'
+      {
+        code: 'render myTemplate',
+        description: 'Render a template with current context',
+        expectedOutput: 'RenderCommandOutput'
+      },
+      {
+        code: 'render myTemplate with (name: "Alice", items: [1,2,3])',
+        description: 'Render template with specific variables',
+        expectedOutput: 'RenderCommandOutput'
+      },
+      {
+        code: 'render "<template>Hello ${name}!</template>" with (name: "World")',
+        description: 'Render inline template string',
+        expectedOutput: 'RenderCommandOutput'
+      },
+      {
+        code: 'render template with (items: data) then put result into #output',
+        description: 'Render template and place result in element',
+        expectedOutput: 'RenderCommandOutput'
+      }
     ],
-    syntax: 'render <template> [with <data>]',
-    category: 'templates' as const,
+    relatedCommands: ['put', 'set', 'get'],
     version: '2.0.0'
   };
 
-  validation = {
-    validate(input: unknown): UnifiedValidationResult<RenderCommandInput> {
-      if (!input || typeof input !== 'object') {
+  // Template directive instances
+  private readonly ifDirective = new EnhancedIfDirective();
+  private readonly elseDirective = new EnhancedElseDirective();
+  private readonly repeatDirective = new EnhancedRepeatDirective();
+
+  /**
+   * Validate input using Zod schema
+   */
+  validate(input: unknown): UnifiedValidationResult<RenderCommandInput> {
+    try {
+      const result = RenderCommandInputSchema.safeParse(input);
+      
+      if (result.success) {
+        return {
+          isValid: true,
+          errors: [],
+          suggestions: [],
+          data: result.data
+        };
+      } else {
+        // Convert Zod errors to our format
+        const errors = result.error.errors.map(err => ({
+          type: 'validation-error' as const,
+          message: `${err.path.join('.')}: ${err.message}`,
+          suggestions: this.generateSuggestions(err.code, err.path)
+        }));
+
+        const suggestions = errors.flatMap(err => err.suggestions);
+
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Render command requires a template',
-            suggestions: ['Provide template element or selector']
-          }],
-          suggestions: ['Provide template element or selector']
+          errors,
+          suggestions
         };
       }
-
-      const inputObj = input as any;
-
-      if (!inputObj.template) {
-        return {
-          isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Render command requires a template argument',
-            suggestions: ['Provide template element or CSS selector']
-          }],
-          suggestions: ['Provide template element or CSS selector']
-        };
-      }
-
+    } catch (error) {
       return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          template: inputObj.template,
-          data: inputObj.data,
-          withKeyword: inputObj.withKeyword
-        }
+        isValid: false,
+        errors: [{
+          type: 'validation-error',
+          message: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          suggestions: ['Check input format and try again']
+        }],
+        suggestions: ['Check input format and try again']
       };
     }
-  };
-
-  async execute(
-    input: RenderCommandInput,
-    context: TypedExecutionContext
-  ): Promise<RenderCommandOutput> {
-    const { template, data } = input;
-
-    // Resolve template element
-    const templateElement = await this.resolveTemplate(template, context);
-    if (!templateElement) {
-      throw new Error(`Template not found: ${template}`);
-    }
-
-    // Clone template content
-    const content = templateElement.content?.cloneNode(true) as DocumentFragment;
-    if (!content) {
-      throw new Error('Template has no content to render');
-    }
-
-    let interpolated = false;
-
-    // Perform data interpolation if data is provided
-    if (data) {
-      interpolated = this.interpolateData(content, data);
-    }
-
-    // Create wrapper element for the rendered content
-    const wrapper = document.createElement('div');
-    wrapper.appendChild(content);
-
-    // Get the first element child as the result
-    const renderedElement = wrapper.firstElementChild as HTMLElement || wrapper;
-
-    // Set the result in context
-    context.it = renderedElement;
-
-    return {
-      element: renderedElement,
-      template: typeof template === 'string' ? template : template.id || 'template',
-      data,
-      rendered: true,
-      interpolated
-    };
   }
 
-  private async resolveTemplate(
-    template: string | HTMLTemplateElement,
-    context: TypedExecutionContext
-  ): Promise<HTMLTemplateElement | null> {
-    if (template instanceof HTMLTemplateElement) {
+  /**
+   * Generate helpful suggestions based on Zod validation errors
+   */
+  private generateSuggestions(errorCode: string, path: (string | number)[]): string[] {
+    const suggestions: string[] = [];
+    
+    if (path.includes('template')) {
+      suggestions.push('Provide a template: HTMLTemplateElement or template string');
+      suggestions.push('Examples: myTemplate, "<template>Hello ${name}!</template>"');
+    }
+    
+    if (path.includes('variables')) {
+      suggestions.push('Provide variables as object: { key: value }');
+      suggestions.push('Examples: { name: "Alice", count: 42 }');
+    }
+    
+    if (errorCode === 'invalid_type') {
+      suggestions.push('Check the data type of your input');
+    }
+    
+    if (errorCode === 'too_small') {
+      suggestions.push('Template must not be empty');
+    }
+
+    // Add general syntax suggestions
+    if (suggestions.length === 0) {
+      suggestions.push('Use syntax: render <template> [with (<variables>)]');
+      suggestions.push('See examples in command metadata');
+    }
+    
+    return suggestions;
+  }
+
+  async execute(
+    context: TypedExecutionContext,
+    input: RenderCommandInput | string | string[]
+  ): Promise<Element | null> {
+    console.log('🎨 Enhanced RENDER command executing with:', { input, contextMe: context.me?.id });
+    
+    // Handle legacy argument formats from command executor
+    let normalizedInput: RenderCommandInput;
+    
+    if (typeof input === 'string') {
+      // Single string argument - probably template name
+      normalizedInput = { template: input };
+    } else if (Array.isArray(input)) {
+      // Array arguments from command executor: ['tmpl', 'with', 'data'] or ['tmpl']
+      if (input.length >= 3 && input[1] === 'with') {
+        normalizedInput = { 
+          template: input[0] as string, 
+          variables: this.parseVariables(input[2] as string, context),
+          withKeyword: 'with'
+        };
+      } else {
+        normalizedInput = { template: input[0] as string };
+      }
+    } else {
+      // Already properly formatted input
+      normalizedInput = input as RenderCommandInput;
+    }
+    
+    let { template, variables } = normalizedInput;
+    const directivesProcessed: string[] = [];
+    const variablesUsed: string[] = [];
+
+    // Resolve template from context if it's a variable name
+    if (typeof template === 'string' && !template.includes('<') && !template.startsWith('#') && !template.startsWith('.')) {
+      // This might be a variable name, try to resolve it from context
+      console.log('🔍 Attempting to resolve template variable:', template);
+      console.log('🔍 Context locals:', Array.from(context.locals.entries()));
+      const resolvedTemplate = this.resolveVariable(template, context);
+      console.log('🔍 Resolved template result:', resolvedTemplate);
+      if (resolvedTemplate) {
+        template = resolvedTemplate;
+        console.log('🔍 Template resolved from variable:', template);
+      } else {
+        console.log('⚠️ Template variable not found in context');
+      }
+    }
+
+    // Extract template content
+    const templateContent = this.extractTemplateContent(template);
+    console.log('📄 Template content extracted:', templateContent);
+
+    // Create template execution context
+    const templateContext = this.createTemplateContext(context, variables || {});
+
+    // Process template with directives
+    const rendered = await this.processTemplate(templateContent, templateContext, directivesProcessed, variablesUsed);
+
+    // Create a DOM element with the rendered content for _hyperscript compatibility
+    const resultElement = document.createElement('div');
+    resultElement.innerHTML = rendered;
+    
+    // If there's only one child element, return it directly (cleaner for single elements)
+    const content = resultElement.children.length === 1 ? resultElement.firstElementChild : resultElement;
+    
+    // Set result in context.it for chaining
+    context.it = content;
+
+    // For _hyperscript compatibility, return the DOM element directly
+    // The test infrastructure expects to access .textContent/.innerHTML properties
+    return content;
+  }
+
+  /**
+   * Extract content from template element or string
+   */
+  private extractTemplateContent(template: HTMLTemplateElement | string): string {
+    if (typeof template === 'string') {
+      // Handle template string - extract content from <template> tags if present
+      const templateMatch = template.match(/<template[^>]*>([\s\S]*?)<\/template>/i);
+      if (templateMatch) {
+        return templateMatch[1];
+      }
       return template;
     }
 
-    if (typeof template === 'string') {
-      const trimmed = template.trim();
-      
-      // Handle context references
-      if (trimmed === 'it' && context.it instanceof HTMLTemplateElement) {
-        return context.it;
-      }
-
-      // Handle CSS selector
-      if (typeof document !== 'undefined') {
-        try {
-          const found = document.querySelector(trimmed);
-          return found instanceof HTMLTemplateElement ? found : null;
-        } catch {
-          return null;
-        }
-      }
+    // Handle HTMLTemplateElement
+    if (template instanceof HTMLTemplateElement) {
+      return template.innerHTML;
     }
 
-    return null;
+    // Fallback for template-like objects with innerHTML property
+    if (template && typeof template === 'object' && 'innerHTML' in template) {
+      return (template as any).innerHTML;
+    }
+
+    // Fallback for template-like objects with textContent property
+    if (template && typeof template === 'object' && 'textContent' in template) {
+      return (template as any).textContent;
+    }
+
+    throw new Error('Invalid template format');
   }
 
-  private interpolateData(content: DocumentFragment, data: any): boolean {
-    if (!data || typeof data !== 'object') {
-      return false;
+  /**
+   * Create template execution context with variables
+   */
+  private createTemplateContext(context: TypedExecutionContext, variables: Record<string, unknown>) {
+    const templateContext = {
+      ...context,
+      templateBuffer: [] as string[],
+      templateDepth: 0,
+      iterationContext: undefined,
+      conditionalContext: undefined,
+      templateMeta: {
+        templateName: 'render-command-template',
+        compiledAt: Date.now(),
+        executionStartTime: Date.now(),
+        directiveStack: []
+      },
+      locals: new Map([
+        ...Array.from(context.locals.entries()),
+        ...Object.entries(variables)
+      ])
+    };
+
+    return templateContext;
+  }
+
+  /**
+   * Process template content with directive parsing and execution
+   */
+  private async processTemplate(
+    content: string,
+    context: any,
+    directivesProcessed: string[],
+    variablesUsed: string[]
+  ): Promise<string> {
+    // Parse and execute directives in the template
+    const result = await this.parseAndExecuteDirectives(content, context, directivesProcessed);
+    
+    // Track variables used
+    const variables = this.extractVariablesFromContent(content);
+    variablesUsed.push(...variables);
+
+    return result;
+  }
+
+  /**
+   * Parse and execute template directives
+   */
+  private async parseAndExecuteDirectives(
+    content: string,
+    context: any,
+    directivesProcessed: string[]
+  ): Promise<string> {
+    // Simple directive parser - looks for @repeat, @if, @else, @end patterns
+    const lines = content.split('\n');
+    const result: string[] = [];
+    
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('@repeat ')) {
+        // Process @repeat directive
+        const { nextIndex, renderedContent } = await this.processRepeatDirective(
+          lines, i, context, directivesProcessed
+        );
+        result.push(renderedContent);
+        i = nextIndex;
+        directivesProcessed.push('@repeat');
+      } else if (line.startsWith('@if ')) {
+        // Process @if directive
+        const { nextIndex, renderedContent } = await this.processIfDirective(
+          lines, i, context, directivesProcessed
+        );
+        result.push(renderedContent);
+        i = nextIndex;
+        directivesProcessed.push('@if');
+      } else if (line === '@else') {
+        // @else is handled within @if processing
+        i++;
+      } else if (line === '@end') {
+        // @end is handled within directive processing
+        i++;
+      } else {
+        // Regular content line - process variable interpolation
+        const processedLine = this.processVariableInterpolation(line, context);
+        if (processedLine.trim() || line === '') {
+          result.push(processedLine);
+        }
+        i++;
+      }
     }
 
-    let interpolated = false;
-    const walker = document.createTreeWalker(
-      content,
-      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-      null
-    );
+    return result.join('\n');
+  }
 
-    let node: Node | null;
-    while ((node = walker.nextNode())) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const textContent = node.textContent || '';
-        const interpolatedText = this.interpolateText(textContent, data);
-        if (interpolatedText !== textContent) {
-          node.textContent = interpolatedText;
-          interpolated = true;
+  /**
+   * Process @repeat directive block
+   */
+  private async processRepeatDirective(
+    lines: string[],
+    startIndex: number,
+    context: any,
+    directivesProcessed: string[]
+  ): Promise<{ nextIndex: number; renderedContent: string }> {
+    const repeatLine = lines[startIndex].trim();
+    
+    // Parse repeat expression: "@repeat in <collection>"
+    const repeatMatch = repeatLine.match(/^@repeat\s+in\s+(.+)$/);
+    if (!repeatMatch) {
+      throw new Error(`Invalid @repeat syntax: ${repeatLine}`);
+    }
+
+    const collectionExpr = repeatMatch[1];
+    const collection = this.evaluateExpression(collectionExpr, context);
+
+    // Find matching @end
+    const { endIndex, blockContent } = this.extractDirectiveBlock(lines, startIndex + 1, '@end');
+
+    // Execute repeat directive
+    const repeatInput = {
+      collection,
+      templateContent: blockContent.join('\n')
+    };
+
+    const repeatResult = await this.repeatDirective.executeTemplate(context, repeatInput, repeatInput.templateContent);
+    
+    if (!repeatResult.success) {
+      throw new Error(`@repeat directive failed: ${repeatResult.error?.message}`);
+    }
+
+    return {
+      nextIndex: endIndex + 1,
+      renderedContent: repeatResult.value || ''
+    };
+  }
+
+  /**
+   * Process @if directive block with optional @else
+   */
+  private async processIfDirective(
+    lines: string[],
+    startIndex: number,
+    context: any,
+    directivesProcessed: string[]
+  ): Promise<{ nextIndex: number; renderedContent: string }> {
+    const ifLine = lines[startIndex].trim();
+    
+    // Parse if expression: "@if <condition>"
+    const ifMatch = ifLine.match(/^@if\s+(.+)$/);
+    if (!ifMatch) {
+      throw new Error(`Invalid @if syntax: ${ifLine}`);
+    }
+
+    const conditionExpr = ifMatch[1];
+    const condition = this.evaluateExpression(conditionExpr, context);
+
+    // Find @else or @end
+    const { endIndex, blockContent, elseContent } = this.extractIfElseBlock(lines, startIndex + 1);
+
+    // Execute if directive
+    const ifInput = {
+      condition,
+      templateContent: blockContent.join('\n')
+    };
+
+    // Create conditional context
+    const conditionalContext = {
+      ...context,
+      conditionalContext: {
+        conditionMet: Boolean(condition),
+        elseAllowed: !Boolean(condition),
+        branchExecuted: Boolean(condition)
+      }
+    };
+
+    const ifResult = await this.ifDirective.executeTemplate(conditionalContext, ifInput, ifInput.templateContent);
+    
+    if (!ifResult.success) {
+      throw new Error(`@if directive failed: ${ifResult.error?.message}`);
+    }
+
+    let renderedContent = ifResult.value || '';
+
+    // Execute @else if condition was false and else content exists
+    if (!condition && elseContent.length > 0) {
+      const elseInput = {
+        templateContent: elseContent.join('\n')
+      };
+
+      const elseContext = {
+        ...context,
+        conditionalContext: {
+          conditionMet: false,
+          elseAllowed: true,
+          branchExecuted: false
         }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element;
+      };
+
+      const elseResult = await this.elseDirective.executeTemplate(elseContext, elseInput, elseInput.templateContent);
+      
+      if (elseResult.success) {
+        renderedContent = elseResult.value || '';
+        directivesProcessed.push('@else');
+      }
+    }
+
+    return {
+      nextIndex: endIndex + 1,
+      renderedContent
+    };
+  }
+
+  /**
+   * Extract directive block content between start and @end
+   */
+  private extractDirectiveBlock(
+    lines: string[],
+    startIndex: number,
+    endKeyword: string
+  ): { endIndex: number; blockContent: string[] } {
+    const blockContent: string[] = [];
+    let nestLevel = 1;
+    let i = startIndex;
+
+    while (i < lines.length && nestLevel > 0) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('@repeat ') || line.startsWith('@if ')) {
+        nestLevel++;
+        blockContent.push(lines[i]);
+      } else if (line === endKeyword) {
+        nestLevel--;
+        if (nestLevel > 0) {
+          blockContent.push(lines[i]);
+        }
+      } else {
+        blockContent.push(lines[i]);
+      }
+      
+      i++;
+    }
+
+    return {
+      endIndex: i - 1,
+      blockContent
+    };
+  }
+
+  /**
+   * Extract if/else block with proper @else handling
+   */
+  private extractIfElseBlock(
+    lines: string[],
+    startIndex: number
+  ): { endIndex: number; blockContent: string[]; elseContent: string[] } {
+    const blockContent: string[] = [];
+    const elseContent: string[] = [];
+    let nestLevel = 1;
+    let i = startIndex;
+    let inElse = false;
+
+    while (i < lines.length && nestLevel > 0) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('@if ')) {
+        nestLevel++;
+      } else if (line === '@else' && nestLevel === 1) {
+        inElse = true;
+        i++;
+        continue;
+      } else if (line === '@end') {
+        nestLevel--;
+        if (nestLevel === 0) break;
+      }
+      
+      if (inElse) {
+        elseContent.push(lines[i]);
+      } else {
+        blockContent.push(lines[i]);
+      }
+      
+      i++;
+    }
+
+    return {
+      endIndex: i,
+      blockContent,
+      elseContent
+    };
+  }
+
+  /**
+   * Process variable interpolation in content
+   */
+  private processVariableInterpolation(content: string, context: any): string {
+    return content.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+      try {
+        const trimmedExpr = expression.trim();
         
-        // Interpolate attributes
-        for (const attr of Array.from(element.attributes)) {
-          const interpolatedValue = this.interpolateText(attr.value, data);
-          if (interpolatedValue !== attr.value) {
-            attr.value = interpolatedValue;
-            interpolated = true;
-          }
+        if (trimmedExpr.startsWith('unescaped ')) {
+          // Unescaped expression
+          const varName = trimmedExpr.substring('unescaped '.length).trim();
+          const value = this.evaluateExpression(varName, context);
+          return String(value || '');
+        } else {
+          // HTML escaped expression (default)
+          const value = this.evaluateExpression(trimmedExpr, context);
+          return this.escapeHtml(String(value || ''));
         }
+      } catch (error) {
+        console.warn(`Template interpolation error for ${expression}:`, error);
+        return match; // Return original if evaluation fails
       }
-    }
-
-    return interpolated;
-  }
-
-  private interpolateText(text: string, data: any): string {
-    // Simple template interpolation: {{property}} or ${property}
-    return text.replace(/\{\{([^}]+)\}\}|\$\{([^}]+)\}/g, (match, prop1, prop2) => {
-      const prop = (prop1 || prop2).trim();
-      
-      // Handle nested properties like user.name
-      const value = this.getNestedProperty(data, prop);
-      return value !== undefined ? String(value) : match;
     });
   }
 
-  private getNestedProperty(obj: any, path: string): any {
-    const keys = path.split('.');
-    let current = obj;
+  /**
+   * Evaluate expression in context
+   */
+  private evaluateExpression(expression: string, context: any): unknown {
+    // Handle literals
+    if (expression === 'true') return true;
+    if (expression === 'false') return false;
+    if (expression === 'null') return null;
+    if (expression === 'undefined') return undefined;
     
-    for (const key of keys) {
-      if (current && typeof current === 'object' && key in current) {
-        current = current[key];
-      } else {
-        return undefined;
+    // Handle numbers
+    const num = Number(expression);
+    if (!isNaN(num)) return num;
+    
+    // Handle arrays
+    if (expression.startsWith('[') && expression.endsWith(']')) {
+      try {
+        return JSON.parse(expression);
+      } catch {
+        // Fall through to variable resolution
       }
     }
     
-    return current;
+    // Handle string literals
+    if ((expression.startsWith('"') && expression.endsWith('"')) ||
+        (expression.startsWith("'") && expression.endsWith("'"))) {
+      return expression.slice(1, -1);
+    }
+
+    // Handle property access
+    if (expression.includes('.')) {
+      const parts = expression.split('.');
+      let current = this.resolveVariable(parts[0], context);
+      
+      for (let i = 1; i < parts.length && current != null; i++) {
+        if (typeof current === 'object' && current !== null) {
+          current = (current as Record<string, unknown>)[parts[i]];
+        } else {
+          return undefined;
+        }
+      }
+      
+      return current;
+    }
+    
+    // Simple variable resolution
+    return this.resolveVariable(expression, context);
+  }
+
+  /**
+   * Resolve variable from context
+   */
+  private resolveVariable(name: string, context: any): unknown {
+    // Check locals first
+    if (context.locals?.has(name)) {
+      return context.locals.get(name);
+    }
+    
+    // Check context variables
+    if (name === 'me') return context.me;
+    if (name === 'it') return context.it;
+    if (name === 'you') return context.you;
+    if (name === 'result') return context.result;
+    
+    // Check globals
+    if (context.globals?.has(name)) {
+      return context.globals.get(name);
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Extract variables referenced in content
+   */
+  private extractVariablesFromContent(content: string): string[] {
+    const variables: Set<string> = new Set();
+    const regex = /\$\{([^}]+)\}/g;
+    let match;
+    
+    while ((match = regex.exec(content)) !== null) {
+      const expression = match[1].trim();
+      
+      // Extract base variable name
+      if (expression.includes('.')) {
+        variables.add(expression.split('.')[0]);
+      } else if (expression.startsWith('unescaped ')) {
+        const varName = expression.substring('unescaped '.length).trim();
+        if (varName.includes('.')) {
+          variables.add(varName.split('.')[0]);
+        } else {
+          variables.add(varName);
+        }
+      } else {
+        variables.add(expression);
+      }
+    }
+    
+    return Array.from(variables);
+  }
+
+  /**
+   * Parse variables from command line syntax like "(x: x)" or "data"
+   */
+  private parseVariables(variableExpr: string, context: any): Record<string, unknown> {
+    // Handle parenthetical syntax: "(x: x, y: y)"
+    if (variableExpr.startsWith('(') && variableExpr.endsWith(')')) {
+      const inner = variableExpr.slice(1, -1);
+      const pairs = inner.split(',').map(pair => pair.trim());
+      const variables: Record<string, unknown> = {};
+      
+      for (const pair of pairs) {
+        const colonIndex = pair.indexOf(':');
+        if (colonIndex > 0) {
+          const key = pair.substring(0, colonIndex).trim();
+          const value = pair.substring(colonIndex + 1).trim();
+          variables[key] = this.resolveVariable(value, context);
+        }
+      }
+      
+      return variables;
+    }
+    
+    // Handle simple variable reference: "data"
+    const resolved = this.resolveVariable(variableExpr, context);
+    if (resolved && typeof resolved === 'object') {
+      return resolved as Record<string, unknown>;
+    }
+    
+    return {};
+  }
+
+  /**
+   * HTML escape utility
+   */
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
   }
 }
 
