@@ -175,7 +175,20 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     input: SetCommandInputType,
     context: TypedExecutionContext
   ): Promise<SetCommandOutput> {
+    console.log('🚨🚨🚨 ENHANCED SET COMMAND EXECUTE CALLED 🚨🚨🚨');
     console.log('🔧 Enhanced SET command executing with:', { input, contextMe: context.me?.id });
+    console.log('🔧 Input type:', typeof input, 'Input value:', input);
+    
+    // Detailed input validation
+    if (!input) {
+      throw new Error('SET command received null/undefined input');
+    }
+    if (typeof input !== 'object') {
+      throw new Error(`SET command received non-object input: ${typeof input}`);
+    }
+    
+    console.log('🔧 Input object keys:', Object.keys(input));
+    console.log('🔧 Input object entries:', Object.entries(input));
     
     // Input should be properly formatted by enhanced command adapter
     const { target, value, scope } = input;

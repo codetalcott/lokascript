@@ -28,9 +28,11 @@ import { createWaitCommand } from '../legacy/commands/async/wait';
 import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
+import { createSimpleSetCommand } from '../commands/data/simple-set';
 import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
 import { createEnhancedDecrementCommand } from '../commands/data/enhanced-decrement';
 import { createEnhancedRenderCommand } from '../commands/templates/enhanced-render';
+import { createEnhancedLogCommand } from '../commands/utility/enhanced-log';
 
 // Additional command imports
 // IncrementCommand and DecrementCommand now imported from data/index.js above
@@ -95,7 +97,7 @@ export class Runtime {
     this.expressionEvaluator = new ExpressionEvaluator();
     this.putCommand = new PutCommand();
     
-    // Initialize enhanced command registry
+    // Initialize enhanced command registry (manual for debugging)
     this.enhancedRegistry = new EnhancedCommandRegistry();
     this.initializeEnhancedCommands();
   }
@@ -159,12 +161,13 @@ export class Runtime {
       
       // Register data commands (enhanced)
       try {
-        const setCommand = createEnhancedSetCommand();
-        console.log('🔧 Registering Enhanced SET command:', setCommand.name);
-        this.enhancedRegistry.register(setCommand);
-        console.log('✅ Enhanced SET command registered successfully');
+        // Temporarily use simple SET command for debugging
+        const setCommand = createSimpleSetCommand();
+        console.log('🔧 Registering Simple SET command:', setCommand.name);
+        this.registerLegacyCommand(setCommand);
+        console.log('✅ Simple SET command registered successfully');
       } catch (e) {
-        console.error('❌ Failed to register Enhanced SET command:', e);
+        console.error('❌ Failed to register Simple SET command:', e);
       }
       
       // Register async commands
@@ -188,6 +191,16 @@ export class Runtime {
         console.log('✅ Enhanced DECREMENT command registered successfully');
       } catch (e) {
         console.error('❌ Failed to register Enhanced DECREMENT command:', e);
+      }
+      
+      // Register utility commands (enhanced)
+      try {
+        const logCommand = createEnhancedLogCommand();
+        console.log('🔧 Registering Enhanced LOG command:', logCommand.name);
+        this.enhancedRegistry.register(logCommand);
+        console.log('✅ Enhanced LOG command registered successfully');
+      } catch (e) {
+        console.error('❌ Failed to register Enhanced LOG command:', e);
       }
       
       // Register content/creation commands
@@ -224,7 +237,7 @@ export class Runtime {
       this.registerLegacyCommand(new TransitionCommand());
       
       // Register additional data commands
-      this.registerLegacyCommand(new DefaultCommand());
+      // this.registerLegacyCommand(new DefaultCommand()); // Disabled for SET command debugging
       
       // Register advanced commands
       this.enhancedRegistry.register(new BeepCommand());
@@ -844,7 +857,10 @@ export class Runtime {
           type: arg.type, 
           value: (arg as any).value || (arg as any).name || (arg as any).operator,
           raw: arg
-        }))
+        })),
+        useEnhancedCommands: this.options.useEnhancedCommands,
+        hasEnhancedSet: this.enhancedRegistry.has('set'),
+        enhancedCommands: this.enhancedRegistry.getCommandNames()
       });
     }
     
@@ -861,9 +877,11 @@ export class Runtime {
     // Try enhanced commands first if enabled
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
       console.log(`🚀 Using enhanced command path for: ${name}`);
+      console.log(`🚀 Enhanced registry commands:`, this.enhancedRegistry.getCommandNames());
       return await this.executeEnhancedCommand(name.toLowerCase(), args || [], context);
     } else {
       console.log(`🔄 Using legacy command path for: ${name} (enhanced available: ${this.enhancedRegistry.has(name.toLowerCase())})`);
+      console.log(`🔄 Enhanced registry commands:`, this.enhancedRegistry.getCommandNames());
     }
     
     // For now, let commands handle their own argument evaluation
@@ -872,12 +890,14 @@ export class Runtime {
 
     switch (name.toLowerCase()) {
       case 'hide': {
+        console.log('🔄 EXECUTING HIDE COMMAND CASE');
         // These commands expect evaluated args
         const hideArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
         return this.executeHideCommand(hideArgs, context);
       }
       
       case 'show': {
+        console.log('🔄 EXECUTING SHOW COMMAND CASE');
         const showArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
         return this.executeShowCommand(showArgs, context);
       }
@@ -903,7 +923,11 @@ export class Runtime {
       }
       
       case 'set': {
+        console.log('🔄 EXECUTING SET COMMAND CASE IN RUNTIME SWITCH');
         console.log('🚨 SET command case reached in runtime switch - should not happen with enhanced commands!');
+        console.log('🚨 Enhanced commands enabled:', this.options.useEnhancedCommands);
+        console.log('🚨 Enhanced registry has SET:', this.enhancedRegistry.has('set'));
+        console.log('🚨 Available enhanced commands:', this.enhancedRegistry.getCommandNames());
         // This should not be reached since SET command should go through enhanced registry
         throw new Error('SET command should be handled by enhanced registry');
       }

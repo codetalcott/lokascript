@@ -103,6 +103,7 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
     try {
       // Debug logging for SET command
       if (this.impl.name === 'set') {
+        console.log('🚨🚨🚨 ENHANCED COMMAND ADAPTER EXECUTE CALLED FOR SET 🚨🚨🚨');
         console.log('🔧 EnhancedCommandAdapter.execute() called with:', { 
           commandName: this.impl.name, 
           args, 
@@ -125,33 +126,67 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
         
         // Special handling for SET command arguments
         if (this.impl.name === 'set') {
-          console.log('🔧 SET: Received arguments:', { 
+          console.log('🔧 SET: Received arguments from runtime:', { 
             args, 
             isArray: Array.isArray(args), 
             length: Array.isArray(args) ? args.length : 'not array',
-            secondArg: Array.isArray(args) && args.length > 1 ? args[1] : 'missing'
+            firstArg: Array.isArray(args) && args.length > 0 ? args[0] : 'missing'
           });
           
-          if (Array.isArray(args) && args.length >= 2) {
-            // Find the 'to' keyword in the arguments
-            const toIndex = args.findIndex(arg => arg === 'to');
-            console.log('🔧 SET: Found "to" at index:', toIndex);
+          // The runtime already processes SET command arguments and passes a proper input object
+          // We should use the first argument directly if it's already an object with target/value
+          if (args.length === 1 && args[0] && typeof args[0] === 'object' && 'target' in args[0]) {
+            console.log('🔧 SET: Using pre-processed input object from runtime');
+            console.log('🔧 SET: Input object details:', {
+              input: args[0],
+              target: args[0].target,
+              targetType: typeof args[0].target,
+              value: args[0].value,
+              valueType: typeof args[0].value,
+              keys: Object.keys(args[0])
+            });
+            input = args[0];
             
-            if (toIndex !== -1 && toIndex < args.length - 1) {
-              // Everything before 'to' is the target, everything after is the value
-              const targetArgs = args.slice(0, toIndex);
-              const valueArgs = args.slice(toIndex + 1);
-              
-              console.log('🔧 SET: Converting structured arguments to input:', { 
-                targetArgs, 
-                valueArgs, 
-                originalArgs: args 
+            // Validate that the input object has required properties
+            if (!input.target) {
+              console.error('🚨 SET: Input object has undefined target!', {
+                input,
+                hasTargetProperty: 'target' in input,
+                targetValue: input.target,
+                targetType: typeof input.target
               });
+            }
+          } else if (Array.isArray(args) && args.length >= 2) {
+            console.log('🔧 SET: Direct argument processing for simple SET commands');
+            // Handle direct argument patterns like ['x', 42] from simple "set x to 42"
+            
+            // Look for simple patterns first
+            if (args.length === 2) {
+              // Simple case: set variable to value
+              const [targetArg, valueArg] = args;
+              console.log('🔧 SET: Simple 2-arg pattern:', { targetArg, valueArg });
               
-              // Join target parts if multiple (e.g., ['my', 'textContent'] -> 'my textContent')
-              const target = targetArgs.join(' ');
-              // Use first value arg (usually just one)
-              const value = valueArgs.length === 1 ? valueArgs[0] : valueArgs;
+              let target, value;
+              
+              // Extract target
+              if (typeof targetArg === 'string') {
+                target = targetArg;
+              } else if (targetArg && typeof targetArg === 'object' && 'name' in targetArg) {
+                target = targetArg.name;
+              } else if (targetArg && typeof targetArg === 'object' && 'value' in targetArg) {
+                target = targetArg.value;
+              } else {
+                target = String(targetArg);
+              }
+              
+              // Extract value
+              if (typeof valueArg === 'object' && 'value' in valueArg) {
+                value = valueArg.value;
+              } else {
+                value = valueArg;
+              }
+              
+              console.log('🔧 SET: Extracted simple pattern:', { target, value });
               
               input = {
                 target,
@@ -159,15 +194,25 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
                 toKeyword: 'to' as const,
                 scope: undefined
               };
-              console.log('🔧 SET: Structured input created:', input);
             } else {
-              console.log('🚨 SET: No "to" keyword found, using default handling');
-              input = args.length === 1 ? args[0] : args;
+              // Complex case: multiple arguments
+              const value = args[args.length - 1];
+              const targetArgs = args.slice(0, -1);
+              const target = targetArgs.join(' ');
+              
+              input = {
+                target,
+                value,
+                toKeyword: 'to' as const,
+                scope: undefined
+              };
             }
           } else {
-            console.log('🚨 SET: Too few arguments, using default handling');
+            console.log('🔧 SET: Using args directly as fallback');
             input = args.length === 1 ? args[0] : args;
           }
+          
+          console.log('🔧 SET: Final input object:', input);
         } else if (this.impl.name === 'render' && Array.isArray(args) && args.length >= 3 && args[1] === 'with') {
           // Convert ['template', 'with', 'data'] to structured input  
           input = {

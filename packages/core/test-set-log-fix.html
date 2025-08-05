@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test SET and LOG Command Fix</title>
+</head>
+<body>
+    <div id="test">Test Element</div>
+    <script src="dist/hyperfixi-browser.js"></script>
+    <script>
+        console.log('🔍 Testing SET and LOG command fixes');
+        
+        async function testCommands() {
+            const testElement = document.getElementById('test');
+            
+            try {
+                console.log('🔧 Testing LOG command: log "hello world"');
+                const logResult = await hyperfixi.evalHyperScript('log "hello world"', testElement);
+                console.log('✅ LOG command result:', logResult);
+                
+                console.log('🔧 Testing SET command: set x to 42');
+                const setResult = await hyperfixi.evalHyperScript('set x to 42', testElement);
+                console.log('✅ SET command result:', setResult);
+                
+                console.log('🎉 Both commands working successfully!');
+                
+            } catch (error) {
+                console.error('❌ Command test failed:', error);
+                console.error('❌ Error details:', error.message);
+                console.error('❌ Error stack:', error.stack);
+            }
+        }
+        
+        window.addEventListener('load', testCommands);
+    </script>
+</body>
+</html>
