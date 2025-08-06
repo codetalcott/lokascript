@@ -97,8 +97,8 @@ export class Runtime {
     this.expressionEvaluator = new ExpressionEvaluator();
     this.putCommand = new PutCommand();
     
-    // Initialize enhanced command registry (manual for debugging)
-    this.enhancedRegistry = new EnhancedCommandRegistry();
+    // Initialize enhanced command registry with all commands for complete system
+    this.enhancedRegistry = EnhancedCommandRegistry.createWithDefaults();
     this.initializeEnhancedCommands();
   }
 
@@ -106,6 +106,7 @@ export class Runtime {
    * Register legacy command by adapting it to the enhanced registry
    */
   private registerLegacyCommand(command: { name: string; execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>; validate?: (args: unknown[]) => { isValid: boolean; errors: unknown[]; suggestions: string[] } }): void {
+    console.log('🔧 Registering legacy command:', command.name);
     // Create an adapter for legacy commands to work with enhanced registry
     const adapter = {
       name: command.name,
@@ -161,13 +162,12 @@ export class Runtime {
       
       // Register data commands (enhanced)
       try {
-        // Temporarily use simple SET command for debugging
-        const setCommand = createSimpleSetCommand();
-        console.log('🔧 Registering Simple SET command:', setCommand.name);
-        this.registerLegacyCommand(setCommand);
-        console.log('✅ Simple SET command registered successfully');
+        const setCommand = createEnhancedSetCommand();
+        console.log('🔧 Registering Enhanced SET command:', setCommand.name);
+        this.enhancedRegistry.register(setCommand);
+        console.log('✅ Enhanced SET command registered successfully');
       } catch (e) {
-        console.error('❌ Failed to register Simple SET command:', e);
+        console.error('❌ Failed to register Enhanced SET command:', e);
       }
       
       // Register async commands
@@ -237,7 +237,7 @@ export class Runtime {
       this.registerLegacyCommand(new TransitionCommand());
       
       // Register additional data commands
-      // this.registerLegacyCommand(new DefaultCommand()); // Disabled for SET command debugging
+      this.registerLegacyCommand(new DefaultCommand());
       
       // Register advanced commands
       this.enhancedRegistry.register(new BeepCommand());

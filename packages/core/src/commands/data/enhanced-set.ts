@@ -190,10 +190,31 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     console.log('🔧 Input object keys:', Object.keys(input));
     console.log('🔧 Input object entries:', Object.entries(input));
     
-    // Input should be properly formatted by enhanced command adapter
-    const { target, value, scope } = input;
+    // Debug the actual input structure
+    console.log('🔍 SET Debug - Raw input:', input);
+    console.log('🔍 SET Debug - Input type:', typeof input);
+    console.log('🔍 SET Debug - Input is array:', Array.isArray(input));
+    console.log('🔍 SET Debug - Input keys:', input && typeof input === 'object' ? Object.keys(input) : 'no keys');
+    
+    // Try to handle different input formats
+    let target, value, scope;
+    
+    if (Array.isArray(input)) {
+      console.log('🔍 SET Debug - Input is array, processing as arguments');
+      [target, value] = input;
+      scope = undefined;
+    } else if (input && typeof input === 'object' && 'target' in input) {
+      console.log('🔍 SET Debug - Input is object with target property');
+      ({ target, value, scope } = input);
+    } else {
+      console.log('🔍 SET Debug - Input format not recognized, attempting fallback');
+      // Fallback: treat as target
+      target = input;
+      value = undefined;
+      scope = undefined;
+    }
 
-    console.log('🔍 SET Debug - target type:', typeof target, 'target value:', target);
+    console.log('🔍 SET Debug - Final extracted values:', { target, value, scope });
 
     // Handle different target types
     if (typeof target === 'string') {

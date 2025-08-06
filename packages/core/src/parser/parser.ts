@@ -473,8 +473,8 @@ export class Parser {
   }
 
   private isCompoundCommand(commandName: string): boolean {
-    // Removed 'set' - now handled entirely by enhanced command system
-    const compoundCommands = ['put', 'trigger', 'remove', 'take', 'toggle'];
+    // Added 'set' back to use the sophisticated parseSetCommand method for "the X of Y" syntax
+    const compoundCommands = ['put', 'trigger', 'remove', 'take', 'toggle', 'set'];
     return compoundCommands.includes(commandName);
   }
 
@@ -496,6 +496,8 @@ export class Parser {
         return this.parseRemoveCommand(identifierNode);
       case 'toggle':
         return this.parseToggleCommand(identifierNode);
+      case 'set':
+        return this.parseSetCommand(identifierNode);
       default:
         // Fallback to regular parsing
         return this.parseRegularCommand(identifierNode);

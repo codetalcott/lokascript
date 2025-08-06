@@ -7,9 +7,11 @@ export class SimpleSetCommand {
   name = 'set' as const;
   
   async execute(context: any, ...args: unknown[]): Promise<unknown> {
-    console.log('🔧 SIMPLE SET COMMAND CALLED');
-    console.log('🔧 Args received:', args);
-    console.log('🔧 Context me:', context.me?.tagName);
+    console.log('🚨🚨🚨 SIMPLE SET COMMAND CALLED - THIS SHOULD BE VISIBLE 🚨🚨🚨');
+    console.log('🔧 SIMPLE SET: Args received:', args);
+    console.log('🔧 SIMPLE SET: Context me:', context.me?.tagName);
+    console.log('🔧 SIMPLE SET: Args length:', args.length);
+    console.log('🔧 SIMPLE SET: Args details:', args.map((arg, i) => ({ index: i, type: typeof arg, value: arg })));
     
     try {
       // Simple case: expect 2 args [target, value]

@@ -113,9 +113,8 @@ export async function evalHyperScript(
     
     // Determine if this is a command or expression
     if (isCommand(script)) {
-      // Use command executor for commands
-      const { executeCommand } = await import('../commands/command-executor');
-      return await executeCommand(script, executionContext);
+      // Use the new runtime system for commands (not the old command executor)
+      return await executeAsCommand(script, executionContext);
     } else {
       // Use expression parser for expressions
       const result = await parseAndEvaluateExpression(script, executionContext);
