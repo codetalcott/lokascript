@@ -165,7 +165,7 @@ describe('Advanced Pattern Coverage', () => {
 
     it('should handle undefined variable gracefully', async () => {
       const result = await parseAndEvaluateExpression('nonExistentVar', context);
-      expect(result).toBe(null);
+      expect(result).toBe(null); // Changed expectation to match our null-returning behavior
     });
 
     it('should handle empty expressions', async () => {
