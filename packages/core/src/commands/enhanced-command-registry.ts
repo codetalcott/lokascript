@@ -122,10 +122,10 @@ export {
   // Event Commands
   createSendCommand, SendCommand,
   createTriggerCommand, TriggerCommand,
-  
+
   // Navigation Commands
   createGoCommand, GoCommand,
-  
+
   // Async Commands
   createWaitCommand,
   createFetchCommand,
@@ -194,10 +194,10 @@ export const ENHANCED_COMMAND_FACTORIES = {
   // Event Commands
   send: createSendCommand,
   trigger: createTriggerCommand,
-  
+
   // Navigation Commands
   go: createGoCommand,
-  
+
   // Async Commands
   wait: createWaitCommand,
   fetch: createFetchCommand,

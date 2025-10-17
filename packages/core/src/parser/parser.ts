@@ -424,15 +424,8 @@ export class Parser {
   private createCommandFromIdentifier(identifierNode: IdentifierNode): CommandNode | null {
     const args: ASTNode[] = [];
     const commandName = identifierNode.name.toLowerCase();
-    
-    // Handle compound command patterns
-    // console.log('🔍 PARSER: checking if compound command', { 
-      // commandName,
-      // isCompound: this.isCompoundCommand(commandName)
-    // });
-    
+
     if (this.isCompoundCommand(commandName)) {
-      // console.log('✅ PARSER: confirmed compound command, calling parseCompoundCommand');
       return this.parseCompoundCommand(identifierNode);
     }
     
@@ -506,30 +499,20 @@ export class Parser {
   }
 
   private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
-    // console.log('🔍 PARSER: parsePutCommand started', { 
-      // commandName: identifierNode.name,
-      // currentToken: this.peek(),
-      // remainingTokens: this.tokens.slice(this.current).map(t => t.value)
-    // });
-    
     const args: ASTNode[] = [];
-    
+
     // Use a more flexible approach similar to the original _hyperscript
     // Parse all arguments until we hit a terminator, then identify the structure
     const allArgs: ASTNode[] = [];
-    
-    while (!this.isAtEnd() && 
-           !this.check('then') && 
-           !this.check('and') && 
-           !this.check('else') && 
+
+    while (!this.isAtEnd() &&
+           !this.check('then') &&
+           !this.check('and') &&
+           !this.check('else') &&
            !this.checkTokenType(TokenType.COMMAND)) {
-      
+
       allArgs.push(this.parsePrimary());
     }
-    
-    // console.log('🔍 PARSER: collected all arguments', { 
-      // allArgs: allArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
-    // });
     
     // Now find the operation keyword and restructure
     let operationIndex = -1;
@@ -538,10 +521,11 @@ export class Parser {
     for (let i = 0; i < allArgs.length; i++) {
       const arg = allArgs[i];
       // Check for identifier, literal, AND keyword types for operation keywords
-      if ((arg.type === 'identifier' || arg.type === 'literal' || arg.type === 'keyword') && 
-          ['into', 'before', 'after', 'at'].includes((arg as any).name || (arg as any).value)) {
+      const argValue = (arg as any).name || (arg as any).value;
+      if ((arg.type === 'identifier' || arg.type === 'literal' || arg.type === 'keyword') &&
+          ['into', 'before', 'after', 'at', 'at start of', 'at end of', 'at the start of', 'at the end of'].includes(argValue)) {
         operationIndex = i;
-        operationKeyword = (arg as any).name || (arg as any).value;
+        operationKeyword = argValue;
         // console.log('🔍 PARSER: found operation keyword', { arg, operationKeyword, type: arg.type });
         break;
       }
@@ -1052,7 +1036,7 @@ export class Parser {
       this.addError(`Binary operator '${token.value}' requires a left operand`);
       return this.createErrorNode();
     }
-    
+
     // Handle literals
     if (this.matchTokenType(TokenType.NUMBER)) {
       const value = parseFloat(this.previous().value);
@@ -1152,8 +1136,8 @@ export class Parser {
     }
 
     // Handle identifiers, keywords, and commands
-    if (this.matchTokenType(TokenType.IDENTIFIER) || 
-        this.matchTokenType(TokenType.KEYWORD) || 
+    if (this.matchTokenType(TokenType.IDENTIFIER) ||
+        this.matchTokenType(TokenType.KEYWORD) ||
         this.matchTokenType(TokenType.CONTEXT_VAR) ||
         this.matchTokenType(TokenType.COMMAND)) {
       const token = this.previous();
@@ -1586,13 +1570,28 @@ export class Parser {
   private parseCommand(): CommandNode {
     const commandToken = this.previous();
     let commandName = commandToken.value;
-    
+
     // Handle special case for beep! command - check if beep is followed by !
     if (commandName === 'beep' && this.check('!')) {
       this.advance(); // consume the !
       commandName = 'beep!';
     }
-    
+
+    // Delegate compound commands (put, trigger, remove, etc.) to their specialized parsers
+    const lowerName = commandName.toLowerCase();
+    if (this.isCompoundCommand(lowerName)) {
+      const identifierNode: IdentifierNode = {
+        type: 'identifier',
+        name: lowerName,
+        start: commandToken.start || 0,
+        end: commandToken.end || 0,
+        line: commandToken.line,
+        column: commandToken.column
+      };
+      const result = this.parseCompoundCommand(identifierNode);
+      return result || this.createErrorNode() as CommandNode;
+    }
+
     const args: ASTNode[] = [];
 
     // Special handling for set command with proper 'to' parsing

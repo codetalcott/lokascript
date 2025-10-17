@@ -276,7 +276,10 @@ export class AddCommand implements TypedCommandImplementation<
   ): HTMLElement[] {
     // If no target specified, use implicit target (me)
     if (target === undefined || target === null) {
-      return context.me ? [context.me] : [];
+      if (!context.me) {
+        throw new Error('Context element "me" is null');
+      }
+      return [context.me];
     }
 
     // Handle HTMLElement

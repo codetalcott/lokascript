@@ -477,6 +477,19 @@ export class Runtime {
       
       // Enhanced commands expect [classExpression, target]
       evaluatedArgs = [classArg, target];
+    } else if ((name === 'add' || name === 'remove') && args.length === 1) {
+      // Handle single-arg pattern: "add .active" (implicit target: me)
+      let classArg = args[0];
+      if (classArg?.type === 'selector' || classArg?.type === 'literal') {
+        classArg = classArg.value;
+      } else if (classArg?.type === 'identifier') {
+        classArg = classArg.name;
+      } else {
+        classArg = await this.execute(args[0], context);
+      }
+
+      // Use context.me as implicit target
+      evaluatedArgs = [classArg, context.me];
     } else if (name === 'set' && args.length >= 3) {
       // Handle "set X to Y" and "set the property of element to value" patterns
       // console.log(`🔧 SET Command Debug:`, {
@@ -926,12 +939,24 @@ export class Runtime {
       }
       
       case 'add': {
-        const addArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        // For add command, extract class names from selector nodes (don't evaluate to elements)
+        const addArgs = rawArgs.map((arg: any) => {
+          if (arg.type === 'selector' || arg.type === 'class_reference') {
+            return arg.value; // Return the class name string
+          }
+          return arg.value || arg.name || arg; // For other types, try to get a string value
+        });
         return this.executeAddCommand(addArgs, context);
       }
-      
+
       case 'remove': {
-        const removeArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        // For remove command, extract class names from selector nodes (don't evaluate to elements)
+        const removeArgs = rawArgs.map((arg: any) => {
+          if (arg.type === 'selector' || arg.type === 'class_reference') {
+            return arg.value; // Return the class name string
+          }
+          return arg.value || arg.name || arg; // For other types, try to get a string value
+        });
         return this.executeRemoveCommand(removeArgs, context);
       }
       

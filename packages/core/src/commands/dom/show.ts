@@ -158,7 +158,10 @@ export class ShowCommand implements TypedCommandImplementation<
   ): HTMLElement[] {
     // Default to context.me if no target specified
     if (target === undefined || target === null) {
-      return context.me ? [context.me] : [];
+      if (!context.me) {
+        throw new Error('Context element "me" is null');
+      }
+      return [context.me];
     }
 
     // Handle HTMLElement directly

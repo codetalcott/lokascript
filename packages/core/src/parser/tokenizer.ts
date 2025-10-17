@@ -61,6 +61,8 @@ const KEYWORDS = new Set([
   'on', 'init', 'behavior', 'def', 'if', 'else', 'unless', 'repeat', 'for',
   'while', 'until', 'end', 'and', 'or', 'not', 'in', 'to', 'from', 'into',
   'with', 'as', 'then', 'when', 'where', 'after', 'before', 'by', 'at', 'async', 'no',
+  // Compound syntax keywords
+  'start', 'of', 'the',
   // Constructor keyword
   'new',
   // Scope keywords
@@ -94,6 +96,17 @@ const COMPARISON_OPERATORS = new Set([
 ]);
 
 const MATHEMATICAL_OPERATORS = new Set(['+', '-', '*', '/', 'mod']);
+
+// Compound prepositions used in put command and other DOM operations
+const COMPOUND_PREPOSITIONS = new Set([
+  'at start of',
+  'at end of',
+  'at the start of',
+  'at the end of',
+  'before',
+  'after',
+  'into'
+]);
 
 const TIME_UNITS = new Set(['ms', 's', 'seconds', 'minutes', 'hours', 'days']);
 
@@ -744,14 +757,20 @@ function tryTokenizeCompoundOperator(tokenizer: Tokenizer, firstWord: string, st
   if (nextWord) {
     const lowerNext = nextWord.toLowerCase();
     let compound = `${lowerFirst} ${lowerNext}`;
-    
+
+    // Check for compound prepositions (e.g., "at start of", "at the start of")
+    const compoundPrep = tryBuildCompoundPreposition(tokenizer, lowerFirst, lowerNext, start);
+    if (compoundPrep) {
+      return true; // Compound preposition was handled
+    }
+
     // Try to build longest possible compound operator
     const longestCompound = tryBuildLongestCompound(tokenizer, lowerFirst, lowerNext);
     if (longestCompound) {
       addToken(tokenizer, TokenType.COMPARISON_OPERATOR, longestCompound, start);
       return true;
     }
-    
+
     // Check two-word operators
     if (COMPARISON_OPERATORS.has(compound)) {
       addToken(tokenizer, TokenType.COMPARISON_OPERATOR, compound, start);
@@ -768,6 +787,93 @@ function tryTokenizeCompoundOperator(tokenizer: Tokenizer, firstWord: string, st
   
   // No compound operator found, reset position
   tokenizer.position = originalPosition;
+  return false;
+}
+
+function tryBuildCompoundPreposition(
+  tokenizer: Tokenizer,
+  firstWord: string,
+  secondWord: string,
+  start: number
+): boolean {
+  const lowerFirst = firstWord.toLowerCase();
+  const lowerSecond = secondWord.toLowerCase();
+
+  // Handle "at start of", "at end of", "at the start of", "at the end of"
+  if (lowerFirst === 'at') {
+    // Save position before trying to read more words
+    const afterSecondWord = tokenizer.position;
+
+    // Check for "at the start/end of" pattern
+    if (lowerSecond === 'the') {
+      skipWhitespace(tokenizer);
+      const thirdWordStart = tokenizer.position;
+      let thirdWord = '';
+      while (tokenizer.position < tokenizer.input.length) {
+        const char = tokenizer.input[tokenizer.position];
+        if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+            (char >= '0' && char <= '9') || char === '_' || char === '-') {
+          thirdWord += advance(tokenizer);
+        } else {
+          break;
+        }
+      }
+
+      const lowerThird = thirdWord.toLowerCase();
+      if (lowerThird === 'start' || lowerThird === 'end') {
+        // Now look for "of"
+        skipWhitespace(tokenizer);
+        const fourthWordStart = tokenizer.position;
+        let fourthWord = '';
+        while (tokenizer.position < tokenizer.input.length) {
+          const char = tokenizer.input[tokenizer.position];
+          if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+              (char >= '0' && char <= '9') || char === '_' || char === '-') {
+            fourthWord += advance(tokenizer);
+          } else {
+            break;
+          }
+        }
+
+        const lowerFourth = fourthWord.toLowerCase();
+        if (lowerFourth === 'of') {
+          const compound = `at the ${lowerThird} of`;
+          addToken(tokenizer, TokenType.KEYWORD, compound, start);
+          return true;
+        }
+      }
+      // Didn't match pattern, reset
+      tokenizer.position = afterSecondWord;
+      return false;
+    }
+
+    // Check for "at start of" or "at end of" (without "the")
+    if (lowerSecond === 'start' || lowerSecond === 'end') {
+      skipWhitespace(tokenizer);
+      const thirdWordStart = tokenizer.position;
+      let thirdWord = '';
+      while (tokenizer.position < tokenizer.input.length) {
+        const char = tokenizer.input[tokenizer.position];
+        if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') ||
+            (char >= '0' && char <= '9') || char === '_' || char === '-') {
+          thirdWord += advance(tokenizer);
+        } else {
+          break;
+        }
+      }
+
+      const lowerThird = thirdWord.toLowerCase();
+      if (lowerThird === 'of') {
+        const compound = `at ${lowerSecond} of`;
+        addToken(tokenizer, TokenType.KEYWORD, compound, start);
+        return true;
+      }
+      // Didn't match pattern, reset
+      tokenizer.position = afterSecondWord;
+      return false;
+    }
+  }
+
   return false;
 }
 

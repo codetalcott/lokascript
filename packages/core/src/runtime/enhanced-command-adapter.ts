@@ -4,11 +4,12 @@
  * Converts TypedCommandImplementation to runtime-compatible format
  */
 
-import type { 
-  ExecutionContext, 
+import type {
+  ExecutionContext,
   TypedExecutionContext,
-  ValidationResult 
+  ValidationResult
 } from '../types/core';
+import { createAllEnhancedCommands } from '../commands/enhanced-command-registry';
 
 
 /**
@@ -409,13 +410,11 @@ export class EnhancedCommandRegistry {
    */
   static createWithDefaults(): EnhancedCommandRegistry {
     const registry = new EnhancedCommandRegistry();
-    
+
     // Import and register all enhanced commands from the enhanced command registry
     try {
-      // Dynamic import to avoid circular dependencies
-      const { createAllEnhancedCommands } = require('../commands/enhanced-command-registry');
       const commands = createAllEnhancedCommands();
-      
+
       // Register all commands
       for (const [name, command] of commands.entries()) {
         registry.register(command);
@@ -423,7 +422,7 @@ export class EnhancedCommandRegistry {
     } catch (error) {
       console.warn('Failed to load enhanced commands:', error);
     }
-    
+
     return registry;
   }
 }

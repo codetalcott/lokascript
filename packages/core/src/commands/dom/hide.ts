@@ -119,10 +119,10 @@ export class HideCommand implements TypedCommandImplementation<
     try {
       // Type-safe target resolution
       const elements = this.resolveTargets(context, input);
-      
+
       // Process elements with enhanced error handling
       const hiddenElements: HTMLElement[] = [];
-      
+
       for (const element of elements) {
         const hideResult = this.hideElement(element, context);
         if (hideResult.success) {
@@ -137,6 +137,11 @@ export class HideCommand implements TypedCommandImplementation<
       };
 
     } catch (error) {
+      // Re-throw critical context errors instead of wrapping them
+      if (error instanceof Error && error.message.includes('Context element')) {
+        throw error;
+      }
+
       return {
         success: false,
         error: {
@@ -156,7 +161,10 @@ export class HideCommand implements TypedCommandImplementation<
   ): HTMLElement[] {
     // Default to context.me if no target specified
     if (target === undefined || target === null) {
-      return context.me ? [context.me] : [];
+      if (!context.me) {
+        throw new Error('Context element "me" is null');
+      }
+      return [context.me];
     }
 
     // Handle HTMLElement directly

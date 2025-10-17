@@ -973,4 +973,12 @@ export class GoCommand implements TypedCommandImplementation<
 
 }
 
+/**
+ * Factory function to create a GoCommand instance
+ * Used by enhanced-command-registry.ts
+ */
+export function createGoCommand(options?: GoCommandOptions): GoCommand {
+  return new GoCommand(options);
+}
+
 export default GoCommand;

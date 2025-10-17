@@ -240,7 +240,10 @@ export class RemoveCommand implements TypedCommandImplementation<
   ): HTMLElement[] {
     // If no target specified, use implicit target (me)
     if (target === undefined || target === null) {
-      return context.me ? [context.me] : [];
+      if (!context.me) {
+        throw new Error('Context element "me" is null');
+      }
+      return [context.me];
     }
 
     // Handle HTMLElement
@@ -282,10 +285,9 @@ export class RemoveCommand implements TypedCommandImplementation<
       // Remove classes with validation
       for (const className of classes) {
         if (this.isValidClassName(className)) {
-          if (element.classList.contains(className)) {
-            element.classList.remove(className);
-            removedClasses.push(className);
-          }
+          // classList.remove() is safe to call even if class doesn't exist
+          element.classList.remove(className);
+          removedClasses.push(className);
         } else {
           return {
             success: false,

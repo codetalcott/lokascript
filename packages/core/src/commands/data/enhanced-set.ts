@@ -262,11 +262,25 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     value: any
   ): SetCommandOutput {
     // Get previous value
-    const previousValue = context.locals?.get(variableName) || 
-                         context.globals?.get(variableName) || 
-                         context.variables?.get(variableName);
+    const previousValue = context.locals?.get(variableName) ||
+                         context.globals?.get(variableName) ||
+                         context.variables?.get(variableName) ||
+                         (context as any)[variableName];
 
-    // Set the value
+    // Special handling for context properties (result, it, etc.)
+    // These are set directly on the context object, not in locals Map
+    if (variableName === 'result') {
+      (context as any).result = value;
+      context.it = value;
+      return {
+        target: variableName,
+        value,
+        previousValue,
+        targetType: 'variable'
+      };
+    }
+
+    // Regular variable handling - store in locals Map
     context.locals.set(variableName, value);
 
     // Set in context.it
