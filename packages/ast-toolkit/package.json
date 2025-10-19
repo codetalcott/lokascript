@@ -62,16 +62,17 @@
   "author": "HyperFixi Contributors",
   "license": "MIT",
   "dependencies": {
-    "@hyperfixi/core": "file:../core"
+    "@hyperfixi/core": "file:../core",
+    "vite": "7.1.10"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0",
-    "eslint": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "happy-dom": "^12.0.0"
+    "eslint": "^8.0.0",
+    "happy-dom": "^20.0.6",
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.0.0"

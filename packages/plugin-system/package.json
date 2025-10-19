@@ -20,12 +20,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hyperfixi/core": "^1.0.0"
+    "@hyperfixi/core": "^1.0.0",
+    "happy-dom": "20.0.6",
+    "vite": "7.1.10"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
     "rollup": "^2.79.2",
     "typescript": "^5.8.3",
-    "vitest": "^1.0.0"
+    "vitest": "^3.2.4"
   }
 }
