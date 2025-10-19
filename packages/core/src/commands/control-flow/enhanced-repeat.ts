@@ -12,13 +12,17 @@ import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
 export interface RepeatCommandInput {
-  type: 'for' | 'times' | 'while' | 'until' | 'forever'; // Type of repeat
+  type: 'for' | 'times' | 'while' | 'until' | 'until-event' | 'forever'; // Type of repeat
   variable?: string; // Variable name for iteration
   collection?: any; // Collection to iterate over
   condition?: any; // Condition for while/until
   count?: number; // Number of times for 'times' type
   indexVariable?: string; // Index variable name
   commands?: Function[]; // Commands to execute in loop
+
+  // Event-driven loop support (for 'until-event' type)
+  eventName?: string; // Event name to wait for
+  eventTarget?: any; // Target element/expression for event
 }
 
 // Output type definition
@@ -81,16 +85,16 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
         };
       }
 
-      const validTypes = ['for', 'times', 'while', 'until', 'forever'];
+      const validTypes = ['for', 'times', 'while', 'until', 'until-event', 'forever'];
       if (!validTypes.includes(inputObj.type)) {
         return {
           isValid: false,
           errors: [{
             type: 'syntax-error',
             message: `Invalid repeat type: ${inputObj.type}`,
-            suggestions: ['Use types: for, times, while, until, forever']
+            suggestions: ['Use types: for, times, while, until, until-event, forever']
           }],
-          suggestions: ['Use types: for, times, while, until, forever']
+          suggestions: ['Use types: for, times, while, until, until-event, forever']
         };
       }
 
@@ -182,6 +186,12 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
         case 'until':
           ({ iterations, lastResult, interrupted } = await this.handleUntilLoop(
             context, condition, indexVariable, commands || []
+          ));
+          break;
+
+        case 'until-event':
+          ({ iterations, lastResult, interrupted } = await this.handleUntilEventLoop(
+            context, input.eventName!, input.eventTarget, indexVariable, commands || []
           ));
           break;
 
@@ -392,6 +402,86 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
 
       if (interrupted) break;
       iterations++;
+    }
+
+    return { iterations, lastResult, interrupted };
+  }
+
+  /**
+   * Handle event-driven loop: repeat until event <eventName> from <target>
+   * Based on original _hyperscript implementation
+   */
+  private async handleUntilEventLoop(
+    context: TypedExecutionContext,
+    eventName: string,
+    eventTarget: any,
+    indexVariable?: string,
+    commands: Function[] = []
+  ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
+    let iterations = 0;
+    let lastResult: any = undefined;
+    let interrupted = false;
+    let eventFired = false;
+
+    // Resolve event target (defaults to context.me)
+    let target: EventTarget = context.me as EventTarget;
+    if (eventTarget) {
+      // Evaluate event target expression
+      if (typeof eventTarget === 'function') {
+        target = await eventTarget(context);
+      } else if (eventTarget.type === 'identifier' && eventTarget.name === 'document') {
+        target = document;
+      } else {
+        target = eventTarget;
+      }
+    }
+
+    // Setup event listener to stop the loop
+    const eventHandler = () => {
+      eventFired = true;
+    };
+
+    target.addEventListener(eventName, eventHandler, { once: true });
+
+    try {
+      // Keep looping until event fires
+      const maxIterations = 10000; // Safety limit
+      while (!eventFired && iterations < maxIterations) {
+        // Set index variable
+        if (indexVariable && context.locals) {
+          context.locals.set(indexVariable, iterations);
+        }
+
+        // Execute commands
+        for (const command of commands) {
+          try {
+            lastResult = await command(context);
+          } catch (error) {
+            if (error instanceof Error) {
+              if (error.message.includes('BREAK')) {
+                interrupted = true;
+                break;
+              }
+              if (error.message.includes('CONTINUE')) {
+                break;
+              }
+            }
+            throw error;
+          }
+        }
+
+        if (interrupted) break;
+        iterations++;
+
+        // Wait a tick to allow events to trigger
+        // This matches the original _hyperscript implementation
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    } finally {
+      // Cleanup: remove event listener if it hasn't fired
+      if (!eventFired) {
+        target.removeEventListener(eventName, eventHandler);
+      }
     }
 
     return { iterations, lastResult, interrupted };

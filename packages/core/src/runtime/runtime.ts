@@ -987,7 +987,12 @@ export class Runtime {
         const beepArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
         return this.executeBeepCommand(beepArgs, context);
       }
-      
+
+      case 'repeat': {
+        // Execute repeat until event command
+        return this.executeRepeatCommand(node as any, context);
+      }
+
       default: {
         throw new Error(`Unknown command: ${name}`);
       }
@@ -1302,6 +1307,101 @@ export class Runtime {
       // console.log('Type:', this.getDetailedType(value));
       // console.log('Representation:', this.getSourceRepresentation(value));
       console.groupEnd();
+    });
+  }
+
+  /**
+   * Execute repeat until event command
+   */
+  private async executeRepeatCommand(node: any, context: ExecutionContext): Promise<void> {
+    // The repeat command stores data in args array:
+    // args[0] = loop type (identifier with name like "until-event")
+    // args[1] = event name (string node)
+    // args[2] = event target (AST node)
+    // args[...] = commands block (last arg with type 'block')
+    const args = node.args || [];
+
+    console.log('🔁 RUNTIME: Executing repeat command', {
+      argsCount: args.length,
+      loopType: args[0]?.name || args[0]?.type,
+      args: args.map((arg: any) => ({ type: arg?.type, name: arg?.name, value: arg?.value }))
+    });
+
+    // Find the loop type
+    const loopTypeNode = args[0];
+    const loopType = loopTypeNode?.name || loopTypeNode?.value;
+
+    if (loopType !== 'until-event') {
+      throw new Error(`Unsupported repeat loop type: ${loopType}`);
+    }
+
+    // Extract event name (args[1])
+    const eventNameNode = args[1];
+    const eventName = eventNameNode?.value;
+
+    // Extract event target (args[2])
+    const eventTargetNode = args[2];
+
+    // Find commands block (last arg with type 'block')
+    const blockNode = args.find((arg: any) => arg?.type === 'block');
+    const commands = blockNode?.commands || [];
+
+    console.log('🔁 RUNTIME: Parsed repeat command', {
+      eventName,
+      hasEventTarget: !!eventTargetNode,
+      commandCount: commands.length
+    });
+
+    // Evaluate the event target (e.g., "the document")
+    let eventTarget: EventTarget | null = null;
+    if (eventTargetNode) {
+      const targetValue = await this.execute(eventTargetNode, context);
+      if (targetValue instanceof EventTarget) {
+        eventTarget = targetValue;
+      } else if (targetValue === 'document' || (targetValue as any)?.name === 'document') {
+        eventTarget = document;
+      }
+    }
+
+    if (!eventTarget) {
+      throw new Error('repeat until event: could not resolve event target');
+    }
+
+    console.log('🔁 RUNTIME: Repeat command will listen for', eventName, 'on', eventTarget);
+
+    // Create a promise that resolves when the event fires
+    return new Promise((resolve) => {
+      let shouldContinue = true;
+
+      const eventHandler = () => {
+        console.log('🔁 RUNTIME: Event', eventName, 'fired, stopping repeat loop');
+        shouldContinue = false;
+        eventTarget!.removeEventListener(eventName!, eventHandler);
+        resolve();
+      };
+
+      // Add event listener
+      eventTarget.addEventListener(eventName!, eventHandler);
+
+      // Start the repeat loop
+      const executeLoop = async () => {
+        while (shouldContinue) {
+          // Execute the commands inside the repeat block
+          if (commands && Array.isArray(commands)) {
+            for (const cmd of commands) {
+              if (!shouldContinue) break; // Stop mid-execution if event fired
+              await this.execute(cmd, context);
+            }
+          }
+
+          // Small delay to prevent blocking the event loop
+          await new Promise(r => setTimeout(r, 0));
+        }
+        console.log('🔁 RUNTIME: Repeat loop finished');
+      };
+
+      // Start loop (but don't await it - let it run in parallel with event listener)
+      executeLoop();
     });
   }
 

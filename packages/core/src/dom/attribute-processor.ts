@@ -122,8 +122,8 @@ export class AttributeProcessor {
    * Process event handler syntax like "on click put ..."
    */
   private processEventHandler(element: HTMLElement, code: string, context: ExecutionContext): void {
-    // Parse the event handler syntax
-    const match = code.match(/^on\s+(\w+)(?:\s+(.+))?$/);
+    // Parse the event handler syntax (support multi-line handlers)
+    const match = code.match(/^on\s+(\w+)(?:\s+([\s\S]+))?$/);
     if (!match) {
       console.error(`Invalid event handler syntax: ${code}`);
       return;

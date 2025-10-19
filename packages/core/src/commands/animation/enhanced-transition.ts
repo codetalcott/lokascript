@@ -116,7 +116,17 @@ export class EnhancedTransitionCommand implements TypedCommandImplementation<
     input: TransitionCommandInput,
     context: TypedExecutionContext
   ): Promise<TransitionCommandOutput> {
-    const { target, property, value, duration: durationInput, timingFunction } = input;
+    const { target, value, duration: durationInput, timingFunction } = input;
+    let { property } = input;
+
+    // Handle CSS property prefix (*property means use the actual CSS property name)
+    // In _hyperscript, * prefix indicates to use the property as-is
+    if (property.startsWith('*')) {
+      property = property.substring(1); // Remove the * prefix
+    }
+
+    // Convert camelCase to kebab-case for CSS properties
+    property = property.replace(/([A-Z])/g, '-$1').toLowerCase();
 
     // Resolve target element (default to context.me)
     let targetElement: HTMLElement;

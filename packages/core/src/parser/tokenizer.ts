@@ -58,7 +58,7 @@ export enum TokenType {
 
 // Hyperscript language element sets (based on LSP database)
 const KEYWORDS = new Set([
-  'on', 'init', 'behavior', 'def', 'if', 'else', 'unless', 'repeat', 'for',
+  'on', 'init', 'behavior', 'def', 'if', 'else', 'unless', 'for',
   'while', 'until', 'end', 'and', 'or', 'not', 'in', 'to', 'from', 'into',
   'with', 'as', 'then', 'when', 'where', 'after', 'before', 'by', 'at', 'async', 'no',
   // Compound syntax keywords
@@ -74,7 +74,7 @@ const KEYWORDS = new Set([
 const COMMANDS = new Set([
   'add', 'append', 'async', 'beep', 'break', 'call', 'continue', 'decrement',
   'default', 'fetch', 'get', 'go', 'halt', 'hide', 'increment', 'js', 'log',
-  'make', 'measure', 'pick', 'put', 'remove', 'render', 'return',
+  'make', 'measure', 'pick', 'put', 'remove', 'render', 'repeat', 'return',
   'send', 'set', 'settle', 'show', 'take', 'tell', 'throw', 'toggle',
   'transition', 'trigger', 'wait'
 ]);

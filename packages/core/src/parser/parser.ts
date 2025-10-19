@@ -403,7 +403,7 @@ export class Parser {
     const COMMANDS = new Set([
       'add', 'append', 'async', 'beep', 'break', 'call', 'continue', 'decrement',
       'default', 'fetch', 'get', 'go', 'halt', 'hide', 'increment', 'js', 'log',
-      'make', 'measure', 'pick', 'put', 'remove', 'render', 'return',
+      'make', 'measure', 'pick', 'put', 'remove', 'render', 'repeat', 'return',
       'send', 'set', 'settle', 'show', 'take', 'tell', 'throw', 'toggle',
       'transition', 'trigger', 'wait'
     ]);
@@ -413,7 +413,7 @@ export class Parser {
   private isKeyword(name: string): boolean {
     // Check if the name is in the KEYWORDS set from tokenizer
     const KEYWORDS = new Set([
-      'if', 'else', 'unless', 'for', 'repeat', 'while', 'until', 'end', 'and', 'or', 
+      'if', 'else', 'unless', 'for', 'while', 'until', 'end', 'and', 'or', 
       'not', 'in', 'to', 'from', 'into', 'with', 'without', 'as', 'matches', 'contains',
       'then', 'on', 'when', 'every', 'init', 'def', 'behavior', 'the', 'of', 'first',
       'last', 'next', 'previous', 'closest', 'within', 'pseudo', 'async', 'await'
@@ -865,8 +865,312 @@ export class Parser {
       // argCount: finalArgs.length,
       // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
     // });
-    
+
     return result;
+  }
+
+  /**
+   * Parse repeat command with support for event-driven loops
+   * Based on original _hyperscript implementation
+   *
+   * Syntax:
+   *   repeat for <var> in <collection> ... end
+   *   repeat <n> times ... end
+   *   repeat while <condition> ... end
+   *   repeat until <condition> ... end
+   *   repeat until event <eventName> from <target> ... end
+   *   repeat forever ... end
+   */
+  /**
+   * Parse a list of commands until we hit 'end' keyword
+   * This is used by repeat blocks and other control flow structures
+   */
+  private parseCommandListUntilEnd(): ASTNode[] {
+    const commands: ASTNode[] = [];
+    console.log('🔄 parseCommandListUntilEnd: Starting to parse command list');
+
+    while (!this.isAtEnd() && !this.check('end')) {
+      console.log('📍 Loop iteration, current token:', this.peek().value, 'type:', this.peek().type);
+      // Try to parse a command
+      let parsedCommand = false;
+
+      if (this.checkTokenType(TokenType.COMMAND)) {
+        console.log('✅ Found COMMAND token:', this.peek().value);
+        this.advance(); // consume the command token
+        // Save error state before parsing command
+        const savedError = this.error;
+        try {
+          const cmd = this.parseCommand();
+          // Check if an error was added during parsing (even if no exception was thrown)
+          if (this.error && this.error !== savedError) {
+            console.log('⚠️  parseCommandListUntilEnd: Command parsing added error, restoring error state. Error was:', this.error.message);
+            this.error = savedError;
+          }
+          if (cmd) {
+            console.log('✅ Parsed command:', cmd.name);
+            commands.push(cmd);
+            parsedCommand = true;
+          }
+        } catch (error) {
+          console.log('⚠️  parseCommandListUntilEnd: Command parsing threw exception, restoring error state:', error instanceof Error ? error.message : String(error));
+          this.error = savedError;
+        }
+      } else if (this.checkTokenType(TokenType.IDENTIFIER)) {
+        const token = this.peek();
+        if (this.isCommand(token.value)) {
+          console.log('✅ Found IDENTIFIER that is a command:', token.value);
+          this.advance(); // consume the command token
+          // Save error state before parsing command
+          const savedError = this.error;
+          try {
+            const cmd = this.parseCommand();
+            // Check if an error was added during parsing (even if no exception was thrown)
+            if (this.error && this.error !== savedError) {
+              console.log('⚠️  parseCommandListUntilEnd: Command parsing added error, restoring error state. Error was:', this.error.message);
+              this.error = savedError;
+            }
+            if (cmd) {
+              console.log('✅ Parsed command:', cmd.name);
+              commands.push(cmd);
+              parsedCommand = true;
+            }
+          } catch (error) {
+            console.log('⚠️  parseCommandListUntilEnd: Command parsing threw exception, restoring error state:', error instanceof Error ? error.message : String(error));
+            this.error = savedError;
+          }
+        } else {
+          console.log('❌ IDENTIFIER is not a command:', token.value);
+        }
+      }
+
+      // If we didn't parse a command, we might be at 'end' or hit an error
+      if (!parsedCommand) {
+        console.log('❌ No command parsed, breaking. Current token:', this.peek().value);
+        break;
+      }
+
+      console.log('📍 After parsing command, current token:', this.peek().value);
+
+      // Skip any unexpected tokens until we find 'end', a command, or a separator
+      // This handles cases where command parsing doesn't consume all its arguments (like HSL colors)
+      while (!this.isAtEnd() &&
+             !this.check('end') &&
+             !this.checkTokenType(TokenType.COMMAND) &&
+             !this.isCommand(this.peek().value) &&
+             !this.check('then') &&
+             !this.check('and') &&
+             !this.check(',')) {
+        console.log('⚠️  Skipping unexpected token:', this.peek().value);
+        this.advance(); // skip the unexpected token
+      }
+
+      // Handle optional separators between commands
+      if (this.match('then', 'and', ',')) {
+        console.log('✅ Found separator, continuing');
+        continue; // explicit separator, continue to next command
+      } else if (this.checkTokenType(TokenType.COMMAND) || this.isCommand(this.peek().value)) {
+        console.log('✅ Next token is a command, continuing without separator');
+        continue; // next token is a command, continue without separator
+      } else {
+        console.log('📍 No separator and no command, breaking. Current token:', this.peek().value);
+        // No separator and no command follows, we should be at 'end'
+        break;
+      }
+    }
+
+    console.log('🔍 After loop, checking for "end". Current token:', this.peek().value);
+    // Expect and consume 'end'
+    if (this.check('end')) {
+      console.log('✅ Found "end", consuming it');
+      this.advance();
+    } else {
+      console.log('❌ ERROR: Expected "end" but got:', this.peek().value, 'at position:', this.peek().start);
+      throw new Error('Expected "end" to close repeat block');
+    }
+
+    console.log('✅ parseCommandListUntilEnd: Successfully parsed', commands.length, 'commands');
+    return commands;
+  }
+
+  private parseRepeatCommand(commandToken: Token): CommandNode {
+    const args: ASTNode[] = [];
+    let loopType: string = 'forever';
+    let eventName: string | null = null;
+    let eventTarget: ASTNode | null = null;
+    let condition: ASTNode | null = null;
+    let collection: ASTNode | null = null;
+    let variable: string | null = null;
+    let times: ASTNode | null = null;
+
+    // Parse repeat type
+    if (this.check('for')) {
+      this.advance(); // consume 'for'
+      loopType = 'for';
+
+      // Parse: for <identifier> in <expression>
+      const identToken = this.peek();
+      if (identToken.type === TokenType.IDENTIFIER) {
+        variable = identToken.value;
+        this.advance();
+      }
+
+      if (this.check('in')) {
+        this.advance(); // consume 'in'
+        collection = this.parseExpression();
+      }
+    } else if (this.check('in')) {
+      this.advance(); // consume 'in'
+      loopType = 'for';
+      variable = 'it';
+      collection = this.parseExpression();
+    } else if (this.check('while')) {
+      this.advance(); // consume 'while'
+      loopType = 'while';
+      condition = this.parseExpression();
+    } else if (this.check('until')) {
+      this.advance(); // consume 'until'
+      loopType = 'until';
+
+      // Check for event-driven loop: until event <eventName> from <target>
+      if (this.check('event')) {
+        this.advance(); // consume 'event'
+        loopType = 'until-event';
+
+        // Parse event name (dotOrColonPath in _hyperscript)
+        const eventToken = this.peek();
+        console.log('📍 Parsing event name, current token:', { value: eventToken.value, type: eventToken.type });
+        if (eventToken.type === TokenType.IDENTIFIER) {
+          eventName = eventToken.value;
+          this.advance();
+          console.log('✅ Got event name:', eventName, 'Next token:', this.peek().value);
+        } else {
+          throw new Error('Expected event name after "event"');
+        }
+
+        // Parse optional 'from <target>'
+        console.log('🔍 Checking for "from", current token:', this.peek().value);
+        if (this.check('from')) {
+          console.log('✅ Found "from", advancing...');
+          this.advance(); // consume 'from'
+          console.log('📍 After consuming "from", current token:', this.peek().value);
+          // Parse the target - use parsePrimary to avoid consuming too much
+          // This handles "from document" or "from the document" or "from #element"
+          if (this.check('the')) {
+            console.log('✅ Found "the", advancing...');
+            this.advance(); // consume 'the'
+          }
+          // Debug: log current token before calling parsePrimary
+          const beforePrimary = this.peek();
+          console.log('🔍 Before parsePrimary for event target:', {
+            value: beforePrimary.value,
+            type: beforePrimary.type,
+            position: beforePrimary.start
+          });
+          eventTarget = this.parsePrimary();
+          console.log('✅ After parsePrimary, eventTarget:', eventTarget);
+        } else {
+          console.log('❌ No "from" found, skipping target parsing');
+        }
+      } else {
+        // Regular until with condition
+        condition = this.parseExpression();
+      }
+    } else if (this.check('forever')) {
+      this.advance(); // consume 'forever'
+      loopType = 'forever';
+    } else {
+      // Parse: repeat <n> times
+      times = this.parseExpression();
+      if (this.check('times')) {
+        this.advance(); // consume 'times'
+        loopType = 'times';
+      }
+    }
+
+    // Parse optional index variable
+    let indexVariable: string | null = null;
+    if (this.check('index')) {
+      this.advance(); // consume 'index'
+      const indexToken = this.peek();
+      if (indexToken.type === TokenType.IDENTIFIER) {
+        indexVariable = indexToken.value;
+        this.advance();
+      }
+    }
+
+    // Parse command block until 'end'
+    // Use parseCommandList helper to handle the command sequence
+    const commands: ASTNode[] = this.parseCommandListUntilEnd();
+
+    // Build args array based on loop type
+    args.push({
+      type: 'identifier',
+      name: loopType,
+      start: commandToken.start,
+      end: commandToken.end,
+      line: commandToken.line,
+      column: commandToken.column
+    } as IdentifierNode);
+
+    if (variable) {
+      args.push({
+        type: 'string',
+        value: variable,
+        start: commandToken.start,
+        end: commandToken.end,
+        line: commandToken.line,
+        column: commandToken.column
+      } as any);
+    }
+
+    if (collection) args.push(collection);
+    if (condition) args.push(condition);
+    if (times) args.push(times);
+
+    if (eventName) {
+      args.push({
+        type: 'string',
+        value: eventName,
+        start: commandToken.start,
+        end: commandToken.end,
+        line: commandToken.line,
+        column: commandToken.column
+      } as any);
+    }
+
+    if (eventTarget) args.push(eventTarget);
+
+    if (indexVariable) {
+      args.push({
+        type: 'string',
+        value: indexVariable,
+        start: commandToken.start,
+        end: commandToken.end,
+        line: commandToken.line,
+        column: commandToken.column
+      } as any);
+    }
+
+    // Add commands as a block
+    args.push({
+      type: 'block',
+      commands: commands,
+      start: commandToken.start,
+      end: commandToken.end || 0,
+      line: commandToken.line,
+      column: commandToken.column
+    } as any);
+
+    return {
+      type: 'command',
+      name: 'repeat',
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: commandToken.start || 0,
+      end: commandToken.end || 0,
+      line: commandToken.line || 1,
+      column: commandToken.column || 1
+    };
   }
 
   private parseAddCommand(identifierNode: IdentifierNode): CommandNode | null {
@@ -1396,18 +1700,56 @@ export class Parser {
     while (!this.isAtEnd()) {
       if (this.checkTokenType(TokenType.COMMAND)) {
         this.advance(); // consume the command token - parseCommand expects this as previous()
-        commands.push(this.parseCommand());
+        // Save error state before parsing
+        const savedError = this.error;
+        try {
+          const cmd = this.parseCommand();
+          // Check if an error was added during parsing (even if no exception was thrown)
+          if (this.error && this.error !== savedError) {
+            console.log('⚠️ Command parsing added error, restoring error state. Error was:', this.error.message);
+            this.error = savedError;
+          }
+          commands.push(cmd);
+        } catch (error) {
+          // If command parsing fails, restore error state and skip to next command
+          console.log('⚠️ Command parsing threw exception, restoring error state:', error instanceof Error ? error.message : String(error));
+          this.error = savedError;
+        }
       } else if (this.checkTokenType(TokenType.IDENTIFIER)) {
         // Check if this identifier is a command or function call
         const token = this.peek();
         if (this.isCommand(token.value)) {
           // It's a command - parse as command
           this.advance(); // consume the command token - parseCommand expects this as previous()
-          commands.push(this.parseCommand());
+          // Save error state before parsing
+          const savedError = this.error;
+          try {
+            const cmd = this.parseCommand();
+            // Check if an error was added during parsing (even if no exception was thrown)
+            if (this.error && this.error !== savedError) {
+              console.log('⚠️ Command parsing added error, restoring error state. Error was:', this.error.message);
+              this.error = savedError;
+            }
+            commands.push(cmd);
+          } catch (error) {
+            // If command parsing fails, restore error state and skip to next command
+            console.log('⚠️ Command parsing threw exception, restoring error state:', error instanceof Error ? error.message : String(error));
+            this.error = savedError;
+          }
         } else {
           // Parse as expression (could be function call like focus())
-          const expr = this.parseExpression();
-          
+          let expr;
+          // Save error state before parsing
+          const savedError = this.error;
+          try {
+            expr = this.parseExpression();
+          } catch (error) {
+            // If expression parsing fails (e.g., HSL colors), restore error state and skip
+            console.log('⚠️ Expression parsing error, restoring error state:', error instanceof Error ? error.message : String(error));
+            this.error = savedError;
+            break;
+          }
+
           // Convert call expressions to commands
           if (expr && expr.type === 'callExpression') {
             const callExpr = expr as CallExpressionNode;
@@ -1447,10 +1789,25 @@ export class Parser {
       } else {
         break; // No more commands
       }
-      
+
+      // Skip any unexpected tokens until we find a command or separator
+      // This handles cases where command parsing doesn't consume all its arguments (like HSL colors)
+      while (!this.isAtEnd() &&
+             !this.checkTokenType(TokenType.COMMAND) &&
+             !this.isCommand(this.peek().value) &&
+             !this.check('then') &&
+             !this.check('and') &&
+             !this.check(',')) {
+        this.advance(); // skip the unexpected token
+      }
+
       // Handle command separators
       if (this.match('then', 'and', ',')) {
         continue; // parse next command
+      } else if (this.checkTokenType(TokenType.COMMAND) || this.isCommand(this.peek().value)) {
+        // Next token is a command - continue parsing even without explicit 'then'
+        // This handles newline-separated commands in event handlers
+        continue;
       } else {
         break; // no more commands
       }
@@ -1480,18 +1837,53 @@ export class Parser {
 
   private parseCommandSequence(): ASTNode {
     const commands: CommandNode[] = [];
-    
-    // Parse commands separated by 'then'
-    do {
-      // Parse a single command - consume all tokens until 'then' or end
+
+    // Parse commands separated by 'then' or newlines
+    while (!this.isAtEnd()) {
+      // Check if we have a command
       if (this.checkTokenType(TokenType.COMMAND) || (this.isCommand(this.peek().value) && !this.isKeyword(this.peek().value))) {
         this.advance(); // consume the command token
-        commands.push(this.parseFullCommand());
+
+        // Save error state before parsing command
+        const savedError = this.error;
+        // Use parseCommand() instead of parseFullCommand() to handle special commands like 'repeat'
+        const cmd = this.parseCommand();
+
+        // Check if an error was added during parsing (even if no exception was thrown)
+        if (this.error && this.error !== savedError) {
+          console.log('⚠️  parseCommandSequence: Command parsing added error, restoring error state. Error was:', this.error.message);
+          this.error = savedError;
+        }
+
+        commands.push(cmd);
+
+        // Skip any unexpected tokens until we find 'then', a command, or end
+        // This handles cases where command parsing doesn't consume all its arguments (like HSL colors)
+        while (!this.isAtEnd() &&
+               !this.checkTokenType(TokenType.COMMAND) &&
+               !this.isCommand(this.peek().value) &&
+               !this.check('then')) {
+          console.log('⚠️  parseCommandSequence: Skipping unexpected token:', this.peek().value);
+          this.advance(); // skip the unexpected token
+        }
+
+        // Check for optional 'then' separator
+        if (this.match('then')) {
+          continue; // Parse next command
+        }
+
+        // Check if next token is also a command (newline-separated)
+        if (this.checkTokenType(TokenType.COMMAND) || (this.isCommand(this.peek().value) && !this.isKeyword(this.peek().value))) {
+          continue; // Parse next command
+        }
+
+        // No more commands
+        break;
       } else {
         this.addError(`Expected command, got: ${this.peek().value}`);
         break;
       }
-    } while (this.match('then'));
+    }
     
     // If we only have one command, return it directly
     if (commands.length === 1) {
@@ -1577,8 +1969,13 @@ export class Parser {
       commandName = 'beep!';
     }
 
-    // Delegate compound commands (put, trigger, remove, etc.) to their specialized parsers
+    // Handle control flow commands
     const lowerName = commandName.toLowerCase();
+    if (lowerName === 'repeat') {
+      return this.parseRepeatCommand(commandToken);
+    }
+
+    // Delegate compound commands (put, trigger, remove, etc.) to their specialized parsers
     if (this.isCompoundCommand(lowerName)) {
       const identifierNode: IdentifierNode = {
         type: 'identifier',
@@ -1751,11 +2148,12 @@ export class Parser {
       };
     }
 
-    // Parse command arguments - continue until we hit a separator or end
-    while (!this.isAtEnd() && 
-           !this.check('then') && 
-           !this.check('and') && 
-           !this.check('else') && 
+    // Parse command arguments - continue until we hit a separator, end, or another command
+    while (!this.isAtEnd() &&
+           !this.check('then') &&
+           !this.check('and') &&
+           !this.check('else') &&
+           !this.check('end') &&
            !this.checkTokenType(TokenType.COMMAND)) {
       
       // Always use parseExpression for arguments to handle complex expressions
@@ -1775,8 +2173,8 @@ export class Parser {
       }
       
       // For hyperscript natural language syntax, continue if we see keywords that indicate more arguments
-      // This handles patterns like "put X into Y", "add X to Y", "remove X from Y", etc.
-      const continuationKeywords = ['into', 'from', 'to', 'with', 'by', 'at', 'before', 'after'];
+      // This handles patterns like "put X into Y", "add X to Y", "remove X from Y", "transition X over Yms", etc.
+      const continuationKeywords = ['into', 'from', 'to', 'with', 'by', 'at', 'before', 'after', 'over'];
       if (continuationKeywords.some(keyword => this.check(keyword))) {
         // Continue parsing - this is likely part of the command
         continue;
