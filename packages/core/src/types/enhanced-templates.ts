@@ -4,7 +4,7 @@
  * Follows the enhanced typing pattern established for expressions and commands
  */
 
-import { v, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v } from '../validation/lightweight-validators';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,

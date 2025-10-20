@@ -64,16 +64,16 @@ export function setContextValue(
   // Handle special context variables
   switch (name) {
     case 'me':
-      context.me = value;
+      Object.assign(context, { me: value });
       return;
     case 'it':
-      context.it = value;
+      Object.assign(context, { it: value });
       return;
     case 'you':
       context.you = value;
       return;
     case 'result':
-      context.result = value;
+      Object.assign(context, { result: value });
       return;
   }
 
@@ -195,10 +195,10 @@ export function restoreContext(
   context: ExecutionContext,
   snapshot: Record<string, any>
 ): void {
-  if (snapshot.me !== undefined) context.me = snapshot.me;
-  if (snapshot.it !== undefined) context.it = snapshot.it;
+  if (snapshot.me !== undefined) Object.assign(context, { me: snapshot.me });
+  if (snapshot.it !== undefined) Object.assign(context, { it: snapshot.it });
   if (snapshot.you !== undefined) context.you = snapshot.you;
-  if (snapshot.result !== undefined) context.result = snapshot.result;
+  if (snapshot.result !== undefined) Object.assign(context, { result: snapshot.result });
 
   if (snapshot.locals) {
     context.locals.clear();
@@ -224,19 +224,19 @@ export function restoreContext(
  */
 export function cloneContext(context: ExecutionContext): ExecutionContext {
   const cloned = createContext(context.me);
-  
-  cloned.it = context.it;
+
+  Object.assign(cloned, { it: context.it });
   cloned.you = context.you;
-  cloned.result = context.result;
-  
+  Object.assign(cloned, { result: context.result });
+
   // Deep copy locals
   context.locals.forEach((value, key) => {
     cloned.locals.set(key, value);
   });
-  
+
   // Share globals reference (globals should be shared)
-  cloned.globals = context.globals;
-  cloned.parent = context.parent;
+  Object.assign(cloned, { globals: context.globals });
+  Object.assign(cloned, { parent: context.parent });
   
   // Copy flags
   Object.assign(cloned.flags, context.flags);
@@ -254,9 +254,9 @@ export function mergeContexts(target: ExecutionContext, source: ExecutionContext
   });
   
   // Update special variables if they exist in source
-  if (source.it !== null) target.it = source.it;
+  if (source.it !== null) Object.assign(target, { it: source.it });
   if (source.you !== null) target.you = source.you;
-  if (source.result !== null) target.result = source.result;
+  if (source.result !== null) Object.assign(target, { result: source.result });
 }
 
 /**

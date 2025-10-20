@@ -196,6 +196,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
           success: false,
           error: {
             name: 'IfDirectiveValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid @if directive input',
             code: 'IF_VALIDATION_FAILED',
             suggestions: validation.suggestions || [
@@ -214,6 +215,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
           success: false,
           error: {
             name: 'IfDirectiveContextError',
+            type: 'invalid-argument',
             message: contextValidation.errors[0]?.message || 'Invalid template context',
             code: 'IF_CONTEXT_INVALID',
             suggestions: contextValidation.suggestions || ['Check template context structure']
@@ -247,6 +249,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
         success: false,
         error: {
           name: 'IfDirectiveError',
+          type: 'runtime-error',
           message: `@if directive execution failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'IF_EXECUTION_FAILED',
           suggestions: [
@@ -283,8 +286,9 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
       }
 
       // Additional semantic validation
-      const { condition: _condition, templateContent } = parsed.data;
-      
+      const data = parsed.data as any;
+      const { condition: _condition, templateContent } = data;
+
       if (!templateContent.trim()) {
         return {
           isValid: false,

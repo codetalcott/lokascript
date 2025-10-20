@@ -14,7 +14,7 @@ export class LambdaExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Creates lambda function with parameters and body';
 
-  async evaluate(context: ExecutionContext, parameters: string[], body: string): Promise<Function> {
+  async evaluate(_context: ExecutionContext, parameters: string[], body: string): Promise<Function> {
     if (!Array.isArray(parameters)) {
       parameters = parameters ? [String(parameters)] : [];
     }
@@ -55,7 +55,7 @@ export class ApplyExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Applies function with arguments';
 
-  async evaluate(context: ExecutionContext, functionName: string, args: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, functionName: string, args: any[]): Promise<any> {
     const fn = context.locals?.get(functionName) || context.globals?.get(functionName);
     
     if (!fn || typeof fn !== 'function') {
@@ -79,7 +79,7 @@ export class CurryExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Curries a function to allow partial application';
 
-  async evaluate(context: ExecutionContext, functionName: string): Promise<Function> {
+  async evaluate(_context: ExecutionContext, functionName: string): Promise<Function> {
     const fn = context.locals?.get(functionName) || context.globals?.get(functionName);
     
     if (!fn || typeof fn !== 'function') {
@@ -109,7 +109,7 @@ export class PartialExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Partially applies function with some arguments';
 
-  async evaluate(context: ExecutionContext, functionName: string, partialArgs: any[]): Promise<Function> {
+  async evaluate(_context: ExecutionContext, functionName: string, partialArgs: any[]): Promise<Function> {
     const fn = context.locals?.get(functionName) || context.globals?.get(functionName);
     
     if (!fn || typeof fn !== 'function') {
@@ -135,7 +135,7 @@ export class AsyncExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Creates async function';
 
-  async evaluate(context: ExecutionContext, parameters: string[], body: string): Promise<Function> {
+  async evaluate(_context: ExecutionContext, parameters: string[], body: string): Promise<Function> {
     if (!Array.isArray(parameters)) {
       body = String(parameters);
       parameters = [];
@@ -177,7 +177,7 @@ export class AwaitExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Awaits a promise';
 
-  async evaluate(context: ExecutionContext, promiseName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, promiseName: string): Promise<any> {
     const promise = context.locals?.get(promiseName) || context.globals?.get(promiseName);
     
     if (!promise) {
@@ -250,7 +250,7 @@ export class ThenExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Adds then handler to promise';
 
-  async evaluate(context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
     const promise = context.locals?.get(promiseName) || context.globals?.get(promiseName);
     const handler = context.locals?.get(handlerName) || context.globals?.get(handlerName);
     
@@ -279,7 +279,7 @@ export class CatchExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Adds catch handler to promise';
 
-  async evaluate(context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
     const promise = context.locals?.get(promiseName) || context.globals?.get(promiseName);
     const handler = context.locals?.get(handlerName) || context.globals?.get(handlerName);
     
@@ -308,7 +308,7 @@ export class FinallyExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Adds finally handler to promise';
 
-  async evaluate(context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, promiseName: string, handlerName: string): Promise<any> {
     const promise = context.locals?.get(promiseName) || context.globals?.get(promiseName);
     const handler = context.locals?.get(handlerName) || context.globals?.get(handlerName);
     
@@ -337,7 +337,7 @@ export class TimeoutExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Creates timeout promise';
 
-  async evaluate(context: ExecutionContext, value: any, delay: number): Promise<any> {
+  async evaluate(_context: ExecutionContext, value: any, delay: number): Promise<any> {
     return new Promise((resolve) => {
       setTimeout(() => resolve(value), delay || 0);
     });
@@ -357,7 +357,7 @@ export class DelayExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Creates delay promise';
 
-  async evaluate(context: ExecutionContext, delay: number): Promise<void> {
+  async evaluate(_context: ExecutionContext, delay: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(resolve, delay || 0);
     });
@@ -377,7 +377,7 @@ export class TryExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Try-catch error handling';
 
-  async evaluate(context: ExecutionContext, tryExpression: string, catchExpression: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, tryExpression: string, catchExpression: string): Promise<any> {
     try {
       // In a real implementation, this would evaluate the tryExpression
       // For now, handle simple test cases
@@ -435,7 +435,7 @@ export class ThrowExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Throws an error';
 
-  async evaluate(context: ExecutionContext, message: string): Promise<never> {
+  async evaluate(_context: ExecutionContext, message: string): Promise<never> {
     throw new Error(message);
   }
 
@@ -453,7 +453,7 @@ export class ErrorExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Creates error object';
 
-  async evaluate(context: ExecutionContext, message: string, name?: string): Promise<Error> {
+  async evaluate(_context: ExecutionContext, message: string, name?: string): Promise<Error> {
     const error = new Error(message);
     if (name) {
       error.name = name;
@@ -475,7 +475,7 @@ export class IsErrorExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Checks if value is an error';
 
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: any): Promise<boolean> {
     return value instanceof Error;
   }
 
@@ -493,7 +493,7 @@ export class SafeExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Safe evaluation that returns result object';
 
-  async evaluate(context: ExecutionContext, expression: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, expression: string): Promise<any> {
     try {
       // In a real implementation, this would evaluate the expression
       if (expression.includes('throw')) {
@@ -540,7 +540,7 @@ export class CondExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Multi-condition evaluation';
 
-  async evaluate(context: ExecutionContext, conditions: [any, any][]): Promise<any> {
+  async evaluate(_context: ExecutionContext, conditions: [any, any][]): Promise<any> {
     if (!Array.isArray(conditions)) {
       return undefined;
     }
@@ -568,7 +568,7 @@ export class SwitchExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Switch-case evaluation';
 
-  async evaluate(context: ExecutionContext, value: any, cases: Record<string, any>): Promise<any> {
+  async evaluate(_context: ExecutionContext, value: any, cases: Record<string, any>): Promise<any> {
     if (!cases || typeof cases !== 'object') {
       return undefined;
     }
@@ -600,7 +600,7 @@ export class PipeExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Pipes value through functions';
 
-  async evaluate(context: ExecutionContext, initialValue: any, functionNames: string[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, initialValue: any, functionNames: string[]): Promise<any> {
     if (!Array.isArray(functionNames)) {
       return initialValue;
     }
@@ -631,7 +631,7 @@ export class ComposeExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Composes functions';
 
-  async evaluate(context: ExecutionContext, functionNames: string[]): Promise<Function> {
+  async evaluate(_context: ExecutionContext, functionNames: string[]): Promise<Function> {
     if (!Array.isArray(functionNames)) {
       return (x: any) => x;
     }
@@ -659,7 +659,7 @@ export class EvalExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Safe expression evaluation';
 
-  async evaluate(context: ExecutionContext, expression: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, expression: string): Promise<any> {
     try {
       // Very basic and safe evaluation for simple expressions
       // In a real implementation, this would use a proper expression evaluator
@@ -717,7 +717,7 @@ export class GetExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Dynamic property access';
 
-  async evaluate(context: ExecutionContext, objectName: string, property: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, objectName: string, property: string): Promise<any> {
     const obj = context.locals?.get(objectName) || context.globals?.get(objectName);
     
     if (!obj || typeof obj !== 'object') {
@@ -741,7 +741,7 @@ export class SetExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Dynamic property setting';
 
-  async evaluate(context: ExecutionContext, objectName: string, property: string, value: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, objectName: string, property: string, value: any): Promise<any> {
     const obj = context.locals?.get(objectName) || context.globals?.get(objectName);
     
     if (!obj || typeof obj !== 'object') {
@@ -766,7 +766,7 @@ export class TypeofExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Returns type of value';
 
-  async evaluate(context: ExecutionContext, value: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, value: any): Promise<string> {
     return typeof value;
   }
 
@@ -784,7 +784,7 @@ export class InstanceofExpression implements ExpressionImplementation {
   category = 'Advanced';
   description = 'Checks instanceof relationship';
 
-  async evaluate(context: ExecutionContext, value: any, constructor: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: any, constructor: any): Promise<boolean> {
     try {
       return value instanceof constructor;
     } catch (error) {

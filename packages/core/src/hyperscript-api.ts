@@ -5,7 +5,7 @@
  * the original _hyperscript interface for drop-in compatibility.
  */
 
-import { Lexer, Tokens } from './tokenizer';
+import { Lexer, _Tokens } from './tokenizer';
 import { HyperscriptParser, parseHyperscript } from './hyperscript-parser';
 import type { ExecutionContext } from './types/core';
 
@@ -89,7 +89,7 @@ const defaultConfig: HyperscriptConfig = {
  */
 export function createHyperscriptAPI(): HyperscriptAPI {
   const api: HyperscriptAPI = {
-    processNode(element: Element): void {
+    processNode(_element: Element): void {
       // TODO: Implement DOM node processing
       console.warn('processNode not yet implemented');
     },
@@ -98,7 +98,7 @@ export function createHyperscriptAPI(): HyperscriptAPI {
       return api.processNode(element);
     },
 
-    async evaluate(src: string, ctx?: any): Promise<any> {
+    async evaluate(src: string, _ctx?: any): Promise<any> {
       // TODO: Implement expression evaluation
       console.warn('evaluate not yet implemented');
       return null;
@@ -121,22 +121,22 @@ export function createHyperscriptAPI(): HyperscriptAPI {
       runtime: null // Will be set when runtime is implemented
     },
 
-    addFeature(keyword: string, definition: any): void {
+    addFeature(keyword: string, _definition: any): void {
       // TODO: Implement feature registration
       console.warn('addFeature not yet implemented');
     },
 
-    addCommand(keyword: string, definition: any): void {
+    addCommand(keyword: string, _definition: any): void {
       // TODO: Implement command registration
       console.warn('addCommand not yet implemented');
     },
 
-    addLeafExpression(keyword: string, definition: any): void {
+    addLeafExpression(keyword: string, _definition: any): void {
       // TODO: Implement leaf expression registration
       console.warn('addLeafExpression not yet implemented');
     },
 
-    addIndirectExpression(keyword: string, definition: any): void {
+    addIndirectExpression(keyword: string, _definition: any): void {
       // TODO: Implement indirect expression registration
       console.warn('addIndirectExpression not yet implemented');
     },

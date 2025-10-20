@@ -456,6 +456,7 @@ export class TypedBehaviorsFeatureImplementation {
           path: 'behavior.name'
         });
         suggestions.push('Use valid identifier for behavior name (e.g., "my-behavior", "tooltip", "draggable_item")');
+      suggestions: []
       }
 
       // Validate parameters
@@ -468,6 +469,7 @@ export class TypedBehaviorsFeatureImplementation {
               path: `behavior.parameters[${index}]`
             });
             suggestions.push('Use valid JavaScript identifiers for parameter names');
+          suggestions: []
           }
         });
 
@@ -480,6 +482,7 @@ export class TypedBehaviorsFeatureImplementation {
             path: 'behavior.parameters'
           });
           suggestions.push('Remove duplicate parameter names');
+        suggestions: []
         }
       }
 
@@ -494,6 +497,7 @@ export class TypedBehaviorsFeatureImplementation {
               path: `behavior.eventHandlers[${index}].event`
             });
             suggestions.push('Use standard DOM event types like "click", "input", "submit", etc.');
+          suggestions: []
           }
 
           // Validate event source selector - skip validation in test environment
@@ -514,6 +518,7 @@ export class TypedBehaviorsFeatureImplementation {
                 path: `behavior.eventHandlers[${index}].eventSource`
               });
               suggestions.push('Use valid CSS selector syntax for event source');
+            suggestions: []
             }
           }
           
@@ -525,6 +530,7 @@ export class TypedBehaviorsFeatureImplementation {
               path: `behavior.eventHandlers[${index}].eventSource`
             });
             suggestions.push('Use valid CSS selector syntax for event source');
+          suggestions: []
           }
 
           // Validate filter expression
@@ -538,6 +544,7 @@ export class TypedBehaviorsFeatureImplementation {
                 path: `behavior.eventHandlers[${index}].filter`
               });
               suggestions.push('Use valid JavaScript expression for event filtering');
+            suggestions: []
             }
           }
 
@@ -549,6 +556,7 @@ export class TypedBehaviorsFeatureImplementation {
               path: `behavior.eventHandlers[${index}].options`
             });
             suggestions.push('Choose either throttle OR debounce, not both');
+          suggestions: []
           }
 
           // Validate commands array
@@ -559,6 +567,7 @@ export class TypedBehaviorsFeatureImplementation {
               path: `behavior.eventHandlers[${index}].commands`
             });
             suggestions.push('Add at least one command to the event handler');
+          suggestions: []
           }
         });
 
@@ -570,6 +579,7 @@ export class TypedBehaviorsFeatureImplementation {
             path: 'behavior.eventHandlers'
           });
           suggestions.push('Reduce number of event handlers or increase maxEventHandlers limit');
+        suggestions: []
         }
       }
 
@@ -582,6 +592,7 @@ export class TypedBehaviorsFeatureImplementation {
           path: 'behavior.namespace'
         });
         suggestions.push('Use valid namespace format (e.g., "myNamespace" or "my.nested.namespace")');
+      suggestions: []
       }
 
       // Validate installation target
@@ -597,6 +608,7 @@ export class TypedBehaviorsFeatureImplementation {
             path: 'installation.target'
           });
           suggestions.push('Use valid CSS selector syntax for installation target');
+        suggestions: []
         }
       }
 

@@ -142,7 +142,7 @@ export class EnhancedAsyncCommand implements TypedCommandImplementation<
 
       // Set the last result in context
       if (results.length > 0) {
-        (context as any).it = results[results.length - 1];
+        Object.assign(context, { it: results[results.length - 1] });
       }
 
       return {
@@ -171,7 +171,7 @@ export class EnhancedAsyncCommand implements TypedCommandImplementation<
         results.push(result);
 
         // Update context for next command
-        context.it = result;
+        Object.assign(context, { it: result });
 
       } catch (error) {
         throw new Error(`Command '${command.name}' failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

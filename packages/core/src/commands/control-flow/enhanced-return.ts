@@ -82,7 +82,7 @@ export class EnhancedReturnCommand implements TypedCommandImplementation<
     }
 
     // Also set it as the result (it)
-    context.it = value;
+    Object.assign(context, { it: value });
 
     // Throw a special return error that can be caught and handled by the runtime
     const returnError = new Error('RETURN_VALUE');

@@ -462,6 +462,7 @@ export class TypedSocketsFeatureImplementation {
               path: 'socket.url'
             });
             suggestions.push('Use ws:// for local development or wss:// for secure connections');
+          suggestions: []
           }
         } catch (urlError) {
           errors.push({
@@ -470,6 +471,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.url'
           });
           suggestions.push('Provide a valid WebSocket URL (e.g., "wss://api.example.com/ws")');
+        suggestions: []
         }
       }
 
@@ -482,6 +484,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.reconnect.maxAttempts'
           });
           suggestions.push('Set maxAttempts to 0 or positive number (0 = no reconnection)');
+        suggestions: []
         }
 
         if (data.socket.reconnect.delay < 0) {
@@ -491,6 +494,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.reconnect.delay'
           });
           suggestions.push('Set delay to positive number in milliseconds');
+        suggestions: []
         }
 
         if (data.socket.reconnect.maxDelay < data.socket.reconnect.delay) {
@@ -500,6 +504,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.reconnect.maxDelay'
           });
           suggestions.push('Ensure maxDelay >= delay for proper backoff behavior');
+        suggestions: []
         }
       }
 
@@ -512,6 +517,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.heartbeat.interval'
           });
           suggestions.push('Set heartbeat interval to positive number in milliseconds');
+        suggestions: []
         }
 
         if (data.socket.heartbeat.timeout <= 0) {
@@ -521,6 +527,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.heartbeat.timeout'
           });
           suggestions.push('Set heartbeat timeout to positive number in milliseconds');
+        suggestions: []
         }
 
         if (data.socket.heartbeat.timeout >= data.socket.heartbeat.interval) {
@@ -530,6 +537,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'socket.heartbeat'
           });
           suggestions.push('Ensure timeout < interval for proper heartbeat detection');
+        suggestions: []
         }
       }
 
@@ -547,6 +555,7 @@ export class TypedSocketsFeatureImplementation {
                 path: `eventHandlers[${index}].filter`
               });
               suggestions.push('Use valid JavaScript expression for message filtering');
+            suggestions: []
             }
           }
 
@@ -558,6 +567,7 @@ export class TypedSocketsFeatureImplementation {
               path: `eventHandlers[${index}].options`
             });
             suggestions.push('Choose either throttle OR debounce, not both');
+          suggestions: []
           }
 
           // Validate commands array
@@ -568,6 +578,7 @@ export class TypedSocketsFeatureImplementation {
               path: `eventHandlers[${index}].commands`
             });
             suggestions.push('Add at least one command to execute when event occurs');
+          suggestions: []
           }
         });
       }
@@ -581,6 +592,7 @@ export class TypedSocketsFeatureImplementation {
             path: 'messageHandling.queue.maxSize'
           });
           suggestions.push('Set queue maxSize to non-negative number (0 for unlimited)');
+        suggestions: []
         }
       }
 
@@ -592,6 +604,7 @@ export class TypedSocketsFeatureImplementation {
           path: 'options.maxConnections'
         });
         suggestions.push('Set maxConnections to positive number');
+      suggestions: []
       }
 
       if (data.options?.connectionTimeout <= 0) {
@@ -601,6 +614,7 @@ export class TypedSocketsFeatureImplementation {
           path: 'options.connectionTimeout'
         });
         suggestions.push('Set connectionTimeout to positive number in milliseconds');
+      suggestions: []
       }
 
       return {

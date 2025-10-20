@@ -53,6 +53,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'ArrayConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to Array: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_CONVERSION_FAILED',
           suggestions: ['Check if value is iterable', 'Ensure value is not circular reference']
@@ -79,6 +80,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'StringConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to String: ${error instanceof Error ? error.message : String(error)}`,
           code: 'STRING_CONVERSION_FAILED',
           suggestions: ['Check if object has circular references', 'Ensure value is serializable']
@@ -111,6 +113,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'BooleanConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to Boolean: ${error instanceof Error ? error.message : String(error)}`,
           code: 'BOOLEAN_CONVERSION_FAILED',
           suggestions: ['Use explicit true/false values', 'Check for unexpected data types']
@@ -133,6 +136,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
           success: false,
           error: {
             name: 'NumberConversionError',
+            type: 'invalid-argument',
             message: `Cannot convert "${value}" to a valid number`,
             code: 'INVALID_NUMBER',
             suggestions: ['Check if value contains non-numeric characters', 'Use a valid numeric format']
@@ -145,6 +149,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'NumberConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to Number: ${error instanceof Error ? error.message : String(error)}`,
           code: 'NUMBER_CONVERSION_FAILED',
           suggestions: ['Ensure value is convertible to number', 'Check for special characters']
@@ -191,6 +196,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
           success: false,
           error: {
             name: 'DateConversionError',
+            type: 'invalid-argument',
             message: `Cannot convert "${value}" to a valid date`,
             code: 'INVALID_DATE',
             suggestions: ['Use ISO 8601 format (YYYY-MM-DD)', 'Check date string format', 'Ensure date values are valid']
@@ -203,6 +209,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'DateConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to Date: ${error instanceof Error ? error.message : String(error)}`,
           code: 'DATE_CONVERSION_FAILED',
           suggestions: ['Check date format', 'Ensure value is a valid date string or timestamp']
@@ -220,6 +227,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'JSONConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to JSON: ${error instanceof Error ? error.message : String(error)}`,
           code: 'JSON_STRINGIFY_FAILED',
           suggestions: ['Check for circular references', 'Ensure all properties are serializable', 'Remove functions and undefined values']
@@ -242,6 +250,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
             success: false,
             error: {
               name: 'ObjectConversionError',
+              type: 'syntax-error',
               message: `Cannot parse JSON string: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
               code: 'JSON_PARSE_FAILED',
               suggestions: ['Check JSON syntax', 'Ensure proper escaping of quotes', 'Validate JSON format']
@@ -255,6 +264,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'ObjectConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value to Object: ${error instanceof Error ? error.message : String(error)}`,
           code: 'OBJECT_CONVERSION_FAILED',
           suggestions: ['Ensure value is valid JSON string or object', 'Check for syntax errors']
@@ -289,6 +299,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
         success: false,
         error: {
           name: 'FormValuesConversionError',
+          type: 'runtime-error',
           message: `Failed to extract form values: ${error instanceof Error ? error.message : String(error)}`,
           code: 'FORM_VALUES_EXTRACTION_FAILED',
           suggestions: ['Ensure element is a form or contains form inputs', 'Check form structure', 'Verify input names are set']
@@ -425,6 +436,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
           success: false,
           error: {
             name: 'AsExpressionValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid input',
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -507,6 +519,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
         success: false as const,
         error: {
           name: 'AsExpressionError',
+          type: 'runtime-error',
           message: `Conversion failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'CONVERSION_FAILED',
           suggestions: ['Check value and type compatibility', 'Ensure value is convertible to target type']
@@ -674,6 +687,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
           success: false,
           error: {
             name: 'IsExpressionValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid input',
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -741,6 +755,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
         success: false as const,
         error: {
           name: 'IsExpressionError',
+          type: 'type-mismatch',
           message: `Type check failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'TYPE_CHECK_FAILED',
           suggestions: ['Check type name spelling', 'Ensure value is accessible']

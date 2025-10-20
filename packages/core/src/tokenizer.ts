@@ -325,14 +325,14 @@ export class Lexer {
       if (OP_TABLE[threeChar]) {
         advance();
         advance();
-        const op = advance();
+        const _op = advance();
         tokens.push(makeToken(OP_TABLE[threeChar], threeChar, start));
         continue;
       }
       
       if (OP_TABLE[twoChar]) {
         advance();
-        const op = advance();
+        const _op = advance();
         tokens.push(makeToken(OP_TABLE[twoChar], twoChar, start));
         continue;
       }
@@ -537,8 +537,8 @@ export class Tokens {
   // Static utility methods
   static sourceFor(tokens: Token[]): string {
     if (tokens.length === 0) return "";
-    const first = tokens[0];
-    const last = tokens[tokens.length - 1];
+    const _first = tokens[0];
+    const _last = tokens[tokens.length - 1];
     // This would need access to original source - simplified for now
     return tokens.map(t => t.value).join("");
   }

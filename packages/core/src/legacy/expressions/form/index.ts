@@ -14,7 +14,7 @@ export class FormValuesExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Extracts all form field values as an object';
 
-  async evaluate(context: ExecutionContext, formElement: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, formElement: any): Promise<any> {
     if (!formElement) return {};
     
     const result: any = {};
@@ -59,7 +59,7 @@ export class FormDataExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Creates FormData object from form';
 
-  async evaluate(context: ExecutionContext, formElement: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, formElement: any): Promise<any> {
     if (!formElement || formElement.tagName !== 'FORM') {
       return {};
     }
@@ -95,7 +95,7 @@ export class GetValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets the value of a form field';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<string> {
     if (!element) return '';
     
     if (element.type === 'checkbox' || element.type === 'radio') {
@@ -119,7 +119,7 @@ export class SetValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Sets the value of a form field';
 
-  async evaluate(context: ExecutionContext, element: any, value: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any, value: any): Promise<void> {
     if (!element) return;
     
     if (element.type === 'checkbox' || element.type === 'radio') {
@@ -144,7 +144,7 @@ export class IsValidExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Checks if form field is valid';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<boolean> {
     if (!element) return true;
     
     // Use HTML5 validation API
@@ -166,7 +166,7 @@ export class ValidationMessageExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets validation message for form field';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<string> {
     if (!element) return '';
     
     return element.validationMessage || '';
@@ -183,7 +183,7 @@ export class IsRequiredExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Checks if form field is required';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<boolean> {
     if (!element) return false;
     
     return element.required || false;
@@ -203,7 +203,7 @@ export class IsCheckedExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Checks if checkbox or radio button is checked';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<boolean> {
     if (!element) return false;
     
     return element.checked || false;
@@ -220,7 +220,7 @@ export class SetCheckedExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Sets checked state of checkbox or radio button';
 
-  async evaluate(context: ExecutionContext, element: any, checked: boolean): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any, checked: boolean): Promise<void> {
     if (!element) return;
     
     element.checked = Boolean(checked);
@@ -237,7 +237,7 @@ export class GetRadioValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets value of checked radio button in group';
 
-  async evaluate(context: ExecutionContext, form: any, name: string): Promise<string | null> {
+  async evaluate(_context: ExecutionContext, form: any, name: string): Promise<string | null> {
     if (!form || !name) return null;
     
     const radios = form.querySelectorAll(`input[type="radio"][name="${name}"]`);
@@ -262,7 +262,7 @@ export class GetCheckboxValuesExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets values of all checked checkboxes in group';
 
-  async evaluate(context: ExecutionContext, form: any, name: string): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, form: any, name: string): Promise<string[]> {
     if (!form || !name) return [];
     
     const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
@@ -291,7 +291,7 @@ export class GetSelectedValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets value of selected option in select element';
 
-  async evaluate(context: ExecutionContext, select: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, select: any): Promise<string> {
     if (!select) return '';
     
     return select.value || '';
@@ -308,7 +308,7 @@ export class GetSelectedTextExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets text of selected option in select element';
 
-  async evaluate(context: ExecutionContext, select: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, select: any): Promise<string> {
     if (!select || !select.options) return '';
     
     const selectedOption = select.options[select.selectedIndex];
@@ -326,7 +326,7 @@ export class GetSelectedValuesExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets values of all selected options in multi-select';
 
-  async evaluate(context: ExecutionContext, select: any): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, select: any): Promise<string[]> {
     if (!select || !select.options) return [];
     
     const values: string[] = [];
@@ -352,7 +352,7 @@ export class SetSelectedValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Sets selected option by value';
 
-  async evaluate(context: ExecutionContext, select: any, value: string): Promise<void> {
+  async evaluate(_context: ExecutionContext, select: any, value: string): Promise<void> {
     if (!select) return;
     
     select.value = value;
@@ -372,7 +372,7 @@ export class HasFilesExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Checks if file input has files selected';
 
-  async evaluate(context: ExecutionContext, input: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, input: any): Promise<boolean> {
     if (!input || input.type !== 'file') return false;
     
     return (input.files?.length || 0) > 0;
@@ -389,7 +389,7 @@ export class GetFileCountExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets number of selected files';
 
-  async evaluate(context: ExecutionContext, input: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, input: any): Promise<number> {
     if (!input || input.type !== 'file') return 0;
     
     return input.files?.length || 0;
@@ -406,7 +406,7 @@ export class GetFileNamesExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets names of selected files';
 
-  async evaluate(context: ExecutionContext, input: any): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, input: any): Promise<string[]> {
     if (!input || input.type !== 'file' || !input.files) return [];
     
     const names: string[] = [];
@@ -431,7 +431,7 @@ export class IsDisabledExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Checks if form field is disabled';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<boolean> {
     if (!element) return true;
     
     return element.disabled || false;
@@ -448,7 +448,7 @@ export class SetDisabledExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Sets disabled state of form field';
 
-  async evaluate(context: ExecutionContext, element: any, disabled: boolean): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any, disabled: boolean): Promise<void> {
     if (!element) return;
     
     element.disabled = Boolean(disabled);
@@ -465,7 +465,7 @@ export class ClearValueExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Clears value of form field';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<void> {
     if (!element) return;
     
     if (element.type === 'checkbox' || element.type === 'radio') {
@@ -488,7 +488,7 @@ export class ResetFormExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Resets form to original values';
 
-  async evaluate(context: ExecutionContext, form: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, form: any): Promise<void> {
     if (!form || form.tagName !== 'FORM') return;
     
     if (form.reset) {
@@ -510,7 +510,7 @@ export class SerializeFormExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Serializes form data as URL-encoded string';
 
-  async evaluate(context: ExecutionContext, form: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, form: any): Promise<string> {
     if (!form || form.tagName !== 'FORM') return '';
     
     try {
@@ -548,7 +548,7 @@ export class GetFormFieldExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets form field by name';
 
-  async evaluate(context: ExecutionContext, form: any, name: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, form: any, name: string): Promise<any> {
     if (!form || !name) return null;
     
     return form.querySelector(`[name="${name}"]`) || 
@@ -567,7 +567,7 @@ export class GetFormFieldsExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Gets all form fields';
 
-  async evaluate(context: ExecutionContext, form: any): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, form: any): Promise<any[]> {
     if (!form) return [];
     
     const fields = form.querySelectorAll('input, textarea, select, button');
@@ -585,7 +585,7 @@ export class ValidateFormExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Validates entire form and returns errors';
 
-  async evaluate(context: ExecutionContext, form: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, form: any): Promise<any> {
     if (!form) return { isValid: true, errors: {} };
     
     const errors: any = {};
@@ -616,7 +616,7 @@ export class FocusFieldExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Sets focus to form field';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<void> {
     if (!element || !element.focus) return;
     
     element.focus();
@@ -633,7 +633,7 @@ export class BlurFieldExpression implements ExpressionImplementation {
   category = 'Form';
   description = 'Removes focus from form field';
 
-  async evaluate(context: ExecutionContext, element: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, element: any): Promise<void> {
     if (!element || !element.blur) return;
     
     element.blur();

@@ -160,6 +160,7 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
           success: false,
           error: {
             name: 'ArrayLiteralValidationError',
+            type: 'validation-error',
             message: `Array literal validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'ARRAY_LITERAL_VALIDATION_ERROR',
             suggestions: validationResult.suggestions
@@ -190,6 +191,7 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
         success: false,
         error: {
           name: 'ArrayLiteralEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate array literal: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_LITERAL_EVALUATION_ERROR',
           suggestions: ['Check array element values', 'Ensure all elements are valid']
@@ -362,6 +364,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
           success: false,
           error: {
             name: 'ArrayIndexValidationError',
+            type: 'validation-error',
             message: `Array index validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'ARRAY_INDEX_VALIDATION_ERROR',
             suggestions: validationResult.suggestions
@@ -387,6 +390,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
         success: false,
         error: {
           name: 'ArrayIndexEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate array index: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_INDEX_EVALUATION_ERROR',
           severity: 'error',
@@ -419,6 +423,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
       success: false,
       error: {
         name: 'InvalidArrayTargetError',
+        type: 'invalid-argument',
         message: `Cannot index target of type ${typeof target}`,
         code: 'INVALID_ARRAY_TARGET',
         severity: 'error',
@@ -555,6 +560,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
         success: false,
         error: {
           name: 'IndexOperationError',
+          type: 'runtime-error',
           message: `Index operation failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'INDEX_OPERATION_ERROR',
           severity: 'error',

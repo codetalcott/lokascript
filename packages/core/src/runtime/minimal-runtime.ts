@@ -22,7 +22,7 @@ export interface MinimalRuntimeOptions {
  * Minimal Runtime Implementation
  */
 export class MinimalRuntime {
-  private options: MinimalRuntimeOptions;
+  private _options: MinimalRuntimeOptions;
   private debug: boolean;
 
   constructor(options: MinimalRuntimeOptions = {}) {

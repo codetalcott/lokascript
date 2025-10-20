@@ -6,8 +6,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -15,6 +15,7 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
+import { asHTMLElement, asHTMLElements } from '../../utils/dom-utils';
 
 /**
  * Input validation schema for LLM understanding
@@ -147,8 +148,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
-            message: validationResult.errors[0]?.message || 'Invalid input',
+                        type: 'validation-error',
+                        message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'SEND_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
           },
@@ -164,8 +165,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'SendCommandError',
-            message: parseResult.error || 'Failed to parse arguments',
+                        type: 'syntax-error',
+                        message: parseResult.error || 'Failed to parse arguments',
             code: 'ARGUMENT_PARSE_FAILED',
             suggestions: [ 'Check argument syntax', 'Use proper to/on keyword placement']
           },
@@ -181,8 +182,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'SendCommandError',
-            message: targetResult.error || 'Failed to resolve target elements',
+                        type: 'runtime-error',
+                        message: targetResult.error || 'Failed to resolve target elements',
             code: 'TARGET_RESOLUTION_FAILED',
             suggestions: [ 'Check if target elements exist', 'Verify selector syntax']
           },
@@ -204,8 +205,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'SendCommandError',
-            message: eventResult.error || 'Failed to dispatch event',
+                        type: 'runtime-error',
+                        message: eventResult.error || 'Failed to dispatch event',
             code: 'EVENT_DISPATCH_FAILED',
             suggestions: [ 'Check if target elements are valid', 'Verify event name format']
           },
@@ -216,7 +217,7 @@ export class SendCommand implements TypedCommandImplementation<
       const event = eventResult.event;
       
       // Store result in context
-      context.it = event;
+      Object.assign(context, { it: event });
       
       return {
         success: true,
@@ -228,8 +229,8 @@ export class SendCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'SendCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SEND_EXECUTION_FAILED',
           suggestions: [ 'Check event name and arguments', 'Verify target elements exist']
         },
@@ -306,7 +307,14 @@ export class SendCommand implements TypedCommandImplementation<
       } else {
         // Default to current element (me)
         if (context.me) {
-          targetElements = [context.me];
+          const htmlElement = asHTMLElement(context.me);
+          if (!htmlElement) {
+            return {
+              success: false,
+              error: 'context.me is not an HTMLElement'
+            };
+          }
+          targetElements = [htmlElement];
         } else {
           return {
             success: false,
@@ -568,9 +576,11 @@ export class SendCommand implements TypedCommandImplementation<
     if (typeof target === 'string') {
       // Handle context references
       if (target === 'me' && context.me) {
-        return [context.me];
+        const htmlElement = asHTMLElement(context.me);
+        return htmlElement ? [htmlElement] : [];
       } else if (target === 'you' && context.you) {
-        return [context.you];
+        const htmlElement = asHTMLElement(context.you);
+        return htmlElement ? [htmlElement] : [];
       } else if (target === 'it' && context.it instanceof HTMLElement) {
         return [context.it];
       }

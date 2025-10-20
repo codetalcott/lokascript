@@ -172,9 +172,9 @@ export async function quickStartAnalytics(options: {
   };
 }) {
   // Create simple in-memory storage for demo purposes
-  const storage: import('./types').AnalyticsStorage = {
+  const storage: import('./types').AnalyticsStorage & { events: import('./types').AnalyticsEvent[] } = {
     events: [] as import('./types').AnalyticsEvent[],
-    
+
     async store(event) {
       this.events.push(event);
     },

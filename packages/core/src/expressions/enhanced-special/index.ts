@@ -146,6 +146,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -387,6 +388,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -583,6 +585,7 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -764,6 +767,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -981,6 +985,7 @@ export class EnhancedStringConcatenationExpression implements BaseTypedExpressio
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid input',
             code: 'STRING_CONCATENATION_VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -1010,6 +1015,7 @@ export class EnhancedStringConcatenationExpression implements BaseTypedExpressio
         success: false,
         error: {
           name: 'StringConcatenationError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'String concatenation failed',
           code: 'STRING_CONCATENATION_ERROR',
           suggestions: ['Check that operands can be converted to strings']
@@ -1172,6 +1178,7 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions

@@ -223,6 +223,7 @@ export interface Token {
 export interface ParseResult<T = ASTNode> {
   success: boolean;
   node?: T;
+  ast?: T; // Alias for node - some code uses ast instead of node
   error?: ParseError;
   tokens: Token[];
 }

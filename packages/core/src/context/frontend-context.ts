@@ -288,6 +288,7 @@ export class TypedFrontendContextImplementation extends EnhancedContextBase<Fron
         path: 'dom.document'
       });
       suggestions.push('Ensure context is initialized in browser environment');
+    suggestions: []
     }
 
     // Validate user state structure
@@ -298,6 +299,7 @@ export class TypedFrontendContextImplementation extends EnhancedContextBase<Fron
           message: 'User permissions must be an array of strings',
           path: 'userState.permissions'
         });
+      suggestions: []
       }
     }
 

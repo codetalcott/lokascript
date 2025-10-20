@@ -417,6 +417,7 @@ export class TypedEventSourceFeatureImplementation {
           path: 'messageProcessing.buffer.maxSize'
         });
         suggestions.push('Set buffer maxSize to 0 for unlimited or positive number for limit');
+      suggestions: []
       }
 
       // Check for empty commands arrays before Zod validation
@@ -429,6 +430,7 @@ export class TypedEventSourceFeatureImplementation {
               path: 'eventHandlers.commands'
             });
             suggestions.push('Add at least one command to execute for event handler');
+          suggestions: []
           }
         }
       }
@@ -456,6 +458,7 @@ export class TypedEventSourceFeatureImplementation {
             path: 'source.url'
           });
           suggestions.push('Use valid HTTP/HTTPS URL for EventSource connection');
+        suggestions: []
         }
 
         // Validate retry settings
@@ -467,6 +470,7 @@ export class TypedEventSourceFeatureImplementation {
               path: 'source.retry.maxAttempts'
             });
             suggestions.push('Set maxAttempts to 0 for no retry or positive number for retry limit');
+          suggestions: []
           }
 
           if (data.source.retry.delay < 0) {
@@ -476,6 +480,7 @@ export class TypedEventSourceFeatureImplementation {
               path: 'source.retry.delay'
             });
             suggestions.push('Set retry delay to positive number in milliseconds');
+          suggestions: []
           }
 
           if (data.source.retry.maxDelay < data.source.retry.delay) {
@@ -485,6 +490,7 @@ export class TypedEventSourceFeatureImplementation {
               path: 'source.retry.maxDelay'
             });
             suggestions.push('Set maxDelay to be greater than or equal to delay');
+          suggestions: []
           }
         }
 
@@ -496,6 +502,7 @@ export class TypedEventSourceFeatureImplementation {
             path: 'source.timeout.duration'
           });
           suggestions.push('Set timeout duration to at least 1000ms for proper operation');
+        suggestions: []
         }
       }
 
@@ -508,6 +515,7 @@ export class TypedEventSourceFeatureImplementation {
             path: 'options.maxConnections'
           });
           suggestions.push('Set maxConnections to at least 1');
+        suggestions: []
         }
 
         if (data.options.connectionTimeout < 1000) {
@@ -517,6 +525,7 @@ export class TypedEventSourceFeatureImplementation {
             path: 'options.connectionTimeout'
           });
           suggestions.push('Set connection timeout to at least 1000ms for proper operation');
+        suggestions: []
         }
       }
 
@@ -531,6 +540,7 @@ export class TypedEventSourceFeatureImplementation {
               path: 'eventHandlers.options'
             });
             suggestions.push('Choose either throttle OR debounce, not both');
+          suggestions: []
           }
 
           // Validate filter expressions
@@ -544,6 +554,7 @@ export class TypedEventSourceFeatureImplementation {
                 path: 'eventHandlers.filter'
               });
               suggestions.push('Use valid JavaScript expression for event filtering');
+            suggestions: []
             }
           }
         }
@@ -556,6 +567,7 @@ export class TypedEventSourceFeatureImplementation {
           message: 'Server-Sent Events are not supported in this environment',
         });
         suggestions.push('EventSource requires a browser environment');
+      suggestions: []
       }
 
       return {

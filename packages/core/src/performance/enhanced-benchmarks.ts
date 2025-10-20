@@ -255,8 +255,8 @@ export function measurePerformance(
   category: BenchmarkResult['category'] = 'command'
 ) {
   return function <T extends (...args: any[]) => any>(
-    target: any,
-    propertyKey: string,
+    _target: any,
+    _propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>
   ) {
     const originalMethod = descriptor.value!;

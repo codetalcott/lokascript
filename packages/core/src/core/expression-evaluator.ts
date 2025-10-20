@@ -127,7 +127,7 @@ export class ExpressionEvaluator {
   /**
    * Evaluate literal nodes (strings, numbers, booleans)
    */
-  private async evaluateLiteral(node: { value: any }, context: ExecutionContext): Promise<any> {
+  private async evaluateLiteral(node: { value: any }, _context: ExecutionContext): Promise<any> {
     return node.value;
   }
 
@@ -320,17 +320,17 @@ export class ExpressionEvaluator {
           
           // Handle special context variables
           if (variableName === 'result') {
-            context.result = rightValue;
+            Object.assign(context, { result: rightValue });
           } else if (variableName === 'it') {
-            context.it = rightValue;
+            Object.assign(context, { it: rightValue });
           } else if (variableName === 'you') {
             context.you = rightValue;
           } else {
             // Set regular variable
             if (!context.variables) {
-              context.variables = new Map();
+              Object.assign(context, { variables: new Map() });
             }
-            context.variables.set(variableName, rightValue);
+            context.variables!.set(variableName, rightValue);
           }
           
           return rightValue; // Assignment returns the assigned value

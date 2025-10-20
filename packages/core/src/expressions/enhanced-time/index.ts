@@ -118,6 +118,7 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
           success: false,
           error: {
             name: 'TimeParsingError',
+            type: 'runtime-error',
             message: 'Time string cannot be empty',
             code: 'EMPTY_TIME_STRING',
             suggestions: ['Provide a valid time string like "2s", "500ms", or "1 minute"']
@@ -149,6 +150,7 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
               success: false,
               error: {
                 name: 'TimeParsingError',
+                type: 'invalid-argument',
                 message: `Invalid numeric value in time string: "${match[1]}"`,
                 code: 'INVALID_TIME_VALUE',
                 suggestions: ['Use valid numeric values like "2.5s" or "10ms"']
@@ -170,6 +172,7 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
         success: false,
         error: {
           name: 'TimeParsingError',
+          type: 'invalid-argument',
           message: `Unrecognized time format: "${timeString}"`,
           code: 'INVALID_TIME_FORMAT',
           suggestions: [
@@ -186,6 +189,7 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
         success: false,
         error: {
           name: 'TimeParsingError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Time parsing failed',
           code: 'TIME_PARSING_FAILED',
           suggestions: ['Check time string format and syntax']
@@ -317,6 +321,7 @@ export class EnhancedDurationFormattingExpression implements TypedExpressionImpl
           success: false,
           error: {
             name: 'DurationFormattingError',
+            type: 'runtime-error',
             message: 'Duration must be non-negative',
             code: 'NEGATIVE_DURATION',
             suggestions: ['Use Math.abs() to convert negative durations', 'Ensure duration is positive']
@@ -392,6 +397,7 @@ export class EnhancedDurationFormattingExpression implements TypedExpressionImpl
         success: false,
         error: {
           name: 'DurationFormattingError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Duration formatting failed',
           code: 'DURATION_FORMATTING_FAILED',
           suggestions: ['Check input parameters and format options']
@@ -527,6 +533,7 @@ export class EnhancedTimeArithmeticExpression implements TypedExpressionImplemen
               success: false,
               error: {
                 name: 'TimeArithmeticError',
+                type: 'type-mismatch',
                 message: 'Division by zero is not allowed',
                 code: 'DIVISION_BY_ZERO',
                 suggestions: ['Ensure divisor is not zero', 'Check time values']
@@ -541,6 +548,7 @@ export class EnhancedTimeArithmeticExpression implements TypedExpressionImplemen
             success: false,
             error: {
               name: 'TimeArithmeticError',
+              type: 'runtime-error',
               message: `Unsupported operation: "${operation}"`,
               code: 'UNSUPPORTED_OPERATION',
               suggestions: ['Use: add, subtract, multiply, or divide', 'Check operation spelling']
@@ -560,6 +568,7 @@ export class EnhancedTimeArithmeticExpression implements TypedExpressionImplemen
         success: false,
         error: {
           name: 'TimeArithmeticError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Time arithmetic failed',
           code: 'TIME_ARITHMETIC_FAILED',
           suggestions: ['Check time values and operation parameters']

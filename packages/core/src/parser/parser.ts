@@ -479,7 +479,7 @@ export class Parser {
       // originalName: identifierNode.name,
       // isSetCommand: commandName === 'set'
     // });
-    const args: ASTNode[] = [];
+    const _args: ASTNode[] = [];
     
     switch (commandName) {
       case 'put':
@@ -499,7 +499,7 @@ export class Parser {
   }
 
   private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
-    const args: ASTNode[] = [];
+    const _args: ASTNode[] = [];
 
     // Use a more flexible approach similar to the original _hyperscript
     // Parse all arguments until we hit a terminator, then identify the structure
@@ -1173,7 +1173,7 @@ export class Parser {
     };
   }
 
-  private parseAddCommand(identifierNode: IdentifierNode): CommandNode | null {
+  private _parseAddCommand(identifierNode: IdentifierNode): CommandNode | null {
     const args: ASTNode[] = [];
     
     // Parse: add <class> to <target>
@@ -1901,7 +1901,7 @@ export class Parser {
     };
   }
 
-  private parseFullCommand(): CommandNode {
+  private _parseFullCommand(): CommandNode {
     const commandToken = this.previous();
     let commandName = commandToken.value;
     
@@ -2453,7 +2453,7 @@ export class Parser {
     return this.peek().type === tokenType;
   }
 
-  private checkNext(value: string): boolean {
+  private _checkNext(value: string): boolean {
     if (this.current + 1 >= this.tokens.length) return false;
     return this.tokens[this.current + 1].value === value;
   }
@@ -2501,7 +2501,7 @@ export class Parser {
     let position = token.start || 0;
     let line = token.line || 1;
     let column = token.column || 1;
-    let errorToken = token;
+    let _errorToken = token;
     
     // For property access errors after '.', position should be after the dot
     if (message.includes("property name after '.'")) {
@@ -2556,8 +2556,8 @@ export class Parser {
     }
     
     this.error = {
+      name: 'ParseError',
       message,
-      position: Math.max(0, position),
       line: Math.max(1, line),
       column: Math.max(1, column)
     };

@@ -115,6 +115,7 @@ export class EnhancedStringInterpolationExpression implements TypedExpressionImp
         success: false,
         error: {
           name: 'StringInterpolationError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'String interpolation failed',
           code: 'STRING_INTERPOLATION_FAILED',
           suggestions: [
@@ -251,6 +252,7 @@ export class EnhancedStringConcatenationExpression implements TypedExpressionImp
         success: false,
         error: {
           name: 'StringConcatenationError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'String concatenation failed',
           code: 'STRING_CONCATENATION_FAILED',
           suggestions: [
@@ -341,6 +343,7 @@ export class EnhancedStringLengthExpression implements TypedExpressionImplementa
         success: false,
         error: {
           name: 'StringLengthError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'String length calculation failed',
           code: 'STRING_LENGTH_FAILED',
           suggestions: [

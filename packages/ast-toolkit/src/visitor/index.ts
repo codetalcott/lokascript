@@ -265,8 +265,8 @@ export function getAncestors(ast: ASTNode | null, targetNode: ASTNode): ASTNode[
             }
           }
         }
-      } else if (value && typeof value === 'object' && typeof value.type === 'string') {
-        if (findPath(value, [...path, node])) {
+      } else if (value && typeof value === 'object' && typeof (value as any).type === 'string') {
+        if (findPath(value as any, [...path, node])) {
           return true;
         }
       }

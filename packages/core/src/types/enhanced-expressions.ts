@@ -1,6 +1,6 @@
 
 // Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
+const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Expression Types - Deep TypeScript Integration for Expression System
@@ -9,7 +9,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * IMPORTANT: Core types now imported from base-types.ts for consistency
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 // Import unified types from base-types system for local use and re-export
 import type { 
   ValidationResult, 
@@ -159,7 +159,7 @@ export interface TypedExpressionImplementation<
  * Expression validation error with position information
  */
 export interface ExpressionValidationError {
-  type: 'type-mismatch' | 'missing-argument' | 'invalid-syntax' | 'runtime-error';
+  type: 'type-mismatch' | 'missing-argument' | 'invalid-syntax' | 'runtime-error' | 'syntax-error' | 'security-warning';
   message: string;
   position?: {
     line: number;
@@ -167,6 +167,7 @@ export interface ExpressionValidationError {
     source: string;
     start?: number;
     end?: number;
+  suggestions: []
   };
   suggestions: string[];
   code?: string;

@@ -277,6 +277,7 @@ export class TypedOnFeatureImplementation {
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -397,6 +398,7 @@ export class TypedOnFeatureImplementation {
           path: 'event.type'
         });
         suggestions.push('Use standard DOM event types like "click", "input", "submit", "keydown", etc.');
+      suggestions: []
       }
 
       // Validate target selector - skip validation in test environment
@@ -413,6 +415,7 @@ export class TypedOnFeatureImplementation {
             path: 'event.target'
           });
           suggestions.push('Use valid CSS selector syntax for target element');
+        suggestions: []
         }
       }
       
@@ -424,6 +427,7 @@ export class TypedOnFeatureImplementation {
           path: 'event.target'
         });
         suggestions.push('Use valid CSS selector syntax for target element');
+      suggestions: []
       }
 
       // Validate performance settings
@@ -434,6 +438,7 @@ export class TypedOnFeatureImplementation {
           path: 'event'
         });
         suggestions.push('Choose either throttle OR debounce, not both');
+      suggestions: []
       }
 
       // Validate timing values
@@ -444,6 +449,7 @@ export class TypedOnFeatureImplementation {
           path: 'event.throttle'
         });
         suggestions.push('Set throttle delay to a positive number in milliseconds');
+      suggestions: []
       }
 
       if (data.event?.debounce && data.event.debounce < 0) {
@@ -453,6 +459,7 @@ export class TypedOnFeatureImplementation {
           path: 'event.debounce'
         });
         suggestions.push('Set debounce delay to a positive number in milliseconds');
+      suggestions: []
       }
 
       // Validate commands array
@@ -463,6 +470,7 @@ export class TypedOnFeatureImplementation {
           path: 'commands'
         });
         suggestions.push('Add at least one command to execute when event occurs');
+      suggestions: []
       }
 
       // Validate command count limits
@@ -473,6 +481,7 @@ export class TypedOnFeatureImplementation {
           path: 'commands'
         });
         suggestions.push('Reduce number of commands or increase maxCommandCount limit');
+      suggestions: []
       }
 
       // Validate filter expression if provided
@@ -487,6 +496,7 @@ export class TypedOnFeatureImplementation {
             path: 'event.filter'
           });
           suggestions.push('Use valid JavaScript expression for event filtering');
+        suggestions: []
         }
       }
 

@@ -268,6 +268,7 @@ export class TypedDefFeatureImplementation {
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validation.errors.map(e => e.message).join(', '),
             code: 'VALIDATION_FAILED',
             suggestions: validation.suggestions
@@ -386,6 +387,7 @@ export class TypedDefFeatureImplementation {
           path: 'definition.name'
         });
         suggestions.push('Use valid JavaScript identifier for function name');
+      suggestions: []
       }
 
       // Validate parameters
@@ -398,6 +400,7 @@ export class TypedDefFeatureImplementation {
               path: `definition.parameters[${index}]`
             });
             suggestions.push('Use valid JavaScript identifiers for parameter names');
+          suggestions: []
           }
         });
 
@@ -410,6 +413,7 @@ export class TypedDefFeatureImplementation {
             path: 'definition.parameters'
           });
           suggestions.push('Remove duplicate parameter names');
+        suggestions: []
         }
 
         // Check parameter count limits
@@ -420,6 +424,7 @@ export class TypedDefFeatureImplementation {
             path: 'definition.parameters'
           });
           suggestions.push('Reduce number of parameters or increase maxParameterCount limit');
+        suggestions: []
         }
       }
 
@@ -431,6 +436,7 @@ export class TypedDefFeatureImplementation {
           path: 'definition.body'
         });
         suggestions.push('Add at least one command to the function body');
+      suggestions: []
       }
 
       // Validate catch block parameter
@@ -442,6 +448,7 @@ export class TypedDefFeatureImplementation {
           path: 'definition.catchBlock.parameter'
         });
         suggestions.push('Use valid JavaScript identifier for catch parameter');
+      suggestions: []
       }
 
       // Validate namespace if provided
@@ -453,6 +460,7 @@ export class TypedDefFeatureImplementation {
           path: 'definition.namespace'
         });
         suggestions.push('Use valid namespace format (e.g., "myNamespace" or "my.nested.namespace")');
+      suggestions: []
       }
 
       return {

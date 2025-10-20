@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-// import { v, type RuntimeValidator } from '../../../validation/lightweight-validators'; // Currently unused
+// import { v } from '../../../validation/lightweight-validators'; // Currently unused
 import type {
   EnhancedTemplateDirective,
   TemplateExecutionContext,
@@ -211,6 +211,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
           success: false,
           error: {
             name: 'RepeatDirectiveValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid @repeat directive input',
             code: 'REPEAT_VALIDATION_FAILED',
             suggestions: validation.suggestions || [
@@ -229,6 +230,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
           success: false,
           error: {
             name: 'RepeatDirectiveContextError',
+            type: 'invalid-argument',
             message: contextValidation.errors[0]?.message || 'Invalid template context',
             code: 'REPEAT_CONTEXT_INVALID',
             suggestions: contextValidation.suggestions || ['Check template context structure']
@@ -244,6 +246,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
           success: false,
           error: {
             name: 'RepeatDirectiveCollectionError',
+            type: 'invalid-argument',
             message: iterableValidation.errors[0]?.message || 'Collection is not iterable',
             code: 'REPEAT_COLLECTION_INVALID',
             suggestions: iterableValidation.suggestions || ['Provide an array or iterable collection']
@@ -293,6 +296,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
         success: false,
         error: {
           name: 'RepeatDirectiveError',
+          type: 'runtime-error',
           message: `@repeat directive execution failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'REPEAT_EXECUTION_FAILED',
           suggestions: [
@@ -329,7 +333,8 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
       }
 
       // Additional semantic validation
-      const { collection: _collection, templateContent } = parsed.data;
+      const data = parsed.data as any;
+      const { collection: _collection, templateContent } = data;
       
       if (!templateContent.trim()) {
         return {

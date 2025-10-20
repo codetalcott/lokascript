@@ -15,8 +15,8 @@ import { TokenType, type Token } from './tokenizer';
 import { enhancedComparisonExpressions } from '../expressions/enhanced-comparison/index';
 import { enhancedMathematicalExpressions } from '../expressions/enhanced-mathematical/index';
 import { enhancedPropertyExpressions } from '../expressions/enhanced-property/index';
-import { enhancedConversionExpressions } from '../expressions/enhanced-conversion/index';
-import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
+import { _enhancedConversionExpressions } from '../expressions/enhanced-conversion/index';
+import { _enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
 import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index';
 
 // Import legacy conversion system for Date conversion compatibility
@@ -1528,7 +1528,7 @@ async function evaluateCSSSelector(node: any, _context: ExecutionContext): Promi
 /**
  * Evaluate query reference expressions (<selector/>)
  */
-async function evaluateQueryReference(node: any, context: ExecutionContext): Promise<NodeList> {
+async function evaluateQueryReference(node: any, _context: ExecutionContext): Promise<NodeList> {
   const selector = node.selector;
   
   // Remove the < and /> wrapper to get the actual selector
@@ -1728,7 +1728,7 @@ async function evaluateArrayAccess(node: any, context: ExecutionContext): Promis
 /**
  * Evaluate 'in' operator for membership testing
  */
-async function evaluateInOperator(item: any, collection: any, context: ExecutionContext): Promise<boolean> {
+async function evaluateInOperator(item: any, collection: any, _context: ExecutionContext): Promise<boolean> {
   
   // Handle array membership
   if (Array.isArray(collection)) {
@@ -1753,7 +1753,7 @@ async function evaluateInOperator(item: any, collection: any, context: Execution
 /**
  * Evaluate CSS attribute selector - returns NodeList of matching elements
  */
-async function evaluateAttributeSelector(node: any, context: ExecutionContext): Promise<NodeList> {
+async function evaluateAttributeSelector(node: any, _context: ExecutionContext): Promise<NodeList> {
   // Build CSS selector string
   let selectorStr = `[${node.attribute}`;
   
@@ -1861,7 +1861,7 @@ async function evaluateTemplateLiteral(node: any, context: ExecutionContext): Pr
   let template = node.value;
   
   // First handle $variable patterns (like $1, $window.foo)
-  template = await replaceAsyncBatch(template, /\$([a-zA-Z_$][a-zA-Z0-9_.$]*|\d+)/g, async (match: string, varName: string) => {
+  template = await replaceAsyncBatch(template, /\$([a-zA-Z_$][a-zA-Z0-9_.$]*|\d+)/g, async (_match: string, varName: string) => {
     try {
       // Handle numeric literals like $1, $2 (return the number as string)
       if (/^\d+$/.test(varName)) {
@@ -1891,7 +1891,7 @@ async function evaluateTemplateLiteral(node: any, context: ExecutionContext): Pr
   });
   
   // Then handle ${expression} patterns
-  template = await replaceAsyncBatch(template, /\$\{([^}]+)\}/g, async (match: string, expr: string) => {
+  template = await replaceAsyncBatch(template, /\$\{([^}]+)\}/g, async (_match: string, expr: string) => {
     try {
       // Recursively parse and evaluate the interpolated expression
       const result = await parseAndEvaluateExpression(expr, context);
@@ -1987,7 +1987,7 @@ async function replaceAsyncBatch(str: string, regex: RegExp, replacer: (match: s
 /**
  * Evaluate constructor calls (new ConstructorName())
  */
-async function evaluateConstructorCall(node: any, context: ExecutionContext): Promise<any> {
+async function evaluateConstructorCall(node: any, _context: ExecutionContext): Promise<any> {
   const constructorName = node.constructor;
   
   try {
@@ -2011,7 +2011,7 @@ async function evaluateConstructorCall(node: any, context: ExecutionContext): Pr
 /**
  * Helper function to reconstruct expression text for error messages
  */
-function reconstructExpression(state: ParseState, leftNode?: ASTNode): string {
+function reconstructExpression(state: ParseState, _leftNode?: ASTNode): string {
   // Simple reconstruction - in a more sophisticated implementation,
   // we'd traverse the AST to rebuild the original text
   return state.tokens.map(token => token.value).join(' ');

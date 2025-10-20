@@ -14,7 +14,7 @@ export class ArrayExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Creates an array from provided arguments';
 
-  async evaluate(context: ExecutionContext, ...elements: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, ...elements: any[]): Promise<any[]> {
     return [...elements];
   }
 
@@ -31,7 +31,7 @@ export class LengthExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns the length of an array or string';
 
-  async evaluate(context: ExecutionContext, arrayLike: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, arrayLike: any): Promise<number> {
     if (Array.isArray(arrayLike)) {
       return arrayLike.length;
     }
@@ -58,7 +58,7 @@ export class PushExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Adds elements to the end of an array';
 
-  async evaluate(context: ExecutionContext, array: any[], ...elements: any[]): Promise<number> {
+  async evaluate(_context: ExecutionContext, array: any[], ...elements: any[]): Promise<number> {
     if (!Array.isArray(array)) return 0;
     return array.push(...elements);
   }
@@ -77,7 +77,7 @@ export class PopExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Removes and returns the last element of an array';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any> {
     if (!Array.isArray(array)) return undefined;
     return array.pop();
   }
@@ -96,7 +96,7 @@ export class ShiftExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Removes and returns the first element of an array';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any> {
     if (!Array.isArray(array)) return undefined;
     return array.shift();
   }
@@ -115,7 +115,7 @@ export class UnshiftExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Adds elements to the beginning of an array';
 
-  async evaluate(context: ExecutionContext, array: any[], ...elements: any[]): Promise<number> {
+  async evaluate(_context: ExecutionContext, array: any[], ...elements: any[]): Promise<number> {
     if (!Array.isArray(array)) return 0;
     return array.unshift(...elements);
   }
@@ -134,7 +134,7 @@ export class AtExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns element at specified index (supports negative indices)';
 
-  async evaluate(context: ExecutionContext, array: any[], index: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[], index: any): Promise<any> {
     if (!Array.isArray(array)) return undefined;
     
     const idx = parseInt(String(index));
@@ -157,7 +157,7 @@ export class SliceExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns a shallow copy of a portion of an array';
 
-  async evaluate(context: ExecutionContext, array: any[], start?: number, end?: number): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], start?: number, end?: number): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return array.slice(start, end);
   }
@@ -176,7 +176,7 @@ export class SpliceExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Changes array contents by removing/adding elements';
 
-  async evaluate(context: ExecutionContext, array: any[], start: number, deleteCount?: number, ...items: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], start: number, deleteCount?: number, ...items: any[]): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return array.splice(start, deleteCount, ...items);
   }
@@ -195,7 +195,7 @@ export class FirstExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns the first element of an array';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any> {
     if (!Array.isArray(array) || array.length === 0) return undefined;
     return array[0];
   }
@@ -214,7 +214,7 @@ export class LastExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns the last element of an array';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any> {
     if (!Array.isArray(array) || array.length === 0) return undefined;
     return array[array.length - 1];
   }
@@ -233,7 +233,7 @@ export class MapExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Creates new array with results of calling function on every element';
 
-  async evaluate(context: ExecutionContext, arrayLike: any, callbackName: string): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, arrayLike: any, callbackName: string): Promise<any[]> {
     const array = this.ensureArray(arrayLike);
     const callback = this.getCallback(context, callbackName);
     
@@ -268,7 +268,7 @@ export class FilterExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Creates new array with all elements that pass the test';
 
-  async evaluate(context: ExecutionContext, arrayLike: any, callbackName: string): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, arrayLike: any, callbackName: string): Promise<any[]> {
     const array = this.ensureArray(arrayLike);
     const callback = this.getCallback(context, callbackName);
     
@@ -300,7 +300,7 @@ export class ReduceExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Reduces array to single value using reducer function';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string, initialValue?: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string, initialValue?: any): Promise<any> {
     if (!Array.isArray(array)) return initialValue;
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -324,7 +324,7 @@ export class FindExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns first element that satisfies testing function';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<any> {
     if (!Array.isArray(array)) return undefined;
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -344,7 +344,7 @@ export class FindIndexExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns index of first element that satisfies testing function';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<number> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<number> {
     if (!Array.isArray(array)) return -1;
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -364,7 +364,7 @@ export class SomeExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Tests whether at least one element passes the test';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<boolean> {
     if (!Array.isArray(array)) return false;
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -384,7 +384,7 @@ export class EveryExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Tests whether all elements pass the test';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<boolean> {
     if (!Array.isArray(array)) return true; // Vacuous truth
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -404,7 +404,7 @@ export class ForEachExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Executes function for each array element';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<void> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<void> {
     if (!Array.isArray(array)) return;
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -427,7 +427,7 @@ export class IncludesExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Determines whether array includes certain element';
 
-  async evaluate(context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<boolean> {
     if (!Array.isArray(array)) return false;
     return array.includes(searchElement, fromIndex);
   }
@@ -443,7 +443,7 @@ export class IndexOfExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns first index at which element can be found';
 
-  async evaluate(context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<number> {
     if (!Array.isArray(array)) return -1;
     return array.indexOf(searchElement, fromIndex);
   }
@@ -459,7 +459,7 @@ export class LastIndexOfExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns last index at which element can be found';
 
-  async evaluate(context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, array: any[], searchElement: any, fromIndex?: number): Promise<number> {
     if (!Array.isArray(array)) return -1;
     
     if (fromIndex !== undefined) {
@@ -479,7 +479,7 @@ export class IsArrayExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Determines whether value is an array';
 
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: any): Promise<boolean> {
     return Array.isArray(value);
   }
 
@@ -497,7 +497,7 @@ export class JoinExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Joins all elements into a string';
 
-  async evaluate(context: ExecutionContext, array: any[], separator: string = ','): Promise<string> {
+  async evaluate(_context: ExecutionContext, array: any[], separator: string = ','): Promise<string> {
     if (!Array.isArray(array)) return '';
     return array.join(separator);
   }
@@ -513,7 +513,7 @@ export class ReverseExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Reverses array in place';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return array.reverse();
   }
@@ -529,7 +529,7 @@ export class SortExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Sorts array elements';
 
-  async evaluate(context: ExecutionContext, array: any[], compareFnName?: string): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], compareFnName?: string): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     
     if (compareFnName) {
@@ -553,7 +553,7 @@ export class ConcatExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Merges arrays into new array';
 
-  async evaluate(context: ExecutionContext, ...arrays: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, ...arrays: any[]): Promise<any[]> {
     const result: any[] = [];
     
     for (const arr of arrays) {
@@ -578,7 +578,7 @@ export class FlatExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Flattens nested arrays to specified depth';
 
-  async evaluate(context: ExecutionContext, array: any[], depth: number = 1): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], depth: number = 1): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return array.flat(depth);
   }
@@ -594,7 +594,7 @@ export class FlatMapExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Maps each element then flattens result';
 
-  async evaluate(context: ExecutionContext, array: any[], callbackName: string): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], callbackName: string): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     
     const callback = context.locals?.get(callbackName) || context.globals?.get(callbackName);
@@ -617,7 +617,7 @@ export class RangeExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Creates array of numbers in specified range';
 
-  async evaluate(context: ExecutionContext, startOrLength: number, end?: number, step: number = 1): Promise<number[]> {
+  async evaluate(_context: ExecutionContext, startOrLength: number, end?: number, step: number = 1): Promise<number[]> {
     let start: number, length: number;
     
     if (end === undefined) {
@@ -649,7 +649,7 @@ export class FillExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Fills array with static value';
 
-  async evaluate(context: ExecutionContext, array: any[], value: any, start?: number, end?: number): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[], value: any, start?: number, end?: number): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return array.fill(value, start, end);
   }
@@ -665,7 +665,7 @@ export class FromExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Creates array from iterable object';
 
-  async evaluate(context: ExecutionContext, arrayLike: any, mapFnName?: string): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, arrayLike: any, mapFnName?: string): Promise<any[]> {
     try {
       if (mapFnName) {
         const mapFn = context.locals?.get(mapFnName) || context.globals?.get(mapFnName);
@@ -694,7 +694,7 @@ export class DestructureExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Destructures array into named variables';
 
-  async evaluate(context: ExecutionContext, array: any[], names: string[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[], names: string[]): Promise<any> {
     if (!Array.isArray(array) || !Array.isArray(names)) return {};
     
     const result: any = {};
@@ -723,7 +723,7 @@ export class ChunkExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Splits array into chunks of specified size';
 
-  async evaluate(context: ExecutionContext, array: any[], size: number): Promise<any[][]> {
+  async evaluate(_context: ExecutionContext, array: any[], size: number): Promise<any[][]> {
     if (!Array.isArray(array) || size <= 0) return [];
     
     const chunks: any[][] = [];
@@ -745,7 +745,7 @@ export class UniqueExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Returns array with duplicate values removed';
 
-  async evaluate(context: ExecutionContext, array: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, array: any[]): Promise<any[]> {
     if (!Array.isArray(array)) return [];
     return [...new Set(array)];
   }
@@ -761,7 +761,7 @@ export class PartitionExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Partitions array into two arrays based on predicate';
 
-  async evaluate(context: ExecutionContext, array: any[], predicateName: string): Promise<[any[], any[]]> {
+  async evaluate(_context: ExecutionContext, array: any[], predicateName: string): Promise<[any[], any[]]> {
     if (!Array.isArray(array)) return [[], []];
     
     const predicate = context.locals?.get(predicateName) || context.globals?.get(predicateName);
@@ -792,7 +792,7 @@ export class ZipExpression implements ExpressionImplementation {
   category = 'Array';
   description = 'Zips multiple arrays together';
 
-  async evaluate(context: ExecutionContext, ...arrays: any[]): Promise<any[][]> {
+  async evaluate(_context: ExecutionContext, ...arrays: any[]): Promise<any[][]> {
     if (arrays.length === 0) return [];
     
     const validArrays = arrays.filter(Array.isArray);

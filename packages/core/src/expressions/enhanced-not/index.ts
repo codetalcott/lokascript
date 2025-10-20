@@ -137,6 +137,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
           success: false,
           error: {
             name: 'NotExpressionValidationError',
+            type: 'validation-error',
             message: `Not expression validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'NOT_EXPRESSION_VALIDATION_ERROR',
             suggestions: validationResult.suggestions
@@ -161,6 +162,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'NotExpressionEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate not expression: ${error instanceof Error ? error.message : String(error)}`,
           code: 'NOT_EXPRESSION_EVALUATION_ERROR',
           suggestions: ['Check the input value', 'Ensure the value is evaluable']

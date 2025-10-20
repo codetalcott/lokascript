@@ -206,7 +206,7 @@ export class EnhancedRepeatCommand implements TypedCommandImplementation<
       }
 
       completed = !interrupted;
-      context.it = lastResult;
+      Object.assign(context, { it: lastResult });
 
       return {
         type,

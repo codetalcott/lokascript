@@ -5,7 +5,7 @@
  * conflicts and establish consistent types across the HyperFixi codebase.
  */
 
-import { v, type RuntimeValidator } from '../validation/lightweight-validators';
+import { _v } from '../validation/lightweight-validators';
 
 // ============================================================================
 // Core Validation Types
@@ -15,7 +15,19 @@ import { v, type RuntimeValidator } from '../validation/lightweight-validators';
  * Unified validation error interface - replaces all fragmented error types
  */
 export interface UnifiedValidationError {
-  readonly type: 'type-mismatch' | 'missing-argument' | 'runtime-error' | 'validation-error' | 'syntax-error' | 'invalid-argument';
+  readonly type:
+    | 'type-mismatch'
+    | 'missing-argument'
+    | 'runtime-error'
+    | 'validation-error'
+    | 'syntax-error'
+    | 'invalid-argument'
+    | 'invalid-input'
+    | 'empty-config'
+    | 'schema-validation'
+    | 'context-error'
+    | 'invalid-syntax'
+    | 'security-warning';
   readonly message: string;
   readonly suggestions: string[]; // Always array, never string
   readonly path?: string;
@@ -39,20 +51,22 @@ export interface UnifiedValidationResult<T = unknown> {
 /**
  * Unified HyperScript value type - consolidates all value type definitions
  */
-export type UnifiedHyperScriptValueType = 
-  | 'string' 
-  | 'number' 
-  | 'boolean' 
-  | 'element' 
-  | 'element-list' 
-  | 'array' 
-  | 'object' 
-  | 'promise' 
-  | 'fragment' 
-  | 'null' 
-  | 'undefined' 
-  | 'function' 
-  | 'event';
+export type UnifiedHyperScriptValueType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'element'
+  | 'element-list'
+  | 'array'
+  | 'object'
+  | 'promise'
+  | 'fragment'
+  | 'null'
+  | 'undefined'
+  | 'function'
+  | 'event'
+  | 'error'
+  | 'unknown';
 
 /**
  * Unified evaluation type - consolidates EvaluationType definitions

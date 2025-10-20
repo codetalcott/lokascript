@@ -1,6 +1,6 @@
 
 // Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
+const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Go Command - Deep TypeScript Integration
@@ -8,8 +8,8 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v, z } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -18,6 +18,7 @@ import type {
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { dispatchCustomEvent } from '../../core/events';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 export interface GoCommandOptions {
   validateUrls?: boolean;
@@ -165,7 +166,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'GO_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -178,7 +179,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'GoCommandError',
+            type: 'missing-argument',
             message: 'Go command requires arguments',
             code: 'NO_ARGUMENTS',
             suggestions: ['Use: go back, go to url <url>, or go to <position> of <element>']
@@ -207,7 +208,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'GoCommandError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'GO_EXECUTION_FAILED',
           suggestions: ['Check navigation parameters', 'Verify target elements exist', 'Ensure URLs are valid']
@@ -329,7 +330,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'NavigationError',
+            type: 'missing-argument',
             message: 'URL is required after "url" keyword',
             code: 'MISSING_URL',
             suggestions: ['Provide URL string after "url" keyword']
@@ -349,7 +350,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'NavigationError',
+            type: 'invalid-argument',
             message: `Invalid URL: "${resolvedUrl}"`,
             code: 'INVALID_URL',
             suggestions: ['Use valid URL format', 'Include protocol for absolute URLs']
@@ -386,7 +387,7 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'NavigationError',
+                type: 'runtime-error',
                 message: `Navigation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'NAVIGATION_FAILED',
                 suggestions: ['Check if URL is accessible', 'Verify network connectivity']
@@ -419,7 +420,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'NavigationError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'URL navigation failed',
           code: 'URL_NAVIGATION_FAILED',
           suggestions: ['Check URL format and accessibility']
@@ -442,7 +443,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ScrollError',
+            type: 'runtime-error',
             message: `Target element not found: ${target}`,
             code: 'TARGET_NOT_FOUND',
             suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -522,7 +523,7 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'ScrollError',
+                type: 'runtime-error',
                 message: `Scroll with offset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_OFFSET_FAILED',
                 suggestions: ['Check if element is visible', 'Verify scroll container']
@@ -546,7 +547,7 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'ScrollError',
+                type: 'runtime-error',
                 message: `Scroll failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_FAILED',
                 suggestions: ['Check if element is visible', 'Verify element is scrollable']
@@ -581,7 +582,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ScrollError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Element scrolling failed',
           code: 'SCROLL_EXECUTION_FAILED',
           suggestions: ['Check target element validity', 'Verify scroll parameters']
@@ -742,11 +743,11 @@ export class GoCommand implements TypedCommandImplementation<
     
     // Handle context references
     if (target === 'me' && context.me) {
-      return context.me;
+      return asHTMLElement(context.me) || null;
     } else if (target === 'it' && context.it instanceof HTMLElement) {
       return context.it;
     } else if (target === 'you' && context.you) {
-      return context.you;
+      return asHTMLElement(context.you) || null;
     }
 
     // Handle variable references
@@ -832,7 +833,7 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'HistoryError',
+            type: 'runtime-error',
             message: 'Browser history API not available',
             code: 'HISTORY_API_UNAVAILABLE',
             suggestions: ['Check if running in browser environment']
@@ -862,7 +863,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'HistoryError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'History navigation failed',
           code: 'HISTORY_NAVIGATION_FAILED',
           suggestions: ['Check browser history support', 'Verify navigation context']

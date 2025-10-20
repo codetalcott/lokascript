@@ -181,6 +181,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
           success: false,
           error: {
             name: 'PossessiveExpressionValidationError',
+            type: 'validation-error',
             message: `Possessive expression validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'POSSESSIVE_EXPRESSION_VALIDATION_ERROR',
             suggestions: validationResult.suggestions
@@ -204,6 +205,7 @@ export class EnhancedPossessiveExpression implements TypedExpressionImplementati
         success: false,
         error: {
           name: 'PossessiveExpressionEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate possessive expression: ${error instanceof Error ? error.message : String(error)}`,
           code: 'POSSESSIVE_EXPRESSION_EVALUATION_ERROR',
           suggestions: ['Check object and property exist', 'Ensure property is accessible']

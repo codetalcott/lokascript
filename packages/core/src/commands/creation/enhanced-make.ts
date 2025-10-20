@@ -174,7 +174,7 @@ export class EnhancedMakeCommand implements TypedCommandImplementation<
     }
 
     // Set the result in context.it
-    context.it = result;
+    Object.assign(context, { it: result });
 
     // Store in variable if specified
     if (variableName) {

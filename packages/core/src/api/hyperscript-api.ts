@@ -257,7 +257,7 @@ function isComplexPattern(code: string): boolean {
 async function handleEventHandlerPattern(
   ast: ASTNode, 
   context: ExecutionContext, 
-  originalCode: string
+  _originalCode: string
 ): Promise<unknown> {
   
   try {

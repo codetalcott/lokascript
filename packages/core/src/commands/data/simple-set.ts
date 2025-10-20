@@ -47,7 +47,7 @@ export class SimpleSetCommand {
           context.locals = new Map();
         }
         context.locals.set(target, value);
-        context.it = value;
+        Object.assign(context, { it: value });
         
         console.log('✅ SET successful:', target, '=', value);
         return value;

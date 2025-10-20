@@ -74,7 +74,7 @@ export interface LLMDocumentation {
   tags: string[];
 }
 
-export interface TypedCommandImplementation<TInput = unknown[], TOutput = unknown> {
+export interface TypedCommandImplementation<_TInput = unknown[], TOutput = unknown> {
   readonly name: string;
   readonly syntax: string;
   readonly description: string;
@@ -235,6 +235,7 @@ export class HideCommand implements TypedCommandImplementation<[HTMLElement | st
           success: false,
           error: {
             name: 'HideCommandError',
+            type: 'runtime-error',
             message: error instanceof Error ? error.message : 'Unknown error',
             code: 'HIDE_EXECUTION_FAILED',
             suggestions: ['Check if element exists', 'Verify element is not null'],
@@ -253,6 +254,7 @@ export class HideCommand implements TypedCommandImplementation<[HTMLElement | st
           type: 'invalid-arguments',
           message: 'Hide command accepts at most one argument',
           suggestion: 'Use hide me, hide element, or hide <selector/>',
+        suggestions: []
         }],
         suggestions: ['Use hide me, hide element, or hide <selector/>'],
       };

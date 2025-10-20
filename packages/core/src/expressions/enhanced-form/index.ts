@@ -81,6 +81,7 @@ export class EnhancedFormValuesExpression implements TypedExpressionImplementati
           success: false,
           error: {
             name: 'FormValuesError',
+            type: 'missing-argument',
             message: 'Form element is required',
             code: 'MISSING_FORM_ELEMENT',
             suggestions: ['Provide a valid form element', 'Ensure element exists in DOM']
@@ -94,6 +95,7 @@ export class EnhancedFormValuesExpression implements TypedExpressionImplementati
           success: false,
           error: {
             name: 'FormValuesError',
+            type: 'invalid-argument',
             message: 'Provided element is not a valid HTML element',
             code: 'INVALID_ELEMENT_TYPE',
             suggestions: ['Ensure element is an HTMLElement', 'Check element selection']
@@ -134,6 +136,7 @@ export class EnhancedFormValuesExpression implements TypedExpressionImplementati
         success: false,
         error: {
           name: 'FormValuesError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Form values extraction failed',
           code: 'FORM_VALUES_EXTRACTION_FAILED',
           suggestions: [
@@ -263,6 +266,7 @@ export class EnhancedFormValidationExpression implements TypedExpressionImplemen
           success: false,
           error: {
             name: 'FormValidationError',
+            type: 'invalid-argument',
             message: 'Valid form element is required',
             code: 'INVALID_FORM_ELEMENT',
             suggestions: ['Provide a valid HTMLElement', 'Ensure form exists in DOM']
@@ -305,6 +309,7 @@ export class EnhancedFormValidationExpression implements TypedExpressionImplemen
         success: false,
         error: {
           name: 'FormValidationError',
+          type: 'validation-error',
           message: error instanceof Error ? error.message : 'Form validation failed',
           code: 'FORM_VALIDATION_FAILED',
           suggestions: ['Check form element and validation rules', 'Ensure form is properly structured']
@@ -438,6 +443,7 @@ export class EnhancedFormSerializationExpression implements TypedExpressionImple
           success: false,
           error: {
             name: 'FormSerializationError',
+            type: 'invalid-argument',
             message: 'Valid form element is required',
             code: 'INVALID_FORM_ELEMENT',
             suggestions: ['Provide a valid HTMLElement', 'Ensure form exists in DOM']
@@ -484,6 +490,7 @@ export class EnhancedFormSerializationExpression implements TypedExpressionImple
         success: false,
         error: {
           name: 'FormSerializationError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Form serialization failed',
           code: 'FORM_SERIALIZATION_FAILED',
           suggestions: ['Check form element and format parameter', 'Ensure form has valid fields']

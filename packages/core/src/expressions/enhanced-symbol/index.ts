@@ -149,6 +149,7 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
           success: false,
           error: {
             name: 'SymbolValidationError',
+            type: 'validation-error',
             message: `Symbol expression validation failed: ${validationResult.errors.join(', ')}`,
             code: 'SYMBOL_VALIDATION_ERROR',
             severity: 'error',
@@ -174,6 +175,7 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'SymbolEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate symbol expression: ${error instanceof Error ? error.message : String(error)}`,
           code: 'SYMBOL_EVALUATION_ERROR',
           severity: 'error',

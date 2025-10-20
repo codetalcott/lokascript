@@ -3,10 +3,10 @@
  * Executes parsed AST nodes with proper context management and DOM integration
  */
 
-import type { 
-  ASTNode, 
-  ExecutionContext, 
-  CommandNode, 
+import type {
+  ASTNode,
+  ExecutionContext,
+  CommandNode,
   ExpressionNode,
   EventHandlerNode
 } from '../types/base-types';
@@ -17,6 +17,7 @@ import { PutCommand } from '../commands/dom/put';
 
 // Enhanced command imports
 import { EnhancedCommandRegistry } from './enhanced-command-adapter';
+import { asHTMLElement } from '../utils/dom-utils';
 import { createHideCommand } from '../commands/dom/hide';
 import { createShowCommand } from '../commands/dom/show';
 import { createToggleCommand } from '../commands/dom/toggle';
@@ -28,7 +29,7 @@ import { createWaitCommand } from '../legacy/commands/async/wait';
 import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
-import { createSimpleSetCommand } from '../commands/data/simple-set';
+import { _createSimpleSetCommand } from '../commands/data/simple-set';
 import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
 import { createEnhancedDecrementCommand } from '../commands/data/enhanced-decrement';
 import { createEnhancedRenderCommand } from '../commands/templates/enhanced-render';
@@ -64,7 +65,7 @@ import {
 } from '../commands/animation/index';
 
 // Data commands
-import { DefaultCommand, IncrementCommand, DecrementCommand } from '../commands/data/index';
+import { DefaultCommand, IncrementCommand, _DecrementCommand } from '../commands/data/index';
 
 // Advanced commands
 import { BeepCommand, AsyncCommand, TellCommand, JSCommand } from '../commands/advanced/index';
@@ -398,8 +399,8 @@ export class Runtime {
       // For put command: evaluate content and position, but handle target specially
       const content = await this.execute(args[0], context);
       const position = await this.execute(args[1], context);
-      let target = args[2];
-      
+      let target: any = args[2];
+
       // Handle target resolution for enhanced put command
       if (target?.type === 'identifier' && target.name === 'me') {
         target = context.me;
@@ -431,7 +432,7 @@ export class Runtime {
       // });
       
       // For add/remove, the first argument (class) should be treated as a literal value, not evaluated as selector
-      let classArg = args[0];
+      let classArg: any = args[0];
       if (classArg?.type === 'selector' || classArg?.type === 'literal') {
         classArg = classArg.value;
       } else if (classArg?.type === 'identifier') {
@@ -439,16 +440,16 @@ export class Runtime {
       } else {
         classArg = await this.execute(args[0], context);
       }
-      
-      const keywordArg = await this.execute(args[1], context); // 'to' or 'from'
-      let target = args[2];
-      
+
+      const _keywordArg = await this.execute(args[1], context); // 'to' or 'from'
+      let target: any = args[2];
+
       // console.log(`🔧 ${name.toUpperCase()} Evaluated:`, {
         // classArg,
         // keywordArg,
         // targetNode: { type: target?.type, value: (target as any)?.value || (target as any)?.name }
       // });
-      
+
       // Extract target selector/element
       if (target?.type === 'identifier' && target.name === 'me') {
         target = context.me;
@@ -467,7 +468,7 @@ export class Runtime {
       
       // Debug target resolution
       if (typeof target === 'string' && target.startsWith('#')) {
-        const elements = document.querySelectorAll(target);
+        const _elements = document.querySelectorAll(target);
         // console.log(`🔍 Target resolution debug for "${target}":`, {
           // selector: target,
           // foundElements: elements.length,
@@ -479,7 +480,7 @@ export class Runtime {
       evaluatedArgs = [classArg, target];
     } else if ((name === 'add' || name === 'remove') && args.length === 1) {
       // Handle single-arg pattern: "add .active" (implicit target: me)
-      let classArg = args[0];
+      let classArg: unknown = args[0];
       if (classArg?.type === 'selector' || classArg?.type === 'literal') {
         classArg = classArg.value;
       } else if (classArg?.type === 'identifier') {
@@ -522,7 +523,7 @@ export class Runtime {
         const valueArgs = args.slice(toIndex + 1);
         
         // console.log('🔧 SET: Target args debug - length:', targetArgs.length);
-        targetArgs.forEach((arg, i) => {
+        targetArgs.forEach((arg, _i) => {
           // console.log(`🔧 SET: Target arg ${i}:`, {
             // type: arg.type,
             // name: (arg as any).name,
@@ -733,7 +734,7 @@ export class Runtime {
     } else if ((name === 'show' || name === 'hide') && args.length >= 1) {
       // Handle "show #element" and "hide #element" patterns
       // For show/hide, the argument should be treated as a selector string, not evaluated as a query
-      let target = args[0];
+      let target: unknown = args[0];
 
       // Extract target selector/element
       if (target?.type === 'identifier' && (target as any).name === 'me') {
@@ -1035,13 +1036,16 @@ export class Runtime {
     // Bind event handlers to all target elements
     for (const target of targets) {
       target.addEventListener(event, eventHandler);
-      
+
       // Store event handler for potential cleanup
       if (!context.events) {
-        context.events = new Map();
+        Object.assign(context, { events: new Map() });
       }
       const eventKey = `${event}-${targets.indexOf(target)}`;
-      context.events.set(eventKey, { target, event, handler: eventHandler });
+      const htmlTarget = asHTMLElement(target);
+      if (htmlTarget) {
+        context.events!.set(eventKey, { target: htmlTarget, event, handler: eventHandler });
+      }
     }
   }
 
@@ -1272,7 +1276,7 @@ export class Runtime {
   /**
    * Execute LOG command - output values to console
    */
-  private executeLogCommand(args: unknown[], _context: ExecutionContext): void {
+  private _executeLogCommand(args: unknown[], _context: ExecutionContext): void {
     // If no arguments, just log empty
     if (args.length === 0) {
       // console.log();
@@ -1286,7 +1290,7 @@ export class Runtime {
   /**
    * Execute BEEP command - debugging output with enhanced formatting
    */
-  private executeBeepCommand(args: unknown[], context: ExecutionContext): void {
+  private executeBeepCommand(args: unknown[], _context: ExecutionContext): void {
     // If no arguments, beep with context info
     if (args.length === 0) {
       console.group('🔔 Beep! Hyperscript Context Debug');
@@ -1301,7 +1305,7 @@ export class Runtime {
     }
     
     // Debug each argument with enhanced formatting
-    args.forEach((value, index) => {
+    args.forEach((_value, index) => {
       console.group(`🔔 Beep! Argument ${index + 1}`);
       // console.log('Value:', value);
       // console.log('Type:', this.getDetailedType(value));
@@ -1408,7 +1412,7 @@ export class Runtime {
   /**
    * Get detailed type information for beep command
    */
-  private getDetailedType(value: any): string {
+  private _getDetailedType(value: any): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     
@@ -1424,7 +1428,7 @@ export class Runtime {
   /**
    * Get source representation for beep command
    */
-  private getSourceRepresentation(value: any): string {
+  private _getSourceRepresentation(value: any): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     

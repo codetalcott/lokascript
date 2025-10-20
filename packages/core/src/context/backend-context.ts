@@ -428,6 +428,7 @@ export class TypedBackendContextImplementation extends EnhancedContextBase<Backe
           path: 'framework.name'
         });
         suggestions.push(`Use one of: ${supportedFrameworks.join(', ')}`);
+      suggestions: []
       }
     }
 
@@ -439,6 +440,7 @@ export class TypedBackendContextImplementation extends EnhancedContextBase<Backe
           message: 'Database service must be an object with query capabilities',
           path: 'services.database'
         });
+      suggestions: []
       }
     }
 

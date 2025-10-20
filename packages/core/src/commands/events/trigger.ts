@@ -5,8 +5,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -14,6 +14,7 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 /**
  * Input validation schema for LLM understanding
@@ -145,8 +146,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
-            message: validationResult.errors[0]?.message || 'Invalid input',
+                        type: 'validation-error',
+                        message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TRIGGER_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
           },
@@ -160,8 +161,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TriggerCommandError',
-            message: parseResult.error || 'Failed to parse arguments',
+                        type: 'syntax-error',
+                        message: parseResult.error || 'Failed to parse arguments',
             code: 'ARGUMENT_PARSE_FAILED',
             suggestions: [ 'Use: trigger eventName on target', 'Use: trigger eventName data on target']
           },
@@ -177,8 +178,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TriggerCommandError',
-            message: targetResult.error || 'Failed to resolve target elements',
+                        type: 'runtime-error',
+                        message: targetResult.error || 'Failed to resolve target elements',
             code: 'TARGET_RESOLUTION_FAILED',
             suggestions: [ 'Check if target elements exist', 'Verify selector syntax']
           },
@@ -192,8 +193,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TriggerCommandError',
-            message: 'No target elements found',
+                        type: 'missing-argument',
+                        message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: ['Check if target elements exist', 'Verify selector syntax']
           },
@@ -213,8 +214,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TriggerCommandError',
-            message: eventResult.error || 'Failed to trigger event',
+                        type: 'runtime-error',
+                        message: eventResult.error || 'Failed to trigger event',
             code: 'EVENT_TRIGGER_FAILED',
             suggestions: [ 'Check if target elements are valid', 'Verify event name format']
           },
@@ -225,7 +226,7 @@ export class TriggerCommand implements TypedCommandImplementation<
       const event = eventResult.event;
       
       // Store result in context
-      context.it = event;
+      Object.assign(context, { it: event });
       
       return {
         success: true,
@@ -237,8 +238,8 @@ export class TriggerCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'TriggerCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TRIGGER_EXECUTION_FAILED',
           suggestions: [ 'Check event name and arguments', 'Verify target elements exist']
         },
@@ -432,9 +433,11 @@ export class TriggerCommand implements TypedCommandImplementation<
     if (typeof target === 'string') {
       // Handle context references
       if (target === 'me' && context.me) {
-        return [context.me];
+        const htmlElement = asHTMLElement(context.me);
+        return htmlElement ? [htmlElement] : [];
       } else if (target === 'you' && context.you) {
-        return [context.you];
+        const htmlElement = asHTMLElement(context.you);
+        return htmlElement ? [htmlElement] : [];
       } else if (target === 'it' && context.it instanceof HTMLElement) {
         return [context.it];
       }

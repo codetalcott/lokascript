@@ -172,6 +172,7 @@ export class FetchCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'FETCH_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -187,6 +188,7 @@ export class FetchCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'FetchCommandError',
+            type: 'invalid-argument',
             message: 'Fetch command requires a valid URL',
             code: 'INVALID_URL',
             suggestions: ['Provide valid URL string', 'Check URL format', 'Use absolute or relative URLs']
@@ -202,6 +204,7 @@ export class FetchCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'FetchCommandError',
+            type: 'runtime-error',
             message: configResult.error || 'Failed to build request configuration',
             code: 'CONFIG_BUILD_FAILED',
             suggestions: ['Check request options', 'Verify target selectors']
@@ -218,6 +221,7 @@ export class FetchCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'FetchCommandError',
+            type: 'runtime-error',
             message: 'Request cancelled by fx:config handler',
             code: 'REQUEST_CANCELLED_CONFIG',
             suggestions: ['Check fx:config event handlers']
@@ -232,6 +236,7 @@ export class FetchCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'FetchCommandError',
+            type: 'runtime-error',
             message: 'Request cancelled by fx:before handler',
             code: 'REQUEST_CANCELLED_BEFORE',
             suggestions: ['Check fx:before event handlers']
@@ -268,6 +273,7 @@ export class FetchCommand implements TypedCommandImplementation<
             success: false,
             error: {
               name: 'FetchCommandError',
+              type: 'runtime-error',
               message: applyResult.error || 'Failed to apply result to target',
               code: 'RESULT_APPLICATION_FAILED',
               suggestions: ['Check target element exists', 'Verify placement strategy']
@@ -333,6 +339,7 @@ export class FetchCommand implements TypedCommandImplementation<
         success: false,
         error: {
           name: 'FetchCommandError',
+          type: 'runtime-error',
           message: errorMessage,
           code: 'FETCH_EXECUTION_FAILED',
           suggestions: suggestions.length > 0 ? suggestions : ['Check URL and network', 'Verify request parameters']

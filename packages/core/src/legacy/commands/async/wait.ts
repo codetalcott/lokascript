@@ -168,6 +168,7 @@ export class WaitCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'WAIT_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -181,6 +182,7 @@ export class WaitCommand implements TypedCommandImplementation<
           success: false,
           error: {
             name: 'WaitCommandError',
+            type: 'missing-argument',
             message: 'Wait command requires arguments',
             code: 'MISSING_ARGUMENTS',
             suggestions: ['Use: wait 1000', 'Use: wait for eventName', 'Use: wait 2s']
@@ -207,6 +209,7 @@ export class WaitCommand implements TypedCommandImplementation<
               success: false,
               error: {
                 name: 'WaitCommandError',
+                type: 'missing-argument',
                 message: 'Event configuration missing eventName',
                 code: 'MISSING_EVENT_NAME',
                 suggestions: ['Provide eventName property in event object']
@@ -219,6 +222,7 @@ export class WaitCommand implements TypedCommandImplementation<
               success: false,
               error: {
                 name: 'WaitCommandError',
+                type: 'invalid-argument',
                 message: 'Event name cannot be empty',
                 code: 'INVALID_EVENT_NAME',
                 suggestions: ['Use valid event names like "click", "submit", etc.']
@@ -267,6 +271,7 @@ export class WaitCommand implements TypedCommandImplementation<
         success: false,
         error: {
           name: 'WaitCommandError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'WAIT_EXECUTION_FAILED',
           suggestions: ['Check time expression format', 'Verify event name and source', 'Ensure target elements exist']

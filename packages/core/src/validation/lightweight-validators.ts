@@ -103,6 +103,7 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected string, received ${typeof value}`,
             path: []
           }
@@ -114,6 +115,7 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `String must be at least ${options.minLength} characters long`,
             path: []
           }
@@ -125,6 +127,7 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `String must be at most ${options.maxLength} characters long`,
             path: []
           }
@@ -139,6 +142,7 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
           return {
             success: false,
             error: {
+              type: 'runtime-error',
               message: `Expected "${expected}", received "${value}"`,
               path: []
             }
@@ -148,6 +152,7 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
         return {
           success: false,
           error: {
+            type: 'missing-argument',
             message: `String does not match required pattern`,
             path: []
           }
@@ -177,6 +182,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected object, received ${typeof value}`,
             path: []
           }
@@ -196,6 +202,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
           return {
             success: false,
             error: {
+              type: 'runtime-error',
               message: `Unexpected properties: ${extraKeys.join(', ')}`,
               path: []
             }
@@ -212,6 +219,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
           return {
             success: false,
             error: {
+              type: 'validation-error',
               message: fieldResult.error!.message || `Field "${fieldName}" validation failed`,
               path: [fieldName, ...fieldResult.error!.path]
             }
@@ -223,6 +231,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
           return {
             success: false,
             error: {
+              type: 'missing-argument',
               message: `Required field "${fieldName}" is missing`,
               path: [fieldName]
             }
@@ -260,6 +269,7 @@ export function createArrayValidator<T>(
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected array, received ${typeof value}`,
             path: []
           }
@@ -274,6 +284,7 @@ export function createArrayValidator<T>(
           return {
             success: false,
             error: {
+              type: 'runtime-error',
               message: itemResult.error!.message,
               path: [i, ...itemResult.error!.path]
             }
@@ -303,6 +314,7 @@ export function createTupleValidator<T extends readonly RuntimeValidator[]>(
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected array, received ${typeof value}`,
             path: []
           }
@@ -313,6 +325,7 @@ export function createTupleValidator<T extends readonly RuntimeValidator[]>(
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `Expected tuple of length ${validators.length}, received length ${value.length}`,
             path: []
           }
@@ -327,6 +340,7 @@ export function createTupleValidator<T extends readonly RuntimeValidator[]>(
           return {
             success: false,
             error: {
+              type: 'runtime-error',
               message: itemResult.error!.message,
               path: [i, ...itemResult.error!.path]
             }
@@ -365,6 +379,7 @@ export function createUnionValidator<T>(
       return {
         success: false,
         error: {
+          type: 'type-mismatch',
           message: 'Value does not match any union type',
           path: []
         }
@@ -392,6 +407,7 @@ export function createLiteralValidator<T extends string | number | boolean>(
       return {
         success: false,
         error: {
+          type: 'runtime-error',
           message: `Expected ${JSON.stringify(literalValue)}, received ${JSON.stringify(value)}`,
           path: []
         }
@@ -419,6 +435,7 @@ export function createNumberValidator(options: { min?: number; max?: number } = 
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected number, received ${typeof value}`,
             path: []
           }
@@ -429,6 +446,7 @@ export function createNumberValidator(options: { min?: number; max?: number } = 
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `Number must be at least ${options.min}`,
             path: []
           }
@@ -439,6 +457,7 @@ export function createNumberValidator(options: { min?: number; max?: number } = 
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `Number must be at most ${options.max}`,
             path: []
           }
@@ -464,6 +483,7 @@ export function createBooleanValidator(): RuntimeValidator<boolean> {
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected boolean, received ${typeof value}`,
             path: []
           }
@@ -495,6 +515,7 @@ export function createCustomValidator<T>(
       return {
         success: false,
         error: {
+          type: 'runtime-error',
           message: errorMessage,
           path: []
         }
@@ -621,6 +642,7 @@ export function createRecordValidator<K extends string | number | symbol, V>(
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected record object, received ${typeof value}`,
             path: []
           }
@@ -637,6 +659,7 @@ export function createRecordValidator<K extends string | number | symbol, V>(
           return {
             success: false,
             error: {
+              type: 'invalid-argument',
               message: `Invalid key "${key}": ${keyResult.error!.message}`,
               path: [key]
             }
@@ -648,6 +671,7 @@ export function createRecordValidator<K extends string | number | symbol, V>(
           return {
             success: false,
             error: {
+              type: 'runtime-error',
               message: valueResult.error!.message,
               path: [key, ...valueResult.error!.path]
             }
@@ -678,6 +702,7 @@ export function createEnumValidator<T extends readonly string[]>(
         return {
           success: false,
           error: {
+            type: 'type-mismatch',
             message: `Expected string, received ${typeof value}`,
             path: []
           }
@@ -688,6 +713,7 @@ export function createEnumValidator<T extends readonly string[]>(
         return {
           success: false,
           error: {
+            type: 'runtime-error',
             message: `Expected one of [${values.join(', ')}], received "${value}"`,
             path: []
           }

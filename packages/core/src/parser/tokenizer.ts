@@ -98,7 +98,7 @@ const COMPARISON_OPERATORS = new Set([
 const MATHEMATICAL_OPERATORS = new Set(['+', '-', '*', '/', 'mod']);
 
 // Compound prepositions used in put command and other DOM operations
-const COMPOUND_PREPOSITIONS = new Set([
+const _COMPOUND_PREPOSITIONS = new Set([
   'at start of',
   'at end of',
   'at the start of',
@@ -565,7 +565,7 @@ function tokenizeSymbol(tokenizer: Tokenizer): void {
   addToken(tokenizer, TokenType.SYMBOL, value, start);
 }
 
-function tokenizeObjectLiteral(tokenizer: Tokenizer): void {
+function _tokenizeObjectLiteral(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
   let value = '';
   let braceCount = 0;
@@ -580,7 +580,7 @@ function tokenizeObjectLiteral(tokenizer: Tokenizer): void {
   addToken(tokenizer, TokenType.OBJECT_LITERAL, value, start);
 }
 
-function tokenizeArrayLiteral(tokenizer: Tokenizer): void {
+function _tokenizeArrayLiteral(tokenizer: Tokenizer): void {
   const start = tokenizer.position;
   let value = '';
   let bracketCount = 0;
@@ -742,7 +742,7 @@ function tryTokenizeCompoundOperator(tokenizer: Tokenizer, firstWord: string, st
   skipWhitespace(tokenizer);
   
   // Peek at the next identifier
-  const nextWordStart = tokenizer.position;
+  const _nextWordStart = tokenizer.position;
   let nextWord = '';
   while (tokenizer.position < tokenizer.input.length) {
     const char = tokenizer.input[tokenizer.position];
@@ -807,7 +807,7 @@ function tryBuildCompoundPreposition(
     // Check for "at the start/end of" pattern
     if (lowerSecond === 'the') {
       skipWhitespace(tokenizer);
-      const thirdWordStart = tokenizer.position;
+      const _thirdWordStart = tokenizer.position;
       let thirdWord = '';
       while (tokenizer.position < tokenizer.input.length) {
         const char = tokenizer.input[tokenizer.position];
@@ -823,7 +823,7 @@ function tryBuildCompoundPreposition(
       if (lowerThird === 'start' || lowerThird === 'end') {
         // Now look for "of"
         skipWhitespace(tokenizer);
-        const fourthWordStart = tokenizer.position;
+        const _fourthWordStart = tokenizer.position;
         let fourthWord = '';
         while (tokenizer.position < tokenizer.input.length) {
           const char = tokenizer.input[tokenizer.position];
@@ -850,7 +850,7 @@ function tryBuildCompoundPreposition(
     // Check for "at start of" or "at end of" (without "the")
     if (lowerSecond === 'start' || lowerSecond === 'end') {
       skipWhitespace(tokenizer);
-      const thirdWordStart = tokenizer.position;
+      const _thirdWordStart = tokenizer.position;
       let thirdWord = '';
       while (tokenizer.position < tokenizer.input.length) {
         const char = tokenizer.input[tokenizer.position];
@@ -936,7 +936,7 @@ function isAlpha(char: string): boolean {
   return /[a-zA-Z]/.test(char);
 }
 
-function isDigit(char: string): boolean {
+function _isDigit(char: string): boolean {
   return /[0-9]/.test(char);
 }
 
@@ -1003,7 +1003,7 @@ function tryBuildLongestCompound(tokenizer: Tokenizer, firstWord: string, second
     }
     
     let nextWord = '';
-    const wordStart = tokenizer.position;
+    const _wordStart = tokenizer.position;
     
     while (tokenizer.position < tokenizer.input.length) {
       const char = tokenizer.input[tokenizer.position];

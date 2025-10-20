@@ -1,6 +1,6 @@
 
 // Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
+const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Context Types for HyperFixi
@@ -8,7 +8,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Building on proven enhanced expression architecture
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedExpressionContext,
   EvaluationType,
@@ -153,7 +153,7 @@ export abstract class EnhancedContextBase<TInput, TOutput> implements TypedConte
     }
   }
 
-  protected validateContextSpecific(data: TInput): ValidationResult {
+  protected validateContextSpecific(_data: TInput): ValidationResult {
     // Override in subclasses for context-specific validation
     return { isValid: true, errors: [], suggestions: [] };
   }
@@ -269,7 +269,7 @@ export interface ContextRegistry {
   register<T extends TypedContextImplementation<any, any>>(context: T): void;
   
   /** Get context by name */
-  get<T>(name: string): TypedContextImplementation<any, any> | null;
+  get<_T>(name: string): TypedContextImplementation<any, any> | null;
   
   /** List all contexts by category */
   listByCategory(category: ContextCategory): TypedContextImplementation<any, any>[];

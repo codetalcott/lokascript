@@ -10,6 +10,7 @@
 import type { TypedCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 // Input type definition
 export interface DefaultCommandInput {
@@ -160,7 +161,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
     }
 
     // Set in context.it
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: variableName,
@@ -193,7 +194,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
 
     // Set the default value
     context.me.setAttribute(attributeName, String(value));
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: `@${attributeName}`,
@@ -215,7 +216,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
     switch (possessive) {
       case 'my':
         if (!context.me) throw new Error('No "me" element in context');
-        targetElement = context.me;
+        targetElement = asHTMLElement(context.me) || (() => { throw new Error('context.me is not an HTMLElement'); })();
         break;
       case 'its':
       case 'it':
@@ -225,7 +226,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
       case 'your':
       case 'you':
         if (!context.you) throw new Error('No "you" element in context');
-        targetElement = context.you;
+        targetElement = asHTMLElement(context.you) || (() => { throw new Error('context.you is not an HTMLElement'); })();
         break;
       default:
         throw new Error(`Unknown possessive: ${possessive}`);
@@ -246,7 +247,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
 
     // Set the default value
     this.setElementProperty(targetElement, property, value);
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: `${possessive} ${property}`,
@@ -275,7 +276,7 @@ export class EnhancedDefaultCommand implements TypedCommandImplementation<
 
     // Set the default value
     this.setElementValue(element, value);
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: 'element',

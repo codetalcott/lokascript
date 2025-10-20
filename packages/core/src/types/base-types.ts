@@ -4,7 +4,7 @@
  * from multiple type definitions across the codebase
  */
 
-import { v, type RuntimeValidator } from '../validation/lightweight-validators';
+import { _v } from '../validation/lightweight-validators';
 
 // ============================================================================
 // Core Validation Types (Single Source of Truth)
@@ -15,7 +15,19 @@ import { v, type RuntimeValidator } from '../validation/lightweight-validators';
  * Unified to use suggestions: string[] for consistency with HyperScriptError
  */
 export interface ValidationError {
-  readonly type: 'type-mismatch' | 'missing-argument' | 'runtime-error' | 'validation-error' | 'syntax-error' | 'invalid-argument';
+  readonly type:
+    | 'type-mismatch'
+    | 'missing-argument'
+    | 'runtime-error'
+    | 'validation-error'
+    | 'syntax-error'
+    | 'invalid-argument'
+    | 'invalid-input'
+    | 'empty-config'
+    | 'schema-validation'
+    | 'context-error'
+    | 'invalid-syntax'
+    | 'security-warning';
   readonly message: string;
   readonly suggestions: string[];
   readonly path?: string;
@@ -71,17 +83,17 @@ export interface EvaluationResult<T = unknown> {
  * Comprehensive evaluation type system that covers all use cases
  * Consolidates EvaluationType definitions from multiple files
  */
-export type EvaluationType = 
+export type EvaluationType =
   | 'String' | 'Number' | 'Boolean' | 'Element' | 'ElementList'
-  | 'Array' | 'Object' | 'Promise' | 'Context' | 'Null' | 'Any';
+  | 'Array' | 'Object' | 'Promise' | 'Context' | 'Null' | 'Undefined' | 'Any';
 
 /**
  * HyperScript value type system for runtime type checking
  * Matches the lowercase convention used in actual hyperscript
  */
-export type HyperScriptValueType = 
+export type HyperScriptValueType =
   | 'string' | 'number' | 'boolean' | 'element' | 'element-list'
-  | 'array' | 'object' | 'promise' | 'fragment' | 'null' | 'undefined' | 'function' | 'event';
+  | 'array' | 'object' | 'promise' | 'fragment' | 'null' | 'undefined' | 'function' | 'event' | 'error' | 'unknown';
 
 /**
  * Mapping between EvaluationType and HyperScriptValueType
@@ -97,6 +109,7 @@ export const evaluationToHyperScriptType: Record<EvaluationType, HyperScriptValu
   'Promise': 'promise',
   'Context': 'object',
   'Null': 'null',
+  'Undefined': 'undefined',
   'Any': 'object'
 };
 
@@ -250,13 +263,13 @@ export interface LLMDocumentation {
   readonly returns: {
     type: string;
     description: string;
-    examples: string[];
+    examples: unknown[];
   };
   readonly examples: Array<{
     title: string;
     code: string;
     explanation: string;
-    output: string;
+    output: unknown;
   }>;
   readonly seeAlso: string[];
   readonly tags: string[];
@@ -367,7 +380,19 @@ export interface CommandResult {
 export interface BaseCommand {
   readonly name: string;
   readonly syntax: string;
+  readonly description?: string;
+  readonly metadata?: {
+    category?: string;
+    complexity?: 'simple' | 'medium' | 'complex';
+    sideEffects?: string[];
+    dependencies?: string[];
+    examples?: Array<{
+      code: string;
+      description: string;
+    }>;
+  };
   execute(context: ExecutionContext, ...args: unknown[]): Promise<CommandResult>;
+  validate?(args: unknown[]): ValidationResult;
 }
 
 // ============================================================================
@@ -508,12 +533,13 @@ export class TypeSystemBridge {
    * Normalize ValidationResult from any source
    */
   static normalizeValidationResult(result: unknown): ValidationResult {
+    const res = result as any; // Type assertion for property access
     return {
-      isValid: Boolean(result?.isValid),
-      errors: Array.isArray(result?.errors) ? result.errors : [],
-      suggestions: Array.isArray(result?.suggestions) ? result.suggestions : [],
-      warnings: Array.isArray(result?.warnings) ? result.warnings : undefined,
-      performance: result?.performance
+      isValid: Boolean(res?.isValid),
+      errors: Array.isArray(res?.errors) ? res.errors : [],
+      suggestions: Array.isArray(res?.suggestions) ? res.suggestions : [],
+      warnings: Array.isArray(res?.warnings) ? res.warnings : undefined,
+      performance: res?.performance
     };
   }
 

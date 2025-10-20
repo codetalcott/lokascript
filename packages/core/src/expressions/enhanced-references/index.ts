@@ -128,6 +128,7 @@ export class EnhancedMeExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'MeExpressionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to evaluate "me"',
           code: 'ME_EVALUATION_FAILED',
           suggestions: ['Ensure element context is properly set', 'Check if "me" is available in current scope']
@@ -265,6 +266,7 @@ export class EnhancedYouExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'YouExpressionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to evaluate "you"',
           code: 'YOU_EVALUATION_FAILED',
           suggestions: ['Ensure target element is available in context', 'Check if "you" is set by event or command']
@@ -407,6 +409,7 @@ export class EnhancedItExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'ItExpressionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to evaluate "it"',
           code: 'IT_EVALUATION_FAILED',
           suggestions: ['Ensure "it" is set by previous operation', 'Check if context variable is available']
@@ -565,6 +568,7 @@ export class EnhancedCSSSelectorExpression implements TypedExpressionImplementat
           success: false,
           error: {
             name: 'CSSSelectorError',
+            type: 'invalid-argument',
             message: `Invalid CSS selector: "${input.selector}"`,
             code: 'INVALID_CSS_SELECTOR',
             suggestions: [
@@ -610,6 +614,7 @@ export class EnhancedCSSSelectorExpression implements TypedExpressionImplementat
         success: false,
         error: {
           name: 'CSSSelectorError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'CSS selector evaluation failed',
           code: 'CSS_SELECTOR_EVALUATION_FAILED',
           suggestions: [

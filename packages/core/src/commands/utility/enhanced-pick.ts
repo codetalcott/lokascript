@@ -163,7 +163,7 @@ export class EnhancedPickCommand implements TypedCommandImplementation<
     const selectedItem = sourceArray[selectedIndex];
 
     // Set the selected item in context
-    context.it = selectedItem;
+    Object.assign(context, { it: selectedItem });
 
     return {
       selectedItem,

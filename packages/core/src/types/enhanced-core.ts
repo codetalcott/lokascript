@@ -1,6 +1,6 @@
 
 // Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
+const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Core Types - Deep TypeScript Integration
@@ -10,7 +10,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * This file now focuses on enhanced features while using unified base types
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 // ============================================================================
 // Import Unified Types
 // ============================================================================

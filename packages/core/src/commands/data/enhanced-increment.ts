@@ -158,7 +158,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
     this.setTargetValue(target, property, scope, newValue, context);
     
     // Update context
-    context.it = newValue;
+    Object.assign(context, { it: newValue });
     
     return {
       oldValue: currentValue,
@@ -288,7 +288,7 @@ export class EnhancedIncrementCommand implements TypedCommandImplementation<
         (context.me as any).value = newValue;
         return;
       } else if (target === 'it') {
-        context.it = newValue;
+        Object.assign(context, { it: newValue });
         return;
       } else if (target === 'you' && context.you) {
         (context.you as any).value = newValue;

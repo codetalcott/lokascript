@@ -14,7 +14,7 @@ export const stringLiteralExpression: ExpressionImplementation = {
   category: 'Literal',
   evaluatesTo: 'String',
   
-  async evaluate(context: ExecutionContext, value: string): Promise<string> {
+  async evaluate(_context: ExecutionContext, value: string): Promise<string> {
     if (typeof value !== 'string') {
       throw new Error('String literal must be a string');
     }
@@ -43,7 +43,7 @@ export const numberLiteralExpression: ExpressionImplementation = {
   category: 'Literal',
   evaluatesTo: 'Number',
   
-  async evaluate(context: ExecutionContext, value: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, value: number): Promise<number> {
     if (typeof value !== 'number') {
       throw new Error('Number literal must be a number');
     }
@@ -74,7 +74,7 @@ export const booleanLiteralExpression: ExpressionImplementation = {
   category: 'Literal',
   evaluatesTo: 'Boolean',
   
-  async evaluate(context: ExecutionContext, value: boolean): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: boolean): Promise<boolean> {
     if (typeof value !== 'boolean') {
       throw new Error('Boolean literal must be a boolean');
     }
@@ -115,7 +115,7 @@ export const arrayLiteralExpression: ExpressionImplementation = {
   category: 'Literal',
   evaluatesTo: 'Array',
   
-  async evaluate(context: ExecutionContext, ...elements: any[]): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, ...elements: any[]): Promise<any[]> {
     // All elements are already evaluated when passed to this function
     return elements;
   },
@@ -131,7 +131,7 @@ export const objectLiteralExpression: ExpressionImplementation = {
   category: 'Literal',
   evaluatesTo: 'Object',
   
-  async evaluate(context: ExecutionContext, properties: Record<string, any>): Promise<Record<string, any>> {
+  async evaluate(_context: ExecutionContext, properties: Record<string, any>): Promise<Record<string, any>> {
     if (typeof properties !== 'object' || properties === null || Array.isArray(properties)) {
       throw new Error('Object literal must be an object');
     }
@@ -162,7 +162,7 @@ export const additionExpression: ExpressionImplementation = {
   precedence: 6,
   associativity: 'Left',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -185,7 +185,7 @@ export const subtractionExpression: ExpressionImplementation = {
   precedence: 6,
   associativity: 'Left',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -208,7 +208,7 @@ export const multiplicationExpression: ExpressionImplementation = {
   precedence: 7,
   associativity: 'Left',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -231,7 +231,7 @@ export const divisionExpression: ExpressionImplementation = {
   precedence: 7,
   associativity: 'Left',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -258,7 +258,7 @@ export const moduloExpression: ExpressionImplementation = {
   precedence: 7,
   associativity: 'Left',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -285,7 +285,7 @@ export const exponentiationExpression: ExpressionImplementation = {
   precedence: 8,
   associativity: 'Right',
   
-  async evaluate(context: ExecutionContext, left: any, right: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, left: any, right: any): Promise<number> {
     const leftNum = ensureNumber(left, 'Left operand');
     const rightNum = ensureNumber(right, 'Right operand');
     
@@ -312,7 +312,7 @@ export const unaryMinusExpression: ExpressionImplementation = {
   precedence: 9,
   associativity: 'Right',
   
-  async evaluate(context: ExecutionContext, operand: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, operand: any): Promise<number> {
     const num = ensureNumber(operand, 'Operand');
     return -num;
   },
@@ -333,7 +333,7 @@ export const unaryPlusExpression: ExpressionImplementation = {
   precedence: 9,
   associativity: 'Right',
   
-  async evaluate(context: ExecutionContext, operand: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, operand: any): Promise<number> {
     const num = ensureNumber(operand, 'Operand');
     return +num;
   },
@@ -357,7 +357,7 @@ export const parenthesesExpression: ExpressionImplementation = {
   operators: ['(', ')'],
   precedence: 10,
   
-  async evaluate(context: ExecutionContext, expression: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, expression: any): Promise<any> {
     // Parentheses just return the inner expression value unchanged
     return expression;
   },

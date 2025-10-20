@@ -351,6 +351,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
         message: 'Generated code is empty',
         suggestion: 'Try a more specific prompt'
       });
+    suggestions: []
     }
     
     // Environment-specific validation
@@ -360,6 +361,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
         message: 'Frontend code typically includes event handlers',
         suggestion: 'Consider adding event triggers like "on click" or "on input"'
       });
+    suggestions: []
     }
     
     // Type safety validation
@@ -370,6 +372,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
           message: 'Potential null/undefined values detected',
           suggestion: 'Add null checks or use optional chaining'
         });
+      suggestions: []
       }
     }
     
@@ -465,6 +468,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
         path: 'prompt'
       });
       suggestions.push('Provide more detailed description of desired functionality');
+    suggestions: []
     }
 
     // Validate framework compatibility
@@ -476,6 +480,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
           message: `Framework ${data.framework.name} is not supported for frontend environment`,
           path: 'framework.name'
         });
+      suggestions: []
       }
     }
 
@@ -488,6 +493,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
             message: `Variable ${name} is missing type definition`,
             path: `availableVariables.${name}.type`
           });
+        suggestions: []
         }
       });
     }

@@ -15,7 +15,7 @@ export class ParseTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Parses hyperscript time literals into milliseconds (2s, 500ms, 1 minute, etc.)';
 
-  async evaluate(context: ExecutionContext, timeString: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, timeString: any): Promise<number> {
     if (timeString == null || timeString === '') return 0;
     
     const str = String(timeString).trim();
@@ -64,7 +64,7 @@ export class FormatDurationExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Formats milliseconds into readable duration string';
 
-  async evaluate(context: ExecutionContext, milliseconds: number, format: string = 'default'): Promise<string> {
+  async evaluate(_context: ExecutionContext, milliseconds: number, format: string = 'default'): Promise<string> {
     const ms = Math.abs(Math.floor(milliseconds));
     
     const units = [
@@ -133,7 +133,7 @@ export class AddTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Adds two time durations together';
 
-  async evaluate(context: ExecutionContext, time1: any, time2: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, time1: any, time2: any): Promise<number> {
     const parseTime = new ParseTimeExpression();
     
     const ms1 = await parseTime.evaluate(context, time1);
@@ -153,7 +153,7 @@ export class SubtractTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Subtracts one time duration from another';
 
-  async evaluate(context: ExecutionContext, time1: any, time2: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, time1: any, time2: any): Promise<number> {
     const parseTime = new ParseTimeExpression();
     
     const ms1 = await parseTime.evaluate(context, time1);
@@ -173,7 +173,7 @@ export class MultiplyTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Multiplies a time duration by a number';
 
-  async evaluate(context: ExecutionContext, time: any, multiplier: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, time: any, multiplier: number): Promise<number> {
     const parseTime = new ParseTimeExpression();
     const ms = await parseTime.evaluate(context, time);
     
@@ -191,7 +191,7 @@ export class DivideTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Divides a time duration by a number';
 
-  async evaluate(context: ExecutionContext, time: any, divisor: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, time: any, divisor: number): Promise<number> {
     const parseTime = new ParseTimeExpression();
     const ms = await parseTime.evaluate(context, time);
     
@@ -227,7 +227,7 @@ export class DateFromExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Creates a Date object from a timestamp';
 
-  async evaluate(context: ExecutionContext, timestamp: number): Promise<Date> {
+  async evaluate(_context: ExecutionContext, timestamp: number): Promise<Date> {
     return new Date(timestamp);
   }
 
@@ -242,7 +242,7 @@ export class FormatDateExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Formats a Date object into a string';
 
-  async evaluate(context: ExecutionContext, date: Date, format: string = 'YYYY-MM-DD HH:mm:ss'): Promise<string> {
+  async evaluate(_context: ExecutionContext, date: Date, format: string = 'YYYY-MM-DD HH:mm:ss'): Promise<string> {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       return 'Invalid Date';
     }
@@ -275,7 +275,7 @@ export class ParseDateExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Parses a date string into a Date object';
 
-  async evaluate(context: ExecutionContext, dateString: string): Promise<Date> {
+  async evaluate(_context: ExecutionContext, dateString: string): Promise<Date> {
     return new Date(dateString);
   }
 
@@ -290,7 +290,7 @@ export class AddToDateExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Adds a time duration to a date';
 
-  async evaluate(context: ExecutionContext, date: Date, duration: any): Promise<Date> {
+  async evaluate(_context: ExecutionContext, date: Date, duration: any): Promise<Date> {
     const parseTime = new ParseTimeExpression();
     const ms = await parseTime.evaluate(context, duration);
     
@@ -308,7 +308,7 @@ export class SubtractFromDateExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Subtracts a time duration from a date';
 
-  async evaluate(context: ExecutionContext, date: Date, duration: any): Promise<Date> {
+  async evaluate(_context: ExecutionContext, date: Date, duration: any): Promise<Date> {
     const parseTime = new ParseTimeExpression();
     const ms = await parseTime.evaluate(context, duration);
     
@@ -329,7 +329,7 @@ export class CompareTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Compares two time durations (-1, 0, 1)';
 
-  async evaluate(context: ExecutionContext, time1: any, time2: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, time1: any, time2: any): Promise<number> {
     const parseTime = new ParseTimeExpression();
     
     const ms1 = await parseTime.evaluate(context, time1);
@@ -351,7 +351,7 @@ export class IsBeforeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Checks if first date is before second date';
 
-  async evaluate(context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
     return date1.getTime() < date2.getTime();
   }
 
@@ -366,7 +366,7 @@ export class IsAfterExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Checks if first date is after second date';
 
-  async evaluate(context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
     return date1.getTime() > date2.getTime();
   }
 
@@ -381,7 +381,7 @@ export class IsSameDayExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Checks if two dates are on the same day';
 
-  async evaluate(context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, date1: Date, date2: Date): Promise<boolean> {
     return date1.getUTCFullYear() === date2.getUTCFullYear() &&
            date1.getUTCMonth() === date2.getUTCMonth() &&
            date1.getUTCDate() === date2.getUTCDate();
@@ -401,7 +401,7 @@ export class ConvertTimeExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Converts milliseconds to other time units';
 
-  async evaluate(context: ExecutionContext, milliseconds: number, unit: string): Promise<number> {
+  async evaluate(_context: ExecutionContext, milliseconds: number, unit: string): Promise<number> {
     const conversions: { [key: string]: number } = {
       'milliseconds': 1,
       'seconds': 1000,
@@ -428,7 +428,7 @@ export class GetTimeComponentExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Extracts specific components from a date';
 
-  async evaluate(context: ExecutionContext, date: Date, component: string, timezone: string = 'local'): Promise<number> {
+  async evaluate(_context: ExecutionContext, date: Date, component: string, timezone: string = 'local'): Promise<number> {
     const isUTC = timezone === 'UTC';
     
     const getters: { [key: string]: () => number } = {
@@ -456,7 +456,7 @@ export class IsLeapYearExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Checks if a year is a leap year';
 
-  async evaluate(context: ExecutionContext, year: number): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, year: number): Promise<boolean> {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
   }
 
@@ -471,7 +471,7 @@ export class DaysInMonthExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Returns the number of days in a given month/year';
 
-  async evaluate(context: ExecutionContext, year: number, month: number): Promise<number> {
+  async evaluate(_context: ExecutionContext, year: number, month: number): Promise<number> {
     // Create date for first day of next month, then subtract one day
     return new Date(year, month, 0).getDate();
   }
@@ -490,7 +490,7 @@ export class ConvertTimezoneExpression implements ExpressionImplementation {
   category = 'Time';
   description = 'Converts a date to a different timezone (basic implementation)';
 
-  async evaluate(context: ExecutionContext, date: Date, timezone: string): Promise<Date> {
+  async evaluate(_context: ExecutionContext, date: Date, timezone: string): Promise<Date> {
     // Basic implementation - in a real scenario you'd use a timezone library
     // For now, just return the original date as timezone handling is complex
     return new Date(date.getTime());

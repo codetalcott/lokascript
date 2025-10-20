@@ -5,7 +5,7 @@
 
 import type { ExecutionContext, ExpressionImplementation } from '../types/core';
 import { globalCache } from './expression-cache';
-import { createOptimizedTokenizer, tokenizeOptimized } from '../parser/tokenizer-optimized';
+import { _createOptimizedTokenizer, tokenizeOptimized } from '../parser/tokenizer-optimized';
 
 // Performance monitoring interface
 export interface PerformanceMetrics {
@@ -77,7 +77,7 @@ export const performanceTracker = new PerformanceTracker();
 export async function evaluateExpressionWithCache<T>(
   cacheKey: string,
   evaluator: () => Promise<T>,
-  context: ExecutionContext
+  _context: ExecutionContext
 ): Promise<T> {
   // Check cache first
   const cached = globalCache.getExpressionResult(cacheKey);
@@ -120,7 +120,7 @@ export function wrapExpressionForPerformance(
 ): ExpressionImplementation {
   return {
     ...expression,
-    async evaluate(context: ExecutionContext, ...args: any[]): Promise<any> {
+    async evaluate(_context: ExecutionContext, ...args: any[]): Promise<any> {
       // Create cache key from expression name and arguments
       const cacheKey = createExpressionCacheKey(expression.name, args);
       

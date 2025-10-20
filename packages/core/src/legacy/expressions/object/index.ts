@@ -14,7 +14,7 @@ export class ObjectExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates an object from key-value pairs';
 
-  async evaluate(context: ExecutionContext, ...args: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, ...args: any[]): Promise<any> {
     const result: any = {};
     
     // Process pairs of arguments as key-value pairs
@@ -45,7 +45,7 @@ export class KeysExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Returns array of object keys';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<string[]> {
     if (!obj || typeof obj !== 'object') return [];
     return Object.keys(obj);
   }
@@ -64,7 +64,7 @@ export class ValuesExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Returns array of object values';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<any[]> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<any[]> {
     if (!obj || typeof obj !== 'object') return [];
     return Object.values(obj);
   }
@@ -83,7 +83,7 @@ export class EntriesExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Returns array of [key, value] pairs';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<[string, any][]> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<[string, any][]> {
     if (!obj || typeof obj !== 'object') return [];
     return Object.entries(obj);
   }
@@ -102,7 +102,7 @@ export class HasPropertyExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Checks if object has a property';
 
-  async evaluate(context: ExecutionContext, obj: any, property: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, obj: any, property: string): Promise<boolean> {
     if (!obj || typeof obj !== 'object') return false;
     return Object.prototype.hasOwnProperty.call(obj, property);
   }
@@ -118,7 +118,7 @@ export class GetPropertyExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Gets property value from object';
 
-  async evaluate(context: ExecutionContext, obj: any, property: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, property: string): Promise<any> {
     if (!obj || typeof obj !== 'object') return undefined;
     return obj[property];
   }
@@ -134,7 +134,7 @@ export class SetPropertyExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Sets property value on object';
 
-  async evaluate(context: ExecutionContext, obj: any, property: string, value: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, obj: any, property: string, value: any): Promise<void> {
     if (!obj || typeof obj !== 'object') return;
     if (!property) return; // Skip empty/null property names
     
@@ -153,7 +153,7 @@ export class DeletePropertyExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Deletes property from object';
 
-  async evaluate(context: ExecutionContext, obj: any, property: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, obj: any, property: string): Promise<boolean> {
     if (!obj || typeof obj !== 'object') return false;
     return delete obj[property];
   }
@@ -172,7 +172,7 @@ export class MergeExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Merges multiple objects into new object';
 
-  async evaluate(context: ExecutionContext, ...objects: any[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, ...objects: any[]): Promise<any> {
     const result: any = {};
     
     for (const obj of objects) {
@@ -195,7 +195,7 @@ export class PickExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates object with only specified properties';
 
-  async evaluate(context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
     if (!obj || typeof obj !== 'object' || !Array.isArray(keys)) return {};
     
     const result: any = {};
@@ -219,7 +219,7 @@ export class OmitExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates object without specified properties';
 
-  async evaluate(context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
     if (!obj || typeof obj !== 'object' || !Array.isArray(keys)) return {};
     
     const result: any = { ...obj };
@@ -241,7 +241,7 @@ export class CloneExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates shallow copy of object';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<any> {
     if (!obj || typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) return [...obj];
     return { ...obj };
@@ -258,7 +258,7 @@ export class DeepCloneExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates deep copy of object';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<any> {
     return this.deepCloneHelper(obj, new WeakMap());
   }
 
@@ -305,7 +305,7 @@ export class MapEntriesExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Maps object entries to new object';
 
-  async evaluate(context: ExecutionContext, obj: any, mapperName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, mapperName: string): Promise<any> {
     if (!obj || typeof obj !== 'object') return {};
     
     const mapper = context.locals?.get(mapperName) || context.globals?.get(mapperName);
@@ -331,7 +331,7 @@ export class FilterEntriesExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Filters object entries by predicate';
 
-  async evaluate(context: ExecutionContext, obj: any, predicateName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, predicateName: string): Promise<any> {
     if (!obj || typeof obj !== 'object') return {};
     
     const predicate = context.locals?.get(predicateName) || context.globals?.get(predicateName);
@@ -361,7 +361,7 @@ export class IsObjectExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Checks if value is a plain object';
 
-  async evaluate(context: ExecutionContext, value: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: any): Promise<boolean> {
     return value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date);
   }
 
@@ -376,7 +376,7 @@ export class IsEmptyExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Checks if object has no properties';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<boolean> {
     if (obj === null || obj === undefined) return true;
     if (typeof obj !== 'object') return false;
     return Object.keys(obj).length === 0;
@@ -393,7 +393,7 @@ export class SizeExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Returns number of properties in object';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<number> {
     if (!obj || typeof obj !== 'object') return 0;
     return Object.keys(obj).length;
   }
@@ -409,7 +409,7 @@ export class EqualsExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Deep equality comparison of objects';
 
-  async evaluate(context: ExecutionContext, obj1: any, obj2: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, obj1: any, obj2: any): Promise<boolean> {
     return this.deepEquals(obj1, obj2);
   }
 
@@ -453,7 +453,7 @@ export class DestructureExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Destructures object properties into new object';
 
-  async evaluate(context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, keys: string[]): Promise<any> {
     if (!obj || typeof obj !== 'object' || !Array.isArray(keys)) return {};
     
     const result: any = {};
@@ -500,7 +500,7 @@ export class GetPathExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Gets nested property by dot notation path';
 
-  async evaluate(context: ExecutionContext, obj: any, path: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, path: string): Promise<any> {
     if (!obj || typeof obj !== 'object' || !path) return undefined;
     
     const keys = path.split('.');
@@ -525,7 +525,7 @@ export class SetPathExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Sets nested property by dot notation path';
 
-  async evaluate(context: ExecutionContext, obj: any, path: string, value: any): Promise<void> {
+  async evaluate(_context: ExecutionContext, obj: any, path: string, value: any): Promise<void> {
     if (!obj || typeof obj !== 'object' || !path) return;
     
     const keys = path.split('.');
@@ -554,7 +554,7 @@ export class HasPathExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Checks if nested property path exists';
 
-  async evaluate(context: ExecutionContext, obj: any, path: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, obj: any, path: string): Promise<boolean> {
     if (!obj || typeof obj !== 'object' || !path) return false;
     
     const keys = path.split('.');
@@ -582,7 +582,7 @@ export class ToJsonExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Converts object to JSON string';
 
-  async evaluate(context: ExecutionContext, obj: any, indent?: number): Promise<string> {
+  async evaluate(_context: ExecutionContext, obj: any, indent?: number): Promise<string> {
     try {
       return JSON.stringify(obj, null, indent);
     } catch (error) {
@@ -601,7 +601,7 @@ export class FromJsonExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Parses JSON string to object';
 
-  async evaluate(context: ExecutionContext, jsonString: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, jsonString: string): Promise<any> {
     try {
       return JSON.parse(jsonString);
     } catch (error) {
@@ -623,7 +623,7 @@ export class FromEntriesExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Creates object from array of [key, value] pairs';
 
-  async evaluate(context: ExecutionContext, entries: [string, any][]): Promise<any> {
+  async evaluate(_context: ExecutionContext, entries: [string, any][]): Promise<any> {
     if (!Array.isArray(entries)) return {};
     
     const result: any = {};
@@ -645,7 +645,7 @@ export class GroupByExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Groups array elements by key function';
 
-  async evaluate(context: ExecutionContext, array: any[], keyFnName: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, array: any[], keyFnName: string): Promise<any> {
     if (!Array.isArray(array)) return {};
     
     const keyFn = context.locals?.get(keyFnName) || context.globals?.get(keyFnName);
@@ -674,7 +674,7 @@ export class InvertExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Inverts object keys and values';
 
-  async evaluate(context: ExecutionContext, obj: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any): Promise<any> {
     if (!obj || typeof obj !== 'object') return {};
     
     const result: any = {};
@@ -696,7 +696,7 @@ export class DefaultsExpression implements ExpressionImplementation {
   category = 'Object';
   description = 'Merges object with default values';
 
-  async evaluate(context: ExecutionContext, obj: any, defaults: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, obj: any, defaults: any): Promise<any> {
     if (!obj || typeof obj !== 'object') obj = {};
     if (!defaults || typeof defaults !== 'object') defaults = {};
     

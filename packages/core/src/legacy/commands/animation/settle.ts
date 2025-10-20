@@ -207,6 +207,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'SETTLE_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -251,6 +252,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'SettleCommandError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SETTLE_EXECUTION_FAILED',
           suggestion: ['Check if element exists', 'Verify animation properties', 'Check timeout value']
@@ -367,6 +369,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'missing-argument',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
               suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
@@ -383,6 +386,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'runtime-error',
               message: `Cannot resolve target element: ${elementResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
               suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -398,6 +402,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'missing-argument',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
               suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
@@ -413,6 +418,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'syntax-error',
               message: `Invalid timeout: ${timeoutResult.error?.message}`,
               code: 'TIMEOUT_PARSE_FAILED',
               suggestion: ['Use numeric milliseconds', 'Use format like "3s" or "500ms"']
@@ -429,6 +435,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'runtime-error',
               message: `Cannot resolve target element: ${elementResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
               suggestion: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -444,6 +451,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'SettleParseError',
+              type: 'syntax-error',
               message: `Invalid timeout: ${timeoutResult.error?.message}`,
               code: 'TIMEOUT_PARSE_FAILED',
               suggestion: ['Use numeric milliseconds', 'Use format like "3s" or "500ms"']
@@ -457,6 +465,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           success: false,
           error: {
             name: 'SettleParseError',
+            type: 'invalid-argument',
             message: 'Invalid settle command syntax',
             code: 'INVALID_SYNTAX',
             suggestion: 'Use: settle, settle <element>, settle for <timeout>, or settle <element> for <timeout>'
@@ -476,6 +485,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'SettleParseError',
+          type: 'syntax-error',
           message: error instanceof Error ? error.message : 'Failed to parse settle arguments',
           code: 'PARSE_FAILED',
           suggestion: 'Check argument syntax and types'
@@ -541,6 +551,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               success: false,
               error: {
                 name: 'ElementResolutionError',
+                type: 'invalid-argument',
                 message: `Invalid CSS selector: "${trimmed}"`,
                 code: 'INVALID_SELECTOR',
                 suggestion: ['Use valid CSS selector syntax', 'Check for typos in selector']
@@ -554,6 +565,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           success: false,
           error: {
             name: 'ElementResolutionError',
+            type: 'runtime-error',
             message: `Element not found: "${trimmed}"`,
             code: 'ELEMENT_NOT_FOUND',
             suggestion: ['Check if element exists in DOM', 'Verify selector matches existing elements']
@@ -566,6 +578,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'ElementResolutionError',
+          type: 'invalid-argument',
           message: `Invalid element reference: ${typeof element}`,
           code: 'INVALID_ELEMENT_REFERENCE',
           suggestion: 'Use HTMLElement or CSS selector string'
@@ -578,6 +591,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'ElementResolutionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Element resolution failed',
           code: 'RESOLUTION_FAILED',
           suggestion: 'Check element reference validity'
@@ -595,6 +609,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'TimeoutParseError',
+              type: 'runtime-error',
               message: 'Timeout cannot be negative',
               code: 'NEGATIVE_TIMEOUT',
               suggestion: 'Use positive timeout values'
@@ -607,6 +622,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
             success: false,
             error: {
               name: 'TimeoutParseError',
+              type: 'runtime-error',
               message: 'Timeout exceeds maximum allowed (60 seconds)',
               code: 'TIMEOUT_TOO_LARGE',
               suggestion: ['Use timeout values under 60000ms', 'Consider shorter animation durations']
@@ -641,6 +657,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
               success: false,
               error: {
                 name: 'TimeoutParseError',
+                type: 'invalid-argument',
                 message: `Invalid timeout number: "${numberStr}"`,
                 code: 'INVALID_TIMEOUT_NUMBER',
                 suggestion: 'Use valid numeric values'
@@ -657,6 +674,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
           success: false,
           error: {
             name: 'TimeoutParseError',
+            type: 'invalid-argument',
             message: `Invalid timeout format: "${value}"`,
             code: 'INVALID_TIMEOUT_FORMAT',
             suggestion: 'Use format like "3s", "500ms", or numeric milliseconds'
@@ -669,6 +687,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'TimeoutParseError',
+          type: 'invalid-argument',
           message: `Timeout must be a number or string, got ${typeof value}`,
           code: 'INVALID_TIMEOUT_TYPE',
           suggestion: 'Use numeric milliseconds or string with unit like "3s"'
@@ -681,6 +700,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'TimeoutParseError',
+          type: 'syntax-error',
           message: error instanceof Error ? error.message : 'Failed to parse timeout',
           code: 'TIMEOUT_PARSE_FAILED',
           suggestion: 'Check timeout format and value'
@@ -724,6 +744,7 @@ export class SettleCommand implements CommandImplementation, TypedCommandImpleme
         success: false,
         error: {
           name: 'SettleWaitError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Wait for settle failed',
           code: 'SETTLE_WAIT_FAILED',
           suggestion: ['Check if element has animations', 'Verify timeout is sufficient', 'Check element is in DOM']

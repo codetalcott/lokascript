@@ -50,11 +50,12 @@ export class ContextBridge {
       // Runtime state
       events: context.events,
       meta: context.meta || {},
-      
+
       // Enhanced features for typed commands
-      errors: [],
-      commandHistory: [],
-      validationMode: 'strict'
+      expressionStack: [],
+      evaluationDepth: 0,
+      validationMode: 'strict',
+      evaluationHistory: []
     };
   }
 
@@ -120,9 +121,9 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
       let result;
       
       // Check if this is a TypedCommandImplementation (enhanced command)
-      const executeLength = this.impl.execute ? this.impl.execute.length : 'no execute method';
-      const hasExecute = !!this.impl.execute;
-      const isEnhancedSignature = this.impl.execute && this.impl.execute.length === 2;
+      const _executeLength = this.impl.execute ? this.impl.execute.length : 'no execute method';
+      const _hasExecute = !!this.impl.execute;
+      const _isEnhancedSignature = this.impl.execute && this.impl.execute.length === 2;
       
       // console.log('🔧 Command signature analysis:', {
         // commandName: this.impl.name,
@@ -148,7 +149,7 @@ export class EnhancedCommandAdapter implements RuntimeCommand {
           
           // Detailed debugging of the first argument
           if (args.length > 0) {
-            const firstArg = args[0];
+            const _firstArg = args[0];
             // console.log('🔧 SET: First argument detailed analysis:', {
               // type: typeof firstArg,
               // isObject: typeof firstArg === 'object' && firstArg !== null,
@@ -396,6 +397,7 @@ export class EnhancedCommandRegistry {
       return {
         success: false,
         error: {
+          type: 'runtime-error',
           message: `Unknown command: ${name}`,
           suggestions: [`Available commands: ${this.getCommandNames().join(', ')}`]
         }
@@ -416,7 +418,7 @@ export class EnhancedCommandRegistry {
       const commands = createAllEnhancedCommands();
 
       // Register all commands
-      for (const [name, command] of commands.entries()) {
+      for (const [_name, command] of commands.entries()) {
         registry.register(command);
       }
     } catch (error) {

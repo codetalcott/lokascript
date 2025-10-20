@@ -20,7 +20,7 @@ export class InterpolateExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Interpolates variables and expressions in template strings using ${variable} syntax';
 
-  async evaluate(context: ExecutionContext, template: any, ...args: any[]): Promise<string> {
+  async evaluate(_context: ExecutionContext, template: any, ...args: any[]): Promise<string> {
     const templateStr = String(template || '');
     
     // Handle ${variable} interpolation
@@ -195,7 +195,7 @@ export class MatchesExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Tests if a string matches a regular expression pattern';
 
-  async evaluate(context: ExecutionContext, text: any, pattern: any, flags?: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any, pattern: any, flags?: string): Promise<boolean> {
     try {
       const textStr = String(text || '');
       
@@ -227,7 +227,7 @@ export class ExtractExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Extracts regex groups from string matches';
 
-  async evaluate(context: ExecutionContext, text: any, pattern: any, flags?: string): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, text: any, pattern: any, flags?: string): Promise<string[]> {
     try {
       const textStr = String(text || '');
       const patternStr = String(pattern || '');
@@ -255,7 +255,7 @@ export class ReplaceExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Replaces text or regex matches in a string';
 
-  async evaluate(context: ExecutionContext, text: any, pattern: any, replacement: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any, pattern: any, replacement: any): Promise<string> {
     const textStr = String(text || '');
     const replacementStr = String(replacement || '');
     
@@ -280,7 +280,7 @@ export class LengthExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Returns the length of a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<number> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<number> {
     // Handle special case for me.textContent or similar expressions
     if (typeof text === 'string' && text.includes('.')) {
       const value = this.resolveProperty(text, context);
@@ -317,7 +317,7 @@ export class UppercaseExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Converts string to uppercase';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     // Handle special case for element attribute access
     if (typeof text === 'string' && text.includes('getAttribute')) {
       const value = this.resolveExpression(text, context);
@@ -347,7 +347,7 @@ export class LowercaseExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Converts string to lowercase';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     return String(text || '').toLowerCase();
   }
 
@@ -362,7 +362,7 @@ export class CapitalizeExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Capitalizes the first letter of a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
@@ -378,7 +378,7 @@ export class TitleCaseExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Converts string to title case (capitalize each word)';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return str.replace(/\w\S*/g, (txt) => 
       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
@@ -396,7 +396,7 @@ export class TrimExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Removes whitespace from both ends of a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     return String(text || '').trim();
   }
 
@@ -411,7 +411,7 @@ export class SubstringExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Extracts a substring from a string';
 
-  async evaluate(context: ExecutionContext, text: any, start: number, end?: number): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any, start: number, end?: number): Promise<string> {
     const str = String(text || '');
     return str.substring(start, end);
   }
@@ -427,7 +427,7 @@ export class SplitExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Splits a string into an array';
 
-  async evaluate(context: ExecutionContext, text: any, separator: string): Promise<string[]> {
+  async evaluate(_context: ExecutionContext, text: any, separator: string): Promise<string[]> {
     const str = String(text || '');
     return str.split(separator);
   }
@@ -443,7 +443,7 @@ export class JoinExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Joins an array into a string';
 
-  async evaluate(context: ExecutionContext, array: any[], separator: string): Promise<string> {
+  async evaluate(_context: ExecutionContext, array: any[], separator: string): Promise<string> {
     if (!Array.isArray(array)) return String(array || '');
     return array.join(separator);
   }
@@ -459,7 +459,7 @@ export class ContainsExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string contains a substring';
 
-  async evaluate(context: ExecutionContext, text: any, substring: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any, substring: any): Promise<boolean> {
     const str = String(text || '');
     const sub = String(substring || '');
     return str.includes(sub);
@@ -476,7 +476,7 @@ export class StartsWithExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string starts with a prefix';
 
-  async evaluate(context: ExecutionContext, text: any, prefix: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any, prefix: any): Promise<boolean> {
     const str = String(text || '');
     const pre = String(prefix || '');
     return str.startsWith(pre);
@@ -493,7 +493,7 @@ export class EndsWithExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string ends with a suffix';
 
-  async evaluate(context: ExecutionContext, text: any, suffix: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any, suffix: any): Promise<boolean> {
     const str = String(text || '');
     const suf = String(suffix || '');
     return str.endsWith(suf);
@@ -511,7 +511,7 @@ export class PadLeftExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Pads a string on the left to a specified length';
 
-  async evaluate(context: ExecutionContext, text: any, length: number, padString: string = ' '): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any, length: number, padString: string = ' '): Promise<string> {
     const str = String(text || '');
     return str.padStart(length, padString);
   }
@@ -527,7 +527,7 @@ export class PadRightExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Pads a string on the right to a specified length';
 
-  async evaluate(context: ExecutionContext, text: any, length: number, padString: string = ' '): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any, length: number, padString: string = ' '): Promise<string> {
     const str = String(text || '');
     return str.padEnd(length, padString);
   }
@@ -543,7 +543,7 @@ export class RepeatExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Repeats a string a specified number of times';
 
-  async evaluate(context: ExecutionContext, text: any, count: number): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any, count: number): Promise<string> {
     const str = String(text || '');
     return str.repeat(Math.max(0, count));
   }
@@ -559,7 +559,7 @@ export class ReverseExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Reverses a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return str.split('').reverse().join('');
   }
@@ -576,7 +576,7 @@ export class EqualsIgnoreCaseExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Compares strings ignoring case differences';
 
-  async evaluate(context: ExecutionContext, text1: any, text2: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text1: any, text2: any): Promise<boolean> {
     const str1 = String(text1 || '').toLowerCase();
     const str2 = String(text2 || '').toLowerCase();
     return str1 === str2;
@@ -593,7 +593,7 @@ export class IsEmptyExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string is empty';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<boolean> {
     const str = String(text || '');
     return str.length === 0;
   }
@@ -609,7 +609,7 @@ export class IsBlankExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string is empty or contains only whitespace';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<boolean> {
     const str = String(text || '');
     return str.trim().length === 0;
   }
@@ -625,7 +625,7 @@ export class IsNumericExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string represents a valid number';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<boolean> {
     const str = String(text || '').trim();
     return str !== '' && !isNaN(Number(str));
   }
@@ -641,7 +641,7 @@ export class IsAlphaExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Checks if a string contains only alphabetic characters';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<boolean> {
     const str = String(text || '');
     return /^[a-zA-Z]+$/.test(str);
   }
@@ -658,7 +658,7 @@ export class UrlEncodeExpression implements ExpressionImplementation {
   category = 'String';
   description = 'URL encodes a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return encodeURIComponent(str);
   }
@@ -674,7 +674,7 @@ export class UrlDecodeExpression implements ExpressionImplementation {
   category = 'String';
   description = 'URL decodes a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     try {
       return decodeURIComponent(str);
@@ -694,7 +694,7 @@ export class HtmlEscapeExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Escapes HTML entities in a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return str
       .replace(/&/g, '&amp;')
@@ -715,7 +715,7 @@ export class HtmlUnescapeExpression implements ExpressionImplementation {
   category = 'String';
   description = 'Unescapes HTML entities in a string';
 
-  async evaluate(context: ExecutionContext, text: any): Promise<string> {
+  async evaluate(_context: ExecutionContext, text: any): Promise<string> {
     const str = String(text || '');
     return str
       .replace(/&amp;/g, '&')

@@ -7,10 +7,11 @@
  * Modernized with TypedCommandImplementation interface and Zod validation
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v, z } from '../../validation/lightweight-validators';
 import type { TypedCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 /**
  * Zod schema for SET command input validation
@@ -270,8 +271,8 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     // Special handling for context properties (result, it, etc.)
     // These are set directly on the context object, not in locals Map
     if (variableName === 'result') {
-      (context as any).result = value;
-      context.it = value;
+      Object.assign(context, { result: value });
+      Object.assign(context, { it: value });
       return {
         target: variableName,
         value,
@@ -284,7 +285,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     context.locals.set(variableName, value);
 
     // Set in context.it
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: variableName,
@@ -308,7 +309,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
     context.globals.set(variableName, value);
 
     // Set in context.it
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: variableName,
@@ -331,7 +332,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
 
     // Set the attribute
     context.me.setAttribute(attributeName, String(value));
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: `@${attributeName}`,
@@ -354,7 +355,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
       case 'my':
       case 'me':
         if (!context.me) throw new Error('No "me" element in context');
-        targetElement = context.me;
+        targetElement = asHTMLElement(context.me) || (() => { throw new Error('context.me is not an HTMLElement'); })();
         break;
       case 'its':
       case 'it':
@@ -364,7 +365,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
       case 'your':
       case 'you':
         if (!context.you) throw new Error('No "you" element in context');
-        targetElement = context.you;
+        targetElement = asHTMLElement(context.you) || (() => { throw new Error('context.you is not an HTMLElement'); })();
         break;
       default:
         throw new Error(`Unknown possessive: ${possessive}`);
@@ -375,7 +376,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
 
     // Set the property
     this.setElementPropertyValue(targetElement, property, value);
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: `${possessive} ${property}`,
@@ -394,7 +395,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
 
     // Set the value
     this.setElementValueDirect(element, value);
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: element,
@@ -491,7 +492,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
 
     // Set the property
     this.setElementPropertyValue(element, property, value);
-    context.it = value;
+    Object.assign(context, { it: value });
 
     return {
       target: `the ${property} of ${selector}`,
@@ -504,7 +505,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
   private queryElement(selector: string, context: TypedExecutionContext): HTMLElement | null {
     // Handle 'me' selector as special case
     if (selector === 'me') {
-      return context.me || null;
+      return (context.me as HTMLElement) || null;
     }
     
     // Handle simple selectors

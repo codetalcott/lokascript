@@ -214,6 +214,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
           success: false,
           error: {
             name: 'AsExpressionValidationError',
+            type: 'validation-error',
             message: `As expression validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
             code: 'AS_EXPRESSION_VALIDATION_ERROR',
             suggestions: validationResult.suggestions
@@ -237,6 +238,7 @@ export class EnhancedAsExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'AsExpressionConversionError',
+          type: 'runtime-error',
           message: `Failed to convert value: ${error instanceof Error ? error.message : String(error)}`,
           code: 'AS_EXPRESSION_CONVERSION_ERROR',
           suggestions: ['Check value is convertible to target type', 'Ensure target type is valid']

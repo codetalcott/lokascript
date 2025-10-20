@@ -139,7 +139,7 @@ export class EnhancedJSCommand implements TypedCommandImplementation<
       const result = await func(...Object.values(executionContext));
 
       // Set the result in context
-      context.it = result;
+      Object.assign(context, { it: result });
 
       return {
         result,

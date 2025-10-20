@@ -5,7 +5,7 @@
  * Compatible with _hyperscript parser patterns
  */
 
-import { Lexer, Tokens, Token } from './tokenizer';
+import { Lexer, Tokens, _Token } from './tokenizer';
 import type { ASTNode, ParseError, ParseResult } from './types/core';
 
 /**
@@ -77,8 +77,9 @@ export class HyperscriptParser {
 
       return {
         success: true,
-        result: program,
-        errors: []
+        node: program,
+        error: undefined,
+        tokens: this.tokens.list
       };
     } catch (error) {
       const parseError: ParseError = {
@@ -90,8 +91,9 @@ export class HyperscriptParser {
 
       return {
         success: false,
-        result: null,
-        errors: [parseError]
+        node: undefined,
+        error: parseError,
+        tokens: this.tokens.list
       };
     }
   }
@@ -130,7 +132,7 @@ export class HyperscriptParser {
     
     // Parse event names (click, submit, etc.)
     const eventToken = this.tokens.requireTokenType('IDENTIFIER');
-    const eventName = eventToken.value;
+    const _eventName = eventToken.value;
 
     // Parse optional event details (from, etc.)
     const body: HyperscriptASTNode[] = [];
@@ -163,7 +165,7 @@ export class HyperscriptParser {
     this.tokens.requireToken('def');
     
     const nameToken = this.tokens.requireTokenType('IDENTIFIER');
-    const functionName = nameToken.value;
+    const _functionName = nameToken.value;
 
     // Parse parameter list
     this.tokens.requireOpToken('(');
@@ -279,7 +281,7 @@ export class HyperscriptParser {
    * Parse arguments for a specific command
    */
   private parseCommandArgs(commandName: string): any[] {
-    const args: any[] = [];
+    const _args: any[] = [];
 
     switch (commandName) {
       case 'put':

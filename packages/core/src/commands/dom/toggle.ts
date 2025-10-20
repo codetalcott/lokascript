@@ -4,8 +4,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -14,6 +14,7 @@ import type {
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { dispatchCustomEvent } from '../../core/events';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 export interface ToggleCommandOptions {
   delimiter?: string;
@@ -53,7 +54,7 @@ export class ToggleCommand implements TypedCommandImplementation<
   public readonly outputType = 'element-list' as const;
   
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'simple',
     sideEffects: ['dom-mutation'],
     examples: [
@@ -137,8 +138,8 @@ export class ToggleCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
-            message: validationResult.errors[0]?.message || 'Invalid input',
+                        type: 'validation-error',
+                        message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TOGGLE_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
           },
@@ -152,8 +153,8 @@ export class ToggleCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ToggleCommandError',
-            message: 'No valid classes provided to toggle',
+                        type: 'missing-argument',
+                        message: 'No valid classes provided to toggle',
             code: 'NO_VALID_CLASSES',
             suggestions: [ 'Provide valid CSS class names', 'Check class name syntax']
           },
@@ -168,8 +169,8 @@ export class ToggleCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ToggleCommandError',
-            message: 'No target elements found',
+                        type: 'missing-argument',
+                        message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: [ 'Check if target selector is valid', 'Ensure elements exist in DOM']
           },
@@ -197,8 +198,8 @@ export class ToggleCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ToggleCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TOGGLE_EXECUTION_FAILED',
           suggestions: [ 'Check if elements exist', 'Verify class names are valid']
         },
@@ -239,7 +240,11 @@ export class ToggleCommand implements TypedCommandImplementation<
       if (!context.me) {
         throw new Error('Context element "me" is null');
       }
-      return [context.me];
+      const htmlElement = asHTMLElement(context.me);
+      if (!htmlElement) {
+        throw new Error('Context element "me" is not an HTMLElement');
+      }
+      return [htmlElement];
     }
 
     // Handle HTMLElement
@@ -287,8 +292,8 @@ export class ToggleCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'ToggleClassError',
-              message: `Invalid class name: "${className}"`,
+                            type: 'invalid-argument',
+                            message: `Invalid class name: "${className}"`,
               code: 'INVALID_CLASS_NAME',
               suggestions: [ 'Use valid CSS class names', 'Check for special characters']
             },
@@ -322,8 +327,8 @@ export class ToggleCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ToggleClassError',
-          message: error instanceof Error ? error.message : 'Failed to toggle classes',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Failed to toggle classes',
           code: 'CLASS_TOGGLE_FAILED',
           suggestions: [ 'Check if element is still in DOM', 'Verify class names are valid']
         },

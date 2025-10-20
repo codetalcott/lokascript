@@ -249,7 +249,11 @@ export class ConversionUtilities {
       return {
         success: false,
         value: fallback !== undefined ? fallback : value,
-        error: { message: error instanceof Error ? error.message : String(error) }
+        error: {
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : String(error),
+          suggestions: []
+        }
       };
     }
   }

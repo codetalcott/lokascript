@@ -7,7 +7,7 @@
  * Integrates with the enhanced template directive system
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v, z } from '../../validation/lightweight-validators';
 import type { TypedCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
@@ -234,7 +234,7 @@ export class EnhancedRenderCommand implements TypedCommandImplementation<
     const content = resultElement.children.length === 1 ? resultElement.firstElementChild : resultElement;
     
     // Set result in context.it for chaining
-    context.it = content;
+    Object.assign(context, { it: content });
 
     // For _hyperscript compatibility, return the DOM element directly
     // The test infrastructure expects to access .textContent/.innerHTML properties
@@ -374,7 +374,7 @@ export class EnhancedRenderCommand implements TypedCommandImplementation<
     lines: string[],
     startIndex: number,
     context: any,
-    directivesProcessed: string[]
+    _directivesProcessed: string[]
   ): Promise<{ nextIndex: number; renderedContent: string }> {
     const repeatLine = lines[startIndex].trim();
     

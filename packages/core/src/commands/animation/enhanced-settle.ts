@@ -9,6 +9,7 @@
 
 import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 // Input type definition
 export interface SettleCommandInput {
@@ -131,7 +132,11 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
       if (!context.me) {
         throw new Error('No target element available - provide explicit target or ensure context.me is available');
       }
-      targetElement = context.me;
+      const htmlElement = asHTMLElement(context.me);
+      if (!htmlElement) {
+        throw new Error('context.me is not an HTMLElement');
+      }
+      targetElement = htmlElement;
     }
 
     // Parse timeout
@@ -143,7 +148,7 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
     const duration = Date.now() - startTime;
 
     // Set the result in context
-    context.it = targetElement;
+    Object.assign(context, { it: targetElement });
 
     return {
       element: targetElement,
@@ -165,9 +170,9 @@ export class EnhancedSettleCommand implements TypedCommandImplementation<
       const trimmed = element.trim();
       
       // Handle context references
-      if (trimmed === 'me' && context.me) return context.me;
+      if (trimmed === 'me' && context.me) return asHTMLElement(context.me);
       if (trimmed === 'it' && context.it instanceof HTMLElement) return context.it;
-      if (trimmed === 'you' && context.you) return context.you;
+      if (trimmed === 'you' && context.you) return asHTMLElement(context.you);
 
       // Handle CSS selector
       if (typeof document !== 'undefined') {

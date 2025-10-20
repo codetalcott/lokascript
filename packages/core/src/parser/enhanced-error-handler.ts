@@ -39,8 +39,8 @@ export class EnhancedErrorHandler {
     const recovery = this.generateRecoveryStrategy(context);
 
     const error: EnhancedParseError = {
+      name: 'ParseError',
       message: enhancedMessage,
-      position: currentToken.start,
       line: currentToken.line,
       column: currentToken.column,
       context,
@@ -69,7 +69,7 @@ export class EnhancedErrorHandler {
   /**
    * Enhance error message with context-specific information
    */
-  private enhanceErrorMessage(message: string, context: ErrorContext, token: Token): string {
+  private enhanceErrorMessage(message: string, context: ErrorContext, _token: Token): string {
     const baseMessage = message;
     
     switch (context.parsing) {
@@ -299,8 +299,8 @@ export class EnhancedErrorHandler {
       // Detect consecutive operators
       if (token.type === TokenType.OPERATOR && next?.type === TokenType.OPERATOR) {
         errors.push({
+          name: 'ParseError',
           message: `Consecutive operators '${token.value}' and '${next.value}' are not allowed`,
-          position: token.start,
           line: token.line,
           column: token.column,
           context: { parsing: 'binary_op', operators: [token.value, next.value] },
@@ -312,8 +312,8 @@ export class EnhancedErrorHandler {
       // Detect unclosed strings
       if (token.type === TokenType.STRING && !token.value.endsWith('"') && !token.value.endsWith("'")) {
         errors.push({
+          name: 'ParseError',
           message: `Unclosed string literal: ${token.value}`,
-          position: token.start,
           line: token.line,
           column: token.column,
           context: { parsing: 'string' },
@@ -325,8 +325,8 @@ export class EnhancedErrorHandler {
       // Detect invalid operator combinations
       if (token.type === TokenType.OPERATOR && (token.value === '++' || token.value === '--')) {
         errors.push({
+          name: 'ParseError',
           message: `Invalid operator '${token.value}'. JavaScript-style increment/decrement operators are not supported`,
-          position: token.start,
           line: token.line,
           column: token.column,
           context: { parsing: 'binary_op', operators: [token.value] },

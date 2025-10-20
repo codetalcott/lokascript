@@ -4,8 +4,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -13,6 +13,7 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
+import { asHTMLElement } from '../../utils/dom-utils';
 import { dispatchCustomEvent } from '../../core/events';
 
 export interface HideCommandOptions {
@@ -50,7 +51,7 @@ export class HideCommand implements TypedCommandImplementation<
   public readonly outputType = 'element-list' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'simple',
     sideEffects: ['dom-mutation'],
     examples: [
@@ -145,8 +146,8 @@ export class HideCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'HideCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'HIDE_EXECUTION_FAILED',
           suggestions: ['Check if element exists', 'Verify element is not null']
         },
@@ -164,7 +165,11 @@ export class HideCommand implements TypedCommandImplementation<
       if (!context.me) {
         throw new Error('Context element "me" is null');
       }
-      return [context.me];
+      const htmlElement = asHTMLElement(context.me);
+      if (!htmlElement) {
+        throw new Error('Context element "me" is not an HTMLElement');
+      }
+      return [htmlElement];
     }
 
     // Handle HTMLElement directly
@@ -218,8 +223,8 @@ export class HideCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'HideElementError',
-          message: error instanceof Error ? error.message : 'Failed to hide element',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Failed to hide element',
           code: 'ELEMENT_HIDE_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify element is not null']
         },

@@ -120,9 +120,9 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
     // If no target specified, append to result variable (it)
     if (!target) {
       if (context.it === undefined) {
-        context.it = contentStr;
+        Object.assign(context, { it: contentStr });
       } else {
-        context.it = String(context.it) + contentStr;
+        Object.assign(context, { it: String(context.it) + contentStr });
       }
       return {
         result: context.it,
@@ -207,7 +207,7 @@ export class EnhancedAppendCommand implements TypedCommandImplementation<
     } else {
       // Handle other object types by converting to string
       const newValue = String(target) + contentStr;
-      context.it = newValue;
+      Object.assign(context, { it: newValue });
       return {
         result: newValue,
         targetType: 'string'

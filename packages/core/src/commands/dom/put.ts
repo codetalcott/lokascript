@@ -1,6 +1,6 @@
 
 // Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
+const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Put Command - Deep TypeScript Integration
@@ -8,8 +8,8 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v, z } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -18,6 +18,7 @@ import type {
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { dispatchCustomEvent } from '../../core/events';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 export interface PutCommandOptions {
   sanitizeHTML?: boolean;
@@ -64,7 +65,7 @@ export class PutCommand implements TypedCommandImplementation<
   public readonly outputType = 'element' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'medium',
     sideEffects: ['dom-mutation'],
     examples: [
@@ -158,8 +159,8 @@ export class PutCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
-            message: validationResult.errors[0]?.message || 'Invalid input',
+                        type: 'validation-error',
+                        message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'PUT_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
           },
@@ -233,8 +234,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'PutCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'PUT_EXECUTION_FAILED',
           suggestions: ['Check if target element exists', 'Verify content is valid', 'Ensure position is supported']
         },
@@ -320,17 +321,30 @@ export class PutCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'PutTargetError',
-              message: 'No target element available - context.me is undefined',
+                            type: 'missing-argument',
+                            message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
               suggestions: ['Ensure command is called within element context', 'Provide explicit target element']
             },
             type: 'error'
           };
         }
+        const htmlElement = asHTMLElement(context.me);
+        if (!htmlElement) {
+          return {
+            success: false,
+            error: {
+                            type: 'invalid-argument',
+                            message: 'context.me is not an HTMLElement',
+              code: 'INVALID_CONTEXT_ELEMENT',
+              suggestions: ['Ensure context.me is an HTMLElement']
+            },
+            type: 'error'
+          };
+        }
         return {
           success: true,
-          value: { element: context.me },
+          value: { element: htmlElement },
           type: 'object'
         };
       }
@@ -366,8 +380,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'PutTargetError',
-                message: `Target element not found: ${selector}`,
+                                type: 'runtime-error',
+                                message: `Target element not found: ${selector}`,
                 code: 'TARGET_NOT_FOUND',
                 suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
               },
@@ -388,8 +402,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'PutTargetError',
-                message: `Target element not found: ${target}`,
+                                type: 'runtime-error',
+                                message: `Target element not found: ${target}`,
                 code: 'TARGET_NOT_FOUND',
                 suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
               },
@@ -408,7 +422,7 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'PutTargetError',
+          type: 'invalid-argument',
           message: `Invalid target type: ${typeof target}`,
           code: 'INVALID_TARGET_TYPE',
           suggestions: ['Use HTMLElement, CSS selector string, or omit for implicit target']
@@ -420,8 +434,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'PutTargetError',
-          message: error instanceof Error ? error.message : 'Target resolution failed',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Target resolution failed',
           code: 'TARGET_RESOLUTION_FAILED',
           suggestions: ['Check target syntax and availability']
         },
@@ -433,7 +447,7 @@ export class PutCommand implements TypedCommandImplementation<
   private querySelector(selector: string, context: TypedExecutionContext): HTMLElement | null {
     // Handle 'me' selector as special case
     if (selector === 'me') {
-      return context.me || null;
+      return (context.me as HTMLElement) || null;
     }
     
     // Use document.querySelector if available
@@ -464,8 +478,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'PutOperationError',
-                message: `Property access (${property}) only supports 'into' position`,
+                                type: 'invalid-argument',
+                                message: `Property access (${property}) only supports 'into' position`,
                 code: 'INVALID_PROPERTY_POSITION',
                 suggestions: ['Use "into" position for property access', 'Remove property access for other positions']
               },
@@ -494,8 +508,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'PutOperationError',
-                message: `Invalid position: ${position}`,
+                                type: 'invalid-argument',
+                                message: `Invalid position: ${position}`,
                 code: 'INVALID_POSITION',
                 suggestions: ['Use: into, before, after, at start of, at end of']
               },
@@ -514,8 +528,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'PutOperationError',
-          message: error instanceof Error ? error.message : 'Put operation failed',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Put operation failed',
           code: 'OPERATION_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify content is valid']
         },

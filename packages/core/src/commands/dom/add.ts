@@ -4,8 +4,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -13,6 +13,7 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
+import { asHTMLElement } from '../../utils/dom-utils';
 import { dispatchCustomEvent } from '../../core/events';
 
 export interface AddCommandOptions {
@@ -53,7 +54,7 @@ export class AddCommand implements TypedCommandImplementation<
   public readonly outputType = 'element-list' as const;
   
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'medium',
     sideEffects: ['dom-mutation'],
     examples: [
@@ -148,8 +149,8 @@ export class AddCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
-            message: validationResult.errors[0]?.message || 'Invalid input',
+                        type: 'validation-error',
+                        message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'ADD_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
           },
@@ -164,8 +165,8 @@ export class AddCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'AddCommandError',
-            message: 'No target elements found',
+                        type: 'missing-argument',
+                        message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: ['Check if target selector is valid', 'Ensure elements exist in DOM']
           },
@@ -191,8 +192,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'AddCommandError',
-              message: 'No valid classes provided to add',
+                            type: 'missing-argument',
+                            message: 'No valid classes provided to add',
               code: 'NO_VALID_CLASSES',
               suggestions: ['Provide valid CSS class names', 'Check class name syntax']
             },
@@ -218,8 +219,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'AddCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'ADD_EXECUTION_FAILED',
           suggestions: ['Check if elements exist', 'Verify class names are valid']
         },
@@ -279,7 +280,11 @@ export class AddCommand implements TypedCommandImplementation<
       if (!context.me) {
         throw new Error('Context element "me" is null');
       }
-      return [context.me];
+      const htmlElement = asHTMLElement(context.me);
+      if (!htmlElement) {
+        throw new Error('Context element "me" is not an HTMLElement');
+      }
+      return [htmlElement];
     }
 
     // Handle HTMLElement
@@ -329,8 +334,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'AddClassError',
-              message: `Invalid class name: "${className}"`,
+                            type: 'invalid-argument',
+                            message: `Invalid class name: "${className}"`,
               code: 'INVALID_CLASS_NAME',
               suggestions: ['Use valid CSS class names', 'Check for special characters']
             },
@@ -364,8 +369,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'AddClassError',
-          message: error instanceof Error ? error.message : 'Failed to add classes',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Failed to add classes',
           code: 'CLASS_ADD_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify class names are valid']
         },
@@ -392,8 +397,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'AddAttributeError',
-              message: `Invalid attribute name: "${name}"`,
+                            type: 'invalid-argument',
+                            message: `Invalid attribute name: "${name}"`,
               code: 'INVALID_ATTRIBUTE_NAME',
               suggestions: ['Use valid HTML attribute names', 'Check attribute syntax']
             },
@@ -426,8 +431,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'AddAttributeError',
-          message: error instanceof Error ? error.message : 'Failed to add attributes',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Failed to add attributes',
           code: 'ATTRIBUTE_ADD_FAILED',
           suggestions: ['Check attribute syntax', 'Verify element exists']
         },

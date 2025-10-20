@@ -4,7 +4,7 @@
  */
 
 import { CodeGenerator } from './code-generator';
-import { readFileSync, existsSync } from 'fs';
+import { _readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 // Critical missing commands we want to implement first
@@ -29,7 +29,7 @@ function getCurrentlyImplemented(): string[] {
     'src/commands/advanced'
   ];
 
-  const implemented: string[] = [];
+  const _implemented: string[] = [];
   
   commandDirs.forEach(dir => {
     const fullPath = join(process.cwd(), dir);

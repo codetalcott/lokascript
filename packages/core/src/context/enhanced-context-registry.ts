@@ -200,6 +200,7 @@ export class EnhancedContextRegistry implements ContextRegistry {
         message: `Context with name "${context.name}" is already registered` 
       });
       suggestions.push('Use a unique name or unregister the existing context first');
+    suggestions: []
     }
 
     // Validate Zod schema functionality
@@ -213,6 +214,7 @@ export class EnhancedContextRegistry implements ContextRegistry {
           message: `Input schema validation failed: ${error instanceof Error ? error.message : String(error)}`
         });
         suggestions.push('Ensure inputSchema is a valid Zod schema');
+      suggestions: []
       }
     }
 
@@ -354,6 +356,7 @@ export function registerContexts(
         message: `Failed to register context "${context.name}": ${error instanceof Error ? error.message : String(error)}`,
         path: context.name
       });
+    suggestions: []
     }
   }
 

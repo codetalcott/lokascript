@@ -195,6 +195,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
           success: false,
           error: {
             name: 'ElseDirectiveValidationError',
+            type: 'validation-error',
             message: validation.errors[0]?.message || 'Invalid @else directive input',
             code: 'ELSE_VALIDATION_FAILED',
             suggestions: validation.suggestions || [
@@ -213,6 +214,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
           success: false,
           error: {
             name: 'ElseDirectiveContextError',
+            type: 'invalid-argument',
             message: contextValidation.errors[0]?.message || 'Invalid template context',
             code: 'ELSE_CONTEXT_INVALID',
             suggestions: contextValidation.suggestions || ['Check template context structure']
@@ -246,6 +248,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
         success: false,
         error: {
           name: 'ElseDirectiveError',
+          type: 'runtime-error',
           message: `@else directive execution failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ELSE_EXECUTION_FAILED',
           suggestions: [
@@ -282,7 +285,8 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
       }
 
       // Additional semantic validation
-      const { templateContent } = parsed.data;
+      const data = parsed.data as any;
+      const { templateContent } = data;
       
       if (!templateContent.trim()) {
         return {

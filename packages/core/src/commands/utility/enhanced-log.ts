@@ -7,7 +7,7 @@
  * Modernized with TypedCommandImplementation interface and Zod validation
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type { TypedCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
@@ -41,7 +41,7 @@ export class EnhancedLogCommand implements TypedCommandImplementation<LogCommand
   
   async execute(
     input: LogCommandInputType,
-    context: TypedExecutionContext
+    _context: TypedExecutionContext
   ): Promise<LogCommandOutput> {
     const { values } = input;
     
@@ -63,30 +63,38 @@ export class EnhancedLogCommand implements TypedCommandImplementation<LogCommand
     try {
       const validInput = this.inputSchema.parse(input);
       return {
-        success: true,
+        isValid: true,
+        errors: [],
+        suggestions: [],
         data: validInput
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
         return {
-          success: false,
-          error: {
+          isValid: false,
+          errors: [{
+            code: 'VALIDATION_ERROR',
             message: `Invalid LOG command input: ${error.message}`,
-            suggestions: [
-              'log "message"',
-              'log variable',
-              'log value1 value2 value3'
-            ]
-          }
+            path: [],
+            severity: 'error' as const
+          }],
+          suggestions: [
+            'log "message"',
+            'log variable',
+            'log value1 value2 value3'
+          ]
         };
       }
-      
+
       return {
-        success: false,
-        error: {
-          message: `LOG command validation failed: ${error.message}`,
-          suggestions: []
-        }
+        isValid: false,
+        errors: [{
+          code: 'VALIDATION_ERROR',
+          message: `LOG command validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          path: [],
+          severity: 'error' as const
+        }],
+        suggestions: []
       };
     }
   }

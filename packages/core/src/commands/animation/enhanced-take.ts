@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import type { 
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -13,12 +13,13 @@ import type {
 } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
 import { dispatchCustomEvent } from '../../core/events';
-import { 
-  createTupleValidator, 
-  createStringValidator, 
+import {
+  createTupleValidator,
+  createStringValidator,
   createUnionValidator,
-  type RuntimeValidator 
+  type _RuntimeValidator
 } from '../../validation/lightweight-validators';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 export interface TakeCommandOptions {
   validateProperties?: boolean;
@@ -54,7 +55,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
   public readonly outputType = 'element' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'medium',
     sideEffects: ['dom-mutation', 'attribute-transfer'],
     examples: [
@@ -158,7 +159,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TAKE_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -216,7 +217,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'TakeCommandError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TAKE_EXECUTION_FAILED',
           suggestions: ['Check if elements exist and verify property names are valid']
@@ -362,7 +363,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TakeParseError',
+            type: 'runtime-error',
             message: `Cannot resolve source element: ${sourceResult.error?.message}`,
             code: 'SOURCE_RESOLUTION_FAILED',
             suggestions: ['Check if source element exists in DOM', 'Verify selector syntax']
@@ -393,7 +394,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'TakeParseError',
+              type: 'runtime-error',
               message: `Cannot resolve target element: ${targetResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
               suggestions: ['Check if target element exists in DOM', 'Verify selector syntax']
@@ -408,7 +409,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-              name: 'TakeParseError',
+              type: 'context-error',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
               suggestions: ['Ensure command is called within element context', 'Provide explicit target element']
@@ -416,7 +417,20 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
             type: 'error'
           };
         }
-        targetElement = context.me;
+        const htmlElement = asHTMLElement(context.me);
+        if (!htmlElement) {
+          return {
+            success: false,
+            error: {
+              type: 'type-mismatch',
+              message: 'context.me is not an HTMLElement',
+              code: 'INVALID_CONTEXT_ELEMENT',
+              suggestions: ['Ensure context.me is an HTMLElement']
+            },
+            type: 'error'
+          };
+        }
+        targetElement = htmlElement;
       }
 
       return {
@@ -433,7 +447,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'TakeParseError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to parse take arguments',
           code: 'PARSE_FAILED',
           suggestions: ['Check argument syntax and types']
@@ -462,11 +476,14 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         // Handle context references
         const trimmed = element.trim();
         if (trimmed === 'me' && context.me) {
-          return {
-            success: true,
-            value: context.me,
-            type: 'element'
-          };
+          const htmlElement = asHTMLElement(context.me);
+          if (htmlElement) {
+            return {
+              success: true,
+              value: htmlElement,
+              type: 'element'
+            };
+          }
         }
         if (trimmed === 'it' && context.it instanceof HTMLElement) {
           return {
@@ -476,11 +493,14 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
           };
         }
         if (trimmed === 'you' && context.you) {
-          return {
-            success: true,
-            value: context.you,
-            type: 'element'
-          };
+          const htmlElement = asHTMLElement(context.you);
+          if (htmlElement) {
+            return {
+              success: true,
+              value: htmlElement,
+              type: 'element'
+            };
+          }
         }
 
         // Handle CSS selector
@@ -498,7 +518,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                name: 'ElementResolutionError',
+                type: 'syntax-error',
                 message: `Invalid CSS selector: "${trimmed}"`,
                 code: 'INVALID_SELECTOR',
                 suggestions: ['Use valid CSS selector syntax', 'Check for typos in selector']
@@ -511,7 +531,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'ElementResolutionError',
+            type: 'runtime-error',
             message: `Element not found: "${trimmed}"`,
             code: 'ELEMENT_NOT_FOUND',
             suggestions: ['Check if element exists in DOM', 'Verify selector matches existing elements']
@@ -523,7 +543,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ElementResolutionError',
+          type: 'invalid-argument',
           message: `Invalid element reference: ${typeof element}`,
           code: 'INVALID_ELEMENT_REFERENCE',
           suggestions: ['Use HTMLElement or CSS selector string']
@@ -535,7 +555,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ElementResolutionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Element resolution failed',
           code: 'RESOLUTION_FAILED',
           suggestions: ['Check element reference validity']
@@ -559,7 +579,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            name: 'TakePropertyError',
+            type: 'invalid-argument',
             message: `Invalid property name: "${prop}"`,
             code: 'INVALID_PROPERTY',
             suggestions: ['Use valid property names', 'Check property syntax']
@@ -686,7 +706,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'TakePropertyError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to take property',
           code: 'PROPERTY_TAKE_FAILED',
           suggestions: ['Check if element supports the property', 'Verify property name is valid']
@@ -819,7 +839,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'PutPropertyError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to put property',
           code: 'PROPERTY_PUT_FAILED',
           suggestions: ['Check if element supports the property', 'Verify property value is valid']

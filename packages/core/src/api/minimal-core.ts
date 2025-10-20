@@ -8,7 +8,7 @@
 import { parse } from '../parser/parser';
 import { tokenize } from '../parser/tokenizer';
 import { MinimalRuntime } from '../runtime/minimal-runtime';
-import { createContext, createChildContext } from '../core/context';
+import { createContext, _createChildContext } from '../core/context';
 import type { ASTNode, ExecutionContext, ParseError } from '../types/base-types';
 
 // ============================================================================
@@ -87,7 +87,7 @@ async function compile(code: string): Promise<MinimalCompilationResult> {
     return {
       success: false,
       errors: [{
-        type: 'compile-error',
+        name: 'CompileError',
         message: error instanceof Error ? error.message : 'Unknown compilation error',
         line: 1,
         column: 1

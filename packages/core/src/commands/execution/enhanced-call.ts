@@ -139,7 +139,7 @@ export class EnhancedCallCommand implements TypedCommandImplementation<
       }
 
       // Set the result in the 'it' context variable
-      context.it = result;
+      Object.assign(context, { it: result });
       
       return {
         result,

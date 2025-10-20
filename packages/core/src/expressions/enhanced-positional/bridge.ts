@@ -291,7 +291,11 @@ export class PositionalUtilities {
       return {
         success: false,
         value: fallback !== undefined ? fallback : null,
-        error: { message: error instanceof Error ? error.message : String(error) }
+        error: {
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : String(error),
+          suggestions: []
+        }
       };
     }
   }
@@ -322,7 +326,11 @@ export class PositionalUtilities {
       return {
         success: false,
         value: fallback !== undefined ? fallback : null,
-        error: { message: error instanceof Error ? error.message : String(error) }
+        error: {
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : String(error),
+          suggestions: []
+        }
       };
     }
   }
@@ -354,7 +362,11 @@ export class PositionalUtilities {
       return {
         success: false,
         value: fallback !== undefined ? fallback : null,
-        error: { message: error instanceof Error ? error.message : String(error) }
+        error: {
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : String(error),
+          suggestions: []
+        }
       };
     }
   }
@@ -388,13 +400,29 @@ export class PositionalUtilities {
           break;
         case 'at':
           if (index === undefined) {
-            operationResult = { success: false, value: null, error: { message: 'Index required for at operation' } };
+            operationResult = {
+              success: false,
+              value: null,
+              error: {
+                type: 'missing-argument',
+                message: 'Index required for at operation',
+                suggestions: []
+              }
+            };
           } else {
             operationResult = await this.safeAt(context, index, collection);
           }
           break;
         default:
-          operationResult = { success: false, value: null, error: { message: `Unknown operation type: ${type}` } };
+          operationResult = {
+            success: false,
+            value: null,
+            error: {
+              type: 'invalid-argument',
+              message: `Unknown operation type: ${type}`,
+              suggestions: []
+            }
+          };
       }
 
       const resultKey = key || `operation_${i}`;

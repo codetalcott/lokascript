@@ -149,6 +149,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           success: false,
           error: {
             name: 'InExpressionValidationError',
+            type: 'validation-error',
             message: `In expression validation failed: ${validationResult.errors.join(', ')}`,
             code: 'IN_EXPRESSION_VALIDATION_ERROR'
           },
@@ -179,6 +180,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'InExpressionEvaluationError',
+          type: 'runtime-error',
           message: `Failed to evaluate in expression: ${error instanceof Error ? error.message : String(error)}`,
           code: 'IN_EXPRESSION_EVALUATION_ERROR'
         },
@@ -216,6 +218,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'ArraySearchError',
+          type: 'runtime-error',
           message: `Failed to search in array: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_SEARCH_ERROR'
         },
@@ -256,6 +259,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'DOMSearchError',
+          type: 'runtime-error',
           message: `Failed to search in DOM: ${error instanceof Error ? error.message : String(error)}`,
           code: 'DOM_SEARCH_ERROR'
         },
@@ -332,6 +336,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'QuerySelectorError',
+          type: 'runtime-error',
           message: `Failed to query selector '${selector}': ${error instanceof Error ? error.message : String(error)}`,
           code: 'QUERY_SELECTOR_ERROR'
         },
@@ -372,6 +377,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         success: false,
         error: {
           name: 'MultiQueryError',
+          type: 'runtime-error',
           message: `Failed to perform multi-query: ${error instanceof Error ? error.message : String(error)}`,
           code: 'MULTI_QUERY_ERROR'
         },

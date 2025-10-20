@@ -142,7 +142,7 @@ export class EnhancedUnlessCommand implements TypedCommandImplementation<
         lastResult = result;
         
         // Update context for next command
-        context.it = result;
+        Object.assign(context, { it: result });
       } catch (error) {
         throw new Error(`Command execution failed in unless block: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }

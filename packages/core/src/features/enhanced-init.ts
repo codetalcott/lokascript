@@ -412,6 +412,7 @@ export class TypedInitFeatureImplementation {
           path: 'initialization.commands'
         });
         suggestions.push('Add at least one command to execute during initialization');
+      suggestions: []
       }
 
       // Check for invalid delay values
@@ -422,6 +423,7 @@ export class TypedInitFeatureImplementation {
           path: 'initialization.timing.delay'
         });
         suggestions.push('Set delay to 0 or positive number in milliseconds');
+      suggestions: []
       }
 
       // If we found specific validation errors, return them without Zod parsing
@@ -447,6 +449,7 @@ export class TypedInitFeatureImplementation {
             path: 'initialization.target'
           });
           suggestions.push('Use valid CSS selector syntax for target element');
+        suggestions: []
         }
       }
 
@@ -458,6 +461,7 @@ export class TypedInitFeatureImplementation {
           path: 'execution.timeout'
         });
         suggestions.push('Set execution timeout to at least 1000ms for proper operation');
+      suggestions: []
       }
 
       // Validate retry configuration
@@ -469,6 +473,7 @@ export class TypedInitFeatureImplementation {
             path: 'execution.retries.maxAttempts'
           });
           suggestions.push('Set maxAttempts to at least 1 for retry functionality');
+        suggestions: []
         }
 
         if (data.execution.retries.delay < 0) {
@@ -478,6 +483,7 @@ export class TypedInitFeatureImplementation {
             path: 'execution.retries.delay'
           });
           suggestions.push('Set retry delay to 0 or positive number in milliseconds');
+        suggestions: []
         }
       }
 
@@ -489,6 +495,7 @@ export class TypedInitFeatureImplementation {
           path: 'options.maxConcurrentInits'
         });
         suggestions.push('Set maxConcurrentInits to at least 1');
+      suggestions: []
       }
 
       // Validate commands structure
@@ -502,6 +509,7 @@ export class TypedInitFeatureImplementation {
               path: `initialization.commands[${index}]`
             });
             suggestions.push('Ensure all commands are valid objects with name and args properties');
+          suggestions: []
           }
         }
       }

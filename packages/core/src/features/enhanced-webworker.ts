@@ -421,6 +421,7 @@ export class TypedWebWorkerFeatureImplementation {
           path: 'messaging.queue.maxSize'
         });
         suggestions.push('Set queue maxSize to 0 for unlimited or positive number for limit');
+      suggestions: []
       }
 
       // Check for empty commands arrays before Zod validation
@@ -433,6 +434,7 @@ export class TypedWebWorkerFeatureImplementation {
               path: 'eventHandlers.commands'
             });
             suggestions.push('Add at least one command to execute for event handler');
+          suggestions: []
           }
         }
       }
@@ -460,6 +462,7 @@ export class TypedWebWorkerFeatureImplementation {
             path: 'worker.script'
           });
           suggestions.push('Provide valid JavaScript file URL or inline script code');
+        suggestions: []
         }
 
         // Validate inline script syntax
@@ -479,6 +482,7 @@ export class TypedWebWorkerFeatureImplementation {
               path: 'worker.script'
             });
             suggestions.push('Ensure inline script has valid JavaScript syntax');
+          suggestions: []
           }
         }
       }
@@ -494,6 +498,7 @@ export class TypedWebWorkerFeatureImplementation {
             path: 'options.maxWorkers'
           });
           suggestions.push('Set maxWorkers to at least 1');
+        suggestions: []
         }
 
         if (data.options.workerTimeout < 1000) {
@@ -503,6 +508,7 @@ export class TypedWebWorkerFeatureImplementation {
             path: 'options.workerTimeout'
           });
           suggestions.push('Set worker timeout to at least 1000ms for proper operation');
+        suggestions: []
         }
 
         if (data.options.terminationTimeout < 1000) {
@@ -512,6 +518,7 @@ export class TypedWebWorkerFeatureImplementation {
             path: 'options.terminationTimeout'
           });
           suggestions.push('Set termination timeout to at least 1000ms for graceful shutdown');
+        suggestions: []
         }
       }
 
@@ -528,6 +535,7 @@ export class TypedWebWorkerFeatureImplementation {
               path: 'eventHandlers.options'
             });
             suggestions.push('Choose either throttle OR debounce, not both');
+          suggestions: []
           }
 
           // Validate filter expressions
@@ -541,6 +549,7 @@ export class TypedWebWorkerFeatureImplementation {
                 path: 'eventHandlers.filter'
               });
               suggestions.push('Use valid JavaScript expression for message filtering');
+            suggestions: []
             }
           }
         }
@@ -553,6 +562,7 @@ export class TypedWebWorkerFeatureImplementation {
           message: 'Web Workers are not supported in this environment',
         });
         suggestions.push('Web Workers require a browser environment');
+      suggestions: []
       }
 
       return {

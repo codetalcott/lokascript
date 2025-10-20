@@ -3,7 +3,7 @@
  * Extends enhanced command patterns to hyperscript features like "on", "init", etc.
  */
 
-import { v, type RuntimeValidator } from '../validation/lightweight-validators';
+import { _v } from '../validation/lightweight-validators';
 import type { ValidationResult, EvaluationResult, CommandMetadata, LLMDocumentation } from './enhanced-core';
 
 /**
@@ -121,6 +121,7 @@ export interface FeatureValidationError {
     end: number;
     line?: number;
     column?: number;
+  suggestions: []
   };
   suggestion: string;
   code?: string;

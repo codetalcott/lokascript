@@ -4,8 +4,8 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
-import type { 
+import { v } from '../../validation/lightweight-validators';
+import type {
   TypedCommandImplementation,
   TypedExecutionContext,
   EvaluationResult,
@@ -14,6 +14,7 @@ import type {
 } from '../../types/enhanced-core.ts';
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { dispatchCustomEvent } from '../../core/events';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 export interface ShowCommandOptions {
   useClass?: boolean;
@@ -51,7 +52,7 @@ export class ShowCommand implements TypedCommandImplementation<
   public readonly outputType = 'element-list' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'dom-manipulation',
+    category: 'DOM',
     complexity: 'simple',
     sideEffects: ['dom-mutation'],
     examples: [
@@ -142,8 +143,8 @@ export class ShowCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ShowCommandError',
-          message: error instanceof Error ? error.message : 'Unknown error',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SHOW_EXECUTION_FAILED',
           suggestions: [ 'Check if element exists', 'Verify element is not null']
         },
@@ -161,7 +162,11 @@ export class ShowCommand implements TypedCommandImplementation<
       if (!context.me) {
         throw new Error('Context element "me" is null');
       }
-      return [context.me];
+      const htmlElement = asHTMLElement(context.me);
+      if (!htmlElement) {
+        throw new Error('Context element "me" is not an HTMLElement');
+      }
+      return [htmlElement];
     }
 
     // Handle HTMLElement directly
@@ -215,8 +220,8 @@ export class ShowCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-          name: 'ShowElementError',
-          message: error instanceof Error ? error.message : 'Failed to show element',
+                    type: 'runtime-error',
+                    message: error instanceof Error ? error.message : 'Failed to show element',
           code: 'ELEMENT_SHOW_FAILED',
           suggestions: [ 'Check if element is still in DOM', 'Verify element is not null']
         },

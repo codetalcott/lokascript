@@ -166,6 +166,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
           success: false,
           error: {
             name: 'ValidationError',
+            type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TAKE_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -221,6 +222,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'TakeCommandError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TAKE_EXECUTION_FAILED',
           suggestion: ['Check if elements exist', 'Verify property names are valid', 'Ensure elements are accessible']
@@ -371,6 +373,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
           success: false,
           error: {
             name: 'TakeParseError',
+            type: 'runtime-error',
             message: `Cannot resolve source element: ${sourceResult.error?.message}`,
             code: 'SOURCE_RESOLUTION_FAILED',
             suggestion: ['Check if source element exists in DOM', 'Verify selector syntax']
@@ -402,6 +405,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
             success: false,
             error: {
               name: 'TakeParseError',
+              type: 'runtime-error',
               message: `Cannot resolve target element: ${targetResult.error?.message}`,
               code: 'TARGET_RESOLUTION_FAILED',
               suggestion: ['Check if target element exists in DOM', 'Verify selector syntax']
@@ -417,6 +421,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
             success: false,
             error: {
               name: 'TakeParseError',
+              type: 'missing-argument',
               message: 'No target element available - context.me is undefined',
               code: 'NO_TARGET_ELEMENT',
               suggestion: ['Ensure command is called within element context', 'Provide explicit target element']
@@ -442,6 +447,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'TakeParseError',
+          type: 'syntax-error',
           message: error instanceof Error ? error.message : 'Failed to parse take arguments',
           code: 'PARSE_FAILED',
           suggestion: 'Check argument syntax and types'
@@ -514,6 +520,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
               success: false,
               error: {
                 name: 'ElementResolutionError',
+                type: 'invalid-argument',
                 message: `Invalid CSS selector: "${trimmed}"`,
                 code: 'INVALID_SELECTOR',
                 suggestion: ['Use valid CSS selector syntax', 'Check for typos in selector']
@@ -527,6 +534,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
           success: false,
           error: {
             name: 'ElementResolutionError',
+            type: 'runtime-error',
             message: `Element not found: "${trimmed}"`,
             code: 'ELEMENT_NOT_FOUND',
             suggestion: ['Check if element exists in DOM', 'Verify selector matches existing elements']
@@ -539,6 +547,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'ElementResolutionError',
+          type: 'invalid-argument',
           message: `Invalid element reference: ${typeof element}`,
           code: 'INVALID_ELEMENT_REFERENCE',
           suggestion: 'Use HTMLElement or CSS selector string'
@@ -551,6 +560,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'ElementResolutionError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Element resolution failed',
           code: 'RESOLUTION_FAILED',
           suggestion: 'Check element reference validity'
@@ -576,6 +586,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
           success: false,
           error: {
             name: 'TakePropertyError',
+            type: 'invalid-argument',
             message: `Invalid property name: "${prop}"`,
             code: 'INVALID_PROPERTY',
             suggestion: ['Use valid property names', 'Check property syntax']
@@ -703,6 +714,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'TakePropertyError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to take property',
           code: 'PROPERTY_TAKE_FAILED',
           suggestion: ['Check if element supports the property', 'Verify property name is valid']
@@ -836,6 +848,7 @@ export class TakeCommand implements CommandImplementation, TypedCommandImplement
         success: false,
         error: {
           name: 'PutPropertyError',
+          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Failed to put property',
           code: 'PROPERTY_PUT_FAILED',
           suggestion: ['Check if element supports the property', 'Verify property value is valid']
