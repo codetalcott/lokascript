@@ -126,7 +126,7 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error', message: 'Validation failed' }],
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestions: [] }],
         suggestions: ['Check input structure']
       };
     }
@@ -319,7 +319,7 @@ export class EnhancedPromiseExpression implements BaseTypedExpression<Promise<un
     } catch (error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error', message: 'Validation failed' }],
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestions: [] }],
         suggestions: ['Check input structure']
       };
     }
@@ -487,7 +487,7 @@ export class EnhancedAwaitExpression implements BaseTypedExpression<unknown> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error', message: 'Validation failed' }],
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestions: [] }],
         suggestions: ['Check input structure']
       };
     }
@@ -625,7 +625,7 @@ export class EnhancedErrorExpression implements BaseTypedExpression<Error> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error', message: 'Validation failed' }],
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestions: [] }],
         suggestions: ['Check input structure']
       };
     }
@@ -747,7 +747,7 @@ export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{ type: 'runtime-error', message: 'Validation failed' }],
+        errors: [{ type: 'runtime-error', message: 'Validation failed', suggestions: [] }],
         suggestions: ['Check input structure']
       };
     }

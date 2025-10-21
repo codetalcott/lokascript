@@ -66,10 +66,11 @@ export interface ValidationResult<T = unknown> {
 /**
  * Evaluation result structure for expression evaluation
  * Provides value and type information for hyperscript expressions
+ * Note: value and type are optional to support error cases
  */
 export interface EvaluationResult<T = unknown> {
-  readonly value: T;
-  readonly type: HyperScriptValueType;
+  readonly value?: T;
+  readonly type?: HyperScriptValueType;
   readonly success: boolean;
   readonly error?: ValidationError;
   readonly performance?: PerformanceCharacteristics;
