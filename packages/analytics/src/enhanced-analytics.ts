@@ -4,13 +4,13 @@
  */
 
 import { z } from 'zod';
-import type { 
+import type {
   TypedContextImplementation,
   ContextMetadata,
   EvaluationResult,
   EnhancedContextBase
 } from '../../core/src/types/enhanced-context.js';
-import type { ValidationResult } from '../../core/src/types/base-types.js';
+import type { ValidationResult, ValidationError } from '../../core/src/types/base-types.js';
 import type { LLMDocumentation, EvaluationType } from '../../core/src/types/enhanced-core.js';
 import type { 
   AnalyticsEvent, 

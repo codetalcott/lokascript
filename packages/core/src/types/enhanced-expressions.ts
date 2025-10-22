@@ -16,7 +16,8 @@ import type {
   LLMDocumentation,
   ExecutionContext,
   TypedExpressionContext,
-  TypedResult
+  TypedResult,
+  EvaluationType
 } from './base-types';
 
 // Re-export for external consumers

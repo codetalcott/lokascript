@@ -18,7 +18,10 @@ import { v, z } from '../validation/lightweight-validators';
 import type {
   ValidationResult,
   ValidationError,
-  TypedResult
+  TypedResult,
+  HyperScriptValueType,
+  EvaluationType,
+  EvaluationResult
 } from './base-types';
 
 // ============================================================================
