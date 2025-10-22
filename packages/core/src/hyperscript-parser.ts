@@ -5,7 +5,7 @@
  * Compatible with _hyperscript parser patterns
  */
 
-import { Lexer, Tokens, _Token } from './tokenizer';
+import { Lexer, Tokens, Token } from './tokenizer';
 import type { ASTNode, ParseError, ParseResult } from './types/core';
 
 /**

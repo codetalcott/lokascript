@@ -5,13 +5,13 @@
  */
 
 import { v, type RuntimeValidator } from '../validation/lightweight-validators';
-import type { 
+import type {
   TypedContextImplementation,
   ContextRegistry,
   ContextFilter,
-  ContextCategory,
-  ValidationResult
+  ContextCategory
 } from '../types/enhanced-context';
+import type { ValidationResult } from '../types/base-types';
 
 // ============================================================================
 // Context Registry Implementation
