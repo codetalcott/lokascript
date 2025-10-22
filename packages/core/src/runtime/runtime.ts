@@ -29,7 +29,7 @@ import { createWaitCommand } from '../legacy/commands/async/wait';
 import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
-import { _createSimpleSetCommand } from '../commands/data/simple-set';
+import { createSimpleSetCommand } from '../commands/data/simple-set';
 import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
 import { createEnhancedDecrementCommand } from '../commands/data/enhanced-decrement';
 import { createEnhancedRenderCommand } from '../commands/templates/enhanced-render';
@@ -65,7 +65,7 @@ import {
 } from '../commands/animation/index';
 
 // Data commands
-import { DefaultCommand, _DecrementCommand } from '../commands/data/index';
+import { DefaultCommand, DecrementCommand } from '../commands/data/index';
 
 // Advanced commands
 import { BeepCommand, AsyncCommand, TellCommand, JSCommand } from '../commands/advanced/index';

@@ -8,14 +8,14 @@
 // ============================================================================
 
 import type {
-  TypedContextImplementation,
-  ValidationResult
+  TypedContextImplementation
 } from '../types/enhanced-context';
+
+import type { ValidationResult } from '../types/base-types';
 
 export type {
   ContextCategory,
   ContextMetadata,
-  ValidationResult,
   EvaluationResult,
   TypedContextImplementation,
   ContextRegistry,
@@ -24,6 +24,8 @@ export type {
   BaseContextOutput,
   EnhancedTypedExpressionContext
 } from '../types/enhanced-context';
+
+export type { ValidationResult } from '../types/base-types';
 
 export {
   EnhancedContextBase,

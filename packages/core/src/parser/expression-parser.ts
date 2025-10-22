@@ -15,8 +15,8 @@ import { TokenType, type Token } from './tokenizer';
 import { enhancedComparisonExpressions } from '../expressions/enhanced-comparison/index';
 import { enhancedMathematicalExpressions } from '../expressions/enhanced-mathematical/index';
 import { enhancedPropertyExpressions } from '../expressions/enhanced-property/index';
-import { _enhancedConversionExpressions } from '../expressions/enhanced-conversion/index';
-import { _enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
+import { enhancedConversionExpressions } from '../expressions/enhanced-conversion/index';
+import { enhancedReferenceExpressions } from '../expressions/enhanced-references/index';
 import { enhancedPositionalExpressions } from '../expressions/enhanced-positional/index';
 
 // Import legacy conversion system for Date conversion compatibility

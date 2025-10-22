@@ -76,48 +76,42 @@ export { RepeatCommand } from './commands/control-flow/index';
 
 export {
   // Reference expressions (me, you, it, CSS selectors)
-  evaluateReference,
-  type ReferenceExpression,
+  referenceExpressions,
 } from './expressions/references/index';
 
 export {
   // Logical expressions (and, or, not, comparisons)
-  evaluateLogical,
-  type LogicalExpression,
+  logicalExpressions,
 } from './expressions/logical/index';
 
 export {
   // Type conversion expressions (as keyword)
-  evaluateConversion,
-  type ConversionExpression,
+  conversionExpressions,
 } from './expressions/conversion/index';
 
 export {
   // Positional expressions (first, last, etc.)
-  evaluatePositional,
-  type PositionalExpression,
+  positionalExpressions,
 } from './expressions/positional/index';
 
 export {
   // Property expressions (possessive syntax)
-  evaluateProperties,
-  type PropertyExpression,
+  propertyExpressions,
 } from './expressions/properties/index';
 
 export {
   // Special expressions (literals, math)
-  evaluateSpecial,
-  type SpecialExpression,
+  specialExpressions,
 } from './expressions/enhanced-special/index';
 
 // ============================================================================
 // Features - Top-level hyperscript features
 // ============================================================================
 
-export { EnhancedBehaviorFeature as BehaviorFeature } from './features/enhanced-behaviors';
-export { EnhancedInitFeature as InitFeature } from './features/enhanced-init';
-export { EnhancedDefFeature as DefFeature } from './features/enhanced-def';
-export { EnhancedWebWorkerFeature as WorkerFeature } from './features/enhanced-webworker';
+export { createBehaviorsFeature } from './features/enhanced-behaviors';
+// export { EnhancedInitFeature as InitFeature } from './features/enhanced-init';
+// export { EnhancedDefFeature as DefFeature } from './features/enhanced-def';
+export { createWebWorkerFeature } from './features/enhanced-webworker';
 // Note: Install, Everywhere, Class, JS, Set features need enhanced implementations
 // Temporarily commenting out until enhanced versions are created
 // export { InstallFeature } from './features/install';
@@ -132,7 +126,6 @@ export { EnhancedWebWorkerFeature as WorkerFeature } from './features/enhanced-w
 
 export {
   TailwindExtension,
-  type TailwindExtensionOptions,
   type TailwindStrategy,
 } from './extensions/tailwind';
 

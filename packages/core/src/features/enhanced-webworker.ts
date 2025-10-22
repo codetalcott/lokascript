@@ -8,9 +8,9 @@
 import { v, z } from '../validation/lightweight-validators';
 import type {
   ContextMetadata,
-  ValidationResult,
   EvaluationResult
 } from '../types/enhanced-context';
+import type { ValidationResult } from '../types/base-types';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
 // ============================================================================

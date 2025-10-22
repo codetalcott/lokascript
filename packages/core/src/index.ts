@@ -82,11 +82,11 @@ export {
 export type {
   TypedContextImplementation,
   ContextMetadata,
-  ValidationResult,
   EvaluationResult,
   EnhancedContextBase
 } from './types/enhanced-context';
-import type { ValidationResult } from './types/base-types';
+
+export type { ValidationResult } from './types/base-types';
 
 export type {
   LLMDocumentation,
