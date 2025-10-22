@@ -434,7 +434,7 @@ export class TypedSocketsFeatureImplementation {
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{ type: 'invalid-input', message: 'Input must be an object' }],
+          errors: [{ type: 'invalid-input', message: 'Input must be an object', suggestions: [] }],
           suggestions: ['Provide a valid WebSocket configuration object']
         };
       }
@@ -623,6 +623,7 @@ export class TypedSocketsFeatureImplementation {
         isValid: false,
         errors: [{
           type: 'schema-validation',
+          suggestions: []
           message: error instanceof Error ? error.message : 'Invalid input format'
         }],
         suggestions: [

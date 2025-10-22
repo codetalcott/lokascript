@@ -431,13 +431,13 @@ export class TypedBehaviorsFeatureImplementation {
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{ type: 'invalid-input', message: 'Input must be an object' }],
+          errors: [{ type: 'invalid-input', message: 'Input must be an object', suggestions: [] }],
           suggestions: ['Provide a valid behavior definition configuration object']
         };
       }
 
       const parsed = this.inputSchema.parse(input);
-      const errors: Array<{ type: string; message: string; path?: string }> = [];
+      const errors: Array<{ type: string; message: string; path?: string; suggestions: string[] }> = [];
       const suggestions: string[] = [];
 
       // Enhanced validation logic
@@ -448,10 +448,9 @@ export class TypedBehaviorsFeatureImplementation {
         errors.push({
           type: 'invalid-behavior-name',
           message: 'Behavior name must be a valid identifier (letters, numbers, underscore, hyphen)',
-          path: 'behavior.name'
+          path: 'behavior.name',
         });
         suggestions.push('Use valid identifier for behavior name (e.g., "my-behavior", "tooltip", "draggable_item")');
-      suggestions: []
       }
 
       // Validate parameters
@@ -459,12 +458,11 @@ export class TypedBehaviorsFeatureImplementation {
         data.behavior.parameters.forEach((param: string, index: number) => {
           if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(param)) {
             errors.push({
-              type: 'invalid-parameter-name',
-              message: `Parameter "${param}" must be a valid JavaScript identifier`,
-              path: `behavior.parameters[${index}]`
-            });
+          type: 'invalid-parameter-name',
+          message: `Parameter "${param}" must be a valid JavaScript identifier`,
+          path: `behavior.parameters[${index}]`,
+        });
             suggestions.push('Use valid JavaScript identifiers for parameter names');
-          suggestions: []
           }
         });
 
@@ -472,10 +470,10 @@ export class TypedBehaviorsFeatureImplementation {
         const paramSet = new Set(data.behavior.parameters);
         if (paramSet.size !== data.behavior.parameters.length) {
           errors.push({
-            type: 'duplicate-parameters',
-            message: 'Behavior parameters must be unique',
-            path: 'behavior.parameters'
-          });
+          type: 'duplicate-parameters',
+          message: 'Behavior parameters must be unique',
+          path: 'behavior.parameters',
+        });
           suggestions.push('Remove duplicate parameter names');
         suggestions: []
         }
@@ -487,12 +485,11 @@ export class TypedBehaviorsFeatureImplementation {
           // Validate event type
           if (!this.isValidEventType(handler.event)) {
             errors.push({
-              type: 'invalid-event-type',
-              message: `"${handler.event}" is not a valid DOM event type`,
-              path: `behavior.eventHandlers[${index}].event`
-            });
+          type: 'invalid-event-type',
+          message: `"${handler.event}" is not a valid DOM event type`,
+          path: `behavior.eventHandlers[${index}].event`,
+        });
             suggestions.push('Use standard DOM event types like "click", "input", "submit", etc.');
-          suggestions: []
           }
 
           // Validate event source selector - skip validation in test environment
@@ -508,10 +505,10 @@ export class TypedBehaviorsFeatureImplementation {
               }
             } catch (selectorError) {
               errors.push({
-                type: 'invalid-event-source-selector',
-                message: `Invalid CSS selector: "${handler.eventSource}"`,
-                path: `behavior.eventHandlers[${index}].eventSource`
-              });
+          type: 'invalid-event-source-selector',
+          message: `Invalid CSS selector: "${handler.eventSource}"`,
+          path: `behavior.eventHandlers[${index}].eventSource`,
+        });
               suggestions.push('Use valid CSS selector syntax for event source');
             suggestions: []
             }
@@ -520,12 +517,11 @@ export class TypedBehaviorsFeatureImplementation {
           // Special validation for obviously invalid selectors
           if (handler.eventSource === '>>>invalid-selector<<<') {
             errors.push({
-              type: 'invalid-event-source-selector',
-              message: `Invalid CSS selector: "${handler.eventSource}"`,
-              path: `behavior.eventHandlers[${index}].eventSource`
-            });
+          type: 'invalid-event-source-selector',
+          message: `Invalid CSS selector: "${handler.eventSource}"`,
+          path: `behavior.eventHandlers[${index}].eventSource`,
+        });
             suggestions.push('Use valid CSS selector syntax for event source');
-          suggestions: []
           }
 
           // Validate filter expression
@@ -534,10 +530,10 @@ export class TypedBehaviorsFeatureImplementation {
               new Function('event', `return ${handler.filter}`);
             } catch (filterError) {
               errors.push({
-                type: 'invalid-filter-expression',
-                message: `Invalid filter expression: ${handler.filter}`,
-                path: `behavior.eventHandlers[${index}].filter`
-              });
+          type: 'invalid-filter-expression',
+          message: `Invalid filter expression: ${handler.filter}`,
+          path: `behavior.eventHandlers[${index}].filter`,
+        });
               suggestions.push('Use valid JavaScript expression for event filtering');
             suggestions: []
             }
@@ -546,33 +542,31 @@ export class TypedBehaviorsFeatureImplementation {
           // Validate performance settings
           if (handler.options?.throttle && handler.options?.debounce) {
             errors.push({
-              type: 'conflicting-performance-options',
-              message: 'Cannot use both throttle and debounce on the same event handler',
-              path: `behavior.eventHandlers[${index}].options`
-            });
+          type: 'conflicting-performance-options',
+          message: 'Cannot use both throttle and debounce on the same event handler',
+          path: `behavior.eventHandlers[${index}].options`,
+        });
             suggestions.push('Choose either throttle OR debounce, not both');
-          suggestions: []
           }
 
           // Validate commands array
           if (!handler.commands || handler.commands.length === 0) {
             errors.push({
-              type: 'empty-commands-array',
-              message: 'Event handler must have at least one command',
-              path: `behavior.eventHandlers[${index}].commands`
-            });
+          type: 'empty-commands-array',
+          message: 'Event handler must have at least one command',
+          path: `behavior.eventHandlers[${index}].commands`,
+        });
             suggestions.push('Add at least one command to the event handler');
-          suggestions: []
           }
         });
 
         // Check event handler count limits
         if (data.behavior.eventHandlers.length > (data.options?.maxEventHandlers || 50)) {
           errors.push({
-            type: 'too-many-event-handlers',
-            message: `Too many event handlers (max: ${data.options?.maxEventHandlers || 50})`,
-            path: 'behavior.eventHandlers'
-          });
+          type: 'too-many-event-handlers',
+          message: `Too many event handlers (max: ${data.options?.maxEventHandlers || 50})`,
+          path: 'behavior.eventHandlers',
+        });
           suggestions.push('Reduce number of event handlers or increase maxEventHandlers limit');
         suggestions: []
         }
@@ -584,10 +578,9 @@ export class TypedBehaviorsFeatureImplementation {
         errors.push({
           type: 'invalid-namespace',
           message: 'Namespace must be a valid JavaScript identifier or dot-separated path',
-          path: 'behavior.namespace'
+          path: 'behavior.namespace',
         });
         suggestions.push('Use valid namespace format (e.g., "myNamespace" or "my.nested.namespace")');
-      suggestions: []
       }
 
       // Validate installation target
@@ -598,10 +591,10 @@ export class TypedBehaviorsFeatureImplementation {
           }
         } catch (selectorError) {
           errors.push({
-            type: 'invalid-installation-target',
-            message: `Invalid CSS selector for installation target: "${data.installation.target}"`,
-            path: 'installation.target'
-          });
+          type: 'invalid-installation-target',
+          message: `Invalid CSS selector for installation target: "${data.installation.target}"`,
+          path: 'installation.target',
+        });
           suggestions.push('Use valid CSS selector syntax for installation target');
         suggestions: []
         }
@@ -618,7 +611,7 @@ export class TypedBehaviorsFeatureImplementation {
         isValid: false,
         errors: [{
           type: 'schema-validation',
-          message: error instanceof Error ? error.message : 'Invalid input format'
+          message: error instanceof Error ? error.message : 'Invalid input format',
         }],
         suggestions: [
           'Ensure input matches EnhancedBehaviorsInput schema',
