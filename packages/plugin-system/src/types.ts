@@ -3,12 +3,12 @@
  * Inspired by Datastar's plugin architecture
  */
 
-import type { 
-  ExecutionContext, 
+import type {
+  ExecutionContext,
   ASTNode,
   CommandNode,
-  ExpressionNode 
-} from '@hyperfixi/core';
+  ExpressionNode
+} from '../../core/src/types/core';
 
 export type PluginType = 'command' | 'feature' | 'transform' | 'runtime';
 export type Requirement = 'allowed' | 'required' | 'denied' | 'exclusive';

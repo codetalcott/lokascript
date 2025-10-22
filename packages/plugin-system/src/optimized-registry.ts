@@ -16,7 +16,7 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
   private patternCache = new Map<string, string | null>();
   private metrics = new Map<string, PluginMetrics>();
 
-  load(...plugins: Plugin[]): void {
+  override load(...plugins: Plugin[]): void {
     super.load(...plugins);
     
     // Pre-compile patterns and optimize

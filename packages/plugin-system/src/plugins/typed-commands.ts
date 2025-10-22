@@ -80,8 +80,10 @@ export const ToggleCommand = defineCommand('toggle', {
       }
 
       case 'visible': {
-        const isHidden = element.style.display === 'none';
-        element.style.display = isHidden ? '' : 'none';
+        if (element instanceof HTMLElement) {
+          const isHidden = element.style.display === 'none';
+          element.style.display = isHidden ? '' : 'none';
+        }
         break;
       }
     }

@@ -42,7 +42,7 @@ export class HybridPluginLoader {
 
     if (this.config.autoDetect) {
       // Setup observers for lazy loading
-      if (this.config.lazyLoadDelay > 0) {
+      if ((this.config.lazyLoadDelay ?? 0) > 0) {
         setTimeout(() => this.detectAndLoadOptional(), this.config.lazyLoadDelay);
       } else {
         this.detectAndLoadOptional();
