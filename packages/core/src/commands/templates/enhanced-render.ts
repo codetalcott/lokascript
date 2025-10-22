@@ -21,10 +21,10 @@ import { EnhancedRepeatDirective } from './directives/enhanced-repeat';
 export const RenderCommandInputSchema = v.object({
   template: v.union([
     z.instanceof(HTMLTemplateElement),
-    v.string().min(1, 'Template must be a non-empty string'),
+    v.string().min(1),
   ]).describe('Template element or template string to render'),
   
-  variables: z.record(v.unknown()).optional().describe('Variables to pass to template context'),
+  variables: z.record(v.string(), v.unknown()).optional().describe('Variables to pass to template context'),
   
   withKeyword: v.literal('with').optional().describe('Syntax keyword "with"'),
 }).describe('RENDER command input parameters');

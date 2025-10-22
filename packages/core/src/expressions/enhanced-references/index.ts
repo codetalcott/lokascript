@@ -454,7 +454,7 @@ export class EnhancedItExpression implements TypedExpressionImplementation<
  * CSS Selector input validation schema
  */
 const CSSelectorInputSchema = v.object({
-  selector: v.string().min(1, 'CSS selector cannot be empty'),
+  selector: v.string().min(1),
   single: v.boolean().optional().default(false) // true for querySelector, false for querySelectorAll
 });
 

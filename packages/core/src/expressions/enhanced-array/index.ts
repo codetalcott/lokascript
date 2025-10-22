@@ -392,7 +392,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
           message: `Failed to evaluate array index: ${error instanceof Error ? error.message : String(error)}`,
           code: 'ARRAY_INDEX_EVALUATION_ERROR',
           severity: 'error',
-          context: { args, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -425,7 +425,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
         message: `Cannot index target of type ${typeof target}`,
         code: 'INVALID_ARRAY_TARGET',
         severity: 'error',
-        context: { target, targetType: typeof target }
+          suggestions: []
       },
       type: 'error'
     };
@@ -549,7 +549,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
           message: `Unsupported index type: ${typeof index}`,
           code: 'INVALID_INDEX_TYPE',
           severity: 'error',
-          context: { index, indexType: typeof index }
+          suggestions: []
         },
         type: 'error'
       };
@@ -562,7 +562,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
           message: `Index operation failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'INDEX_OPERATION_ERROR',
           severity: 'error',
-          context: { array, index, error }
+          suggestions: []
         },
         type: 'error'
       };

@@ -17,14 +17,6 @@ import type {
 // Enhanced String Interpolation Expression
 // ============================================================================
 
-/**
- * String interpolation input schema
- */
-const StringInterpolationInputSchema = v.object({
-  template: v.string(),
-  variables: z.record(v.string(), v.unknown()).optional()
-});
-
 // type StringInterpolationInput = any; // Inferred from RuntimeValidator - unused
 
 /**

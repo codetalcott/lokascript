@@ -38,7 +38,7 @@ export const EnhancedOnInputSchema = v.object({
   commands: v.array(v.any()), // Parsed command nodes
   /** Execution context */
   context: v.object({
-    variables: z.record(v.any()).default({}),
+    variables: z.record(v.string(), v.any()).default({}),
     me: v.any().optional(),
     it: v.any().optional(),
     target: v.any().optional(),
@@ -120,6 +120,9 @@ export interface EventListener {
   commands: any[];
   context: ExecutionContext;
   options: EventListenerOptions & {
+    once?: boolean;
+    passive?: boolean;
+    capture?: boolean;
     delegated?: boolean;
     filter?: string;
     throttle?: number;

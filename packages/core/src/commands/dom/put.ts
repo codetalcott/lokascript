@@ -32,7 +32,7 @@ const PutCommandInputSchema = v.tuple([
     v.boolean(),
     v.custom((value: unknown) => value instanceof HTMLElement),
     v.array(v.unknown()),
-    z.record(v.unknown()),
+    z.record(v.string(), v.unknown()),
     v.null(),
     v.undefined()
   ]).describe('Content to insert'),

@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   ValidationResult,
   TypedExecutionContext as TypedExpressionContext,
@@ -427,7 +427,7 @@ export class EnhancedSubtractionExpression implements BaseTypedExpression<number
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: BinaryOperationInput
   ): Promise<TypedResult<number>> {
     // Reuse the same logic as addition but with subtraction operation
@@ -576,11 +576,11 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: BinaryOperationInput
   ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
-    
+
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {
@@ -718,11 +718,11 @@ export class EnhancedDivisionExpression implements BaseTypedExpression<number> {
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: BinaryOperationInput
   ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
-    
+
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {
@@ -878,11 +878,11 @@ export class EnhancedModuloExpression implements BaseTypedExpression<number> {
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: BinaryOperationInput
   ): Promise<TypedResult<number>> {
     const additionExpr = new EnhancedAdditionExpression();
-    
+
     try {
       const validation = this.validate(input);
       if (!validation.isValid) {

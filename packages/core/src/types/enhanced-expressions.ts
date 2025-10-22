@@ -378,7 +378,7 @@ export const CommonInputSchemas = {
   NumberInput: v.number(),
   BooleanInput: v.boolean(),
   ElementInput: v.custom((value: unknown) => value instanceof HTMLElement),
-  SelectorInput: v.string().regex(/^[.#]?[\w-]+$/, 'Invalid CSS selector'),
+  SelectorInput: v.string().regex(/^[.#]?[\w-]+$/),
   ComparisonInput: v.object({
     left: v.unknown(),
     operator: z.enum(['==', '!=', '>', '<', '>=', '<=']),

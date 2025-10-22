@@ -22,7 +22,7 @@ export const EnhancedEventSourceInputSchema = v.object({
   source: z.object({
     url: v.string().min(1),
     withCredentials: v.boolean().default(false),
-    headers: z.record(v.string()).default({}),
+    headers: z.record(v.string(), v.string()).default({}),
     retry: v.object({
       enabled: v.boolean().default(true),
       maxAttempts: v.number().default(5),
@@ -60,7 +60,7 @@ export const EnhancedEventSourceInputSchema = v.object({
   }).default({}),
   /** Execution context */
   context: v.object({
-    variables: z.record(v.any()).default({}),
+    variables: z.record(v.string(), v.any()).default({}),
     me: v.any().optional(),
     it: v.any().optional(),
     target: v.any().optional(),

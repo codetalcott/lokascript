@@ -165,7 +165,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
             message: `Object literal validation failed: ${validationResult.errors.join(', ')}`,
             code: 'OBJECT_LITERAL_VALIDATION_ERROR',
             severity: 'error',
-            context: { args, validation: validationResult }
+          suggestions: []
           },
           type: 'error'
         };
@@ -203,7 +203,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
           message: `Failed to evaluate object literal: ${error instanceof Error ? error.message : String(error)}`,
           code: 'OBJECT_LITERAL_EVALUATION_ERROR',
           severity: 'error',
-          context: { args, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -238,7 +238,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
             message: `Failed to resolve dynamic field key: ${keyValue.error?.message}`,
             code: 'DYNAMIC_FIELD_KEY_ERROR',
             severity: 'error',
-            context: { field, keyEvaluation: keyValue }
+          suggestions: []
           },
           type: 'error'
         };
@@ -260,7 +260,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
           message: `Failed to resolve field key: ${error instanceof Error ? error.message : String(error)}`,
           code: 'FIELD_KEY_RESOLUTION_ERROR',
           severity: 'error',
-          context: { field, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -303,7 +303,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
               message: `Field value function evaluation failed: ${functionError instanceof Error ? functionError.message : String(functionError)}`,
               code: 'FIELD_VALUE_FUNCTION_ERROR',
               severity: 'error',
-              context: { value, functionError }
+          suggestions: []
             },
             type: 'error'
           };
@@ -325,7 +325,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
           message: `Failed to resolve field value: ${error instanceof Error ? error.message : String(error)}`,
           code: 'FIELD_VALUE_RESOLUTION_ERROR',
           severity: 'error',
-          context: { value, error }
+          suggestions: []
         },
         type: 'error'
       };

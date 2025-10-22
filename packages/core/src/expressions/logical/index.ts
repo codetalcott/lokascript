@@ -357,7 +357,7 @@ export const andExpression: EnhancedExpressionImplementation = {
         input: 'name and age',
         description: 'Both name and age must be truthy',
         expectedOutput: true,
-        context: { name: 'John', age: 25 }
+        context: { variables: new Map([['name', 'John'], ['age', 25]]) }
       }
     ],
     relatedExpressions: ['or', 'not'],
@@ -764,7 +764,7 @@ export const matchesExpression: EnhancedExpressionImplementation = {
         input: 'text matches "/^hello/"',
         description: 'Check if text starts with "hello" using regex',
         expectedOutput: true,
-        context: { text: 'hello world' }
+        context: { variables: new Map([['text', 'hello world']]) }
       }
     ],
     relatedExpressions: ['contains', 'startsWith', 'endsWith'],

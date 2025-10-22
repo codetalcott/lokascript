@@ -63,7 +63,7 @@ export const HyperScriptValueSchema = v.union([
   v.undefined(),
   v.custom((value: unknown) => value instanceof HTMLElement),
   v.array(v.custom((value: unknown) => value instanceof HTMLElement)),
-  z.record(v.unknown()), // Will be refined recursively
+  z.record(v.string(), v.unknown()), // Will be refined recursively
   v.array(v.unknown())
 ]);
 

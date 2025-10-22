@@ -32,7 +32,7 @@ const TriggerCommandInputSchema = v.tuple([
     v.null(),
     v.undefined()
   ]).optional() // Target element(s)
-]).rest(v.any()); // Allow additional arguments
+]).rest(); // Allow additional arguments
 
 type TriggerCommandInput = any; // Inferred from RuntimeValidator
 

@@ -6,7 +6,6 @@
  */
 
 import type { RuntimeValidator } from '../validation/lightweight-validators';
-import { z } from '../validation/lightweight-validators';
 
 // ============================================================================
 // Core Validation Types

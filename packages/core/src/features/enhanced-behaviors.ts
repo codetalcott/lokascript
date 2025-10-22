@@ -49,13 +49,13 @@ export const EnhancedBehaviorsInputSchema = v.object({
   /** Installation configuration */
   installation: v.object({
     target: v.string().optional(), // CSS selector or 'me'
-    parameters: z.record(v.any()).default({}),
+    parameters: z.record(v.string(), v.any()).default({}),
     autoInstall: v.boolean().default(false),
     scope: z.enum(['element', 'document', 'global']).default('element'),
   }).default({}),
   /** Execution context */
   context: v.object({
-    variables: z.record(v.any()).default({}),
+    variables: z.record(v.string(), v.any()).default({}),
     me: v.any().optional(),
     it: v.any().optional(),
     target: v.any().optional(),

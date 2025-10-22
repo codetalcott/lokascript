@@ -32,7 +32,7 @@ const GoCommandInputSchema = z.union([
     v.literal('url'),
     v.string().describe('URL to navigate to'),
     z.enum(['in', 'new', 'window']).optional()
-  ]).rest(z.enum(['in', 'new', 'window'])),
+  ]).rest(),
   
   // History navigation: go back
   v.tuple([v.literal('back')]),

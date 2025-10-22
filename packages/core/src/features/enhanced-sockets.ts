@@ -64,7 +64,7 @@ export const EnhancedSocketsInputSchema = v.object({
   }).default({}),
   /** Execution context */
   context: v.object({
-    variables: z.record(v.any()).default({}),
+    variables: z.record(v.string(), v.any()).default({}),
     me: v.any().optional(),
     it: v.any().optional(),
     target: v.any().optional(),

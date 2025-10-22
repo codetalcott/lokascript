@@ -21,7 +21,7 @@ import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
 export const LLMGenerationInputSchema = v.object({
   /** Code generation prompt */
-  prompt: v.string().min(1, 'Prompt cannot be empty'),
+  prompt: v.string().min(1),
   /** Target environment for generated code */
   targetEnvironment: z.enum(['frontend', 'backend', 'universal']),
   /** Framework context if applicable */

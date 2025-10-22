@@ -239,7 +239,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
             message: `Function call validation failed: ${validationResult.errors.join(', ')}`,
             code: 'FUNCTION_CALL_VALIDATION_ERROR',
             severity: 'error',
-            context: { args, validation: validationResult }
+          suggestions: []
           },
           type: 'error'
         };
@@ -286,7 +286,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Failed to evaluate function call: ${error instanceof Error ? error.message : String(error)}`,
           code: 'FUNCTION_CALL_EVALUATION_ERROR',
           severity: 'error',
-          context: { args, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -380,7 +380,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Function "${functionPath}" not found in any accessible context`,
           code: 'FUNCTION_NOT_FOUND',
           severity: 'error',
-          context: { functionPath, availableContexts: resolutionContexts.map(c => c.name) }
+          suggestions: []
         },
         type: 'error'
       };
@@ -393,7 +393,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Failed to resolve function "${functionPath}": ${error instanceof Error ? error.message : String(error)}`,
           code: 'FUNCTION_RESOLUTION_ERROR',
           severity: 'error',
-          context: { functionPath, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -509,7 +509,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Function execution failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'FUNCTION_EXECUTION_ERROR',
           severity: 'error',
-          context: { func: func.name || 'anonymous', args, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -561,7 +561,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Constructor execution failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'CONSTRUCTOR_EXECUTION_ERROR',
           severity: 'error',
-          context: { constructorName, args, error }
+          suggestions: []
         },
         type: 'error'
       };
@@ -617,7 +617,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Constructor "${constructorName}" not found in any accessible context`,
           code: 'CONSTRUCTOR_NOT_FOUND',
           severity: 'error',
-          context: { constructorName, availableContexts: resolutionContexts.map(c => c.name) }
+          suggestions: []
         },
         type: 'error'
       };
@@ -630,7 +630,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
           message: `Failed to resolve constructor "${constructorName}": ${error instanceof Error ? error.message : String(error)}`,
           code: 'CONSTRUCTOR_RESOLUTION_ERROR',
           severity: 'error',
-          context: { constructorName, error }
+          suggestions: []
         },
         type: 'error'
       };

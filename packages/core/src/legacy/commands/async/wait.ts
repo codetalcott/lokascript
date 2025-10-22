@@ -29,7 +29,7 @@ const WaitCommandInputSchema = v.union([
   // Time-based wait: wait 1000, wait "2s"
   v.tuple([z.union([v.number(), v.string()])]),
   // Event-based wait: wait for "click" from "#button"
-  v.tuple([v.literal('for'), v.string()]).rest(v.any()),
+  v.tuple([v.literal('for'), v.string()]).rest(),
   // Complex object format for structured waiting
   v.tuple([v.object({
     type: z.enum(['timeout', 'event', 'mixed']),

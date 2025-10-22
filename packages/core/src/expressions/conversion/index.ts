@@ -10,7 +10,7 @@ import type { ExecutionContext, ExpressionImplementation } from '../../types/cor
 // ============================================================================
 
 export interface ConversionFunction {
-  (value: unknown, context: ExecutionContext): unknown;
+  (value: unknown, context?: ExecutionContext): unknown;
 }
 
 export const defaultConversions: Record<string, ConversionFunction> = {

@@ -18,7 +18,7 @@ import { asHTMLElement } from '../../utils/dom-utils';
  */
 export const SetCommandInputSchema = v.object({
   target: v.union([
-    v.string().min(1, 'Target must be a non-empty string'),
+    v.string().min(1),
     v.custom((value: unknown) => value instanceof HTMLElement),
   ]).describe('Target variable, element property, or attribute'),
   

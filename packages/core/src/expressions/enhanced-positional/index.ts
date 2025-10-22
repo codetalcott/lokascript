@@ -30,12 +30,6 @@ const IndexInputSchema = v.object({
   index: v.number().describe('Index position to access')
 }).strict();
 
-const SliceInputSchema = v.object({
-  collection: v.unknown().describe('Collection to slice'),
-  start: v.number().optional().describe('Start index (inclusive)'),
-  end: v.number().optional().describe('End index (exclusive)')
-}).strict();
-
 const RandomInputSchema = v.object({
   collection: v.unknown().describe('Collection to select random item from')
 }).strict();

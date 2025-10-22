@@ -139,7 +139,6 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
           success: false,
           error: {
             name: 'LambdaError',
-            type: 'invalid-argument',
             message: 'Parameters must be an array of strings',
             code: 'INVALID_PARAMETERS',
             suggestions: ['Provide an array of parameter names like ["x", "y"]']
@@ -153,7 +152,6 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
           success: false,
           error: {
             name: 'LambdaError',
-            type: 'invalid-argument',
             message: 'Body must be a string expression',
             code: 'INVALID_BODY',
             suggestions: ['Provide a string expression for the function body']
@@ -191,7 +189,6 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
         success: false,
         error: {
           name: 'LambdaError',
-          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Lambda creation failed',
           code: 'LAMBDA_CREATION_FAILED',
           suggestions: ['Check parameter and body syntax']
@@ -372,7 +369,6 @@ export class EnhancedPromiseExpression implements BaseTypedExpression<Promise<un
         success: false,
         error: {
           name: 'PromiseError',
-          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Promise creation failed',
           code: 'PROMISE_CREATION_FAILED',
           suggestions: ['Check executor syntax', 'Use resolve() or reject() calls']
@@ -516,7 +512,6 @@ export class EnhancedAwaitExpression implements BaseTypedExpression<unknown> {
         success: false,
         error: {
           name: 'AwaitError',
-          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Await operation failed',
           code: 'AWAIT_FAILED',
           suggestions: ['Check promise implementation', 'Handle promise rejection']
@@ -654,7 +649,6 @@ export class EnhancedErrorExpression implements BaseTypedExpression<Error> {
         success: false,
         error: {
           name: 'ErrorCreationError',
-          type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Error creation failed',
           code: 'ERROR_CREATION_FAILED',
           suggestions: ['Check error message and properties']
@@ -784,7 +778,6 @@ export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
         success: false,
         error: {
           name: 'TypeofError',
-          type: 'type-mismatch',
           message: error instanceof Error ? error.message : 'Type checking failed',
           code: 'TYPEOF_FAILED',
           suggestions: ['Check if value is accessible']

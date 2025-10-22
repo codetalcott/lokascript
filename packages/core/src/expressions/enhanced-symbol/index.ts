@@ -24,7 +24,7 @@ import type {
  */
 export const SymbolExpressionInputSchema = v.tuple([
   v.string()
-    .min(1, 'Symbol name cannot be empty')
+    .min(1)
     .describe('Variable name to resolve from context')
 ]);
 
@@ -152,7 +152,7 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
             message: `Symbol expression validation failed: ${validationResult.errors.join(', ')}`,
             code: 'SYMBOL_VALIDATION_ERROR',
             severity: 'error',
-            context: { args, validation: validationResult }
+          suggestions: []
           },
           type: 'error'
         };
@@ -178,7 +178,7 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
           message: `Failed to evaluate symbol expression: ${error instanceof Error ? error.message : String(error)}`,
           code: 'SYMBOL_EVALUATION_ERROR',
           severity: 'error',
-          context: { args, error }
+          suggestions: []
         },
         type: 'error'
       };

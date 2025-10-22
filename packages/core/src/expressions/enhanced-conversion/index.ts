@@ -318,7 +318,7 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
  */
 const AsExpressionInputSchema = v.object({
   value: v.any(),
-  type: v.string().min(1, 'Conversion type cannot be empty')
+  type: v.string().min(1)
 });
 
 /**
@@ -585,7 +585,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
  */
 const IsExpressionInputSchema = v.object({
   value: v.any(),
-  type: v.string().min(1, 'Type name cannot be empty')
+  type: v.string().min(1)
 });
 
 /**

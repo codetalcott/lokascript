@@ -3,7 +3,7 @@
  * Implements pattern matching (matches, contains, in) with type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExpressionContext,

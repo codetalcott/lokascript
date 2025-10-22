@@ -20,16 +20,6 @@ import type {
 // ============================================================================
 
 /**
- * Time parsing input schema
- */
-const TimeParsingInputSchema = v.object({
-  timeString: v.string().min(1, 'Time string cannot be empty'),
-  defaultUnit: z.enum(['ms', 's', 'm', 'h', 'd', 'w']).optional().default('ms')
-});
-
-// type TimeParsingInput = any; // Inferred from RuntimeValidator - unused
-
-/**
  * Enhanced time parsing expression with comprehensive validation
  */
 export class EnhancedTimeParsingExpression implements TypedExpressionImplementation<number> {
@@ -217,14 +207,6 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
 /**
  * Duration formatting options
  */
-const DurationFormatSchema = v.object({
-  milliseconds: v.number().min(0, 'Duration must be non-negative'),
-  format: z.enum(['default', 'long', 'short', 'precise']).optional().default('default'),
-  maxUnits: v.number().min(1).max(6).optional().default(6)
-});
-
-// type DurationFormatInput = any; // Inferred from RuntimeValidator - unused
-
 /**
  * Enhanced duration formatting expression
  */

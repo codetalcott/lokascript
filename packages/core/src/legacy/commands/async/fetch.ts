@@ -43,7 +43,7 @@ const FetchCommandInputSchema = v.tuple([
   ]),
   v.object({
     method: v.string().optional(),
-    headers: z.record(v.string()).optional(),
+    headers: z.record(v.string(), v.string()).optional(),
     body: v.unknown().optional(),
     target: v.union([
       v.custom((value: unknown) => value instanceof HTMLElement),
