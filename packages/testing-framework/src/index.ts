@@ -1,6 +1,6 @@
 /**
  * Testing Framework for HyperFixi Applications
- * 
+ *
  * Provides comprehensive cross-platform behavior testing including:
  * - Multi-environment test execution (JSDOM, Browser, Node.js)
  * - Rich assertion library with DOM and HyperScript matchers
@@ -9,6 +9,18 @@
  * - Performance testing
  * - Accessibility testing
  */
+
+// Import types first for local use
+import type {
+  TestSuite,
+  TestCase,
+  TestFunction,
+  TestContext,
+  TestConfig,
+  TestResult,
+  TestEnvironment,
+  BrowserType,
+} from './types';
 
 // Core exports
 export { CoreTestRunner, ParallelTestRunner, createTestRunner, measurePerformance } from './runner';

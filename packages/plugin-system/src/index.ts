@@ -3,6 +3,11 @@
  * Main exports with performance optimizations
  */
 
+// Import for local use first
+import { optimizedRegistry } from './optimized-registry';
+import { createHybridLoader } from './hybrid-loader';
+import type { Plugin } from './types';
+
 // Core types
 export * from './types';
 export * from './typed';
@@ -27,7 +32,6 @@ export default optimizedRegistry;
 /**
  * Quick start function
  */
-import type { Plugin } from './types';
 
 export function initializeHyperfixi(options?: {
   plugins?: Plugin[];
