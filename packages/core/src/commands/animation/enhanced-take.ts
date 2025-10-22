@@ -10,6 +10,7 @@ import type {
   EvaluationResult,
   CommandMetadata,
   LLMDocumentation,
+  TypedResult
 } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
 import { dispatchCustomEvent } from '../../core/events';

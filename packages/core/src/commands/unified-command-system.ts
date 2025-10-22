@@ -163,7 +163,7 @@ export class AsyncCommandExecutor {
           commandName,
           args,
           timestamp: Date.now(),
-          traceId
+          ...(traceId !== undefined && { traceId })
         }
       };
     } catch (error) {
@@ -181,7 +181,7 @@ export class AsyncCommandExecutor {
           commandName,
           args,
           timestamp: Date.now(),
-          traceId
+          ...(traceId !== undefined && { traceId })
         }
       };
     }

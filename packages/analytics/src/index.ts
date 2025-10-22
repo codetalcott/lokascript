@@ -13,6 +13,10 @@
 export { AnalyticsTracker, createAnalyticsTracker, getTracker, initAnalytics } from './tracker';
 export { EventCollector, createEventCollector } from './collector';
 
+// Import for local use
+import { createAnalyticsTracker } from './tracker';
+import { createEventCollector } from './collector';
+
 // Enhanced Pattern exports
 export {
   TypedAnalyticsContextImplementation,

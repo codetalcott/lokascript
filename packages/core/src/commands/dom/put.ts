@@ -252,7 +252,7 @@ export class PutCommand implements TypedCommandImplementation<
           errors: parsed.error?.errors.map(err => ({
             type: 'type-mismatch' as const,
             message: `Invalid argument: ${err.message}`,
-            suggestions: [this.getValidationSuggestion(err.code, err.path)]
+            suggestions: [this.getValidationSuggestion(err.code ?? "unknown", err.path)]
           })) ?? [],
           suggestions: ['Provide content, position, and target', 'Use valid position keywords', 'Ensure target is element or selector']
         };
