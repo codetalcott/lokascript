@@ -4,15 +4,13 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
-import type { 
+import type {
   BaseTypedExpression,
   TypedExpressionContext,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
-  TypedResult,
   LLMDocumentation,
-  HyperScriptValueType,
   EvaluationResult
 } from '../../types/base-types';
 import type { ExpressionCategory } from '../../types/enhanced-expressions';
@@ -417,7 +415,7 @@ export class EnhancedMyExpression implements BaseTypedExpression<ContextProperty
         return {
           success: true,
           value: undefined,
-          type: 'Undefined'
+          type: 'undefined'
         };
       }
 
@@ -589,7 +587,7 @@ export class EnhancedItsExpression implements BaseTypedExpression<ContextPropert
         return {
           success: true,
           value: undefined,
-          type: 'Undefined'
+          type: 'undefined'
         };
       }
 
@@ -761,7 +759,7 @@ export class EnhancedYourExpression implements BaseTypedExpression<ContextProper
         return {
           success: true,
           value: undefined,
-          type: 'Undefined'
+          type: 'undefined'
         };
       }
 
@@ -951,7 +949,7 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<Attribut
         return {
           success: true,
           value: null,
-          type: 'Null'
+          type: 'null'
         };
       }
 
@@ -1136,7 +1134,7 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
         return {
           success: true,
           value: false,
-          type: 'Boolean'
+          type: 'boolean'
         };
       }
 
@@ -1148,7 +1146,7 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
       return {
         success: true,
         value: result,
-        type: 'Boolean'
+        type: 'boolean'
       };
 
     } catch (error) {

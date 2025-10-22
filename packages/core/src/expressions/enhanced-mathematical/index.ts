@@ -49,14 +49,14 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
   public readonly syntax = 'left + right';
   public readonly description = 'Adds two numeric values with type safety and validation';
   public readonly inputSchema = BinaryOperationInputSchema;
-  public readonly outputType: EvaluationType = 'Number';
+  public readonly outputType: EvaluationType = 'number';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Number'],
+    returnTypes: ['number'],
     examples: [
       {
         input: '5 + 3',
@@ -351,14 +351,14 @@ export class EnhancedSubtractionExpression implements BaseTypedExpression<number
   public readonly syntax = 'left - right';
   public readonly description = 'Subtracts right operand from left operand with type safety';
   public readonly inputSchema = BinaryOperationInputSchema;
-  public readonly outputType: EvaluationType = 'Number';
+  public readonly outputType: EvaluationType = 'number';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Number'],
+    returnTypes: ['number'],
     examples: [
       {
         input: '10 - 3',
@@ -500,14 +500,14 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
   public readonly syntax = 'left * right';
   public readonly description = 'Multiplies two numeric values with overflow protection';
   public readonly inputSchema = BinaryOperationInputSchema;
-  public readonly outputType: EvaluationType = 'Number';
+  public readonly outputType: EvaluationType = 'number';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Number'],
+    returnTypes: ['number'],
     examples: [
       {
         input: '6 * 7',
@@ -642,14 +642,14 @@ export class EnhancedDivisionExpression implements BaseTypedExpression<number> {
   public readonly syntax = 'left / right';
   public readonly description = 'Divides left operand by right operand with zero-division protection';
   public readonly inputSchema = BinaryOperationInputSchema;
-  public readonly outputType: EvaluationType = 'Number';
+  public readonly outputType: EvaluationType = 'number';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Number'],
+    returnTypes: ['number'],
     examples: [
       {
         input: '15 / 3',
@@ -802,14 +802,14 @@ export class EnhancedModuloExpression implements BaseTypedExpression<number> {
   public readonly syntax = 'left mod right';
   public readonly description = 'Calculates remainder of division with comprehensive validation';
   public readonly inputSchema = BinaryOperationInputSchema;
-  public readonly outputType: EvaluationType = 'Number';
+  public readonly outputType: EvaluationType = 'number';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Number'],
+    returnTypes: ['number'],
     examples: [
       {
         input: '10 mod 3',

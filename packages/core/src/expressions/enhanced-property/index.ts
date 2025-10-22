@@ -64,7 +64,7 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
   public readonly outputType: EvaluationType = 'Any';
 
   public readonly metadata: ExpressionMetadata = {
-    category: 'Properties',
+    category: 'Property',
     complexity: 'simple',
     sideEffects: [],
     dependencies: ['me'],
@@ -294,13 +294,13 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
    * Infer the type of a value for result metadata
    */
   private inferType(value: unknown): EvaluationType {
-    if (value === null) return 'Null';
+    if (value === null) return 'null';
     if (value === undefined) return 'Any';
-    if (typeof value === 'boolean') return 'Boolean';
-    if (typeof value === 'number') return 'Number';
-    if (typeof value === 'string') return 'String';
-    if (Array.isArray(value)) return 'Array';
-    if (typeof value === 'object') return 'Object';
+    if (typeof value === 'boolean') return 'boolean';
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'string') return 'string';
+    if (Array.isArray(value)) return 'array';
+    if (typeof value === 'object') return 'object';
     return 'Any';
   }
 
@@ -335,7 +335,7 @@ export class EnhancedItsExpression implements BaseTypedExpression<HyperScriptVal
   public readonly outputType: EvaluationType = 'Any';
 
   public readonly metadata: ExpressionMetadata = {
-    category: 'Properties',
+    category: 'Property',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
@@ -551,14 +551,14 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
   public readonly syntax = '@attribute or element@attribute';
   public readonly description = 'Accesses HTML attributes with comprehensive DOM validation';
   public readonly inputSchema = AttributeAccessInputSchema;
-  public readonly outputType: EvaluationType = 'String';
+  public readonly outputType: EvaluationType = 'string';
 
   public readonly metadata: ExpressionMetadata = {
-    category: 'Properties',
+    category: 'Property',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['String', 'Null'],
+    returnTypes: ['string', 'null'],
     examples: [
       {
         input: '@data-value',

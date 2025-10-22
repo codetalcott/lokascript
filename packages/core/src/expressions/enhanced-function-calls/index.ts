@@ -12,8 +12,7 @@ import type {
   TypedExpressionContext,
   TypedExpressionImplementation,
   LLMDocumentation,
-  ValidationResult,
-  HyperScriptError
+  ValidationResult
 } from '../../types/enhanced-core';
 
 // ============================================================================

@@ -5,11 +5,11 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
-import type { 
-  TypedExpressionContext, 
-  ExpressionMetadata, 
-  LLMDocumentation 
+import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
+import type {
+  TypedExpressionContext,
+  ExpressionMetadata,
+  LLMDocumentation
 } from '../../types/enhanced-expressions';
 import { matchesWithCache } from '../../performance/integration';
 

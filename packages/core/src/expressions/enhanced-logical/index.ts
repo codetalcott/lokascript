@@ -6,15 +6,12 @@
 
 import { v } from '../../validation/lightweight-validators';
 import type {
-  BaseTypedExpression,
   TypedExpressionContext,
   ExpressionCategory,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
-  TypedResult,
   LLMDocumentation,
-  HyperScriptValueType,
   TypedExpressionImplementation,
   EvaluationResult
 } from '../../types/base-types';

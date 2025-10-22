@@ -4,9 +4,8 @@
  * Provides detailed performance metrics and bottleneck identification
  */
 
-import type { 
-  CommandExecutionResult,
-  CommandExecutionOptions 
+import type {
+  CommandExecutionResult
 } from './unified-command-system';
 import type { TypedExecutionContext } from '../types/core';
 

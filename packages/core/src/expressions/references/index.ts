@@ -3,14 +3,13 @@
  * Handles me, you, it, CSS selectors, and element references with enhanced TypeScript integration
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
-import type { 
-  TypedExpressionImplementation, 
-  TypedExecutionContext, 
-  HyperScriptValue, 
+import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
+import type {
+  TypedExpressionImplementation,
+  TypedExecutionContext,
+  HyperScriptValue,
   EvaluationResult,
   ValidationResult,
-  HyperScriptError,
   LLMDocumentation
 } from '../../types/enhanced-core';
 

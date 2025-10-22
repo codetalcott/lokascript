@@ -3,7 +3,7 @@
  * Handles first, last, next, previous, and numeric position expressions
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
+import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 
 // ============================================================================
 // Array/Collection Positional Expressions

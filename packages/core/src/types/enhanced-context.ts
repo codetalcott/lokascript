@@ -116,7 +116,7 @@ export abstract class EnhancedContextBase<TInput, TOutput> implements TypedConte
       if (!parsed.success) {
         return {
           isValid: false,
-          errors: parsed.error.errors.map(err => ({
+          errors: parsed.error.errors.map((err: { message: string; path?: (string | number)[] }) => ({
             type: 'type-mismatch',
             message: `Invalid ${this.category.toLowerCase()} context input: ${err.message}`,
             path: err.path?.join('.') || 'root',
@@ -163,10 +163,10 @@ export abstract class EnhancedContextBase<TInput, TOutput> implements TypedConte
     ];
 
     // Add context-specific suggestions based on error
-    if (error.errors.some(e => e.path.includes('variables'))) {
+    if (error.errors.some((e: { path: unknown[] }) => e.path.includes('variables'))) {
       suggestions.push('Verify variable types and values');
     }
-    if (error.errors.some(e => e.path.includes('environment'))) {
+    if (error.errors.some((e: { path: unknown[] }) => e.path.includes('environment'))) {
       suggestions.push('Check environment configuration is valid');
     }
 

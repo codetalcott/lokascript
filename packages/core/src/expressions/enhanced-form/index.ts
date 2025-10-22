@@ -8,7 +8,6 @@ import { v, type RuntimeValidator } from '../../validation/lightweight-validator
 import type {
   TypedExpressionImplementation,
   TypedExecutionContext,
-  HyperScriptValue,
   EvaluationResult,
   LLMDocumentation
 } from '../../types/enhanced-core';

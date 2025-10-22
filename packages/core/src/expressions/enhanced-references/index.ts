@@ -8,9 +8,7 @@ import { v } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExpressionContext,
-  ExpressionMetadata,
-  ExpressionValidationResult,
-  CommonInputSchemas
+  ExpressionMetadata
 } from '../../types/enhanced-expressions';
 import type { EvaluationResult, ValidationResult, LLMDocumentation } from '../../types/enhanced-core';
 

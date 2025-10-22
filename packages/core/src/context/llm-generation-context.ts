@@ -123,7 +123,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     },
     performance: {
       averageTime: 125.5,
-      complexity: 'O(n*m)' // n=prompt complexity, m=context size
+      complexity: 'O(n²)' // n=prompt complexity, m=context size
     }
   };
 

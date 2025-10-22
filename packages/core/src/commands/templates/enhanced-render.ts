@@ -36,8 +36,6 @@ export interface RenderCommandInput {
   withKeyword?: 'with'; // For syntax validation
 }
 
-type RenderCommandInputType = z.infer<typeof RenderCommandInputSchema>;
-
 // Output type definition  
 export interface RenderCommandOutput {
   rendered: string;

@@ -4,11 +4,8 @@
  * context management, and comprehensive error handling
  */
 
-import type { 
-  TypedExecutionContext, 
-  ValidationResult,
-  TypedResult,
-  ExecutionContext 
+import type {
+  TypedExecutionContext
 } from '../types/core';
 
 // Import all enhanced commands

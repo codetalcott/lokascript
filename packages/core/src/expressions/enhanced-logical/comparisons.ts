@@ -49,14 +49,14 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
   public readonly syntax = 'left == right';
   public readonly description = 'Equality comparison with type coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 == "5"',
@@ -254,14 +254,14 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
   public readonly syntax = 'left != right';
   public readonly description = 'Inequality comparison with type coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 != "6"',
@@ -438,14 +438,14 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
   public readonly syntax = 'left > right';
   public readonly description = 'Greater than comparison with numeric coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '10 > 5',
@@ -633,14 +633,14 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
   public readonly syntax = 'left < right';
   public readonly description = 'Less than comparison with numeric coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 < 10',
@@ -816,14 +816,14 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
   public readonly syntax = 'left >= right';
   public readonly description = 'Greater than or equal comparison with numeric coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '10 >= 10',
@@ -999,14 +999,14 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
   public readonly syntax = 'left <= right';
   public readonly description = 'Less than or equal comparison with numeric coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 <= 10',

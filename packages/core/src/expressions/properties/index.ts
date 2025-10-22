@@ -3,7 +3,7 @@
  * Handles possessive syntax, attribute access, and property references
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
+import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 
 // ============================================================================
 // Possessive Expressions

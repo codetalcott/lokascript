@@ -679,14 +679,14 @@ export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
   public readonly inputSchema = v.object({
     value: v.unknown().describe('Value to check type of')
   });
-  public readonly outputType: EvaluationType = 'String';
+  public readonly outputType: EvaluationType = 'string';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Special',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['String'],
+    returnTypes: ['string'],
     examples: [],
     relatedExpressions: [],
     performance: {

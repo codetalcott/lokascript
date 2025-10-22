@@ -3,16 +3,7 @@
  * Handles type conversions using the 'as' keyword and built-in conversion types
  */
 
-import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
-
-// ============================================================================
-// Built-in Conversion Types
-// ============================================================================
-
-type ConversionType = 
-  | 'Array' | 'Boolean' | 'Date' | 'Float' | 'Fragment' | 'HTML' | 'Int' 
-  | 'JSON' | 'Math' | 'Number' | 'Object' | 'String' | 'Values' 
-  | 'Values:Form' | 'Values:JSON' | string; // Allow custom conversions
+import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 
 // ============================================================================
 // Conversion Registry

@@ -6,13 +6,11 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
-import type { 
-  BaseTypedExpression,
+import type {
   TypedExpressionContext,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
-  TypedResult,
   LLMDocumentation,
   TypedExpressionImplementation,
   EvaluationResult
@@ -44,7 +42,6 @@ const RandomInputSchema = v.object({
 
 type CollectionInput = z.infer<typeof CollectionInputSchema>;
 type IndexInput = z.infer<typeof IndexInputSchema>;
-type SliceInput = z.infer<typeof SliceInputSchema>;
 type RandomInput = z.infer<typeof RandomInputSchema>;
 
 // ============================================================================
@@ -801,7 +798,7 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
         return {
           success: true,
           value: undefined,
-          type: 'Undefined'
+          type: 'undefined'
         };
       }
 

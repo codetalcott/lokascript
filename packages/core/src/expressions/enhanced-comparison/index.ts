@@ -49,14 +49,14 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
   public readonly syntax = 'left > right';
   public readonly description = 'Compares if left operand is greater than right operand';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '10 > 5',
@@ -300,14 +300,14 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
   public readonly syntax = 'left < right';
   public readonly description = 'Compares if left operand is less than right operand';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 < 10',
@@ -466,14 +466,14 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
   public readonly syntax = 'left >= right';
   public readonly description = 'Compares if left operand is greater than or equal to right operand';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '10 >= 10',
@@ -626,14 +626,14 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
   public readonly syntax = 'left <= right';
   public readonly description = 'Compares if left operand is less than or equal to right operand';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 <= 10',
@@ -786,14 +786,14 @@ export class EnhancedEqualityExpression implements BaseTypedExpression<boolean> 
   public readonly syntax = 'left == right';
   public readonly description = 'Compares if two values are equal with type coercion';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 == "5"',
@@ -951,14 +951,14 @@ export class EnhancedInequalityExpression implements BaseTypedExpression<boolean
   public readonly syntax = 'left != right';
   public readonly description = 'Compares if two values are not equal';
   public readonly inputSchema = ComparisonInputSchema;
-  public readonly outputType: EvaluationType = 'Boolean';
+  public readonly outputType: EvaluationType = 'boolean';
 
   public readonly metadata: ExpressionMetadata = {
     category: 'Logical',
     complexity: 'simple',
     sideEffects: [],
     dependencies: [],
-    returnTypes: ['Boolean'],
+    returnTypes: ['boolean'],
     examples: [
       {
         input: '5 != 3',
