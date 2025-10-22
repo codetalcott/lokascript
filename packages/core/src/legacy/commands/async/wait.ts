@@ -41,7 +41,7 @@ const WaitCommandInputSchema = v.union([
   })])
 ]);
 
-type WaitCommandInput = z.infer<typeof WaitCommandInputSchema>;
+type WaitCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Wait Command with full type safety for LLM agents

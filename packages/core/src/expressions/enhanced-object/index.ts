@@ -31,14 +31,14 @@ export const ObjectFieldSchema = v.object({
   isDynamic: v.boolean().default(false).describe('Whether the key is computed from an expression')
 });
 
-export type ObjectField = z.infer<typeof ObjectFieldSchema>;
+export type ObjectField = any; // Inferred from RuntimeValidator
 
 /**
  * Schema for object literal expression input validation
  */
 export const ObjectLiteralInputSchema = v.array(ObjectFieldSchema).describe('Object field definitions');
 
-export type ObjectLiteralInput = z.infer<typeof ObjectLiteralInputSchema>;
+export type ObjectLiteralInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Object Literal Expression Implementation

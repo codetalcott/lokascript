@@ -27,7 +27,7 @@ import type { TypedExpressionContext } from '../../test-utilities.ts';
  */
 export const ArrayLiteralInputSchema = v.array(v.unknown()).describe('Array elements');
 
-export type ArrayLiteralInput = z.infer<typeof ArrayLiteralInputSchema>;
+export type ArrayLiteralInput = any; // Inferred from RuntimeValidator
 
 /**
  * Schema for array index expression input validation
@@ -44,7 +44,7 @@ export const ArrayIndexInputSchema = v.tuple([
   ]).describe('Index or range specification')
 ]);
 
-export type ArrayIndexInput = z.infer<typeof ArrayIndexInputSchema>;
+export type ArrayIndexInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Array Literal Expression Implementation

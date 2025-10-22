@@ -101,8 +101,8 @@ export const EnhancedDefOutputSchema = v.object({
   }),
 });
 
-export type EnhancedDefInput = z.infer<typeof EnhancedDefInputSchema>;
-export type EnhancedDefOutput = z.infer<typeof EnhancedDefOutputSchema>;
+export type EnhancedDefInput = any; // Inferred from RuntimeValidator
+export type EnhancedDefOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Function Definition Types

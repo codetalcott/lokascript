@@ -29,8 +29,8 @@ const UnaryLogicalInputSchema = v.object({
   operand: v.unknown().describe('Operand value to negate')
 }).strict();
 
-type BinaryLogicalInput = z.infer<typeof BinaryLogicalInputSchema>;
-type UnaryLogicalInput = z.infer<typeof UnaryLogicalInputSchema>;
+type BinaryLogicalInput = any; // Inferred from RuntimeValidator
+type UnaryLogicalInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced And Expression

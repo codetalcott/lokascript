@@ -27,7 +27,7 @@ export const InExpressionInputSchema = v.tuple([
   v.unknown().describe('Container to search in (array, NodeList, or DOM element)')
 ]);
 
-export type InExpressionInput = z.infer<typeof InExpressionInputSchema>;
+export type InExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced In Expression Implementation

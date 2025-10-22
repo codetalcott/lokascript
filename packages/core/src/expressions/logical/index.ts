@@ -4,6 +4,7 @@
  * Enhanced with TypeScript patterns, comprehensive validation, and LLM documentation
  */
 
+import type { RuntimeValidator } from '../../validation/lightweight-validators';
 import { v } from '../../validation/lightweight-validators';
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import type {
@@ -23,7 +24,7 @@ import { matchesWithCache } from '../../performance/integration';
 interface EnhancedExpressionImplementation extends ExpressionImplementation {
   metadata?: ExpressionMetadata;
   documentation?: LLMDocumentation;
-  inputSchema?: z.ZodSchema<unknown>;
+  inputSchema?: RuntimeValidator<unknown>;
 }
 
 /**

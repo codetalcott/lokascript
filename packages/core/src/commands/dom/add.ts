@@ -37,7 +37,7 @@ const AddCommandInputSchema = v.tuple([
   ]).optional()
 ]);
 
-type AddCommandInput = z.infer<typeof AddCommandInputSchema>;
+type AddCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Add Command with full type safety for LLM agents

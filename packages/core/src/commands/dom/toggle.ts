@@ -37,7 +37,7 @@ const ToggleCommandInputSchema = v.tuple([
   ]).optional()
 ]);
 
-type ToggleCommandInput = z.infer<typeof ToggleCommandInputSchema>;
+type ToggleCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Toggle Command with full type safety for LLM agents

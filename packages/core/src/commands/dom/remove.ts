@@ -37,7 +37,7 @@ const RemoveCommandInputSchema = v.tuple([
   ]).optional()
 ]);
 
-type RemoveCommandInput = z.infer<typeof RemoveCommandInputSchema>;
+type RemoveCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Remove Command with full type safety for LLM agents

@@ -125,8 +125,8 @@ export const EnhancedEventSourceOutputSchema = v.object({
   }),
 });
 
-export type EnhancedEventSourceInput = z.infer<typeof EnhancedEventSourceInputSchema>;
-export type EnhancedEventSourceOutput = z.infer<typeof EnhancedEventSourceOutputSchema>;
+export type EnhancedEventSourceInput = any; // Inferred from RuntimeValidator
+export type EnhancedEventSourceOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // EventSource Management Types

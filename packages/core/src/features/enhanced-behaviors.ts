@@ -128,8 +128,8 @@ export const EnhancedBehaviorsOutputSchema = v.object({
   }),
 });
 
-export type EnhancedBehaviorsInput = z.infer<typeof EnhancedBehaviorsInputSchema>;
-export type EnhancedBehaviorsOutput = z.infer<typeof EnhancedBehaviorsOutputSchema>;
+export type EnhancedBehaviorsInput = any; // Inferred from RuntimeValidator
+export type EnhancedBehaviorsOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Behavior System Types

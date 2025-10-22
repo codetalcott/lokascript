@@ -8,6 +8,7 @@
  * This file now focuses on enhanced features while using unified base types
  */
 
+import type { RuntimeValidator } from '../validation/lightweight-validators';
 import { v, z } from '../validation/lightweight-validators';
 // ============================================================================
 // Import Unified Types
@@ -113,7 +114,7 @@ export interface TypedCommandImplementation<
   readonly description: string;
   
   /** Input parameter schema for validation */
-  readonly inputSchema: z.ZodSchema<TInput>;
+  readonly inputSchema: RuntimeValidator<TInput>;
   
   /** Output type information for LLMs */
   readonly outputType: HyperScriptValueType;

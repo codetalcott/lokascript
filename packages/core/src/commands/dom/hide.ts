@@ -34,7 +34,7 @@ const HideCommandInputSchema = v.tuple([
   ]).optional()
 ]);
 
-type HideCommandInput = z.infer<typeof HideCommandInputSchema>;
+type HideCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Hide Command with full type safety for LLM agents

@@ -4,7 +4,7 @@
  * from multiple type definitions across the codebase
  */
 
-import { _v } from '../validation/lightweight-validators';
+import type { RuntimeValidator } from '../validation/lightweight-validators';
 
 // ============================================================================
 // Core Validation Types (Single Source of Truth)
@@ -291,10 +291,10 @@ export interface BaseTypedExpression<T = unknown> {
   readonly category: string;
   readonly syntax: string;
   readonly outputType: EvaluationType;
-  readonly inputSchema: z.ZodSchema;
+  readonly inputSchema: RuntimeValidator;
   readonly metadata: ExpressionMetadata;
   readonly documentation: LLMDocumentation;
-  
+
   evaluate(context: TypedExecutionContext, input: unknown): Promise<TypedResult<T>>;
   validate(input: unknown): ValidationResult;
 }
@@ -333,11 +333,11 @@ export interface BaseTypedFeature<TInput = unknown, TOutput = unknown> {
   readonly name: string;
   readonly category: FeatureCategory;
   readonly description: string;
-  readonly inputSchema: z.ZodSchema<TInput>;
+  readonly inputSchema: RuntimeValidator<TInput>;
   readonly outputType: EvaluationType;
   readonly metadata: FeatureMetadata;
   readonly documentation: LLMDocumentation;
-  
+
   initialize(context: TypedExecutionContext): Promise<TypedResult<void>>;
   execute(context: TypedExecutionContext, input: TInput): Promise<TypedResult<TOutput>>;
   validate(input: unknown): ValidationResult;

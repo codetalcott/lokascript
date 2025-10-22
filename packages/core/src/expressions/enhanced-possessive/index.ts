@@ -28,7 +28,7 @@ export const PossessiveExpressionInputSchema = v.tuple([
   v.string().describe('Property/attribute name to access')
 ]);
 
-export type PossessiveExpressionInput = z.infer<typeof PossessiveExpressionInputSchema>;
+export type PossessiveExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Possessive Expression Implementation

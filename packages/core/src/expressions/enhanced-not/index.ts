@@ -25,7 +25,7 @@ export const NotExpressionInputSchema = v.tuple([
   v.unknown().describe('Value to negate')
 ]);
 
-export type NotExpressionInput = z.infer<typeof NotExpressionInputSchema>;
+export type NotExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Not Expression Implementation

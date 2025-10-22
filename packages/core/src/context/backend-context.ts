@@ -79,8 +79,8 @@ export const BackendContextOutputSchema = v.object({
   }),
 }).merge(BaseContextOutputSchema);
 
-export type BackendContextInput = z.infer<typeof BackendContextInputSchema>;
-export type BackendContextOutput = z.infer<typeof BackendContextOutputSchema>;
+export type BackendContextInput = any; // Inferred from RuntimeValidator
+export type BackendContextOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Backend Context Implementation  

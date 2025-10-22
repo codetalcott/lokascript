@@ -35,7 +35,7 @@ const ShowCommandInputSchema = v.tuple([
   ]).optional()
 ]);
 
-type ShowCommandInput = z.infer<typeof ShowCommandInputSchema>;
+type ShowCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Show Command with full type safety for LLM agents

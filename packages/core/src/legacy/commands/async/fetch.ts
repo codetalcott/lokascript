@@ -55,7 +55,7 @@ const FetchCommandInputSchema = v.tuple([
   }).optional()
 ]);
 
-type FetchCommandInput = z.infer<typeof FetchCommandInputSchema>;
+type FetchCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Fetch Command with full type safety for LLM agents

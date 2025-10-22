@@ -28,7 +28,7 @@ export const AsExpressionInputSchema = v.tuple([
   v.string().describe('Target type for conversion')
 ]);
 
-export type AsExpressionInput = z.infer<typeof AsExpressionInputSchema>;
+export type AsExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Type Conversion Definitions

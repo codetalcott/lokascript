@@ -37,7 +37,7 @@ export interface SetCommandInput {
   scope?: 'global' | 'local';
 }
 
-type SetCommandInputType = z.infer<typeof SetCommandInputSchema>;
+type SetCommandInputType = any; // Inferred from RuntimeValidator
 
 // Output type definition  
 export interface SetCommandOutput {

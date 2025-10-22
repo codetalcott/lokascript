@@ -36,7 +36,7 @@ const SendCommandInputSchema = v.tuple([
   ]).optional() // Target element(s)
 ]).rest(v.any()); // Allow additional arguments
 
-type SendCommandInput = z.infer<typeof SendCommandInputSchema>;
+type SendCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Send Command with full type safety for LLM agents

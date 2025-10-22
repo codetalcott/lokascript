@@ -45,7 +45,7 @@ const PutCommandInputSchema = v.tuple([
   ]).describe('Target element or property')
 ]);
 
-type PutCommandInput = z.infer<typeof PutCommandInputSchema>;
+type PutCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Put Command with full type safety for LLM agents

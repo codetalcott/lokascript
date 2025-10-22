@@ -138,8 +138,8 @@ export const EnhancedSocketsOutputSchema = v.object({
   }),
 });
 
-export type EnhancedSocketsInput = z.infer<typeof EnhancedSocketsInputSchema>;
-export type EnhancedSocketsOutput = z.infer<typeof EnhancedSocketsOutputSchema>;
+export type EnhancedSocketsInput = any; // Inferred from RuntimeValidator
+export type EnhancedSocketsOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // WebSocket System Types

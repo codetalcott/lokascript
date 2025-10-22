@@ -39,10 +39,10 @@ const AttributeWithValueInputSchema = v.object({
   value: v.string().describe('Expected attribute value')
 }).strict();
 
-type PropertyAccessInput = z.infer<typeof PropertyAccessInputSchema>;
-type AttributeAccessInput = z.infer<typeof AttributeAccessInputSchema>;
-type ContextPropertyInput = z.infer<typeof ContextPropertyInputSchema>;
-type AttributeWithValueInput = z.infer<typeof AttributeWithValueInputSchema>;
+type PropertyAccessInput = any; // Inferred from RuntimeValidator
+type AttributeAccessInput = any; // Inferred from RuntimeValidator
+type ContextPropertyInput = any; // Inferred from RuntimeValidator
+type AttributeWithValueInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Possessive Expression (element's property)

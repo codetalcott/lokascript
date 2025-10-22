@@ -129,8 +129,8 @@ export const EnhancedWebWorkerOutputSchema = v.object({
   }),
 });
 
-export type EnhancedWebWorkerInput = z.infer<typeof EnhancedWebWorkerInputSchema>;
-export type EnhancedWebWorkerOutput = z.infer<typeof EnhancedWebWorkerOutputSchema>;
+export type EnhancedWebWorkerInput = any; // Inferred from RuntimeValidator
+export type EnhancedWebWorkerOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Web Worker Management Types

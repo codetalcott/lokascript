@@ -7,6 +7,7 @@
  * IMPORTANT: Core types now imported from base-types.ts for consistency
  */
 
+import type { RuntimeValidator } from '../validation/lightweight-validators';
 import { v, z } from '../validation/lightweight-validators';
 // Import unified types from base-types system for local use and re-export
 import type { 
@@ -71,10 +72,10 @@ export interface BaseTypedExpression<T> {
   readonly category: string;
   readonly syntax: string;
   readonly outputType: string;
-  readonly inputSchema: z.ZodSchema<unknown>;
+  readonly inputSchema: RuntimeValidator<unknown>;
   readonly metadata: ExpressionMetadata;
   readonly documentation: LLMDocumentation;
-  
+
   evaluate(context: TypedExpressionContext, input: unknown): Promise<TypedResult<T>>;
   validate(input: unknown): ValidationResult;
 }
@@ -127,26 +128,26 @@ export interface TypedExpressionImplementation<
   readonly category: ExpressionCategory;
   readonly syntax: string;
   readonly description: string;
-  readonly inputSchema: z.ZodSchema<TInput>;
+  readonly inputSchema: RuntimeValidator<TInput>;
   readonly outputType: EvaluationType;
   readonly metadata: ExpressionMetadata;
   readonly documentation: LLMDocumentation;
-  
+
   /**
    * Evaluate expression with typed context and input
    */
   evaluate(context: TContext, input: TInput): Promise<EvaluationResult<TOutput>>;
-  
+
   /**
    * Validate expression input
    */
   validate(input: unknown): ValidationResult;
-  
+
   /**
    * Parse expression string into typed input (for complex expressions)
    */
   parse?(expressionString: string): Promise<EvaluationResult<TInput>>;
-  
+
   /**
    * Check if expression can handle the given input
    */

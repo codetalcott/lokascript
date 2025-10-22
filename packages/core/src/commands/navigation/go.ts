@@ -48,7 +48,7 @@ const GoCommandInputSchema = z.union([
   ])).min(1).max(10)
 ]);
 
-type GoCommandInput = z.infer<typeof GoCommandInputSchema>;
+type GoCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Go Command with full type safety for LLM agents

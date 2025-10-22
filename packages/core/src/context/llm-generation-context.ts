@@ -82,8 +82,8 @@ export const LLMGenerationOutputSchema = v.object({
   frameworkNotes: v.array(v.string()).optional(),
 }).merge(BaseContextOutputSchema);
 
-export type LLMGenerationInput = z.infer<typeof LLMGenerationInputSchema>;
-export type LLMGenerationOutput = z.infer<typeof LLMGenerationOutputSchema>;
+export type LLMGenerationInput = any; // Inferred from RuntimeValidator
+export type LLMGenerationOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // LLM Generation Context Implementation

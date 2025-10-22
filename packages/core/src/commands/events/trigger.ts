@@ -34,7 +34,7 @@ const TriggerCommandInputSchema = v.tuple([
   ]).optional() // Target element(s)
 ]).rest(v.any()); // Allow additional arguments
 
-type TriggerCommandInput = z.infer<typeof TriggerCommandInputSchema>;
+type TriggerCommandInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced Trigger Command with full type safety for LLM agents

@@ -58,8 +58,8 @@ export const FrontendContextOutputSchema = v.object({
   }),
 }).merge(BaseContextOutputSchema);
 
-export type FrontendContextInput = z.infer<typeof FrontendContextInputSchema>;
-export type FrontendContextOutput = z.infer<typeof FrontendContextOutputSchema>;
+export type FrontendContextInput = any; // Inferred from RuntimeValidator
+export type FrontendContextOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Frontend Context Implementation

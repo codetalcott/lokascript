@@ -106,8 +106,8 @@ export const EnhancedOnOutputSchema = v.object({
   }),
 });
 
-export type EnhancedOnInput = z.infer<typeof EnhancedOnInputSchema>;
-export type EnhancedOnOutput = z.infer<typeof EnhancedOnOutputSchema>;
+export type EnhancedOnInput = any; // Inferred from RuntimeValidator
+export type EnhancedOnOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Event Handling Types

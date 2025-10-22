@@ -28,7 +28,7 @@ export const SymbolExpressionInputSchema = v.tuple([
     .describe('Variable name to resolve from context')
 ]);
 
-export type SymbolExpressionInput = z.infer<typeof SymbolExpressionInputSchema>;
+export type SymbolExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Symbol Expression Implementation

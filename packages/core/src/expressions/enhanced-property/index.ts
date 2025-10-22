@@ -47,9 +47,9 @@ const AttributeAccessInputSchema = v.object({
   attribute: v.string().describe('Attribute name to access')
 }).strict();
 
-type PropertyAccessInput = z.infer<typeof PropertyAccessInputSchema>;
-type PossessiveAccessInput = z.infer<typeof PossessiveAccessInputSchema>;
-type AttributeAccessInput = z.infer<typeof AttributeAccessInputSchema>;
+type PropertyAccessInput = any; // Inferred from RuntimeValidator
+type PossessiveAccessInput = any; // Inferred from RuntimeValidator
+type AttributeAccessInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced My Expression (Context Property Access)

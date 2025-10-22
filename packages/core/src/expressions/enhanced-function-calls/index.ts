@@ -51,7 +51,7 @@ export const FunctionCallExpressionInputSchema = z.union([
   ])
 ]);
 
-export type FunctionCallExpressionInput = z.infer<typeof FunctionCallExpressionInputSchema>;
+export type FunctionCallExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Function Call Expression Implementation

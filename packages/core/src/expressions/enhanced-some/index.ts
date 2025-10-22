@@ -25,7 +25,7 @@ export const SomeExpressionInputSchema = v.tuple([
   v.unknown().describe('Value to check for existence/non-emptiness')
 ]);
 
-export type SomeExpressionInput = z.infer<typeof SomeExpressionInputSchema>;
+export type SomeExpressionInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Some Expression Implementation

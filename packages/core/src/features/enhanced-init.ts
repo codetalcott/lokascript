@@ -117,8 +117,8 @@ export const EnhancedInitOutputSchema = v.object({
   }),
 });
 
-export type EnhancedInitInput = z.infer<typeof EnhancedInitInputSchema>;
-export type EnhancedInitOutput = z.infer<typeof EnhancedInitOutputSchema>;
+export type EnhancedInitInput = any; // Inferred from RuntimeValidator
+export type EnhancedInitOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Init Management Types

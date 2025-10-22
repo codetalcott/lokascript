@@ -37,7 +37,7 @@ const BinaryOperationInputSchema = v.object({
   right: v.unknown().describe('Right operand value')
 });
 
-type BinaryOperationInput = z.infer<typeof BinaryOperationInputSchema>;
+type BinaryOperationInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Addition Expression

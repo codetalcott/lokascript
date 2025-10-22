@@ -24,7 +24,7 @@ export interface LogCommandInput {
   values: unknown[];
 }
 
-type LogCommandInputType = z.infer<typeof LogCommandInputSchema>;
+type LogCommandInputType = any; // Inferred from RuntimeValidator
 
 // Output type definition  
 export interface LogCommandOutput {

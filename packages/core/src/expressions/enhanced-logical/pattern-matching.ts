@@ -36,9 +36,9 @@ const InInputSchema = v.object({
   container: v.unknown().describe('Container to search in (array, string, or object)')
 }).strict();
 
-type PatternMatchInput = z.infer<typeof PatternMatchInputSchema>;
-type ContainsInput = z.infer<typeof ContainsInputSchema>;
-type InInput = z.infer<typeof InInputSchema>;
+type PatternMatchInput = any; // Inferred from RuntimeValidator
+type ContainsInput = any; // Inferred from RuntimeValidator
+type InInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Matches Expression

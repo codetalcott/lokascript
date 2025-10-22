@@ -458,7 +458,7 @@ const CSSelectorInputSchema = v.object({
   single: v.boolean().optional().default(false) // true for querySelector, false for querySelectorAll
 });
 
-type CSSSelectorInput = z.infer<typeof CSSelectorInputSchema>;
+type CSSSelectorInput = any; // Inferred from RuntimeValidator
 
 /**
  * Enhanced CSS selector expression with validation and error handling

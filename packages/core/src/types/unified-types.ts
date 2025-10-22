@@ -5,7 +5,8 @@
  * conflicts and establish consistent types across the HyperFixi codebase.
  */
 
-import { _v } from '../validation/lightweight-validators';
+import type { RuntimeValidator } from '../validation/lightweight-validators';
+import { z } from '../validation/lightweight-validators';
 
 // ============================================================================
 // Core Validation Types
@@ -121,7 +122,7 @@ export interface UnifiedExecutionContext {
  * Enhanced execution context with additional typing information
  */
 export interface UnifiedTypedExecutionContext extends UnifiedExecutionContext {
-  readonly typeRegistry: Map<string, z.ZodSchema>;
+  readonly typeRegistry: Map<string, RuntimeValidator>;
   readonly validationCache: Map<string, UnifiedValidationResult>;
 }
 
@@ -297,7 +298,7 @@ export class UnifiedValidator {
    */
   static validateInput<T>(
     input: unknown,
-    schema: z.ZodSchema<T>
+    schema: RuntimeValidator<T>
   ): UnifiedValidationResult<T> {
     try {
       const parsed = schema.safeParse(input);

@@ -6,6 +6,7 @@
  * Building on proven enhanced expression architecture
  */
 
+import type { RuntimeValidator } from '../validation/lightweight-validators';
 import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedExpressionContext,
@@ -64,8 +65,8 @@ export interface TypedContextImplementation<TInput, TOutput> {
   readonly category: ContextCategory;
   /** Human-readable description */
   readonly description: string;
-  /** Zod schema for input validation */
-  readonly inputSchema: z.ZodSchema<TInput>;
+  /** Runtime validator for input validation */
+  readonly inputSchema: RuntimeValidator<TInput>;
   /** Expected output type */
   readonly outputType: EvaluationType;
   /** Context metadata for tooling */
@@ -75,10 +76,10 @@ export interface TypedContextImplementation<TInput, TOutput> {
 
   /** Initialize context with validated input */
   initialize(input: TInput): Promise<EvaluationResult<TOutput>>;
-  
-  /** Validate input using Zod schema */
+
+  /** Validate input using runtime validator */
   validate(input: unknown): ValidationResult;
-  
+
   /** Performance tracking */
   trackPerformance?(startTime: number, success: boolean, output?: any): void;
 }
@@ -91,7 +92,7 @@ export abstract class EnhancedContextBase<TInput, TOutput> implements TypedConte
   abstract readonly name: string;
   abstract readonly category: ContextCategory;
   abstract readonly description: string;
-  abstract readonly inputSchema: z.ZodSchema<TInput>;
+  abstract readonly inputSchema: RuntimeValidator<TInput>;
   abstract readonly outputType: EvaluationType;
   abstract readonly metadata: ContextMetadata;
   abstract readonly documentation: LLMDocumentation;
@@ -156,7 +157,7 @@ export abstract class EnhancedContextBase<TInput, TOutput> implements TypedConte
     return { isValid: true, errors: [], suggestions: [] };
   }
 
-  protected generateValidationSuggestions(error: z.ZodError): string[] {
+  protected generateValidationSuggestions(error: any): string[] {
     const suggestions = [
       `Ensure all required ${this.category.toLowerCase()} context properties are provided`,
       'Check property types match the expected schema'
@@ -227,8 +228,8 @@ export const BaseContextOutputSchema = v.object({
   error: v.string().optional()
 }).strict();
 
-export type BaseContextInput = z.infer<typeof BaseContextInputSchema>;
-export type BaseContextOutput = z.infer<typeof BaseContextOutputSchema>;
+export type BaseContextInput = any; // z.infer<typeof BaseContextInputSchema>;
+export type BaseContextOutput = any; // z.infer<typeof BaseContextOutputSchema>;
 
 // ============================================================================
 // Enhanced TypedExpressionContext Extension

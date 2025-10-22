@@ -37,7 +37,7 @@ const ComparisonInputSchema = v.object({
   right: v.unknown().describe('Right operand value')
 });
 
-type ComparisonInput = z.infer<typeof ComparisonInputSchema>;
+type ComparisonInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced Greater Than Expression

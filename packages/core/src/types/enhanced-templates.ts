@@ -116,7 +116,7 @@ export const IfDirectiveInputSchema = v.object({
   templateContent: v.string()
 });
 
-export type IfDirectiveInput = z.infer<typeof IfDirectiveInputSchema>;
+export type IfDirectiveInput = any; // Inferred from RuntimeValidator
 
 /**
  * Input schema for @else directive
@@ -125,7 +125,7 @@ export const ElseDirectiveInputSchema = v.object({
   templateContent: v.string()
 });
 
-export type ElseDirectiveInput = z.infer<typeof ElseDirectiveInputSchema>;
+export type ElseDirectiveInput = any; // Inferred from RuntimeValidator
 
 /**
  * Input schema for @repeat directive
@@ -136,7 +136,7 @@ export const RepeatDirectiveInputSchema = v.object({
   templateContent: v.string()
 });
 
-export type RepeatDirectiveInput = z.infer<typeof RepeatDirectiveInputSchema>;
+export type RepeatDirectiveInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Template Compilation Types

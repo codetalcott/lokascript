@@ -3,7 +3,7 @@
  * Extends enhanced command patterns to hyperscript features like "on", "init", etc.
  */
 
-import { _v } from '../validation/lightweight-validators';
+import type { RuntimeValidator } from '../validation/lightweight-validators';
 import type { ValidationResult, EvaluationResult, CommandMetadata, LLMDocumentation } from './enhanced-core';
 
 /**
@@ -72,7 +72,7 @@ export interface TypedFeatureImplementation<
   readonly name: string;
   readonly syntax: string;
   readonly description: string;
-  readonly inputSchema: z.ZodSchema<TInput>;
+  readonly inputSchema: RuntimeValidator<TInput>;
   readonly outputType: string;
   readonly metadata: FeatureMetadata;
   readonly documentation: LLMDocumentation;

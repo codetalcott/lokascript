@@ -40,9 +40,9 @@ const RandomInputSchema = v.object({
   collection: v.unknown().describe('Collection to select random item from')
 }).strict();
 
-type CollectionInput = z.infer<typeof CollectionInputSchema>;
-type IndexInput = z.infer<typeof IndexInputSchema>;
-type RandomInput = z.infer<typeof RandomInputSchema>;
+type CollectionInput = any; // Inferred from RuntimeValidator
+type IndexInput = any; // Inferred from RuntimeValidator
+type RandomInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced First Expression

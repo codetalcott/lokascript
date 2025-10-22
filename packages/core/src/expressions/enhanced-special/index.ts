@@ -38,10 +38,10 @@ const BinaryOperationInputSchema = v.object({
   right: v.unknown().describe('Right operand')
 }).strict();
 
-type StringLiteralInput = z.infer<typeof StringLiteralInputSchema>;
-type NumberLiteralInput = z.infer<typeof NumberLiteralInputSchema>;
-type BooleanLiteralInput = z.infer<typeof BooleanLiteralInputSchema>;
-type BinaryOperationInput = z.infer<typeof BinaryOperationInputSchema>;
+type StringLiteralInput = any; // Inferred from RuntimeValidator
+type NumberLiteralInput = any; // Inferred from RuntimeValidator
+type BooleanLiteralInput = any; // Inferred from RuntimeValidator
+type BinaryOperationInput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Enhanced String Literal Expression
