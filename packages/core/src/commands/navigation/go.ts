@@ -65,7 +65,7 @@ export class GoCommand implements TypedCommandImplementation<
   public readonly outputType = 'object' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'navigation',
+    category: 'Control',
     complexity: 'complex',
     sideEffects: ['navigation', 'dom-query', 'history'],
     examples: [

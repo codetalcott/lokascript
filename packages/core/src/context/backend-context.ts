@@ -95,7 +95,7 @@ export class TypedBackendContextImplementation extends EnhancedContextBase<Backe
 
   public readonly metadata: ContextMetadata = {
     category: 'Backend',
-    complexity: 'moderate',
+    complexity: 'medium',
     sideEffects: ['database-access', 'response-modification', 'logging', 'cache-access'],
     dependencies: ['server-runtime', 'database', 'cache'],
     returnTypes: ['Context'],

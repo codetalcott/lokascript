@@ -168,6 +168,7 @@ export class TypedAnalyticsContextImplementation {
         expectedOutput: 'GDPR-compliant analytics with IP anonymization'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['frontendContext', 'backendContext', 'performanceContext'],
     frameworkDependencies: ['browser-apis', 'performance-apis'],
     environmentRequirements: {

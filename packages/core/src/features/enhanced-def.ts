@@ -192,6 +192,7 @@ export class TypedDefFeatureImplementation {
         expectedOutput: 'Function with try-catch pattern and error recovery'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['onFeature', 'behaviorFeature', 'executionContext'],
     frameworkDependencies: ['hyperscript-runtime', 'command-system'],
     environmentRequirements: {

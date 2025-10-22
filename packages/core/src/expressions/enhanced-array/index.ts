@@ -546,6 +546,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
         success: false,
         error: {
           name: 'InvalidIndexTypeError',
+          type: 'validation-error',
           message: `Unsupported index type: ${typeof index}`,
           code: 'INVALID_INDEX_TYPE',
           severity: 'error',

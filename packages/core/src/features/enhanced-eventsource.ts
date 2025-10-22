@@ -231,6 +231,7 @@ export class TypedEventSourceFeatureImplementation {
         expectedOutput: 'Buffered event source for handling high-frequency updates'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['socketsFeature', 'onFeature', 'executionContext'],
     frameworkDependencies: ['eventsource-api', 'hyperscript-runtime'],
     environmentRequirements: {

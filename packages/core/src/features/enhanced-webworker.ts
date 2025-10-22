@@ -225,6 +225,7 @@ export class TypedWebWorkerFeatureImplementation {
         expectedOutput: 'High-performance worker context with zero-copy data transfer'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['socketsFeature', 'onFeature', 'executionContext'],
     frameworkDependencies: ['web-worker-api', 'hyperscript-runtime'],
     environmentRequirements: {

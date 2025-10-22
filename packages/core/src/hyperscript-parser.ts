@@ -83,6 +83,7 @@ export class HyperscriptParser {
       };
     } catch (error) {
       const parseError: ParseError = {
+        name: 'ParseError',
         message: error instanceof Error ? error.message : 'Unknown parse error',
         line: this.tokens.currentToken().line,
         column: this.tokens.currentToken().column,

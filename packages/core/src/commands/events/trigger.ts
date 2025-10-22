@@ -51,7 +51,7 @@ export class TriggerCommand implements TypedCommandImplementation<
   public readonly outputType = 'event' as const;
   
   public readonly metadata: CommandMetadata = {
-    category: 'event-handling',
+    category: 'Event',
     complexity: 'simple',
     sideEffects: ['event-emission'],
     examples: [

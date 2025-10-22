@@ -939,7 +939,7 @@ export class EnhancedStringConcatenationExpression implements BaseTypedExpressio
         examples: ['"World"', '123', 'false', 'variable']
       }
     ],
-    returnValue: {
+    returns: {
       type: 'string',
       description: 'Concatenated string result',
       examples: ['"Hello World"', '"Count: 42"', '"Time: 3:45:30 PM"']

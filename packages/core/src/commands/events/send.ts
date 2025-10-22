@@ -53,7 +53,7 @@ export class SendCommand implements TypedCommandImplementation<
   public readonly outputType = 'event' as const;
   
   public readonly metadata: CommandMetadata = {
-    category: 'event-handling',
+    category: 'Event',
     complexity: 'medium',
     sideEffects: ['event-emission'],
     examples: [

@@ -151,7 +151,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
             name: 'InExpressionValidationError',
             type: 'validation-error',
             message: `In expression validation failed: ${validationResult.errors.join(', ')}`,
-            code: 'IN_EXPRESSION_VALIDATION_ERROR'
+            code: 'IN_EXPRESSION_VALIDATION_ERROR',
+            suggestions: []
           },
           type: 'error'
         };
@@ -182,7 +183,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           name: 'InExpressionEvaluationError',
           type: 'runtime-error',
           message: `Failed to evaluate in expression: ${error instanceof Error ? error.message : String(error)}`,
-          code: 'IN_EXPRESSION_EVALUATION_ERROR'
+          code: 'IN_EXPRESSION_EVALUATION_ERROR',
+          suggestions: []
         },
         type: 'error'
       };
@@ -220,7 +222,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           name: 'ArraySearchError',
           type: 'runtime-error',
           message: `Failed to search in array: ${error instanceof Error ? error.message : String(error)}`,
-          code: 'ARRAY_SEARCH_ERROR'
+          code: 'ARRAY_SEARCH_ERROR',
+          suggestions: []
         },
         type: 'error'
       };
@@ -261,7 +264,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           name: 'DOMSearchError',
           type: 'runtime-error',
           message: `Failed to search in DOM: ${error instanceof Error ? error.message : String(error)}`,
-          code: 'DOM_SEARCH_ERROR'
+          code: 'DOM_SEARCH_ERROR',
+          suggestions: []
         },
         type: 'error'
       };
@@ -338,7 +342,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           name: 'QuerySelectorError',
           type: 'runtime-error',
           message: `Failed to query selector '${selector}': ${error instanceof Error ? error.message : String(error)}`,
-          code: 'QUERY_SELECTOR_ERROR'
+          code: 'QUERY_SELECTOR_ERROR',
+          suggestions: []
         },
         type: 'error'
       };
@@ -379,7 +384,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
           name: 'MultiQueryError',
           type: 'runtime-error',
           message: `Failed to perform multi-query: ${error instanceof Error ? error.message : String(error)}`,
-          code: 'MULTI_QUERY_ERROR'
+          code: 'MULTI_QUERY_ERROR',
+          suggestions: []
         },
         type: 'error'
       };

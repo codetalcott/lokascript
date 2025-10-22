@@ -90,6 +90,7 @@ export class TypedFrontendContextImplementation extends EnhancedContextBase<Fron
         expectedOutput: 'Context with user-aware capabilities'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['backendContext', 'universalContext'],
     frameworkDependencies: ['browser'],
     environmentRequirements: {

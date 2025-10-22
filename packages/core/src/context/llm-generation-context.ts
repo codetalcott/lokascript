@@ -114,6 +114,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
         expectedOutput: 'Server-side hyperscript with Django model types and validations'
       }
     ],
+    relatedExpressions: [],
     relatedContexts: ['frontendContext', 'backendContext', 'enhancedExpressions'],
     frameworkDependencies: ['typescript', 'enhanced-patterns'],
     environmentRequirements: {
