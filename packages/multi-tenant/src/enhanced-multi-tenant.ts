@@ -84,56 +84,56 @@ export const EnhancedMultiTenantOutputSchema = z.object({
   category: z.literal('Universal'),
   capabilities: z.array(z.string()),
   state: z.enum(['ready', 'resolving', 'isolated', 'error']),
-  
+
   /** Tenant management functions */
   tenant: z.object({
-    resolve: z.function(),
-    getCurrent: z.function(),
-    getContext: z.function(),
-    switchTo: z.function(),
+    resolve: z.custom<(...args: any[]) => any>(() => true),
+    getCurrent: z.custom<(...args: any[]) => any>(() => true),
+    getContext: z.custom<(...args: any[]) => any>(() => true),
+    switchTo: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Customization management */
   customization: z.object({
-    get: z.function(),
-    apply: z.function(),
-    update: z.function(),
-    validate: z.function(),
+    get: z.custom<(...args: any[]) => any>(() => true),
+    apply: z.custom<(...args: any[]) => any>(() => true),
+    update: z.custom<(...args: any[]) => any>(() => true),
+    validate: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Isolation management */
   isolation: z.object({
-    enable: z.function(),
-    disable: z.function(),
-    isEnabled: z.function(),
-    getNamespace: z.function(),
-    checkViolation: z.function(),
+    enable: z.custom<(...args: any[]) => any>(() => true),
+    disable: z.custom<(...args: any[]) => any>(() => true),
+    isEnabled: z.custom<(...args: any[]) => any>(() => true),
+    getNamespace: z.custom<(...args: any[]) => any>(() => true),
+    checkViolation: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Feature management */
   features: z.object({
-    isEnabled: z.function(),
-    list: z.function(),
-    check: z.function(),
-    enable: z.function(),
-    disable: z.function(),
+    isEnabled: z.custom<(...args: any[]) => any>(() => true),
+    list: z.custom<(...args: any[]) => any>(() => true),
+    check: z.custom<(...args: any[]) => any>(() => true),
+    enable: z.custom<(...args: any[]) => any>(() => true),
+    disable: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Permission management */
   permissions: z.object({
-    check: z.function(),
-    hasPermission: z.function(),
-    listPermissions: z.function(),
-    grant: z.function(),
-    revoke: z.function(),
+    check: z.custom<(...args: any[]) => any>(() => true),
+    hasPermission: z.custom<(...args: any[]) => any>(() => true),
+    listPermissions: z.custom<(...args: any[]) => any>(() => true),
+    grant: z.custom<(...args: any[]) => any>(() => true),
+    revoke: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Metrics and monitoring */
   metrics: z.object({
-    collect: z.function(),
-    getMetrics: z.function(),
-    getUsage: z.function(),
-    getLimits: z.function(),
+    collect: z.custom<(...args: any[]) => any>(() => true),
+    getMetrics: z.custom<(...args: any[]) => any>(() => true),
+    getUsage: z.custom<(...args: any[]) => any>(() => true),
+    getLimits: z.custom<(...args: any[]) => any>(() => true),
   }),
 });
 

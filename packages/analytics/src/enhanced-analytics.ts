@@ -71,50 +71,50 @@ export const EnhancedAnalyticsOutputSchema = z.object({
   category: z.literal('Universal'),
   capabilities: z.array(z.string()),
   state: z.enum(['ready', 'collecting', 'processing', 'error']),
-  
+
   /** Analytics tracking functions */
-  track: z.function(),
-  trackHyperscriptEvent: z.function(),
-  trackUserAction: z.function(),
-  trackPerformance: z.function(),
-  trackError: z.function(),
-  
+  track: z.custom<(...args: any[]) => any>(() => true),
+  trackHyperscriptEvent: z.custom<(...args: any[]) => any>(() => true),
+  trackUserAction: z.custom<(...args: any[]) => any>(() => true),
+  trackPerformance: z.custom<(...args: any[]) => any>(() => true),
+  trackError: z.custom<(...args: any[]) => any>(() => true),
+
   /** Session management */
   session: z.object({
-    getId: z.function(),
-    start: z.function(),
-    end: z.function(),
-    getMetrics: z.function(),
+    getId: z.custom<(...args: any[]) => any>(() => true),
+    start: z.custom<(...args: any[]) => any>(() => true),
+    end: z.custom<(...args: any[]) => any>(() => true),
+    getMetrics: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Event management */
   events: z.object({
-    queue: z.function(),
-    flush: z.function(),
-    clear: z.function(),
-    count: z.function(),
+    queue: z.custom<(...args: any[]) => any>(() => true),
+    flush: z.custom<(...args: any[]) => any>(() => true),
+    clear: z.custom<(...args: any[]) => any>(() => true),
+    count: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Data collection */
   collect: z.object({
-    start: z.function(),
-    stop: z.function(),
-    isActive: z.function(),
-    getMetrics: z.function(),
+    start: z.custom<(...args: any[]) => any>(() => true),
+    stop: z.custom<(...args: any[]) => any>(() => true),
+    isActive: z.custom<(...args: any[]) => any>(() => true),
+    getMetrics: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Filtering and enrichment */
   filters: z.object({
-    add: z.function(),
-    remove: z.function(),
-    list: z.function(),
+    add: z.custom<(...args: any[]) => any>(() => true),
+    remove: z.custom<(...args: any[]) => any>(() => true),
+    list: z.custom<(...args: any[]) => any>(() => true),
   }),
-  
+
   /** Export and reporting */
   export: z.object({
-    toJSON: z.function(),
-    toCSV: z.function(),
-    generateReport: z.function(),
+    toJSON: z.custom<(...args: any[]) => any>(() => true),
+    toCSV: z.custom<(...args: any[]) => any>(() => true),
+    generateReport: z.custom<(...args: any[]) => any>(() => true),
   }),
 });
 
@@ -352,7 +352,7 @@ export class TypedAnalyticsContextImplementation {
       }
 
       const parsed = this.inputSchema.parse(input);
-      const errors: Array<{ type: string; message: string; path?: string }> = [];
+      const errors: Array<{ type: string; message: string; path?: string; suggestions: string[] }> = [];
       const suggestions: string[] = [];
 
       // Enhanced validation logic
@@ -363,7 +363,8 @@ export class TypedAnalyticsContextImplementation {
         errors.push({
           type: 'invalid-tracking-id',
           message: 'Tracking ID must be in format like "GA-123456789-1" or "GTM-ABC123"',
-          path: 'config.trackingId'
+          path: 'config.trackingId',
+          suggestions: []
         });
         suggestions.push('Use valid Google Analytics or Google Tag Manager format');
       }
@@ -380,7 +381,8 @@ export class TypedAnalyticsContextImplementation {
           errors.push({
             type: 'invalid-api-endpoint',
             message: 'API endpoint must be a valid URL',
-            path: 'config.apiEndpoint'
+            path: 'config.apiEndpoint',
+            suggestions: []
           });
           suggestions.push('Provide a valid HTTPS URL for the analytics API endpoint');
         }
@@ -391,7 +393,8 @@ export class TypedAnalyticsContextImplementation {
         errors.push({
           type: 'batch-size-too-large',
           message: 'Batch size should not exceed 1000 events for optimal performance',
-          path: 'config.batchSize'
+          path: 'config.batchSize',
+          suggestions: []
         });
         suggestions.push('Use smaller batch sizes (50-100) for better performance');
       }
@@ -401,7 +404,8 @@ export class TypedAnalyticsContextImplementation {
         errors.push({
           type: 'invalid-sampling-rate',
           message: 'Sampling rate must be greater than 0 when sampling is enabled',
-          path: 'config.sampling.rate'
+          path: 'config.sampling.rate',
+          suggestions: []
         });
         suggestions.push('Set sampling rate between 0.1 and 1.0');
       }
@@ -411,14 +415,15 @@ export class TypedAnalyticsContextImplementation {
         errors.push({
           type: 'invalid-user-id',
           message: 'User ID should be at least 3 characters long',
-          path: 'context.userId'
+          path: 'context.userId',
+          suggestions: []
         });
         suggestions.push('Use meaningful user identifiers for better analytics');
       }
 
       return {
         isValid: errors.length === 0,
-        errors,
+        errors: errors as ValidationError[],
         suggestions
       };
 

@@ -32,6 +32,8 @@ export interface ValidationError {
   readonly suggestions: string[];
   readonly path?: string;
   readonly code?: string;
+  readonly name?: string;
+  readonly severity?: 'error' | 'warning' | 'info';
 }
 
 /**
@@ -205,13 +207,14 @@ export interface EnhancedError {
   readonly message: string;
   readonly code: string;
   readonly suggestions: string[];
+  readonly type?: string;
 }
 
 /**
  * Typed result structure for enhanced expressions and features
  * Provides comprehensive success/failure information
  */
-export type TypedResult<T = unknown> = 
+export type TypedResult<T = unknown> =
   | {
       readonly success: true;
       readonly value: T;
@@ -221,6 +224,8 @@ export type TypedResult<T = unknown> =
       readonly success: false;
       readonly error: EnhancedError;
       readonly errors?: ValidationError[];
+      readonly suggestions?: string[];
+      readonly type?: string;
     };
 
 // ============================================================================
@@ -260,6 +265,7 @@ export interface LLMDocumentation {
     description: string;
     optional: boolean;
     examples: string[];
+    defaultValue?: unknown;
   }>;
   readonly returns: {
     type: string;
@@ -274,6 +280,7 @@ export interface LLMDocumentation {
   }>;
   readonly seeAlso: string[];
   readonly tags: string[];
+  readonly returnValue?: unknown;
 }
 
 /**

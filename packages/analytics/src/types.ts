@@ -115,7 +115,7 @@ export interface PerformanceTimingEvent extends AnalyticsEvent {
     metric: string;
     value: number;
     unit: 'ms' | 'bytes' | 'count';
-    category: 'compilation' | 'execution' | 'rendering' | 'network';
+    category: 'compilation' | 'execution' | 'rendering' | 'network' | 'navigation';
     details?: Record<string, any>;
   };
 }
