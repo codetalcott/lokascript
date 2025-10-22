@@ -104,22 +104,22 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
       const issues: string[] = [];
       
       // Check for extremely large objects
-      if (validatedArgs.length > 1000) {
-        issues.push(`Object literal with ${validatedArgs.length} fields may impact performance`);
+      if ((validatedArgs as any[]).length > 1000) {
+        issues.push(`Object literal with ${(validatedArgs as any[]).length} fields may impact performance`);
       }
       
       // Check for duplicate static keys
-      const staticKeys = validatedArgs
-        .filter(field => !field.isDynamic && typeof field.key === 'string')
-        .map(field => field.key as string);
-      
-      const duplicateKeys = staticKeys.filter((key, index) => staticKeys.indexOf(key) !== index);
+      const staticKeys = (validatedArgs as any[])
+        .filter((field: any) => !field.isDynamic && typeof field.key === 'string')
+        .map((field: any) => field.key as string);
+
+      const duplicateKeys = staticKeys.filter((key: string, index: number) => staticKeys.indexOf(key) !== index);
       if (duplicateKeys.length > 0) {
         issues.push(`Duplicate field names detected: ${[...new Set(duplicateKeys)].join(', ')}`);
       }
       
       // Validate field key types
-      for (const field of validatedArgs) {
+      for (const field of (validatedArgs as any[])) {
         if (!field.isDynamic && typeof field.key !== 'string') {
           issues.push(`Static field key must be a string, got ${typeof field.key}`);
         }
@@ -175,7 +175,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
       const resultObject: Record<string, HyperScriptValue> = {};
       
       // Process each field
-      for (const field of fields) {
+      for (const field of (fields as any[])) {
         const keyResult = await this.resolveFieldKey(field, context);
         if (!keyResult.success) {
           return keyResult as EvaluationResult<Record<string, HyperScriptValue>>;

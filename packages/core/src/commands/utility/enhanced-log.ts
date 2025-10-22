@@ -74,7 +74,7 @@ export class EnhancedLogCommand implements TypedCommandImplementation<LogCommand
           isValid: false,
           errors: [{
             code: 'VALIDATION_ERROR',
-            message: `Invalid LOG command input: ${error.message}`,
+            message: `Invalid LOG command input: ${error instanceof Error ? error.message : String(error)}`,
             path: [],
             severity: 'error' as const
           }],

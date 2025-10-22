@@ -262,7 +262,8 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     if (availableVariables && Object.keys(availableVariables).length > 0) {
       enhancedPrompt += '\nAvailable variables:\n';
       Object.entries(availableVariables).forEach(([name, def]) => {
-        enhancedPrompt += `- ${name}: ${def.type}${def.nullable ? ' | null' : ''}${def.optional ? ' (optional)' : ''}\n`;
+        const typedDef = def as any;
+        enhancedPrompt += `- ${name}: ${typedDef.type}${typedDef.nullable ? ' | null' : ''}${typedDef.optional ? ' (optional)' : ''}\n`;
       });
     }
     
@@ -377,7 +378,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     Object.entries(variables).forEach(([name, def]) => {
       if (code.includes(name)) {
         types[name] = {
-          type: def.type,
+          type: (def as any).type,
           confidence: 0.9,
           usage: [code.includes(`${name}.`) ? 'property-access' : 'variable-reference']
         };
@@ -472,7 +473,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     // Validate available variables structure
     if (data.availableVariables) {
       Object.entries(data.availableVariables).forEach(([name, def]) => {
-        if (!def.type) {
+        if (!(def as any).type) {
           errors.push({
             type: 'missing-type',
             message: `Variable ${name} is missing type definition`,

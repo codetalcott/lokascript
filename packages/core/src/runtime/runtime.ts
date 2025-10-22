@@ -692,7 +692,7 @@ export class Runtime {
             // Perform the operation
             switch (operator) {
               case '+':
-                value = leftValue + rightValue; // String concatenation or numeric addition
+                value = (leftValue as any) + (rightValue as any); // String concatenation or numeric addition
                 break;
               case '-':
                 value = Number(leftValue) - Number(rightValue);

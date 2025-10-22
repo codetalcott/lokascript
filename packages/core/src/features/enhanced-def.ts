@@ -389,7 +389,7 @@ export class TypedDefFeatureImplementation {
 
       // Validate parameters
       if (data.definition?.parameters) {
-        data.definition.parameters.forEach((param, index) => {
+        data.definition.parameters.forEach((param: string, index: number) => {
           if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(param)) {
             errors.push({
               type: 'invalid-parameter-name',

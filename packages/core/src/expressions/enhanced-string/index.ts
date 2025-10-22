@@ -25,7 +25,7 @@ const StringInterpolationInputSchema = v.object({
   variables: z.record(v.string(), v.unknown()).optional()
 });
 
-type StringInterpolationInput = any; // Inferred from RuntimeValidator
+// type StringInterpolationInput = any; // Inferred from RuntimeValidator - unused
 
 /**
  * Enhanced string interpolation expression with comprehensive variable substitution

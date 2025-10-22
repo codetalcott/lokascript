@@ -9,9 +9,7 @@ import type {
   UnifiedValidationError,
   UnifiedValidationResult,
   UnifiedExecutionContext,
-  UnifiedHyperScriptValue,
-  UnifiedResult,
-  UnifiedTypedResult
+  UnifiedResult
 } from './unified-types';
 
 // ============================================================================
@@ -41,27 +39,27 @@ type LegacyValidationResult<T> = LegacyValidationResultSuccess<T> | LegacyValida
 /**
  * Legacy ValidationError formats
  */
-interface LegacyValidationError {
-  type: string;
-  message: string;
-  suggestion?: string;
-  suggestions?: string | string[];
-  path?: string;
-  code?: string;
-}
+// interface LegacyValidationError {
+//   type: string;
+//   message: string;
+//   suggestion?: string;
+//   suggestions?: string | string[];
+//   path?: string;
+//   code?: string;
+// }
 
 /**
  * Legacy ExecutionContext format
  */
-interface LegacyExecutionContext {
-  me?: HTMLElement | null;
-  it?: unknown;
-  you?: HTMLElement | null;
-  locals?: Map<string, unknown> | Record<string, unknown>;
-  globals?: Map<string, unknown> | Record<string, unknown>;
-  variables?: Map<string, unknown> | Record<string, unknown>;
-  [key: string]: unknown;
-}
+// interface LegacyExecutionContext {
+//   me?: HTMLElement | null;
+//   it?: unknown;
+//   you?: HTMLElement | null;
+//   locals?: Map<string, unknown> | Record<string, unknown>;
+//   globals?: Map<string, unknown> | Record<string, unknown>;
+//   variables?: Map<string, unknown> | Record<string, unknown>;
+//   [key: string]: unknown;
+// }
 
 // ============================================================================
 // Migration Adapter Class

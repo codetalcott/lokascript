@@ -6,12 +6,9 @@
 import type {
   Plugin,
   PluginRegistry,
-  CommandPlugin,
-  FeaturePlugin,
-  ElementContext,
-  PluginType
+  CommandPlugin
 } from './types';
-import type { OptimizedPlugin, PluginMetrics } from './typed';
+import type { PluginMetrics } from './typed';
 import { HyperfixiPluginRegistry } from './registry';
 
 export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements PluginRegistry {

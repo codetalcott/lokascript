@@ -6,11 +6,9 @@
  */
 
 import { v, z } from '../validation/lightweight-validators';
-import type { 
-  TypedContextImplementation,
+import type {
   ContextMetadata,
-  EvaluationResult,
-  EnhancedContextBase
+  EvaluationResult
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType, ValidationResult } from '../types/enhanced-core';
 import type { ExecutionContext } from '../types/core';
@@ -22,7 +20,7 @@ import type { ExecutionContext } from '../types/core';
 export const EnhancedInitInputSchema = v.object({
   /** Element initialization configuration */
   initialization: z.object({
-    target: v.union([v.custom((value) => value instanceof HTMLElement), v.string()]), // Element or selector
+    target: v.union([v.custom((value: unknown) => value instanceof HTMLElement), v.string()]), // Element or selector
     commands: v.array(v.any()).min(1), // Commands to execute
     timing: z.object({
       immediate: v.boolean().default(false), // Execute before other features

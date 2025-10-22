@@ -76,7 +76,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   Float: (value: unknown) => {
-    const num = defaultConversions.Number(value);
+    const num = defaultConversions.Number(value) as number;
     return parseFloat(num.toString());
   },
 
@@ -206,7 +206,7 @@ function evaluateMathExpression(expression: string): number {
     
     return result;
   } catch (error) {
-    throw new Error(`Math expression evaluation failed: ${error.message}`);
+    throw new Error(`Math expression evaluation failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -312,7 +312,7 @@ export const asExpression: ExpressionImplementation = {
     // Handle Fixed:<precision> conversion
     if (type.startsWith('Fixed')) {
       const { precision } = parseFixedPrecision(type);
-      const num = defaultConversions.Number(value);
+      const num = defaultConversions.Number(value) as number;
       return num.toFixed(precision || 2);
     }
     

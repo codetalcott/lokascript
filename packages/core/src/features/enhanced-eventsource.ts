@@ -6,12 +6,10 @@
  */
 
 import { v, z } from '../validation/lightweight-validators';
-import type { 
-  TypedContextImplementation,
+import type {
   ContextMetadata,
   ValidationResult,
-  EvaluationResult,
-  EnhancedContextBase
+  EvaluationResult
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 

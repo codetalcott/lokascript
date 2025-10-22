@@ -444,7 +444,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
         };
       }
 
-      if (!isFinite(parsed.data.value)) {
+      if (!isFinite((parsed.data as any).value)) {
         return {
           isValid: false,
           errors: [{

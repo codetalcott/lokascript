@@ -30,7 +30,7 @@ export class EnhancedContextRegistry implements ContextRegistry {
     // Validate context implementation
     const validation = this.validate(context);
     if (!validation.isValid) {
-      throw new Error(`Context registration failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      throw new Error(`Context registration failed: ${validation.errors.map((e: { message: string }) => e.message).join(', ')}`);
     }
 
     // Register context

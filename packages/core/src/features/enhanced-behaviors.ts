@@ -6,12 +6,10 @@
  */
 
 import { v, z } from '../validation/lightweight-validators';
-import type { 
-  TypedContextImplementation,
+import type {
   ContextMetadata,
   ValidationResult,
-  EvaluationResult,
-  EnhancedContextBase
+  EvaluationResult
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
@@ -458,7 +456,7 @@ export class TypedBehaviorsFeatureImplementation {
 
       // Validate parameters
       if (data.behavior?.parameters) {
-        data.behavior.parameters.forEach((param, index) => {
+        data.behavior.parameters.forEach((param: string, index: number) => {
           if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(param)) {
             errors.push({
               type: 'invalid-parameter-name',
@@ -485,7 +483,7 @@ export class TypedBehaviorsFeatureImplementation {
 
       // Validate event handlers
       if (data.behavior?.eventHandlers) {
-        data.behavior.eventHandlers.forEach((handler, index) => {
+        data.behavior.eventHandlers.forEach((handler: any, index: number) => {
           // Validate event type
           if (!this.isValidEventType(handler.event)) {
             errors.push({

@@ -198,8 +198,8 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
     context: TypedExpressionContext
   ): Promise<HyperScriptValue> {
     // 1. Check meta context first (for template variables, local scope)
-    if (context.meta && context.meta.has(symbolName)) {
-      return context.meta.get(symbolName) as HyperScriptValue;
+    if (context.meta && typeof (context.meta as any).has === 'function' && (context.meta as any).has(symbolName)) {
+      return (context.meta as any).get(symbolName) as HyperScriptValue;
     }
 
     // 2. Check local variables

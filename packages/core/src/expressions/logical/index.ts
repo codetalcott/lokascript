@@ -8,7 +8,6 @@ import type { RuntimeValidator } from '../../validation/lightweight-validators';
 import { v } from '../../validation/lightweight-validators';
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import type {
-  TypedExpressionContext,
   ExpressionMetadata,
   LLMDocumentation
 } from '../../types/enhanced-expressions';
@@ -238,7 +237,7 @@ export const lessThanExpression: ExpressionImplementation = {
   operators: ['<', 'is less than'],
   
   async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left < right;
+    return (left as any) < (right as any);
   },
   
   validate(args: unknown[]): string | null {
@@ -258,7 +257,7 @@ export const lessThanOrEqualExpression: ExpressionImplementation = {
   operators: ['<=', 'is less than or equal to'],
   
   async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left <= right;
+    return (left as any) <= (right as any);
   },
   
   validate(args: unknown[]): string | null {
@@ -278,7 +277,7 @@ export const greaterThanExpression: ExpressionImplementation = {
   operators: ['>', 'is greater than'],
   
   async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left > right;
+    return (left as any) > (right as any);
   },
   
   validate(args: unknown[]): string | null {
@@ -298,7 +297,7 @@ export const greaterThanOrEqualExpression: ExpressionImplementation = {
   operators: ['>=', 'is greater than or equal to'],
   
   async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left >= right;
+    return (left as any) >= (right as any);
   },
   
   validate(args: unknown[]): string | null {

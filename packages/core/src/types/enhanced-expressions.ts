@@ -10,15 +10,12 @@
 import type { RuntimeValidator } from '../validation/lightweight-validators';
 import { v, z } from '../validation/lightweight-validators';
 // Import unified types from base-types system for local use and re-export
-import type { 
-  ValidationResult, 
+import type {
+  ValidationResult,
   EvaluationResult,
   LLMDocumentation,
   ExecutionContext,
-  TypedExecutionContext,
   TypedExpressionContext,
-  EvaluationType,
-  HyperScriptValueType,
   TypedResult
 } from './base-types';
 
@@ -380,7 +377,7 @@ export const CommonInputSchemas = {
   StringInput: v.string(),
   NumberInput: v.number(),
   BooleanInput: v.boolean(),
-  ElementInput: v.custom((value) => value instanceof HTMLElement),
+  ElementInput: v.custom((value: unknown) => value instanceof HTMLElement),
   SelectorInput: v.string().regex(/^[.#]?[\w-]+$/, 'Invalid CSS selector'),
   ComparisonInput: v.object({
     left: v.unknown(),

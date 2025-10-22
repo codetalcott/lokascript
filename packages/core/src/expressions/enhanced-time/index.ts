@@ -27,7 +27,7 @@ const TimeParsingInputSchema = v.object({
   defaultUnit: z.enum(['ms', 's', 'm', 'h', 'd', 'w']).optional().default('ms')
 });
 
-type TimeParsingInput = any; // Inferred from RuntimeValidator
+// type TimeParsingInput = any; // Inferred from RuntimeValidator - unused
 
 /**
  * Enhanced time parsing expression with comprehensive validation
@@ -223,7 +223,7 @@ const DurationFormatSchema = v.object({
   maxUnits: v.number().min(1).max(6).optional().default(6)
 });
 
-type DurationFormatInput = any; // Inferred from RuntimeValidator
+// type DurationFormatInput = any; // Inferred from RuntimeValidator - unused
 
 /**
  * Enhanced duration formatting expression

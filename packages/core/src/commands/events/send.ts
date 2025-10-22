@@ -28,8 +28,8 @@ const SendCommandInputSchema = v.tuple([
     v.literal('on')
   ]).optional(), // Target keyword
   v.union([
-    v.custom((value) => value instanceof HTMLElement),
-    v.array(v.custom((value) => value instanceof HTMLElement)),
+    v.custom((value: unknown) => value instanceof HTMLElement),
+    v.array(v.custom((value: unknown) => value instanceof HTMLElement)),
     v.string(), // CSS selector or context reference
     v.null(),
     v.undefined()

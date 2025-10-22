@@ -26,8 +26,8 @@ export interface HideCommandOptions {
  */
 const HideCommandInputSchema = v.tuple([
   v.union([
-    v.custom((value) => value instanceof HTMLElement),
-    v.array(v.custom((value) => value instanceof HTMLElement)), 
+    v.custom((value: unknown) => value instanceof HTMLElement),
+    v.array(v.custom((value: unknown) => value instanceof HTMLElement)),
     v.string(), // CSS selector
     v.null(),   // Use implicit target (me)
     v.undefined()

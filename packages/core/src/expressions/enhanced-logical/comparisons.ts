@@ -195,12 +195,12 @@ export class EnhancedEqualsExpression implements BaseTypedExpression<boolean> {
       }
 
       // Ensure operator is == for this expression
-      if (parsed.data.operator !== '==') {
+      if ((parsed.data as any).operator !== '==') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Equals expression expects == operator, got ${parsed.data.operator}`,
+            message: `Equals expression expects == operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [
@@ -380,12 +380,12 @@ export class EnhancedNotEqualsExpression implements BaseTypedExpression<boolean>
         };
       }
 
-      if (parsed.data.operator !== '!=') {
+      if ((parsed.data as any).operator !== '!=') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Not equals expression expects != operator, got ${parsed.data.operator}`,
+            message: `Not equals expression expects != operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [
@@ -575,12 +575,12 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
         };
       }
 
-      if (parsed.data.operator !== '>') {
+      if ((parsed.data as any).operator !== '>') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Greater than expression expects > operator, got ${parsed.data.operator}`,
+            message: `Greater than expression expects > operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [
@@ -758,12 +758,12 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
         };
       }
 
-      if (parsed.data.operator !== '<') {
+      if ((parsed.data as any).operator !== '<') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Less than expression expects < operator, got ${parsed.data.operator}`,
+            message: `Less than expression expects < operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [
@@ -941,12 +941,12 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
         };
       }
 
-      if (parsed.data.operator !== '>=') {
+      if ((parsed.data as any).operator !== '>=') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Greater than or equal expression expects >= operator, got ${parsed.data.operator}`,
+            message: `Greater than or equal expression expects >= operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [
@@ -1124,12 +1124,12 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
         };
       }
 
-      if (parsed.data.operator !== '<=') {
+      if ((parsed.data as any).operator !== '<=') {
         return {
           isValid: false,
           errors: [{
             type: 'missing-argument',
-            message: `Less than or equal expression expects <= operator, got ${parsed.data.operator}`,
+            message: `Less than or equal expression expects <= operator, got ${(parsed.data as any).operator}`,
             suggestions: []
           }],
           suggestions: [

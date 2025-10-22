@@ -268,7 +268,7 @@ export class CommandPatternValidator {
 
   private static validateStructuredErrors(instance: Record<string, unknown>): boolean {
     // This is harder to test without actually executing, but we can check method signature
-    const executeMethod = instance.execute.toString();
+    const executeMethod = (instance.execute as any).toString();
     return (
       executeMethod.includes('Promise<EvaluationResult') ||
       executeMethod.includes('EvaluationResult<') ||

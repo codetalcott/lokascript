@@ -42,7 +42,7 @@ const GoCommandInputSchema = z.union([
     v.string(),
     v.number(),
     v.boolean(),
-    v.custom((value) => value instanceof HTMLElement),
+    v.custom((value: unknown) => value instanceof HTMLElement),
     v.null(),
     v.undefined()
   ])).min(1).max(10)

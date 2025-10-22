@@ -16,13 +16,9 @@ import { v, z } from '../validation/lightweight-validators';
 
 // Import from base type system
 import type {
-  ExecutionContext,
   ValidationResult,
   ValidationError,
-  HyperScriptValueType,
-  EvaluationType,
-  TypedResult,
-  LLMDocumentation
+  TypedResult
 } from './base-types';
 
 // ============================================================================
@@ -65,8 +61,8 @@ export const HyperScriptValueSchema = v.union([
   v.boolean(),
   v.null(),
   v.undefined(),
-  v.custom((value) => value instanceof HTMLElement),
-  v.array(v.custom((value) => value instanceof HTMLElement)),
+  v.custom((value: unknown) => value instanceof HTMLElement),
+  v.array(v.custom((value: unknown) => value instanceof HTMLElement)),
   z.record(v.unknown()), // Will be refined recursively
   v.array(v.unknown())
 ]);
@@ -749,7 +745,7 @@ export const HyperScriptProgramSchema = v.object({
     id: v.string(),
     trigger: z.object({
       event: v.string(),
-      target: v.union([v.string(), v.custom((value) => value instanceof HTMLElement)]).optional(),
+      target: v.union([v.string(), v.custom((value: unknown) => value instanceof HTMLElement)]).optional(),
       options: z.object({
         once: v.boolean().optional(),
         debounce: v.number().optional(),

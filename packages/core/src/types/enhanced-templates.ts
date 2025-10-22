@@ -5,11 +5,10 @@
  */
 
 import { v } from '../validation/lightweight-validators';
-import type { 
+import type {
   BaseTypedExpression,
   TypedExpressionContext,
   TypedResult,
-  ExpressionMetadata,
   ValidationResult,
   LLMDocumentation
 } from './enhanced-expressions.ts';

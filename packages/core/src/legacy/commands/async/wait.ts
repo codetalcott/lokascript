@@ -569,7 +569,7 @@ export class WaitCommand implements TypedCommandImplementation<
           // Handle event destructuring
           if (destructure && destructure.length > 0) {
             // Store destructured properties in context locals
-            destructure.forEach(prop => {
+            destructure.forEach((prop: string) => {
               if (context.locals) {
                 context.locals.set(prop, (event as any)[prop]);
               }

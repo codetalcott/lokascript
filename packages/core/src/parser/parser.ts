@@ -68,10 +68,10 @@ interface PossessiveExpressionNode extends ASTNode {
   property: ASTNode;
 }
 
-interface ObjectLiteralNode extends ASTNode {
-  type: 'objectLiteral';
-  properties: Array<{ key: ASTNode; value: ASTNode }>;
-}
+// interface ObjectLiteralNode extends ASTNode {
+//   type: 'objectLiteral';
+//   properties: Array<{ key: ASTNode; value: ASTNode }>;
+// }
 
 interface EventHandlerNode extends ASTNode {
   type: 'eventHandler';

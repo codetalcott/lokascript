@@ -6,12 +6,10 @@
  */
 
 import { v, z } from '../validation/lightweight-validators';
-import type { 
-  TypedContextImplementation,
+import type {
   ContextMetadata,
   ValidationResult,
-  EvaluationResult,
-  EnhancedContextBase
+  EvaluationResult
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
 
@@ -540,7 +538,7 @@ export class TypedSocketsFeatureImplementation {
 
       // Validate event handlers
       if (data.eventHandlers) {
-        data.eventHandlers.forEach((handler, index) => {
+        data.eventHandlers.forEach((handler: any, index: number) => {
           // Validate filter expressions
           if (handler.filter) {
             try {

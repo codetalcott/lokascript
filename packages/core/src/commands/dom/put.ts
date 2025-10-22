@@ -30,7 +30,7 @@ const PutCommandInputSchema = v.tuple([
     v.string(),
     v.number(),
     v.boolean(),
-    v.custom((value) => value instanceof HTMLElement),
+    v.custom((value: unknown) => value instanceof HTMLElement),
     v.array(v.unknown()),
     z.record(v.unknown()),
     v.null(),
@@ -38,7 +38,7 @@ const PutCommandInputSchema = v.tuple([
   ]).describe('Content to insert'),
   z.enum(['into', 'before', 'after', 'at start of', 'at end of']).describe('Insertion position'),
   v.union([
-    v.custom((value) => value instanceof HTMLElement),
+    v.custom((value: unknown) => value instanceof HTMLElement),
     v.string(), // CSS selector or property access
     v.null(),   // Use implicit target (me)
     v.undefined()

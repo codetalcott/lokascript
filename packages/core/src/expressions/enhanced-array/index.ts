@@ -111,10 +111,10 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
       const errors: ValidationError[] = [];
       
       // Check for extremely large arrays
-      if (validatedArgs.length > 10000) {
+      if ((validatedArgs as any[]).length > 10000) {
         errors.push({
           type: 'runtime-error',
-          message: `Array literal with ${validatedArgs.length} elements may impact performance`,
+          message: `Array literal with ${(validatedArgs as any[]).length} elements may impact performance`,
           suggestion: 'Consider breaking large arrays into smaller chunks'
         });
       }
@@ -167,11 +167,11 @@ export class EnhancedArrayLiteralExpression implements TypedExpressionImplementa
         };
       }
 
-      const elements = this.inputSchema.parse(args);
-      
+      const elements = this.inputSchema.parse(args) as any[];
+
       // Resolve any promise elements
       const resolvedElements = await Promise.all(
-        elements.map(async (element) => {
+        elements.map(async (element: unknown) => {
           if (element && typeof element === 'object' && 'then' in element) {
             return await element;
           }
