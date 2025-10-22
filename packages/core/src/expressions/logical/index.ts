@@ -613,7 +613,7 @@ export const containsExpression: ExpressionImplementation = {
     
     // Check for NodeList (browser environment only)
     if (typeof NodeList !== 'undefined' && container instanceof NodeList) {
-      return Array.from(container).includes(value);
+      return Array.from(container).includes(value as Node);
     }
     
     // Check if object has property

@@ -259,7 +259,7 @@ export class TypeChecker {
       errors: [{
         type: 'type-mismatch',
         message: `Expected ${expectedType}, got ${actualType}`,
-        suggestions: this.getTypeSuggestion(actualType, expectedType)
+        suggestions: [this.getTypeSuggestion(actualType, expectedType)]
       }],
       suggestions: [this.getTypeSuggestion(actualType, expectedType)]
     };

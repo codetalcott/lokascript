@@ -71,7 +71,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   Int: (value: unknown) => {
-    const num = defaultConversions.Number(value);
+    const num = defaultConversions.Number(value) as number;
     return Math.trunc(num);
   },
 
@@ -124,7 +124,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
     }
     
     const template = document.createElement('template');
-    template.innerHTML = value;
+    template.innerHTML = String(value);
     return template.content;
   },
 
@@ -168,7 +168,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
 
   'Values:Form': (value: unknown, context: ExecutionContext) => {
     const values = defaultConversions.Values(value, context);
-    return new URLSearchParams(values).toString();
+    return new URLSearchParams(values as Record<string, string>).toString();
   },
 
   'Values:JSON': (value: unknown, context: ExecutionContext) => {

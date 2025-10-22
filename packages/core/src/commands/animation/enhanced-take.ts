@@ -18,7 +18,7 @@ import {
   createTupleValidator,
   createStringValidator,
   createUnionValidator,
-  type _RuntimeValidator
+  type RuntimeValidator
 } from '../../validation/lightweight-validators';
 import { asHTMLElement } from '../../utils/dom-utils';
 
