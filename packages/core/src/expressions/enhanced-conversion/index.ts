@@ -539,7 +539,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
           errors: parsed.error?.errors.map(err => ({
             type: 'type-mismatch' as const,
             message: err.message,
-            suggestions: `Expected valid input structure, got: ${err.code}`
+            suggestions: [`Expected valid input structure, got: ${err.code}`]
           })) ?? [],
           suggestions: [
             'Provide both value and type parameters',
@@ -775,7 +775,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
           errors: parsed.error?.errors.map(err => ({
             type: 'type-mismatch' as const,
             message: err.message,
-            suggestions: `Expected valid input structure, got: ${err.code}`
+            suggestions: [`Expected valid input structure, got: ${err.code}`]
           })) ?? [],
           suggestions: [
             'Provide both value and type parameters',

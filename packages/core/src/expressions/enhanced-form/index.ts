@@ -321,7 +321,7 @@ export class EnhancedFormValidationExpression implements TypedExpressionImplemen
   private async getFormValues(formElement: HTMLElement): Promise<Record<string, unknown>> {
     const valuesExpr = new EnhancedFormValuesExpression();
     const result = await valuesExpr.evaluate({} as TypedExecutionContext, formElement);
-    return result.success ? result.value : {};
+    return result.success ? (result.value ?? {}) : {};
   }
 
   private validateCustomRules(values: Record<string, unknown>, rules: Record<string, string>): boolean {

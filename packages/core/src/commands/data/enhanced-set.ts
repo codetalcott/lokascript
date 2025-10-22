@@ -114,7 +114,7 @@ export class EnhancedSetCommand implements TypedCommandImplementation<
         // Convert Zod errors to our format
         const errors = result.error?.errors.map(err => ({
           type: 'validation-error' as const,
-          message: `${(err.path ?? []).join('.')}: ${err.message}`,
+          message: `${Array.isArray(err.path) ? err.path.join('.') : ''}: ${err.message}`,
           suggestions: this.generateSuggestions(err.code ?? 'unknown', err.path ?? [])
         })) ?? [];
 
