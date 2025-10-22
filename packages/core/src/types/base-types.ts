@@ -129,7 +129,7 @@ export interface ExecutionContext {
   readonly result: unknown;
   readonly locals: Map<string, unknown>;
   readonly globals: Map<string, unknown>;
-  readonly event?: Event | null;
+  readonly event?: Event | null | undefined;
   readonly halted?: boolean;
   readonly returned?: boolean;
   readonly broke?: boolean;

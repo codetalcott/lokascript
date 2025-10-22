@@ -15,7 +15,7 @@ import type {
   LLMDocumentation,
 } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
-import { asHTMLElement, asHTMLElements } from '../../utils/dom-utils';
+import { asHTMLElement } from '../../utils/dom-utils';
 
 /**
  * Input validation schema for LLM understanding

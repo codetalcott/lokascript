@@ -156,7 +156,7 @@ export const defaultConversions: Record<string, ConversionFunction> = {
   },
 
   // Form value conversions
-  Values: (value: unknown, context: ExecutionContext) => {
+  Values: (value: unknown, _context: ExecutionContext) => {
     if (value instanceof HTMLFormElement) {
       return getFormValuesProcessed(value);
     }
@@ -389,7 +389,7 @@ export const isExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['is a', 'is an'],
   
-  async evaluate(context: ExecutionContext, value: unknown, type: string): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: unknown, type: string): Promise<boolean> {
     if (typeof type !== 'string') {
       throw new Error('Type check requires a string type');
     }
@@ -452,7 +452,7 @@ export const asyncExpression: ExpressionImplementation = {
   associativity: 'Right',
   operators: ['async'],
   
-  async evaluate(context: ExecutionContext, expression: unknown): Promise<unknown> {
+  async evaluate(_context: ExecutionContext, expression: unknown): Promise<unknown> {
     // In hyperscript, async prevents automatic promise synchronization
     // Here we just return the value without awaiting if it's a promise
     return expression;

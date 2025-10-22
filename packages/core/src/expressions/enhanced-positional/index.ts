@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Positional Expressions for HyperScript
  * Provides deep TypeScript integration for positional navigation expressions
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,

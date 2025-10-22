@@ -3,7 +3,7 @@
  * Provides deep TypeScript integration for type conversion expressions with comprehensive validation
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type { 
   TypedExpressionContext, 
   TypedResult,

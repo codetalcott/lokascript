@@ -14,8 +14,7 @@ export const ReactiveStateFeature: FeaturePlugin = {
 
   onGlobalInit: (ctx: InitContext) => {
     // Initialize global state management
-    const globalState = new Map<string, any>();
-
+  
     ctx.registerFeature('state', {
       name: 'state',
       init: (elementCtx: ElementContext) => {

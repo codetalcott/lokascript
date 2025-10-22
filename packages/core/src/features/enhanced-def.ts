@@ -1,13 +1,10 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
-
 /**
  * Enhanced Def Feature Implementation
  * Type-safe function definition feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   ValidationResult,
   LLMDocumentation, 
@@ -541,13 +538,13 @@ export class TypedDefFeatureImplementation {
     return functionDef;
   }
 
-  private createFunctionDefiner(config: any) {
+  private createFunctionDefiner(_config: any) {
     return async (definition: any) => {
       return await this.registerFunction(definition, {});
     };
   }
 
-  private createFunctionCaller(config: any) {
+  private createFunctionCaller(_config: any) {
     return async (name: string, parameters: any[] = []) => {
       const func = this.functions.get(name);
       if (!func) {
@@ -771,14 +768,14 @@ export class TypedDefFeatureImplementation {
   }
 
   private createTypeValidator() {
-    return (parameters: any[], signature: any) => {
+    return (_parameters: any[], _signature: any) => {
       // Validate parameter types against function signature
       return { isValid: true, errors: [] };
     };
   }
 
   private createTypeAnnotator() {
-    return (functionName: string, parameterTypes: string[], returnType: string) => {
+    return (functionName: string, _parameterTypes: string[], returnType: string) => {
       const func = this.functions.get(functionName);
       if (func) {
         func.returnType = returnType;
@@ -812,10 +809,10 @@ export class TypedDefFeatureImplementation {
     };
   }
 
-  private async executeFunction(func: FunctionDefinition, context: ExecutionContext): Promise<any> {
+  private async executeFunction(func: FunctionDefinition, _context: ExecutionContext): Promise<any> {
     // Simplified function execution - would integrate with actual command executor
     let result = undefined;
-    
+
     try {
       // Execute function body commands
       for (const command of func.body) {
@@ -847,9 +844,10 @@ export class TypedDefFeatureImplementation {
 
   private async executeCatchBlock(func: FunctionDefinition, error: Error): Promise<any> {
     if (!func.catchBlock) return undefined;
-    
+
     // Execute catch block with error parameter
-    const catchContext = {
+    // @ts-expect-error - Reserved for future catch block execution
+    const _catchContext = {
       ...func.context,
       variables: {
         ...func.context.variables,

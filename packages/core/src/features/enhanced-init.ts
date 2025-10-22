@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Init Feature Implementation
  * Type-safe element initialization feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
@@ -549,7 +547,7 @@ export class TypedInitFeatureImplementation {
     };
   }
 
-  private async registerElement(initConfig: any, context: any): Promise<InitRegistration> {
+  private async registerElement(initConfig: any, _context: any): Promise<InitRegistration> {
     const id = `init-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     // Resolve target element
@@ -833,7 +831,7 @@ export class TypedInitFeatureImplementation {
   }
 
   // Factory methods for context API
-  private createElementRegistrar(config: any) {
+  private createElementRegistrar(_config: any) {
     return async (target: HTMLElement | string, commands: any[], options?: any) => {
       const initConfig = {
         target,
@@ -990,14 +988,14 @@ export class TypedInitFeatureImplementation {
   }
 
   private createElementAddedHandler() {
-    return (callback: (element: HTMLElement) => void) => {
+    return (_callback: (element: HTMLElement) => void) => {
       // Would set up callback for element-added events
       return 'handler-id';
     };
   }
 
   private createElementRemovedHandler() {
-    return (callback: (element: HTMLElement) => void) => {
+    return (_callback: (element: HTMLElement) => void) => {
       // Would set up callback for element-removed events
       return 'handler-id';
     };
@@ -1059,7 +1057,7 @@ export class TypedInitFeatureImplementation {
   }
 
   private createErrorHandlerSetter() {
-    return (handler: (error: Error, context: any) => void) => {
+    return (_handler: (error: Error, context: any) => void) => {
       // Would set custom error handler
       return true;
     };

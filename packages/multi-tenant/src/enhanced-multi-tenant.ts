@@ -190,6 +190,7 @@ export class TypedMultiTenantContextImplementation {
       }
     ],
     relatedContexts: ['analyticsContext', 'i18nContext', 'authContext'],
+    relatedExpressions: [],
     frameworkDependencies: ['tenant-isolation', 'customization-engine'],
     environmentRequirements: {
       browser: true,

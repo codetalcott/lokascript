@@ -1,6 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Time Expressions - Deep TypeScript Integration
@@ -8,7 +6,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Enhanced for LLM code agents with maximum type safety
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v, z } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExecutionContext,
@@ -111,7 +109,7 @@ export class EnhancedTimeParsingExpression implements TypedExpressionImplementat
     { pattern: /([-\d.]+)\s*(?:w|week|weeks)\b/i, multiplier: 604800000, name: 'weeks' }
   ];
 
-  async evaluate(context: TypedExecutionContext, timeString: string, defaultUnit: string = 'ms'): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, timeString: string, defaultUnit: string = 'ms'): Promise<EvaluationResult<number>> {
     try {
       if (!timeString || timeString.trim() === '') {
         return {
@@ -314,7 +312,7 @@ export class EnhancedDurationFormattingExpression implements TypedExpressionImpl
     { name: 's', longName: 'second', value: 1000 }
   ];
 
-  async evaluate(context: TypedExecutionContext, milliseconds: number, format: string = 'default', maxUnits: number = 6): Promise<EvaluationResult<string>> {
+  async evaluate(_context: TypedExecutionContext, milliseconds: number, format: string = 'default', maxUnits: number = 6): Promise<EvaluationResult<string>> {
     try {
       if (milliseconds < 0) {
         return {

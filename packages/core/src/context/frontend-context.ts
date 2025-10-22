@@ -3,13 +3,11 @@
  * Type-safe browser-based hyperscript context following enhanced pattern
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import {
   EnhancedContextBase,
   BaseContextInputSchema,
   BaseContextOutputSchema,
-  type BaseContextInput,
-  type BaseContextOutput,
   type ContextMetadata,
   type ValidationResult,
   type EvaluationResult

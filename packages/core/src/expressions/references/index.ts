@@ -98,7 +98,7 @@ export const querySelectorExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Element',
   
-  async evaluate(context: ExecutionContext, selector: string): Promise<HTMLElement | null> {
+  async evaluate(_context: ExecutionContext, selector: string): Promise<HTMLElement | null> {
     if (typeof selector !== 'string') {
       throw new Error('querySelector requires a string selector');
     }
@@ -124,7 +124,7 @@ export const querySelectorAllExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Array',
   
-  async evaluate(context: ExecutionContext, selector: string): Promise<HTMLElement[]> {
+  async evaluate(_context: ExecutionContext, selector: string): Promise<HTMLElement[]> {
     if (typeof selector !== 'string') {
       throw new Error('querySelectorAll requires a string selector');
     }
@@ -155,7 +155,7 @@ export const idExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Element',
   
-  async evaluate(context: ExecutionContext, id: string): Promise<HTMLElement | null> {
+  async evaluate(_context: ExecutionContext, id: string): Promise<HTMLElement | null> {
     if (typeof id !== 'string') {
       throw new Error('getElementById requires a string ID');
     }
@@ -179,7 +179,7 @@ export const classExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Array',
   
-  async evaluate(context: ExecutionContext, className: string): Promise<HTMLElement[]> {
+  async evaluate(_context: ExecutionContext, className: string): Promise<HTMLElement[]> {
     if (typeof className !== 'string') {
       throw new Error('getElementsByClassName requires a string class name');
     }
@@ -260,7 +260,7 @@ export const windowExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Object',
   
-  async evaluate(context: ExecutionContext): Promise<Window> {
+  async evaluate(_context: ExecutionContext): Promise<Window> {
     return window;
   },
   
@@ -274,7 +274,7 @@ export const documentExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Object',
   
-  async evaluate(context: ExecutionContext): Promise<Document> {
+  async evaluate(_context: ExecutionContext): Promise<Document> {
     return document;
   },
   
@@ -288,7 +288,7 @@ export const elementWithSelectorExpression: ExpressionImplementation = {
   category: 'Reference',
   evaluatesTo: 'Array',
   
-  async evaluate(context: ExecutionContext, selector: string): Promise<HTMLElement[]> {
+  async evaluate(_context: ExecutionContext, selector: string): Promise<HTMLElement[]> {
     if (typeof selector !== 'string') {
       throw new Error('Selector must be a string');
     }

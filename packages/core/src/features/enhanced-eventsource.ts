@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced EventSource Feature Implementation
  * Type-safe Server-Sent Events management feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
@@ -16,7 +14,6 @@ import type {
   EnhancedContextBase
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
-import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced EventSource Feature Input/Output Schemas
@@ -605,7 +602,7 @@ export class TypedEventSourceFeatureImplementation {
     };
   }
 
-  private async createConnection(sourceConfig: any, context: any): Promise<EventSourceConnection> {
+  private async createConnection(sourceConfig: any, _context: any): Promise<EventSourceConnection> {
     const id = `connection-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const connection: EventSourceConnection = {
@@ -995,7 +992,7 @@ export class TypedEventSourceFeatureImplementation {
   }
 
   private createEventEmitter() {
-    return async (connectionId: string, eventType: string, data?: any) => {
+    return async (_connectionId: string, _eventType: string, _data?: any) => {
       // Would emit custom events
       return true;
     };
@@ -1101,7 +1098,7 @@ export class TypedEventSourceFeatureImplementation {
   }
 
   private createErrorHandlerSetter() {
-    return (handler: (error: Error, context: any) => void) => {
+    return (_handler: (error: Error, context: any) => void) => {
       // Would set custom error handler
       return true;
     };

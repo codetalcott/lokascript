@@ -4,7 +4,7 @@
  * Handles array membership, DOM element queries, and advanced filtering
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   HyperScriptValueType,
@@ -434,7 +434,8 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
   /**
    * Infer the type of a search result
    */
-  private inferType(value: unknown): HyperScriptValueType {
+  // @ts-expect-error - Reserved for future use
+  private _inferType(value: unknown): HyperScriptValueType {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     if (typeof value === 'string') return 'string';

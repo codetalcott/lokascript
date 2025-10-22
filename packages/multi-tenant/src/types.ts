@@ -173,7 +173,7 @@ export interface TenantCondition {
 export interface TenantContext {
   tenant: TenantInfo;
   customization: TenantCustomization;
-  user?: TenantUser;
+  user?: TenantUser | undefined;
   request: TenantRequest;
   session: TenantSession;
   features: Set<string>;
@@ -215,7 +215,7 @@ export interface TenantRequest {
 export interface TenantSession {
   id: string;
   tenantId: string;
-  userId?: string;
+  userId?: string | undefined;
   data: Record<string, any>;
   expiresAt: Date;
   createdAt: Date;

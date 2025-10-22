@@ -29,7 +29,6 @@ function getCurrentlyImplemented(): string[] {
     'src/commands/advanced'
   ];
 
-  const _implemented: string[] = [];
   
   commandDirs.forEach(dir => {
     const fullPath = join(process.cwd(), dir);

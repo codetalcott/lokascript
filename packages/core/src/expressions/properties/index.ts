@@ -15,7 +15,7 @@ export const possessiveExpression: ExpressionImplementation = {
   evaluatesTo: 'Any',
   operators: ["'s", 's'],
   
-  async evaluate(context: ExecutionContext, element: any, property: string): Promise<any> {
+  async evaluate(_context: ExecutionContext, element: any, property: string): Promise<any> {
     if (element == null) {
       return undefined;
     }
@@ -181,7 +181,7 @@ export const ofExpression: ExpressionImplementation = {
   evaluatesTo: 'Any',
   operators: ['of'],
   
-  async evaluate(context: ExecutionContext, property: string, object: any): Promise<any> {
+  async evaluate(_context: ExecutionContext, property: string, object: any): Promise<any> {
     if (object == null) {
       return undefined;
     }
@@ -303,7 +303,7 @@ export const classReferenceExpression: ExpressionImplementation = {
   evaluatesTo: 'Array',
   operators: ['.'],
   
-  async evaluate(context: ExecutionContext, className: string): Promise<HTMLElement[]> {
+  async evaluate(_context: ExecutionContext, className: string): Promise<HTMLElement[]> {
     if (typeof className !== 'string') {
       throw new Error('Class name must be a string');
     }
@@ -337,7 +337,7 @@ export const idReferenceExpression: ExpressionImplementation = {
   evaluatesTo: 'Element',
   operators: ['#'],
   
-  async evaluate(context: ExecutionContext, idValue: string): Promise<HTMLElement | null> {
+  async evaluate(_context: ExecutionContext, idValue: string): Promise<HTMLElement | null> {
     if (typeof idValue !== 'string') {
       throw new Error('ID value must be a string');
     }

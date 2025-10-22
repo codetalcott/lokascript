@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Special Expressions for HyperScript
  * Provides deep TypeScript integration for literals and mathematical operations
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type { 
   BaseTypedExpression,
   TypedExpressionContext,
@@ -35,21 +33,9 @@ const BooleanLiteralInputSchema = v.object({
   value: v.boolean().describe('Boolean literal value')
 }).strict();
 
-const ArrayLiteralInputSchema = v.object({
-  elements: v.array(v.unknown()).describe('Array elements')
-}).strict();
-
-const ObjectLiteralInputSchema = v.object({
-  properties: z.record(v.string(), v.unknown()).describe('Object properties')
-}).strict();
-
 const BinaryOperationInputSchema = v.object({
   left: v.unknown().describe('Left operand'),
   right: v.unknown().describe('Right operand')
-}).strict();
-
-const UnaryOperationInputSchema = v.object({
-  operand: v.unknown().describe('Operand for unary operation')
 }).strict();
 
 type StringLiteralInput = z.infer<typeof StringLiteralInputSchema>;
@@ -225,7 +211,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
 
   private interpolateString(template: string, context: TypedExpressionContext): string {
     // Handle ${expression} interpolation
-    let result = template.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+    let result = template.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
       try {
         const value = this.resolveExpression(expression.trim(), context);
         return value !== undefined ? String(value) : '';
@@ -235,7 +221,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
     });
 
     // Handle $variable interpolation
-    result = result.replace(/\$([a-zA-Z_$][a-zA-Z0-9_.$]*)/g, (match, varName) => {
+    result = result.replace(/\$([a-zA-Z_$][a-zA-Z0-9_.$]*)/g, (_match, varName) => {
       try {
         const value = this.resolveVariable(varName, context);
         return value !== undefined ? String(value) : '';

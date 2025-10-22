@@ -122,11 +122,11 @@ export class HyperfixiPluginRegistry implements PluginRegistry {
     }
   }
 
-  private loadTransformPlugin(plugin: TransformPlugin): void {
+  private loadTransformPlugin(_plugin: TransformPlugin): void {
     // Transform plugins are used during parsing phase
   }
 
-  private loadRuntimePlugin(plugin: RuntimePlugin): void {
+  private loadRuntimePlugin(_plugin: RuntimePlugin): void {
     // Runtime plugins enhance execution
   }
 
@@ -187,7 +187,7 @@ export class HyperfixiPluginRegistry implements PluginRegistry {
     }
   }
 
-  protected processAttribute(element: Element, attr: Attr): void {
+  protected processAttribute(_element: Element, attr: Attr): void {
     const value = attr.value;
     if (!value) return;
 

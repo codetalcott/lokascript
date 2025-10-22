@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with maximum type safety
  */
 
-import { v, z, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v, z } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExecutionContext,
@@ -96,7 +96,7 @@ export class EnhancedStringInterpolationExpression implements TypedExpressionImp
       const templateStr = String(template || '');
       
       // Handle ${variable} interpolation
-      const result = templateStr.replace(/\$\{([^}]+)\}/g, (match, expression) => {
+      const result = templateStr.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
         try {
           const value = this.evaluateExpression(expression.trim(), context, variables);
           return String(value);
@@ -234,7 +234,7 @@ export class EnhancedStringConcatenationExpression implements TypedExpressionImp
     tags: ['string', 'concatenation', 'join', 'type-conversion']
   };
 
-  async evaluate(context: TypedExecutionContext, ...values: HyperScriptValue[]): Promise<EvaluationResult<string>> {
+  async evaluate(_context: TypedExecutionContext, ...values: HyperScriptValue[]): Promise<EvaluationResult<string>> {
     try {
       const result = values.map(value => {
         if (value === null) return 'null';
@@ -328,7 +328,7 @@ export class EnhancedStringLengthExpression implements TypedExpressionImplementa
     tags: ['string', 'length', 'measure', 'validation']
   };
 
-  async evaluate(context: TypedExecutionContext, value: HyperScriptValue): Promise<EvaluationResult<number>> {
+  async evaluate(_context: TypedExecutionContext, value: HyperScriptValue): Promise<EvaluationResult<number>> {
     try {
       const stringValue = String(value);
       const length = stringValue.length;

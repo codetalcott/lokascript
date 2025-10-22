@@ -1,6 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Array Expressions - Array Literal and Index Operations
@@ -8,7 +6,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Handles array creation, indexing, range operations, and type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   HyperScriptValueType,

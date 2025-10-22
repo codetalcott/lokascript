@@ -5,7 +5,7 @@
  */
 
 // Advanced expressions implementation
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   ValidationResult,
   TypedExecutionContext,
@@ -201,7 +201,7 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
     }
   }
 
-  private evaluateLambdaBody(body: string, context: TypedExecutionContext, args: unknown[]): unknown {
+  private evaluateLambdaBody(body: string, context: TypedExecutionContext, _args: unknown[]): unknown {
     // Simple expression evaluation for common patterns
     if (body.includes('+') && body.split('+').length === 2) {
       const [left, right] = body.split('+').map(s => s.trim());
@@ -325,7 +325,7 @@ export class EnhancedPromiseExpression implements BaseTypedExpression<Promise<un
     }
   }
 
-  async evaluate(context: TypedExecutionContext, executor: string): Promise<TypedResult<Promise<unknown>>> {
+  async evaluate(_context: TypedExecutionContext, executor: string): Promise<TypedResult<Promise<unknown>>> {
     try {
       const promise = new Promise<unknown>((resolve, reject) => {
         try {
@@ -493,7 +493,7 @@ export class EnhancedAwaitExpression implements BaseTypedExpression<unknown> {
     }
   }
 
-  async evaluate(context: TypedExecutionContext, promise: unknown): Promise<TypedResult<unknown>> {
+  async evaluate(_context: TypedExecutionContext, promise: unknown): Promise<TypedResult<unknown>> {
     try {
       if (promise instanceof Promise) {
         const result = await promise;
@@ -631,7 +631,7 @@ export class EnhancedErrorExpression implements BaseTypedExpression<Error> {
     }
   }
 
-  async evaluate(context: TypedExecutionContext, message: string, name?: string, code?: string): Promise<TypedResult<Error>> {
+  async evaluate(_context: TypedExecutionContext, message: string, name?: string, code?: string): Promise<TypedResult<Error>> {
     try {
       const error = new Error(String(message));
       
@@ -753,7 +753,7 @@ export class EnhancedTypeofExpression implements BaseTypedExpression<string> {
     }
   }
 
-  async evaluate(context: TypedExecutionContext, value: unknown): Promise<TypedResult<string>> {
+  async evaluate(_context: TypedExecutionContext, value: unknown): Promise<TypedResult<string>> {
     try {
       let typeResult: string;
 

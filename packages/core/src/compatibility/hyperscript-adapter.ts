@@ -92,7 +92,6 @@ export async function evalHyperScript(
     
     if (isCommand) {
       // Use the command execution system
-      const { _Runtime } = await import('../runtime/runtime');
       const { hyperscript } = await import('../api/hyperscript-api');
       
       // Parse and execute as a command using the full hyperscript system

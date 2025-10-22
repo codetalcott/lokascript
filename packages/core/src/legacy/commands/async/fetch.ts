@@ -1,6 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Fetch Command - Deep TypeScript Integration
@@ -8,7 +6,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Enhanced for LLM code agents with comprehensive validation
  */
 
-import { v, z, type RuntimeValidator } from '../../../validation/lightweight-validators';
+import { v, z } from '../../../validation/lightweight-validators';
 import type { 
   TypedCommandImplementation,
   TypedExecutionContext,

@@ -18,7 +18,6 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
   private compiledPatterns = new Map<string, RegExp>();
   private patternCache = new Map<string, string | null>();
   private metrics = new Map<string, PluginMetrics>();
-  private sortedCommands: CommandPlugin[] = [];
 
   load(...plugins: Plugin[]): void {
     super.load(...plugins);
@@ -35,84 +34,6 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
         callCount: 0,
         errorCount: 0
       });
-    }
-    
-    // Pre-sort command plugins for faster matching
-    this.updateSortedCommands();
-  }
-
-  /**
-   * Optimized attribute processing with caching
-   */
-  private processAttribute(element: Element, attr: Attr): void {
-    const value = attr.value;
-    if (!value) return;
-
-    // Check cache first
-    const cachedPlugin = this.patternCache.get(value);
-    if (cachedPlugin !== undefined) {
-      if (cachedPlugin) {
-        this.executePlugin(cachedPlugin, element, value);
-      }
-      return;
-    }
-
-    // Find matching plugin using optimized search
-    const pluginName = this.findMatchingPlugin(value);
-    this.patternCache.set(value, pluginName);
-    
-    if (pluginName) {
-      this.executePlugin(pluginName, element, value);
-    }
-  }
-
-  /**
-   * Use binary search for pattern matching when possible
-   */
-  private findMatchingPlugin(value: string): string | null {
-    // For simple patterns, use optimized lookup
-    const firstWord = value.split(/\s+/)[0];
-    
-    // Check if it's a known command
-    for (const plugin of this.sortedCommands) {
-      if (plugin.name === firstWord) {
-        return plugin.name;
-      }
-      
-      const pattern = this.compiledPatterns.get(plugin.name);
-      if (pattern && pattern.test(value)) {
-        return plugin.name;
-      }
-    }
-    
-    return null;
-  }
-
-  /**
-   * Execute plugin with performance tracking
-   */
-  private executePlugin(pluginName: string, element: Element, value: string): void {
-    const plugin = this.get(pluginName) as CommandPlugin;
-    if (!plugin) return;
-
-    const metrics = this.metrics.get(pluginName)!;
-    const startTime = performance.now();
-    
-    try {
-      // Execute plugin
-      // In real implementation, this would parse and execute
-      metrics.callCount++;
-      
-      const executionTime = performance.now() - startTime;
-      metrics.executionTime.push(executionTime);
-      
-      // Keep only last 100 execution times
-      if (metrics.executionTime.length > 100) {
-        metrics.executionTime.shift();
-      }
-    } catch (error) {
-      metrics.errorCount++;
-      metrics.lastError = error as Error;
     }
   }
 
@@ -137,32 +58,6 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
   }
 
   /**
-   * Update sorted command list for optimized searching
-   */
-  private updateSortedCommands(): void {
-    this.sortedCommands = this.getByType<CommandPlugin>('command')
-      .sort((a, b) => {
-        // Sort by specificity and usage frequency
-        const aMetrics = this.metrics.get(a.name);
-        const bMetrics = this.metrics.get(b.name);
-        
-        // Prioritize frequently used plugins
-        const aUsage = aMetrics?.callCount || 0;
-        const bUsage = bMetrics?.callCount || 0;
-        
-        if (aUsage !== bUsage) {
-          return bUsage - aUsage;
-        }
-        
-        // Then by pattern length (more specific first)
-        const aPattern = this.compiledPatterns.get(a.name)?.source || '';
-        const bPattern = this.compiledPatterns.get(b.name)?.source || '';
-        
-        return bPattern.length - aPattern.length;
-      });
-  }
-
-  /**
    * Get performance metrics for monitoring
    */
   getMetrics(pluginName?: string): Map<string, PluginMetrics> | PluginMetrics | undefined {
@@ -183,9 +78,6 @@ export class OptimizedPluginRegistry extends HyperfixiPluginRegistry implements 
    * Optimize based on usage patterns
    */
   optimize(): void {
-    // Re-sort based on actual usage
-    this.updateSortedCommands();
-    
     // Clear cache entries for rarely used patterns
     const cacheThreshold = 10;
     for (const [pattern, pluginName] of this.patternCache.entries()) {

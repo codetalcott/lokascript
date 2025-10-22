@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced WebWorker Feature Implementation
  * Type-safe Web Worker management feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
@@ -16,7 +14,6 @@ import type {
   EnhancedContextBase
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
-import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced WebWorker Feature Input/Output Schemas
@@ -600,7 +597,7 @@ export class TypedWebWorkerFeatureImplementation {
     };
   }
 
-  private async createWorker(workerConfig: any, context: any): Promise<WorkerInstance> {
+  private async createWorker(workerConfig: any, _context: any): Promise<WorkerInstance> {
     const id = `worker-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     let worker: Worker;
@@ -1037,7 +1034,7 @@ export class TypedWebWorkerFeatureImplementation {
   }
 
   private createEventEmitter() {
-    return async (workerId: string, eventType: string, data?: any) => {
+    return async (_workerId: string, _eventType: string, _data?: any) => {
       // Would emit custom events to worker
       return true;
     };
@@ -1143,7 +1140,7 @@ export class TypedWebWorkerFeatureImplementation {
   }
 
   private createErrorHandlerSetter() {
-    return (handler: (error: Error, context: any) => void) => {
+    return (_handler: (error: Error, context: any) => void) => {
       // Would set custom error handler
       return true;
     };

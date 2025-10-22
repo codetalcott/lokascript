@@ -13,8 +13,8 @@ export type CapabilityLevel = 'basic' | 'enhanced' | 'modern' | 'cutting-edge';
 export interface Capability {
   name: string;
   supported: boolean;
-  version?: string;
-  details?: Record<string, any>;
+  version?: string | undefined;
+  details?: Record<string, any> | undefined;
 }
 
 /**
@@ -88,8 +88,8 @@ export interface EnhancementContext {
   element: Element;
   capabilities: CapabilityReport;
   strategy: EnhancementStrategy;
-  templateVars?: Record<string, any>;
-  userPreferences?: UserPreferences;
+  templateVars?: Record<string, any> | undefined;
+  userPreferences?: UserPreferences | undefined;
 }
 
 /**

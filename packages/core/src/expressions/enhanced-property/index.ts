@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety and context awareness
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   ValidationResult,
   TypedExecutionContext as TypedExpressionContext,

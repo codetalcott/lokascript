@@ -74,7 +74,7 @@ export class EnhancedFormValuesExpression implements TypedExpressionImplementati
     tags: ['form', 'extraction', 'values', 'fields']
   };
 
-  async evaluate(context: TypedExecutionContext, formElement: HTMLElement): Promise<EvaluationResult<Record<string, unknown>>> {
+  async evaluate(_context: TypedExecutionContext, formElement: HTMLElement): Promise<EvaluationResult<Record<string, unknown>>> {
     try {
       if (!formElement) {
         return {
@@ -259,7 +259,7 @@ export class EnhancedFormValidationExpression implements TypedExpressionImplemen
     tags: ['form', 'validation', 'rules', 'html5']
   };
 
-  async evaluate(context: TypedExecutionContext, formElement: HTMLElement, customRules?: Record<string, string>): Promise<EvaluationResult<boolean>> {
+  async evaluate(_context: TypedExecutionContext, formElement: HTMLElement, customRules?: Record<string, string>): Promise<EvaluationResult<boolean>> {
     try {
       if (!formElement || !(formElement instanceof HTMLElement)) {
         return {

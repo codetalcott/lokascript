@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   ValidationResult,
   TypedExecutionContext as TypedExpressionContext,
@@ -171,7 +171,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Greater than comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Greater than comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: [
           'Ensure both operands are comparable (numbers, strings, or dates)',
@@ -212,7 +213,8 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
         isValid: false,
         errors: [{
           type: 'runtime-error',
-          message: 'Validation failed with exception'
+          message: 'Validation failed with exception',
+          suggestions: []
         }],
         suggestions: ['Check input structure and types']
       };
@@ -222,7 +224,7 @@ export class EnhancedGreaterThanExpression implements BaseTypedExpression<boolea
   /**
    * Compare two values using the specified operator
    */
-  private compareValues(left: unknown, right: unknown, operator: string): boolean {
+  private compareValues(left: unknown, right: unknown, _operator: string): boolean {
     // Handle null/undefined cases
     if (left == null || right == null) {
       return false;
@@ -368,7 +370,7 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: ComparisonInput
   ): Promise<TypedResult<boolean>> {
     // Reuse greater than logic but invert the comparison
@@ -397,7 +399,8 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Less than comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Less than comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: ['Ensure both operands are comparable']
       };
@@ -409,7 +412,7 @@ export class EnhancedLessThanExpression implements BaseTypedExpression<boolean> 
     return greaterThanExpr.validate(input);
   }
 
-  private invertComparison(greaterResult: boolean, left: unknown, right: unknown, _operator: string): boolean {
+  private invertComparison(_greaterResult: boolean, left: unknown, right: unknown, _operator: string): boolean {
     // Handle null/undefined cases
     if (left == null || right == null) {
       return false;
@@ -533,7 +536,7 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: ComparisonInput
   ): Promise<TypedResult<boolean>> {
     try {
@@ -559,7 +562,8 @@ export class EnhancedGreaterThanOrEqualExpression implements BaseTypedExpression
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Greater than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Greater than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: ['Ensure both operands are comparable']
       };
@@ -692,7 +696,7 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: ComparisonInput
   ): Promise<TypedResult<boolean>> {
     try {
@@ -718,7 +722,8 @@ export class EnhancedLessThanOrEqualExpression implements BaseTypedExpression<bo
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Less than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Less than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: ['Ensure both operands are comparable']
       };
@@ -857,7 +862,7 @@ export class EnhancedEqualityExpression implements BaseTypedExpression<boolean> 
   };
 
   async evaluate(
-    context: TypedExpressionContext,
+    _context: TypedExpressionContext,
     input: ComparisonInput
   ): Promise<TypedResult<boolean>> {
     try {
@@ -883,7 +888,8 @@ export class EnhancedEqualityExpression implements BaseTypedExpression<boolean> 
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: ['Check for comparable values']
       };
@@ -1042,7 +1048,8 @@ export class EnhancedInequalityExpression implements BaseTypedExpression<boolean
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Inequality comparison failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Inequality comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         }],
         suggestions: ['Check for comparable values']
       };

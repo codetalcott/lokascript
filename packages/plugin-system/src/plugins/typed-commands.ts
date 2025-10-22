@@ -11,7 +11,7 @@ import { defineCommand } from '../typed';
 export const OnCommand = defineCommand('on', {
   execute: async (ctx) => {
     const { element, args, modifiers } = ctx;
-    const [eventName, ...handlers] = args; // TypeScript knows args is [string, ...string[]]
+    const [eventName] = args; // TypeScript knows args is [string, ...string[]]
 
     // Type-safe modifier checking
     const options: AddEventListenerOptions = {

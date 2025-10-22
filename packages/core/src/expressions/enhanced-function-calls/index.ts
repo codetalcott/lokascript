@@ -4,7 +4,7 @@
  * Handles global functions, method calls, async operations, and proper context binding
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   HyperScriptValueType,
@@ -343,7 +343,6 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
       // Special handling for context method calls (like testArray.join)
       if (pathParts.length > 1) {
         const objectName = pathParts[0];
-        const methodName = pathParts.slice(1).join('.');
         
         // Check if we have the object in any context
         for (const resolutionContext of resolutionContexts) {
@@ -642,7 +641,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
   /**
    * Resolve individual arguments, handling expressions and promises
    */
-  private async resolveArgument(arg: unknown, context: TypedExpressionContext): Promise<unknown> {
+  private async resolveArgument(arg: unknown, _context: TypedExpressionContext): Promise<unknown> {
     // If argument is a promise, await it
     if (arg && typeof arg === 'object' && 'then' in arg) {
       return await arg;

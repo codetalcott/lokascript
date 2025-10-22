@@ -4,7 +4,7 @@
  * Enhanced for LLM code agents with full type safety
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExpressionContext,
@@ -692,7 +692,7 @@ export class EnhancedCSSSelectorExpression implements TypedExpressionImplementat
     }
   }
 
-  private getValidationSuggestion(errorCode: string, path: (string | number)[]): string {
+  private getValidationSuggestion(errorCode: string, _path: (string | number)[]): string {
     const suggestions: Record<string, string> = {
       'too_small': 'CSS selector cannot be empty',
       'invalid_type': 'Selector must be a string',

@@ -1,6 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Wait Command - Deep TypeScript Integration
@@ -14,7 +12,7 @@ const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
  * Enhanced for LLM code agents with comprehensive validation
  */
 
-import { v, z, type RuntimeValidator } from '../../../validation/lightweight-validators';
+import { v, z } from '../../../validation/lightweight-validators';
 import type { 
   TypedCommandImplementation,
   TypedExecutionContext,
@@ -196,7 +194,7 @@ export class WaitCommand implements TypedCommandImplementation<
       // Handle structured object arguments from tests
       if (typeof firstArg === 'object' && firstArg !== null) {
         if (firstArg.type === 'timeout') {
-          const result = await this.waitForTime([firstArg], context);
+          await this.waitForTime([firstArg], context);
           return {
             success: true,
             value: null, // Time-based waits return null
@@ -532,7 +530,7 @@ export class WaitCommand implements TypedCommandImplementation<
   }
 
   private async executeEventWait(eventSpec: any, context: TypedExecutionContext): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const listeners: Array<{ element: HTMLElement | Document; event: string; handler: EventListener }> = [];
       let timeoutId: NodeJS.Timeout | null = null;
       let resolved = false;

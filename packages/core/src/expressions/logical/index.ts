@@ -4,7 +4,7 @@
  * Enhanced with TypeScript patterns, comprehensive validation, and LLM documentation
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type { ExecutionContext, ExpressionImplementation, EvaluationType } from '../../types/core';
 import type { 
   TypedExpressionContext, 
@@ -59,7 +59,6 @@ function trackEvaluation<T>(
 // ============================================================================
 
 const ComparisonInputSchema = v.tuple([v.unknown(), v.unknown()]);
-const UnaryInputSchema = v.tuple([v.unknown()]);
 const PatternMatchingInputSchema = v.tuple([v.unknown(), v.string()]);
 
 // ============================================================================
@@ -177,7 +176,7 @@ export const strictEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['==='],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left === right;
   },
   
@@ -197,7 +196,7 @@ export const notEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=', 'is not', 'does not equal'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left != right;
   },
   
@@ -217,7 +216,7 @@ export const strictNotEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=='],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left !== right;
   },
   
@@ -237,7 +236,7 @@ export const lessThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<', 'is less than'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left < right;
   },
   
@@ -257,7 +256,7 @@ export const lessThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<=', 'is less than or equal to'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left <= right;
   },
   
@@ -277,7 +276,7 @@ export const greaterThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>', 'is greater than'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left > right;
   },
   
@@ -297,7 +296,7 @@ export const greaterThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>=', 'is greater than or equal to'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     return left >= right;
   },
   
@@ -424,7 +423,7 @@ export const orExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['or', '||'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
     // Convert to boolean using truthy/falsy rules
     return Boolean(left) || Boolean(right);
   },
@@ -445,7 +444,7 @@ export const notExpression: ExpressionImplementation = {
   associativity: 'Right',
   operators: ['not', '!'],
   
-  async evaluate(context: ExecutionContext, operand: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, operand: unknown): Promise<boolean> {
     // Convert to boolean using truthy/falsy rules
     return !Boolean(operand);
   },
@@ -468,7 +467,7 @@ export const isEmptyExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['is empty', 'isEmpty'],
   
-  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
     if (value == null) return true;
     if (typeof value === 'string') return value.length === 0;
     if (Array.isArray(value)) return value.length === 0;
@@ -491,7 +490,7 @@ export const noExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['no'],
   
-  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
     // The 'no' operator should return true for empty/null/undefined values
     // but false for actual values including false and 0
     if (value == null) return true;
@@ -535,7 +534,7 @@ export const existsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['exists'],
   
-  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
     return value != null;
   },
   
@@ -553,7 +552,7 @@ export const doesNotExistExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['does not exist', 'doesNotExist'],
   
-  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
     return value == null;
   },
   
@@ -575,7 +574,7 @@ export const containsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['contains', 'includes', 'include'],
   
-  async evaluate(context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
     // Handle DOM element containment first
     if (container && value) {
       // If both are DOM elements, check containment
@@ -657,7 +656,7 @@ export const startsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['starts with', 'startsWith'],
   
-  async evaluate(context: ExecutionContext, str: unknown, prefix: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, str: unknown, prefix: unknown): Promise<boolean> {
     if (typeof str !== 'string' || typeof prefix !== 'string') {
       return false;
     }
@@ -678,7 +677,7 @@ export const endsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['ends with', 'endsWith'],
   
-  async evaluate(context: ExecutionContext, str: unknown, suffix: unknown): Promise<boolean> {
+  async evaluate(_context: ExecutionContext, str: unknown, suffix: unknown): Promise<boolean> {
     if (typeof str !== 'string' || typeof suffix !== 'string') {
       return false;
     }

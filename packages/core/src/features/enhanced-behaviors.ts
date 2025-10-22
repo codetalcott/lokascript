@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Behaviors Feature Implementation
  * Type-safe behavior definition and installation feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
@@ -16,7 +14,6 @@ import type {
   EnhancedContextBase
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
-import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced Behaviors Feature Input/Output Schemas
@@ -647,7 +644,7 @@ export class TypedBehaviorsFeatureImplementation {
     };
   }
 
-  private async registerBehavior(behavior: any, context: any): Promise<BehaviorDefinition> {
+  private async registerBehavior(behavior: any, _context: any): Promise<BehaviorDefinition> {
     const behaviorDef: BehaviorDefinition = {
       name: behavior.name,
       namespace: behavior.namespace,
@@ -924,13 +921,13 @@ export class TypedBehaviorsFeatureImplementation {
   }
 
   // Factory methods for context API
-  private createBehaviorDefiner(config: any) {
+  private createBehaviorDefiner(_config: any) {
     return async (behaviorDefinition: any) => {
       return await this.registerBehavior(behaviorDefinition, {});
     };
   }
 
-  private createBehaviorInstaller(config: any) {
+  private createBehaviorInstaller(_config: any) {
     return async (behaviorName: string, element: HTMLElement, parameters: Record<string, any> = {}) => {
       return await this.createBehaviorInstance(behaviorName, element, parameters);
     };
@@ -975,7 +972,7 @@ export class TypedBehaviorsFeatureImplementation {
     };
   }
 
-  private createInstanceCreator(config: any) {
+  private createInstanceCreator(_config: any) {
     return async (behaviorName: string, element: HTMLElement, parameters: Record<string, any> = {}) => {
       return await this.createBehaviorInstance(behaviorName, element, parameters);
     };
@@ -1100,7 +1097,7 @@ export class TypedBehaviorsFeatureImplementation {
   }
 
   private createDefaultsSetter() {
-    return (behaviorName: string, defaults: Record<string, any>) => {
+    return (behaviorName: string, _defaults: Record<string, any>) => {
       const behavior = this.behaviorDefinitions.get(behaviorName);
       if (behavior) {
         // Would store defaults in behavior metadata
@@ -1111,7 +1108,7 @@ export class TypedBehaviorsFeatureImplementation {
   }
 
   private createLifecycleHandler(phase: 'create' | 'mount' | 'unmount' | 'destroy') {
-    return async (instanceId: string, data?: any) => {
+    return async (instanceId: string, _data?: any) => {
       const instance = this.behaviorInstances.get(instanceId);
       if (instance) {
         await this.executeLifecycleHook(instance, phase);
@@ -1130,9 +1127,9 @@ export class TypedBehaviorsFeatureImplementation {
   private destroyBehaviorInstance(instance: BehaviorInstance) {
     // Execute destroy lifecycle hook
     this.executeLifecycleHook(instance, 'destroy');
-    
+
     // Remove event listeners
-    for (const [handlerId, listener] of instance.eventListeners) {
+    for (const [_handlerId, _listener] of instance.eventListeners) {
       // Would remove from DOM
     }
     instance.eventListeners.clear();

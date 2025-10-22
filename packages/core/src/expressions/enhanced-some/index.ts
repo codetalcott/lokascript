@@ -4,7 +4,7 @@
  * Handles existence checking for values, arrays, and DOM query results
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   EvaluationResult,

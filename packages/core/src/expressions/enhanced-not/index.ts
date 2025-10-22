@@ -4,7 +4,7 @@
  * Handles boolean negation, truthiness evaluation, and type coercion
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   EvaluationResult,

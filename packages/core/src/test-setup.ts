@@ -7,7 +7,6 @@ import { beforeEach, afterEach, vi } from 'vitest';
 
 // Mock console methods in test environment to reduce noise
 const consoleMethods = ['log', 'error', 'info'] as const;
-const _originalConsole = { ...console };
 
 beforeEach(() => {
   // Reset all mocks before each test

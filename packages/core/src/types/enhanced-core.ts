@@ -1,6 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Core Types - Deep TypeScript Integration

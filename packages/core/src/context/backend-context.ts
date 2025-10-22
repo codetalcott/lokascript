@@ -1,13 +1,10 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
-
 /**
- * Backend Context Implementation  
+ * Backend Context Implementation
  * Type-safe server-side hyperscript context following enhanced pattern
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import {
   EnhancedContextBase,
   BaseContextInputSchema,

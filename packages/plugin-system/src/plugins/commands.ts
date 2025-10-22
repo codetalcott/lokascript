@@ -14,7 +14,7 @@ export const OnCommandPlugin: CommandPlugin = {
 
   execute: async (ctx: RuntimeContext) => {
     const { element, args, modifiers } = ctx;
-    const [eventName, ...handlers] = args;
+    const [eventName] = args;
 
     // Extract modifiers (e.g., on click.once.prevent)
     const options: AddEventListenerOptions = {

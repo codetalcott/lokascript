@@ -285,20 +285,6 @@ export class FixedTemplateProcessor {
   }
 
   /**
-   * Process @set command
-   */
-  private async _processSetCommand(command: string, context: ExecutionContext): Promise<void> {
-    const match = command.match(/^(\w+)\s+to\s+(.+)$/);
-    if (match) {
-      const [, varName, expression] = match;
-      const value = this.resolveVariable(expression, context);
-      const newLocals = new Map(context.locals);
-      newLocals.set(varName, value);
-      Object.assign(context, { locals: newLocals });
-    }
-  }
-
-  /**
    * Convert value to string with proper null/undefined handling
    */
   private valueToString(value: any): string {

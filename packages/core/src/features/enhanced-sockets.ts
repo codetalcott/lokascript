@@ -1,13 +1,11 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
 
 /**
  * Enhanced Sockets Feature Implementation
  * Type-safe WebSocket management feature with enhanced validation and LLM integration
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import type { 
   TypedContextImplementation,
   ContextMetadata,
@@ -16,7 +14,6 @@ import type {
   EnhancedContextBase
 } from '../types/enhanced-context';
 import type { LLMDocumentation, EvaluationType } from '../types/enhanced-core';
-import type { ExecutionContext } from '../types/core';
 
 // ============================================================================
 // Enhanced Sockets Feature Input/Output Schemas
@@ -652,7 +649,7 @@ export class TypedSocketsFeatureImplementation {
     };
   }
 
-  private async createSocketConnection(socketConfig: any, eventHandlers: any[], context: any): Promise<SocketConnection> {
+  private async createSocketConnection(socketConfig: any, eventHandlers: any[], _context: any): Promise<SocketConnection> {
     const connectionId = `socket-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const connection: SocketConnection = {
@@ -680,7 +677,7 @@ export class TypedSocketsFeatureImplementation {
     return connection;
   }
 
-  private async registerEventHandler(connectionId: string, handler: any): Promise<SocketEventHandler> {
+  private async registerEventHandler(_connectionId: string, handler: any): Promise<SocketEventHandler> {
     const handlerId = `handler-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const eventHandler: SocketEventHandler = {
@@ -787,7 +784,7 @@ export class TypedSocketsFeatureImplementation {
     await this.executeEventHandlers(connectionId, 'message', event);
   }
 
-  private async executeEventHandlers(connectionId: string, eventType: string, eventData: any) {
+  private async executeEventHandlers(_connectionId: string, eventType: string, eventData: any) {
     const handlers = Array.from(this.eventHandlers.values())
       .filter(h => h.event === eventType && h.isActive);
 
@@ -1022,7 +1019,7 @@ export class TypedSocketsFeatureImplementation {
   }
 
   // Factory methods for context API
-  private createConnectionEstablisher(config: any) {
+  private createConnectionEstablisher(_config: any) {
     return async (connectionIdOrConfig?: string | any) => {
       if (typeof connectionIdOrConfig === 'string') {
         return await this.connectWebSocket(connectionIdOrConfig);
@@ -1262,7 +1259,7 @@ export class TypedSocketsFeatureImplementation {
   }
 
   private createErrorHandlerSetter() {
-    return (handler: (error: Error, context: any) => void) => {
+    return (_handler: (error: Error, context: any) => void) => {
       // Would set custom error handler
       return true;
     };

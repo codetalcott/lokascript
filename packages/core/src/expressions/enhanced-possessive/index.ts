@@ -4,7 +4,7 @@
  * Handles 'my property', 'element's attribute', style access, and attribute bracket notation
  */
 
-import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
+import { v } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
   HyperScriptValueType,

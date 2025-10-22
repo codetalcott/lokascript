@@ -1,7 +1,4 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const _createNumberValidator = () => v.string({ pattern: /^\d+$/ });
-
 /**
  * Enhanced Go Command - Deep TypeScript Integration
  * Handles URL navigation, element scrolling, and browser history management with validation

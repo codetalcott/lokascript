@@ -122,10 +122,10 @@ export interface TestResult {
   test: string;
   status: TestStatus;
   duration: number;
-  error?: TestError;
+  error?: TestError | undefined;
   logs: TestLog[];
   screenshots: string[];
-  coverage?: CoverageData;
+  coverage?: CoverageData | undefined;
 }
 
 /**
@@ -134,11 +134,11 @@ export interface TestResult {
 export interface TestError {
   name: string;
   message: string;
-  stack?: string;
-  code?: string;
-  expected?: any;
-  actual?: any;
-  diff?: string;
+  stack?: string | undefined;
+  code?: string | undefined;
+  expected?: any | undefined;
+  actual?: any | undefined;
+  diff?: string | undefined;
 }
 
 /**

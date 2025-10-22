@@ -2011,7 +2011,8 @@ async function evaluateConstructorCall(node: any, _context: ExecutionContext): P
 /**
  * Helper function to reconstruct expression text for error messages
  */
-function reconstructExpression(state: ParseState, _leftNode?: ASTNode): string {
+// @ts-expect-error - Reserved for future error reporting
+function _reconstructExpression(state: ParseState, _leftNode?: ASTNode): string {
   // Simple reconstruction - in a more sophisticated implementation,
   // we'd traverse the AST to rebuild the original text
   return state.tokens.map(token => token.value).join(' ');

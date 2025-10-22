@@ -159,24 +159,6 @@ export class OptimizedTemplateExecutor {
   }
 
   /**
-   * Process basic content without any directive processing (error recovery)
-   */
-  private async _processBasicContent(content: string, context: ExecutionContext): Promise<void> {
-    const buffer = context.meta?.__ht_template_result;
-    if (!Array.isArray(buffer) || !content?.trim()) return;
-
-    try {
-      const processedContent = await this.processContentInterpolation(content, context);
-      if (processedContent.trim()) {
-        buffer.push(processedContent);
-      }
-    } catch (error) {
-      // Ultimate fallback - just push the raw content
-      buffer.push(content);
-    }
-  }
-
-  /**
    * Process complex templates with both @repeat and @if
    */
   private async processComplexTemplate(commands: string[], content: string, context: ExecutionContext): Promise<void> {

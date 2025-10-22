@@ -128,7 +128,7 @@ export interface PatternMatch {
 export interface PatternTemplate {
   pattern: string;
   template: string;
-  constraints?: Record<string, (node: ASTNode) => boolean>;
+  constraints?: Record<string, (node: ASTNode) => boolean> | undefined;
 }
 
 // ============================================================================
@@ -145,7 +145,7 @@ export interface TransformOptions {
 export interface OptimizationPass {
   name: string;
   transform: (node: ASTNode, context: VisitorContext) => ASTNode | ASTNode[] | null;
-  shouldRun?: (node: ASTNode) => boolean;
+  shouldRun?: ((node: ASTNode) => boolean) | undefined;
 }
 
 // ============================================================================

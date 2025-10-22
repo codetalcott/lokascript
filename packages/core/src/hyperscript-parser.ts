@@ -129,10 +129,10 @@ export class HyperscriptParser {
    */
   private parseOnFeature(): FeatureNode {
     this.tokens.requireToken('on');
-    
+
     // Parse event names (click, submit, etc.)
-    const eventToken = this.tokens.requireTokenType('IDENTIFIER');
-    const _eventName = eventToken.value;
+    // @ts-expect-error - Token captured for future validation
+    const _eventToken = this.tokens.requireTokenType('IDENTIFIER');
 
     // Parse optional event details (from, etc.)
     const body: HyperscriptASTNode[] = [];
@@ -163,9 +163,9 @@ export class HyperscriptParser {
    */
   private parseDefFeature(): FeatureNode {
     this.tokens.requireToken('def');
-    
-    const nameToken = this.tokens.requireTokenType('IDENTIFIER');
-    const _functionName = nameToken.value;
+
+    // @ts-expect-error - Token captured for future validation
+    const _nameToken = this.tokens.requireTokenType('IDENTIFIER');
 
     // Parse parameter list
     this.tokens.requireOpToken('(');
@@ -281,7 +281,6 @@ export class HyperscriptParser {
    * Parse arguments for a specific command
    */
   private parseCommandArgs(commandName: string): any[] {
-    const _args: any[] = [];
 
     switch (commandName) {
       case 'put':

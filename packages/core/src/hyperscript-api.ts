@@ -98,7 +98,7 @@ export function createHyperscriptAPI(): HyperscriptAPI {
       return api.processNode(element);
     },
 
-    async evaluate(src: string, _ctx?: any): Promise<any> {
+    async evaluate(_src: string, _ctx?: any): Promise<any> {
       // TODO: Implement expression evaluation
       console.warn('evaluate not yet implemented');
       return null;
@@ -121,22 +121,22 @@ export function createHyperscriptAPI(): HyperscriptAPI {
       runtime: null // Will be set when runtime is implemented
     },
 
-    addFeature(keyword: string, _definition: any): void {
+    addFeature(_keyword: string, _definition: any): void {
       // TODO: Implement feature registration
       console.warn('addFeature not yet implemented');
     },
 
-    addCommand(keyword: string, _definition: any): void {
+    addCommand(_keyword: string, _definition: any): void {
       // TODO: Implement command registration
       console.warn('addCommand not yet implemented');
     },
 
-    addLeafExpression(keyword: string, _definition: any): void {
+    addLeafExpression(_keyword: string, _definition: any): void {
       // TODO: Implement leaf expression registration
       console.warn('addLeafExpression not yet implemented');
     },
 
-    addIndirectExpression(keyword: string, _definition: any): void {
+    addIndirectExpression(_keyword: string, _definition: any): void {
       // TODO: Implement indirect expression registration
       console.warn('addIndirectExpression not yet implemented');
     },

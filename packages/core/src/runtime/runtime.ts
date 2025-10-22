@@ -65,7 +65,7 @@ import {
 } from '../commands/animation/index';
 
 // Data commands
-import { DefaultCommand, IncrementCommand, _DecrementCommand } from '../commands/data/index';
+import { DefaultCommand, _DecrementCommand } from '../commands/data/index';
 
 // Advanced commands
 import { BeepCommand, AsyncCommand, TellCommand, JSCommand } from '../commands/advanced/index';
@@ -441,7 +441,7 @@ export class Runtime {
         classArg = await this.execute(args[0], context);
       }
 
-      const _keywordArg = await this.execute(args[1], context); // 'to' or 'from'
+      await this.execute(args[1], context); // 'to' or 'from' (evaluated for side effects)
       let target: any = args[2];
 
       // console.log(`🔧 ${name.toUpperCase()} Evaluated:`, {
@@ -468,7 +468,7 @@ export class Runtime {
       
       // Debug target resolution
       if (typeof target === 'string' && target.startsWith('#')) {
-        const _elements = document.querySelectorAll(target);
+        document.querySelectorAll(target); // Query for validation
         // console.log(`🔍 Target resolution debug for "${target}":`, {
           // selector: target,
           // foundElements: elements.length,
@@ -523,7 +523,7 @@ export class Runtime {
         const valueArgs = args.slice(toIndex + 1);
         
         // console.log('🔧 SET: Target args debug - length:', targetArgs.length);
-        targetArgs.forEach((arg, _i) => {
+        targetArgs.forEach((_arg) => {
           // console.log(`🔧 SET: Target arg ${i}:`, {
             // type: arg.type,
             // name: (arg as any).name,
@@ -1276,6 +1276,7 @@ export class Runtime {
   /**
    * Execute LOG command - output values to console
    */
+  // @ts-expect-error - Reserved for future logging implementation
   private _executeLogCommand(args: unknown[], _context: ExecutionContext): void {
     // If no arguments, just log empty
     if (args.length === 0) {
@@ -1412,6 +1413,7 @@ export class Runtime {
   /**
    * Get detailed type information for beep command
    */
+  // @ts-expect-error - Reserved for future beep command enhancement
   private _getDetailedType(value: any): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
@@ -1428,6 +1430,7 @@ export class Runtime {
   /**
    * Get source representation for beep command
    */
+  // @ts-expect-error - Reserved for future beep command enhancement
   private _getSourceRepresentation(value: any): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';

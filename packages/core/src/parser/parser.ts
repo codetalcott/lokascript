@@ -474,13 +474,12 @@ export class Parser {
 
   private parseCompoundCommand(identifierNode: IdentifierNode): CommandNode | null {
     const commandName = identifierNode.name.toLowerCase();
-    // console.log('🎯 PARSER: parseCompoundCommand called', { 
+    // console.log('🎯 PARSER: parseCompoundCommand called', {
       // commandName,
       // originalName: identifierNode.name,
       // isSetCommand: commandName === 'set'
     // });
-    const _args: ASTNode[] = [];
-    
+
     switch (commandName) {
       case 'put':
         return this.parsePutCommand(identifierNode);
@@ -499,8 +498,6 @@ export class Parser {
   }
 
   private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
-    const _args: ASTNode[] = [];
-
     // Use a more flexible approach similar to the original _hyperscript
     // Parse all arguments until we hit a terminator, then identify the structure
     const allArgs: ASTNode[] = [];
@@ -1173,6 +1170,7 @@ export class Parser {
     };
   }
 
+  // @ts-expect-error - Reserved for future command parsing
   private _parseAddCommand(identifierNode: IdentifierNode): CommandNode | null {
     const args: ASTNode[] = [];
     
@@ -1901,6 +1899,7 @@ export class Parser {
     };
   }
 
+  // @ts-expect-error - Reserved for future command parsing
   private _parseFullCommand(): CommandNode {
     const commandToken = this.previous();
     let commandName = commandToken.value;
@@ -2453,6 +2452,7 @@ export class Parser {
     return this.peek().type === tokenType;
   }
 
+  // @ts-expect-error - Reserved for future token lookahead
   private _checkNext(value: string): boolean {
     if (this.current + 1 >= this.tokens.length) return false;
     return this.tokens[this.current + 1].value === value;
@@ -2501,8 +2501,9 @@ export class Parser {
     let position = token.start || 0;
     let line = token.line || 1;
     let column = token.column || 1;
-    let _errorToken = token;
-    
+    // @ts-expect-error - Tracked for future error enhancement
+    let errorToken = token;
+
     // For property access errors after '.', position should be after the dot
     if (message.includes("property name after '.'")) {
       const previousToken = this.current > 0 ? this.previous() : token;

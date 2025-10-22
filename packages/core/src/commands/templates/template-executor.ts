@@ -232,29 +232,6 @@ export class TemplateExecutor {
   }
 
   /**
-   * Execute a block of commands recursively
-   */
-  private async _executeBlockCommandsRecursive(
-    blockCommands: string[],
-    blockContent: string,
-    context: ExecutionContext
-  ): Promise<void> {
-    if (blockCommands.length > 0) {
-      // Recursively execute block commands
-      await this.executeCommands(blockCommands, blockContent, context);
-    } else if (blockContent.trim()) {
-      // No commands, just process content
-      const buffer = context.meta?.__ht_template_result;
-      if (Array.isArray(buffer)) {
-        const processedContent = await this.processContentInterpolation(blockContent, context);
-        if (processedContent.trim()) {
-          buffer.push(processedContent);
-        }
-      }
-    }
-  }
-
-  /**
    * Extract block commands between current position and matching @end
    */
   private extractBlock(commands: string[], startIndex: number): {

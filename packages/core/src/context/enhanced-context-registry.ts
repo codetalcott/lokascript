@@ -56,7 +56,7 @@ export class EnhancedContextRegistry implements ContextRegistry {
   /**
    * Get context by name
    */
-  get<T>(name: string): TypedContextImplementation<any, any> | null {
+  get<_T>(name: string): TypedContextImplementation<any, any> | null {
     return this.contexts.get(name) || null;
   }
 

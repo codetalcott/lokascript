@@ -10,8 +10,8 @@ import type { ValidationError } from '../types/base-types';
 
 export interface ValidationResult<T = unknown> {
   success: boolean;
-  data?: T;
-  error?: ValidationError;
+  data?: T | undefined;
+  error?: ValidationError | undefined;
 }
 
 /**
@@ -193,10 +193,10 @@ export function createStringValidator(options: StringValidatorOptions = {}): Run
  */
 export function createObjectValidator<T extends Record<string, RuntimeValidator>>(
   fields: T,
-  options?: { strict?: boolean }
+  options?: { strict?: boolean } | undefined
 ): RuntimeValidator<{ [K in keyof T]: T[K] extends RuntimeValidator<infer U> ? U : never }> {
   if (skipValidation) {
-    return createPassthroughValidator();
+    return createPassthroughValidator() as any;
   }
 
   const validator = addDescribeMethod({
@@ -273,7 +273,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
   // Add strict() method to return a new validator with strict mode enabled
   (validator as any).strict = () => createObjectValidator(fields, { strict: true });
 
-  return validator;
+  return validator as RuntimeValidator<{ [K in keyof T]: T[K] extends RuntimeValidator<infer U> ? U : never }>;
 }
 
 /**
@@ -592,14 +592,14 @@ function addDescribeToValidator<T>(validator: any): RuntimeValidator<T> {
   }
   // Add rest method for tuple validators (ignores rest elements for now)
   if (!validator.rest) {
-    validator.rest = function(restValidator: any) {
+    validator.rest = function(_restValidator: any) {
       // For now, just return this - we don't enforce rest validation
       return this;
     };
   }
   // Add refine method (custom validation)
   if (!validator.refine) {
-    validator.refine = function(refineFn: any, errorMessage?: string) {
+    validator.refine = function(_refineFn: any, _errorMessage?: string) {
       // For now, just return this - we don't enforce refinements
       return this;
     };
@@ -621,7 +621,7 @@ function addDescribeToValidator<T>(validator: any): RuntimeValidator<T> {
           prop !== 'constructor' &&
           prop !== 'validate' &&
           prop !== 'then') {  // Avoid breaking Promises
-        return function(...args: any[]) {
+        return function(..._args: any[]) {
           // Return the validator itself for chaining
           return receiver;
         };

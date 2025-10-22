@@ -1,19 +1,14 @@
 
-// Missing number validator - add to lightweight-validators.ts if needed
-const createNumberValidator = () => v.string({ pattern: /^\d+$/ });
-
 /**
  * LLM Code Generation Context
  * Type-safe LLM code generation with enhanced validation patterns
  */
 
-import { v, z, type RuntimeValidator } from '../validation/lightweight-validators';
+import { v, z } from '../validation/lightweight-validators';
 import {
   EnhancedContextBase,
   BaseContextInputSchema,
   BaseContextOutputSchema,
-  type BaseContextInput,
-  type BaseContextOutput,
   type ContextMetadata,
   type ValidationResult,
   type EvaluationResult
@@ -276,7 +271,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
   }
 
   private generateCodeForEnvironment(prompt: string, input: LLMGenerationInput): string {
-    const { targetEnvironment, framework, outputFormat } = input;
+    const { targetEnvironment } = input;
     
     // Frontend code generation patterns
     if (targetEnvironment === 'frontend') {
@@ -292,18 +287,8 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     return this.generateUniversalCode(prompt, input);
   }
 
-  private generateFrontendCode(prompt: string, input: LLMGenerationInput): string {
+  private generateFrontendCode(prompt: string, _input: LLMGenerationInput): string {
     // Enhanced frontend code generation logic
-    const patterns = [
-      'on click',
-      'on input',
-      'fetch',
-      'put into',
-      'toggle',
-      'add .class',
-      'remove .class'
-    ];
-    
     // Simple pattern-based generation (would be more sophisticated with actual LLM)
     if (prompt.includes('button') || prompt.includes('click')) {
       return 'on click add .active to me then wait 2s then remove .active from me';
@@ -320,7 +305,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     return 'on click log "Generated frontend hyperscript"';
   }
 
-  private generateBackendCode(prompt: string, input: LLMGenerationInput): string {
+  private generateBackendCode(_prompt: string, input: LLMGenerationInput): string {
     // Enhanced backend code generation logic
     const { framework } = input;
     
@@ -335,12 +320,12 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     return 'on request log request.method then respond with status 200';
   }
 
-  private generateUniversalCode(prompt: string, input: LLMGenerationInput): string {
+  private generateUniversalCode(_prompt: string, _input: LLMGenerationInput): string {
     // Universal code generation patterns
     return 'set result to (call processData with input) then log result';
   }
 
-  private async validateGeneratedCode(code: string, input: LLMGenerationInput) {
+  private async validateGeneratedCode(code: string, _input: LLMGenerationInput) {
     const errors: Array<{ type: string; message: string; line?: number; suggestion?: string }> = [];
     const warnings: Array<{ type: string; message: string; suggestion?: string }> = [];
     
@@ -402,7 +387,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     return types;
   }
 
-  private async analyzePerformance(code: string, input: LLMGenerationInput) {
+  private async analyzePerformance(code: string, _input: LLMGenerationInput) {
     const recommendations: string[] = [];
     let complexity: 'O(1)' | 'O(n)' | 'O(n^2)' | 'O(log n)' = 'O(1)';
     let estimatedExecutionTime = 10; // milliseconds
@@ -431,7 +416,7 @@ export class TypedLLMGenerationContextImplementation extends EnhancedContextBase
     };
   }
 
-  private generateFrameworkNotes(code: string, input: LLMGenerationInput): string[] {
+  private generateFrameworkNotes(_code: string, input: LLMGenerationInput): string[] {
     const notes: string[] = [];
     const { framework, targetEnvironment } = input;
     
