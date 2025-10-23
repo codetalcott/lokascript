@@ -322,17 +322,17 @@ export const styleRefExpression: ExpressionImplementation = {
     }
     
     const target = element || context.me;
-    if (!target) {
+    if (!target || !(target instanceof HTMLElement)) {
       return undefined;
     }
-    
+
     // Check if it's a computed style request
     if (property.startsWith('computed-')) {
       const cssProperty = property.substring(9); // Remove 'computed-' prefix
       const computedStyle = getComputedStyle(target);
       return computedStyle.getPropertyValue(cssProperty) || '';
     }
-    
+
     // Direct style property access
     const value = target.style.getPropertyValue(property);
     return value || undefined;

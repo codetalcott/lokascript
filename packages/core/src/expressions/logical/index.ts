@@ -578,26 +578,26 @@ export const containsExpression: ExpressionImplementation = {
     // Handle DOM element containment first
     if (container && value) {
       // If both are DOM elements, check containment
-      if (container.nodeType === 1 && value.nodeType === 1) {
-        return container.contains(value);
+      if ((container as any).nodeType === 1 && (value as any).nodeType === 1) {
+        return (container as Node).contains(value as Node);
       }
-      
+
       // If container is CSS selector string, resolve to element
       if (typeof container === 'string' && container.match(/^[.#][\w-]+$/)) {
         const containerElement = document.querySelector(container);
-        if (containerElement && value.nodeType === 1) {
-          return containerElement.contains(value);
+        if (containerElement && (value as any).nodeType === 1) {
+          return containerElement.contains(value as Node);
         }
         if (containerElement && typeof value === 'string' && value.match(/^[.#][\w-]+$/)) {
           const valueElement = document.querySelector(value);
           return valueElement ? containerElement.contains(valueElement) : false;
         }
       }
-      
+
       // If value is CSS selector string, resolve to element
-      if (typeof value === 'string' && value.match(/^[.#][\w-]+$/) && container.nodeType === 1) {
+      if (typeof value === 'string' && value.match(/^[.#][\w-]+$/) && (container as any).nodeType === 1) {
         const valueElement = document.querySelector(value);
-        return valueElement ? container.contains(valueElement) : false;
+        return valueElement ? (container as Node).contains(valueElement) : false;
       }
     }
     

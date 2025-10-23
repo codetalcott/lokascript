@@ -745,7 +745,7 @@ export class TypedInitFeatureImplementation {
         }
         break;
       case 'setStyle':
-        if (context.me && command.args?.[0] && command.args?.[1] !== undefined) {
+        if (context.me instanceof HTMLElement && command.args?.[0] && command.args?.[1] !== undefined) {
           (context.me.style as any)[command.args[0]] = command.args[1];
         }
         break;
