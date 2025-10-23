@@ -15,6 +15,11 @@ import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { PutCommand } from '../commands/dom/put';
 // SetCommand now imported from data/index.js above
 
+// Helper to check AST node types (workaround for type system limitations)
+function nodeType(node: ASTNode): string {
+  return (node as any).type || node.type;
+}
+
 // Enhanced command imports
 import { EnhancedCommandRegistry } from './enhanced-command-adapter';
 import { asHTMLElement } from '../utils/dom-utils';
@@ -502,7 +507,7 @@ export class Runtime {
       let toIndex = -1;
       for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-        if (arg.type === 'identifier' && (arg as any).name === 'to') {
+        if (nodeType(arg) === 'identifier' && (arg as any).name === 'to') {
           toIndex = i;
           break;
         }
