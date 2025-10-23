@@ -4,7 +4,7 @@
  */
 
 import { CodeGenerator } from './code-generator';
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 // Critical missing commands we want to implement first

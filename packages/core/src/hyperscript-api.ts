@@ -5,7 +5,7 @@
  * the original _hyperscript interface for drop-in compatibility.
  */
 
-import { Lexer, Tokens } from './tokenizer';
+import { Lexer } from './tokenizer';
 import { HyperscriptParser, parseHyperscript } from './hyperscript-parser';
 import type { ExecutionContext } from './types/core';
 

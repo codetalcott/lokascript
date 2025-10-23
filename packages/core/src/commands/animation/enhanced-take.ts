@@ -17,8 +17,7 @@ import { dispatchCustomEvent } from '../../core/events';
 import {
   createTupleValidator,
   createStringValidator,
-  createUnionValidator,
-  type RuntimeValidator
+  createUnionValidator
 } from '../../validation/lightweight-validators';
 import { asHTMLElement } from '../../utils/dom-utils';
 

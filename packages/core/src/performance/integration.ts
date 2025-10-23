@@ -5,7 +5,7 @@
 
 import type { ExecutionContext, ExpressionImplementation } from '../types/core';
 import { globalCache } from './expression-cache';
-import { createOptimizedTokenizer, tokenizeOptimized } from '../parser/tokenizer-optimized';
+import { tokenizeOptimized } from '../parser/tokenizer-optimized';
 
 // Performance monitoring interface
 export interface PerformanceMetrics {
