@@ -25,7 +25,6 @@ export class MinimalRuntime {
   private debug: boolean;
 
   constructor(options: MinimalRuntimeOptions = {}) {
-    this.options = options;
     this.debug = options.debug || false;
   }
 
@@ -63,7 +62,7 @@ export class MinimalRuntime {
    * Execute a command node with basic commands only
    */
   private async executeCommand(node: CommandNode, context: ExecutionContext): Promise<unknown> {
-    const { name, args } = node;
+    const { name, args = [] } = node;
 
     // Basic toggle command implementation
     if (name === 'toggle') {
@@ -212,7 +211,7 @@ export class MinimalRuntime {
     if (context.me instanceof HTMLElement) {
       context.me.addEventListener(event, async () => {
         for (const command of commands) {
-          await this.executeCommand(command, context);
+          await this.executeCommand(command as CommandNode, context);
         }
       });
     }
