@@ -1,9 +1,17 @@
 /**
  * Unified Types - Public API
- * 
+ *
  * Single point of entry for all unified type definitions.
  * This file exports all core types that should be used throughout the codebase.
  */
+
+// Import base types for use in type aliases
+import type {
+  ValidationResult,
+  ValidationError,
+  EvaluationResult,
+  ExecutionContext
+} from './base-types';
 
 // ============================================================================
 // Core Unified Types

@@ -73,7 +73,7 @@ function addDescribeMethod<T>(baseValidator: { validate: (value: unknown) => Val
       validator.description = description;
       return validator;
     },
-    safeParse(value: unknown) {
+    safeParse(value: unknown): { success: boolean; data?: T; error?: { errors: ValidationError[] } } {
       const result = this.validate(value);
       if (result.success) {
         return { success: true, data: result.data };
@@ -778,8 +778,8 @@ export const v = {
   function: () => addDescribeToValidator(createCustomValidator((value) => typeof value === 'function', 'Expected function')),
   unknown: () => addDescribeToValidator(createPassthroughValidator<unknown>()),
   any: () => addDescribeToValidator(createPassthroughValidator<any>()),
-  null: () => addDescribeToValidator(createLiteralValidator(null)),
-  undefined: () => addDescribeToValidator(createLiteralValidator(undefined)),
+  null: () => addDescribeToValidator(createCustomValidator((value) => value === null, 'Expected null')),
+  undefined: () => addDescribeToValidator(createCustomValidator((value) => value === undefined, 'Expected undefined')),
   instanceOf: (constructor: any) => addDescribeToValidator(createCustomValidator(
     (value) => value instanceof constructor,
     `Expected instance of ${constructor.name}`

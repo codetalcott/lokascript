@@ -4,12 +4,6 @@
  */
 
 // Removed unused zod import
-import type { 
-  TypedCommandImplementation,
-  CommandMetadata,
-  LLMDocumentation,
-  ValidationResult 
-} from '../types/enhanced-core.ts';
 
 export interface PatternValidationResult {
   isEnhanced: boolean;

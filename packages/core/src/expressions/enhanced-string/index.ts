@@ -4,7 +4,6 @@
  * Enhanced for LLM code agents with maximum type safety
  */
 
-import { v, z } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExecutionContext,

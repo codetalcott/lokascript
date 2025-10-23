@@ -44,9 +44,9 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'],
     
     // Watch disabled in config - use command line
-    
+
     // Reporter configuration
-    reporter: ['verbose', 'json', 'html'],
+    reporters: ['verbose', 'json', 'html'],
     
     // Parallel test execution
     pool: 'threads',
