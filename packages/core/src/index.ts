@@ -7,21 +7,25 @@
 export { hyperscript, type HyperscriptAPI, type CompilationResult } from './api/hyperscript-api';
 
 // Export core types for advanced usage
-export type { 
-  ASTNode, 
-  ExecutionContext, 
-  ParseResult, 
+export type {
+  ASTNode,
+  ExecutionContext,
+  ParseResult,
   ParseError,
   Token,
   CommandNode,
-  ExpressionNode
+  ExpressionNode,
+  FeatureNode,
+  StatementNode,
+  ElementType,
+  ExpressionCategory
 } from './types/core';
 
 // Export utilities for direct usage
 export { parse } from './parser/parser';
 export { Runtime, type RuntimeOptions } from './runtime/runtime';
 export { createContext, createChildContext } from './core/context';
-export { Lexer, Tokens, type Token } from './tokenizer';
+export { Lexer, Tokens } from './tokenizer';
 
 // Export enhanced feature implementations
 export {

@@ -96,10 +96,10 @@ export interface CodeSmell {
   type: string;
   severity: 'low' | 'medium' | 'high';
   location: {
-    start: number;
-    end: number;
-    line: number;
-    column: number;
+    start?: number;
+    end?: number;
+    line?: number;
+    column?: number;
   };
   message: string;
   suggestion?: string;

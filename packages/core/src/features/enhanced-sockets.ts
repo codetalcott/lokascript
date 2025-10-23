@@ -623,7 +623,7 @@ export class TypedSocketsFeatureImplementation {
         isValid: false,
         errors: [{
           type: 'schema-validation',
-          suggestions: []
+          suggestions: [],
           message: error instanceof Error ? error.message : 'Invalid input format'
         }],
         suggestions: [
