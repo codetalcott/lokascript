@@ -14,6 +14,7 @@ import type {
   ValidationResult
 } from '../../types/enhanced-core.ts';
 import type { TypedExpressionContext } from '../../test-utilities.ts';
+import type { ValidationError } from '../../types/base-types';
 
 // ============================================================================
 // Input Validation Schemas
@@ -101,13 +102,17 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
     try {
       const validatedArgs = this.inputSchema.parse(args);
       
-      const issues: string[] = [];
-      
+      const issues: ValidationError[] = [];
+
       // Check for extremely large objects
       if ((validatedArgs as any[]).length > 1000) {
-        issues.push(`Object literal with ${(validatedArgs as any[]).length} fields may impact performance`);
+        issues.push({
+          type: 'validation-error',
+          message: `Object literal with ${(validatedArgs as any[]).length} fields may impact performance`,
+          suggestions: []
+        });
       }
-      
+
       // Check for duplicate static keys
       const staticKeys = (validatedArgs as any[])
         .filter((field: any) => !field.isDynamic && typeof field.key === 'string')
@@ -115,13 +120,21 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
 
       const duplicateKeys = staticKeys.filter((key: string, index: number) => staticKeys.indexOf(key) !== index);
       if (duplicateKeys.length > 0) {
-        issues.push(`Duplicate field names detected: ${[...new Set(duplicateKeys)].join(', ')}`);
+        issues.push({
+          type: 'validation-error',
+          message: `Duplicate field names detected: ${[...new Set(duplicateKeys)].join(', ')}`,
+          suggestions: []
+        });
       }
-      
+
       // Validate field key types
       for (const field of (validatedArgs as any[])) {
         if (!field.isDynamic && typeof field.key !== 'string') {
-          issues.push(`Static field key must be a string, got ${typeof field.key}`);
+          issues.push({
+            type: 'validation-error',
+            message: `Static field key must be a string, got ${typeof field.key}`,
+            suggestions: []
+          });
         }
       }
 
@@ -137,7 +150,11 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
     } catch (error) {
       return {
         isValid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid object literal arguments'],
+        errors: [{
+          type: 'syntax-error',
+          message: error instanceof Error ? error.message : 'Invalid object literal arguments',
+          suggestions: []
+        }],
         suggestions: [
           'Provide fields as an array of field definitions',
           'Ensure each field has a valid key and value'

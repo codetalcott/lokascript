@@ -14,6 +14,7 @@ import type {
   ValidationResult
 } from '../../types/enhanced-core.ts';
 import type { TypedExpressionContext } from '../../test-utilities.ts';
+import type { ValidationError } from '../../types/base-types';
 
 // ============================================================================
 // Input Validation Schemas
@@ -96,21 +97,33 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
     try {
       const validatedArgs = this.inputSchema.parse(args);
       const [searchValue, container] = validatedArgs;
-      
-      const issues: string[] = [];
-      
+
+      const issues: ValidationError[] = [];
+
       // Basic validation
       if (searchValue === undefined) {
-        issues.push('Search value cannot be undefined');
+        issues.push({
+          type: 'validation-error',
+          message: 'Search value cannot be undefined',
+          suggestions: []
+        });
       }
-      
+
       if (container === undefined || container === null) {
-        issues.push('Container cannot be null or undefined');
+        issues.push({
+          type: 'validation-error',
+          message: 'Container cannot be null or undefined',
+          suggestions: []
+        });
       }
-      
+
       // Check for potentially expensive operations
       if (Array.isArray(searchValue) && searchValue.length > 100) {
-        issues.push(`Searching for ${searchValue.length} values may impact performance`);
+        issues.push({
+          type: 'validation-error',
+          message: `Searching for ${searchValue.length} values may impact performance`,
+          suggestions: []
+        });
       }
 
       return {
@@ -125,7 +138,11 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
     } catch (error) {
       return {
         isValid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid in expression arguments'],
+        errors: [{
+          type: 'syntax-error',
+          message: error instanceof Error ? error.message : 'Invalid in expression arguments',
+          suggestions: []
+        }],
         suggestions: [
           'Provide a search value as the first argument',
           'Provide a container (array, NodeList, or DOM element) as the second argument'
@@ -148,11 +165,9 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
         return {
           success: false,
           error: {
-            name: 'InExpressionValidationError',
             type: 'validation-error',
-            message: `In expression validation failed: ${validationResult.errors.join(', ')}`,
-            code: 'IN_EXPRESSION_VALIDATION_ERROR',
-            suggestions: []
+            message: `In expression validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
+            suggestions: validationResult.suggestions
           },
           type: 'error'
         };

@@ -14,6 +14,7 @@ import type {
   LLMDocumentation,
   ValidationResult
 } from '../../types/enhanced-core';
+import type { ValidationError } from '../../types/base-types';
 
 // ============================================================================
 // Input Validation Schema
@@ -94,21 +95,33 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
       const [symbolName] = validatedArgs;
 
       // Additional semantic validation
-      const issues: string[] = [];
-      
+      const issues: ValidationError[] = [];
+
       // Check for reserved keywords
       const reservedKeywords = ['me', 'you', 'it', 'event', 'target', 'result'];
       if (reservedKeywords.includes(symbolName)) {
-        issues.push(`"${symbolName}" is a reserved hyperscript keyword - use context references instead`);
+        issues.push({
+          type: 'validation-error',
+          message: `"${symbolName}" is a reserved hyperscript keyword - use context references instead`,
+          suggestions: []
+        });
       }
 
       // Check for potentially problematic names
       if (symbolName.includes('.')) {
-        issues.push(`Symbol names with dots should use property access syntax instead: "${symbolName.split('.')[0]}'s ${symbolName.split('.').slice(1).join('.')}"`);
+        issues.push({
+          type: 'validation-error',
+          message: `Symbol names with dots should use property access syntax instead: "${symbolName.split('.')[0]}'s ${symbolName.split('.').slice(1).join('.')}"`,
+          suggestions: []
+        });
       }
 
       if (symbolName.startsWith('__')) {
-        issues.push(`Symbol names starting with "__" are typically internal - consider a different name`);
+        issues.push({
+          type: 'validation-error',
+          message: `Symbol names starting with "__" are typically internal - consider a different name`,
+          suggestions: []
+        });
       }
 
       return {
@@ -123,7 +136,11 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
     } catch (error) {
       return {
         isValid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid symbol expression arguments'],
+        errors: [{
+          type: 'syntax-error',
+          message: error instanceof Error ? error.message : 'Invalid symbol expression arguments',
+          suggestions: []
+        }],
         suggestions: [
           'Provide a valid string for the symbol name',
           'Ensure symbol name is not empty',
