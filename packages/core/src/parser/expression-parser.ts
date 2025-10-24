@@ -438,8 +438,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
           type: 'propertyOfExpression',
           property,
           target,
-          start: left.start,
-          end: target.end
+          ...(left.start !== undefined && { start: left.start }),
+          ...(target.end !== undefined && { end: target.end })
         };
       } else {
         // No "of" found, treat as separate tokens (fallback)
@@ -466,7 +466,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
           start: propertyToken.start,
           end: propertyToken.end
         },
-        start: left.start,
+        ...(left.start !== undefined && { start: left.start }),
         end: propertyToken.end
       };
       // Continue loop to handle chained property access (obj.prop1.prop2)
@@ -489,7 +489,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
         type: 'arrayAccess',
         object: left,
         index,
-        start: left.start,
+        ...(left.start !== undefined && { start: left.start }),
         end: closeToken.end
       };
       // Continue loop to handle chained array access (arr[0][1])
@@ -527,7 +527,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
         type: 'callExpression',
         callee: left,
         arguments: args,
-        start: left.start,
+        ...(left.start !== undefined && { start: left.start }),
         end: closeParen.end
       };
       // Continue loop to handle chained method calls (obj.method().another())
@@ -559,7 +559,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       operator: token.value,
       operand,
       start: token.start,
-      end: operand.end
+      ...(operand.end !== undefined && { end: operand.end })
     };
   }
   
@@ -607,7 +607,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
           operator: operatorToken.value,
           argument,
           start: operatorToken.start,
-          end: argument.end
+          ...(argument.end !== undefined && { end: argument.end })
         };
       }
     }
@@ -631,7 +631,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       operator: token.value,
       operand,
       start: token.start,
-      end: operand.end
+      ...(operand.end !== undefined && { end: operand.end })
     };
   }
   
