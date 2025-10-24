@@ -431,6 +431,7 @@ export class TypedBehaviorsFeatureImplementation {
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
+          errors: [],
           suggestions: ['Provide a valid behavior definition configuration object']
         };
       }
@@ -618,6 +619,7 @@ export class TypedBehaviorsFeatureImplementation {
         errors: [{
           type: 'schema-validation',
           message: error instanceof Error ? error.message : 'Invalid input format',
+          suggestions: []
         }],
         suggestions: [
           'Ensure input matches EnhancedBehaviorsInput schema',

@@ -77,7 +77,8 @@ export class HyperscriptParser {
 
       return {
         success: true,
-        node: program
+        node: program,
+        tokens: []
       };
     } catch (error) {
       const parseError: ParseError = {
@@ -90,7 +91,8 @@ export class HyperscriptParser {
 
       return {
         success: false,
-        error: parseError
+        error: parseError,
+        tokens: []
       };
     }
   }

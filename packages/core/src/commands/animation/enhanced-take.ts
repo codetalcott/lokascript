@@ -159,6 +159,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
+            name: 'ValidationError',
             type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TAKE_VALIDATION_FAILED',
@@ -217,6 +218,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
+          name: 'RuntimeError',
           type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TAKE_EXECUTION_FAILED',

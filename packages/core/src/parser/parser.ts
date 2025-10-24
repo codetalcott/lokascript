@@ -1498,7 +1498,7 @@ export class Parser {
     // Check if followed by an identifier (like $variable, $window)
     if (this.checkTokenType(TokenType.IDENTIFIER)) {
       const identifierToken = this.advance();
-      let expression = this.createIdentifier(identifierToken.value);
+      let expression: ASTNode = this.createIdentifier(identifierToken.value);
       
       // Handle property access like $window.foo
       while (this.match('.')) {
