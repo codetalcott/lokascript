@@ -66,9 +66,8 @@ const skipValidation = isProduction ||
  * Helper function to add describe method to any validator
  */
 function addDescribeMethod<T>(baseValidator: { validate: (value: unknown) => ValidationResult<T>, description?: string | undefined }): RuntimeValidator<T> {
-  const validator: RuntimeValidator<T> = {
+  const validator = {
     ...baseValidator,
-    description: baseValidator.description,
     describe(description: string): RuntimeValidator<T> {
       validator.description = description;
       return validator;
@@ -76,7 +75,7 @@ function addDescribeMethod<T>(baseValidator: { validate: (value: unknown) => Val
     safeParse(value: unknown): { success: boolean; data?: T; error?: { errors: ValidationError[] } } {
       const result = this.validate(value);
       if (result.success) {
-        return { success: true, data: result.data };
+        return { success: true, ...(result.data !== undefined && { data: result.data }) };
       } else {
         return {
           success: false,
@@ -126,12 +125,12 @@ function addDescribeMethod<T>(baseValidator: { validate: (value: unknown) => Val
       throw new Error(result.error?.message || 'Validation failed');
     },
     merge(_other: RuntimeValidator<any>): RuntimeValidator<T> {
-      return validator;
+      return validator as RuntimeValidator<T>;
     },
     refine(_refineFn: (value: T) => boolean, _errorMessage?: string): RuntimeValidator<T> {
-      return validator;
+      return validator as RuntimeValidator<T>;
     }
-  };
+  } as RuntimeValidator<T>;
   return validator;
 }
 

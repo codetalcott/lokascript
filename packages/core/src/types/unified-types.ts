@@ -323,7 +323,7 @@ export class UnifiedValidator {
         isValid: true,
         errors: [],
         suggestions: [],
-        data: parsed.data
+        ...(parsed.data !== undefined && { data: parsed.data })
       };
     } catch (error) {
       return {

@@ -569,7 +569,7 @@ export class TypedDefFeatureImplementation {
             ...func.context.variables,
             ...Object.fromEntries(func.parameters.map((param, i) => [param, parameters[i]]))
           }
-        };
+        } as ExecutionContext;
 
         // Execute function body (simplified - would use actual command executor)
         let result = undefined;
@@ -724,7 +724,7 @@ export class TypedDefFeatureImplementation {
               ...func.context.variables,
               ...capturedVariables
             }
-          };
+          } as ExecutionContext;
 
           // Temporarily update function context
           const originalContext = func.context;

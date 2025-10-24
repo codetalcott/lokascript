@@ -1756,10 +1756,10 @@ export class Parser {
               name: (callExpr.callee as IdentifierNode).name,
               args: callExpr.arguments as ExpressionNode[],
               isBlocking: false,
-              start: expr.start,
-              end: expr.end,
-              line: expr.line,
-              column: expr.column
+              ...(expr.start !== undefined && { start: expr.start }),
+              ...(expr.end !== undefined && { end: expr.end }),
+              ...(expr.line !== undefined && { line: expr.line }),
+              ...(expr.column !== undefined && { column: expr.column })
             };
             commands.push(commandNode);
           } else if (expr && expr.type === 'binaryExpression' && (expr as BinaryExpressionNode).operator === ' ') {
@@ -1769,12 +1769,12 @@ export class Parser {
               const commandNode: CommandNode = {
                 type: 'command',
                 name: (binExpr.left as any).name,
-                args: [binExpr.right],
+                args: [binExpr.right as ExpressionNode],
                 isBlocking: false,
-                start: expr.start,
-                end: expr.end,
-                line: expr.line,
-                column: expr.column
+                ...(expr.start !== undefined && { start: expr.start }),
+                ...(expr.end !== undefined && { end: expr.end }),
+                ...(expr.line !== undefined && { line: expr.line }),
+                ...(expr.column !== undefined && { column: expr.column })
               };
               commands.push(commandNode);
             } else {

@@ -102,7 +102,7 @@ export class ProductionPerformanceMonitor {
       timestamp: Date.now(),
       duration,
       success,
-      metadata,
+      ...(metadata !== undefined && { metadata }),
       severity
     };
 

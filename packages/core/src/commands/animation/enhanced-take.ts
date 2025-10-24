@@ -174,7 +174,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
           success: false,
           ...(parseResult.error && { error: parseResult.error }),
           type: 'error'
-        } as EvaluationResult<HTMLElement>;
+        } as TypedResult<HTMLElement>;
       }
 
       const { property, source, target } = parseResult.value!;
@@ -182,7 +182,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       // Take the property from source
       const takeResult = await this.takeProperty(source, property, context);
       if (!takeResult.success) {
-        return takeResult as EvaluationResult<HTMLElement>;
+        return takeResult as TypedResult<HTMLElement>;
       }
 
       const takenValue = takeResult.value;
@@ -190,7 +190,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       // Put it on target
       const putResult = await this.putProperty(target, property, takenValue, context);
       if (!putResult.success) {
-        return putResult as EvaluationResult<HTMLElement>;
+        return putResult as TypedResult<HTMLElement>;
       }
 
       // Dispatch enhanced take event with rich metadata

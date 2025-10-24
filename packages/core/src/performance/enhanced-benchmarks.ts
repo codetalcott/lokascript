@@ -118,7 +118,7 @@ export class EnhancedBenchmark {
       metadata: {
         complexity: options.complexity || 'medium',
         operationType: options.operationType,
-        inputSize: options.inputSize,
+        ...(options.inputSize !== undefined && { inputSize: options.inputSize }),
         validationPassed
       }
     };

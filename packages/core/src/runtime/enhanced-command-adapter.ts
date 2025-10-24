@@ -40,15 +40,15 @@ export class ContextBridge {
       it: context.it,
       you: context.you,
       result: context.result,
-      event: context.event,
-      
+      ...(context.event !== undefined && { event: context.event }),
+
       // Variable storage
       variables: context.variables || new Map(),
       locals: context.locals || new Map(),
       globals: context.globals || new Map(),
-      
+
       // Runtime state
-      events: context.events,
+      ...(context.events !== undefined && { events: context.events }),
       meta: context.meta || {},
 
       // Enhanced features for typed commands
@@ -69,12 +69,12 @@ export class ContextBridge {
       it: typedContext.it,
       you: typedContext.you,
       result: typedContext.result,
-      event: typedContext.event,
-      variables: typedContext.variables,
+      ...(typedContext.event !== undefined && { event: typedContext.event }),
+      ...(typedContext.variables !== undefined && { variables: typedContext.variables }),
       locals: typedContext.locals,
       globals: typedContext.globals,
-      events: typedContext.events,
-      meta: typedContext.meta
+      ...(typedContext.events !== undefined && { events: typedContext.events }),
+      ...(typedContext.meta !== undefined && { meta: typedContext.meta })
     };
   }
 }
