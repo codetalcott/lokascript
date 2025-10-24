@@ -209,44 +209,44 @@ export class Runtime {
       }
       
       // Register content/creation commands
-      this.registerLegacyCommand(new MakeCommand());
-      this.registerLegacyCommand(new AppendCommand());
-      
+      this.registerLegacyCommand(new MakeCommand() as any);
+      this.registerLegacyCommand(new AppendCommand() as any);
+
       // Register execution commands
-      this.registerLegacyCommand(new CallCommand());
-      
+      this.registerLegacyCommand(new CallCommand() as any);
+
       // Register advanced commands
-      this.registerLegacyCommand(new JSCommand());
-      this.registerLegacyCommand(new TellCommand());
-      
+      this.registerLegacyCommand(new JSCommand() as any);
+      this.registerLegacyCommand(new TellCommand() as any);
+
       // Register utility commands
-      this.registerLegacyCommand(new PickCommand());
+      this.registerLegacyCommand(new PickCommand() as any);
       
       // Register navigation commands (has TypedCommandImplementation)
       this.enhancedRegistry.register(new GoCommand());
       
       // Register control flow commands
-      this.registerLegacyCommand(new IfCommand());
-      this.registerLegacyCommand(new HaltCommand());
-      this.registerLegacyCommand(new BreakCommand());
-      this.registerLegacyCommand(new ContinueCommand());
-      this.registerLegacyCommand(new ReturnCommand());
-      this.registerLegacyCommand(new ThrowCommand());
-      this.registerLegacyCommand(new UnlessCommand());
-      this.registerLegacyCommand(new RepeatCommand());
+      this.registerLegacyCommand(new IfCommand() as any);
+      this.registerLegacyCommand(new HaltCommand() as any);
+      this.registerLegacyCommand(new BreakCommand() as any);
+      this.registerLegacyCommand(new ContinueCommand() as any);
+      this.registerLegacyCommand(new ReturnCommand() as any);
+      this.registerLegacyCommand(new ThrowCommand() as any);
+      this.registerLegacyCommand(new UnlessCommand() as any);
+      this.registerLegacyCommand(new RepeatCommand() as any);
       
       // Register animation commands
-      this.registerLegacyCommand(new MeasureCommand());
-      this.registerLegacyCommand(new SettleCommand());
-      this.registerLegacyCommand(new TakeCommand());
-      this.registerLegacyCommand(new TransitionCommand());
-      
+      this.registerLegacyCommand(new MeasureCommand() as any);
+      this.registerLegacyCommand(new SettleCommand() as any);
+      this.registerLegacyCommand(new TakeCommand() as any);
+      this.registerLegacyCommand(new TransitionCommand() as any);
+
       // Register additional data commands
-      this.registerLegacyCommand(new DefaultCommand());
-      
+      this.registerLegacyCommand(new DefaultCommand() as any);
+
       // Register advanced commands
       this.enhancedRegistry.register(new BeepCommand());
-      this.registerLegacyCommand(new AsyncCommand());
+      this.registerLegacyCommand(new AsyncCommand() as any);
       
       // Register template commands (enhanced)
       try {
@@ -257,7 +257,7 @@ export class Runtime {
       } catch (e) {
         // console.error('❌ Failed to register Enhanced RENDER command:', e);
         // Fallback to legacy command
-        this.registerLegacyCommand(new RenderCommand());
+        this.registerLegacyCommand(new RenderCommand() as any);
       }
       
       if (this.options.enableErrorReporting) {
