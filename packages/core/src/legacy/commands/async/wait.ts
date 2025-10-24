@@ -21,7 +21,7 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.ts';
+} from '../../types/enhanced-core';
 
 /**
  * Input validation schema for LLM understanding

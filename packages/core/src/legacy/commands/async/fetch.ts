@@ -14,7 +14,7 @@ import type {
   ValidationResult,
   CommandMetadata,
   LLMDocumentation,
-} from '../../types/enhanced-core.ts';
+} from '../../types/enhanced-core';
 import { 
   emitConfigEvent, 
   emitBeforeEvent, 
