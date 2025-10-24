@@ -751,7 +751,7 @@ export class Runtime {
       } else if (target?.type === 'literal') {
         target = (target as any).value;
       } else {
-        const evaluated = await this.execute(target, context);
+        const evaluated = await this.execute(target as ASTNode, context);
         target = evaluated;
       }
 
@@ -914,7 +914,7 @@ export class Runtime {
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
       // console.log(`🚀 Using enhanced command path for: ${name}`);
       // console.log(`🚀 Enhanced registry commands:`, this.enhancedRegistry.getCommandNames());
-      return await this.executeEnhancedCommand(name.toLowerCase(), args || [], context);
+      return await this.executeEnhancedCommand(name.toLowerCase(), (args || []) as ExpressionNode[], context);
     } else {
       // console.log(`🔄 Using legacy command path for: ${name} (enhanced available: ${this.enhancedRegistry.has(name.toLowerCase())})`);
       // console.log(`🔄 Enhanced registry commands:`, this.enhancedRegistry.getCommandNames());
@@ -928,18 +928,18 @@ export class Runtime {
       case 'hide': {
         // console.log('🔄 EXECUTING HIDE COMMAND CASE');
         // These commands expect evaluated args
-        const hideArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        const hideArgs = await Promise.all((rawArgs as ASTNode[]).map((arg: ASTNode) => this.execute(arg, context)));
         return this.executeHideCommand(hideArgs, context);
       }
       
       case 'show': {
         // console.log('🔄 EXECUTING SHOW COMMAND CASE');
-        const showArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        const showArgs = await Promise.all((rawArgs as ASTNode[]).map((arg: ASTNode) => this.execute(arg, context)));
         return this.executeShowCommand(showArgs, context);
       }
-      
+
       case 'wait': {
-        const waitArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        const waitArgs = await Promise.all((rawArgs as ASTNode[]).map((arg: ASTNode) => this.execute(arg, context)));
         return this.executeWaitCommand(waitArgs, context);
       }
       
@@ -967,7 +967,7 @@ export class Runtime {
       
       case 'put': {
         // Put command should get mixed arguments - content evaluated, target as raw string/element
-        return await this.executePutCommand(rawArgs, context);
+        return await this.executePutCommand(rawArgs as ExpressionNode[], context);
       }
       
       case 'set': {
@@ -989,7 +989,7 @@ export class Runtime {
       case 'beep':
       case 'beep!': {
         // Beep command for debugging - evaluates all arguments and logs them
-        const beepArgs = await Promise.all(rawArgs.map((arg: ExpressionNode) => this.execute(arg, context)));
+        const beepArgs = await Promise.all((rawArgs as ASTNode[]).map((arg: ASTNode) => this.execute(arg, context)));
         return this.executeBeepCommand(beepArgs, context);
       }
 
