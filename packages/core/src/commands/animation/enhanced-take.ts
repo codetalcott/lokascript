@@ -172,7 +172,7 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
       if (!parseResult.success) {
         return {
           success: false,
-          error: parseResult.error,
+          ...(parseResult.error && { error: parseResult.error }),
           type: 'error'
         } as EvaluationResult<HTMLElement>;
       }

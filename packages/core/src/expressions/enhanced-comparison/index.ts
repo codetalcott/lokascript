@@ -1032,8 +1032,8 @@ export class EnhancedInequalityExpression implements BaseTypedExpression<boolean
       if (!equalityResult.success) {
         return {
           success: false,
-          errors: equalityResult.errors,
-          suggestions: equalityResult.suggestions
+          ...(equalityResult.errors && { errors: equalityResult.errors }),
+          ...(equalityResult.suggestions && { suggestions: equalityResult.suggestions })
         };
       }
 

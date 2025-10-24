@@ -4,14 +4,6 @@
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
-import type {
-  TypedExpressionImplementation,
-  TypedExecutionContext,
-  HyperScriptValue,
-  EvaluationResult,
-  ValidationResult,
-  LLMDocumentation
-} from '../../types/enhanced-core';
 
 // ============================================================================
 // Core Reference Variables
