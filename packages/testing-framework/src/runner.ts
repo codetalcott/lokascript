@@ -149,7 +149,7 @@ export class CoreTestRunner implements TestRunner {
       await this.runBeforeEachHooks(context);
 
       // Set test timeout
-      const timeout = test.timeout || context.config?.timeout || 5000;
+      const timeout = test.timeout || this.executionContext?.config.timeout || 5000;
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error(`Test timeout after ${timeout}ms`)), timeout);
       });
@@ -280,8 +280,8 @@ export class CoreTestRunner implements TestRunner {
       context.browser = browser;
 
       const browserContext = await browser.newContext({
-        viewport: config.viewport,
-        baseURL: config.baseURL,
+        ...(config.viewport && { viewport: config.viewport }),
+        ...(config.baseURL && { baseURL: config.baseURL }),
       });
 
       context.page = await browserContext.newPage();
@@ -615,8 +615,8 @@ export async function measurePerformance(
     const firstContentfulPaint = paint.find(entry => entry.name === 'first-contentful-paint')?.startTime || 0;
 
     return {
-      loadTime: navigation ? navigation.loadEventEnd - navigation.navigationStart : 0,
-      domContentLoaded: navigation ? navigation.domContentLoadedEventEnd - navigation.navigationStart : 0,
+      loadTime: navigation ? navigation.loadEventEnd - navigation.startTime : 0,
+      domContentLoaded: navigation ? navigation.domContentLoadedEventEnd - navigation.startTime : 0,
       firstPaint,
       firstContentfulPaint,
       largestContentfulPaint: 0, // Would need additional measurement

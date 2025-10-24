@@ -99,7 +99,13 @@ export function createAnalyticsSystem(options: {
   };
 }) {
   const tracker = createAnalyticsTracker(options.tracker);
-  const collector = createEventCollector(options.storage, options.collector);
+  const collector = createEventCollector(options.storage, options.collector ? {
+    ...(options.collector.batchSize !== undefined && { batchSize: options.collector.batchSize }),
+    ...(options.collector.flushInterval !== undefined && { flushInterval: options.collector.flushInterval }),
+    ...(options.collector.maxBufferSize !== undefined && { maxBufferSize: options.collector.maxBufferSize }),
+    ...(options.collector.alerting && { alerting: options.collector.alerting }),
+    ...(options.collector.realtime && { realtime: options.collector.realtime }),
+  } : undefined);
 
   return {
     tracker,
@@ -291,8 +297,8 @@ export async function quickStartAnalytics(options: {
   const system = createAnalyticsSystem({
     storage,
     tracker: {
-      apiEndpoint: options.apiEndpoint,
-      trackingId: options.trackingId,
+      ...(options.apiEndpoint && { apiEndpoint: options.apiEndpoint }),
+      ...(options.trackingId && { trackingId: options.trackingId }),
       events: {
         compilation: true,
         execution: true,

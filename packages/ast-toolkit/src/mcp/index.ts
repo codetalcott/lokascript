@@ -492,7 +492,7 @@ class ASTToolkitMCPServer {
 
   private async recognizeIntent(args: any): Promise<CallToolResult> {
     const { ast } = args;
-    const intent = recognizeIntent(ast as ASTNode);
+    const intent = recognizeIntent(typeof ast === 'string' ? ast : JSON.stringify(ast));
     
     return {
       content: [{

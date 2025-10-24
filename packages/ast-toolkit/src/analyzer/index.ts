@@ -168,10 +168,10 @@ function detectExcessiveNesting(ast: ASTNode): CodeSmell[] {
       type: 'excessive-nesting',
       severity: 'high',
       location: {
-        start: ast.start,
-        end: ast.end,
-        line: ast.line,
-        column: ast.column
+        ...(ast.start !== undefined && { start: ast.start }),
+        ...(ast.end !== undefined && { end: ast.end }),
+        ...(ast.line !== undefined && { line: ast.line }),
+        ...(ast.column !== undefined && { column: ast.column })
       },
       message: `Nesting depth of ${currentDepth} exceeds recommended maximum of ${maxDepth}`,
       suggestion: 'Consider extracting nested logic into separate functions or using early returns'
@@ -205,10 +205,10 @@ function detectDuplicateCode(ast: ASTNode): CodeSmell[] {
         type: 'duplicate-code',
         severity: 'medium',
         location: {
-          start: nodes[0].start,
-          end: nodes[0].end,
-          line: nodes[0].line,
-          column: nodes[0].column
+          ...(nodes[0].start !== undefined && { start: nodes[0].start }),
+          ...(nodes[0].end !== undefined && { end: nodes[0].end }),
+          ...(nodes[0].line !== undefined && { line: nodes[0].line }),
+          ...(nodes[0].column !== undefined && { column: nodes[0].column })
         },
         message: `Duplicate code found (${nodes.length} occurrences)`,
         suggestion: 'Consider extracting common logic into a reusable function'
@@ -232,10 +232,10 @@ function detectLongCommandChains(ast: ASTNode): CodeSmell[] {
             type: 'long-command-chain',
             severity: 'medium',
             location: {
-              start: node.start,
-              end: node.end,
-              line: node.line,
-              column: node.column
+              ...(node.start !== undefined && { start: node.start }),
+              ...(node.end !== undefined && { end: node.end }),
+              ...(node.line !== undefined && { line: node.line }),
+              ...(node.column !== undefined && { column: node.column })
             },
             message: `Command chain with ${commands.length} commands exceeds recommended maximum of ${maxCommands}`,
             suggestion: 'Consider breaking into smaller, focused handlers'
@@ -261,10 +261,10 @@ function detectComplexConditions(ast: ASTNode): CodeSmell[] {
             type: 'complex-condition',
             severity: 'medium',
             location: {
-              start: node.start,
-              end: node.end,
-              line: node.line,
-              column: node.column
+              ...(node.start !== undefined && { start: node.start }),
+              ...(node.end !== undefined && { end: node.end }),
+              ...(node.line !== undefined && { line: node.line }),
+              ...(node.column !== undefined && { column: node.column })
             },
             message: `Condition complexity of ${conditionComplexity} is too high`,
             suggestion: 'Consider extracting condition logic into named variables'
@@ -467,10 +467,10 @@ export function findDeadCode(ast: ASTNode): Array<{
         type: 'unused-variable',
         name: varName,
         location: {
-          start: defNode.start,
-          end: defNode.end,
-          line: defNode.line,
-          column: defNode.column
+          ...(defNode.start !== undefined && { start: defNode.start }),
+          ...(defNode.end !== undefined && { end: defNode.end }),
+          ...(defNode.line !== undefined && { line: defNode.line }),
+          ...(defNode.column !== undefined && { column: defNode.column })
         },
         message: `Variable '${varName}' is defined but never used`
       });
@@ -487,10 +487,10 @@ export function findDeadCode(ast: ASTNode): Array<{
         deadCode.push({
           type: 'unreachable-code',
           location: {
-            start: node.start,
-            end: node.end,
-            line: node.line,
-            column: node.column
+            ...(node.start !== undefined && { start: node.start }),
+            ...(node.end !== undefined && { end: node.end }),
+            ...(node.line !== undefined && { line: node.line }),
+            ...(node.column !== undefined && { column: node.column })
           },
           message: 'Unreachable code after halt/throw statement'
         });

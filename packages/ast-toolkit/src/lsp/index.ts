@@ -135,20 +135,22 @@ export function astToLSPDiagnostics(ast: ASTNode): Diagnostic[] {
   
   // Convert code smells to diagnostics
   for (const smell of smells) {
-    diagnostics.push({
-      range: {
-        start: { line: smell.location.line - 1, character: smell.location.column - 1 },
-        end: { line: smell.location.line - 1, character: smell.location.column + 10 }
-      },
-      severity: mapSmellSeverityToLSP(smell.severity),
-      code: smell.type,
-      source: 'hyperscript-ast-toolkit',
-      message: smell.message
-    });
+    if (smell.location.line !== undefined && smell.location.column !== undefined) {
+      diagnostics.push({
+        range: {
+          start: { line: smell.location.line - 1, character: smell.location.column - 1 },
+          end: { line: smell.location.line - 1, character: smell.location.column + 10 }
+        },
+        severity: mapSmellSeverityToLSP(smell.severity),
+        code: smell.type,
+        source: 'hyperscript-ast-toolkit',
+        message: smell.message
+      });
+    }
   }
   
   // Add complexity warnings
-  if (complexity.cyclomatic > 10) {
+  if (complexity.cyclomatic > 10 && ast.line !== undefined && ast.column !== undefined) {
     diagnostics.push({
       range: {
         start: { line: ast.line - 1, character: ast.column - 1 },
@@ -160,8 +162,8 @@ export function astToLSPDiagnostics(ast: ASTNode): Diagnostic[] {
       message: `High cyclomatic complexity: ${complexity.cyclomatic} (recommended: <= 10)`
     });
   }
-  
-  if (complexity.cognitive > 15) {
+
+  if (complexity.cognitive > 15 && ast.line !== undefined && ast.column !== undefined) {
     diagnostics.push({
       range: {
         start: { line: ast.line - 1, character: ast.column - 1 },
@@ -445,20 +447,20 @@ function findNodeAtPosition(ast: ASTNode, position: Position): ASTNode | null {
   }
   
   // Return the most specific node (smallest range containing the position)
-  return nodesAtLine.reduce((best, current) => {
+  return nodesAtLine.reduce<ASTNode | null>((best, current) => {
     if (!best) return current;
-    
+
     // Prefer higher-level nodes (eventHandler > command > selector)
     const currentPriority = getNodePriority(current.type);
     const bestPriority = getNodePriority(best.type);
-    
+
     if (currentPriority > bestPriority) return current;
     if (bestPriority > currentPriority) return best;
-    
+
     // If same priority, prefer smaller nodes
     const currentSize = (current.end || 0) - (current.start || 0);
     const bestSize = (best.end || 0) - (best.start || 0);
-    
+
     return currentSize < bestSize ? current : best;
   }, null);
 }

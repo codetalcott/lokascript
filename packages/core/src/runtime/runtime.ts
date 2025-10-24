@@ -550,13 +550,13 @@ export class Runtime {
             // fullNode: targetArg
           // });
           
-          if (targetArg.type === 'identifier') {
+          if (nodeType(targetArg) === 'identifier') {
             target = (targetArg as any).name;
             // console.log('🔧 SET: Set target from identifier:', target);
-          } else if (targetArg.type === 'literal') {
+          } else if (nodeType(targetArg) === 'literal') {
             target = (targetArg as any).value;
             // console.log('🔧 SET: Set target from literal:', target);
-          } else if (targetArg.type === 'memberExpression') {
+          } else if (nodeType(targetArg) === 'memberExpression') {
             // Handle memberExpression like "my textContent"
             // console.log('🚨 SET: MEMBEREXPRESSION DETECTED - PROCESSING NOW!');
             const memberExpr = targetArg as any;
@@ -573,7 +573,7 @@ export class Runtime {
               // console.log('🔧 SET: Not a possessive memberExpression, evaluating normally');
               target = await this.execute(targetArg, context);
             }
-          } else if (targetArg.type === 'propertyOfExpression') {
+          } else if (nodeType(targetArg) === 'propertyOfExpression') {
             // Handle "the X of Y" pattern
             // console.log('🚨 SET: PROPERTYOFEXPRESSION DETECTED - THE X OF Y PATTERN!');
             const propOfExpr = targetArg as any;
@@ -606,18 +606,18 @@ export class Runtime {
             // });
             throw new Error(`Invalid target type: ${typeof target}. Target arg: ${JSON.stringify(targetArg)}`);
           }
-        } else if (targetArgs.length === 2 && 
-                   (targetArgs[0].type === 'identifier' || targetArgs[0].type === 'context_var') && 
+        } else if (targetArgs.length === 2 &&
+                   (nodeType(targetArgs[0]) === 'identifier' || nodeType(targetArgs[0]) === 'context_var') &&
                    ['my', 'me', 'its', 'it', 'your', 'you'].includes((targetArgs[0] as any).name || (targetArgs[0] as any).value)) {
           // Handle possessive syntax: "my textContent", "its value", etc.
           const possessive = (targetArgs[0] as any).name;
           const property = (targetArgs[1] as any).name || (targetArgs[1] as any).value;
           target = `${possessive} ${property}`;
           // console.log('🔧 SET: Detected possessive syntax:', { possessive, property, target });
-        } else if (targetArgs.length === 3 && 
-                   targetArgs[0].type === 'selector' &&
-                   targetArgs[1].type === 'identifier' && (targetArgs[1] as any).name === "'s" &&
-                   targetArgs[2].type === 'identifier') {
+        } else if (targetArgs.length === 3 &&
+                   nodeType(targetArgs[0]) === 'selector' &&
+                   nodeType(targetArgs[1]) === 'identifier' && (targetArgs[1] as any).name === "'s" &&
+                   nodeType(targetArgs[2]) === 'identifier') {
           // Handle selector possessive syntax: "#element's property"
           const selector = (targetArgs[0] as any).value;
           const property = (targetArgs[2] as any).name;
@@ -632,30 +632,30 @@ export class Runtime {
           // Look for property name (first identifier after "the")
           for (let i = 0; i < targetArgs.length; i++) {
             const arg = targetArgs[i];
-            if (arg.type === 'identifier' && (arg as any).name !== 'the' && (arg as any).name !== 'of') {
+            if (nodeType(arg) === 'identifier' && (arg as any).name !== 'the' && (arg as any).name !== 'of') {
               property = (arg as any).name;
               break;
             }
           }
-          
+
           // Look for element selector
           for (let i = 0; i < targetArgs.length; i++) {
             const arg = targetArgs[i];
-            if (arg.type === 'selector') {
+            if (nodeType(arg) === 'selector') {
               element = (arg as any).value;
               break;
             }
           }
-          
+
           if (property && element) {
             // Create a structured target for property setting
             target = { element, property };
           } else {
             // Fallback to simple concatenation
             target = targetArgs.map(arg => {
-              if (arg.type === 'identifier') return (arg as any).name;
-              if (arg.type === 'selector') return (arg as any).value;
-              if (arg.type === 'literal') return (arg as any).value;
+              if (nodeType(arg) === 'identifier') return (arg as any).name;
+              if (nodeType(arg) === 'selector') return (arg as any).value;
+              if (nodeType(arg) === 'literal') return (arg as any).value;
               return arg;
             }).join('.');
           }
@@ -681,7 +681,7 @@ export class Runtime {
           // Handle function calls like Date(), Math.max(1, 2, 3), etc.
           // console.log('🔧 SET: Detected function call pattern, evaluating as function');
           value = await this.evaluateFunctionCall(valueArgs, context);
-        } else if (valueArgs.length === 3 && valueArgs[1].type === 'identifier') {
+        } else if (valueArgs.length === 3 && nodeType(valueArgs[1]) === 'identifier') {
           // Check if this is a binary expression pattern: value + operator + value
           const operatorNode = valueArgs[1];
           const operator = (operatorNode as any).name || (operatorNode as any).value;
@@ -1204,7 +1204,7 @@ export class Runtime {
     let prepositionIndex = -1;
     for (let i = 0; i < rawArgs.length; i++) {
       const arg = rawArgs[i];
-      if (arg?.type === 'literal' && 
+      if (nodeType(arg) === 'literal' &&
           ['into', 'before', 'after', 'at'].includes(arg.value as string)) {
         prepositionIndex = i;
         prepositionArg = arg.value;
@@ -1246,17 +1246,17 @@ export class Runtime {
       // });
       
       // Handle target resolution - fix the [object Object] issue
-      if (target?.type === 'identifier' && (target as any).name === 'me') {
+      if (nodeType(target) === 'identifier' && (target as any).name === 'me') {
         target = context.me;
         // console.log('🔍 RUNTIME: resolved "me" to context.me', { target });
-      } else if (target?.type === 'identifier') {
+      } else if (nodeType(target) === 'identifier') {
         // For other identifiers, keep as string for CSS selector or context lookup
         target = (target as any).name;
         // console.log('🔍 RUNTIME: resolved identifier to name', { target });
-      } else if (target?.type === 'literal') {
+      } else if (nodeType(target) === 'literal') {
         target = (target as any).value;
         // console.log('🔍 RUNTIME: resolved literal to value', { target });
-      } else if (target?.type === 'selector') {
+      } else if (nodeType(target) === 'selector') {
         target = (target as any).value;
         // console.log('🔍 RUNTIME: resolved selector to value', { target });
       } else {
