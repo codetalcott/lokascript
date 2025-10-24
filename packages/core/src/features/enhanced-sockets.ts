@@ -1098,7 +1098,7 @@ export class TypedSocketsFeatureImplementation {
 
       const metrics: SocketMetrics = {
         connectionId: connection.id,
-        connectedAt: connection.connectedAt,
+        ...(connection.connectedAt !== undefined && { connectedAt: connection.connectedAt }),
         totalReconnects: connection.totalReconnects,
         messagesSent: connection.messagesSent,
         messagesReceived: connection.messagesReceived,

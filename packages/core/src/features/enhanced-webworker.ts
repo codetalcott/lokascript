@@ -916,7 +916,7 @@ export class TypedWebWorkerFeatureImplementation {
           workerId,
           type: 'outgoing',
           data,
-          transferables,
+          ...(transferables && { transferables }),
           timestamp: Date.now(),
           format: this.detectMessageFormat(data),
         };

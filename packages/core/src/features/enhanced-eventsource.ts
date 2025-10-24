@@ -675,8 +675,8 @@ export class TypedEventSourceFeatureImplementation {
       data: event.data,
       timestamp: Date.now(),
       format: this.detectMessageFormat(event.data),
-      lastEventId: event.lastEventId || undefined,
-      origin: event.origin || undefined,
+      ...(event.lastEventId && { lastEventId: event.lastEventId }),
+      ...(event.origin && { origin: event.origin }),
     };
 
     this.messageHistory.push(message);

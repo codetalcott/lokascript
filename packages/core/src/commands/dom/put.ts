@@ -170,10 +170,9 @@ export class PutCommand implements TypedCommandImplementation<
       if (!targetResult.success) {
         return {
           success: false,
-          error: targetResult.error || {
-            name: 'UnknownError',
+          error: targetResult.error ?? {
+            type: 'runtime-error',
             message: 'Unknown error occurred',
-            code: 'UNKNOWN_ERROR',
             suggestions: []
           },
           type: 'error'
