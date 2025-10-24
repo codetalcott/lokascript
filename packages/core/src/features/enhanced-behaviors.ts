@@ -448,6 +448,7 @@ export class TypedBehaviorsFeatureImplementation {
           type: 'invalid-behavior-name',
           message: 'Behavior name must be a valid identifier (letters, numbers, underscore, hyphen)',
           path: 'behavior.name',
+          suggestions: []
         });
         suggestions.push('Use valid identifier for behavior name (e.g., "my-behavior", "tooltip", "draggable_item")');
       }
