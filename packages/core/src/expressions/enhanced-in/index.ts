@@ -256,10 +256,10 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
     try {
       // Resolve container to DOM element
       const containerElement = await this.resolveContainerElement(container, context);
-      if (!containerElement.success) {
+      if (!containerElement.success || !containerElement.value) {
         return containerElement as EvaluationResult<HyperScriptValue[]>;
       }
-      
+
       // Handle different search value types
       if (typeof searchValue === 'string') {
         return this.querySelectorInContainer(searchValue, containerElement.value);

@@ -222,7 +222,7 @@ export function restoreContext(
  * Clones a context (useful for parallel execution)
  */
 export function cloneContext(context: ExecutionContext): ExecutionContext {
-  const cloned = createContext(context.me);
+  const cloned = createContext(context.me instanceof HTMLElement ? context.me : null);
 
   Object.assign(cloned, { it: context.it });
   cloned.you = context.you;

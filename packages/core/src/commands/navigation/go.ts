@@ -396,7 +396,8 @@ export class GoCommand implements TypedCommandImplementation<
       }
 
       // Dispatch enhanced navigation event
-      dispatchCustomEvent(context.me || document.body, 'hyperscript:go', {
+      const eventTarget = (context.me instanceof HTMLElement ? context.me : null) || document.body;
+      dispatchCustomEvent(eventTarget, 'hyperscript:go', {
         context,
         command: this.name,
         type: 'url',
@@ -556,7 +557,8 @@ export class GoCommand implements TypedCommandImplementation<
       }
 
       // Dispatch enhanced scroll event
-      dispatchCustomEvent(context.me || document.body, 'hyperscript:go', {
+      const scrollEventTarget = (context.me instanceof HTMLElement ? context.me : null) || document.body;
+      dispatchCustomEvent(scrollEventTarget, 'hyperscript:go', {
         context,
         command: this.name,
         type: 'scroll',
@@ -840,7 +842,8 @@ export class GoCommand implements TypedCommandImplementation<
       }
 
       // Dispatch enhanced history event
-      dispatchCustomEvent(context.me || document.body, 'hyperscript:go', {
+      const historyEventTarget = (context.me instanceof HTMLElement ? context.me : null) || document.body;
+      dispatchCustomEvent(historyEventTarget, 'hyperscript:go', {
         context,
         command: this.name,
         type: 'history',
