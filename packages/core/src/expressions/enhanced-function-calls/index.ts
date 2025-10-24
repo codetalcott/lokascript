@@ -542,7 +542,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
       );
 
       // Execute the constructor with new keyword
-      const result = new constructor.value(...resolvedArgs);
+      const result = new (constructor.value as new (...args: any[]) => any)(...resolvedArgs);
 
       // Handle promise results
       let finalResult = result;

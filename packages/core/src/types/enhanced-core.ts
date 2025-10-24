@@ -373,7 +373,7 @@ export interface ParsedCommand {
   readonly name: string;
   
   /** Reference to executable implementation */
-  readonly implementation?: unknown | TypedExpressionImplementation<unknown, unknown>;
+  readonly implementation?: unknown | TypedExpressionImplementation<unknown, TypedExecutionContext>;
   
   /** Parsed arguments with type information */
   readonly args: ParsedArgument[];
