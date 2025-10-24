@@ -10,7 +10,7 @@ import type {
   TypedExpressionContext,
   ExpressionMetadata
 } from '../../types/enhanced-expressions';
-import type { EvaluationResult, ValidationResult, LLMDocumentation } from '../../types/enhanced-core';
+import type { EvaluationResult, ValidationResult, LLMDocumentation, HyperScriptValueType } from '../../types/enhanced-core';
 
 // ============================================================================
 // Enhanced Me Expression
@@ -104,7 +104,7 @@ export class EnhancedMeExpression implements TypedExpressionImplementation<
       // Track evaluation
       const startTime = Date.now();
       const element = context.me;
-      
+
       // Add to evaluation history
       context.evaluationHistory.push({
         expressionName: this.name,
@@ -118,7 +118,7 @@ export class EnhancedMeExpression implements TypedExpressionImplementation<
 
       return {
         success: true,
-        value: element,
+        value: (element instanceof HTMLElement ? element : null),
         type: 'element'
       };
     } catch (error) {
@@ -243,7 +243,7 @@ export class EnhancedYouExpression implements TypedExpressionImplementation<
     try {
       const startTime = Date.now();
       const element = context.you;
-      
+
       context.evaluationHistory.push({
         expressionName: this.name,
         category: this.category,
@@ -256,7 +256,7 @@ export class EnhancedYouExpression implements TypedExpressionImplementation<
 
       return {
         success: true,
-        value: element,
+        value: (element instanceof HTMLElement ? element : null),
         type: 'element'
       };
     } catch (error) {
@@ -437,12 +437,12 @@ export class EnhancedItExpression implements TypedExpressionImplementation<
     };
   }
 
-  private inferType(value: unknown): string {
+  private inferType(value: unknown): HyperScriptValueType {
     if (value === null) return 'null';
     if (value instanceof HTMLElement) return 'element';
     if (Array.isArray(value)) return 'array';
     if (typeof value === 'object') return 'object';
-    return typeof value;
+    return typeof value as HyperScriptValueType;
   }
 }
 

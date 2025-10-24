@@ -472,7 +472,7 @@ export class EnhancedTimeArithmeticExpression implements TypedExpressionImplemen
         ms1 = time1;
       } else {
         const result1 = await parser.evaluate(context, String(time1));
-        if (!result1.success) {
+        if (!result1.success || typeof result1.value !== 'number') {
           return result1;
         }
         ms1 = result1.value;
@@ -484,7 +484,7 @@ export class EnhancedTimeArithmeticExpression implements TypedExpressionImplemen
         ms2 = time2;
       } else {
         const result2 = await parser.evaluate(context, String(time2));
-        if (!result2.success) {
+        if (!result2.success || typeof result2.value !== 'number') {
           return result2;
         }
         ms2 = result2.value;

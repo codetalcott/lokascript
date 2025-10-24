@@ -66,7 +66,7 @@ export class EnhancedExpressionAdapter {
       return (result.value as HTMLElement) || null;
     } else {
       console.warn('Enhanced me expression failed:', result.error);
-      return context.me || null; // Fallback to legacy behavior
+      return (context.me instanceof HTMLElement ? context.me : null); // Fallback to legacy behavior
     }
   }
 
@@ -113,7 +113,7 @@ export class EnhancedExpressionAdapter {
     const result = await enhancedReferenceExpressions['css-selector'].evaluate(typedContext, input);
     
     if (result.success) {
-      return result.value;
+      return (result.value as HTMLElement | HTMLElement[] | null) ?? null;
     } else {
       console.warn('Enhanced CSS selector expression failed:', result.error);
       // Fallback to basic DOM query
