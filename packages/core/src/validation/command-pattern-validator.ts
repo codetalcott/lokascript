@@ -97,7 +97,7 @@ export class CommandPatternValidator {
     }
 
     // 3. Check metadata structure
-    const hasProperMetadata = this.validateMetadata(instance.metadata);
+    const hasProperMetadata = this.validateMetadata(instance.metadata as Record<string, unknown>);
     if (hasProperMetadata) {
       passed.push('✅ Has properly structured CommandMetadata');
       score++;
@@ -107,7 +107,7 @@ export class CommandPatternValidator {
     }
 
     // 4. Check LLM documentation
-    const hasLLMDocumentation = this.validateLLMDocumentation(instance.documentation);
+    const hasLLMDocumentation = this.validateLLMDocumentation(instance.documentation as Record<string, unknown>);
     if (hasLLMDocumentation) {
       passed.push('✅ Has comprehensive LLMDocumentation');
       score++;
@@ -202,15 +202,15 @@ export class CommandPatternValidator {
 
   private static validateMetadata(metadata: Record<string, unknown>): boolean {
     if (!metadata || typeof metadata !== 'object') return false;
-    
+
     return (
       typeof metadata.category === 'string' &&
-      ['simple', 'medium', 'complex'].includes(metadata.complexity) &&
+      ['simple', 'medium', 'complex'].includes(metadata.complexity as string) &&
       Array.isArray(metadata.sideEffects) &&
       Array.isArray(metadata.examples) &&
       Array.isArray(metadata.relatedCommands) &&
-      Array.isArray(metadata.examples) && metadata.examples.every((ex: Record<string, unknown>) => 
-        typeof ex.code === 'string' && 
+      Array.isArray(metadata.examples) && metadata.examples.every((ex: Record<string, unknown>) =>
+        typeof ex.code === 'string' &&
         typeof ex.description === 'string'
       )
     );
