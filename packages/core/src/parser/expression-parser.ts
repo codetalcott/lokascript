@@ -228,8 +228,8 @@ function parseComparisonExpression(state: ParseState): ASTNode {
           operator: 'is not',
           left,
           right,
-          start: left.start,
-          end: right.end
+          ...(left.start !== undefined && { start: left.start }),
+          ...(right.end !== undefined && { end: right.end })
         };
       } else {
         const right = parseArithmeticExpression(state);
@@ -238,8 +238,8 @@ function parseComparisonExpression(state: ParseState): ASTNode {
           operator,
           left,
           right,
-          start: left.start,
-          end: right.end
+          ...(left.start !== undefined && { start: left.start }),
+          ...(right.end !== undefined && { end: right.end })
         };
       }
     } else {
@@ -369,7 +369,7 @@ function parseAsExpression(state: ParseState): ASTNode {
         type: 'asExpression',
         expression: left,
         targetType: typeName,
-        start: left.start,
+        ...(left.start !== undefined && { start: left.start }),
         end: typeToken.end
       };
     } else {
@@ -399,8 +399,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
         type: 'possessiveExpression',
         object: left,
         property,
-        start: left.start,
-        end: property.end
+        ...(left.start !== undefined && { start: left.start }),
+        ...(property.end !== undefined && { end: property.end })
       };
       // Continue loop to handle chained possessive (obj's prop1's prop2)
       continue;
@@ -416,8 +416,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
         type: 'contextPossessive',
         contextType: (left as any).name,
         property,
-        start: left.start,
-        end: property.end
+        ...(left.start !== undefined && { start: left.start }),
+        ...(property.end !== undefined && { end: property.end })
       };
     }
     // Handle "the X of Y" pattern (the property of element)
