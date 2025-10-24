@@ -561,7 +561,7 @@ export class WaitCommand implements TypedCommandImplementation<
       }
 
       // Set up event listeners
-      eventSpec.events.forEach(({ eventName, source, destructure }) => {
+      eventSpec.events.forEach(({ eventName, source, destructure }: { eventName: string; source: string; destructure?: string[] }) => {
         const target = this.resolveEventSource(source, context);
         
         const handler = (event: Event) => {

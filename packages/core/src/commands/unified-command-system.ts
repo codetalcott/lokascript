@@ -117,8 +117,7 @@ export class CommandContextManager {
       broke: false,
       continued: false,
       async: false,
-      evaluationHistory: [],
-      effectHistory: []
+      evaluationHistory: []
     };
   }
 }
