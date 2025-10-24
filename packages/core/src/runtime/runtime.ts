@@ -849,7 +849,7 @@ export class Runtime {
         // For other commands (hide/show), pass selector as is
         args = selector ? [{ type: 'literal', value: selector }] : [];
       }
-      return await this.executeEnhancedCommand(commandName, args, context);
+      return await this.executeEnhancedCommand(commandName, args as ExpressionNode[], context);
     }
 
     // Fallback to legacy command handling
