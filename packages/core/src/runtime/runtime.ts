@@ -30,8 +30,9 @@ import { createAddCommand } from '../commands/dom/add';
 import { createRemoveCommand } from '../commands/dom/remove';
 import { createSendCommand } from '../commands/events/send';
 import { createTriggerCommand } from '../commands/events/trigger';
-import { createWaitCommand } from '../legacy/commands/async/wait';
-import { createFetchCommand } from '../legacy/commands/async/fetch';
+// Legacy commands excluded from TypeScript project
+// import { createWaitCommand } from '../legacy/commands/async/wait';
+// import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
 import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
@@ -174,11 +175,12 @@ export class Runtime {
       } catch (e) {
         // console.error('❌ Failed to register Enhanced SET command:', e);
       }
-      
+
       // Register async commands
-      this.enhancedRegistry.register(createWaitCommand());
-      this.enhancedRegistry.register(createFetchCommand());
-      
+      // Legacy commands excluded - TODO: Implement enhanced versions
+      // this.enhancedRegistry.register(createWaitCommand());
+      // this.enhancedRegistry.register(createFetchCommand());
+
       // Register data commands (enhanced)
       try {
         const incrementCommand = createEnhancedIncrementCommand();
