@@ -63,8 +63,10 @@ import { createTriggerCommand, TriggerCommand } from './events/trigger';
 import { createGoCommand, GoCommand } from './navigation/go';
 
 // Async Commands - using legacy for now
-import { createWaitCommand } from '../legacy/commands/async/wait';
-import { createFetchCommand } from '../legacy/commands/async/fetch';
+// NOTE: Legacy commands excluded from TypeScript project (tsconfig.json)
+// TODO: Implement enhanced versions of wait and fetch commands
+// import { createWaitCommand } from '../legacy/commands/async/wait';
+// import { createFetchCommand } from '../legacy/commands/async/fetch';
 
 // Re-export everything
 export {
@@ -127,8 +129,8 @@ export {
   createGoCommand, GoCommand,
 
   // Async Commands
-  createWaitCommand,
-  createFetchCommand,
+  // createWaitCommand,
+  // createFetchCommand,
 };
 
 import type { TypedCommandImplementation } from '../types/core';
@@ -199,8 +201,8 @@ export const ENHANCED_COMMAND_FACTORIES = {
   go: createGoCommand,
 
   // Async Commands
-  wait: createWaitCommand,
-  fetch: createFetchCommand,
+  // wait: createWaitCommand,
+  // fetch: createFetchCommand,
 } as const;
 
 /**

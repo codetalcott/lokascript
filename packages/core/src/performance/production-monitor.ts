@@ -374,7 +374,7 @@ export function monitorPerformance(
     const originalMethod = descriptor.value!;
     const operationName = name || `${target.constructor.name}.${propertyKey}`;
     
-    descriptor.value = async function (...args: Parameters<T>) {
+    descriptor.value = async function (this: any, ...args: Parameters<T>) {
       return productionMonitor.measure(
         operationName,
         category,

@@ -261,7 +261,7 @@ export function measurePerformance(
   ) {
     const originalMethod = descriptor.value!;
     
-    descriptor.value = async function (...args: Parameters<T>) {
+    descriptor.value = async function (this: any, ...args: Parameters<T>) {
       const start = performance.now();
       const result = await originalMethod.apply(this, args);
       const end = performance.now();

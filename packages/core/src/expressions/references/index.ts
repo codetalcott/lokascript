@@ -358,7 +358,7 @@ export const possessiveStyleRefExpression: ExpressionImplementation = {
     // Resolve the possessor to an element
     let target: HTMLElement | null = null;
     if (possessor === 'my' && context.me) {
-      target = context.me;
+      target = context.me instanceof HTMLElement ? context.me : null;
     } else if (possessor === 'its' && context.result) {
       target = context.result as HTMLElement;
     }
@@ -406,7 +406,7 @@ export const ofStyleRefExpression: ExpressionImplementation = {
     // Resolve the reference to an element
     let target: HTMLElement | null = null;
     if (reference === 'me' && context.me) {
-      target = context.me;
+      target = context.me instanceof HTMLElement ? context.me : null;
     } else if (reference === 'it' && context.result) {
       target = context.result as HTMLElement;
     }

@@ -220,7 +220,7 @@ function getFormValues(form: HTMLFormElement): Record<string, unknown> {
       if (!Array.isArray(values[key])) {
         values[key] = [values[key]];
       }
-      values[key].push(value);
+      (values[key] as unknown[]).push(value);
     } else {
       values[key] = value;
     }
@@ -243,7 +243,7 @@ function getFormValuesProcessed(form: HTMLFormElement): Record<string, unknown> 
           if (!Array.isArray(values[input.name])) {
             values[input.name] = [values[input.name]];
           }
-          values[input.name].push(value);
+          (values[input.name] as unknown[]).push(value);
         } else {
           values[input.name] = value;
         }
