@@ -114,7 +114,7 @@ export class CommandContextManager {
       result: null,
       locals: new Map(),
       globals: new Map(),
-      parent: undefined,
+      // parent is optional, omitted for default context
       halted: false,
       returned: false,
       broke: false,
