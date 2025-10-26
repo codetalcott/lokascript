@@ -89,7 +89,7 @@ export class EnhancedSymbolExpression implements TypedExpressionImplementation<
 
   // Required TypedExpressionImplementation properties
   public readonly name = 'symbol';
-  public readonly category: ExpressionCategory = 'Reference';
+  public readonly category: ExpressionCategory = 'reference';
   public readonly precedence = 18; // Highest precedence for variable references
   public readonly associativity: 'left' | 'right' | 'none' = 'none';
   public readonly outputType = 'any';

@@ -138,7 +138,7 @@ export class EnhancedFunctionCallExpression implements TypedExpressionImplementa
 
   // Required TypedExpressionImplementation properties
   public readonly name = 'functionCall';
-  public readonly category: ExpressionCategory = 'Special';
+  public readonly category: ExpressionCategory = 'special';
   public readonly precedence = 17; // High precedence for function calls
   public readonly associativity: 'left' | 'right' | 'none' = 'left';
   public readonly outputType = 'any';
