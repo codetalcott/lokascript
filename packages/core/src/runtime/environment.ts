@@ -9,6 +9,7 @@ declare const Deno: {
   version: { deno: string };
   build: { os: string };
   readTextFile: (path: string) => Promise<string>;
+  env: { get: (key: string) => string | undefined };
 };
 
 // ============================================================================

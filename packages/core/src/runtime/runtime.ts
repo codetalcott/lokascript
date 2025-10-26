@@ -115,10 +115,11 @@ export class Runtime {
   private registerLegacyCommand(command: { name: string; execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>; validate?: (args: unknown[]) => { isValid: boolean; errors: unknown[]; suggestions: string[] } }): void {
     // console.log('🔧 Registering legacy command:', command.name);
     // Create an adapter for legacy commands to work with enhanced registry
+    const commandAny = command as any;
     const adapter = {
       name: command.name,
-      syntax: command.syntax || `${command.name} [args...]`,
-      description: command.description || `${command.name} command`,
+      syntax: commandAny.syntax || `${command.name} [args...]`,
+      description: commandAny.description || `${command.name} command`,
       inputSchema: null, // Legacy commands don't have schemas
       outputType: 'unknown' as const,
       
@@ -488,10 +489,11 @@ export class Runtime {
     } else if ((name === 'add' || name === 'remove') && args.length === 1) {
       // Handle single-arg pattern: "add .active" (implicit target: me)
       let classArg: unknown = args[0];
-      if (classArg?.type === 'selector' || classArg?.type === 'literal') {
-        classArg = classArg.value;
-      } else if (classArg?.type === 'identifier') {
-        classArg = classArg.name;
+      const classArgAny = classArg as any;
+      if (classArgAny?.type === 'selector' || classArgAny?.type === 'literal') {
+        classArg = classArgAny.value;
+      } else if (classArgAny?.type === 'identifier') {
+        classArg = classArgAny.name;
       } else {
         classArg = await this.execute(args[0], context);
       }
@@ -742,17 +744,18 @@ export class Runtime {
       // Handle "show #element" and "hide #element" patterns
       // For show/hide, the argument should be treated as a selector string, not evaluated as a query
       let target: unknown = args[0];
+      const targetAny = target as any;
 
       // Extract target selector/element
-      if (target?.type === 'identifier' && (target as any).name === 'me') {
+      if (targetAny?.type === 'identifier' && targetAny.name === 'me') {
         target = context.me;
-      } else if (target?.type === 'selector' || target?.type === 'id_selector' || target?.type === 'class_selector') {
+      } else if (targetAny?.type === 'selector' || targetAny?.type === 'id_selector' || targetAny?.type === 'class_selector') {
         // Keep as selector string
-        target = (target as any).value;
-      } else if (target?.type === 'identifier') {
-        target = (target as any).name;
-      } else if (target?.type === 'literal') {
-        target = (target as any).value;
+        target = targetAny.value;
+      } else if (targetAny?.type === 'identifier') {
+        target = targetAny.name;
+      } else if (targetAny?.type === 'literal') {
+        target = targetAny.value;
       } else {
         const evaluated = await this.execute(target as ASTNode, context);
         target = evaluated;
@@ -1510,11 +1513,12 @@ export class Runtime {
     }
     
     // Fallback: check for element-like properties (for mocks and Node.js)
-    return obj && 
-           typeof obj === 'object' && 
-           obj.style && 
-           typeof obj.style === 'object' &&
-           obj.classList;
+    const objAny = obj as any;
+    return obj &&
+           typeof obj === 'object' &&
+           objAny.style &&
+           typeof objAny.style === 'object' &&
+           objAny.classList;
   }
 
   /**
