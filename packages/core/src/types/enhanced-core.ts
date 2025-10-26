@@ -777,9 +777,9 @@ export const HyperScriptProgramSchema = v.object({
     }),
   })),
   metadata: v.object({
-    compilation: z.object({
+    compilation: v.object({
       compiled: v.boolean(),
-      compiledAt: z.date().optional(),
+      compiledAt: v.union([v.instanceof(Date), v.string(), v.undefined()]),
       compiler: v.string(),
       version: v.string(),
     }),

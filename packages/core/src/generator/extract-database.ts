@@ -223,10 +223,10 @@ export type HyperscriptCommand = ${commands.map(cmd =>
       if (!acc[example.element_type]) {
         acc[example.element_type] = {};
       }
-      if (!acc[example.element_type][example.element_name]) {
-        acc[example.element_type][example.element_name] = [];
+      if (!acc[example.element_type][example.element_id]) {
+        acc[example.element_type][example.element_id] = [];
       }
-      acc[example.element_type][example.element_name].push(example);
+      acc[example.element_type][example.element_id].push(example);
       return acc;
     }, {} as Record<string, Record<string, DatabaseExample[]>>);
     

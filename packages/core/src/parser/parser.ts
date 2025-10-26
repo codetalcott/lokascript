@@ -1515,7 +1515,7 @@ export class Parser {
       return {
         type: 'dollarExpression',
         expression,
-        raw: `$${identifierToken.value}${this.previous().raw || ''}`,
+        raw: `$${identifierToken.value}${(this.previous() as any).raw || this.previous().value || ''}`,
         line: identifierToken.line,
         column: identifierToken.column - 1 // Include the $ symbol
       };

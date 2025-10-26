@@ -107,7 +107,7 @@ export function createHyperscriptAPI(): HyperscriptAPI {
     parse(src: string): any {
       const result = parseHyperscript(src);
       if (result.success) {
-        return result.result;
+        return result.node || result.ast;
       } else {
         throw new Error(`Parse error: ${result.error?.message || 'Unknown parse error'}`);
       }
