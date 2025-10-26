@@ -455,7 +455,7 @@ export class EnhancedFormSerializationExpression implements TypedExpressionImple
       const valuesResult = await valuesExpr.evaluate(context, formElement);
       
       if (!valuesResult.success) {
-        return valuesResult as EvaluationResult<string>;
+        return valuesResult as unknown as EvaluationResult<string>;
       }
 
       const values = valuesResult.value as Record<string, unknown>;

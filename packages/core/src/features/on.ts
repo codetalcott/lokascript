@@ -598,7 +598,7 @@ export class TypedOnFeatureImplementation {
     }
 
     if (targetElement) {
-      targetElement.addEventListener(listener.eventType, handler as EventListenerOrEventListenerObject, listener.options);
+      targetElement.addEventListener(listener.eventType, handler as unknown as EventListenerOrEventListenerObject, listener.options);
     }
   }
 

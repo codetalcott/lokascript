@@ -259,7 +259,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
       // Resolve container to DOM element
       const containerElement = await this.resolveContainerElement(container, context);
       if (!containerElement.success || !containerElement.value) {
-        return containerElement as EvaluationResult<HyperScriptValue[]>;
+        return containerElement as unknown as EvaluationResult<HyperScriptValue[]>;
       }
 
       // Handle different search value types

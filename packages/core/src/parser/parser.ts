@@ -1985,7 +1985,7 @@ export class Parser {
         column: commandToken.column
       };
       const result = this.parseCompoundCommand(identifierNode);
-      return result || this.createErrorNode() as CommandNode;
+      return result || this.createErrorNode() as unknown as CommandNode;
     }
 
     const args: ASTNode[] = [];
@@ -2227,7 +2227,7 @@ export class Parser {
       end: pos.end,
       line: pos.line,
       column: pos.column
-    } as CommandNode; // TypeScript helper for complex conditional types
+    } as unknown as CommandNode; // TypeScript helper for complex conditional types
   }
 
   private parseConditionalBranch(): ASTNode {

@@ -195,7 +195,7 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
       for (const field of (fields as any[])) {
         const keyResult = await this.resolveFieldKey(field, context);
         if (!keyResult.success) {
-          return keyResult as EvaluationResult<Record<string, HyperScriptValue>>;
+          return keyResult as unknown as EvaluationResult<Record<string, HyperScriptValue>>;
         }
         
         const resolvedValue = await this.resolveFieldValue(field.value, context);

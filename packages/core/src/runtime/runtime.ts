@@ -290,11 +290,11 @@ export class Runtime {
         }
         
         case 'CommandSequence': {
-          return await this.executeCommandSequence(node as { commands: ASTNode[] }, context);
+          return await this.executeCommandSequence(node as unknown as { commands: ASTNode[] }, context);
         }
-        
+
         case 'objectLiteral': {
-          return await this.executeObjectLiteral(node as { properties: Array<{ key: ASTNode; value: ASTNode }> }, context);
+          return await this.executeObjectLiteral(node as unknown as { properties: Array<{ key: ASTNode; value: ASTNode }> }, context);
         }
         
         default: {
@@ -365,9 +365,9 @@ export class Runtime {
           // unless it's meant to be evaluated as a variable
           // In hyperscript, {name: value} uses 'name' as literal key
           // But {[name]: value} or {(name): value} would evaluate 'name' as variable
-          key = (property.key as { name: string }).name;
+          key = (property.key as unknown as { name: string }).name;
         } else if (property.key.type === 'literal') {
-          key = String((property.key as { value: unknown }).value);
+          key = String((property.key as unknown as { value: unknown }).value);
         } else {
           // For other key types, evaluate them
           const evaluatedKey = await this.execute(property.key, context);
