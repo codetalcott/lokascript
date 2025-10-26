@@ -379,7 +379,7 @@ export class EnhancedArrayIndexExpression implements TypedExpressionImplementati
       }
       
       // Handle different index types
-      const result = this.performIndexOperation(arrayTarget.value, index);
+      const result = this.performIndexOperation(arrayTarget.value, index as number | string | { start?: number; end?: number });
       
       return result;
     } catch (error) {

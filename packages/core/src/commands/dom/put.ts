@@ -262,7 +262,7 @@ export class PutCommand implements TypedCommandImplementation<
       
       // Validate position is supported
       const validPositions = ['into', 'before', 'after', 'at start of', 'at end of'];
-      if (!validPositions.includes(position)) {
+      if (!validPositions.includes(position as string)) {
         return {
           isValid: false,
           errors: [{
