@@ -5,6 +5,7 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
+import type { RuntimeValidator } from '../../validation/lightweight-validators';
 import type {
   TypedExpressionImplementation,
   TypedExpressionContext,
@@ -28,7 +29,7 @@ export class EnhancedMeExpression implements TypedExpressionImplementation<
   public readonly category = 'Reference' as const;
   public readonly syntax = 'me';
   public readonly description = 'References the current element in the execution context';
-  public readonly inputSchema = v.undefined();
+  public readonly inputSchema = v.undefined() as RuntimeValidator<undefined>;
   public readonly outputType = 'Element' as const;
 
   public readonly metadata: ExpressionMetadata = {
@@ -174,7 +175,7 @@ export class EnhancedYouExpression implements TypedExpressionImplementation<
   public readonly category = 'Reference' as const;
   public readonly syntax = 'you';
   public readonly description = 'References the target element (usually event target or command target)';
-  public readonly inputSchema = v.undefined();
+  public readonly inputSchema = v.undefined() as RuntimeValidator<undefined>;
   public readonly outputType = 'Element' as const;
 
   public readonly metadata: ExpressionMetadata = {
@@ -311,7 +312,7 @@ export class EnhancedItExpression implements TypedExpressionImplementation<
   public readonly category = 'Reference' as const;
   public readonly syntax = 'it';
   public readonly description = 'References the current context variable (result of previous operation or loop item)';
-  public readonly inputSchema = v.undefined();
+  public readonly inputSchema = v.undefined() as RuntimeValidator<undefined>;
   public readonly outputType = 'Any' as const;
 
   public readonly metadata: ExpressionMetadata = {
