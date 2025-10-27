@@ -14,6 +14,7 @@ import type {
 } from '../types/base-types';
 import type { ContextMetadata } from '../types/context-types';
 import type { EvaluationResult } from '../types/command-types';
+import { parseAndEvaluateExpression } from '../parser/expression-parser';
 
 // ============================================================================
 // Enhanced Def Feature Input/Output Schemas
@@ -1032,15 +1033,22 @@ export class DefFeature {
       executionContext.locals?.set(param, args[i]);
     });
 
-    // Simple execution: look for return command in body
+    // Execute commands in the function body
     for (const cmd of func.body) {
       if (cmd.type === 'command' && cmd.name === 'return') {
-        // Return the first argument (simplified)
+        // Evaluate and return the first argument
         const returnValue = cmd.args?.[0];
 
-        // If it's a variable reference, look it up
-        if (typeof returnValue === 'string' && executionContext.locals?.has(returnValue)) {
-          return executionContext.locals.get(returnValue);
+        // Evaluate the return value as an expression
+        if (returnValue !== undefined && returnValue !== null) {
+          try {
+            // Try to evaluate as expression
+            const evaluated = await this.evaluateExpression(returnValue, executionContext);
+            return evaluated;
+          } catch (error) {
+            // If evaluation fails, return the literal value
+            return returnValue;
+          }
         }
 
         return returnValue;
@@ -1048,17 +1056,93 @@ export class DefFeature {
 
       // Handle set command for side effects
       if (cmd.type === 'command' && cmd.name === 'set') {
-        const [scope, key, value] = cmd.args || [];
-        if (scope === 'global' && context.globals) {
-          context.globals.set(key, value);
-        } else if (scope === 'result') {
-          executionContext.locals?.set(key, value);
+        const args = cmd.args || [];
+
+        // Support two formats:
+        // 1. Simple format: ['result', 'value * 2'] or ['global', 'varName', 'value']
+        // 2. 'to' keyword format: ['result', 'to', 'value * 2'] or ['global', 'varName', 'to', 'value']
+
+        let varName: string;
+        let value: any;
+        let isGlobal = false;
+
+        const toIndex = args.indexOf('to');
+
+        if (toIndex !== -1) {
+          // Format with 'to' keyword
+          if (args[0] === 'global') {
+            // set global varName to value
+            isGlobal = true;
+            varName = args[1];
+            value = args[toIndex + 1];
+          } else {
+            // set result to value * 2
+            varName = args[0];
+            value = args[toIndex + 1];
+          }
+        } else {
+          // Simple format without 'to' keyword
+          if (args[0] === 'global' && args.length >= 3) {
+            // set global varName value
+            isGlobal = true;
+            varName = args[1];
+            value = args[2];
+          } else if (args.length >= 2) {
+            // set result value * 2
+            varName = args[0];
+            value = args[1];
+          } else {
+            // Invalid set command, skip
+            continue;
+          }
+        }
+
+        // Evaluate the value as an expression
+        try {
+          value = await this.evaluateExpression(value, executionContext);
+        } catch (error) {
+          // If evaluation fails, use the literal value
+        }
+
+        // Store the value
+        if (isGlobal && context.globals) {
+          context.globals.set(varName, value);
+        } else {
+          executionContext.locals?.set(varName, value);
         }
       }
     }
 
     // No return statement found
     return undefined;
+  }
+
+  /**
+   * Helper to evaluate a value as an expression or return it as-is
+   */
+  private async evaluateExpression(value: any, context: ExecutionContext): Promise<any> {
+    // If it's not a string, return as-is
+    if (typeof value !== 'string') {
+      return value;
+    }
+
+    // First check if it's a simple variable reference in locals
+    if (context.locals?.has(value)) {
+      return context.locals.get(value);
+    }
+
+    // Then check globals
+    if (context.globals?.has(value)) {
+      return context.globals.get(value);
+    }
+
+    // Try to parse and evaluate as an expression (handles 'i + j', 'value * 2', etc.)
+    try {
+      return await parseAndEvaluateExpression(value, context);
+    } catch (error) {
+      // If parsing/evaluation fails, return the literal string
+      return value;
+    }
   }
 
   /**
