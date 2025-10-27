@@ -314,7 +314,7 @@ export class UnifiedValidator {
               'Ensure property types match schema'
             ],
             path: Array.isArray(err.path) ? err.path.join('.') : String(err.path)
-          })),
+          })) || [],
           suggestions: ['Review input format and try again']
         };
       }

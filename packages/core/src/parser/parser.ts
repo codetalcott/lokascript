@@ -351,8 +351,11 @@ export class Parser {
                 this.checkTokenType(TokenType.CONTEXT_VAR) ||
                 this.checkTokenType(TokenType.IDENTIFIER) ||
                 this.checkTokenType(TokenType.KEYWORD)) {
-              
-              expr = this.createCommandFromIdentifier(expr as IdentifierNode);
+
+              const command = this.createCommandFromIdentifier(expr as IdentifierNode);
+              if (command) {
+                expr = command;
+              }
             } else {
               break;
             }
@@ -361,7 +364,10 @@ export class Parser {
             const commandName = (expr as IdentifierNode).name.toLowerCase();
             if (commandName === 'wait' && this.checkTokenType(TokenType.TIME_EXPRESSION)) {
               // wait with time expression should be a command
-              expr = this.createCommandFromIdentifier(expr as IdentifierNode);
+              const command = this.createCommandFromIdentifier(expr as IdentifierNode);
+              if (command) {
+                expr = command;
+              }
             } else if (this.checkTokenType(TokenType.CSS_SELECTOR) || 
                 this.checkTokenType(TokenType.ID_SELECTOR) || 
                 this.checkTokenType(TokenType.CLASS_SELECTOR)) {
@@ -2236,7 +2242,8 @@ export class Parser {
       // Parse as command directly
       const commandToken = this.advance();
       const identifierNode = this.createIdentifier(commandToken.value);
-      return this.createCommandFromIdentifier(identifierNode);
+      const command = this.createCommandFromIdentifier(identifierNode);
+      return command || identifierNode;
     }
     
     // Also check for IDENTIFIER tokens that are commands (backup)
@@ -2248,7 +2255,8 @@ export class Parser {
         // Parse as command
         const identifierToken = this.advance();
         const identifierNode = this.createIdentifier(identifierToken.value);
-        return this.createCommandFromIdentifier(identifierNode);
+        const command = this.createCommandFromIdentifier(identifierNode);
+        return command || identifierNode;
       }
     }
     

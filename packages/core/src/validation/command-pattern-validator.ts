@@ -53,7 +53,7 @@ export class CommandPatternValidator {
     // Create instance for testing
     let instance: Record<string, unknown>;
     try {
-      instance = new CommandClass();
+      instance = new CommandClass() as Record<string, unknown>;
     } catch (error) {
       failed.push('Command class cannot be instantiated');
       suggestions.push('Fix constructor issues or provide proper options');
