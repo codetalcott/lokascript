@@ -132,7 +132,8 @@ export class EnhancedLambdaExpression implements BaseTypedExpression<Function> {
     }
   }
 
-  async evaluate(context: TypedExecutionContext, parameters: string[], body: string): Promise<TypedResult<Function>> {
+  async evaluate(context: TypedExecutionContext, input: unknown): Promise<TypedResult<Function>> {
+    const { parameters, body } = input as { parameters: string[]; body: string };
     try {
       if (!Array.isArray(parameters)) {
         return {
