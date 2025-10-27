@@ -1181,6 +1181,11 @@ export class DefFeature {
               isGlobal = true;
               varName = args[1];
               value = args[toIndex + 1];
+            } else if (args[0] === 'local') {
+              // set local varName to value
+              isGlobal = false;
+              varName = args[1];
+              value = args[toIndex + 1];
             } else {
               // set result to value * 2
               varName = args[0];
@@ -1191,6 +1196,11 @@ export class DefFeature {
             if (args[0] === 'global' && args.length >= 3) {
               // set global varName value
               isGlobal = true;
+              varName = args[1];
+              value = args[2];
+            } else if (args[0] === 'local' && args.length >= 3) {
+              // set local varName value
+              isGlobal = false;
               varName = args[1];
               value = args[2];
             } else if (args.length >= 2) {
