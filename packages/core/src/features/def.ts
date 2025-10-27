@@ -966,25 +966,43 @@ export class DefFeature {
     name: string,
     parameters: string[],
     body: any[],
-    context: ExecutionContext
+    context: ExecutionContext,
+    catchBlock?: { parameter: string; body: any[] },
+    finallyBlock?: any[],
+    force: boolean = false
   ): void {
+    // Check for redefinition
+    if (!force && this.functions.has(name)) {
+      throw new Error(`Function ${name} is already defined`);
+    }
+
     // Parse namespace from function name (e.g., 'utils.math.add' -> namespace: 'utils.math', name: 'add')
     const parts = name.split('.');
     const functionName = parts[parts.length - 1];
     const namespace = parts.length > 1 ? parts.slice(0, -1).join('.') : undefined;
+
+    // Auto-detect async by scanning body for async commands
+    const asyncCommands = ['wait', 'fetch', 'async'];
+    const isAsync = body.some(cmd =>
+      cmd && typeof cmd === 'object' && cmd.name &&
+      (asyncCommands.includes(cmd.name) ||
+       (cmd.name === 'call' && this.functions.get(cmd.args?.[0])?.isAsync))
+    );
 
     const funcDef: FunctionDefinition = {
       name: functionName,
       namespace,
       parameters,
       body,
-      isAsync: false,
+      catchBlock,
+      finallyBlock,
+      isAsync,
       context,
       metadata: {
         name: functionName,
         namespace,
         parameters,
-        isAsync: false,
+        isAsync,
         complexity: body.length,
         createdAt: Date.now(),
         callCount: 0,
@@ -1054,88 +1072,155 @@ export class DefFeature {
       executionContext.locals?.set(param, args[i]);
     });
 
-    // Execute commands in the function body
-    for (const cmd of func.body) {
-      if (cmd.type === 'command' && cmd.name === 'return') {
-        // Evaluate and return the first argument
-        const returnValue = cmd.args?.[0];
+    let result: any = undefined;
+    let thrownError: any = null;
 
-        // Evaluate the return value as an expression
-        if (returnValue !== undefined && returnValue !== null) {
+    try {
+      // Execute commands in the function body
+      for (const cmd of func.body) {
+        if (cmd.type === 'command' && cmd.name === 'return') {
+          // Evaluate and return the first argument
+          const returnValue = cmd.args?.[0];
+
+          // Evaluate the return value as an expression
+          if (returnValue !== undefined && returnValue !== null) {
+            try {
+              // Try to evaluate as expression
+              const evaluated = await this.evaluateExpression(returnValue, executionContext);
+              result = evaluated;
+              return result;
+            } catch (error) {
+              // If evaluation fails, return the literal value
+              result = returnValue;
+              return result;
+            }
+          }
+
+          result = returnValue;
+          return result;
+        }
+
+        // Handle set command for side effects
+        if (cmd.type === 'command' && cmd.name === 'set') {
+          const args = cmd.args || [];
+
+          // Support two formats:
+          // 1. Simple format: ['result', 'value * 2'] or ['global', 'varName', 'value']
+          // 2. 'to' keyword format: ['result', 'to', 'value * 2'] or ['global', 'varName', 'to', 'value']
+
+          let varName: string;
+          let value: any;
+          let isGlobal = false;
+
+          const toIndex = args.indexOf('to');
+
+          if (toIndex !== -1) {
+            // Format with 'to' keyword
+            if (args[0] === 'global') {
+              // set global varName to value
+              isGlobal = true;
+              varName = args[1];
+              value = args[toIndex + 1];
+            } else {
+              // set result to value * 2
+              varName = args[0];
+              value = args[toIndex + 1];
+            }
+          } else {
+            // Simple format without 'to' keyword
+            if (args[0] === 'global' && args.length >= 3) {
+              // set global varName value
+              isGlobal = true;
+              varName = args[1];
+              value = args[2];
+            } else if (args.length >= 2) {
+              // set result value * 2
+              varName = args[0];
+              value = args[1];
+            } else {
+              // Invalid set command, skip
+              continue;
+            }
+          }
+
+          // Evaluate the value as an expression
           try {
-            // Try to evaluate as expression
-            const evaluated = await this.evaluateExpression(returnValue, executionContext);
-            return evaluated;
+            value = await this.evaluateExpression(value, executionContext);
           } catch (error) {
-            // If evaluation fails, return the literal value
-            return returnValue;
+            // If evaluation fails, use the literal value
+          }
+
+          // Store the value
+          if (isGlobal && context.globals) {
+            context.globals.set(varName, value);
+          } else {
+            executionContext.locals?.set(varName, value);
+          }
+        }
+      }
+    } catch (error) {
+      thrownError = error;
+
+      // Execute catch block if present
+      if (func.catchBlock) {
+        // Bind error to catch parameter
+        executionContext.locals?.set(func.catchBlock.parameter, error);
+
+        // Execute catch block commands
+        for (const cmd of func.catchBlock.body) {
+          if (cmd.type === 'command' && cmd.name === 'set') {
+            const args = cmd.args || [];
+            if (args.length >= 2) {
+              const varName = args[0];
+              let value = args[1];
+
+              // Check if it's the error parameter reference
+              if (value === func.catchBlock.parameter) {
+                value = error;
+              }
+
+              // Store in context or locals
+              if (args[0] === 'global' && context.globals) {
+                context.globals.set(args[1], value);
+              } else {
+                executionContext.locals?.set(varName, value);
+              }
+            }
           }
         }
 
-        return returnValue;
+        // Don't rethrow if catch block handled it
+        thrownError = null;
+      }
+    } finally {
+      // Execute finally block if present
+      if (func.finallyBlock) {
+        for (const cmd of func.finallyBlock) {
+          if (cmd.type === 'command' && cmd.name === 'set') {
+            const args = cmd.args || [];
+            if (args.length >= 2) {
+              const varName = args[0];
+              const value = args[1];
+
+              // Store in context or locals
+              if (args[0] === 'global' && context.globals) {
+                context.globals.set(args[1], value);
+              } else {
+                executionContext.locals?.set(varName, value);
+              }
+            }
+          }
+        }
       }
 
-      // Handle set command for side effects
-      if (cmd.type === 'command' && cmd.name === 'set') {
-        const args = cmd.args || [];
-
-        // Support two formats:
-        // 1. Simple format: ['result', 'value * 2'] or ['global', 'varName', 'value']
-        // 2. 'to' keyword format: ['result', 'to', 'value * 2'] or ['global', 'varName', 'to', 'value']
-
-        let varName: string;
-        let value: any;
-        let isGlobal = false;
-
-        const toIndex = args.indexOf('to');
-
-        if (toIndex !== -1) {
-          // Format with 'to' keyword
-          if (args[0] === 'global') {
-            // set global varName to value
-            isGlobal = true;
-            varName = args[1];
-            value = args[toIndex + 1];
-          } else {
-            // set result to value * 2
-            varName = args[0];
-            value = args[toIndex + 1];
-          }
-        } else {
-          // Simple format without 'to' keyword
-          if (args[0] === 'global' && args.length >= 3) {
-            // set global varName value
-            isGlobal = true;
-            varName = args[1];
-            value = args[2];
-          } else if (args.length >= 2) {
-            // set result value * 2
-            varName = args[0];
-            value = args[1];
-          } else {
-            // Invalid set command, skip
-            continue;
-          }
-        }
-
-        // Evaluate the value as an expression
-        try {
-          value = await this.evaluateExpression(value, executionContext);
-        } catch (error) {
-          // If evaluation fails, use the literal value
-        }
-
-        // Store the value
-        if (isGlobal && context.globals) {
-          context.globals.set(varName, value);
-        } else {
-          executionContext.locals?.set(varName, value);
-        }
+      // Rethrow error if it wasn't handled by catch block
+      if (thrownError) {
+        throw thrownError;
       }
     }
 
     // No return statement found
-    return undefined;
+    return result;
   }
 
   /**
@@ -1210,6 +1295,23 @@ export class DefFeature {
    */
   removeFunction(name: string): boolean {
     return this.functions.delete(name);
+  }
+
+  /**
+   * Get a JavaScript-callable function wrapper
+   */
+  getJavaScriptFunction(name: string, context: ExecutionContext): Function {
+    return (...args: any[]) => {
+      return this.executeFunction(name, args, context);
+    };
+  }
+
+  /**
+   * Get function metadata
+   */
+  getFunctionMetadata(name: string): FunctionMetadata | null {
+    const func = this.functions.get(name);
+    return func?.metadata || null;
   }
 
   /**
