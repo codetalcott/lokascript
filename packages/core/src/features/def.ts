@@ -971,15 +971,47 @@ export class DefFeature {
     finallyBlock?: any[],
     force: boolean = false
   ): void {
-    // Check for redefinition
-    if (!force && this.functions.has(name)) {
-      throw new Error(`Function ${name} is already defined`);
+    // Validate function name
+    if (!name || name.trim() === '') {
+      throw new Error('Function name cannot be empty');
     }
 
     // Parse namespace from function name (e.g., 'utils.math.add' -> namespace: 'utils.math', name: 'add')
     const parts = name.split('.');
     const functionName = parts[parts.length - 1];
-    const namespace = parts.length > 1 ? parts.slice(0, -1).join('.') : undefined;
+    const namespace = parts.length > 1 ? parts.slice(0, -1).join('.') : null;
+
+    // Validate function name format (must start with letter or underscore)
+    if (!/^[a-zA-Z_]/.test(functionName)) {
+      throw new Error('Invalid function name');
+    }
+
+    // Check for reserved keywords
+    const reservedWords = ['if', 'then', 'else', 'return', 'def', 'end'];
+    if (reservedWords.includes(functionName.toLowerCase())) {
+      throw new Error('Reserved keyword');
+    }
+
+    // Validate parameters
+    for (const param of parameters) {
+      if (!param || param.trim() === '') {
+        throw new Error('Parameter name cannot be empty');
+      }
+      if (!/^[a-zA-Z_]/.test(param)) {
+        throw new Error('Invalid parameter name');
+      }
+    }
+
+    // Check for duplicate parameters
+    const uniqueParams = new Set(parameters);
+    if (uniqueParams.size !== parameters.length) {
+      throw new Error('Duplicate parameter name');
+    }
+
+    // Check for redefinition
+    if (!force && this.functions.has(name)) {
+      throw new Error(`Function ${name} is already defined`);
+    }
 
     // Auto-detect async by scanning body for async commands
     const asyncCommands = ['wait', 'fetch', 'async'];
@@ -1100,6 +1132,12 @@ export class DefFeature {
           return result;
         }
 
+        // Handle throw command
+        if (cmd.type === 'command' && cmd.name === 'throw') {
+          const errorMessage = cmd.args?.[0] || 'Error';
+          throw new Error(String(errorMessage));
+        }
+
         // Handle set command for side effects
         if (cmd.type === 'command' && cmd.name === 'set') {
           const args = cmd.args || [];
@@ -1168,29 +1206,50 @@ export class DefFeature {
 
         // Execute catch block commands
         for (const cmd of func.catchBlock.body) {
+          if (cmd.type === 'command' && cmd.name === 'return') {
+            // Handle return in catch block
+            let returnValue = cmd.args?.[0];
+
+            // Check if it references the error parameter (e.g., 'e.message' or just 'e')
+            // Use word boundaries to avoid false matches like 'e' in 'handled'
+            if (typeof returnValue === 'string') {
+              const paramPattern = new RegExp(`\\b${func.catchBlock.parameter}\\b`, 'g');
+              const paramMessagePattern = new RegExp(`\\b${func.catchBlock.parameter}\\.message\\b`, 'g');
+
+              if (paramMessagePattern.test(returnValue) || paramPattern.test(returnValue)) {
+                // Simple string interpolation for error messages
+                if (error instanceof Error) {
+                  returnValue = returnValue.replace(paramMessagePattern, error.message);
+                  returnValue = returnValue.replace(paramPattern, error.toString());
+                } else {
+                  returnValue = returnValue.replace(paramPattern, String(error));
+                }
+              }
+            }
+
+            result = returnValue;
+            thrownError = null; // Don't rethrow
+            break;
+          }
+
           if (cmd.type === 'command' && cmd.name === 'set') {
             const args = cmd.args || [];
-            if (args.length >= 2) {
-              const varName = args[0];
-              let value = args[1];
 
-              // Check if it's the error parameter reference
-              if (value === func.catchBlock.parameter) {
-                value = error;
-              }
-
-              // Store in context or locals
-              if (args[0] === 'global' && context.globals) {
-                context.globals.set(args[1], value);
-              } else {
-                executionContext.locals?.set(varName, value);
-              }
+            // Handle different set formats
+            if (args[0] === 'global' && args.length >= 3) {
+              // set global varName value
+              context.globals?.set(args[1], args[2]);
+            } else if (args.length >= 2) {
+              // set varName value
+              executionContext.locals?.set(args[0], args[1]);
             }
           }
         }
 
-        // Don't rethrow if catch block handled it
-        thrownError = null;
+        // Don't rethrow if catch block handled it (had a return statement)
+        if (result !== undefined) {
+          thrownError = null;
+        }
       }
     } finally {
       // Execute finally block if present
@@ -1198,16 +1257,14 @@ export class DefFeature {
         for (const cmd of func.finallyBlock) {
           if (cmd.type === 'command' && cmd.name === 'set') {
             const args = cmd.args || [];
-            if (args.length >= 2) {
-              const varName = args[0];
-              const value = args[1];
 
-              // Store in context or locals
-              if (args[0] === 'global' && context.globals) {
-                context.globals.set(args[1], value);
-              } else {
-                executionContext.locals?.set(varName, value);
-              }
+            // Handle different set formats
+            if (args[0] === 'global' && args.length >= 3) {
+              // set global varName value
+              context.globals?.set(args[1], args[2]);
+            } else if (args.length >= 2) {
+              // set varName value
+              executionContext.locals?.set(args[0], args[1]);
             }
           }
         }
@@ -1300,9 +1357,23 @@ export class DefFeature {
   /**
    * Get a JavaScript-callable function wrapper
    */
-  getJavaScriptFunction(name: string, context: ExecutionContext): Function {
+  getJavaScriptFunction(name: string, context?: ExecutionContext): Function {
+    const func = this.functions.get(name);
+    if (!func) {
+      throw new Error(`Function "${name}" not found`);
+    }
+
+    // Use provided context or function's stored context
+    const executionContext = context || func.context;
+
     return (...args: any[]) => {
-      return this.executeFunction(name, args, context);
+      // Ensure context has locals initialized
+      const wrappedContext = {
+        ...executionContext,
+        locals: executionContext.locals || new Map(),
+        globals: executionContext.globals || new Map()
+      };
+      return this.executeFunction(name, args, wrappedContext);
     };
   }
 
