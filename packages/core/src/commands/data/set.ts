@@ -56,8 +56,8 @@ export class SetCommand implements CommandImplementation<
   TypedExecutionContext
 > {
   public readonly name = 'set' as const;
-  public readonly syntax = 'set <target> to <value>';
-  public readonly description = 'The set command assigns values to variables, element properties, or attributes. It supports both local and global scope assignment.';
+  public readonly syntax = 'set <expression> to <expression>\n  set <object literal> on <expression>';
+  public readonly description = 'The set command allows you to set a value of a variable, property or the DOM.';
   public readonly inputSchema = SetCommandInputSchema;
   public readonly outputType = 'object' as const;
   
@@ -156,50 +156,107 @@ export class SetCommand implements CommandImplementation<
     return suggestions;
   }
 
+  // Overloaded execute method for compatibility
   async execute(
+    contextOrInput: TypedExecutionContext | SetCommandInput,
+    ...args: any[]
+  ): Promise<SetCommandOutput> {
+    // Legacy API: execute(context, ...args)
+    // Detect by checking if first arg looks like a context (has 'me' or 'locals')
+    if ('me' in contextOrInput || 'locals' in contextOrInput || 'globals' in contextOrInput) {
+      const context = contextOrInput as TypedExecutionContext;
+      return await this.executeTyped(context, ...args);
+    }
+
+    // Enhanced API: execute(input, context)
+    const input = contextOrInput as SetCommandInput;
+    const context = args[0] as TypedExecutionContext;
+    return await this.executeEnhanced(input, context);
+  }
+
+  // Enhanced API execution
+  private async executeEnhanced(
     input: SetCommandInputType,
     context: TypedExecutionContext
   ): Promise<SetCommandOutput> {
-    console.log('🚨🚨🚨 ENHANCED SET COMMAND EXECUTE CALLED 🚨🚨🚨');
-    console.log('🔧 Enhanced SET command executing with:', { input, contextMe: context.me?.id });
-    console.log('🔧 Input type:', typeof input, 'Input value:', input);
-    
-    // Detailed input validation
-    if (!input) {
-      throw new Error('SET command received null/undefined input');
-    }
-    if (typeof input !== 'object') {
-      throw new Error(`SET command received non-object input: ${typeof input}`);
-    }
-    
-    console.log('🔧 Input object keys:', Object.keys(input));
-    console.log('🔧 Input object entries:', Object.entries(input));
-    
-    // Debug the actual input structure
-    console.log('🔍 SET Debug - Raw input:', input);
-    console.log('🔍 SET Debug - Input type:', typeof input);
-    console.log('🔍 SET Debug - Input is array:', Array.isArray(input));
-    console.log('🔍 SET Debug - Input keys:', input && typeof input === 'object' ? Object.keys(input) : 'no keys');
-    
     // Try to handle different input formats
     let target, value, scope;
-    
+
     if (Array.isArray(input)) {
-      console.log('🔍 SET Debug - Input is array, processing as arguments');
       [target, value] = input;
       scope = undefined;
     } else if (input && typeof input === 'object' && 'target' in input) {
-      console.log('🔍 SET Debug - Input is object with target property');
       ({ target, value, scope } = input);
     } else {
-      console.log('🔍 SET Debug - Input format not recognized, attempting fallback');
       // Fallback: treat as target
       target = input;
       value = undefined;
       scope = undefined;
     }
 
-    console.log('🔍 SET Debug - Final extracted values:', { target, value, scope });
+    return await this.executeCore(context, target, value, scope);
+  }
+
+  // Legacy API execution
+  private async executeTyped(
+    context: TypedExecutionContext,
+    ...args: any[]
+  ): Promise<SetCommandOutput> {
+    // Parse args: handle different formats
+    // Format 1: set x to 'foo' → args: ['x', 'to', 'foo']
+    // Format 2: set global globalVar to 10 → args: ['global', 'globalVar', 'to', 10]
+    // Format 3: set element.property to value → args: [element, 'property', 'to', value]
+
+    let target, value, scope;
+
+    // Check if first arg is 'global'
+    if (args[0] === 'global') {
+      scope = 'global';
+      target = args[1];
+      // Find 'to' keyword
+      const toIndex = args.indexOf('to');
+      if (toIndex !== -1) {
+        value = args[toIndex + 1];
+      }
+    } else if (args[0] instanceof HTMLElement) {
+      // Element property setting: element, 'property', 'to', value
+      const element = args[0];
+      const property = args[1];
+      const toIndex = args.indexOf('to');
+      if (toIndex !== -1) {
+        value = args[toIndex + 1];
+      }
+      target = { element, property };
+    } else {
+      // Regular variable: 'x', 'to', 'foo'
+      target = args[0];
+      const toIndex = args.indexOf('to');
+      if (toIndex !== -1) {
+        value = args[toIndex + 1];
+      }
+    }
+
+    return await this.executeCore(context, target, value, scope);
+  }
+
+  // Core execution logic
+  private async executeCore(
+    context: TypedExecutionContext,
+    target: any,
+    value: unknown,
+    scope?: 'global' | 'local'
+  ): Promise<SetCommandOutput> {
+    // Handle element.property format from legacy API
+    if (target && typeof target === 'object' && 'element' in target && 'property' in target) {
+      const { element, property } = target as { element: HTMLElement, property: string };
+      // Set property on the specific element
+      this.setElementPropertyValue(element, property, value);
+      return {
+        target: element,
+        value,
+        targetType: 'property'
+      };
+    }
 
     // Handle different target types
     if (typeof target === 'string') {
@@ -212,7 +269,6 @@ export class SetCommand implements CommandImplementation<
       const possessiveMatch = target.match(/^(my|me|its?|your?)\s+(.+)$/);
       if (possessiveMatch) {
         const [, possessive, property] = possessiveMatch;
-        console.log('🔧 SET: Parsed possessive syntax:', { possessive, property, originalTarget: target });
         return this.setElementProperty(context, possessive, property, value);
       }
 
@@ -220,7 +276,6 @@ export class SetCommand implements CommandImplementation<
       const theOfMatch = target.match(/^the\s+(.+?)\s+of\s+(.+)$/);
       if (theOfMatch) {
         const [, property, selector] = theOfMatch;
-        console.log('🔧 SET: Parsed "the X of Y" syntax:', { property, selector, originalTarget: target });
         return this.setElementPropertyBySelector(context, selector, property, value);
       }
 
