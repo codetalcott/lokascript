@@ -4,10 +4,10 @@
  * 
  * Syntax: throw <message>
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
@@ -24,7 +24,7 @@ export interface ThrowCommandOutput {
 /**
  * Enhanced Throw Command with full type safety and validation
  */
-export class EnhancedThrowCommand implements TypedCommandImplementation<
+export class EnhancedThrowCommand implements LegacyCommandImplementation<
   ThrowCommandInput,
   ThrowCommandOutput,
   TypedExecutionContext

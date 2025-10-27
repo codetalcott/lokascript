@@ -4,10 +4,10 @@
  * 
  * Syntax: settle [<target>] [for <timeout>]
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import { asHTMLElement } from '../../utils/dom-utils';
 
@@ -29,7 +29,7 @@ export interface SettleCommandOutput {
 /**
  * Enhanced Settle Command with full type safety and validation
  */
-export class EnhancedSettleCommand implements TypedCommandImplementation<
+export class EnhancedSettleCommand implements LegacyCommandImplementation<
   SettleCommandInput,
   SettleCommandOutput,
   TypedExecutionContext

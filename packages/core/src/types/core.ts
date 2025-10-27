@@ -169,7 +169,17 @@ export interface LegacyValidationResult<T = unknown> {
   error?: import('./base-types').ValidationError;
 }
 
-export interface TypedCommandImplementation<TInput = unknown, TOutput = unknown, TContext = import('./base-types').ExecutionContext> {
+/**
+ * @deprecated Use TypedCommandImplementation from enhanced-core.ts instead.
+ * This legacy interface is kept for backward compatibility only.
+ *
+ * Key differences from modern interface:
+ * - Legacy: execute(input, context) → Promise<TOutput>
+ * - Modern: execute(context, ...args) → Promise<TypedResult<TOutput>>
+ * - Legacy: metadata is plain object
+ * - Modern: metadata is CommandMetadata type with additional fields
+ */
+export interface LegacyCommandImplementation<TInput = unknown, TOutput = unknown, TContext = import('./base-types').ExecutionContext> {
   metadata: {
     name: string;
     description: string;
@@ -178,11 +188,11 @@ export interface TypedCommandImplementation<TInput = unknown, TOutput = unknown,
     category: string;
     version: string;
   };
-  
+
   validation: {
     validate(input: unknown): import('./base-types').ValidationResult<TInput>;
   };
-  
+
   execute(input: TInput, context: TContext): Promise<TOutput>;
 }
 

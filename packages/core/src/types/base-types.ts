@@ -116,6 +116,19 @@ export const evaluationToHyperScriptType: Record<EvaluationType, HyperScriptValu
   'Any': 'object'
 };
 
+/**
+ * Expression category classification
+ * Used for organizing and documenting expression types
+ */
+export type ExpressionCategory =
+  | 'Reference'      // me, you, it, CSS selectors
+  | 'Logical'        // comparisons, boolean logic, pattern matching
+  | 'Conversion'     // as keyword, type conversions
+  | 'Positional'     // first, last, array navigation
+  | 'Property'       // possessive syntax, attribute access
+  | 'Special'        // literals, math operations, string manipulation
+  | 'Template';      // template directives, conditional rendering, iteration
+
 // ============================================================================
 // Execution Context Types (Unified System)
 // ============================================================================
@@ -170,6 +183,12 @@ export interface TypedExecutionContext extends ExecutionContext {
     success: boolean;
   }>;
 }
+
+// NOTE: TypedExpressionImplementation is intentionally NOT defined here to avoid conflicts
+// Files should import it directly from enhanced-expressions.ts or enhanced-core.ts
+// based on which interface signature they need:
+// - enhanced-expressions.ts: evaluate(context, input) signature
+// - enhanced-core.ts: evaluate(context, ...args) signature
 
 // ============================================================================
 // Result Types (Unified System)

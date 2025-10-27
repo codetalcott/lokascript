@@ -4,10 +4,10 @@
  * 
  * Syntax: measure [<target>] [<property>] [and set <variable>]
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import { asHTMLElement } from '../../utils/dom-utils';
 
@@ -32,7 +32,7 @@ export interface MeasureCommandOutput {
 /**
  * Enhanced Measure Command with full type safety and validation
  */
-export class EnhancedMeasureCommand implements TypedCommandImplementation<
+export class EnhancedMeasureCommand implements LegacyCommandImplementation<
   MeasureCommandInput,
   MeasureCommandOutput,
   TypedExecutionContext

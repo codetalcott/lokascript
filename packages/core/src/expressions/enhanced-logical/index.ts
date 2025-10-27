@@ -12,9 +12,9 @@ import type {
   ExpressionMetadata,
   ValidationResult,
   LLMDocumentation,
-  TypedExpressionImplementation,
   EvaluationResult
 } from '../../types/base-types';
+import type { TypedExpressionImplementation } from '../../types/enhanced-expressions';
 
 // ============================================================================
 // Input Schemas

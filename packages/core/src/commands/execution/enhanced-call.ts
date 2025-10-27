@@ -6,10 +6,10 @@
  * 
  * Syntax: call <expression> | get <expression>
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation } from '../../types/core';
+import type { LegacyCommandImplementation } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 import type { UnifiedValidationResult } from '../../types/unified-types';
 
@@ -29,7 +29,7 @@ export interface CallCommandOutput {
 /**
  * Enhanced Call Command with full type safety and validation
  */
-export class EnhancedCallCommand implements TypedCommandImplementation<
+export class EnhancedCallCommand implements LegacyCommandImplementation<
   CallCommandInput,
   CallCommandOutput,
   TypedExecutionContext

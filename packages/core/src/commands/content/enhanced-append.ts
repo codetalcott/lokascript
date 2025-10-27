@@ -5,10 +5,10 @@
  * 
  * Syntax: append <content> [to <target>]
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
@@ -28,7 +28,7 @@ export interface AppendCommandOutput {
 /**
  * Enhanced Append Command with full type safety and validation
  */
-export class EnhancedAppendCommand implements TypedCommandImplementation<
+export class EnhancedAppendCommand implements LegacyCommandImplementation<
   AppendCommandInput,
   AppendCommandOutput,
   TypedExecutionContext

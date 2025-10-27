@@ -4,10 +4,10 @@
  * 
  * Syntax: return [<value>]
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition
@@ -24,7 +24,7 @@ export interface ReturnCommandOutput {
 /**
  * Enhanced Return Command with full type safety and validation
  */
-export class EnhancedReturnCommand implements TypedCommandImplementation<
+export class EnhancedReturnCommand implements LegacyCommandImplementation<
   ReturnCommandInput,
   ReturnCommandOutput,
   TypedExecutionContext

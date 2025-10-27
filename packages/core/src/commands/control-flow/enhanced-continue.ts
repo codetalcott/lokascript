@@ -4,10 +4,10 @@
  * 
  * Syntax: continue
  * 
- * Modernized with TypedCommandImplementation interface
+ * Modernized with LegacyCommandImplementation interface
  */
 
-import type { TypedCommandImplementation, ValidationResult } from '../../types/core';
+import type { LegacyCommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/enhanced-core';
 
 // Input type definition (continue takes no arguments)
@@ -24,7 +24,7 @@ export interface ContinueCommandOutput {
 /**
  * Enhanced Continue Command with full type safety and validation
  */
-export class EnhancedContinueCommand implements TypedCommandImplementation<
+export class EnhancedContinueCommand implements LegacyCommandImplementation<
   ContinueCommandInput,
   ContinueCommandOutput,
   TypedExecutionContext
