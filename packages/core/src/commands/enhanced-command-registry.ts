@@ -217,7 +217,7 @@ export function getEnhancedCommandNames(): string[] {
  */
 export function createEnhancedCommand(name: string): LegacyCommandImplementation<unknown, unknown, TypedExecutionContext> | null {
   const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
-  return factory ? factory() : null;
+  return factory ? factory() as LegacyCommandImplementation<unknown, unknown, TypedExecutionContext> : null;
 }
 
 /**
