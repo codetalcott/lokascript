@@ -600,28 +600,30 @@ export class TypedOnFeatureImplementation {
     }
   }
 
-  private createDOMEventHandler(listener: EventListener): EventListener {
-    return async (event: Event) => {
-      if (!listener.isActive || listener.isPaused) return;
+  private createDOMEventHandler(listener: EventListener): (event: Event) => void {
+    return (event: Event) => {
+      void (async () => {
+        if (!listener.isActive || listener.isPaused) return;
 
-      // Apply filter if provided
-      if (listener.options.filter && !this.testEventFilter(event, listener.options.filter)) {
-        return;
-      }
+        // Apply filter if provided
+        if (listener.options.filter && !this.testEventFilter(event, listener.options.filter)) {
+          return;
+        }
 
-      // Apply throttling/debouncing
-      if (listener.options.throttle && this.isThrottled(listener.id, listener.options.throttle)) {
-        return;
-      }
+        // Apply throttling/debouncing
+        if (listener.options.throttle && this.isThrottled(listener.id, listener.options.throttle)) {
+          return;
+        }
 
-      if (listener.options.debounce) {
-        this.applyDebounce(listener.id, listener.options.debounce, () => {
-          this.executeEventHandler(event, listener);
-        });
-        return;
-      }
+        if (listener.options.debounce) {
+          this.applyDebounce(listener.id, listener.options.debounce, () => {
+            this.executeEventHandler(event, listener);
+          });
+          return;
+        }
 
-      await this.executeEventHandler(event, listener);
+        await this.executeEventHandler(event, listener);
+      })();
     };
   }
 
