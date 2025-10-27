@@ -30,7 +30,7 @@ export interface IncrementCommandOutput {
 /**
  * Enhanced Increment Command with full type safety and validation
  */
-export class EnhancedIncrementCommand implements CommandImplementation<
+export class IncrementCommand implements CommandImplementation<
   IncrementCommandInput,
   IncrementCommandOutput,
   TypedExecutionContext
@@ -455,8 +455,8 @@ export class EnhancedIncrementCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced increment command
  */
-export function createEnhancedIncrementCommand(): EnhancedIncrementCommand {
-  return new EnhancedIncrementCommand();
+export function createIncrementCommand(): IncrementCommand {
+  return new IncrementCommand();
 }
 
-export default EnhancedIncrementCommand;
+export default IncrementCommand;

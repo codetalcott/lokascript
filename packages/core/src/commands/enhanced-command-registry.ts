@@ -5,47 +5,47 @@
  */
 
 // Data Commands
-import { createEnhancedIncrementCommand, EnhancedIncrementCommand } from './data/enhanced-increment';
-import { createEnhancedDecrementCommand, EnhancedDecrementCommand } from './data/enhanced-decrement';
-import { createEnhancedSetCommand, EnhancedSetCommand } from './data/enhanced-set';
-import { createEnhancedDefaultCommand, EnhancedDefaultCommand } from './data/enhanced-default';
+import { createIncrementCommand, IncrementCommand } from './data/increment';
+import { createDecrementCommand, DecrementCommand } from './data/decrement';
+import { createSetCommand, SetCommand } from './data/set';
+import { createDefaultCommand, DefaultCommand } from './data/default';
 
 // Creation Commands
-import { createEnhancedMakeCommand, EnhancedMakeCommand } from './creation/enhanced-make';
+import { createMakeCommand, MakeCommand } from './creation/make';
 
 // Content Commands
-import { createEnhancedAppendCommand, EnhancedAppendCommand } from './content/enhanced-append';
+import { createAppendCommand, AppendCommand } from './content/append';
 
 // Execution Commands
-import { createEnhancedCallCommand, createEnhancedGetCommand, EnhancedCallCommand, EnhancedGetCommand } from './execution/enhanced-call';
+import { createCallCommand, createEnhancedGetCommand, CallCommand, EnhancedGetCommand } from './execution/call';
 
 // Control Flow Commands
-import { createEnhancedIfCommand, EnhancedIfCommand } from './control-flow/enhanced-if';
-import { createEnhancedHaltCommand, EnhancedHaltCommand } from './control-flow/enhanced-halt';
-import { createEnhancedReturnCommand, EnhancedReturnCommand } from './control-flow/enhanced-return';
-import { createEnhancedThrowCommand, EnhancedThrowCommand } from './control-flow/enhanced-throw';
-import { createEnhancedRepeatCommand, EnhancedRepeatCommand } from './control-flow/enhanced-repeat';
-import { createEnhancedUnlessCommand, EnhancedUnlessCommand } from './control-flow/enhanced-unless';
-import { createEnhancedContinueCommand, EnhancedContinueCommand } from './control-flow/enhanced-continue';
-import { createEnhancedBreakCommand, EnhancedBreakCommand } from './control-flow/enhanced-break';
+import { createIfCommand, IfCommand } from './control-flow/if';
+import { createHaltCommand, HaltCommand } from './control-flow/halt';
+import { createReturnCommand, ReturnCommand } from './control-flow/return';
+import { createThrowCommand, ThrowCommand } from './control-flow/throw';
+import { createRepeatCommand, RepeatCommand } from './control-flow/repeat';
+import { createUnlessCommand, UnlessCommand } from './control-flow/unless';
+import { createContinueCommand, ContinueCommand } from './control-flow/continue';
+import { createBreakCommand, BreakCommand } from './control-flow/break';
 
 // Utility Commands
-import { createEnhancedPickCommand, EnhancedPickCommand } from './utility/enhanced-pick';
-import { createEnhancedLogCommand, EnhancedLogCommand } from './utility/enhanced-log';
+import { createPickCommand, PickCommand } from './utility/pick';
+import { createLogCommand, LogCommand } from './utility/log';
 
 // Advanced Commands
-import { createEnhancedTellCommand, EnhancedTellCommand } from './advanced/enhanced-tell';
-import { createEnhancedJSCommand, EnhancedJSCommand } from './advanced/enhanced-js';
+import { createTellCommand, TellCommand } from './advanced/tell';
+import { createJSCommand, JSCommand } from './advanced/js';
 import { createBeepCommand, BeepCommand } from './advanced/beep';
-import { createEnhancedAsyncCommand, EnhancedAsyncCommand } from './advanced/enhanced-async';
+import { createAsyncCommand, AsyncCommand } from './advanced/async';
 
 // Animation Commands
-import { createEnhancedSettleCommand, EnhancedSettleCommand } from './animation/enhanced-settle';
-import { createEnhancedMeasureCommand, EnhancedMeasureCommand } from './animation/enhanced-measure';
-import { createEnhancedTransitionCommand, EnhancedTransitionCommand } from './animation/enhanced-transition';
+import { createSettleCommand, SettleCommand } from './animation/settle';
+import { createMeasureCommand, MeasureCommand } from './animation/measure';
+import { createTransitionCommand, TransitionCommand } from './animation/transition';
 
 // Template Commands
-import { createEnhancedRenderCommand, EnhancedRenderCommand } from './templates/enhanced-render';
+import { createRenderCommand, RenderCommand } from './templates/render';
 
 // DOM Commands
 import { createAddCommand, AddCommand } from './dom/add';
@@ -71,47 +71,47 @@ import { createGoCommand, GoCommand } from './navigation/go';
 // Re-export everything
 export {
   // Data Commands
-  createEnhancedIncrementCommand, EnhancedIncrementCommand,
-  createEnhancedDecrementCommand, EnhancedDecrementCommand,
-  createEnhancedSetCommand, EnhancedSetCommand,
-  createEnhancedDefaultCommand, EnhancedDefaultCommand,
+  createIncrementCommand, IncrementCommand,
+  createDecrementCommand, DecrementCommand,
+  createSetCommand, SetCommand,
+  createDefaultCommand, DefaultCommand,
   
   // Creation Commands
-  createEnhancedMakeCommand, EnhancedMakeCommand,
+  createMakeCommand, MakeCommand,
   
   // Content Commands
-  createEnhancedAppendCommand, EnhancedAppendCommand,
+  createAppendCommand, AppendCommand,
   
   // Execution Commands
-  createEnhancedCallCommand, createEnhancedGetCommand, EnhancedCallCommand, EnhancedGetCommand,
+  createCallCommand, createEnhancedGetCommand, CallCommand, EnhancedGetCommand,
   
   // Control Flow Commands
-  createEnhancedIfCommand, EnhancedIfCommand,
-  createEnhancedHaltCommand, EnhancedHaltCommand,
-  createEnhancedReturnCommand, EnhancedReturnCommand,
-  createEnhancedThrowCommand, EnhancedThrowCommand,
-  createEnhancedRepeatCommand, EnhancedRepeatCommand,
-  createEnhancedUnlessCommand, EnhancedUnlessCommand,
-  createEnhancedContinueCommand, EnhancedContinueCommand,
-  createEnhancedBreakCommand, EnhancedBreakCommand,
+  createIfCommand, IfCommand,
+  createHaltCommand, HaltCommand,
+  createReturnCommand, ReturnCommand,
+  createThrowCommand, ThrowCommand,
+  createRepeatCommand, RepeatCommand,
+  createUnlessCommand, UnlessCommand,
+  createContinueCommand, ContinueCommand,
+  createBreakCommand, BreakCommand,
   
   // Utility Commands
-  createEnhancedPickCommand, EnhancedPickCommand,
-  createEnhancedLogCommand, EnhancedLogCommand,
+  createPickCommand, PickCommand,
+  createLogCommand, LogCommand,
   
   // Advanced Commands
-  createEnhancedTellCommand, EnhancedTellCommand,
-  createEnhancedJSCommand, EnhancedJSCommand,
+  createTellCommand, TellCommand,
+  createJSCommand, JSCommand,
   createBeepCommand, BeepCommand,
-  createEnhancedAsyncCommand, EnhancedAsyncCommand,
+  createAsyncCommand, AsyncCommand,
   
   // Animation Commands
-  createEnhancedSettleCommand, EnhancedSettleCommand,
-  createEnhancedMeasureCommand, EnhancedMeasureCommand,
-  createEnhancedTransitionCommand, EnhancedTransitionCommand,
+  createSettleCommand, SettleCommand,
+  createMeasureCommand, MeasureCommand,
+  createTransitionCommand, TransitionCommand,
   
   // Template Commands
-  createEnhancedRenderCommand, EnhancedRenderCommand,
+  createRenderCommand, RenderCommand,
   
   // DOM Commands
   createAddCommand, AddCommand,
@@ -142,48 +142,48 @@ import type { TypedExecutionContext } from '../types/enhanced-core';
  */
 export const ENHANCED_COMMAND_FACTORIES = {
   // Data Commands
-  increment: createEnhancedIncrementCommand,
-  decrement: createEnhancedDecrementCommand,
-  set: createEnhancedSetCommand,
-  default: createEnhancedDefaultCommand,
+  increment: createIncrementCommand,
+  decrement: createDecrementCommand,
+  set: createSetCommand,
+  default: createDefaultCommand,
 
   // Creation Commands
-  make: createEnhancedMakeCommand,
+  make: createMakeCommand,
 
   // Content Commands
-  append: createEnhancedAppendCommand,
+  append: createAppendCommand,
 
   // Execution Commands
-  call: createEnhancedCallCommand,
+  call: createCallCommand,
   get: createEnhancedGetCommand,
 
   // Control Flow Commands
-  if: createEnhancedIfCommand,
-  halt: createEnhancedHaltCommand,
-  return: createEnhancedReturnCommand,
-  throw: createEnhancedThrowCommand,
-  repeat: createEnhancedRepeatCommand,
-  unless: createEnhancedUnlessCommand,
-  continue: createEnhancedContinueCommand,
-  break: createEnhancedBreakCommand,
+  if: createIfCommand,
+  halt: createHaltCommand,
+  return: createReturnCommand,
+  throw: createThrowCommand,
+  repeat: createRepeatCommand,
+  unless: createUnlessCommand,
+  continue: createContinueCommand,
+  break: createBreakCommand,
 
   // Utility Commands
-  pick: createEnhancedPickCommand,
-  log: createEnhancedLogCommand,
+  pick: createPickCommand,
+  log: createLogCommand,
 
   // Advanced Commands
-  tell: createEnhancedTellCommand,
-  js: createEnhancedJSCommand,
+  tell: createTellCommand,
+  js: createJSCommand,
   beep: createBeepCommand,
-  async: createEnhancedAsyncCommand,
+  async: createAsyncCommand,
 
   // Animation Commands
-  settle: createEnhancedSettleCommand,
-  measure: createEnhancedMeasureCommand,
-  transition: createEnhancedTransitionCommand,
+  settle: createSettleCommand,
+  measure: createMeasureCommand,
+  transition: createTransitionCommand,
 
   // Template Commands
-  render: createEnhancedRenderCommand,
+  render: createRenderCommand,
   
   // DOM Commands
   add: createAddCommand,

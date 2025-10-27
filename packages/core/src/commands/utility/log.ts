@@ -35,7 +35,7 @@ export interface LogCommandOutput {
 /**
  * Enhanced Log Command with full type safety and validation
  */
-export class EnhancedLogCommand implements CommandImplementation<LogCommandInputType, LogCommandOutput, TypedExecutionContext> {
+export class LogCommand implements CommandImplementation<LogCommandInputType, LogCommandOutput, TypedExecutionContext> {
   name = 'log' as const;
   inputSchema = LogCommandInputSchema;
 
@@ -116,11 +116,11 @@ export class EnhancedLogCommand implements CommandImplementation<LogCommandInput
 }
 
 /**
- * Factory function to create a new EnhancedLogCommand instance
+ * Factory function to create a new LogCommand instance
  */
-export function createEnhancedLogCommand(): EnhancedLogCommand {
-  return new EnhancedLogCommand();
+export function createLogCommand(): LogCommand {
+  return new LogCommand();
 }
 
 // Export command instance for direct use
-export const enhancedLogCommand = createEnhancedLogCommand();
+export const enhancedLogCommand = createLogCommand();

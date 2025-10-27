@@ -41,7 +41,7 @@ export interface AsyncCommandOutput {
 /**
  * Enhanced Async Command with full type safety and validation
  */
-export class EnhancedAsyncCommand implements TypedCommandImplementation<
+export class AsyncCommand implements TypedCommandImplementation<
   AsyncCommandInput,
   AsyncCommandOutput,
   TypedExecutionContext
@@ -185,8 +185,8 @@ export class EnhancedAsyncCommand implements TypedCommandImplementation<
 /**
  * Factory function to create the enhanced async command
  */
-export function createEnhancedAsyncCommand(): EnhancedAsyncCommand {
-  return new EnhancedAsyncCommand();
+export function createAsyncCommand(): AsyncCommand {
+  return new AsyncCommand();
 }
 
-export default EnhancedAsyncCommand;
+export default AsyncCommand;

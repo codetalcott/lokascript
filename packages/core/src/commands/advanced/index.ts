@@ -3,15 +3,15 @@
  * Provides advanced hyperscript commands for complex interactions
  */
 
-import { EnhancedTellCommand as TellCommand } from './enhanced-tell';
-import { EnhancedAsyncCommand as AsyncCommand } from './enhanced-async';
+import { TellCommand as TellCommand } from './tell';
+import { AsyncCommand as AsyncCommand } from './async';
 import { BeepCommand } from './beep';
-import { EnhancedJSCommand as JSCommand } from './enhanced-js';
+import { JSCommand as JSCommand } from './js';
 
-export { EnhancedTellCommand as TellCommand } from './enhanced-tell';
-export { EnhancedAsyncCommand as AsyncCommand } from './enhanced-async';
+export { TellCommand as TellCommand } from './tell';
+export { AsyncCommand as AsyncCommand } from './async';
 export { BeepCommand } from './beep';
-export { EnhancedJSCommand as JSCommand } from './enhanced-js';
+export { JSCommand as JSCommand } from './js';
 
 // Create instances with default options for easy access
 export const advancedCommands = {

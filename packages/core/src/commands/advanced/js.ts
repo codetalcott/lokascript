@@ -42,7 +42,7 @@ export interface JSCommandOutput {
 /**
  * Enhanced JS Command with full type safety and validation
  */
-export class EnhancedJSCommand implements TypedCommandImplementation<
+export class JSCommand implements TypedCommandImplementation<
   JSCommandInput,
   JSCommandOutput,
   TypedExecutionContext
@@ -187,8 +187,8 @@ export class EnhancedJSCommand implements TypedCommandImplementation<
 /**
  * Factory function to create the enhanced js command
  */
-export function createEnhancedJSCommand(): EnhancedJSCommand {
-  return new EnhancedJSCommand();
+export function createJSCommand(): JSCommand {
+  return new JSCommand();
 }
 
-export default EnhancedJSCommand;
+export default JSCommand;

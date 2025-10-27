@@ -27,7 +27,7 @@ export interface IfCommandOutput {
 /**
  * Enhanced If Command with full type safety and validation
  */
-export class EnhancedIfCommand implements CommandImplementation<
+export class IfCommand implements CommandImplementation<
   IfCommandInput,
   IfCommandOutput,
   TypedExecutionContext
@@ -228,8 +228,8 @@ export class EnhancedIfCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced if command
  */
-export function createEnhancedIfCommand(): EnhancedIfCommand {
-  return new EnhancedIfCommand();
+export function createIfCommand(): IfCommand {
+  return new IfCommand();
 }
 
-export default EnhancedIfCommand;
+export default IfCommand;

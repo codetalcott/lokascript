@@ -32,7 +32,7 @@ export interface MeasureCommandOutput {
 /**
  * Enhanced Measure Command with full type safety and validation
  */
-export class EnhancedMeasureCommand implements CommandImplementation<
+export class MeasureCommand implements CommandImplementation<
   MeasureCommandInput,
   MeasureCommandOutput,
   TypedExecutionContext
@@ -278,8 +278,8 @@ export class EnhancedMeasureCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced measure command
  */
-export function createEnhancedMeasureCommand(): EnhancedMeasureCommand {
-  return new EnhancedMeasureCommand();
+export function createMeasureCommand(): MeasureCommand {
+  return new MeasureCommand();
 }
 
-export default EnhancedMeasureCommand;
+export default MeasureCommand;

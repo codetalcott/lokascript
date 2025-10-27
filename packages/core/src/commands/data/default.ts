@@ -31,7 +31,7 @@ export interface DefaultCommandOutput {
 /**
  * Enhanced Default Command with full type safety and validation
  */
-export class EnhancedDefaultCommand implements CommandImplementation<
+export class DefaultCommand implements CommandImplementation<
   DefaultCommandInput,
   DefaultCommandOutput,
   TypedExecutionContext
@@ -360,8 +360,8 @@ export class EnhancedDefaultCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced default command
  */
-export function createEnhancedDefaultCommand(): EnhancedDefaultCommand {
-  return new EnhancedDefaultCommand();
+export function createDefaultCommand(): DefaultCommand {
+  return new DefaultCommand();
 }
 
-export default EnhancedDefaultCommand;
+export default DefaultCommand;

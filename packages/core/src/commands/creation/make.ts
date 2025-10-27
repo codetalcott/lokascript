@@ -28,7 +28,7 @@ export interface MakeCommandOutput {
 /**
  * Enhanced Make Command with full type safety and validation
  */
-export class EnhancedMakeCommand implements CommandImplementation<
+export class MakeCommand implements CommandImplementation<
   MakeCommandInput,
   MakeCommandOutput,
   TypedExecutionContext
@@ -278,8 +278,8 @@ export class EnhancedMakeCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced make command
  */
-export function createEnhancedMakeCommand(): EnhancedMakeCommand {
-  return new EnhancedMakeCommand();
+export function createMakeCommand(): MakeCommand {
+  return new MakeCommand();
 }
 
-export default EnhancedMakeCommand;
+export default MakeCommand;

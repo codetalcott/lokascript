@@ -24,7 +24,7 @@ export interface ReturnCommandOutput {
 /**
  * Enhanced Return Command with full type safety and validation
  */
-export class EnhancedReturnCommand implements CommandImplementation<
+export class ReturnCommand implements CommandImplementation<
   ReturnCommandInput,
   ReturnCommandOutput,
   TypedExecutionContext
@@ -95,8 +95,8 @@ export class EnhancedReturnCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced return command
  */
-export function createEnhancedReturnCommand(): EnhancedReturnCommand {
-  return new EnhancedReturnCommand();
+export function createReturnCommand(): ReturnCommand {
+  return new ReturnCommand();
 }
 
-export default EnhancedReturnCommand;
+export default ReturnCommand;

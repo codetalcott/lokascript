@@ -29,7 +29,7 @@ export interface CallCommandOutput {
 /**
  * Enhanced Call Command with full type safety and validation
  */
-export class EnhancedCallCommand implements CommandImplementation<
+export class CallCommand implements CommandImplementation<
   CallCommandInput,
   CallCommandOutput,
   TypedExecutionContext
@@ -157,7 +157,7 @@ export class EnhancedCallCommand implements CommandImplementation<
 /**
  * Enhanced Get Command (alias for Call)
  */
-export class EnhancedGetCommand extends EnhancedCallCommand {
+export class EnhancedGetCommand extends CallCommand {
   override metadata = {
     ...(this.constructor as any).prototype.metadata,
     name: 'get',
@@ -175,8 +175,8 @@ export class EnhancedGetCommand extends EnhancedCallCommand {
 /**
  * Factory function to create the enhanced call command
  */
-export function createEnhancedCallCommand(): EnhancedCallCommand {
-  return new EnhancedCallCommand();
+export function createCallCommand(): CallCommand {
+  return new CallCommand();
 }
 
 /**
@@ -186,4 +186,4 @@ export function createEnhancedGetCommand(): EnhancedGetCommand {
   return new EnhancedGetCommand();
 }
 
-export default EnhancedCallCommand;
+export default CallCommand;

@@ -41,7 +41,7 @@ export interface TellCommandOutput {
 /**
  * Enhanced Tell Command with full type safety and validation
  */
-export class EnhancedTellCommand implements TypedCommandImplementation<
+export class TellCommand implements TypedCommandImplementation<
   TellCommandInput,
   TellCommandOutput,
   TypedExecutionContext
@@ -265,8 +265,8 @@ export class EnhancedTellCommand implements TypedCommandImplementation<
 /**
  * Factory function to create the enhanced tell command
  */
-export function createEnhancedTellCommand(): EnhancedTellCommand {
-  return new EnhancedTellCommand();
+export function createTellCommand(): TellCommand {
+  return new TellCommand();
 }
 
-export default EnhancedTellCommand;
+export default TellCommand;

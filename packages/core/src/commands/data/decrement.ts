@@ -30,7 +30,7 @@ export interface DecrementCommandOutput {
 /**
  * Enhanced Decrement Command with full type safety and validation
  */
-export class EnhancedDecrementCommand implements CommandImplementation<
+export class DecrementCommand implements CommandImplementation<
   DecrementCommandInput,
   DecrementCommandOutput,
   TypedExecutionContext
@@ -455,8 +455,8 @@ export class EnhancedDecrementCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced decrement command
  */
-export function createEnhancedDecrementCommand(): EnhancedDecrementCommand {
-  return new EnhancedDecrementCommand();
+export function createDecrementCommand(): DecrementCommand {
+  return new DecrementCommand();
 }
 
-export default EnhancedDecrementCommand;
+export default DecrementCommand;

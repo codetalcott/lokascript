@@ -29,7 +29,7 @@ export interface SettleCommandOutput {
 /**
  * Enhanced Settle Command with full type safety and validation
  */
-export class EnhancedSettleCommand implements CommandImplementation<
+export class SettleCommand implements CommandImplementation<
   SettleCommandInput,
   SettleCommandOutput,
   TypedExecutionContext
@@ -313,8 +313,8 @@ export class EnhancedSettleCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced settle command
  */
-export function createEnhancedSettleCommand(): EnhancedSettleCommand {
-  return new EnhancedSettleCommand();
+export function createSettleCommand(): SettleCommand {
+  return new SettleCommand();
 }
 
-export default EnhancedSettleCommand;
+export default SettleCommand;

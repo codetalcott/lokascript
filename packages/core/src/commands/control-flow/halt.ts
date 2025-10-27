@@ -24,7 +24,7 @@ export interface HaltCommandOutput {
 /**
  * Enhanced Halt Command with full type safety and validation
  */
-export class EnhancedHaltCommand implements CommandImplementation<
+export class HaltCommand implements CommandImplementation<
   HaltCommandInput,
   HaltCommandOutput,
   TypedExecutionContext
@@ -73,8 +73,8 @@ export class EnhancedHaltCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced halt command
  */
-export function createEnhancedHaltCommand(): EnhancedHaltCommand {
-  return new EnhancedHaltCommand();
+export function createHaltCommand(): HaltCommand {
+  return new HaltCommand();
 }
 
-export default EnhancedHaltCommand;
+export default HaltCommand;

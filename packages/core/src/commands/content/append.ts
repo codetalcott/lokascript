@@ -28,7 +28,7 @@ export interface AppendCommandOutput {
 /**
  * Enhanced Append Command with full type safety and validation
  */
-export class EnhancedAppendCommand implements CommandImplementation<
+export class AppendCommand implements CommandImplementation<
   AppendCommandInput,
   AppendCommandOutput,
   TypedExecutionContext
@@ -293,8 +293,8 @@ export class EnhancedAppendCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced append command
  */
-export function createEnhancedAppendCommand(): EnhancedAppendCommand {
-  return new EnhancedAppendCommand();
+export function createAppendCommand(): AppendCommand {
+  return new AppendCommand();
 }
 
-export default EnhancedAppendCommand;
+export default AppendCommand;

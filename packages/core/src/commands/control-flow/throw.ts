@@ -24,7 +24,7 @@ export interface ThrowCommandOutput {
 /**
  * Enhanced Throw Command with full type safety and validation
  */
-export class EnhancedThrowCommand implements CommandImplementation<
+export class ThrowCommand implements CommandImplementation<
   ThrowCommandInput,
   ThrowCommandOutput,
   TypedExecutionContext
@@ -120,8 +120,8 @@ export class EnhancedThrowCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced throw command
  */
-export function createEnhancedThrowCommand(): EnhancedThrowCommand {
-  return new EnhancedThrowCommand();
+export function createThrowCommand(): ThrowCommand {
+  return new ThrowCommand();
 }
 
-export default EnhancedThrowCommand;
+export default ThrowCommand;

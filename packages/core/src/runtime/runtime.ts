@@ -35,11 +35,11 @@ import { createTriggerCommand } from '../commands/events/trigger';
 // import { createWaitCommand } from '../legacy/commands/async/wait';
 // import { createFetchCommand } from '../legacy/commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
-import { createEnhancedSetCommand } from '../commands/data/enhanced-set';
-import { createEnhancedIncrementCommand } from '../commands/data/enhanced-increment';
-import { createEnhancedDecrementCommand } from '../commands/data/enhanced-decrement';
-import { createEnhancedRenderCommand } from '../commands/templates/enhanced-render';
-import { createEnhancedLogCommand } from '../commands/utility/enhanced-log';
+import { createSetCommand } from '../commands/data/set';
+import { createIncrementCommand } from '../commands/data/increment';
+import { createDecrementCommand } from '../commands/data/decrement';
+import { createRenderCommand } from '../commands/templates/render';
+import { createLogCommand } from '../commands/utility/log';
 
 // Additional command imports
 // IncrementCommand and DecrementCommand now imported from data/index.js above
@@ -170,7 +170,7 @@ export class Runtime {
       
       // Register data commands (enhanced)
       try {
-        const setCommand = createEnhancedSetCommand();
+        const setCommand = createSetCommand();
         // console.log('🔧 Registering Enhanced SET command:', setCommand.name);
         this.enhancedRegistry.register(setCommand);
         // console.log('✅ Enhanced SET command registered successfully');
@@ -185,7 +185,7 @@ export class Runtime {
 
       // Register data commands (enhanced)
       try {
-        const incrementCommand = createEnhancedIncrementCommand();
+        const incrementCommand = createIncrementCommand();
         // console.log('🔧 Registering Enhanced INCREMENT command:', incrementCommand.name);
         this.enhancedRegistry.register(incrementCommand);
         // console.log('✅ Enhanced INCREMENT command registered successfully');
@@ -194,7 +194,7 @@ export class Runtime {
       }
       
       try {
-        const decrementCommand = createEnhancedDecrementCommand();
+        const decrementCommand = createDecrementCommand();
         // console.log('🔧 Registering Enhanced DECREMENT command:', decrementCommand.name);
         this.enhancedRegistry.register(decrementCommand);
         // console.log('✅ Enhanced DECREMENT command registered successfully');
@@ -204,7 +204,7 @@ export class Runtime {
       
       // Register utility commands (enhanced)
       try {
-        const logCommand = createEnhancedLogCommand();
+        const logCommand = createLogCommand();
         // console.log('🔧 Registering Enhanced LOG command:', logCommand.name);
         this.enhancedRegistry.register(logCommand);
         // console.log('✅ Enhanced LOG command registered successfully');
@@ -254,7 +254,7 @@ export class Runtime {
       
       // Register template commands (enhanced)
       try {
-        const renderCommand = createEnhancedRenderCommand();
+        const renderCommand = createRenderCommand();
         // console.log('🔧 Registering Enhanced RENDER command:', renderCommand.name);
         this.enhancedRegistry.register(renderCommand);
         // console.log('✅ Enhanced RENDER command registered successfully');

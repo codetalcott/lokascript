@@ -37,7 +37,7 @@ export interface RepeatCommandOutput {
 /**
  * Enhanced Repeat Command with full type safety and validation
  */
-export class EnhancedRepeatCommand implements CommandImplementation<
+export class RepeatCommand implements CommandImplementation<
   RepeatCommandInput,
   RepeatCommandOutput,
   TypedExecutionContext
@@ -557,8 +557,8 @@ export class EnhancedRepeatCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced repeat command
  */
-export function createEnhancedRepeatCommand(): EnhancedRepeatCommand {
-  return new EnhancedRepeatCommand();
+export function createRepeatCommand(): RepeatCommand {
+  return new RepeatCommand();
 }
 
-export default EnhancedRepeatCommand;
+export default RepeatCommand;

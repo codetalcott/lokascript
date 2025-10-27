@@ -50,7 +50,7 @@ export interface SetCommandOutput {
 /**
  * Enhanced Set Command with full type safety and validation
  */
-export class EnhancedSetCommand implements CommandImplementation<
+export class SetCommand implements CommandImplementation<
   SetCommandInput,
   SetCommandOutput,
   TypedExecutionContext
@@ -511,8 +511,8 @@ export class EnhancedSetCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced set command
  */
-export function createEnhancedSetCommand(): EnhancedSetCommand {
-  return new EnhancedSetCommand();
+export function createSetCommand(): SetCommand {
+  return new SetCommand();
 }
 
-export default EnhancedSetCommand;
+export default SetCommand;

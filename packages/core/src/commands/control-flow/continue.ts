@@ -24,7 +24,7 @@ export interface ContinueCommandOutput {
 /**
  * Enhanced Continue Command with full type safety and validation
  */
-export class EnhancedContinueCommand implements CommandImplementation<
+export class ContinueCommand implements CommandImplementation<
   ContinueCommandInput,
   ContinueCommandOutput,
   TypedExecutionContext
@@ -68,8 +68,8 @@ export class EnhancedContinueCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced continue command
  */
-export function createEnhancedContinueCommand(): EnhancedContinueCommand {
-  return new EnhancedContinueCommand();
+export function createContinueCommand(): ContinueCommand {
+  return new ContinueCommand();
 }
 
-export default EnhancedContinueCommand;
+export default ContinueCommand;

@@ -28,7 +28,7 @@ export interface UnlessCommandOutput {
 /**
  * Enhanced Unless Command with full type safety and validation
  */
-export class EnhancedUnlessCommand implements CommandImplementation<
+export class UnlessCommand implements CommandImplementation<
   UnlessCommandInput,
   UnlessCommandOutput,
   TypedExecutionContext
@@ -206,8 +206,8 @@ export class EnhancedUnlessCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced unless command
  */
-export function createEnhancedUnlessCommand(): EnhancedUnlessCommand {
-  return new EnhancedUnlessCommand();
+export function createUnlessCommand(): UnlessCommand {
+  return new UnlessCommand();
 }
 
-export default EnhancedUnlessCommand;
+export default UnlessCommand;

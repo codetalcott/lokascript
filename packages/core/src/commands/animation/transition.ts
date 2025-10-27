@@ -36,7 +36,7 @@ export interface TransitionCommandOutput {
 /**
  * Enhanced Transition Command with full type safety and validation
  */
-export class EnhancedTransitionCommand implements CommandImplementation<
+export class TransitionCommand implements CommandImplementation<
   TransitionCommandInput,
   TransitionCommandOutput,
   TypedExecutionContext
@@ -289,8 +289,8 @@ export class EnhancedTransitionCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced transition command
  */
-export function createEnhancedTransitionCommand(): EnhancedTransitionCommand {
-  return new EnhancedTransitionCommand();
+export function createTransitionCommand(): TransitionCommand {
+  return new TransitionCommand();
 }
 
-export default EnhancedTransitionCommand;
+export default TransitionCommand;

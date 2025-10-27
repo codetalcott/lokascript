@@ -24,7 +24,7 @@ export interface BreakCommandOutput {
 /**
  * Enhanced Break Command with full type safety and validation
  */
-export class EnhancedBreakCommand implements CommandImplementation<
+export class BreakCommand implements CommandImplementation<
   BreakCommandInput,
   BreakCommandOutput,
   TypedExecutionContext
@@ -68,8 +68,8 @@ export class EnhancedBreakCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced break command
  */
-export function createEnhancedBreakCommand(): EnhancedBreakCommand {
-  return new EnhancedBreakCommand();
+export function createBreakCommand(): BreakCommand {
+  return new BreakCommand();
 }
 
-export default EnhancedBreakCommand;
+export default BreakCommand;

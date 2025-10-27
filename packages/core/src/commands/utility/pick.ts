@@ -29,7 +29,7 @@ export interface PickCommandOutput {
 /**
  * Enhanced Pick Command with full type safety and validation
  */
-export class EnhancedPickCommand implements CommandImplementation<
+export class PickCommand implements CommandImplementation<
   PickCommandInput,
   PickCommandOutput,
   TypedExecutionContext
@@ -177,8 +177,8 @@ export class EnhancedPickCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced pick command
  */
-export function createEnhancedPickCommand(): EnhancedPickCommand {
-  return new EnhancedPickCommand();
+export function createPickCommand(): PickCommand {
+  return new PickCommand();
 }
 
-export default EnhancedPickCommand;
+export default PickCommand;

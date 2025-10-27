@@ -43,7 +43,7 @@ type TakeCommandInput = [string, 'from', string | HTMLElement, ...unknown[]];
 /**
  * Enhanced Take Command with full type safety for LLM agents
  */
-export class EnhancedTakeCommand implements TypedCommandImplementation<
+export class TakeCommand implements TypedCommandImplementation<
   TakeCommandInput,
   HTMLElement,  // Returns the target element that received the property
   TypedExecutionContext
@@ -879,9 +879,9 @@ export class EnhancedTakeCommand implements TypedCommandImplementation<
  * @llm-bundle-size 5KB
  * @llm-description Type-safe take command for property and attribute transfer
  */
-export function createEnhancedTakeCommand(options?: TakeCommandOptions): EnhancedTakeCommand {
-  return new EnhancedTakeCommand(options);
+export function createTakeCommand(options?: TakeCommandOptions): TakeCommand {
+  return new TakeCommand(options);
 }
 
 // Default export for convenience
-export default EnhancedTakeCommand;
+export default TakeCommand;

@@ -47,7 +47,7 @@ export interface RenderCommandOutput {
 /**
  * Enhanced Render Command with full type safety and validation
  */
-export class EnhancedRenderCommand implements CommandImplementation<
+export class RenderCommand implements CommandImplementation<
   RenderCommandInput,
   Element | null,
   TypedExecutionContext
@@ -722,8 +722,8 @@ export class EnhancedRenderCommand implements CommandImplementation<
 /**
  * Factory function to create the enhanced render command
  */
-export function createEnhancedRenderCommand(): EnhancedRenderCommand {
-  return new EnhancedRenderCommand();
+export function createRenderCommand(): RenderCommand {
+  return new RenderCommand();
 }
 
-export default EnhancedRenderCommand;
+export default RenderCommand;
