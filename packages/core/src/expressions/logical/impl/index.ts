@@ -237,7 +237,8 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
    */
   private toBoolean(value: unknown): boolean {
     // JavaScript falsy values: false, 0, -0, 0n, "", null, undefined, NaN
-    if (value === false || value === 0 || value === -0 || value === 0n || 
+    // Note: -0 === 0 in JavaScript, so checking value === 0 covers both 0 and -0
+    if (value === false || value === 0 || value === 0n ||
         value === "" || value === null || value === undefined) {
       return false;
     }
