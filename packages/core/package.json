@@ -8,19 +8,19 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./parser": {
+      "types": "./dist/parser/index.d.ts",
       "import": "./dist/parser/index.mjs",
-      "require": "./dist/parser/index.js",
-      "types": "./dist/parser/index.d.ts"
+      "require": "./dist/parser/index.js"
     },
     "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.mjs",
-      "require": "./dist/runtime/index.js",
-      "types": "./dist/runtime/index.d.ts"
+      "require": "./dist/runtime/index.js"
     }
   },
   "files": [
