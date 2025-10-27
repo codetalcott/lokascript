@@ -10,7 +10,7 @@ import type {
   ContextMetadata,
   EvaluationResult
 } from '../types/enhanced-context';
-import type { ValidationResult, EvaluationType } from '../types/base-types';
+import type { ValidationResult, ValidationError, EvaluationType } from '../types/base-types';
 import type { LLMDocumentation } from '../types/enhanced-core';
 
 // ============================================================================
@@ -402,18 +402,18 @@ export class TypedEventSourceFeatureImplementation {
 
       // Pre-validation checks for specific error cases
       const inputData = input as any;
-      const errors: Array<{ type: string; message: string; path?: string }> = [];
+      const errors: ValidationError[] = [];
       const suggestions: string[] = [];
 
       // Check for negative buffer size before Zod validation
       if (inputData.messageProcessing?.buffer?.maxSize !== undefined && inputData.messageProcessing.buffer.maxSize < 0) {
         errors.push({
-          type: 'invalid-buffer-size',
+          type: 'invalid-input',
           message: 'Buffer size must be non-negative (0 = unlimited)',
-          path: 'messageProcessing.buffer.maxSize'
+          path: 'messageProcessing.buffer.maxSize',
+          suggestions: []
         });
         suggestions.push('Set buffer maxSize to 0 for unlimited or positive number for limit');
-      suggestions: []
       }
 
       // Check for empty commands arrays before Zod validation
@@ -421,12 +421,12 @@ export class TypedEventSourceFeatureImplementation {
         for (const handler of inputData.eventHandlers) {
           if (handler.commands && Array.isArray(handler.commands) && handler.commands.length === 0) {
             errors.push({
-              type: 'empty-commands-array',
+              type: 'empty-config',
               message: 'Event handler commands array cannot be empty',
-              path: 'eventHandlers.commands'
+              path: 'eventHandlers.commands',
+              suggestions: []
             });
             suggestions.push('Add at least one command to execute for event handler');
-          suggestions: []
           }
         }
       }
@@ -449,56 +449,56 @@ export class TypedEventSourceFeatureImplementation {
       if (data.source) {
         if (!this.isValidEventSourceURL(data.source.url)) {
           errors.push({
-            type: 'invalid-eventsource-url',
+            type: 'validation-error',
             message: `Invalid EventSource URL: "${data.source.url}"`,
-            path: 'source.url'
+            path: 'source.url',
+            suggestions: []
           });
           suggestions.push('Use valid HTTP/HTTPS URL for EventSource connection');
-        suggestions: []
         }
 
         // Validate retry settings
         if (data.source.retry) {
           if (data.source.retry.maxAttempts < 0) {
             errors.push({
-              type: 'invalid-retry-attempts',
+              type: 'invalid-input',
               message: 'Retry max attempts must be non-negative',
-              path: 'source.retry.maxAttempts'
+              path: 'source.retry.maxAttempts',
+              suggestions: []
             });
             suggestions.push('Set maxAttempts to 0 for no retry or positive number for retry limit');
-          suggestions: []
           }
 
           if (data.source.retry.delay < 0) {
             errors.push({
-              type: 'invalid-retry-delay',
+              type: 'invalid-input',
               message: 'Retry delay must be non-negative',
-              path: 'source.retry.delay'
+              path: 'source.retry.delay',
+              suggestions: []
             });
             suggestions.push('Set retry delay to positive number in milliseconds');
-          suggestions: []
           }
 
           if (data.source.retry.maxDelay < data.source.retry.delay) {
             errors.push({
-              type: 'invalid-retry-max-delay',
+              type: 'validation-error',
               message: 'Max delay must be greater than or equal to delay',
-              path: 'source.retry.maxDelay'
+              path: 'source.retry.maxDelay',
+              suggestions: []
             });
             suggestions.push('Set maxDelay to be greater than or equal to delay');
-          suggestions: []
           }
         }
 
         // Validate timeout settings
         if (data.source.timeout && data.source.timeout.duration < 1000) {
           errors.push({
-            type: 'invalid-timeout-duration',
+            type: 'invalid-input',
             message: 'Timeout duration must be at least 1000ms',
-            path: 'source.timeout.duration'
+            path: 'source.timeout.duration',
+            suggestions: []
           });
           suggestions.push('Set timeout duration to at least 1000ms for proper operation');
-        suggestions: []
         }
       }
 
@@ -506,22 +506,22 @@ export class TypedEventSourceFeatureImplementation {
       if (data.options) {
         if (data.options.maxConnections < 1) {
           errors.push({
-            type: 'invalid-max-connections',
+            type: 'invalid-input',
             message: 'maxConnections must be at least 1',
-            path: 'options.maxConnections'
+            path: 'options.maxConnections',
+            suggestions: []
           });
           suggestions.push('Set maxConnections to at least 1');
-        suggestions: []
         }
 
         if (data.options.connectionTimeout < 1000) {
           errors.push({
-            type: 'invalid-connection-timeout',
+            type: 'invalid-input',
             message: 'Connection timeout must be at least 1000ms',
-            path: 'options.connectionTimeout'
+            path: 'options.connectionTimeout',
+            suggestions: []
           });
           suggestions.push('Set connection timeout to at least 1000ms for proper operation');
-        suggestions: []
         }
       }
 
@@ -531,12 +531,12 @@ export class TypedEventSourceFeatureImplementation {
           // Validate performance settings
           if (handler.options?.throttle && handler.options?.debounce) {
             errors.push({
-              type: 'conflicting-performance-options',
+              type: 'validation-error',
               message: 'Cannot use both throttle and debounce simultaneously',
-              path: 'eventHandlers.options'
+              path: 'eventHandlers.options',
+              suggestions: []
             });
             suggestions.push('Choose either throttle OR debounce, not both');
-          suggestions: []
           }
 
           // Validate filter expressions
@@ -545,12 +545,12 @@ export class TypedEventSourceFeatureImplementation {
               new Function('event', `return ${handler.filter}`);
             } catch (filterError) {
               errors.push({
-                type: 'invalid-filter-expression',
+                type: 'syntax-error',
                 message: `Invalid filter expression: ${handler.filter}`,
-                path: 'eventHandlers.filter'
+                path: 'eventHandlers.filter',
+                suggestions: []
               });
               suggestions.push('Use valid JavaScript expression for event filtering');
-            suggestions: []
             }
           }
         }
@@ -559,11 +559,11 @@ export class TypedEventSourceFeatureImplementation {
       // Check EventSource support
       if (typeof EventSource === 'undefined') {
         errors.push({
-          type: 'eventsource-not-supported',
+          type: 'runtime-error',
           message: 'Server-Sent Events are not supported in this environment',
+          suggestions: []
         });
         suggestions.push('EventSource requires a browser environment');
-      suggestions: []
       }
 
       return {
