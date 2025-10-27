@@ -166,11 +166,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
           code: 'STRING_EVALUATION_FAILED',
           message: `String literal evaluation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Check template syntax for interpolation',
-          'Ensure referenced variables exist in context'
-        ]
+        }
       };
     }
   }
@@ -395,11 +391,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
             code: 'NUMBER_NOT_FINITE',
             message: 'Number literal must be finite',
             suggestions: []
-          },
-          suggestions: [
-            'Use finite numbers only',
-            'Avoid Infinity and NaN values'
-          ]
+          }
         };
       }
 
@@ -422,11 +414,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
           code: 'NUMBER_EVALUATION_FAILED',
           message: `Number literal evaluation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure value is a valid number',
-          'Check for numeric overflow'
-        ]
+        }
       };
     }
   }
@@ -610,10 +598,7 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
           code: 'BOOLEAN_EVALUATION_FAILED',
           message: `Boolean literal evaluation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure value is a valid boolean'
-        ]
+        }
       };
     }
   }
@@ -801,11 +786,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
           code: 'ADDITION_FAILED',
           message: `Addition failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure operands can be converted to numbers',
-          'Check for valid numeric values'
-        ]
+        }
       };
     }
   }
@@ -1216,11 +1197,7 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
           code: 'MULTIPLICATION_FAILED',
           message: `Multiplication failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure operands can be converted to numbers',
-          'Check for valid numeric values'
-        ]
+        }
       };
     }
   }
