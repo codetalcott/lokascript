@@ -10,7 +10,7 @@ import type {
   ContextMetadata,
   EvaluationResult
 } from '../types/enhanced-context';
-import type { ValidationResult, EvaluationType } from '../types/base-types';
+import type { ValidationResult, ValidationError, EvaluationType } from '../types/base-types';
 import type { LLMDocumentation } from '../types/enhanced-core';
 
 // ============================================================================
@@ -260,6 +260,7 @@ export class TypedSocketsFeatureImplementation {
       }
     ],
     relatedContexts: ['onFeature', 'behaviorFeature', 'eventSourceFeature'],
+    relatedExpressions: [],
     frameworkDependencies: ['websocket-api', 'network-stack'],
     environmentRequirements: {
       browser: true,
@@ -268,7 +269,7 @@ export class TypedSocketsFeatureImplementation {
     },
     performance: {
       averageTime: 25.4,
-      complexity: 'O(n + m)' // n = number of connections, m = number of queued messages
+      complexity: 'O(n)' // n = number of connections and messages
     }
   };
 
@@ -440,7 +441,7 @@ export class TypedSocketsFeatureImplementation {
       }
 
       const parsed = this.inputSchema.parse(input);
-      const errors: Array<{ type: string; message: string; path?: string }> = [];
+      const errors: ValidationError[] = [];
       const suggestions: string[] = [];
 
       // Enhanced validation logic
@@ -452,21 +453,21 @@ export class TypedSocketsFeatureImplementation {
           const url = new URL(data.socket.url);
           if (!['ws:', 'wss:'].includes(url.protocol)) {
             errors.push({
-              type: 'invalid-websocket-protocol',
+              type: 'validation-error',
               message: 'WebSocket URL must use ws:// or wss:// protocol',
-              path: 'socket.url'
+              path: 'socket.url',
+              suggestions: []
             });
             suggestions.push('Use ws:// for local development or wss:// for secure connections');
-          suggestions: []
           }
         } catch (urlError) {
           errors.push({
-            type: 'invalid-websocket-url',
+            type: 'validation-error',
             message: `Invalid WebSocket URL: ${data.socket.url}`,
-            path: 'socket.url'
+            path: 'socket.url',
+            suggestions: []
           });
           suggestions.push('Provide a valid WebSocket URL (e.g., "wss://api.example.com/ws")');
-        suggestions: []
         }
       }
 
@@ -474,32 +475,32 @@ export class TypedSocketsFeatureImplementation {
       if (data.socket?.reconnect) {
         if (data.socket.reconnect.maxAttempts < 0) {
           errors.push({
-            type: 'invalid-reconnect-attempts',
+            type: 'invalid-input',
             message: 'Max reconnection attempts must be non-negative',
-            path: 'socket.reconnect.maxAttempts'
+            path: 'socket.reconnect.maxAttempts',
+            suggestions: []
           });
           suggestions.push('Set maxAttempts to 0 or positive number (0 = no reconnection)');
-        suggestions: []
         }
 
         if (data.socket.reconnect.delay < 0) {
           errors.push({
-            type: 'invalid-reconnect-delay',
+            type: 'invalid-input',
             message: 'Reconnection delay must be non-negative',
-            path: 'socket.reconnect.delay'
+            path: 'socket.reconnect.delay',
+            suggestions: []
           });
           suggestions.push('Set delay to positive number in milliseconds');
-        suggestions: []
         }
 
         if (data.socket.reconnect.maxDelay < data.socket.reconnect.delay) {
           errors.push({
-            type: 'invalid-max-delay',
+            type: 'validation-error',
             message: 'Max delay must be greater than or equal to initial delay',
-            path: 'socket.reconnect.maxDelay'
+            path: 'socket.reconnect.maxDelay',
+            suggestions: []
           });
           suggestions.push('Ensure maxDelay >= delay for proper backoff behavior');
-        suggestions: []
         }
       }
 
@@ -507,32 +508,32 @@ export class TypedSocketsFeatureImplementation {
       if (data.socket?.heartbeat?.enabled) {
         if (data.socket.heartbeat.interval <= 0) {
           errors.push({
-            type: 'invalid-heartbeat-interval',
+            type: 'invalid-input',
             message: 'Heartbeat interval must be positive',
-            path: 'socket.heartbeat.interval'
+            path: 'socket.heartbeat.interval',
+            suggestions: []
           });
           suggestions.push('Set heartbeat interval to positive number in milliseconds');
-        suggestions: []
         }
 
         if (data.socket.heartbeat.timeout <= 0) {
           errors.push({
-            type: 'invalid-heartbeat-timeout',
+            type: 'invalid-input',
             message: 'Heartbeat timeout must be positive',
-            path: 'socket.heartbeat.timeout'
+            path: 'socket.heartbeat.timeout',
+            suggestions: []
           });
           suggestions.push('Set heartbeat timeout to positive number in milliseconds');
-        suggestions: []
         }
 
         if (data.socket.heartbeat.timeout >= data.socket.heartbeat.interval) {
           errors.push({
-            type: 'invalid-heartbeat-timing',
+            type: 'validation-error',
             message: 'Heartbeat timeout must be less than interval',
-            path: 'socket.heartbeat'
+            path: 'socket.heartbeat',
+            suggestions: []
           });
           suggestions.push('Ensure timeout < interval for proper heartbeat detection');
-        suggestions: []
         }
       }
 
@@ -545,35 +546,35 @@ export class TypedSocketsFeatureImplementation {
               new Function('message', 'event', `return ${handler.filter}`);
             } catch (filterError) {
               errors.push({
-                type: 'invalid-filter-expression',
+                type: 'syntax-error',
                 message: `Invalid filter expression: ${handler.filter}`,
-                path: `eventHandlers[${index}].filter`
+                path: `eventHandlers[${index}].filter`,
+                suggestions: []
               });
               suggestions.push('Use valid JavaScript expression for message filtering');
-            suggestions: []
             }
           }
 
           // Validate performance settings
           if (handler.options?.throttle && handler.options?.debounce) {
             errors.push({
-              type: 'conflicting-performance-options',
+              type: 'validation-error',
               message: 'Cannot use both throttle and debounce on the same event handler',
-              path: `eventHandlers[${index}].options`
+              path: `eventHandlers[${index}].options`,
+              suggestions: []
             });
             suggestions.push('Choose either throttle OR debounce, not both');
-          suggestions: []
           }
 
           // Validate commands array
           if (!handler.commands || handler.commands.length === 0) {
             errors.push({
-              type: 'empty-commands-array',
+              type: 'empty-config',
               message: 'Event handler must have at least one command',
-              path: `eventHandlers[${index}].commands`
+              path: `eventHandlers[${index}].commands`,
+              suggestions: []
             });
             suggestions.push('Add at least one command to execute when event occurs');
-          suggestions: []
           }
         });
       }
@@ -582,34 +583,34 @@ export class TypedSocketsFeatureImplementation {
       if (data.messageHandling?.queue) {
         if (data.messageHandling.queue.maxSize < 0) {
           errors.push({
-            type: 'invalid-queue-size',
+            type: 'invalid-input',
             message: 'Queue max size must be non-negative (0 = unlimited)',
-            path: 'messageHandling.queue.maxSize'
+            path: 'messageHandling.queue.maxSize',
+            suggestions: []
           });
           suggestions.push('Set queue maxSize to non-negative number (0 for unlimited)');
-        suggestions: []
         }
       }
 
       // Validate connection limits
       if (data.options?.maxConnections <= 0) {
         errors.push({
-          type: 'invalid-max-connections',
+          type: 'invalid-input',
           message: 'Max connections must be positive',
-          path: 'options.maxConnections'
+          path: 'options.maxConnections',
+          suggestions: []
         });
         suggestions.push('Set maxConnections to positive number');
-      suggestions: []
       }
 
       if (data.options?.connectionTimeout <= 0) {
         errors.push({
-          type: 'invalid-connection-timeout',
+          type: 'invalid-input',
           message: 'Connection timeout must be positive',
-          path: 'options.connectionTimeout'
+          path: 'options.connectionTimeout',
+          suggestions: []
         });
         suggestions.push('Set connectionTimeout to positive number in milliseconds');
-      suggestions: []
       }
 
       return {
