@@ -8,10 +8,10 @@ import { v } from '../validation/lightweight-validators';
 import type {
   BaseTypedExpression,
   TypedExpressionContext,
-  TypedResult,
+  EvaluationResult,
   ValidationResult,
   LLMDocumentation
-} from './enhanced-expressions.ts';
+} from './base-types';
 import type { HyperScriptValue } from './enhanced-core.ts';
 import type { ExecutionContext } from './core.ts';
 
@@ -91,10 +91,10 @@ export interface EnhancedTemplateDirective<TInput = unknown, TOutput = string>
   
   /** Enhanced template execution method */
   executeTemplate(
-    context: TemplateExecutionContext, 
+    context: TemplateExecutionContext,
     input: TInput,
     templateContent: string
-  ): Promise<TypedResult<string>>;
+  ): Promise<EvaluationResult<string>>;
   
   /** Validate template context and input */
   validateTemplateContext(
