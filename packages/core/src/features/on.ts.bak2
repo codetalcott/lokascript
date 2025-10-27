@@ -381,8 +381,7 @@ export class TypedOnFeatureImplementation {
         return {
           isValid: false,
           error: { type: 'invalid-input', message: 'Input must be an object', suggestions: [] },
-          suggestions: ['Provide a valid event handling configuration object'],
-          errors: []
+          suggestions: ['Provide a valid event handling configuration object']
         };
       }
 
@@ -521,8 +520,7 @@ export class TypedOnFeatureImplementation {
           'Ensure input matches EnhancedOnInput schema',
           'Check event configuration structure',
           'Verify commands array contains valid command objects'
-        ],
-        errors: []
+        ]
       };
     }
   }

@@ -368,8 +368,7 @@ export class TypedDefFeatureImplementation {
         return {
           isValid: false,
           error: { type: 'invalid-input', message: 'Input must be an object', suggestions: [] },
-          suggestions: ['Provide a valid function definition configuration object'],
-          errors: []
+          suggestions: ['Provide a valid function definition configuration object']
         };
       }
 
@@ -482,8 +481,7 @@ export class TypedDefFeatureImplementation {
           'Ensure input matches EnhancedDefInput schema',
           'Check function definition structure',
           'Verify parameter and body configurations are valid'
-        ],
-        errors: []
+        ]
       };
     }
   }

@@ -186,12 +186,7 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
           type: 'runtime-error',
           message: `Logical AND operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure both operands are valid values',
-          'Check for null or undefined values',
-          'Verify operands can be converted to boolean'
-        ]
+        }
       };
     }
   }
@@ -425,12 +420,7 @@ export class EnhancedOrExpression implements TypedExpressionImplementation<Binar
           type: 'runtime-error',
           message: `Logical OR operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure both operands are valid values',
-          'Check for null or undefined values',
-          'Verify operands can be converted to boolean'
-        ]
+        }
       };
     }
   }

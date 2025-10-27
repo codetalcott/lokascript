@@ -192,7 +192,12 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
           type: 'runtime-error',
           message: `Pattern matching failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        }
+        },
+        suggestions: [
+          'Check pattern syntax (CSS selector or regex)',
+          'Ensure value is appropriate for pattern type',
+          'Verify DOM elements exist for CSS selectors'
+        ]
       };
     }
   }
@@ -232,8 +237,7 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
             suggestions: [
               'Check CSS selector syntax',
               'Use valid selector patterns like .class, #id, tag[attr]'
-            ],
-            errors: []
+            ]
           };
         }
       }
@@ -252,8 +256,7 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types'],
-        errors: []
+        suggestions: ['Check input structure and types']
       };
     }
   }
@@ -457,7 +460,12 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
           type: 'runtime-error',
           message: `Contains operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        }
+        },
+        suggestions: [
+          'Ensure container is array, string, or object',
+          'Check item type compatibility',
+          'Verify container is not null or undefined'
+        ]
       };
     }
   }
@@ -495,8 +503,7 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types'],
-        errors: []
+        suggestions: ['Check input structure and types']
       };
     }
   }
@@ -635,7 +642,11 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
           type: 'runtime-error',
           message: `In operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        }
+        },
+        suggestions: [
+          'Ensure container is array, string, or object',
+          'Check item type compatibility'
+        ]
       };
     }
   }
@@ -673,8 +684,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types'],
-        errors: []
+        suggestions: ['Check input structure and types']
       };
     }
   }
