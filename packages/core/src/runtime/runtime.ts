@@ -1768,7 +1768,7 @@ export class Runtime {
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
       const result = this.enhancedRegistry.validateCommand(name.toLowerCase(), input);
       const returnObj: { valid: boolean; error?: string; suggestions?: string[] } = {
-        valid: result.success
+        valid: result.success ?? false
       };
       if (result.error?.message) {
         returnObj.error = result.error.message;

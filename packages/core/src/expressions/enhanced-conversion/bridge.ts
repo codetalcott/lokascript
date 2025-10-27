@@ -79,9 +79,9 @@ export class EnhancedConversionAdapter {
     const typedContext = createTypedExpressionContext(context);
     const input = { value, type };
     const result = await enhancedConversionExpressions.is.evaluate(typedContext, input);
-    
+
     if (result.success) {
-      return result.value;
+      return result.value ?? false;
     } else {
       console.warn('Enhanced is expression failed:', result.error);
       // Fallback to basic type checking

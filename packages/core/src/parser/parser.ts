@@ -572,7 +572,7 @@ export class Parser {
     }
     
     const result = {
-      type: 'command',
+      type: 'command' as const,
       name: identifierNode.name,
       args: finalArgs as ExpressionNode[],
       isBlocking: false,
@@ -581,13 +581,13 @@ export class Parser {
       line: identifierNode.line || 1,
       column: identifierNode.column || 1
     };
-    
-    // console.log('✅ PARSER: parsePutCommand completed', { 
-      // result, 
+
+    // console.log('✅ PARSER: parsePutCommand completed', {
+      // result,
       // argCount: finalArgs.length,
       // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
     // });
-    
+
     return result;
   }
 
@@ -778,7 +778,7 @@ export class Parser {
     }
     
     const result = {
-      type: 'command',
+      type: 'command' as const,
       name: identifierNode.name,
       args: finalArgs as ExpressionNode[],
       isBlocking: false,
@@ -787,13 +787,13 @@ export class Parser {
       line: identifierNode.line || 1,
       column: identifierNode.column || 1
     };
-    
-    // console.log('✅ PARSER: parseSetCommand completed', { 
-      // result, 
+
+    // console.log('✅ PARSER: parseSetCommand completed', {
+      // result,
       // argCount: finalArgs.length,
       // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
     // });
-    
+
     return result;
   }
 
@@ -847,7 +847,7 @@ export class Parser {
     }
     
     const result = {
-      type: 'command',
+      type: 'command' as const,
       name: identifierNode.name,
       args: finalArgs as ExpressionNode[],
       isBlocking: false,
@@ -856,9 +856,9 @@ export class Parser {
       line: identifierNode.line || 1,
       column: identifierNode.column || 1
     };
-    
-    // console.log('✅ PARSER: parseTriggerCommand completed', { 
-      // result, 
+
+    // console.log('✅ PARSER: parseTriggerCommand completed', {
+      // result,
       // argCount: finalArgs.length,
       // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
     // });
