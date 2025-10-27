@@ -4,12 +4,12 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
-import type { 
-  TypedExpressionContext, 
-  TypedResult,
+import type {
+  TypedExpressionContext,
+  EvaluationResult,
   ExpressionMetadata,
   BaseTypedExpression,
-  ValidationResult, 
+  ValidationResult,
   LLMDocumentation
 } from '../../types/base-types';
 
@@ -425,7 +425,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
     tags: ['conversion', 'types', 'validation', 'forms', 'json', 'parsing']
   };
 
-  async evaluate(context: TypedExpressionContext, input: { value: unknown; type: string }): Promise<TypedResult<unknown>> {
+  async evaluate(context: TypedExpressionContext, input: { value: unknown; type: string }): Promise<EvaluationResult<unknown>> {
     const startTime = Date.now();
     
     try {
@@ -676,7 +676,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
     tags: ['validation', 'types', 'checking', 'guards']
   };
 
-  async evaluate(context: TypedExpressionContext, input: { value: unknown; type: string }): Promise<TypedResult<boolean>> {
+  async evaluate(context: TypedExpressionContext, input: { value: unknown; type: string }): Promise<EvaluationResult<boolean>> {
     const startTime = Date.now();
     
     try {

@@ -6,13 +6,13 @@
  */
 
 import { v } from '../../validation/lightweight-validators';
-import type { 
+import type {
   BaseTypedExpression,
   TypedExpressionContext,
   EvaluationType,
   ExpressionMetadata,
   ValidationResult,
-  TypedResult,
+  EvaluationResult,
   LLMDocumentation
 } from '../../types/base-types';
 import type { ExpressionCategory } from '../../types/enhanced-expressions';
@@ -122,7 +122,7 @@ export class EnhancedStringLiteralExpression implements BaseTypedExpression<stri
   async evaluate(
     context: TypedExpressionContext,
     input: StringLiteralInput
-  ): Promise<TypedResult<string>> {
+  ): Promise<EvaluationResult<string>> {
     const startTime = Date.now();
 
     try {
@@ -368,7 +368,7 @@ export class EnhancedNumberLiteralExpression implements BaseTypedExpression<numb
   async evaluate(
     context: TypedExpressionContext,
     input: NumberLiteralInput
-  ): Promise<TypedResult<number>> {
+  ): Promise<EvaluationResult<number>> {
     const startTime = Date.now();
 
     try {
@@ -573,7 +573,7 @@ export class EnhancedBooleanLiteralExpression implements BaseTypedExpression<boo
   async evaluate(
     context: TypedExpressionContext,
     input: BooleanLiteralInput
-  ): Promise<TypedResult<boolean>> {
+  ): Promise<EvaluationResult<boolean>> {
     const startTime = Date.now();
 
     try {
@@ -759,7 +759,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<TypedResult<number>> {
+  ): Promise<EvaluationResult<number>> {
     const startTime = Date.now();
 
     try {
@@ -981,7 +981,7 @@ export class EnhancedStringConcatenationExpression implements BaseTypedExpressio
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<TypedResult<string>> {
+  ): Promise<EvaluationResult<string>> {
     const startTime = Date.now();
 
     try {
@@ -1174,7 +1174,7 @@ export class EnhancedMultiplicationExpression implements BaseTypedExpression<num
   async evaluate(
     context: TypedExpressionContext,
     input: BinaryOperationInput
-  ): Promise<TypedResult<number>> {
+  ): Promise<EvaluationResult<number>> {
     const startTime = Date.now();
 
     try {
