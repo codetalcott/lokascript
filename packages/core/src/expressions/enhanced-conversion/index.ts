@@ -502,6 +502,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
         success: false as const,
         error: {
           name: 'UnknownConversionTypeError',
+          type: 'validation-error' as const,
           message: `Unknown conversion type: ${type}`,
           code: 'UNKNOWN_CONVERSION_TYPE',
           suggestions: [
@@ -519,7 +520,7 @@ export class EnhancedAsExpression implements BaseTypedExpression<unknown> {
         success: false as const,
         error: {
           name: 'AsExpressionError',
-          type: 'runtime-error',
+          type: 'runtime-error' as const,
           message: `Conversion failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'CONVERSION_FAILED',
           suggestions: ['Check value and type compatibility', 'Ensure value is convertible to target type']
@@ -755,7 +756,7 @@ export class EnhancedIsExpression implements BaseTypedExpression<boolean> {
         success: false as const,
         error: {
           name: 'IsExpressionError',
-          type: 'type-mismatch',
+          type: 'type-mismatch' as const,
           message: `Type check failed: ${error instanceof Error ? error.message : String(error)}`,
           code: 'TYPE_CHECK_FAILED',
           suggestions: ['Check type name spelling', 'Ensure value is accessible']
