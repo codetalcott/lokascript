@@ -52,6 +52,11 @@ export interface RuntimeValidator<T = unknown> {
   parse(value: unknown): T;
   merge(other: RuntimeValidator<any>): RuntimeValidator<T>;
   refine(refineFn: (value: T) => boolean, errorMessage?: string): RuntimeValidator<T>;
+
+  // Internal metadata (not part of public API but needed for implementation)
+  _defaultValue?: T;
+  _isOptional?: boolean;
+  _baseValidator?: RuntimeValidator<any>;
 }
 
 // Environment-based validation control
@@ -88,10 +93,36 @@ function addDescribeMethod<T>(baseValidator: { validate: (value: unknown) => Val
       return validator;
     },
     optional(): RuntimeValidator<T | undefined> {
-      return validator as RuntimeValidator<T | undefined>;
+      // Create a new validator that wraps the base validator
+      const optionalValidator = {
+        ...validator,
+        _isOptional: true,
+        _baseValidator: validator,
+        validate(value: unknown): ValidationResult<T | undefined> {
+          // Allow undefined for optional validators
+          if (value === undefined || value === null) {
+            return { success: true, data: undefined };
+          }
+          return validator.validate(value);
+        }
+      };
+      return optionalValidator as RuntimeValidator<T | undefined>;
     },
-    default(_value: T): RuntimeValidator<T> {
-      return validator;
+    default(defaultValue: T): RuntimeValidator<T> {
+      // Create a new validator that wraps the base validator and applies defaults
+      const defaultValidator = {
+        ...validator,
+        _defaultValue: defaultValue,
+        _baseValidator: validator,
+        validate(value: unknown): ValidationResult<T> {
+          // Apply default if value is undefined
+          if (value === undefined) {
+            return { success: true, data: defaultValue };
+          }
+          return validator.validate(value);
+        }
+      };
+      return defaultValidator;
     },
     min(_value: number): RuntimeValidator<T> {
       return validator;
