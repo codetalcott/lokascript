@@ -16,21 +16,19 @@ import type {
   LLMDocumentation,
   ExecutionContext,
   TypedExpressionContext,
-  TypedResult,
   EvaluationType
 } from './base-types';
 
 // Re-export for external consumers
-export type { 
-  ValidationResult, 
+export type {
+  ValidationResult,
   EvaluationResult,
   LLMDocumentation,
   ExecutionContext,
   TypedExecutionContext,
   TypedExpressionContext,
   EvaluationType,
-  HyperScriptValueType,
-  TypedResult
+  HyperScriptValueType
 } from './base-types';
 
 // Core types now imported from base-types.ts above
@@ -49,8 +47,6 @@ export type ExpressionCategory =
   | 'Template';      // template directives, conditional rendering, iteration
 
 // EvaluationType and TypedExpressionContext now imported from base-types.ts above
-
-// TypedResult now imported from base-types.ts above
 
 /**
  * Enhanced error type with suggestions and structured information

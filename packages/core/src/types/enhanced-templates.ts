@@ -374,11 +374,10 @@ export interface StandardTemplateContext {
 }
 
 // Re-export for convenience
-export type { 
+export type {
   BaseTypedExpression,
-  TypedExpressionContext, 
-  TypedResult,
+  TypedExpressionContext,
   ExpressionMetadata,
   ValidationResult,
-  LLMDocumentation 
+  LLMDocumentation
 } from './enhanced-expressions.ts';

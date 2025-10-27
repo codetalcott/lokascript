@@ -832,7 +832,7 @@ export function createEnhancedTypeof(): EnhancedTypeofExpression {
  */
 export async function createLambda(parameters: string[], body: string, context: TypedExecutionContext): Promise<TypedResult<Function>> {
   const expr = new EnhancedLambdaExpression();
-  return expr.evaluate(context, parameters, body);
+  return expr.evaluate(context, { parameters, body });
 }
 
 export async function createPromise(executor: string, context: TypedExecutionContext): Promise<TypedResult<Promise<unknown>>> {

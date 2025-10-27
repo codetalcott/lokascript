@@ -344,7 +344,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
     }
     
     // Try to resolve from context
-    if (container === 'me' && context.me) {
+    if (container === 'me' && context.me instanceof HTMLElement) {
       return { success: true, value: context.me, type: 'element' };
     }
     
