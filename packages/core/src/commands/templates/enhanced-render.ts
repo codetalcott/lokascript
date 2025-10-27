@@ -49,7 +49,7 @@ export interface RenderCommandOutput {
  */
 export class EnhancedRenderCommand implements LegacyCommandImplementation<
   RenderCommandInput,
-  RenderCommandOutput,
+  Element | null,
   TypedExecutionContext
 > {
   public readonly name = 'render' as const;
@@ -154,7 +154,7 @@ export class EnhancedRenderCommand implements LegacyCommandImplementation<
   }
 
   async execute(
-    input: RenderCommandInput | string | string[],
+    input: RenderCommandInput,
     context: TypedExecutionContext
   ): Promise<Element | null> {
     console.log('🎨 Enhanced RENDER command executing with:', { input, contextMe: context.me?.id });

@@ -14,9 +14,9 @@ import type {
 } from '../../../types/enhanced-templates.ts';
 import { IfDirectiveInputSchema } from '../../../types/enhanced-templates';
 import type {
-  TypedResult,
+  EvaluationResult,
   ExpressionMetadata
-} from '../../../types/enhanced-expressions.ts';
+} from '../../../types/base-types';
 import type { UnifiedValidationResult } from '../../../types/unified-types.ts';
 import { TemplateContextUtils } from '../enhanced-template-context';
 
@@ -174,7 +174,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
   /**
    * Main evaluation method for expressions
    */
-  async evaluate(context: TemplateExecutionContext, input: IfDirectiveInput): Promise<TypedResult<string>> {
+  async evaluate(context: TemplateExecutionContext, input: IfDirectiveInput): Promise<EvaluationResult<string>> {
     return this.executeTemplate(context, input, input.templateContent);
   }
 
@@ -185,7 +185,7 @@ export class EnhancedIfDirective implements EnhancedTemplateDirective<IfDirectiv
     context: TemplateExecutionContext,
     input: IfDirectiveInput,
     templateContent: string
-  ): Promise<TypedResult<string>> {
+  ): Promise<EvaluationResult<string>> {
     const startTime = Date.now();
 
     try {

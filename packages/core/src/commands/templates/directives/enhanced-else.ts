@@ -14,9 +14,9 @@ import type {
 } from '../../../types/enhanced-templates';
 import { ElseDirectiveInputSchema } from '../../../types/enhanced-templates';
 import type {
-  TypedResult,
+  EvaluationResult,
   ExpressionMetadata
-} from '../../../types/enhanced-expressions';
+} from '../../../types/base-types';
 import type { UnifiedValidationResult, UnifiedValidationError } from '../../../types/unified-types';
 import { TemplateContextUtils } from '../enhanced-template-context';
 
@@ -173,7 +173,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
   /**
    * Main evaluation method for expressions
    */
-  evaluate(context: TemplateExecutionContext, input: ElseDirectiveInput): Promise<TypedResult<string>> {
+  evaluate(context: TemplateExecutionContext, input: ElseDirectiveInput): Promise<EvaluationResult<string>> {
     return this.executeTemplate(context, input, input.templateContent);
   }
 
@@ -184,7 +184,7 @@ export class EnhancedElseDirective implements EnhancedTemplateDirective<ElseDire
     context: TemplateExecutionContext,
     input: ElseDirectiveInput,
     templateContent: string
-  ): Promise<TypedResult<string>> {
+  ): Promise<EvaluationResult<string>> {
     const startTime = Date.now();
 
     try {

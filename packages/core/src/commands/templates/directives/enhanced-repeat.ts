@@ -15,9 +15,9 @@ import type {
 } from '../../../types/enhanced-templates.ts';
 import { RepeatDirectiveInputSchema } from '../../../types/enhanced-templates';
 import type {
-  TypedResult,
+  EvaluationResult,
   ExpressionMetadata
-} from '../../../types/enhanced-expressions.ts';
+} from '../../../types/base-types';
 import type { UnifiedValidationResult, UnifiedValidationError } from '../../../types/unified-types.ts';
 import type { HyperScriptValue } from '../../../types/enhanced-core.ts';
 import { TemplateContextUtils } from '../enhanced-template-context';
@@ -189,7 +189,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
   /**
    * Main evaluation method for expressions
    */
-  async evaluate(context: TemplateExecutionContext, input: RepeatDirectiveInput): Promise<TypedResult<string>> {
+  async evaluate(context: TemplateExecutionContext, input: RepeatDirectiveInput): Promise<EvaluationResult<string>> {
     return this.executeTemplate(context, input, input.templateContent);
   }
 
@@ -200,7 +200,7 @@ export class EnhancedRepeatDirective implements EnhancedTemplateDirective<Repeat
     context: TemplateExecutionContext,
     input: RepeatDirectiveInput,
     templateContent: string
-  ): Promise<TypedResult<string>> {
+  ): Promise<EvaluationResult<string>> {
     const startTime = Date.now();
 
     try {
