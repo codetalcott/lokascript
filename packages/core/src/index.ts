@@ -31,11 +31,11 @@ export { Lexer, Tokens } from './tokenizer';
 export {
   TypedDefFeatureImplementation,
   createDefFeature,
-  createEnhancedDef,
+  createDef,
   enhancedDefImplementation,
-  type EnhancedDefInput,
-  type EnhancedDefOutput
-} from './features/enhanced-def';
+  type DefInput,
+  type DefOutput
+} from './features/def';
 
 export {
   TypedOnFeatureImplementation,
@@ -49,38 +49,38 @@ export {
 export {
   TypedBehaviorsFeatureImplementation,
   createBehaviorsFeature,
-  createEnhancedBehaviors,
+  createBehaviors,
   enhancedBehaviorsImplementation,
-  type EnhancedBehaviorsInput,
-  type EnhancedBehaviorsOutput
-} from './features/enhanced-behaviors';
+  type BehaviorsInput,
+  type BehaviorsOutput
+} from './features/behaviors';
 
 export {
   TypedSocketsFeatureImplementation,
   createSocketsFeature,
-  createEnhancedSockets,
+  createSockets,
   enhancedSocketsImplementation,
-  type EnhancedSocketsInput,
-  type EnhancedSocketsOutput
-} from './features/enhanced-sockets';
+  type SocketsInput,
+  type SocketsOutput
+} from './features/sockets';
 
 export {
   TypedWebWorkerFeatureImplementation,
   createWebWorkerFeature,
-  createEnhancedWebWorker,
+  createWebWorker,
   enhancedWebWorkerImplementation,
-  type EnhancedWebWorkerInput,
-  type EnhancedWebWorkerOutput
-} from './features/enhanced-webworker';
+  type WebWorkerInput,
+  type WebWorkerOutput
+} from './features/webworker';
 
 export {
   TypedEventSourceFeatureImplementation,
   createEventSourceFeature,
-  createEnhancedEventSource,
+  createEventSource,
   enhancedEventSourceImplementation,
-  type EnhancedEventSourceInput,
-  type EnhancedEventSourceOutput
-} from './features/enhanced-eventsource';
+  type EventSourceInput,
+  type EventSourceOutput
+} from './features/eventsource';
 
 // Export enhanced context types
 export type {

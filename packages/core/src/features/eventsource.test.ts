@@ -7,11 +7,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   TypedEventSourceFeatureImplementation,
   createEventSourceFeature,
-  createEnhancedEventSource,
+  createEventSource,
   enhancedEventSourceImplementation,
-  type EnhancedEventSourceInput,
-  type EnhancedEventSourceOutput
-} from './enhanced-eventsource';
+  type EventSourceInput,
+  type EventSourceOutput
+} from './eventsource';
 
 // Mock EventSource for testing
 class MockEventSource {
@@ -133,7 +133,7 @@ describe('Enhanced EventSource Feature Implementation', () => {
 
   describe('Context Initialization', () => {
     it('should initialize with minimal EventSource configuration', async () => {
-      const input: EnhancedEventSourceInput = {
+      const input: EventSourceInput = {
         source: {
           url: 'https://api.example.com/events',
           withCredentials: false,
@@ -164,7 +164,7 @@ describe('Enhanced EventSource Feature Implementation', () => {
     });
 
     it('should initialize with comprehensive EventSource configuration', async () => {
-      const input: EnhancedEventSourceInput = {
+      const input: EventSourceInput = {
         source: {
           url: 'https://stream.example.com/updates',
           withCredentials: true,
@@ -235,7 +235,7 @@ describe('Enhanced EventSource Feature Implementation', () => {
     });
 
     it('should handle different message processing formats', async () => {
-      const input: EnhancedEventSourceInput = {
+      const input: EventSourceInput = {
         source: {
           url: 'https://data.example.com/stream',
         },
@@ -719,7 +719,7 @@ describe('Enhanced EventSource Feature Implementation', () => {
     });
 
     it('should create enhanced eventsource through convenience function', async () => {
-      const result = await createEnhancedEventSource(
+      const result = await createEventSource(
         {
           url: 'https://test.example.com/events',
           withCredentials: false,

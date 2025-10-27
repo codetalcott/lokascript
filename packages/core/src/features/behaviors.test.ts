@@ -7,11 +7,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   TypedBehaviorsFeatureImplementation,
   createBehaviorsFeature,
-  createEnhancedBehaviors,
+  createBehaviors,
   enhancedBehaviorsImplementation,
-  type EnhancedBehaviorsInput,
-  type EnhancedBehaviorsOutput
-} from './enhanced-behaviors';
+  type BehaviorsInput,
+  type BehaviorsOutput
+} from './behaviors';
 
 describe('Enhanced Behaviors Feature Implementation', () => {
   let behaviorsFeature: TypedBehaviorsFeatureImplementation;
@@ -23,7 +23,7 @@ describe('Enhanced Behaviors Feature Implementation', () => {
 
   describe('Context Initialization', () => {
     it('should initialize with minimal behavior configuration', async () => {
-      const input: EnhancedBehaviorsInput = {
+      const input: BehaviorsInput = {
         behavior: {
           name: 'simple',
           parameters: [],
@@ -52,7 +52,7 @@ describe('Enhanced Behaviors Feature Implementation', () => {
     });
 
     it('should initialize with comprehensive behavior configuration', async () => {
-      const input: EnhancedBehaviorsInput = {
+      const input: BehaviorsInput = {
         behavior: {
           name: 'tooltip',
           namespace: 'ui',
@@ -122,7 +122,7 @@ describe('Enhanced Behaviors Feature Implementation', () => {
     });
 
     it('should handle behavior with complex event handling patterns', async () => {
-      const input: EnhancedBehaviorsInput = {
+      const input: BehaviorsInput = {
         behavior: {
           name: 'draggable',
           parameters: ['constraint', 'axis'],
@@ -813,7 +813,7 @@ describe('Enhanced Behaviors Feature Implementation', () => {
     });
 
     it('should create enhanced behaviors through convenience function', async () => {
-      const result = await createEnhancedBehaviors(
+      const result = await createBehaviors(
         {
           name: 'test-behavior',
           eventHandlers: [

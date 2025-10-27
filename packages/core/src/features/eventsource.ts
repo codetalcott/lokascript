@@ -17,7 +17,7 @@ import type { LLMDocumentation } from '../types/enhanced-core';
 // Enhanced EventSource Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedEventSourceInputSchema = v.object({
+export const EventSourceInputSchema = v.object({
   /** EventSource configuration */
   source: z.object({
     url: v.string().min(1),
@@ -78,7 +78,7 @@ export const EnhancedEventSourceInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedEventSourceOutputSchema = v.object({
+export const EventSourceOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -123,8 +123,8 @@ export const EnhancedEventSourceOutputSchema = v.object({
   }),
 });
 
-export type EnhancedEventSourceInput = any; // Inferred from RuntimeValidator
-export type EnhancedEventSourceOutput = any; // Inferred from RuntimeValidator
+export type EventSourceInput = any; // Inferred from RuntimeValidator
+export type EventSourceOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // EventSource Management Types
@@ -189,12 +189,12 @@ export class TypedEventSourceFeatureImplementation {
   public readonly name = 'eventsourceFeature';
   public readonly category = 'Frontend' as const;
   public readonly description = 'Type-safe Server-Sent Events management feature with connection handling, message processing, and comprehensive error recovery';
-  public readonly inputSchema = EnhancedEventSourceInputSchema;
+  public readonly inputSchema = EventSourceInputSchema;
   public readonly outputType: EvaluationType = 'Context';
 
   private evaluationHistory: Array<{
-    input: EnhancedEventSourceInput;
-    output?: EnhancedEventSourceOutput;
+    input: EventSourceInput;
+    output?: EventSourceOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -250,7 +250,7 @@ export class TypedEventSourceFeatureImplementation {
     parameters: [
       {
         name: 'sourceConfig',
-        type: 'EnhancedEventSourceInput',
+        type: 'EventSourceInput',
         description: 'SSE configuration including server URL, event handlers, message processing options, and connection settings',
         optional: false,
         examples: [
@@ -261,7 +261,7 @@ export class TypedEventSourceFeatureImplementation {
       }
     ],
     returns: {
-      type: 'EnhancedEventSourceContext',
+      type: 'EventSourceContext',
       description: 'Server-Sent Events management context with connection lifecycle, message processing, buffer management, and error recovery capabilities',
       examples: [
         'context.connection.connect() → establish SSE connection',
@@ -294,7 +294,7 @@ export class TypedEventSourceFeatureImplementation {
     tags: ['server-sent-events', 'real-time', 'streaming', 'events', 'connection-management', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedEventSourceInput): Promise<EvaluationResult<EnhancedEventSourceOutput>> {
+  async initialize(input: EventSourceInput): Promise<EvaluationResult<EventSourceOutput>> {
     const startTime = Date.now();
     
     try {
@@ -312,7 +312,7 @@ export class TypedEventSourceFeatureImplementation {
       const config = await this.initializeConfig(input);
       
       // Create enhanced eventsource context
-      const context: EnhancedEventSourceOutput = {
+      const context: EventSourceOutput = {
         contextId: `eventsource-${Date.now()}`,
         timestamp: startTime,
         category: 'Frontend',
@@ -443,7 +443,7 @@ export class TypedEventSourceFeatureImplementation {
       const parsed = this.inputSchema.parse(input);
 
       // Enhanced validation logic for remaining checks
-      const data = parsed as EnhancedEventSourceInput;
+      const data = parsed as EventSourceInput;
 
       // Validate EventSource URL
       if (data.source) {
@@ -581,7 +581,7 @@ export class TypedEventSourceFeatureImplementation {
           message: error instanceof Error ? error.message : 'Invalid input format'
         }],
         suggestions: [
-          'Ensure input matches EnhancedEventSourceInput schema',
+          'Ensure input matches EventSourceInput schema',
           'Check source configuration structure',
           'Verify event handlers and message processing configurations'
         ]
@@ -593,7 +593,7 @@ export class TypedEventSourceFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedEventSourceInput) {
+  private async initializeConfig(input: EventSourceInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -1104,10 +1104,10 @@ export class TypedEventSourceFeatureImplementation {
     };
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedEventSourceOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: EventSourceOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedEventSourceInput, // Would store actual input in real implementation
+      input: {} as EventSourceInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -1139,10 +1139,10 @@ export function createEventSourceFeature(): TypedEventSourceFeatureImplementatio
   return new TypedEventSourceFeatureImplementation();
 }
 
-export async function createEnhancedEventSource(
-  source: Partial<EnhancedEventSourceInput['source']>,
-  options?: Partial<EnhancedEventSourceInput>
-): Promise<EvaluationResult<EnhancedEventSourceOutput>> {
+export async function createEventSource(
+  source: Partial<EventSourceInput['source']>,
+  options?: Partial<EventSourceInput>
+): Promise<EvaluationResult<EventSourceOutput>> {
   const eventsourceFeature = new TypedEventSourceFeatureImplementation();
   return eventsourceFeature.initialize({
     source: {

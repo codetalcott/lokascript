@@ -111,10 +111,10 @@ export {
 // Features - Top-level hyperscript features
 // ============================================================================
 
-export { createBehaviorsFeature } from './features/enhanced-behaviors';
-// export { EnhancedInitFeature as InitFeature } from './features/enhanced-init';
-// export { EnhancedDefFeature as DefFeature } from './features/enhanced-def';
-export { createWebWorkerFeature } from './features/enhanced-webworker';
+export { createBehaviorsFeature } from './features/behaviors';
+// export { EnhancedInitFeature as InitFeature } from './features/init';
+// export { EnhancedDefFeature as DefFeature } from './features/def';
+export { createWebWorkerFeature } from './features/webworker';
 // Note: Install, Everywhere, Class, JS, Set features need enhanced implementations
 // Temporarily commenting out until enhanced versions are created
 // export { InstallFeature } from './features/install';

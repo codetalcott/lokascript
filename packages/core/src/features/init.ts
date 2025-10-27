@@ -18,7 +18,7 @@ import type { ExecutionContext } from '../types/core';
 // Enhanced Init Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedInitInputSchema = v.object({
+export const InitInputSchema = v.object({
   /** Element initialization configuration */
   initialization: z.object({
     target: v.union([v.custom((value: unknown) => value instanceof HTMLElement), v.string()]), // Element or selector
@@ -70,7 +70,7 @@ export const EnhancedInitInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedInitOutputSchema = v.object({
+export const InitOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -116,8 +116,8 @@ export const EnhancedInitOutputSchema = v.object({
   }),
 });
 
-export type EnhancedInitInput = any; // Inferred from RuntimeValidator
-export type EnhancedInitOutput = any; // Inferred from RuntimeValidator
+export type InitInput = any; // Inferred from RuntimeValidator
+export type InitOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Init Management Types
@@ -179,12 +179,12 @@ export class TypedInitFeatureImplementation {
   public readonly name = 'initFeature';
   public readonly category = 'Frontend' as const;
   public readonly description = 'Type-safe element initialization feature with lifecycle management, error handling, and performance optimization';
-  public readonly inputSchema = EnhancedInitInputSchema;
+  public readonly inputSchema = InitInputSchema;
   public readonly outputType: EvaluationType = 'Object';
 
   private evaluationHistory: Array<{
-    input: EnhancedInitInput;
-    output?: EnhancedInitOutput;
+    input: InitInput;
+    output?: InitOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -284,7 +284,7 @@ export class TypedInitFeatureImplementation {
     tags: ['initialization', 'lifecycle', 'dom-management', 'element-processing', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedInitInput): Promise<EvaluationResult<EnhancedInitOutput>> {
+  async initialize(input: InitInput): Promise<EvaluationResult<InitOutput>> {
     const startTime = Date.now();
     
     try {
@@ -302,7 +302,7 @@ export class TypedInitFeatureImplementation {
       const config = await this.initializeConfig(input);
       
       // Create enhanced init context
-      const context: EnhancedInitOutput = {
+      const context: InitOutput = {
         contextId: `init-${Date.now()}`,
         timestamp: startTime,
         category: 'Frontend',
@@ -435,7 +435,7 @@ export class TypedInitFeatureImplementation {
       const parsed = this.inputSchema.parse(input);
 
       // Enhanced validation logic for remaining checks
-      const data = parsed as EnhancedInitInput;
+      const data = parsed as InitInput;
 
       // Validate target element/selector
       if (data.initialization.target) {
@@ -526,7 +526,7 @@ export class TypedInitFeatureImplementation {
           suggestions: []
         }],
         suggestions: [
-          'Ensure input matches EnhancedInitInput schema',
+          'Ensure input matches InitInput schema',
           'Check initialization configuration structure',
           'Verify commands and execution options'
         ]
@@ -538,7 +538,7 @@ export class TypedInitFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedInitInput) {
+  private async initializeConfig(input: InitInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -1063,10 +1063,10 @@ export class TypedInitFeatureImplementation {
     };
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedInitOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: InitOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedInitInput, // Would store actual input in real implementation
+      input: {} as InitInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -1101,11 +1101,11 @@ export function createInitFeature(): TypedInitFeatureImplementation {
   return new TypedInitFeatureImplementation();
 }
 
-export async function createEnhancedInit(
+export async function createInit(
   target: HTMLElement | string,
   commands: any[],
-  options?: Partial<EnhancedInitInput>
-): Promise<EvaluationResult<EnhancedInitOutput>> {
+  options?: Partial<InitInput>
+): Promise<EvaluationResult<InitOutput>> {
   const initFeature = new TypedInitFeatureImplementation();
   return initFeature.initialize({
     initialization: {

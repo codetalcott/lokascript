@@ -17,7 +17,7 @@ import type { LLMDocumentation } from '../types/enhanced-core';
 // Enhanced WebWorker Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedWebWorkerInputSchema = v.object({
+export const WebWorkerInputSchema = v.object({
   /** Worker configuration */
   worker: z.object({
     script: v.string().min(1), // Script URL or inline code
@@ -72,7 +72,7 @@ export const EnhancedWebWorkerInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedWebWorkerOutputSchema = v.object({
+export const WebWorkerOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -127,8 +127,8 @@ export const EnhancedWebWorkerOutputSchema = v.object({
   }),
 });
 
-export type EnhancedWebWorkerInput = any; // Inferred from RuntimeValidator
-export type EnhancedWebWorkerOutput = any; // Inferred from RuntimeValidator
+export type WebWorkerInput = any; // Inferred from RuntimeValidator
+export type WebWorkerOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Web Worker Management Types
@@ -183,12 +183,12 @@ export class TypedWebWorkerFeatureImplementation {
   public readonly name = 'webworkerFeature';
   public readonly category = 'Frontend' as const;
   public readonly description = 'Type-safe Web Worker management feature with message handling, event processing, and comprehensive error management';
-  public readonly inputSchema = EnhancedWebWorkerInputSchema;
+  public readonly inputSchema = WebWorkerInputSchema;
   public readonly outputType: EvaluationType = 'Context';
 
   private evaluationHistory: Array<{
-    input: EnhancedWebWorkerInput;
-    output?: EnhancedWebWorkerOutput;
+    input: WebWorkerInput;
+    output?: WebWorkerOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -244,7 +244,7 @@ export class TypedWebWorkerFeatureImplementation {
     parameters: [
       {
         name: 'workerConfig',
-        type: 'EnhancedWebWorkerInput',
+        type: 'WebWorkerInput',
         description: 'Web Worker configuration including script source, messaging format, event handlers, and performance options',
         optional: false,
         examples: [
@@ -255,7 +255,7 @@ export class TypedWebWorkerFeatureImplementation {
       }
     ],
     returns: {
-      type: 'EnhancedWebWorkerContext',
+      type: 'WebWorkerContext',
       description: 'Web Worker management context with worker lifecycle, message handling, queue management, and error recovery capabilities',
       examples: [
         'context.workers.create(config) → worker instance ID',
@@ -288,7 +288,7 @@ export class TypedWebWorkerFeatureImplementation {
     tags: ['webworkers', 'background-execution', 'message-passing', 'transferables', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedWebWorkerInput): Promise<EvaluationResult<EnhancedWebWorkerOutput>> {
+  async initialize(input: WebWorkerInput): Promise<EvaluationResult<WebWorkerOutput>> {
     const startTime = Date.now();
     
     try {
@@ -306,7 +306,7 @@ export class TypedWebWorkerFeatureImplementation {
       const config = await this.initializeConfig(input);
       
       // Create enhanced webworker context
-      const context: EnhancedWebWorkerOutput = {
+      const context: WebWorkerOutput = {
         contextId: `webworker-${Date.now()}`,
         timestamp: startTime,
         category: 'Frontend',
@@ -447,7 +447,7 @@ export class TypedWebWorkerFeatureImplementation {
       const parsed = this.inputSchema.parse(input);
 
       // Enhanced validation logic for remaining checks
-      const data = parsed as EnhancedWebWorkerInput;
+      const data = parsed as WebWorkerInput;
 
       // Validate worker script
       if (data.worker) {
@@ -576,7 +576,7 @@ export class TypedWebWorkerFeatureImplementation {
           message: error instanceof Error ? error.message : 'Invalid input format'
         }],
         suggestions: [
-          'Ensure input matches EnhancedWebWorkerInput schema',
+          'Ensure input matches WebWorkerInput schema',
           'Check worker configuration structure',
           'Verify messaging and event handler configurations'
         ]
@@ -588,7 +588,7 @@ export class TypedWebWorkerFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedWebWorkerInput) {
+  private async initializeConfig(input: WebWorkerInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -1146,10 +1146,10 @@ export class TypedWebWorkerFeatureImplementation {
     };
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedWebWorkerOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: WebWorkerOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedWebWorkerInput, // Would store actual input in real implementation
+      input: {} as WebWorkerInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -1181,10 +1181,10 @@ export function createWebWorkerFeature(): TypedWebWorkerFeatureImplementation {
   return new TypedWebWorkerFeatureImplementation();
 }
 
-export async function createEnhancedWebWorker(
-  worker: Partial<EnhancedWebWorkerInput['worker']>,
-  options?: Partial<EnhancedWebWorkerInput>
-): Promise<EvaluationResult<EnhancedWebWorkerOutput>> {
+export async function createWebWorker(
+  worker: Partial<WebWorkerInput['worker']>,
+  options?: Partial<WebWorkerInput>
+): Promise<EvaluationResult<WebWorkerOutput>> {
   const webworkerFeature = new TypedWebWorkerFeatureImplementation();
   return webworkerFeature.initialize({
     worker: {

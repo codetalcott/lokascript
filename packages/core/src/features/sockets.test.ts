@@ -7,11 +7,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   TypedSocketsFeatureImplementation,
   createSocketsFeature,
-  createEnhancedSockets,
+  createSockets,
   enhancedSocketsImplementation,
-  type EnhancedSocketsInput,
-  type EnhancedSocketsOutput
-} from './enhanced-sockets';
+  type SocketsInput,
+  type SocketsOutput
+} from './sockets';
 
 // Mock WebSocket for testing
 class MockWebSocket {
@@ -86,7 +86,7 @@ describe('Enhanced Sockets Feature Implementation', () => {
 
   describe('Context Initialization', () => {
     it('should initialize with minimal socket configuration', async () => {
-      const input: EnhancedSocketsInput = {
+      const input: SocketsInput = {
         socket: {
           url: 'wss://api.example.com/ws',
           protocols: [],
@@ -121,7 +121,7 @@ describe('Enhanced Sockets Feature Implementation', () => {
     });
 
     it('should initialize with comprehensive socket configuration', async () => {
-      const input: EnhancedSocketsInput = {
+      const input: SocketsInput = {
         socket: {
           url: 'wss://chat.example.com/ws',
           protocols: ['chat', 'v1'],
@@ -200,7 +200,7 @@ describe('Enhanced Sockets Feature Implementation', () => {
     });
 
     it('should handle WebSocket with binary message support', async () => {
-      const input: EnhancedSocketsInput = {
+      const input: SocketsInput = {
         socket: {
           url: 'wss://data.example.com/ws',
           binaryType: 'arraybuffer',
@@ -757,7 +757,7 @@ describe('Enhanced Sockets Feature Implementation', () => {
     });
 
     it('should create enhanced sockets through convenience function', async () => {
-      const result = await createEnhancedSockets(
+      const result = await createSockets(
         {
           url: 'wss://test.example.com/ws',
           protocols: ['test'],

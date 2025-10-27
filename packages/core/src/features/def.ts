@@ -19,7 +19,7 @@ import type { EvaluationResult } from '../types/enhanced-core';
 // Enhanced Def Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedDefInputSchema = v.object({
+export const DefInputSchema = v.object({
   /** Function definition */
   definition: z.object({
     name: v.string().min(1),
@@ -53,7 +53,7 @@ export const EnhancedDefInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedDefOutputSchema = v.object({
+export const DefOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -102,8 +102,8 @@ export const EnhancedDefOutputSchema = v.object({
   }),
 });
 
-export type EnhancedDefInput = any; // Inferred from RuntimeValidator
-export type EnhancedDefOutput = any; // Inferred from RuntimeValidator
+export type DefInput = any; // Inferred from RuntimeValidator
+export type DefOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Function Definition Types
@@ -155,12 +155,12 @@ export class TypedDefFeatureImplementation {
   public readonly name = 'defFeature';
   public readonly category = 'Universal' as const;
   public readonly description = 'Type-safe function definition feature with parameter validation, closure support, and async execution';
-  public readonly inputSchema = EnhancedDefInputSchema;
+  public readonly inputSchema = DefInputSchema;
   public readonly outputType: EvaluationType = 'Context';
 
   private evaluationHistory: Array<{
-    input: EnhancedDefInput;
-    output?: EnhancedDefOutput;
+    input: DefInput;
+    output?: DefOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -212,7 +212,7 @@ export class TypedDefFeatureImplementation {
     parameters: [
       {
         name: 'defConfig',
-        type: 'EnhancedDefInput',
+        type: 'DefInput',
         description: 'Function definition configuration including name, parameters, body, and execution options',
         optional: false,
         examples: [
@@ -223,7 +223,7 @@ export class TypedDefFeatureImplementation {
       }
     ],
     returns: {
-      type: 'EnhancedDefContext',
+      type: 'DefContext',
       description: 'Function management context with registration, execution, and type validation capabilities',
       examples: [
         'context.functions.define(functionDef) → registered function',
@@ -256,7 +256,7 @@ export class TypedDefFeatureImplementation {
     tags: ['functions', 'definitions', 'parameters', 'async', 'closures', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedDefInput): Promise<EvaluationResult<EnhancedDefOutput>> {
+  async initialize(input: DefInput): Promise<EvaluationResult<DefOutput>> {
     const startTime = Date.now();
     
     try {
@@ -279,7 +279,7 @@ export class TypedDefFeatureImplementation {
       const config = await this.initializeConfig(input);
       
       // Create enhanced def context
-      const context: EnhancedDefOutput = {
+      const context: DefOutput = {
         contextId: `def-${Date.now()}`,
         timestamp: startTime,
         category: 'Universal',
@@ -372,7 +372,7 @@ export class TypedDefFeatureImplementation {
       const suggestions: string[] = [];
 
       // Enhanced validation logic
-      const data = parsed as EnhancedDefInput;
+      const data = parsed as DefInput;
 
       // Validate function name
       if (data.definition && !/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(data.definition.name)) {
@@ -473,7 +473,7 @@ export class TypedDefFeatureImplementation {
           suggestions: []
         },
         suggestions: [
-          'Ensure input matches EnhancedDefInput schema',
+          'Ensure input matches DefInput schema',
           'Check function definition structure',
           'Verify parameter and body configurations are valid'
         ],
@@ -486,7 +486,7 @@ export class TypedDefFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedDefInput) {
+  private async initializeConfig(input: DefInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -871,10 +871,10 @@ export class TypedDefFeatureImplementation {
     return body.length;
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedDefOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: DefOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedDefInput, // Would store actual input in real implementation
+      input: {} as DefInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -905,10 +905,10 @@ export function createDefFeature(): TypedDefFeatureImplementation {
   return new TypedDefFeatureImplementation();
 }
 
-export async function createEnhancedDef(
-  definition: Partial<EnhancedDefInput['definition']>,
-  options?: Partial<EnhancedDefInput>
-): Promise<EvaluationResult<EnhancedDefOutput>> {
+export async function createDef(
+  definition: Partial<DefInput['definition']>,
+  options?: Partial<DefInput>
+): Promise<EvaluationResult<DefOutput>> {
   const defFeature = new TypedDefFeatureImplementation();
   return defFeature.initialize({
     definition: {

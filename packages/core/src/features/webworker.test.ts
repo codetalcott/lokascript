@@ -7,11 +7,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   TypedWebWorkerFeatureImplementation,
   createWebWorkerFeature,
-  createEnhancedWebWorker,
+  createWebWorker,
   enhancedWebWorkerImplementation,
-  type EnhancedWebWorkerInput,
-  type EnhancedWebWorkerOutput
-} from './enhanced-webworker';
+  type WebWorkerInput,
+  type WebWorkerOutput
+} from './webworker';
 
 // Mock Worker for testing
 class MockWorker {
@@ -99,7 +99,7 @@ describe('Enhanced WebWorker Feature Implementation', () => {
 
   describe('Context Initialization', () => {
     it('should initialize with minimal worker configuration', async () => {
-      const input: EnhancedWebWorkerInput = {
+      const input: WebWorkerInput = {
         worker: {
           script: './test-worker.js',
           type: 'classic',
@@ -131,7 +131,7 @@ describe('Enhanced WebWorker Feature Implementation', () => {
     });
 
     it('should initialize with comprehensive worker configuration', async () => {
-      const input: EnhancedWebWorkerInput = {
+      const input: WebWorkerInput = {
         worker: {
           script: './advanced-worker.js',
           type: 'module',
@@ -196,7 +196,7 @@ describe('Enhanced WebWorker Feature Implementation', () => {
     });
 
     it('should handle inline worker scripts', async () => {
-      const input: EnhancedWebWorkerInput = {
+      const input: WebWorkerInput = {
         worker: {
           script: `
             self.onmessage = function(e) {
@@ -767,7 +767,7 @@ describe('Enhanced WebWorker Feature Implementation', () => {
     });
 
     it('should create enhanced webworker through convenience function', async () => {
-      const result = await createEnhancedWebWorker(
+      const result = await createWebWorker(
         {
           script: './test-worker.js',
           type: 'classic',

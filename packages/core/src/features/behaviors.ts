@@ -17,7 +17,7 @@ import type { LLMDocumentation } from '../types/enhanced-core';
 // Enhanced Behaviors Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedBehaviorsInputSchema = v.object({
+export const BehaviorsInputSchema = v.object({
   /** Behavior definition */
   behavior: z.object({
     name: v.string().min(1),
@@ -73,7 +73,7 @@ export const EnhancedBehaviorsInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedBehaviorsOutputSchema = v.object({
+export const BehaviorsOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -126,8 +126,8 @@ export const EnhancedBehaviorsOutputSchema = v.object({
   }),
 });
 
-export type EnhancedBehaviorsInput = any; // Inferred from RuntimeValidator
-export type EnhancedBehaviorsOutput = any; // Inferred from RuntimeValidator
+export type BehaviorsInput = any; // Inferred from RuntimeValidator
+export type BehaviorsOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // Behavior System Types
@@ -207,12 +207,12 @@ export class TypedBehaviorsFeatureImplementation {
   public readonly name = 'behaviorsFeature';
   public readonly category = 'Frontend' as const;
   public readonly description = 'Type-safe behavior definition and installation feature with lifecycle management, event handling, and parameter validation';
-  public readonly inputSchema = EnhancedBehaviorsInputSchema;
+  public readonly inputSchema = BehaviorsInputSchema;
   public readonly outputType: EvaluationType = 'Context';
 
   private evaluationHistory: Array<{
-    input: EnhancedBehaviorsInput;
-    output?: EnhancedBehaviorsOutput;
+    input: BehaviorsInput;
+    output?: BehaviorsOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -266,7 +266,7 @@ export class TypedBehaviorsFeatureImplementation {
     parameters: [
       {
         name: 'behaviorsConfig',
-        type: 'EnhancedBehaviorsInput',
+        type: 'BehaviorsInput',
         description: 'Behavior definition configuration including name, parameters, event handlers, and lifecycle hooks',
         optional: false,
         examples: [
@@ -277,7 +277,7 @@ export class TypedBehaviorsFeatureImplementation {
       }
     ],
     returns: {
-      type: 'EnhancedBehaviorsContext',
+      type: 'BehaviorsContext',
       description: 'Behavior management context with definition, installation, and lifecycle management capabilities',
       examples: [
         'context.behaviors.define(behaviorDef) → behavior registration',
@@ -310,7 +310,7 @@ export class TypedBehaviorsFeatureImplementation {
     tags: ['behaviors', 'components', 'lifecycle', 'parameters', 'events', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedBehaviorsInput): Promise<EvaluationResult<EnhancedBehaviorsOutput>> {
+  async initialize(input: BehaviorsInput): Promise<EvaluationResult<BehaviorsOutput>> {
     const startTime = Date.now();
     
     try {
@@ -331,7 +331,7 @@ export class TypedBehaviorsFeatureImplementation {
       }
       
       // Create enhanced behaviors context
-      const context: EnhancedBehaviorsOutput = {
+      const context: BehaviorsOutput = {
         contextId: `behaviors-${Date.now()}`,
         timestamp: startTime,
         category: 'Frontend',
@@ -442,7 +442,7 @@ export class TypedBehaviorsFeatureImplementation {
       const suggestions: string[] = [];
 
       // Enhanced validation logic
-      const data = parsed as EnhancedBehaviorsInput;
+      const data = parsed as BehaviorsInput;
 
       // Validate behavior name
       if (data.behavior && !/^[a-zA-Z_$][a-zA-Z0-9_$-]*$/.test(data.behavior.name)) {
@@ -623,7 +623,7 @@ export class TypedBehaviorsFeatureImplementation {
           suggestions: []
         }],
         suggestions: [
-          'Ensure input matches EnhancedBehaviorsInput schema',
+          'Ensure input matches BehaviorsInput schema',
           'Check behavior definition structure',
           'Verify event handler and parameter configurations are valid'
         ]
@@ -635,7 +635,7 @@ export class TypedBehaviorsFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedBehaviorsInput) {
+  private async initializeConfig(input: BehaviorsInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -1149,10 +1149,10 @@ export class TypedBehaviorsFeatureImplementation {
     instance.isActive = false;
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedBehaviorsOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: BehaviorsOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedBehaviorsInput, // Would store actual input in real implementation
+      input: {} as BehaviorsInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -1184,10 +1184,10 @@ export function createBehaviorsFeature(): TypedBehaviorsFeatureImplementation {
   return new TypedBehaviorsFeatureImplementation();
 }
 
-export async function createEnhancedBehaviors(
-  behavior: Partial<EnhancedBehaviorsInput['behavior']>,
-  options?: Partial<EnhancedBehaviorsInput>
-): Promise<EvaluationResult<EnhancedBehaviorsOutput>> {
+export async function createBehaviors(
+  behavior: Partial<BehaviorsInput['behavior']>,
+  options?: Partial<BehaviorsInput>
+): Promise<EvaluationResult<BehaviorsOutput>> {
   const behaviorsFeature = new TypedBehaviorsFeatureImplementation();
   return behaviorsFeature.initialize({
     behavior: {

@@ -17,7 +17,7 @@ import type { LLMDocumentation } from '../types/enhanced-core';
 // Enhanced Sockets Feature Input/Output Schemas
 // ============================================================================
 
-export const EnhancedSocketsInputSchema = v.object({
+export const SocketsInputSchema = v.object({
   /** Socket configuration */
   socket: z.object({
     url: v.string().url(),
@@ -82,7 +82,7 @@ export const EnhancedSocketsInputSchema = v.object({
   debug: v.boolean().default(false),
 });
 
-export const EnhancedSocketsOutputSchema = v.object({
+export const SocketsOutputSchema = v.object({
   /** Context identifier */
   contextId: v.string(),
   timestamp: v.number(),
@@ -136,8 +136,8 @@ export const EnhancedSocketsOutputSchema = v.object({
   }),
 });
 
-export type EnhancedSocketsInput = any; // Inferred from RuntimeValidator
-export type EnhancedSocketsOutput = any; // Inferred from RuntimeValidator
+export type SocketsInput = any; // Inferred from RuntimeValidator
+export type SocketsOutput = any; // Inferred from RuntimeValidator
 
 // ============================================================================
 // WebSocket System Types
@@ -217,12 +217,12 @@ export class TypedSocketsFeatureImplementation {
   public readonly name = 'socketsFeature';
   public readonly category = 'Frontend' as const;
   public readonly description = 'Type-safe WebSocket management feature with reconnection, message queuing, and comprehensive error handling';
-  public readonly inputSchema = EnhancedSocketsInputSchema;
+  public readonly inputSchema = SocketsInputSchema;
   public readonly outputType: EvaluationType = 'Context';
 
   private evaluationHistory: Array<{
-    input: EnhancedSocketsInput;
-    output?: EnhancedSocketsOutput;
+    input: SocketsInput;
+    output?: SocketsOutput;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -278,7 +278,7 @@ export class TypedSocketsFeatureImplementation {
     parameters: [
       {
         name: 'socketsConfig',
-        type: 'EnhancedSocketsInput',
+        type: 'SocketsInput',
         description: 'WebSocket configuration including URL, protocols, reconnection settings, and event handlers',
         optional: false,
         examples: [
@@ -289,7 +289,7 @@ export class TypedSocketsFeatureImplementation {
       }
     ],
     returns: {
-      type: 'EnhancedSocketsContext',
+      type: 'SocketsContext',
       description: 'WebSocket management context with connection control, messaging, and event handling capabilities',
       examples: [
         'context.connection.connect() → establish WebSocket connection',
@@ -322,7 +322,7 @@ export class TypedSocketsFeatureImplementation {
     tags: ['websockets', 'realtime', 'networking', 'messaging', 'reconnection', 'type-safe', 'enhanced-pattern']
   };
 
-  async initialize(input: EnhancedSocketsInput): Promise<EvaluationResult<EnhancedSocketsOutput>> {
+  async initialize(input: SocketsInput): Promise<EvaluationResult<SocketsOutput>> {
     const startTime = Date.now();
     
     try {
@@ -343,7 +343,7 @@ export class TypedSocketsFeatureImplementation {
       }
       
       // Create enhanced sockets context
-      const context: EnhancedSocketsOutput = {
+      const context: SocketsOutput = {
         contextId: `sockets-${Date.now()}`,
         timestamp: startTime,
         category: 'Frontend',
@@ -445,7 +445,7 @@ export class TypedSocketsFeatureImplementation {
       const suggestions: string[] = [];
 
       // Enhanced validation logic
-      const data = parsed as EnhancedSocketsInput;
+      const data = parsed as SocketsInput;
 
       // Validate WebSocket URL
       if (data.socket?.url) {
@@ -628,7 +628,7 @@ export class TypedSocketsFeatureImplementation {
           message: error instanceof Error ? error.message : 'Invalid input format'
         }],
         suggestions: [
-          'Ensure input matches EnhancedSocketsInput schema',
+          'Ensure input matches SocketsInput schema',
           'Check WebSocket configuration structure',
           'Verify event handler and message handling configurations are valid'
         ]
@@ -640,7 +640,7 @@ export class TypedSocketsFeatureImplementation {
   // Enhanced Helper Methods
   // ============================================================================
 
-  private async initializeConfig(input: EnhancedSocketsInput) {
+  private async initializeConfig(input: SocketsInput) {
     return {
       ...input.options,
       environment: input.environment,
@@ -1265,10 +1265,10 @@ export class TypedSocketsFeatureImplementation {
     };
   }
 
-  private trackPerformance(startTime: number, success: boolean, output?: EnhancedSocketsOutput): void {
+  private trackPerformance(startTime: number, success: boolean, output?: SocketsOutput): void {
     const duration = Date.now() - startTime;
     this.evaluationHistory.push({
-      input: {} as EnhancedSocketsInput, // Would store actual input in real implementation
+      input: {} as SocketsInput, // Would store actual input in real implementation
       output,
       success,
       duration,
@@ -1300,10 +1300,10 @@ export function createSocketsFeature(): TypedSocketsFeatureImplementation {
   return new TypedSocketsFeatureImplementation();
 }
 
-export async function createEnhancedSockets(
-  socket: Partial<EnhancedSocketsInput['socket']>,
-  options?: Partial<EnhancedSocketsInput>
-): Promise<EvaluationResult<EnhancedSocketsOutput>> {
+export async function createSockets(
+  socket: Partial<SocketsInput['socket']>,
+  options?: Partial<SocketsInput>
+): Promise<EvaluationResult<SocketsOutput>> {
   const socketsFeature = new TypedSocketsFeatureImplementation();
   return socketsFeature.initialize({
     socket: {
