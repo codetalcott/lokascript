@@ -1253,7 +1253,7 @@ export class Runtime {
       
       // Handle target resolution - fix the [object Object] issue
       if (nodeType(target) === 'identifier' && (target as any).name === 'me') {
-        target = context.me;
+        target = context.me as any;
         // console.log('🔍 RUNTIME: resolved "me" to context.me', { target });
       } else if (nodeType(target) === 'identifier') {
         // For other identifiers, keep as string for CSS selector or context lookup
@@ -1268,18 +1268,19 @@ export class Runtime {
       } else {
         // Only evaluate if it's not already a target we can handle
         if (typeof target === 'object' && target?.type) {
-          target = await this.execute(target, context);
+          target = (await this.execute(target, context)) as any;
           // console.log('🔍 RUNTIME: evaluated complex target', { target });
         }
       }
 
       // console.log('✅ RUNTIME: calling putCommand.execute', { content, preposition, target });
-      return this.putCommand.execute(context as TypedExecutionContext, content, preposition, target);
+      void this.putCommand.execute(context as TypedExecutionContext, content, preposition, target);
+      return;
     }
 
     // console.log('⚠️ RUNTIME: fallback to raw args', { rawArgs });
     // Fallback: use raw args
-    return this.putCommand.execute(context as TypedExecutionContext, ...rawArgs);
+    void this.putCommand.execute(context as TypedExecutionContext, ...rawArgs);
   }
 
 
