@@ -138,7 +138,7 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -159,10 +159,10 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `First operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
           'Check that collection is not null or undefined'
@@ -199,11 +199,11 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -343,7 +343,7 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -364,10 +364,10 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Last operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
           'Check that collection is not null or undefined'
@@ -404,11 +404,11 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -560,7 +560,7 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -583,10 +583,10 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `At operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
           'Check that index is a valid number',
@@ -624,11 +624,11 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -781,7 +781,7 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -813,10 +813,10 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Random operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
           'Check that collection is not null or undefined'
@@ -853,11 +853,11 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }

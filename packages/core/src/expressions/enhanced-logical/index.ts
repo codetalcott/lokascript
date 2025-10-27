@@ -147,7 +147,7 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -183,10 +183,10 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Logical AND operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure both operands are valid values',
           'Check for null or undefined values',
@@ -224,11 +224,11 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -385,7 +385,7 @@ export class EnhancedOrExpression implements TypedExpressionImplementation<Binar
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -421,10 +421,10 @@ export class EnhancedOrExpression implements TypedExpressionImplementation<Binar
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Logical OR operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure both operands are valid values',
           'Check for null or undefined values',
@@ -569,7 +569,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -592,10 +592,10 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Logical NOT operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure operand is a valid value',
           'Check for null or undefined values',
@@ -633,11 +633,11 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }

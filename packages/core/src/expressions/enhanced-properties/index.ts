@@ -151,7 +151,7 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -171,10 +171,10 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Property access failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure element is not null or undefined',
           'Check that property name is valid',
@@ -212,11 +212,11 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -406,7 +406,7 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -436,10 +436,10 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `My property access failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure current element (me) is available in context',
           'Check that property name is valid'
@@ -476,11 +476,11 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -578,7 +578,7 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -608,10 +608,10 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Its property access failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure it reference is available in context',
           'Check that property name is valid'
@@ -648,11 +648,11 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -750,7 +750,7 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -780,10 +780,10 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Your property access failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure you reference is available in context',
           'Check that property name is valid'
@@ -820,11 +820,11 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -940,7 +940,7 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -969,10 +969,10 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Attribute access failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure element is a valid DOM element',
           'Check that attribute name is correct'
@@ -1009,11 +1009,11 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -1125,7 +1125,7 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -1155,10 +1155,10 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Attribute value check failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure element is a valid DOM element',
           'Check attribute and value parameters'
@@ -1195,11 +1195,11 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }

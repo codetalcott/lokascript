@@ -359,10 +359,10 @@ export class TypedOnFeatureImplementation {
       
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `On feature initialization failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Verify event type is a valid DOM event',
           'Check target selector is valid CSS selector',
@@ -379,7 +379,7 @@ export class TypedOnFeatureImplementation {
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{ type: 'invalid-input', message: 'Input must be an object', suggestions: [] }],
+          error: { type: 'invalid-input', message: 'Input must be an object', suggestions: [] },
           suggestions: ['Provide a valid event handling configuration object']
         };
       }
@@ -510,11 +510,11 @@ export class TypedOnFeatureImplementation {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'schema-validation',
           message: error instanceof Error ? error.message : 'Invalid input format',
           suggestions: []
-        }],
+        },
         suggestions: [
           'Ensure input matches EnhancedOnInput schema',
           'Check event configuration structure',

@@ -346,10 +346,10 @@ export class TypedDefFeatureImplementation {
       
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Def feature initialization failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Verify function definition syntax is correct',
           'Check parameter names are valid identifiers',
@@ -366,7 +366,7 @@ export class TypedDefFeatureImplementation {
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{ type: 'invalid-input', message: 'Input must be an object', suggestions: [] }],
+          error: { type: 'invalid-input', message: 'Input must be an object', suggestions: [] },
           suggestions: ['Provide a valid function definition configuration object']
         };
       }
@@ -471,11 +471,11 @@ export class TypedDefFeatureImplementation {
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'schema-validation',
           message: error instanceof Error ? error.message : 'Invalid input format',
           suggestions: []
-        }],
+        },
         suggestions: [
           'Ensure input matches EnhancedDefInput schema',
           'Check function definition structure',

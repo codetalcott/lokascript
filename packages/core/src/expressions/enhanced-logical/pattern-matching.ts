@@ -152,7 +152,7 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -189,10 +189,10 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Pattern matching failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Check pattern syntax (CSS selector or regex)',
           'Ensure value is appropriate for pattern type',
@@ -229,11 +229,11 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
         if (this.isCSSSelector(pattern) && !this.isValidCSSSelector(pattern)) {
           return {
             isValid: false,
-            errors: [{
+            error: {
               type: 'syntax-error',
               message: `Invalid CSS selector: ${pattern}`,
               suggestions: []
-            }],
+            },
             suggestions: [
               'Check CSS selector syntax',
               'Use valid selector patterns like .class, #id, tag[attr]'
@@ -251,11 +251,11 @@ export class EnhancedMatchesExpression implements TypedExpressionImplementation<
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -422,7 +422,7 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -457,10 +457,10 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `Contains operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure container is array, string, or object',
           'Check item type compatibility',
@@ -498,11 +498,11 @@ export class EnhancedContainsExpression implements TypedExpressionImplementation
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
@@ -618,7 +618,7 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
       if (!validation.isValid) {
         return {
           success: false,
-          errors: validation.errors,
+          error: validation.errors[0],
           suggestions: validation.suggestions
         };
       }
@@ -639,10 +639,10 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
 
       return {
         success: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: `In operation failed: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        },
         suggestions: [
           'Ensure container is array, string, or object',
           'Check item type compatibility'
@@ -679,11 +679,11 @@ export class EnhancedInExpression implements TypedExpressionImplementation<InInp
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
+        error: {
           type: 'runtime-error',
           message: 'Validation failed with exception',
           suggestions: []
-        }],
+        },
         suggestions: ['Check input structure and types']
       };
     }
