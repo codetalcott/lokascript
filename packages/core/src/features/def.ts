@@ -968,14 +968,21 @@ export class DefFeature {
     body: any[],
     context: ExecutionContext
   ): void {
+    // Parse namespace from function name (e.g., 'utils.math.add' -> namespace: 'utils.math', name: 'add')
+    const parts = name.split('.');
+    const functionName = parts[parts.length - 1];
+    const namespace = parts.length > 1 ? parts.slice(0, -1).join('.') : undefined;
+
     const funcDef: FunctionDefinition = {
-      name,
+      name: functionName,
+      namespace,
       parameters,
       body,
       isAsync: false,
       context,
       metadata: {
-        name,
+        name: functionName,
+        namespace,
         parameters,
         isAsync: false,
         complexity: body.length,
@@ -985,6 +992,7 @@ export class DefFeature {
       }
     };
 
+    // Store with full qualified name as key
     this.functions.set(name, funcDef);
   }
 
@@ -1007,6 +1015,19 @@ export class DefFeature {
    */
   getFunction(name: string): FunctionDefinition | undefined {
     return this.functions.get(name);
+  }
+
+  /**
+   * Get all functions in a namespace
+   */
+  getFunctionsByNamespace(namespace: string): FunctionDefinition[] {
+    const functions: FunctionDefinition[] = [];
+    for (const [_key, func] of this.functions) {
+      if (func.namespace === namespace) {
+        functions.push(func);
+      }
+    }
+    return functions;
   }
 
   /**
@@ -1134,6 +1155,16 @@ export class DefFeature {
     // Then check globals
     if (context.globals?.has(value)) {
       return context.globals.get(value);
+    }
+
+    // Check if it looks like an expression (contains operators or function calls)
+    // If it's a simple string literal without operators, don't try to evaluate
+    const hasOperators = /[+\-*/%<>=!&|()]/.test(value);
+    const isQuotedString = /^["'].*["']$/.test(value);
+
+    // If no operators and not a quoted string, it's likely a literal value
+    if (!hasOperators && !isQuotedString) {
+      return value;
     }
 
     // Try to parse and evaluate as an expression (handles 'i + j', 'value * 2', etc.)
