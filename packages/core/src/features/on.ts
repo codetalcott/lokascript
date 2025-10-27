@@ -363,13 +363,7 @@ export class TypedOnFeatureImplementation {
           type: 'runtime-error',
           message: `On feature initialization failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Verify event type is a valid DOM event',
-          'Check target selector is valid CSS selector',
-          'Ensure commands array contains valid command objects',
-          'Validate context has required properties'
-        ]
+        }
       };
     }
   }

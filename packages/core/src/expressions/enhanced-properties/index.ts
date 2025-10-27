@@ -174,12 +174,7 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
           type: 'runtime-error',
           message: `Property access failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure element is not null or undefined',
-          'Check that property name is valid',
-          'Verify element has the requested property'
-        ]
+        }
       };
     }
   }
@@ -440,11 +435,7 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
           type: 'runtime-error',
           message: `My property access failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure current element (me) is available in context',
-          'Check that property name is valid'
-        ]
+        }
       };
     }
   }
@@ -613,11 +604,7 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
           type: 'runtime-error',
           message: `Its property access failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure it reference is available in context',
-          'Check that property name is valid'
-        ]
+        }
       };
     }
   }
@@ -786,11 +773,7 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
           type: 'runtime-error',
           message: `Your property access failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure you reference is available in context',
-          'Check that property name is valid'
-        ]
+        }
       };
     }
   }
@@ -976,11 +959,7 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
           type: 'runtime-error',
           message: `Attribute access failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure element is a valid DOM element',
-          'Check that attribute name is correct'
-        ]
+        }
       };
     }
   }
@@ -1163,11 +1142,7 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
           type: 'runtime-error',
           message: `Attribute value check failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure element is a valid DOM element',
-          'Check attribute and value parameters'
-        ]
+        }
       };
     }
   }

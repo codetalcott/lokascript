@@ -162,11 +162,7 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
           type: 'runtime-error',
           message: `First operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure collection is array, NodeList, or string',
-          'Check that collection is not null or undefined'
-        ]
+        }
       };
     }
   }
@@ -368,11 +364,7 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
           type: 'runtime-error',
           message: `Last operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure collection is array, NodeList, or string',
-          'Check that collection is not null or undefined'
-        ]
+        }
       };
     }
   }
@@ -588,12 +580,7 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
           type: 'runtime-error',
           message: `At operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure collection is array, NodeList, or string',
-          'Check that index is a valid number',
-          'Verify index is within collection bounds'
-        ]
+        }
       };
     }
   }
@@ -819,11 +806,7 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
           type: 'runtime-error',
           message: `Random operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure collection is array, NodeList, or string',
-          'Check that collection is not null or undefined'
-        ]
+        }
       };
     }
   }

@@ -586,12 +586,7 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
           type: 'runtime-error',
           message: `Logical NOT operation failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Ensure operand is a valid value',
-          'Check for null or undefined values',
-          'Verify operand can be converted to boolean'
-        ]
+        }
       };
     }
   }

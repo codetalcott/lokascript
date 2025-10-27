@@ -350,13 +350,7 @@ export class TypedDefFeatureImplementation {
           type: 'runtime-error',
           message: `Def feature initialization failed: ${error instanceof Error ? error.message : String(error)}`,
           suggestions: []
-        },
-        suggestions: [
-          'Verify function definition syntax is correct',
-          'Check parameter names are valid identifiers',
-          'Ensure function body contains valid commands',
-          'Validate context has required properties'
-        ]
+        }
       };
     }
   }
