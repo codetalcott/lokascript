@@ -59,11 +59,16 @@ export class EnhancedObjectLiteralExpression implements TypedExpressionImplement
   public readonly syntax = '{ key1: value1, key2: value2, ... }';
   public readonly description = 'Creates an object literal with specified key-value pairs';
   public readonly inputSchema: RuntimeValidator<Record<string, HyperScriptValue>> = ObjectLiteralInputSchema as RuntimeValidator<Record<string, HyperScriptValue>>;
-  public readonly outputType = 'object' as const;
+  public readonly outputType = 'Object' as const;
   public readonly metadata = {
     category: 'Special' as const,
     complexity: 'O(n)' as const,
     purity: 'pure' as const,
+    sideEffects: [],
+    dependencies: [],
+    returnTypes: ['Object'],
+    examples: ['{}', '{x: 1}', '{name: "Alice", age: 30}'],
+    relatedExpressions: ['Property', 'Possessive'],
     performance: { complexity: 'O(n)' as const, notes: 'Linear time based on number of fields' },
     semantics: { deterministic: true, sideEffects: false }
   };

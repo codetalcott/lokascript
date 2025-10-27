@@ -48,11 +48,16 @@ export class EnhancedInExpression implements TypedExpressionImplementation<
   public readonly syntax = '<value> in <collection>';
   public readonly description = 'Tests membership in collections and performs DOM queries';
   public readonly inputSchema: RuntimeValidator<HyperScriptValue[]> = InExpressionInputSchema as RuntimeValidator<HyperScriptValue[]>;
-  public readonly outputType = 'array' as const;
+  public readonly outputType = 'Array' as const;
   public readonly metadata = {
     category: 'Logical' as const,
     complexity: 'O(n)' as const,
     purity: 'pure' as const,
+    sideEffects: [],
+    dependencies: [],
+    returnTypes: ['Array'],
+    examples: ['x in [1,2,3]', '"foo" in obj', '<div/> in body'],
+    relatedExpressions: ['Matches', 'Contains'],
     performance: { complexity: 'O(n)' as const, notes: 'Linear search through collection' },
     semantics: { deterministic: true, sideEffects: false }
   };
