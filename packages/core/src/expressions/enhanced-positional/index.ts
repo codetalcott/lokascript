@@ -160,7 +160,8 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
         success: false,
         error: {
           type: 'runtime-error',
-          message: `First operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `First operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
@@ -203,7 +204,8 @@ export class EnhancedFirstExpression implements TypedExpressionImplementation<Co
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -364,7 +366,8 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Last operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Last operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
@@ -407,7 +410,8 @@ export class EnhancedLastExpression implements TypedExpressionImplementation<Col
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -582,7 +586,8 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
         success: false,
         error: {
           type: 'runtime-error',
-          message: `At operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `At operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
@@ -626,7 +631,8 @@ export class EnhancedAtExpression implements TypedExpressionImplementation<Index
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -811,7 +817,8 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Random operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Random operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure collection is array, NodeList, or string',
@@ -854,7 +861,8 @@ export class EnhancedRandomExpression implements TypedExpressionImplementation<R
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }

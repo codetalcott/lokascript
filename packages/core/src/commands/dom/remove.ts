@@ -139,7 +139,8 @@ export class RemoveCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'validation-error',
+                        name: 'ValidationError',
+          type: 'validation-error',
                         message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'REMOVE_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -154,7 +155,8 @@ export class RemoveCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'missing-argument',
+                        name: 'ValidationError',
+          type: 'missing-argument',
                         message: 'No valid classes provided to remove',
             code: 'NO_VALID_CLASSES',
             suggestions: [ 'Provide valid CSS class names', 'Check class name syntax']
@@ -170,7 +172,8 @@ export class RemoveCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'missing-argument',
+                        name: 'ValidationError',
+          type: 'missing-argument',
                         message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: [ 'Check if target selector is valid', 'Ensure elements exist in DOM']
@@ -199,7 +202,8 @@ export class RemoveCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'REMOVE_EXECUTION_FAILED',
           suggestions: [ 'Check if elements exist', 'Verify class names are valid']
@@ -298,7 +302,8 @@ export class RemoveCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-                            type: 'invalid-argument',
+                            name: 'ValidationError',
+          type: 'invalid-argument',
                             message: `Invalid class name: "${className}"`,
               code: 'INVALID_CLASS_NAME',
               suggestions: [ 'Use valid CSS class names', 'Check for special characters']
@@ -333,7 +338,8 @@ export class RemoveCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Failed to remove classes',
           code: 'CLASS_REMOVE_FAILED',
           suggestions: [ 'Check if element is still in DOM', 'Verify class names are valid']

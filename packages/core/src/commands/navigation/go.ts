@@ -164,7 +164,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'validation-error',
+            name: 'ValidationError',
+          type: 'validation-error',
             message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'GO_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -177,7 +178,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'missing-argument',
+            name: 'ValidationError',
+          type: 'missing-argument',
             message: 'Go command requires arguments',
             code: 'NO_ARGUMENTS',
             suggestions: ['Use: go back, go to url <url>, or go to <position> of <element>']
@@ -206,6 +208,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
+          name: 'ValidationError',
           type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Unknown error',
           code: 'GO_EXECUTION_FAILED',
@@ -328,7 +331,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'missing-argument',
+            name: 'ValidationError',
+          type: 'missing-argument',
             message: 'URL is required after "url" keyword',
             code: 'MISSING_URL',
             suggestions: ['Provide URL string after "url" keyword']
@@ -348,7 +352,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'invalid-argument',
+            name: 'ValidationError',
+          type: 'invalid-argument',
             message: `Invalid URL: "${resolvedUrl}"`,
             code: 'INVALID_URL',
             suggestions: ['Use valid URL format', 'Include protocol for absolute URLs']
@@ -385,7 +390,8 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                type: 'runtime-error',
+                name: 'ValidationError',
+          type: 'runtime-error',
                 message: `Navigation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'NAVIGATION_FAILED',
                 suggestions: ['Check if URL is accessible', 'Verify network connectivity']
@@ -419,6 +425,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
+          name: 'ValidationError',
           type: 'runtime-error',
           message: error instanceof Error ? error.message : 'URL navigation failed',
           code: 'URL_NAVIGATION_FAILED',
@@ -442,7 +449,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'runtime-error',
+            name: 'ValidationError',
+          type: 'runtime-error',
             message: `Target element not found: ${target}`,
             code: 'TARGET_NOT_FOUND',
             suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -522,7 +530,8 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                type: 'runtime-error',
+                name: 'ValidationError',
+          type: 'runtime-error',
                 message: `Scroll with offset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_OFFSET_FAILED',
                 suggestions: ['Check if element is visible', 'Verify scroll container']
@@ -546,7 +555,8 @@ export class GoCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                type: 'runtime-error',
+                name: 'ValidationError',
+          type: 'runtime-error',
                 message: `Scroll failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 code: 'SCROLL_FAILED',
                 suggestions: ['Check if element is visible', 'Verify element is scrollable']
@@ -582,6 +592,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
+          name: 'ValidationError',
           type: 'runtime-error',
           message: error instanceof Error ? error.message : 'Element scrolling failed',
           code: 'SCROLL_EXECUTION_FAILED',
@@ -833,7 +844,8 @@ export class GoCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-            type: 'runtime-error',
+            name: 'ValidationError',
+          type: 'runtime-error',
             message: 'Browser history API not available',
             code: 'HISTORY_API_UNAVAILABLE',
             suggestions: ['Check if running in browser environment']
@@ -864,6 +876,7 @@ export class GoCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
+          name: 'ValidationError',
           type: 'runtime-error',
           message: error instanceof Error ? error.message : 'History navigation failed',
           code: 'HISTORY_NAVIGATION_FAILED',

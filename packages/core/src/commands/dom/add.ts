@@ -150,7 +150,8 @@ export class AddCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'validation-error',
+                        name: 'ValidationError',
+          type: 'validation-error',
                         message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'ADD_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -166,7 +167,8 @@ export class AddCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'missing-argument',
+                        name: 'ValidationError',
+          type: 'missing-argument',
                         message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: ['Check if target selector is valid', 'Ensure elements exist in DOM']
@@ -193,7 +195,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-                            type: 'missing-argument',
+                            name: 'ValidationError',
+          type: 'missing-argument',
                             message: 'No valid classes provided to add',
               code: 'NO_VALID_CLASSES',
               suggestions: ['Provide valid CSS class names', 'Check class name syntax']
@@ -220,7 +223,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'ADD_EXECUTION_FAILED',
           suggestions: ['Check if elements exist', 'Verify class names are valid']
@@ -335,7 +339,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-                            type: 'invalid-argument',
+                            name: 'ValidationError',
+          type: 'invalid-argument',
                             message: `Invalid class name: "${className}"`,
               code: 'INVALID_CLASS_NAME',
               suggestions: ['Use valid CSS class names', 'Check for special characters']
@@ -370,7 +375,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Failed to add classes',
           code: 'CLASS_ADD_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify class names are valid']
@@ -398,7 +404,8 @@ export class AddCommand implements TypedCommandImplementation<
           return {
             success: false,
             error: {
-                            type: 'invalid-argument',
+                            name: 'ValidationError',
+          type: 'invalid-argument',
                             message: `Invalid attribute name: "${name}"`,
               code: 'INVALID_ATTRIBUTE_NAME',
               suggestions: ['Use valid HTML attribute names', 'Check attribute syntax']
@@ -432,7 +439,8 @@ export class AddCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Failed to add attributes',
           code: 'ATTRIBUTE_ADD_FAILED',
           suggestions: ['Check attribute syntax', 'Verify element exists']

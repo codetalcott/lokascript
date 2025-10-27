@@ -145,7 +145,8 @@ export class ShowCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SHOW_EXECUTION_FAILED',
           suggestions: [ 'Check if element exists', 'Verify element is not null']
@@ -222,7 +223,8 @@ export class ShowCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Failed to show element',
           code: 'ELEMENT_SHOW_FAILED',
           suggestions: [ 'Check if element is still in DOM', 'Verify element is not null']

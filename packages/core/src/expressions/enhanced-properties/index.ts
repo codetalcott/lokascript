@@ -172,7 +172,8 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Property access failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Property access failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure element is not null or undefined',
@@ -216,7 +217,8 @@ export class EnhancedPossessiveExpression implements BaseTypedExpression<unknown
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -436,7 +438,8 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
         success: false,
         error: {
           type: 'runtime-error',
-          message: `My property access failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `My property access failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure current element (me) is available in context',
@@ -479,7 +482,8 @@ export class EnhancedMyExpression implements BaseTypedExpression<unknown> {
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -607,7 +611,8 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Its property access failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Its property access failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure it reference is available in context',
@@ -650,7 +655,8 @@ export class EnhancedItsExpression implements BaseTypedExpression<unknown> {
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -778,7 +784,8 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Your property access failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Your property access failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure you reference is available in context',
@@ -821,7 +828,8 @@ export class EnhancedYourExpression implements BaseTypedExpression<unknown> {
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -966,7 +974,8 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Attribute access failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Attribute access failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure element is a valid DOM element',
@@ -1009,7 +1018,8 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -1151,7 +1161,8 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Attribute value check failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Attribute value check failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure element is a valid DOM element',
@@ -1194,7 +1205,8 @@ export class EnhancedAttributeWithValueExpression implements BaseTypedExpression
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }

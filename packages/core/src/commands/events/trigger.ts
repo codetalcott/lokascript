@@ -146,7 +146,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'validation-error',
+                        name: 'ValidationError',
+          type: 'validation-error',
                         message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'TRIGGER_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -161,7 +162,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'syntax-error',
+                        name: 'ValidationError',
+          type: 'syntax-error',
                         message: parseResult.error || 'Failed to parse arguments',
             code: 'ARGUMENT_PARSE_FAILED',
             suggestions: [ 'Use: trigger eventName on target', 'Use: trigger eventName data on target']
@@ -178,7 +180,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'runtime-error',
+                        name: 'ValidationError',
+          type: 'runtime-error',
                         message: targetResult.error || 'Failed to resolve target elements',
             code: 'TARGET_RESOLUTION_FAILED',
             suggestions: [ 'Check if target elements exist', 'Verify selector syntax']
@@ -193,7 +196,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'missing-argument',
+                        name: 'ValidationError',
+          type: 'missing-argument',
                         message: 'No target elements found',
             code: 'NO_TARGET_ELEMENTS',
             suggestions: ['Check if target elements exist', 'Verify selector syntax']
@@ -214,7 +218,8 @@ export class TriggerCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'runtime-error',
+                        name: 'ValidationError',
+          type: 'runtime-error',
                         message: eventResult.error || 'Failed to trigger event',
             code: 'EVENT_TRIGGER_FAILED',
             suggestions: [ 'Check if target elements are valid', 'Verify event name format']
@@ -238,7 +243,8 @@ export class TriggerCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'TRIGGER_EXECUTION_FAILED',
           suggestions: [ 'Check event name and arguments', 'Verify target elements exist']

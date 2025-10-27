@@ -148,7 +148,8 @@ export class HideCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'HIDE_EXECUTION_FAILED',
           suggestions: ['Check if element exists', 'Verify element is not null']
@@ -225,7 +226,8 @@ export class HideCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Failed to hide element',
           code: 'ELEMENT_HIDE_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify element is not null']

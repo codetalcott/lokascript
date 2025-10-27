@@ -184,7 +184,8 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Logical AND operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Logical AND operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure both operands are valid values',
@@ -228,7 +229,8 @@ export class EnhancedAndExpression implements TypedExpressionImplementation<Bina
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }
@@ -421,7 +423,8 @@ export class EnhancedOrExpression implements TypedExpressionImplementation<Binar
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Logical OR operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Logical OR operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure both operands are valid values',
@@ -591,7 +594,8 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
         success: false,
         error: {
           type: 'runtime-error',
-          message: `Logical NOT operation failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Logical NOT operation failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: []
         },
         suggestions: [
           'Ensure operand is a valid value',
@@ -635,7 +639,8 @@ export class EnhancedNotExpression implements TypedExpressionImplementation<Unar
           message: 'Validation failed with exception',
           suggestions: []
         },
-        suggestions: ['Check input structure and types']
+        suggestions: ['Check input structure and types'],
+        errors: []
       };
     }
   }

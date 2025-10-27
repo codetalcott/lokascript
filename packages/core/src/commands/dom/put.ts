@@ -157,7 +157,8 @@ export class PutCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'validation-error',
+                        name: 'ValidationError',
+          type: 'validation-error',
                         message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'PUT_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -231,7 +232,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'PUT_EXECUTION_FAILED',
           suggestions: ['Check if target element exists', 'Verify content is valid', 'Ensure position is supported']
@@ -377,7 +379,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                                type: 'runtime-error',
+                                name: 'ValidationError',
+          type: 'runtime-error',
                                 message: `Target element not found: ${selector}`,
                 code: 'TARGET_NOT_FOUND',
                 suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -399,7 +402,8 @@ export class PutCommand implements TypedCommandImplementation<
             return {
               success: false,
               error: {
-                                type: 'runtime-error',
+                                name: 'ValidationError',
+          type: 'runtime-error',
                                 message: `Target element not found: ${target}`,
                 code: 'TARGET_NOT_FOUND',
                 suggestions: ['Check if element exists in DOM', 'Verify selector syntax']
@@ -431,7 +435,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Target resolution failed',
           code: 'TARGET_RESOLUTION_FAILED',
           suggestions: ['Check target syntax and availability']
@@ -525,7 +530,8 @@ export class PutCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Put operation failed',
           code: 'OPERATION_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify content is valid']

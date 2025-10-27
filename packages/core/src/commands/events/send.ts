@@ -148,7 +148,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'validation-error',
+                        name: 'ValidationError',
+          type: 'validation-error',
                         message: validationResult.errors[0]?.message || 'Invalid input',
             code: 'SEND_VALIDATION_FAILED',
             suggestions: validationResult.suggestions
@@ -165,7 +166,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'syntax-error',
+                        name: 'ValidationError',
+          type: 'syntax-error',
                         message: parseResult.error || 'Failed to parse arguments',
             code: 'ARGUMENT_PARSE_FAILED',
             suggestions: [ 'Check argument syntax', 'Use proper to/on keyword placement']
@@ -182,7 +184,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'runtime-error',
+                        name: 'ValidationError',
+          type: 'runtime-error',
                         message: targetResult.error || 'Failed to resolve target elements',
             code: 'TARGET_RESOLUTION_FAILED',
             suggestions: [ 'Check if target elements exist', 'Verify selector syntax']
@@ -205,7 +208,8 @@ export class SendCommand implements TypedCommandImplementation<
         return {
           success: false,
           error: {
-                        type: 'runtime-error',
+                        name: 'ValidationError',
+          type: 'runtime-error',
                         message: eventResult.error || 'Failed to dispatch event',
             code: 'EVENT_DISPATCH_FAILED',
             suggestions: [ 'Check if target elements are valid', 'Verify event name format']
@@ -229,7 +233,8 @@ export class SendCommand implements TypedCommandImplementation<
       return {
         success: false,
         error: {
-                    type: 'runtime-error',
+                    name: 'ValidationError',
+          type: 'runtime-error',
                     message: error instanceof Error ? error.message : 'Unknown error',
           code: 'SEND_EXECUTION_FAILED',
           suggestions: [ 'Check event name and arguments', 'Verify target elements exist']
