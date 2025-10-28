@@ -7,15 +7,13 @@ export { WaitCommand, createWaitCommand } from './wait';
 export { FetchCommand, createFetchCommand } from './fetch';
 
 export type {
-  WaitCommandInput,
   WaitCommandOutput,
   WaitTimeInput,
-  WaitEventInput,
-  EventSpec
+  WaitEventInput
 } from './wait';
 
 export type {
-  FetchCommandInput,
   FetchCommandOutput,
+  FetchCommandInputData,
   FetchResponseType
 } from './fetch';

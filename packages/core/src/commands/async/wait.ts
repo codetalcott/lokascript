@@ -17,10 +17,10 @@ import { v, z } from '../../validation/lightweight-validators';
 import type {
   TypedCommandImplementation,
   TypedExecutionContext,
+  EvaluationResult,
   CommandMetadata,
   LLMDocumentation
 } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
 
 // ============================================================================
 // Type Definitions
@@ -41,7 +41,8 @@ export interface WaitEventInput {
   source?: EventTarget;
 }
 
-export type WaitCommandInput = WaitTimeInput | WaitEventInput;
+// Internal parsed types for documentation
+type WaitCommandInput = any; // Inferred from RuntimeValidator
 
 export interface WaitCommandOutput {
   type: 'time' | 'event';
@@ -100,7 +101,7 @@ export class WaitCommand implements TypedCommandImplementation<
   public readonly outputType = 'object' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'Async',
+    category: 'Control',
     complexity: 'medium',
     sideEffects: ['time', 'event-listening'],
     examples: [
@@ -130,6 +131,26 @@ export class WaitCommand implements TypedCommandImplementation<
 
   public readonly documentation: LLMDocumentation = {
     summary: 'Provides asynchronous time delays and event waiting functionality',
+    examples: [
+      {
+        title: 'Time delay',
+        code: 'wait 2s',
+        explanation: 'Wait for 2 seconds before continuing',
+        output: '2000'
+      },
+      {
+        title: 'Event waiting',
+        code: 'wait for click',
+        explanation: 'Wait for a click event on the current element',
+        output: 'Event'
+      },
+      {
+        title: 'Event with timeout',
+        code: 'wait for click or 1s',
+        explanation: 'Wait for click event, but timeout after 1 second',
+        output: 'Event | 1000'
+      }
+    ],
     parameters: [
       {
         name: 'time',
@@ -153,47 +174,82 @@ export class WaitCommand implements TypedCommandImplementation<
         examples: ['document', 'window', '#myElement']
       }
     ],
-    returnType: {
+    returns: {
       type: 'Promise<Event | number>',
-      description: 'Resolves with event object or timeout duration'
+      description: 'Resolves with event object or timeout duration',
+      examples: ['Event', '2000']
     },
-    notes: [
-      'This command is asynchronous - execution pauses until wait completes',
-      'Multiple events create a race condition - first to fire wins',
-      'Event properties can be destructured into local variables',
-      'Result is stored in context.result'
-    ]
+    seeAlso: ['on', 'trigger', 'send'],
+    tags: ['async', 'events', 'timing', 'delay']
   };
+
+  /**
+   * Validate command arguments
+   */
+  validate(_args: unknown[]): import('../../types/base-types').ValidationResult {
+    // Basic validation - accept any args for now
+    // More sophisticated validation could check time formats, event names, etc.
+    return {
+      isValid: true,
+      errors: [],
+      suggestions: []
+    };
+  }
 
   /**
    * Execute the wait command
    */
   async execute(
-    input: WaitCommandInput,
-    context: TypedExecutionContext
-  ): Promise<WaitCommandOutput> {
+    context: TypedExecutionContext,
+    ...args: any[]
+  ): Promise<EvaluationResult<WaitCommandOutput>> {
     const startTime = Date.now();
 
-    if (input.type === 'time') {
-      await this.waitForTime(input.value);
+    // Parse input - args[0] contains the parsed input object from the parser
+    const input = args[0] as WaitTimeInput | WaitEventInput;
+
+    try {
+      if (input.type === 'time') {
+        await this.waitForTime(input.value);
+        const duration = Date.now() - startTime;
+
+        return {
+          success: true,
+          value: {
+            type: 'time',
+            result: input.value,
+            duration
+          },
+          type: 'object'
+        };
+      }
+
+      // Event-based wait
+      const event = await this.waitForEvent(input.events, input.source || context.me || undefined, context);
       const duration = Date.now() - startTime;
 
       return {
-        type: 'time',
-        result: input.value,
-        duration
+        success: true,
+        value: {
+          type: 'event',
+          result: event,
+          duration
+        },
+        type: 'object'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'RuntimeError',
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : 'Wait command failed',
+          code: 'WAIT_FAILED',
+          suggestions: ['Check event names', 'Verify target elements exist']
+        },
+        type: 'error'
       };
     }
-
-    // Event-based wait
-    const event = await this.waitForEvent(input.events, input.source || context.me, context);
-    const duration = Date.now() - startTime;
-
-    return {
-      type: 'event',
-      result: event,
-      duration
-    };
   }
 
   /**
@@ -228,16 +284,12 @@ export class WaitCommand implements TypedCommandImplementation<
           target.removeEventListener(eventName, listener);
         }
 
-        // Store result in context
+        // Resolve with result
         if (typeof event === 'number') {
           // Timeout - just resolve with the time value
-          context.result = event;
           resolve(event as any);
         } else {
-          // Event - store and destructure properties
-          context.result = event;
-
-          // Destructure event properties into locals
+          // Event - destructure properties into locals
           if (eventInfo?.args && context.locals) {
             for (const arg of eventInfo.args) {
               const value = (event as any)[arg] ||
@@ -255,7 +307,7 @@ export class WaitCommand implements TypedCommandImplementation<
       for (const eventInfo of events) {
         if (eventInfo.name) {
           // Event listener
-          const eventTarget = target || context.me;
+          const eventTarget = target || context.me || undefined;
           if (!eventTarget) {
             throw new Error('No event target available (context.me is undefined)');
           }

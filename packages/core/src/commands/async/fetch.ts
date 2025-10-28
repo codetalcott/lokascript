@@ -19,10 +19,10 @@ import { v, z } from '../../validation/lightweight-validators';
 import type {
   TypedCommandImplementation,
   TypedExecutionContext,
+  EvaluationResult,
   CommandMetadata,
   LLMDocumentation
 } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
 
 // ============================================================================
 // Type Definitions
@@ -30,7 +30,8 @@ import type { UnifiedValidationResult } from '../../types/unified-types';
 
 export type FetchResponseType = 'text' | 'json' | 'html' | 'response';
 
-export interface FetchCommandInput {
+// Internal parsed input type for documentation
+export interface FetchCommandInputData {
   url: string;
   responseType?: FetchResponseType;
   options?: {
@@ -47,6 +48,8 @@ export interface FetchCommandInput {
     integrity?: string;
   };
 }
+
+type FetchCommandInput = any; // Inferred from RuntimeValidator
 
 export interface FetchCommandOutput {
   status: number;
@@ -107,7 +110,7 @@ export class FetchCommand implements TypedCommandImplementation<
   public readonly outputType = 'object' as const;
 
   public readonly metadata: CommandMetadata = {
-    category: 'Async',
+    category: 'Communication',
     complexity: 'complex',
     sideEffects: ['network', 'event-dispatching'],
     examples: [
@@ -142,6 +145,26 @@ export class FetchCommand implements TypedCommandImplementation<
 
   public readonly documentation: LLMDocumentation = {
     summary: 'Issues HTTP requests using the Fetch API with lifecycle event support',
+    examples: [
+      {
+        title: 'Basic GET request',
+        code: 'fetch "/api/users" as json',
+        explanation: 'Fetch JSON data from an API endpoint',
+        output: '{ users: [...] }'
+      },
+      {
+        title: 'POST request with data',
+        code: 'fetch "/api/users" with { method: "POST", body: data }',
+        explanation: 'Send a POST request with body data',
+        output: 'Response'
+      },
+      {
+        title: 'HTML fragment fetch',
+        code: 'fetch "/partial.html" as html',
+        explanation: 'Fetch and parse HTML fragment',
+        output: 'HTMLElement | DocumentFragment'
+      }
+    ],
     parameters: [
       {
         name: 'url',
@@ -165,28 +188,39 @@ export class FetchCommand implements TypedCommandImplementation<
         examples: ['{ method: "POST" }', '{ headers: { "X-Auth": "token" } }']
       }
     ],
-    returnType: {
+    returns: {
       type: 'Promise<any>',
-      description: 'Resolves with parsed response based on responseType'
+      description: 'Resolves with parsed response based on responseType',
+      examples: ['{ name: "John" }', '<div>HTML</div>', 'text content']
     },
-    notes: [
-      'This command is asynchronous',
-      'Result is stored in context.result',
-      'Fires lifecycle events: fetch:beforeRequest, fetch:afterResponse, fetch:afterRequest, fetch:error',
-      'Can be cancelled by sending fetch:abort event to triggering element',
-      'Timeout can be set via options.timeout',
-      'Headers can be configured via fetch:beforeRequest event handler'
-    ]
+    seeAlso: ['go', 'post', 'put', 'delete'],
+    tags: ['async', 'http', 'network', 'request', 'ajax']
   };
+
+  /**
+   * Validate command arguments
+   */
+  validate(_args: unknown[]): import('../../types/base-types').ValidationResult {
+    // Basic validation - accept any args for now
+    // More sophisticated validation could check URL formats, options, etc.
+    return {
+      isValid: true,
+      errors: [],
+      suggestions: []
+    };
+  }
 
   /**
    * Execute the fetch command
    */
   async execute(
-    input: FetchCommandInput,
-    context: TypedExecutionContext
-  ): Promise<FetchCommandOutput> {
+    context: TypedExecutionContext,
+    ...args: any[]
+  ): Promise<EvaluationResult<FetchCommandOutput>> {
     const startTime = Date.now();
+
+    // Parse input - args[0] contains the parsed input object from the parser
+    const input = args[0] as FetchCommandInputData;
     const { url, responseType = 'text', options = {} } = input;
 
     // Setup abort controller for cancellation support
@@ -249,9 +283,6 @@ export class FetchCommand implements TypedCommandImplementation<
         result = await response.text();
       }
 
-      // Store result in context
-      context.result = result;
-
       // Fire afterRequest event
       if (context.me) {
         this.dispatchEvent(context.me, 'fetch:afterRequest', { result });
@@ -260,12 +291,16 @@ export class FetchCommand implements TypedCommandImplementation<
       const duration = Date.now() - startTime;
 
       return {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: result,
-        url: response.url,
-        duration
+        success: true,
+        value: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          data: result,
+          url: response.url,
+          duration
+        },
+        type: 'object'
       };
     } catch (error) {
       // Fire error event
@@ -276,9 +311,17 @@ export class FetchCommand implements TypedCommandImplementation<
         });
       }
 
-      throw new Error(
-        `Fetch failed for ${url}: ${error instanceof Error ? error.message : String(error)}`
-      );
+      return {
+        success: false,
+        error: {
+          name: 'FetchError',
+          type: 'runtime-error',
+          message: `Fetch failed for ${url}: ${error instanceof Error ? error.message : String(error)}`,
+          code: 'FETCH_FAILED',
+          suggestions: ['Check URL validity', 'Verify network connectivity', 'Review CORS settings']
+        },
+        type: 'error'
+      };
     } finally {
       // Cleanup
       if (timeoutId) {
