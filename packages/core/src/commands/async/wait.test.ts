@@ -22,7 +22,16 @@ describe('Wait Command', () => {
     context = {
       me: testElement,
       locals: new Map(),
-      result: undefined
+      result: undefined,
+      globals: new Map(),
+      variables: new Map(),
+      it: undefined,
+      you: undefined,
+      event: undefined,
+      expressionStack: [],
+      evaluationDepth: 0,
+      validationMode: 'permissive' as const,
+      evaluationHistory: []
     } as TypedExecutionContext;
   });
 
@@ -415,7 +424,7 @@ describe('Wait Command', () => {
       testElement.classList.add('example');
 
       const input = { type: 'time' as const, value: 50 };
-      await waitCommand.execute(input, context);
+      await waitCommand.execute(context, input);
 
       testElement.classList.remove('example');
       expect(testElement.classList.contains('example')).toBe(false);

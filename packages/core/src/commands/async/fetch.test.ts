@@ -25,7 +25,16 @@ describe('Fetch Command', () => {
     context = {
       me: testElement,
       locals: new Map(),
-      result: undefined
+      result: undefined,
+      globals: new Map(),
+      variables: new Map(),
+      it: undefined,
+      you: undefined,
+      event: undefined,
+      expressionStack: [],
+      evaluationDepth: 0,
+      validationMode: 'permissive' as const,
+      evaluationHistory: []
     } as TypedExecutionContext;
 
     // Reset fetch mock
@@ -483,11 +492,20 @@ describe('Fetch Command', () => {
 
       const contextWithoutMe = {
         locals: new Map(),
-        result: undefined
+        result: undefined,
+        globals: new Map(),
+        variables: new Map(),
+        it: undefined,
+        you: undefined,
+        event: undefined,
+        expressionStack: [],
+        evaluationDepth: 0,
+        validationMode: 'permissive' as const,
+        evaluationHistory: []
       } as TypedExecutionContext;
 
       const input = { url: '/api/data' };
-      const result = await fetchCommand.execute(input, contextWithoutMe);
+      const result = await fetchCommand.execute(contextWithoutMe, input);
 
       expect(result.success).toBe(true);
       expect(result.value.status).toBe(200);
