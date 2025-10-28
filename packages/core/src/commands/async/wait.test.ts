@@ -37,7 +37,7 @@ describe('Wait Command', () => {
       expect(waitCommand.name).toBe('wait');
       expect(typeof waitCommand.syntax).toBe('string');
       expect(typeof waitCommand.description).toBe('string');
-      expect(waitCommand.metadata.category).toBe('Async');
+      expect(waitCommand.metadata.category).toBe('Control');
     });
 
     it('should have comprehensive examples', () => {
@@ -56,30 +56,33 @@ describe('Wait Command', () => {
       const startTime = Date.now();
       const input = { type: 'time' as const, value: 100 };
 
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
       const duration = Date.now() - startTime;
       expect(duration).toBeGreaterThanOrEqual(90); // Allow some timing variance
-      expect(result.type).toBe('time');
-      expect(result.result).toBe(100);
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('time');
+      expect(result.value.result).toBe(100);
     });
 
     it('should handle zero timeout', async () => {
       const input = { type: 'time' as const, value: 0 };
 
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
-      expect(result.type).toBe('time');
-      expect(result.result).toBe(0);
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('time');
+      expect(result.value.result).toBe(0);
     });
 
     it('should handle large timeout values', async () => {
       const input = { type: 'time' as const, value: 1 };
 
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
-      expect(result.type).toBe('time');
-      expect(result.result).toBe(1);
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('time');
+      expect(result.value.result).toBe(1);
     });
   });
 
@@ -91,7 +94,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Trigger event after short delay
       setTimeout(() => {
@@ -100,28 +103,30 @@ describe('Wait Command', () => {
 
       const result = await promise;
 
-      expect(result.type).toBe('event');
-      expect(result.result).toBeInstanceOf(Event);
-      expect((result.result as Event).type).toBe('click');
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
+      expect(result.value.result).toBeInstanceOf(Event);
+      expect((result.value.result as Event).type).toBe('click');
     });
 
-    it('should store event in context.result', async () => {
+    it('should return event in result value', async () => {
       const input = {
         type: 'event' as const,
         events: [{ name: 'custom' }],
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         testElement.dispatchEvent(new CustomEvent('custom'));
       }, 50);
 
-      await promise;
+      const result = await promise;
 
-      expect(context.result).toBeInstanceOf(Event);
-      expect((context.result as Event).type).toBe('custom');
+      expect(result.success).toBe(true);
+      expect(result.value.result).toBeInstanceOf(Event);
+      expect((result.value.result as Event).type).toBe('custom');
     });
 
     it('should wait for event from specific source', async () => {
@@ -134,7 +139,7 @@ describe('Wait Command', () => {
         source: otherElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Click on different element - should not resolve
       testElement.dispatchEvent(new MouseEvent('click'));
@@ -146,7 +151,8 @@ describe('Wait Command', () => {
 
       const result = await promise;
 
-      expect(result.type).toBe('event');
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
       document.body.removeChild(otherElement);
     });
 
@@ -156,7 +162,7 @@ describe('Wait Command', () => {
         events: [{ name: 'click' }]
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         testElement.dispatchEvent(new MouseEvent('click'));
@@ -164,10 +170,11 @@ describe('Wait Command', () => {
 
       const result = await promise;
 
-      expect(result.type).toBe('event');
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
     });
 
-    it('should throw error when no event target available', async () => {
+    it('should return error when no event target available', async () => {
       const contextWithoutMe = {
         locals: new Map(),
         result: undefined
@@ -178,9 +185,10 @@ describe('Wait Command', () => {
         events: [{ name: 'click' }]
       };
 
-      await expect(waitCommand.execute(input, contextWithoutMe)).rejects.toThrow(
-        'No event target available'
-      );
+      const result = await waitCommand.execute(contextWithoutMe, input);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('No event target available');
     });
   });
 
@@ -192,7 +200,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         const event = new MouseEvent('mousemove', {
@@ -215,7 +223,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         const event = new CustomEvent('custom', {
@@ -237,7 +245,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         testElement.dispatchEvent(new MouseEvent('click'));
@@ -257,7 +265,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Trigger keydown first
       setTimeout(() => {
@@ -266,8 +274,9 @@ describe('Wait Command', () => {
 
       const result = await promise;
 
-      expect(result.type).toBe('event');
-      expect((result.result as Event).type).toBe('keydown');
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
+      expect((result.value.result as Event).type).toBe('keydown');
     });
 
     it('should handle event or timeout race', async () => {
@@ -278,11 +287,11 @@ describe('Wait Command', () => {
       };
 
       const startTime = Date.now();
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
       const duration = Date.now() - startTime;
       expect(duration).toBeGreaterThanOrEqual(90);
-      expect(result.result).toBe(100); // Should resolve with timeout value
+      expect(result.value.result).toBe(100); // Should resolve with timeout value
     });
 
     it('should resolve with event if it fires before timeout', async () => {
@@ -292,7 +301,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Fire event before timeout
       setTimeout(() => {
@@ -301,8 +310,9 @@ describe('Wait Command', () => {
 
       const result = await promise;
 
-      expect(result.type).toBe('event');
-      expect((result.result as Event).type).toBe('click');
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
+      expect((result.value.result as Event).type).toBe('click');
     });
 
     it('should cleanup listeners after first event fires', async () => {
@@ -312,21 +322,22 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Fire click
       setTimeout(() => {
         testElement.dispatchEvent(new MouseEvent('click'));
       }, 50);
 
-      await promise;
+      const result = await promise;
 
       // Fire keydown after resolution - should not cause issues
       testElement.dispatchEvent(new KeyboardEvent('keydown'));
 
       // If listeners weren't cleaned up, this might cause problems
-      expect(context.result).toBeInstanceOf(Event);
-      expect((context.result as Event).type).toBe('click');
+      expect(result.success).toBe(true);
+      expect(result.value.result).toBeInstanceOf(Event);
+      expect((result.value.result as Event).type).toBe('click');
     });
   });
 
@@ -338,7 +349,7 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       // Fire all events simultaneously
       setTimeout(() => {
@@ -350,8 +361,9 @@ describe('Wait Command', () => {
       const result = await promise;
 
       // Should resolve with one of them (first to fire)
-      expect(result.type).toBe('event');
-      expect(['event1', 'event2', 'event3']).toContain((result.result as Event).type);
+      expect(result.success).toBe(true);
+      expect(result.value.type).toBe('event');
+      expect(['event1', 'event2', 'event3']).toContain((result.value.result as Event).type);
     });
 
     it('should handle immediate timeout (0ms)', async () => {
@@ -360,18 +372,18 @@ describe('Wait Command', () => {
         events: [{ time: 0 }]
       };
 
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
-      expect(result.result).toBe(0);
+      expect(result.value.result).toBe(0);
     });
 
     it('should report accurate duration', async () => {
       const input = { type: 'time' as const, value: 100 };
 
-      const result = await waitCommand.execute(input, context);
+      const result = await waitCommand.execute(context, input);
 
-      expect(result.duration).toBeGreaterThanOrEqual(90);
-      expect(result.duration).toBeLessThan(200);
+      expect(result.value.duration).toBeGreaterThanOrEqual(90);
+      expect(result.value.duration).toBeLessThan(200);
     });
   });
 
@@ -386,15 +398,16 @@ describe('Wait Command', () => {
         source: testElement
       };
 
-      const promise = waitCommand.execute(input, context);
+      const promise = waitCommand.execute(context, input);
 
       setTimeout(() => {
         testElement.dispatchEvent(new Event('transitionend'));
       }, 50);
 
-      await promise;
+      const result = await promise;
 
-      expect(context.result).toBeInstanceOf(Event);
+      expect(result.success).toBe(true);
+      expect(result.value.result).toBeInstanceOf(Event);
     });
 
     it('should support animation sequences', async () => {

@@ -43,7 +43,7 @@ describe('Fetch Command', () => {
       expect(fetchCommand.name).toBe('fetch');
       expect(typeof fetchCommand.syntax).toBe('string');
       expect(typeof fetchCommand.description).toBe('string');
-      expect(fetchCommand.metadata.category).toBe('Async');
+      expect(fetchCommand.metadata.category).toBe('Communication');
     });
 
     it('should have comprehensive examples', () => {
@@ -66,7 +66,7 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/api/data' };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/data',
@@ -75,9 +75,9 @@ describe('Fetch Command', () => {
           signal: expect.any(AbortSignal)
         })
       );
-      expect(result.status).toBe(200);
-      expect(result.data).toBe('Hello World');
-      expect(context.result).toBe('Hello World');
+      expect(result.success).toBe(true);
+      expect(result.value.status).toBe(200);
+      expect(result.value.data).toBe('Hello World');
     });
 
     it('should handle JSON response type', async () => {
@@ -88,10 +88,10 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/api/user', responseType: 'json' as const };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.data).toEqual(mockData);
-      expect(context.result).toEqual(mockData);
+      expect(result.success).toBe(true);
+      expect(result.value.data).toEqual(mockData);
     });
 
     it('should handle HTML response type', async () => {
@@ -100,10 +100,10 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/page', responseType: 'html' as const };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.data).toBeInstanceOf(HTMLElement);
-      expect((result.data as HTMLElement).id).toBe('test');
+      expect(result.value.data).toBeInstanceOf(HTMLElement);
+      expect((result.value.data as HTMLElement).id).toBe('test');
     });
 
     it('should handle response type for raw response', async () => {
@@ -111,10 +111,10 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/api/raw', responseType: 'response' as const };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.data).toBeInstanceOf(Response);
-      expect(context.result).toBeInstanceOf(Response);
+      expect(result.success).toBe(true);
+      expect(result.value.data).toBeInstanceOf(Response);
     });
   });
 
@@ -132,7 +132,7 @@ describe('Fetch Command', () => {
         }
       };
 
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/save',
@@ -141,7 +141,8 @@ describe('Fetch Command', () => {
           body: JSON.stringify({ name: 'Test' })
         })
       );
-      expect(result.status).toBe(201);
+      expect(result.success).toBe(true);
+      expect(result.value.status).toBe(201);
     });
 
     it('should handle PUT request', async () => {
@@ -153,7 +154,7 @@ describe('Fetch Command', () => {
         options: { method: 'PUT' }
       };
 
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/update/1',
@@ -170,9 +171,10 @@ describe('Fetch Command', () => {
         options: { method: 'DELETE' }
       };
 
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.status).toBe(204);
+      expect(result.success).toBe(true);
+      expect(result.value.status).toBe(204);
     });
   });
 
@@ -191,7 +193,7 @@ describe('Fetch Command', () => {
         }
       };
 
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/protected',
@@ -218,7 +220,7 @@ describe('Fetch Command', () => {
         }
       };
 
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/data',
@@ -244,7 +246,7 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/data' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(eventFired).toBe(true);
     });
@@ -259,7 +261,7 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/data' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(eventFired).toBe(true);
     });
@@ -275,7 +277,7 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/data' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(eventFired).toBe(true);
     });
@@ -291,7 +293,7 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/data' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(eventFired).toBe(true);
     });
@@ -307,7 +309,10 @@ describe('Fetch Command', () => {
 
       const input = { url: '/api/fail' };
 
-      await expect(fetchCommand.execute(input, context)).rejects.toThrow();
+      const result = await fetchCommand.execute(context, input);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Network error');
       expect(eventFired).toBe(true);
     });
 
@@ -320,7 +325,7 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/protected' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/protected',
@@ -350,7 +355,9 @@ describe('Fetch Command', () => {
 
       const input = { url: '/api/slow' };
 
-      await expect(fetchCommand.execute(input, context)).rejects.toThrow();
+      const result = await fetchCommand.execute(context, input);
+
+      expect(result.success).toBe(false);
       expect(abortCalled).toBe(true);
     });
 
@@ -373,7 +380,7 @@ describe('Fetch Command', () => {
         options: { timeout: 100 }
       };
 
-      const promise = fetchCommand.execute(input, context);
+      const promise = fetchCommand.execute(context, input);
 
       // Fast-forward time
       vi.advanceTimersByTime(100);
@@ -385,14 +392,15 @@ describe('Fetch Command', () => {
   });
 
   describe('Error Handling', () => {
-    it('should throw descriptive error on fetch failure', async () => {
+    it('should return descriptive error on fetch failure', async () => {
       (global.fetch as any).mockRejectedValueOnce(new Error('Network timeout'));
 
       const input = { url: '/api/fail' };
 
-      await expect(fetchCommand.execute(input, context)).rejects.toThrow(
-        'Fetch failed for /api/fail: Network timeout'
-      );
+      const result = await fetchCommand.execute(context, input);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Fetch failed for /api/fail: Network timeout');
     });
 
     it('should handle JSON parse errors', async () => {
@@ -401,7 +409,10 @@ describe('Fetch Command', () => {
 
       const input = { url: '/api/data', responseType: 'json' as const };
 
-      await expect(fetchCommand.execute(input, context)).rejects.toThrow();
+      const result = await fetchCommand.execute(context, input);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBeTruthy();
     });
   });
 
@@ -411,10 +422,11 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/api/delete' };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.data).toBe('');
-      expect(result.status).toBe(204);
+      expect(result.value.data).toBe('');
+      expect(result.success).toBe(true);
+      expect(result.value.status).toBe(204);
     });
 
     it('should handle HTML with multiple elements', async () => {
@@ -423,9 +435,9 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/page', responseType: 'html' as const };
-      const result = await fetchCommand.execute(input, context);
+      const result = await fetchCommand.execute(context, input);
 
-      expect(result.data).toBeInstanceOf(DocumentFragment);
+      expect(result.value.data).toBeInstanceOf(DocumentFragment);
     });
 
     it('should clean up abort listener', async () => {
@@ -433,7 +445,7 @@ describe('Fetch Command', () => {
       (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const input = { url: '/api/data' };
-      await fetchCommand.execute(input, context);
+      await fetchCommand.execute(context, input);
 
       // Dispatch abort after fetch completes - should not cause issues
       testElement.dispatchEvent(new CustomEvent('fetch:abort'));
@@ -454,12 +466,13 @@ describe('Fetch Command', () => {
       });
 
       const input = { url: '/api/data' };
-      const promise = fetchCommand.execute(input, context);
+      const promise = fetchCommand.execute(context, input);
 
       vi.advanceTimersByTime(100);
       const result = await promise;
 
-      expect(result.duration).toBeGreaterThanOrEqual(0);
+      expect(result.success).toBe(true);
+      expect(result.value.duration).toBeGreaterThanOrEqual(0);
 
       vi.useRealTimers();
     });
@@ -476,7 +489,8 @@ describe('Fetch Command', () => {
       const input = { url: '/api/data' };
       const result = await fetchCommand.execute(input, contextWithoutMe);
 
-      expect(result.status).toBe(200);
+      expect(result.success).toBe(true);
+      expect(result.value.status).toBe(200);
       // Events won't fire, but fetch should still work
     });
   });
