@@ -17,6 +17,8 @@ export class AttributeProcessor {
   private processedElements = new WeakSet<HTMLElement>();
   private options: Required<AttributeProcessorOptions>;
   private observer: MutationObserver | null = null;
+  private processedCount = 0;
+  private readyEventDispatched = false;
 
   constructor(options: AttributeProcessorOptions = {}) {
     this.options = {
@@ -39,6 +41,9 @@ export class AttributeProcessor {
     // Process existing elements
     if (this.options.autoScan) {
       this.scanAndProcessAll();
+
+      // Dispatch hyperscript:ready event after initial page processing
+      this.dispatchReadyEvent();
     }
 
     // Set up mutation observer for new elements
@@ -113,6 +118,10 @@ export class AttributeProcessor {
 
       // Mark as processed
       this.processedElements.add(element);
+      this.processedCount++;
+
+      // Dispatch load event on the element after successful processing
+      this.dispatchLoadEvent(element);
     } catch (error) {
       console.error(`Error processing hyperscript attribute on element:`, element, error);
     }
@@ -162,6 +171,46 @@ export class AttributeProcessor {
         console.error(`🔧 EVENT: Element:`, element);
       }
     });
+  }
+
+  /**
+   * Dispatch load event on an element after it has been processed
+   */
+  private dispatchLoadEvent(element: HTMLElement): void {
+    try {
+      const loadEvent = new Event('load', {
+        bubbles: false, // Element-specific event
+        cancelable: false
+      });
+      element.dispatchEvent(loadEvent);
+    } catch (error) {
+      console.error(`Error dispatching load event on element:`, element, error);
+    }
+  }
+
+  /**
+   * Dispatch hyperscript:ready event on the document after initial processing
+   */
+  private dispatchReadyEvent(): void {
+    // Only dispatch once
+    if (this.readyEventDispatched) {
+      return;
+    }
+
+    try {
+      const readyEvent = new CustomEvent('hyperscript:ready', {
+        bubbles: true,
+        cancelable: false,
+        detail: {
+          processedElements: this.processedCount,
+          timestamp: Date.now()
+        }
+      });
+      document.dispatchEvent(readyEvent);
+      this.readyEventDispatched = true;
+    } catch (error) {
+      console.error(`Error dispatching hyperscript:ready event:`, error);
+    }
   }
 
   /**
