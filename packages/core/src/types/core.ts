@@ -24,7 +24,9 @@ export type {
   ASTNode,
   ParseError,
   ExpressionNode,
-  CommandNode as BaseCommandNode
+  CommandNode as BaseCommandNode,
+  EventHandlerNode,
+  BehaviorNode
 } from './base-types';
 
 // Import types for use within this file
@@ -234,11 +236,22 @@ export interface Token {
   column: number;
 }
 
+export interface ParseWarning {
+  type: string;
+  message: string;
+  suggestions: string[];
+  severity: 'info' | 'warning' | 'error';
+  code?: string;
+  line?: number;
+  column?: number;
+}
+
 export interface ParseResult<T = ASTNode> {
   success: boolean;
   node?: T;
   ast?: T; // Alias for node - some code uses ast instead of node
   error?: ParseError;
+  warnings?: ParseWarning[];
   tokens: Token[];
 }
 

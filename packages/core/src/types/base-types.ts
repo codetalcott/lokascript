@@ -512,6 +512,19 @@ export interface EventHandlerNode extends ASTNode {
 }
 
 /**
+ * Behavior definition AST node
+ * Represents a reusable behavior that can be installed on elements
+ */
+export interface BehaviorNode extends ASTNode {
+  readonly type: 'behavior';
+  readonly name: string;
+  readonly parameters: string[];
+  readonly eventHandlers: EventHandlerNode[];
+  readonly initBlock?: ASTNode;
+  readonly namespace?: string;
+}
+
+/**
  * Enhanced AST node with type information
  */
 export interface TypedASTNode extends ASTNode {

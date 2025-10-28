@@ -18,6 +18,7 @@ import { createAppendCommand, AppendCommand } from './content/append';
 
 // Execution Commands
 import { createCallCommand, createEnhancedGetCommand, CallCommand, EnhancedGetCommand } from './execution/call';
+import { createPseudoCommand, PseudoCommand } from './execution/pseudo-command';
 
 // Control Flow Commands
 import { createIfCommand, IfCommand } from './control-flow/if';
@@ -62,6 +63,9 @@ import { createTriggerCommand, TriggerCommand } from './events/trigger';
 // Navigation Commands
 import { createGoCommand, GoCommand } from './navigation/go';
 
+// Behavior Commands
+import { installCommand, InstallCommand } from './behaviors/install';
+
 // Async Commands - using legacy for now
 // NOTE: Legacy commands excluded from TypeScript project (tsconfig.json)
 // TODO: Implement enhanced versions of wait and fetch commands
@@ -84,6 +88,7 @@ export {
   
   // Execution Commands
   createCallCommand, createEnhancedGetCommand, CallCommand, EnhancedGetCommand,
+  createPseudoCommand, PseudoCommand,
   
   // Control Flow Commands
   createIfCommand, IfCommand,
@@ -128,6 +133,9 @@ export {
   // Navigation Commands
   createGoCommand, GoCommand,
 
+  // Behavior Commands
+  InstallCommand,
+
   // Async Commands
   // createWaitCommand,
   // createFetchCommand,
@@ -156,6 +164,7 @@ export const ENHANCED_COMMAND_FACTORIES = {
   // Execution Commands
   call: createCallCommand,
   get: createEnhancedGetCommand,
+  'pseudo-command': createPseudoCommand,
 
   // Control Flow Commands
   if: createIfCommand,
@@ -200,6 +209,9 @@ export const ENHANCED_COMMAND_FACTORIES = {
   // Navigation Commands
   go: createGoCommand,
 
+  // Behavior Commands
+  install: () => installCommand,
+
   // Async Commands
   // wait: createWaitCommand,
   // fetch: createFetchCommand,
@@ -240,13 +252,14 @@ export const ENHANCED_COMMAND_CATEGORIES = {
   data: ['increment', 'decrement', 'set', 'default'],
   creation: ['make'],
   content: ['append'],
-  execution: ['call', 'get'],
+  execution: ['call', 'get', 'pseudo-command'],
   flow: ['if', 'halt', 'return', 'throw', 'repeat', 'unless', 'continue', 'break'],
   utility: ['pick'],
   advanced: ['tell', 'js', 'beep', 'async'],
   animation: ['settle', 'measure', 'transition'],
   templates: ['render'],
   dom: ['add', 'remove', 'toggle', 'show', 'hide', 'put'],
+  behaviors: ['install'],
 } as const;
 
 /**
