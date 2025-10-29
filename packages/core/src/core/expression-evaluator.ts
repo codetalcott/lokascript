@@ -63,31 +63,35 @@ export class ExpressionEvaluator {
     switch (node.type) {
       case 'identifier':
         return this.evaluateIdentifier(node as any, context);
-      
+
       case 'literal':
         return this.evaluateLiteral(node as any, context);
-      
+
+      case 'string':
+        // String literal nodes (alternative to 'literal' for string values)
+        return (node as any).value || (node as any).content || '';
+
       case 'memberExpression':
         return this.evaluateMemberExpression(node as any, context);
-      
+
       case 'binaryExpression':
         return this.evaluateBinaryExpression(node as any, context);
-      
+
       case 'unaryExpression':
         return this.evaluateUnaryExpression(node as any, context);
-      
+
       case 'callExpression':
         return this.evaluateCallExpression(node as any, context);
-      
+
       case 'selector':
         return this.evaluateSelector(node as any, context);
-      
+
       case 'dollarExpression':
         return this.evaluateDollarExpression(node as any, context);
-      
+
       case 'possessiveExpression':
         return this.evaluatePossessiveExpression(node as any, context);
-      
+
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
@@ -118,6 +122,11 @@ export class ExpressionEvaluator {
     // Check custom variables (legacy support)
     if (context.variables?.has(name)) {
       return context.variables.get(name);
+    }
+
+    // Check JavaScript global objects (Date, Math, Object, Array, etc.)
+    if (typeof globalThis !== 'undefined' && name in globalThis) {
+      return (globalThis as any)[name];
     }
 
     // Default to returning the name itself for unknown identifiers
@@ -182,8 +191,22 @@ export class ExpressionEvaluator {
    */
   private async evaluateBinaryExpression(node: any, context: ExecutionContext): Promise<any> {
     const { operator, left, right } = node;
-    
-    // Evaluate operands
+
+    // Special handling for 'in' operator - don't evaluate left if it's a selector
+    if (operator === 'in' && left.type === 'selector') {
+      const selector = left.value;
+      const contextElement = await this.evaluate(right, context);
+
+      // Verify we have a valid DOM element as context
+      if (!contextElement || typeof contextElement.querySelector !== 'function') {
+        throw new Error(`'in' operator requires a DOM element as the right operand (got: ${typeof contextElement})`);
+      }
+
+      // Query for the selector within the context element
+      return contextElement.querySelector(selector);
+    }
+
+    // Evaluate operands normally for other operators
     const leftValue = await this.evaluate(left, context);
     const rightValue = await this.evaluate(right, context);
     
@@ -366,21 +389,42 @@ export class ExpressionEvaluator {
           return leftValue.matches(String(rightValue));
         }
         return false;
-      
+
+      case 'in':
+        // DOM query within context (fallback for non-selector cases)
+        // Note: Most common case (.selector in element) is handled before the switch
+        const selector = typeof leftValue === 'string' ? leftValue : String(leftValue);
+        const contextElement = rightValue;
+
+        // Verify we have a valid DOM element as context
+        if (!contextElement || typeof contextElement.querySelector !== 'function') {
+          // Could also be array/object membership check
+          if (Array.isArray(contextElement)) {
+            return contextElement.includes(leftValue);
+          }
+          if (typeof contextElement === 'object' && contextElement !== null) {
+            return selector in contextElement;
+          }
+          throw new Error(`'in' operator requires a DOM element, array, or object as the right operand (got: ${typeof contextElement})`);
+        }
+
+        // Query for the selector within the context element
+        return contextElement.querySelector(selector);
+
       case ' ':
         // Space operator - typically for command with selector
         if (typeof leftValue === 'string' && typeof rightValue === 'string') {
           // This might be a command-selector pattern, return both values
           return { command: leftValue, selector: rightValue };
         }
-        
+
         // Special case: command identifier + selector node
         if (left.type === 'identifier' && right.type === 'selector') {
           return { command: left.name, selector: right.value };
         }
-        
+
         return rightValue;
-      
+
       default:
         throw new Error(`Unsupported binary operator: "${operator}" (length: ${operator.length})`);
     }
@@ -420,11 +464,44 @@ export class ExpressionEvaluator {
    * Evaluate call expressions (function calls)
    */
   private async evaluateCallExpression(node: any, context: ExecutionContext): Promise<any> {
-    const { callee, arguments: args } = node;
-    
+    const { callee, arguments: args, isConstructor } = node;
+
+    // Handle constructor calls (new ClassName())
+    if (isConstructor) {
+      const constructorName = callee.name;
+
+      // Try to resolve constructor from global scope
+      const Constructor = context.globals?.get(constructorName) || (window as any)[constructorName];
+      if (typeof Constructor === 'function') {
+        const evaluatedArgs = await Promise.all(
+          args.map((arg: any) => this.evaluate(arg, context))
+        );
+        return new Constructor(...evaluatedArgs);
+      }
+
+      throw new Error(`Unknown constructor: ${constructorName}`);
+    }
+
+    // Handle member expression calls (like obj.method())
+    if (callee.type === 'memberExpression') {
+      // Evaluate the member expression to get the function
+      const func = await this.evaluateMemberExpression(callee, context);
+
+      if (typeof func === 'function') {
+        const evaluatedArgs = await Promise.all(
+          args.map((arg: any) => this.evaluate(arg, context))
+        );
+        // Evaluate the object to use as 'this' context
+        const thisContext = await this.evaluate(callee.object, context);
+        return func.apply(thisContext, evaluatedArgs);
+      }
+
+      throw new Error(`Member expression does not evaluate to a function: ${callee.property?.name || 'unknown'}`);
+    }
+
     // Get function name
     const functionName = callee.name || callee;
-    
+
     // Check if it's a registered expression function
     const expression = this.expressionRegistry.get(functionName);
     if (expression) {
@@ -432,10 +509,10 @@ export class ExpressionEvaluator {
       const evaluatedArgs = await Promise.all(
         args.map((arg: any) => this.evaluate(arg, context))
       );
-      
+
       return expression.evaluate(context, ...evaluatedArgs);
     }
-    
+
     // For unknown functions, try to resolve from context or global scope
     const func = context.globals?.get(functionName) || (window as any)[functionName];
     if (typeof func === 'function') {
@@ -444,7 +521,7 @@ export class ExpressionEvaluator {
       );
       return func(...evaluatedArgs);
     }
-    
+
     throw new Error(`Unknown function: ${functionName}`);
   }
 

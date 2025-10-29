@@ -120,6 +120,32 @@ export class TransitionCommand implements CommandImplementation<
     const { target, value, duration: durationInput, timingFunction } = input;
     let { property } = input;
 
+    // Validate that we have a property and value
+    if (!property || typeof property !== 'string') {
+      console.warn('⚠️ Transition command called without property argument - this may be due to parser limitations with multiline syntax. Skipping transition.');
+      // Return a dummy result to avoid breaking execution
+      return {
+        element: context.me as HTMLElement,
+        property: 'none',
+        fromValue: '',
+        toValue: '',
+        duration: 0,
+        completed: false
+      };
+    }
+
+    if (value === undefined || value === null) {
+      console.warn(`⚠️ Transition command for property "${property}" called without target value - skipping transition.`);
+      return {
+        element: context.me as HTMLElement,
+        property,
+        fromValue: '',
+        toValue: '',
+        duration: 0,
+        completed: false
+      };
+    }
+
     // Handle CSS property prefix (*property means use the actual CSS property name)
     // In _hyperscript, * prefix indicates to use the property as-is
     if (property.startsWith('*')) {

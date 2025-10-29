@@ -53,6 +53,15 @@ const hyperfixi = {
     console.log('🎯 BROWSER-BUNDLE: hyperfixi.compile() called', { code });
     const result = hyperscript.compile(code);
     console.log('🏁 BROWSER-BUNDLE: hyperscript.compile() returned', { result });
+
+    // For compatibility with _hyperscript, throw an error if compilation fails
+    if (!result.success) {
+      const errorMessage = result.errors && result.errors.length > 0
+        ? result.errors[0].message
+        : 'Compilation failed';
+      throw new Error(errorMessage);
+    }
+
     return result;
   },
   execute: hyperscript.execute,

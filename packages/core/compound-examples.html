@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFixi - Compound Hyperscript Examples</title>
+
+    <!-- Test Navigation -->
+    <script src="test-nav.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .demo-section {
+            background: white;
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+
+        .description {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        /* Example 1: HSL Color Cycling */
+        #color-box {
+            width: 300px;
+            height: 200px;
+            background: hsl(200, 100%, 90%);
+            border: 3px solid #333;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #color-box:active {
+            transform: scale(0.98);
+        }
+
+        /* Example 2: Draggable Items */
+        .draggable-container {
+            position: relative;
+            min-height: 400px;
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .draggable-item {
+            position: absolute;
+            width: 200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: move;
+            user-select: none;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .draggable-item.dragging {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .titlebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px 8px 0 0;
+            cursor: move;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 15px;
+            color: #333;
+        }
+
+        #item1 {
+            top: 20px;
+            left: 20px;
+        }
+
+        #item2 {
+            top: 20px;
+            left: 280px;
+        }
+
+        #item3 {
+            top: 180px;
+            left: 20px;
+        }
+
+        .status {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 13px;
+            color: #1976d2;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 HyperFixi - Compound Hyperscript Examples</h1>
+
+    <div class="description">
+        <strong>Pure Hyperscript Validation</strong> - These examples use ONLY hyperscript, with zero JavaScript.
+        They demonstrate complex, real-world patterns including event loops, behavior definitions, and dynamic styling.
+    </div>
+
+    <!-- Example 1: HSL Color Cycling -->
+    <div class="demo-section">
+        <h2>🌈 Example 1: HSL Color Cycling on Pointer Hold <span class="success-badge">PURE HYPERSCRIPT</span></h2>
+
+        <div class="description">
+            <p><strong>Pattern:</strong> Loop-based event handling with dynamic color generation</p>
+            <p><strong>Features tested:</strong></p>
+            <ul>
+                <li><code>on pointerdown</code> - Pointer event handling</li>
+                <li><code>repeat until event pointerup from the document</code> - Event-driven loops</li>
+                <li><code>Math.random()</code> - Global object access</li>
+                <li>Template string interpolation with backticks</li>
+                <li><code>transition</code> - CSS transitions</li>
+            </ul>
+        </div>
+
+        <div class="code-block">
+<span class="keyword">on</span> pointerdown
+  <span class="keyword">repeat until</span> <span class="keyword">event</span> pointerup <span class="keyword">from</span> <span class="keyword">the</span> document
+    <span class="keyword">set</span> rand <span class="keyword">to</span> Math.random() * 360
+    <span class="keyword">transition</span>
+      *background-color
+      <span class="keyword">to</span> <span class="string">`hsl(${rand} 100% 90%)`</span>
+      <span class="keyword">over</span> 250ms
+  <span class="keyword">end</span>
+  <span class="keyword">transition</span> *background-color <span class="keyword">to</span> initial
+<span class="keyword">end</span>
+        </div>
+
+        <div class="status">
+            📝 Instructions: Press and hold on the box below. Watch the colors cycle while you hold!
+        </div>
+
+        <div id="color-box"
+             _="on pointerdown
+                  repeat until event pointerup from the document
+                    set rand to Math.random() * 360
+                    transition
+                      *background-color
+                      to `hsl(${rand} 100% 90%)`
+                      over 250ms
+                  end
+                  transition *background-color to initial
+                end">
+            Press & Hold Me!
+        </div>
+    </div>
+
+    <!-- Example 2: Draggable Behavior -->
+    <div class="demo-section">
+        <h2>🖱️ Example 2: Draggable Behavior Pattern <span class="success-badge">PURE HYPERSCRIPT</span></h2>
+
+        <div class="description">
+            <p><strong>Pattern:</strong> Reusable behavior with parameters and custom events</p>
+            <p><strong>Features tested:</strong></p>
+            <ul>
+                <li><code>behavior</code> - Behavior definition with parameters</li>
+                <li><code>install</code> - Behavior installation</li>
+                <li><code>init</code> - Initialization logic</li>
+                <li><code>halt the event</code> - Event propagation control</li>
+                <li><code>trigger</code> - Custom events</li>
+                <li><code>measure</code> - Element position measurement</li>
+                <li><code>wait for</code> - Multiple event waiting</li>
+                <li>Template string CSS injection</li>
+            </ul>
+        </div>
+
+        <div class="code-block">
+<span class="comment">-- Usage: _="install Draggable(dragHandle: .titlebar in me)"</span>
+
+<span class="keyword">behavior</span> Draggable(dragHandle)
+  <span class="keyword">init</span>
+    <span class="keyword">if no</span> dragHandle <span class="keyword">set the</span> dragHandle <span class="keyword">to</span> me
+  <span class="keyword">end</span>
+  <span class="keyword">on</span> pointerdown(clientX, clientY) <span class="keyword">from</span> dragHandle
+    <span class="keyword">halt the event</span>
+    <span class="keyword">trigger</span> draggable:start <span class="comment">-- hooks, e.g. for adding a drop shadow</span>
+    <span class="keyword">measure</span> my x, y
+    <span class="keyword">set</span> xoff <span class="keyword">to</span> clientX - x
+    <span class="keyword">set</span> yoff <span class="keyword">to</span> clientY - y
+    <span class="keyword">repeat until</span> <span class="keyword">event</span> pointerup <span class="keyword">from</span> document
+      <span class="keyword">wait for</span> pointermove(pageX, pageY) <span class="keyword">or</span>
+                 pointerup  (pageX, pageY) <span class="keyword">from</span> document
+      <span class="keyword">add</span> <span class="string">{ left: ${pageX - xoff}px; top: ${pageY - yoff}px; }</span>
+      <span class="keyword">trigger</span> draggable:move
+    <span class="keyword">end</span>
+    <span class="keyword">trigger</span> draggable:end
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+        </div>
+
+        <div class="note">
+            ⚠️ <strong>Note:</strong> The <code>behavior</code> feature requires full hyperscript implementation.
+            If this example doesn't work yet, it indicates we need to implement the behavior system.
+            The HSL example above should work with current expression + command support.
+        </div>
+
+        <div class="status">
+            📝 Instructions: Drag the boxes by their title bars. Custom events are triggered during drag operations.
+        </div>
+
+        <div class="draggable-container">
+            <div id="item1" class="draggable-item"
+                 _="install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging">
+                <div class="titlebar">📦 Draggable Item 1</div>
+                <div class="content">Drag me by the title bar!</div>
+            </div>
+
+            <div id="item2" class="draggable-item"
+                 _="install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging">
+                <div class="titlebar">📦 Draggable Item 2</div>
+                <div class="content">I'm draggable too!</div>
+            </div>
+
+            <div id="item3" class="draggable-item"
+                 _="install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging">
+                <div class="titlebar">📦 Draggable Item 3</div>
+                <div class="content">Move me around!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Implementation Status -->
+    <div class="demo-section">
+        <h2>📊 Implementation Status</h2>
+
+        <div class="description">
+            <p><strong>What's Expected:</strong></p>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="border-bottom: 2px solid #ddd;">
+                    <th style="text-align: left; padding: 10px;">Feature</th>
+                    <th style="text-align: left; padding: 10px;">Example</th>
+                    <th style="text-align: center; padding: 10px;">Status</th>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>on pointerdown</code></td>
+                    <td style="padding: 10px;">HSL Color Box</td>
+                    <td style="padding: 10px; text-align: center;">✅ Should Work</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>repeat until event</code></td>
+                    <td style="padding: 10px;">HSL Color Box</td>
+                    <td style="padding: 10px; text-align: center;">⚠️ Needs Testing</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>Math.random()</code></td>
+                    <td style="padding: 10px;">HSL Color Box</td>
+                    <td style="padding: 10px; text-align: center;">✅ Fixed Today</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>transition</code></td>
+                    <td style="padding: 10px;">HSL Color Box</td>
+                    <td style="padding: 10px; text-align: center;">⚠️ Needs Implementation</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>behavior</code></td>
+                    <td style="padding: 10px;">Draggable Items</td>
+                    <td style="padding: 10px; text-align: center;">❌ Not Yet Implemented</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><code>measure</code></td>
+                    <td style="padding: 10px;">Draggable Items</td>
+                    <td style="padding: 10px; text-align: center;">⚠️ Needs Implementation</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><code>trigger</code></td>
+                    <td style="padding: 10px;">Draggable Items</td>
+                    <td style="padding: 10px; text-align: center;">⚠️ Needs Implementation</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="note">
+            💡 <strong>Testing Strategy:</strong>
+            <ol>
+                <li>Open this page in a browser with HyperFixi loaded</li>
+                <li>Try the HSL color box first (simpler example)</li>
+                <li>Check browser console for any errors</li>
+                <li>Try the draggable items (more complex)</li>
+                <li>Document which features work and which need implementation</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Load HyperFixi -->
+    <script>
+        // Cache busting for development - force fresh load
+        const script = document.createElement('script');
+        script.src = '/dist/hyperfixi-browser.js?v=' + Date.now();
+        document.write(script.outerHTML);
+    </script>
+
+    <!-- Define Draggable Behavior in Hyperscript -->
+    <script type="text/hyperscript">
+behavior Draggable(dragHandle)
+  init
+    if no dragHandle set the dragHandle to me
+  end
+  on pointerdown(clientX, clientY) from dragHandle
+    halt the event
+    trigger draggable:start
+    measure my x, y
+    set xoff to clientX - x
+    set yoff to clientY - y
+    repeat until event pointerup from document
+      wait for pointermove(pageX, pageY) or
+               pointerup(pageX, pageY) from document
+      add { left: ${pageX - xoff}px; top: ${pageY - yoff}px; }
+      trigger draggable:move
+    end
+    trigger draggable:end
+  end
+end
+    </script>
+
+    <script>
+        // Pure JavaScript for status reporting only - NOT for implementing hyperscript features!
+        window.addEventListener('load', () => {
+            console.log('🚀 HyperFixi Compound Examples Page Loaded');
+            console.log('📊 HyperFixi Available:', typeof hyperfixi !== 'undefined');
+
+            if (typeof hyperfixi !== 'undefined') {
+                console.log('✅ HyperFixi Methods:', Object.keys(hyperfixi));
+
+                // Initialize hyperscript processing
+                if (hyperfixi.processNode) {
+                    console.log('🔧 Processing hyperscript attributes...');
+                    // Auto-process should happen via attribute processor
+                }
+            } else {
+                console.error('❌ HyperFixi not loaded! Check /dist/hyperfixi-browser.js');
+            }
+        });
+    </script>
+</body>
+</html>

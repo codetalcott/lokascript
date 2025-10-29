@@ -192,7 +192,8 @@ export class InstallCommand implements CommandImplementation<
   private async resolveTarget(target: unknown, context: TypedExecutionContext): Promise<HTMLElement[]> {
     // If no target specified, use 'me' (current element)
     if (target === undefined || target === null) {
-      const me = context.locals.get('me');
+      // Check context.me first (primary location), then fall back to locals
+      const me = context.me || context.locals.get('me');
       if (me instanceof HTMLElement) {
         return [me];
       }
@@ -216,7 +217,8 @@ export class InstallCommand implements CommandImplementation<
     // If string (CSS selector)
     if (typeof target === 'string') {
       if (target === 'me') {
-        const me = context.locals.get('me');
+        // Check context.me first (primary location), then fall back to locals
+        const me = context.me || context.locals.get('me');
         if (me instanceof HTMLElement) {
           return [me];
         }

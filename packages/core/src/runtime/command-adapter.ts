@@ -10,6 +10,7 @@ import type {
   ValidationResult
 } from '../types/core';
 import { createAllEnhancedCommands } from '../commands/command-registry';
+import { ExpressionEvaluator } from '../core/expression-evaluator';
 
 
 /**
@@ -124,15 +125,6 @@ export class CommandAdapter implements RuntimeCommand {
       let result;
       
       // Check if this is a TypedCommandImplementation (enhanced command)
-      
-      // console.log('🔧 Command signature analysis:', {
-        // commandName: this.impl.name,
-        // hasExecute,
-        // executeLength,
-        // isEnhancedSignature,
-        // executeMethod: this.impl.execute?.toString().substring(0, 200) + '...'
-      // });
-      
       if (this.impl.execute && this.impl.execute.length === 2) {
         // console.log('🔧 Detected enhanced command with proper signature - using enhanced path');
         // Enhanced command expects (input, context) signature
@@ -241,8 +233,124 @@ export class CommandAdapter implements RuntimeCommand {
           input = {
             values: Array.isArray(args) ? args : [args]
           };
+        } else if (this.impl.name === 'install') {
+          // INSTALL command - convert [behaviorNameNode, paramsNode?, targetNode?] to structured input
+          // Expected args from parser:
+          //   args[0]: Identifier node with behavior name
+          //   args[1]: ObjectLiteral node with parameters (optional)
+          //   args[2]: Target expression (optional, defaults to 'me')
+
+          let behaviorName: string | undefined;
+          let parameters: Record<string, unknown> | undefined;
+          let target: unknown | undefined;
+
+          // Extract behavior name
+          if (args.length > 0 && args[0]) {
+            const nameNode = args[0];
+            if (typeof nameNode === 'string') {
+              behaviorName = nameNode;
+            } else if (typeof nameNode === 'object' && nameNode && 'name' in nameNode) {
+              behaviorName = (nameNode as any).name;
+            } else if (typeof nameNode === 'object' && nameNode && 'value' in nameNode) {
+              behaviorName = (nameNode as any).value;
+            }
+          }
+
+          // Extract parameters (if present)
+          if (args.length > 1 && args[1]) {
+            const paramsNode = args[1];
+            if (typeof paramsNode === 'object' && paramsNode !== null) {
+              // Check if it's an object literal node from the parser
+              if ('properties' in paramsNode && Array.isArray((paramsNode as any).properties)) {
+                // It's an AST objectLiteral node - already evaluated by runtime
+                parameters = paramsNode as Record<string, unknown>;
+              } else if ('type' in paramsNode && (paramsNode as any).type === 'objectLiteral') {
+                // AST node not yet evaluated - this shouldn't happen but handle it
+                parameters = paramsNode as Record<string, unknown>;
+              } else {
+                // Already evaluated to a plain object
+                parameters = paramsNode as Record<string, unknown>;
+              }
+            }
+          }
+
+          // Extract target (if present)
+          if (args.length > 2) {
+            target = args[2];
+          }
+
+          input = {
+            behaviorName,
+            parameters,
+            target
+          };
+        } else if (this.impl.name === 'transition' || this.impl.metadata?.name === 'transition') {
+          // TRANSITION command - receives raw AST nodes, extract metadata then evaluate values
+          // Expected args from parser:
+          //   args[0]: String node with property name (may include * prefix)
+          //   args[1]: Value expression node (needs evaluation with context)
+          //   args[2]: Duration expression node (optional, needs evaluation)
+          //   args[3]: Timing function expression node (optional, needs evaluation)
+
+          const property = args[0] ? (typeof args[0] === 'string' ? args[0] : (args[0] as any).value || (args[0] as any).content) : undefined;
+
+          // Evaluate value, duration, timingFunction using the expression evaluator
+          const evaluator = new ExpressionEvaluator();
+          const value = args[1] ? await evaluator.evaluate(args[1], context) : undefined;
+          const duration = args.length > 2 && args[2] ? await evaluator.evaluate(args[2], context) : undefined;
+          const timingFunction = args.length > 3 && args[3] ? await evaluator.evaluate(args[3], context) : undefined;
+
+          input = {
+            property,
+            value,
+            duration,
+            timingFunction
+          };
+        } else if (this.impl.name === 'repeat' || this.impl.metadata?.name === 'repeat') {
+          // REPEAT command - receives raw AST nodes, extract loop type then evaluate as needed
+          // Expected args from parser:
+          //   args[0]: Identifier node with loop type ('for', 'times', 'while', 'until', 'until-event', 'forever')
+          //   args[1]: Variable name (string node) for 'for' loops, OR event name for 'until-event'
+          //   args[2]: Collection/condition/times/eventTarget expression
+          //   args[3]: (for until-event with from) event target
+
+          const loopType = args[0] ? (typeof args[0] === 'string' ? args[0] : (args[0] as any).name || (args[0] as any).value) : undefined;
+
+          let variable: string | undefined;
+          let collection: any;
+          let condition: any;
+          let count: number | undefined;
+          let eventName: string | undefined;
+          let eventTarget: any;
+
+          // Create evaluator for AST node evaluation
+          const evaluator = new ExpressionEvaluator();
+
+          // Parse based on loop type
+          if (loopType === 'for') {
+            variable = args[1] ? (typeof args[1] === 'string' ? args[1] : (args[1] as any).value) : undefined;
+            collection = args[2] ? await evaluator.evaluate(args[2], context) : undefined;
+          } else if (loopType === 'times') {
+            const timesArg = args[1] ? await evaluator.evaluate(args[1], context) : undefined;
+            count = typeof timesArg === 'number' ? timesArg : undefined;
+          } else if (loopType === 'while' || loopType === 'until') {
+            condition = args[1]; // Keep as AST node for later evaluation
+          } else if (loopType === 'until-event') {
+            eventName = args[1] ? (typeof args[1] === 'string' ? args[1] : (args[1] as any).value) : undefined;
+            eventTarget = args[2] ? await evaluator.evaluate(args[2], context) : undefined;
+          }
+
+          input = {
+            type: loopType,
+            variable,
+            collection,
+            condition,
+            count,
+            eventName,
+            eventTarget
+          };
         } else {
-          // Default input handling for non-SET/non-RENDER/non-LOG commands
+          // Default input handling for non-SET/non-RENDER/non-LOG/non-INSTALL/non-TRANSITION/non-REPEAT commands
           input = args.length === 1 ? args[0] : args;
         }
         
@@ -264,10 +372,15 @@ export class CommandAdapter implements RuntimeCommand {
       return result;
       
     } catch (error) {
+      // Check for halt execution - don't wrap, just rethrow
+      if (error instanceof Error && (error as any).isHalt) {
+        throw error;
+      }
+
       // Enhanced error handling with suggestions
       if (error instanceof Error) {
         const enhancedError = new Error(`${this.name} command error: ${error.message}`);
-        
+
         // Add suggestions if available from validation
         if (this.impl.validation) {
           const suggestions = this.generateSuggestions(args);
@@ -275,10 +388,10 @@ export class CommandAdapter implements RuntimeCommand {
             enhancedError.message += `\n\nSuggestions:\n${suggestions.map(s => `  • ${s}`).join('\n')}`;
           }
         }
-        
+
         throw enhancedError;
       }
-      
+
       throw error;
     }
   }

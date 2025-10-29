@@ -4,7 +4,10 @@
     <meta charset="utf-8">
     <title>HyperFixi vs _hyperscript Test Runner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css">
+    <!-- Test Navigation -->
+    <script src="/test-nav.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.css">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -108,8 +111,9 @@
 
     <div id="test-controls">
         <button onclick="runAllTests()">Run All Tests</button>
-        <button onclick="runExpressionTests()">Run Expression Tests Only</button>
-        <button onclick="runCommandTests()">Run Command Tests Only</button>
+        <button onclick="runExpressionTests()">Expression Tests</button>
+        <button onclick="runCoreTests()">Core Tests</button>
+        <button onclick="runCommandTests()">Command Tests</button>
         <button onclick="stopTests()" id="stop-btn" disabled>Stop Tests</button>
         
         <br><br>
@@ -141,23 +145,60 @@
     <div id="mocha"></div>
 
     <!-- Load dependencies -->
-    <script src="https://unpkg.com/chai/chai.js"></script>
-    <script src="https://unpkg.com/mocha/mocha.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.10/chai.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.js"></script>
     
     <!-- Load HyperFixi -->
     <script src="/dist/hyperfixi-browser.js"></script>
-    
+
+    <!-- Load comprehensive tests -->
+    <script type="module" id="comprehensive-tests-loader">
+        import { loadExpressionTests, loadCommandTests, loadCoreTests, loadFeatureTests } from './comprehensive-tests.js';
+        window.loadExpressionTests = loadExpressionTests;
+        window.loadCommandTests = loadCommandTests;
+        window.loadCoreTests = loadCoreTests;
+        window.loadFeatureTests = loadFeatureTests;
+    </script>
+
     <!-- Load our test adapter -->
-    <script type="module">
-        // We'll load our test adapter here
-        import { createHyperScriptTestAdapter, testUtils } from './test-adapter.js';
-        
-        // Set up global test environment
-        window._hyperscript = createHyperScriptTestAdapter();
-        
-        // Expose test utilities globally (like _hyperscript tests expect)
-        Object.assign(window, testUtils);
-        
+    <script>
+        // Create test adapter using HyperFixi browser bundle
+        window.evalHyperScript = async function(src, ctx) {
+            return await hyperfixi.evalHyperScript(src, ctx);
+        };
+
+        // Test utilities that tests expect
+        window.make = function(htmlStr) {
+            const div = document.createElement('div');
+            div.innerHTML = htmlStr;
+            const element = div.firstElementChild;
+            const workArea = document.getElementById('work-area');
+            if (workArea && element) {
+                workArea.appendChild(element);
+            }
+            return element;
+        };
+
+        window.clearWorkArea = function() {
+            const workArea = document.getElementById('work-area');
+            if (workArea) {
+                workArea.innerHTML = '';
+            }
+        };
+
+        window.byId = function(id) {
+            return document.getElementById(id);
+        };
+
+        window.getParseErrorFor = function(src, ctx) {
+            try {
+                hyperfixi.compile(src);
+                return '';
+            } catch (e) {
+                return e.message || String(e);
+            }
+        };
+
         // Set up Mocha
         mocha.setup('bdd');
         
@@ -185,60 +226,96 @@
             document.getElementById('progress-fill').style.width = completion + '%';
         }
 
-        // Hook into Mocha events
-        mocha.suite.on('pass', function(test) {
-            testResults.passed++;
-            testResults.total++;
-            updateStats();
-        });
-
-        mocha.suite.on('fail', function(test, err) {
-            testResults.failed++;
-            testResults.total++;
-            updateStats();
-            
-            if (document.getElementById('stop-on-failure').checked) {
-                stopTests();
-            }
-        });
+        // We'll attach event listeners to the runner after mocha.run() is called
 
         // Test running functions
         window.runAllTests = function() {
-            console.log('🚀 Starting full _hyperscript test suite...');
+            console.log('🚀 Starting comprehensive HyperFixi test suite...');
             document.getElementById('stop-btn').disabled = false;
-            
+
             // Reset counters
             testResults = { passed: 0, failed: 0, total: 0 };
             updateStats();
-            
-            // We'll dynamically load test files here
-            loadAndRunTests([
-                'expressions/mathOperator',
-                'expressions/strings', 
-                'expressions/logicalOperator',
-                'expressions/comparisonOperator',
-                'expressions/possessiveExpression',
-                // Add more as we implement them
-            ]);
+
+            // Load all test categories
+            setTimeout(() => {
+                if (window.loadExpressionTests) {
+                    window.loadExpressionTests();
+                }
+                if (window.loadCoreTests) {
+                    window.loadCoreTests();
+                }
+                if (window.loadCommandTests) {
+                    window.loadCommandTests();
+                }
+                if (window.loadFeatureTests) {
+                    window.loadFeatureTests();
+                }
+
+                // Run all loaded tests
+                setTimeout(() => {
+                    console.log('🏃 Running all registered tests...');
+                    const runner = mocha.run();
+                    setupRunnerEvents(runner);
+                }, 200);
+            }, 100);
         };
 
         window.runExpressionTests = function() {
             console.log('🔍 Running expression tests only...');
-            loadAndRunTests([
-                'expressions/mathOperator',
-                'expressions/strings', 
-                'expressions/logicalOperator',
-                'expressions/comparisonOperator',
-                'expressions/possessiveExpression',
-                'expressions/numbers',
-                'expressions/boolean',
-                'expressions/asExpression'
-            ]);
+
+            // Reset counters
+            testResults = { passed: 0, failed: 0, total: 0 };
+            updateStats();
+
+            setTimeout(() => {
+                if (window.loadExpressionTests) {
+                    window.loadExpressionTests();
+                }
+
+                setTimeout(() => {
+                    const runner = mocha.run();
+                    setupRunnerEvents(runner);
+                }, 200);
+            }, 100);
         };
 
         window.runCommandTests = function() {
             console.log('⚙️ Running command tests only...');
-            alert('Command tests not implemented yet - this will show 0% passing');
+
+            // Reset counters
+            testResults = { passed: 0, failed: 0, total: 0 };
+            updateStats();
+
+            setTimeout(() => {
+                if (window.loadCommandTests) {
+                    window.loadCommandTests();
+                }
+
+                setTimeout(() => {
+                    const runner = mocha.run();
+                    setupRunnerEvents(runner);
+                }, 200);
+            }, 100);
+        };
+
+        window.runCoreTests = function() {
+            console.log('🏗️ Running core tests only...');
+
+            // Reset counters
+            testResults = { passed: 0, failed: 0, total: 0 };
+            updateStats();
+
+            setTimeout(() => {
+                if (window.loadCoreTests) {
+                    window.loadCoreTests();
+                }
+
+                setTimeout(() => {
+                    const runner = mocha.run();
+                    setupRunnerEvents(runner);
+                }, 200);
+            }, 100);
         };
 
         window.stopTests = function() {
@@ -246,82 +323,30 @@
             document.getElementById('stop-btn').disabled = true;
         };
 
-        async function loadAndRunTests(testFiles) {
-            for (const testFile of testFiles) {
-                try {
-                    console.log(`Loading test: ${testFile}`);
-                    // We'll need to convert _hyperscript test files to work with our adapter
-                    // For now, let's create a simple test to verify our setup
-                    await loadTestFile(testFile);
-                } catch (error) {
-                    console.error(`Failed to load test ${testFile}:`, error);
+        // Setup event listeners for a Mocha runner
+        function setupRunnerEvents(runner) {
+            runner.on('pass', function(test) {
+                testResults.passed++;
+                testResults.total++;
+                updateStats();
+            });
+
+            runner.on('fail', function(test, err) {
+                testResults.failed++;
+                testResults.total++;
+                updateStats();
+                console.error(`❌ Test failed: ${test.title}`, err.message);
+
+                if (document.getElementById('stop-on-failure')?.checked) {
+                    runner.abort();
                 }
-            }
-            
-            // Run all loaded tests
-            mocha.run();
-        }
+            });
 
-        async function loadTestFile(testFile) {
-            // This is where we'd load and adapt _hyperscript test files
-            // For now, let's create some basic tests to validate our setup
-            
-            if (testFile === 'expressions/mathOperator') {
-                describe("HyperFixi Math Operator Tests", function () {
-                    it("addition works", async function () {
-                        const result = await evalHyperScript("1 + 1");
-                        result.should.equal(2);
-                    });
-
-                    it("string concat works", async function () {
-                        const result = await evalHyperScript("'a' + 'b'");
-                        result.should.equal("ab");
-                    });
-
-                    it("unparenthesized expressions with multiple operators cause an error", function () {
-                        const result = getParseErrorFor("1 + 2 * 3");
-                        result.indexOf("You must parenthesize math operations with different operators").should.equal(0);
-                    });
-
-                    it("parenthesized expressions with multiple operators work", async function () {
-                        const result = await evalHyperScript("1 + (2 * 3)");
-                        result.should.equal(7);
-                    });
-                });
-            }
-            
-            if (testFile === 'expressions/strings') {
-                describe("HyperFixi String Tests", function () {
-                    it("can parse simple strings", async function () {
-                        const result = await evalHyperScript('"hello world"');
-                        result.should.equal("hello world");
-                    });
-
-                    it("can parse simple strings w/ single quotes", async function () {
-                        const result = await evalHyperScript("'hello world'");
-                        result.should.equal("hello world");
-                    });
-                });
-            }
-
-            if (testFile === 'expressions/possessiveExpression') {
-                describe("HyperFixi Possessive Expression Tests", function () {
-                    it("its result works", async function () {
-                        const result = await evalHyperScript("its result", { result: { result: 'success' } });
-                        result.should.equal('success');
-                    });
-
-                    it("my property works", async function () {
-                        const result = await evalHyperScript("my value", { me: { value: 42 } });
-                        result.should.equal(42);
-                    });
-
-                    it("your property works", async function () {
-                        const result = await evalHyperScript("your data", { you: { data: 'test' } });
-                        result.should.equal('test');
-                    });
-                });
-            }
+            runner.on('end', function() {
+                console.log('✅ Test run completed!');
+                console.log(`Final results: ${testResults.passed}/${testResults.total} passed`);
+                document.getElementById('stop-btn').disabled = true;
+            });
         }
 
         // Make functions available globally

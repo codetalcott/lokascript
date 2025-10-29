@@ -1,0 +1,704 @@
+=== Compound Examples Test Logs ===
+Timestamp: 2025-10-29T14:57:38.622Z
+Browser: chromium
+URL: http://127.0.0.1:3000/compound-examples.html
+Duration: 3351ms
+Total logs: 486
+Errors: 6
+Warnings: 34
+
+=== Console Output ===
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[LOG] 🔧 About to create transition command... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27088)
+[LOG] 🔧 Transition command created: TransitionCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27090)
+[LOG] 🔧 Transition command metadata: {name: transition, description: The transition command animates CSS properties usi…t value to a new value over a specified duration., examples: Array(4), syntax: transition [<target>] <property> to <value> [over <duration>] [with <timing-function>], category: animation} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27091)
+[LOG] 🔧 Transition command name: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27092)
+[LOG] 🔧 About to register transition command... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27093)
+[LOG] ✅ Transition command registered in enhanced registry (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27095)
+[LOG] ✅ Available enhanced commands: [increment, decrement, set, default, make, append, call, get, pseudo-command, if, halt, return, throw, repeat, unless, continue, break, pick, log, tell, js, beep, async, settle, measure, transition, render, add, remove, toggle, show, hide, put, send, trigger, go, install, undefined, take] (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27096)
+[LOG] ✅ Verify transition is in registry: true (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27097)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: on pointerdown
+                  repeat until event pointerup from the document
+                    set rand to Math.random() * 360
+                    transition
+                      *background-color
+                      to `hsl(${rand} 100% 90%)`
+                      over 250ms
+                  end
+                  transition *background-color to initial
+                end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "on pointerdown
+                  repeat until event pointerup from the document
+                    set rand to Math.random() * 360
+                    transition
+                      *background-color
+                      to `hsl(${rand} 100% 90%)`
+                      over 250ms
+                  end
+                  transition *background-color to initial
+                end" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: on pointerdown
+                  repeat until even… *background-color to initial
+                end, codeLength: 384, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: the (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] ✅ Found "the", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7583)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 71} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 71, end: 79, line: 2} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: set type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: set (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: set (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: transition type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ⚠️  parseCommandListUntilEnd: Command parsing added error, restoring error state. Error was: Unexpected token: hsl(${rand} 100% 90%) at line 6, column 26 (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7432)
+[LOG] ✅ Parsed command: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: hsl(${rand} 100% 90%) (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: hsl(${rand} 100% 90%) (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: over (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: 250ms (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 2 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] ⚠️ Command parsing added error, restoring error state. Error was: Binary operator '*' requires a left operand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:8668)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(33), compilationTime: 3.6999998092651367} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as event handler (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29423)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.5} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.2999999523162842} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.2999999523162842} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 SCRIPT: Processing hyperscript script tag (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29356)
+[LOG] 🔧 SCRIPT: Compiling hyperscript code from script tag: 
+behavior Draggable(dragHandle)
+  init
+    if no dragHandle set the dragHandle to me
+  end
+  on poin (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29363)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: 
+behavior Draggable(dragHandle)
+  init
+    if no d…
+    end
+    trigger draggable:end
+  end
+end
+    , codeLength: 549, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: document (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 303} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 303, end: 311, line: 12} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: wait type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: add type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: left (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageX (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: xoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: top (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageY (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: yoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: trigger type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 3 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 SCRIPT: Compilation succeeded, executing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29377)
+[LOG] 🔧 RUNTIME: Registering behavior: Draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27838)
+[LOG] ✅ RUNTIME: Behavior registered: Draggable with 1 event handlers (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27846)
+[LOG] 🔧 SCRIPT: Script tag processing complete (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29380)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 SCRIPT: Processing hyperscript script tag (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29356)
+[LOG] 🔧 SCRIPT: Compiling hyperscript code from script tag: 
+behavior Draggable(dragHandle)
+  init
+    if no dragHandle set the dragHandle to me
+  end
+  on poin (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29363)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: 
+behavior Draggable(dragHandle)
+  init
+    if no d…
+    end
+    trigger draggable:end
+  end
+end
+    , codeLength: 549, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: document (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 303} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 303, end: 311, line: 12} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: wait type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: add type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: left (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageX (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: xoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: top (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageY (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: yoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: trigger type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 3 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 SCRIPT: Compilation succeeded, executing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29377)
+[LOG] 🔧 RUNTIME: Registering behavior: Draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27838)
+[LOG] ✅ RUNTIME: Behavior registered: Draggable with 1 event handlers (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27846)
+[LOG] 🔧 SCRIPT: Script tag processing complete (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29380)
+[LOG] 🚀 HyperFixi Compound Examples Page Loaded (http://127.0.0.1:3000/compound-examples.html:406)
+[LOG] 📊 HyperFixi Available: true (http://127.0.0.1:3000/compound-examples.html:407)
+[LOG] ✅ HyperFixi Methods: [evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart, evaluate, compile, execute, run, createContext, createRuntime, Parser, Runtime, tokenize, processNode, process, attributeProcessor, tailwindExtension, version] (http://127.0.0.1:3000/compound-examples.html:410)
+[LOG] 🔧 Processing hyperscript attributes... (http://127.0.0.1:3000/compound-examples.html:414)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[LOG] 🔧 About to create transition command... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27088)
+[LOG] 🔧 Transition command created: TransitionCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27090)
+[LOG] 🔧 Transition command metadata: {name: transition, description: The transition command animates CSS properties usi…t value to a new value over a specified duration., examples: Array(4), syntax: transition [<target>] <property> to <value> [over <duration>] [with <timing-function>], category: animation} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27091)
+[LOG] 🔧 Transition command name: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27092)
+[LOG] 🔧 About to register transition command... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27093)
+[LOG] ✅ Transition command registered in enhanced registry (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27095)
+[LOG] ✅ Available enhanced commands: [increment, decrement, set, default, make, append, call, get, pseudo-command, if, halt, return, throw, repeat, unless, continue, break, pick, log, tell, js, beep, async, settle, measure, transition, render, add, remove, toggle, show, hide, put, send, trigger, go, install, undefined, take] (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27096)
+[LOG] ✅ Verify transition is in registry: true (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27097)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[WARNING] ⚠️  Attempting to register command with undefined name: {impl: Object, implName: undefined, implMetadata: undefined, implMetadataName: undefined, adapterName: undefined} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:26007)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: on pointerdown
+                  repeat until event pointerup from the document
+                    set rand to Math.random() * 360
+                    transition
+                      *background-color
+                      to `hsl(${rand} 100% 90%)`
+                      over 250ms
+                  end
+                  transition *background-color to initial
+                end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "on pointerdown
+                  repeat until event pointerup from the document
+                    set rand to Math.random() * 360
+                    transition
+                      *background-color
+                      to `hsl(${rand} 100% 90%)`
+                      over 250ms
+                  end
+                  transition *background-color to initial
+                end" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: on pointerdown
+                  repeat until even… *background-color to initial
+                end, codeLength: 384, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: the (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] ✅ Found "the", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7583)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 71} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 71, end: 79, line: 2} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: set type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: set (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: set (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: transition type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ⚠️  parseCommandListUntilEnd: Command parsing added error, restoring error state. Error was: Unexpected token: hsl(${rand} 100% 90%) at line 6, column 26 (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7432)
+[LOG] ✅ Parsed command: transition (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: hsl(${rand} 100% 90%) (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: hsl(${rand} 100% 90%) (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: over (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: 250ms (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 2 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] ⚠️ Command parsing added error, restoring error state. Error was: Binary operator '*' requires a left operand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:8668)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(33), compilationTime: 2.1000001430511475} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as event handler (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29423)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.2999999523162842} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.20000004768371582} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Found hyperscript code: install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29397)
+[LOG] 🔧 ATTR: Processing element with code: "install Draggable(dragHandle: .titlebar in me)
+                    on draggable:start add .dragging
+                    on draggable:end remove .dragging" (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29403)
+[LOG] 🔧 ATTR: Created context for element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29406)
+[LOG] 🔧 ATTR: About to compile hyperscript code (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29408)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: install Draggable(dragHandle: .titlebar in me)
+   …                on draggable:end remove .dragging, codeLength: 153, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: on (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: start (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] ⚠️  parseCommandSequence: Skipping unexpected token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:9090)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 ATTR: Compilation result: {success: true, ast: Object, errors: Array(0), tokens: Array(21), compilationTime: 0.3000001907348633} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29410)
+[LOG] 🔧 ATTR: Compilation succeeded, processing handler type (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29420)
+[LOG] 🔧 ATTR: Processing as immediate execution (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29427)
+[LOG] 🔧 SCRIPT: Processing hyperscript script tag (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29356)
+[LOG] 🔧 SCRIPT: Compiling hyperscript code from script tag: 
+behavior Draggable(dragHandle)
+  init
+    if no dragHandle set the dragHandle to me
+  end
+  on poin (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29363)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: 
+behavior Draggable(dragHandle)
+  init
+    if no d…
+    end
+    trigger draggable:end
+  end
+end
+    , codeLength: 549, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: document (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 303} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 303, end: 311, line: 12} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: wait type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: add type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: left (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageX (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: xoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: top (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageY (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: yoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: trigger type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 3 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 SCRIPT: Compilation succeeded, executing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29377)
+[LOG] 🔧 RUNTIME: Registering behavior: Draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27838)
+[LOG] ✅ RUNTIME: Behavior registered: Draggable with 1 event handlers (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27846)
+[LOG] 🔧 SCRIPT: Script tag processing complete (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29380)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 ATTR: Attempting to process element: JSHandle@node (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29390)
+[LOG] 🔧 ATTR: Skipping already processed element (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29393)
+[LOG] 🔧 SCRIPT: Processing hyperscript script tag (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29356)
+[LOG] 🔧 SCRIPT: Compiling hyperscript code from script tag: 
+behavior Draggable(dragHandle)
+  init
+    if no dragHandle set the dragHandle to me
+  end
+  on poin (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29363)
+[LOG] 🚀 COMPILE: hyperscript-api compile() called {code: 
+behavior Draggable(dragHandle)
+  init
+    if no d…
+    end
+    trigger draggable:end
+  end
+end
+    , codeLength: 549, codeType: string} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28840)
+[LOG] 🔍 COMPILE: about to call parse() (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28851)
+[LOG] 📍 Parsing event name, current token: {value: pointerup, type: identifier} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7565)
+[LOG] ✅ Got event name: pointerup Next token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7569)
+[LOG] 🔍 Checking for "from", current token: from (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7575)
+[LOG] ✅ Found "from", advancing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7577)
+[LOG] 📍 After consuming "from", current token: document (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7579)
+[LOG] 🔍 Before parsePrimary for event target: {value: document, type: identifier, position: 303} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7588)
+[LOG] ✅ After parsePrimary, eventTarget: {type: identifier, name: document, start: 303, end: 311, line: 12} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7594)
+[LOG] 🔄 parseCommandListUntilEnd: Starting to parse command list (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7418)
+[LOG] 📍 Loop iteration, current token: wait type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: wait (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: add type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: add (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: left (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageX (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: xoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: top (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: : (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: $ (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: { (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: pageY (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: - (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: yoff (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: px (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: ; (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ⚠️  Skipping unexpected token: } (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7490)
+[LOG] ✅ Next token is a command, continuing without separator (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7499)
+[LOG] 📍 Loop iteration, current token: trigger type: command (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7420)
+[LOG] ✅ Found COMMAND token: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7424)
+[LOG] ✅ Parsed command: trigger (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7436)
+[LOG] 📍 After parsing command, current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7480)
+[LOG] 📍 No separator and no command, breaking. Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7503)
+[LOG] 🔍 After loop, checking for "end". Current token: end (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7508)
+[LOG] ✅ Found "end", consuming it (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7511)
+[LOG] ✅ parseCommandListUntilEnd: Successfully parsed 3 commands (http://127.0.0.1:3000/dist/hyperfixi-browser.js:7518)
+[LOG] 🏁 COMPILE: parse() returned {success: true, hasNode: true, hasError: false} (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28853)
+[LOG] 🔧 SCRIPT: Compilation succeeded, executing... (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29377)
+[LOG] 🔧 RUNTIME: Registering behavior: Draggable (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27838)
+[LOG] ✅ RUNTIME: Behavior registered: Draggable with 1 event handlers (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27846)
+[LOG] 🔧 SCRIPT: Script tag processing complete (http://127.0.0.1:3000/dist/hyperfixi-browser.js:29380)
+[LOG] 🚀 HyperFixi Compound Examples Page Loaded (http://127.0.0.1:3000/compound-examples.html:406)
+[LOG] 📊 HyperFixi Available: true (http://127.0.0.1:3000/compound-examples.html:407)
+[LOG] ✅ HyperFixi Methods: [evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart, evaluate, compile, execute, run, createContext, createRuntime, Parser, Runtime, tokenize, processNode, process, attributeProcessor, tailwindExtension, version] (http://127.0.0.1:3000/compound-examples.html:410)
+[LOG] 🔧 Processing hyperscript attributes... (http://127.0.0.1:3000/compound-examples.html:414)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+[PAGEERROR] install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable 
+Stack: Error: install command error: Failed to install behavior "Draggable": No target specified and "me" is not available in context
+
+Suggestions:
+  • Example: install Removable
+    at CommandAdapter.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:25937:43)
+    at async Runtime.executeEnhancedCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27649:26)
+    at async Runtime.executeCommand (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27719:24)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27150:32)
+    at async Runtime.executeCommandSequence (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27192:34)
+    at async Runtime.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:27159:32)
+    at async Object.execute (http://127.0.0.1:3000/dist/hyperfixi-browser.js:28901:16)
+
+=== End of Logs ===

@@ -335,17 +335,17 @@ export class Parser {
   }
 
   private parseUnary(): ASTNode {
-    if (this.match('not', '-', '+')) {
+    if (this.match('not', 'no', '-', '+')) {
       const operator = this.previous().value;
-      
+
       // Only flag as missing operand if this starts a complex expression and lacks proper context
-      // Valid unary: "-5", "not true", "+number" 
+      // Valid unary: "-5", "not true", "no value", "+number"
       // Invalid: "5 + + 3" (handled elsewhere), standalone "+" (handled below)
       if (this.isAtEnd()) {
         this.addError(`Expected expression after '${operator}' operator`);
         return this.createErrorNode();
       }
-      
+
       const expr = this.parseUnary();
       return this.createUnaryExpression(operator, expr, true);
     }
@@ -439,7 +439,7 @@ export class Parser {
     // Check if the name is in the COMMANDS set from tokenizer
     const COMMANDS = new Set([
       'add', 'append', 'async', 'beep', 'break', 'call', 'continue', 'decrement',
-      'default', 'fetch', 'get', 'go', 'halt', 'hide', 'if', 'increment', 'js', 'log',
+      'default', 'fetch', 'get', 'go', 'halt', 'hide', 'if', 'increment', 'install', 'js', 'log',
       'make', 'measure', 'pick', 'put', 'remove', 'render', 'repeat', 'return',
       'send', 'set', 'settle', 'show', 'take', 'tell', 'throw', 'toggle',
       'transition', 'trigger', 'unless', 'wait'
@@ -1210,6 +1210,364 @@ export class Parser {
   }
 
   /**
+   * Parse wait command with support for events and time expressions
+   *
+   * Syntax:
+   *   wait <time>                                    (wait for duration)
+   *   wait for <event>                              (wait for event)
+   *   wait for <event>(params)                      (wait for event with parameters)
+   *   wait for <event> or <event>                   (wait for multiple events)
+   *   wait for <event>(params) or <event>(params)   (events with parameters)
+   *   wait for <event> from <target>                (wait for event from target)
+   *   wait for <event> or <event> from <target>     (multiple events from target)
+   */
+  private parseWaitCommand(commandToken: Token): CommandNode {
+    const args: ASTNode[] = [];
+
+    // Check if this is a simple time-based wait (e.g., "wait 1s")
+    if (this.checkTokenType(TokenType.TIME_EXPRESSION) || this.checkTokenType(TokenType.NUMBER)) {
+      // Simple wait with time
+      const timeExpr = this.parsePrimary();
+      args.push(timeExpr);
+
+      return {
+        type: 'command',
+        name: 'wait',
+        args: args as ExpressionNode[],
+        isBlocking: true,
+        start: commandToken.start || 0,
+        end: this.getPosition().end,
+        line: commandToken.line || 1,
+        column: commandToken.column || 1
+      };
+    }
+
+    // Check for 'for' keyword (event-based wait)
+    if (this.check('for')) {
+      this.advance(); // consume 'for'
+
+      // Parse event specifications (can be multiple with 'or')
+      const events: Array<{name: string, params: string[]}> = [];
+
+      do {
+        // Parse event name
+        const eventToken = this.peek();
+        if (eventToken.type !== TokenType.IDENTIFIER) {
+          throw new Error('Expected event name after "for"');
+        }
+        const eventName = eventToken.value;
+        this.advance();
+
+        // Parse optional parameters: (param1, param2)
+        const eventParams: string[] = [];
+        if (this.check('(')) {
+          this.advance(); // consume '('
+
+          // Parse parameter list
+          while (!this.isAtEnd() && !this.check(')')) {
+            const paramToken = this.peek();
+            if (paramToken.type === TokenType.IDENTIFIER) {
+              eventParams.push(paramToken.value);
+              this.advance();
+
+              // Check for comma separator
+              if (this.check(',')) {
+                this.advance();
+              }
+            } else {
+              break;
+            }
+          }
+
+          // Consume closing parenthesis
+          if (!this.check(')')) {
+            throw new Error('Expected ")" after event parameters');
+          }
+          this.advance();
+        }
+
+        events.push({ name: eventName, params: eventParams });
+
+        // Check for 'or' to continue with more events
+        if (this.check('or')) {
+          this.advance(); // consume 'or'
+          continue;
+        } else {
+          break;
+        }
+      } while (!this.isAtEnd());
+
+      // Parse optional 'from <target>' clause
+      let eventTarget: ASTNode | null = null;
+      if (this.check('from')) {
+        this.advance(); // consume 'from'
+
+        // Optional 'the' before target
+        if (this.check('the')) {
+          this.advance();
+        }
+
+        // Parse the target expression
+        eventTarget = this.parsePrimary();
+      }
+
+      // Build args array
+      // Format: [eventList, target?]
+      args.push({
+        type: 'arrayLiteral',
+        elements: events.map(event => ({
+          type: 'objectLiteral',
+          properties: [
+            {
+              key: { type: 'identifier', name: 'name' } as IdentifierNode,
+              value: { type: 'literal', value: event.name, raw: `"${event.name}"` } as LiteralNode
+            },
+            {
+              key: { type: 'identifier', name: 'params' } as IdentifierNode,
+              value: {
+                type: 'arrayLiteral',
+                elements: event.params.map(param => ({
+                  type: 'literal',
+                  value: param,
+                  raw: `"${param}"`
+                } as LiteralNode))
+              } as any
+            }
+          ]
+        } as any)),
+        start: commandToken.start,
+        end: this.getPosition().end,
+        line: commandToken.line,
+        column: commandToken.column
+      } as any);
+
+      if (eventTarget) {
+        args.push(eventTarget);
+      }
+    }
+
+    return {
+      type: 'command',
+      name: 'wait',
+      args: args as ExpressionNode[],
+      isBlocking: true,
+      start: commandToken.start || 0,
+      end: this.getPosition().end,
+      line: commandToken.line || 1,
+      column: commandToken.column || 1
+    };
+  }
+
+  /**
+   * Parse install command with support for named parameters
+   *
+   * Syntax:
+   *   install BehaviorName                        (simple installation)
+   *   install BehaviorName()                      (with empty params)
+   *   install BehaviorName(param1, param2)        (positional params)
+   *   install BehaviorName(name: value)           (named params)
+   *   install BehaviorName(name: value, name2: value2)  (multiple named params)
+   */
+  private parseInstallCommand(commandToken: Token): CommandNode {
+    const args: ASTNode[] = [];
+
+    // Parse behavior name (identifier)
+    if (!this.checkTokenType(TokenType.IDENTIFIER)) {
+      throw new Error('Expected behavior name after "install"');
+    }
+
+    const behaviorName = this.advance().value;
+    args.push({
+      type: 'identifier',
+      name: behaviorName,
+      start: this.previous().start,
+      end: this.previous().end,
+      line: this.previous().line,
+      column: this.previous().column
+    } as IdentifierNode);
+
+    // Check for parameter list
+    if (this.check('(')) {
+      this.advance(); // consume '('
+
+      // Parse parameters (can be named or positional)
+      const params: Array<{name?: string, value: ASTNode}> = [];
+
+      while (!this.isAtEnd() && !this.check(')')) {
+        // Check if this is a named parameter (identifier followed by ':')
+        const checkpoint = this.current;
+        let paramName: string | undefined;
+
+        if (this.checkTokenType(TokenType.IDENTIFIER)) {
+          const possibleName = this.peek().value;
+          this.advance(); // consume identifier
+
+          if (this.check(':')) {
+            // This is a named parameter
+            this.advance(); // consume ':'
+            paramName = possibleName;
+          } else {
+            // Not a named parameter, rewind
+            this.current = checkpoint;
+          }
+        }
+
+        // Parse the parameter value
+        const value = this.parseExpression();
+        params.push({ name: paramName, value });
+
+        // Check for comma separator
+        if (this.check(',')) {
+          this.advance();
+        } else if (!this.check(')')) {
+          // No comma and not at closing paren - might be end of params
+          break;
+        }
+      }
+
+      // Consume closing parenthesis
+      if (!this.check(')')) {
+        throw new Error('Expected ")" after behavior parameters');
+      }
+      this.advance();
+
+      // Add parameters as an object literal node
+      if (params.length > 0) {
+        args.push({
+          type: 'objectLiteral',
+          properties: params.map(param => ({
+            key: param.name
+              ? { type: 'identifier', name: param.name } as IdentifierNode
+              : { type: 'literal', value: '_positional' } as LiteralNode,
+            value: param.value
+          })),
+          start: commandToken.start,
+          end: this.getPosition().end,
+          line: commandToken.line,
+          column: commandToken.column
+        } as any);
+      }
+    }
+
+    return {
+      type: 'command',
+      name: 'install',
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: commandToken.start || 0,
+      end: this.getPosition().end,
+      line: commandToken.line || 1,
+      column: commandToken.column || 1
+    };
+  }
+
+  /**
+   * Parse transition command with support for multiline syntax
+   *
+   * Syntax:
+   *   transition <property> to <value>
+   *   transition <property> to <value> over <duration>
+   *   transition <property> to <value> over <duration> with <timing-function>
+   *   transition <target> <property> to <value>
+   *
+   * Multiline form:
+   *   transition
+   *     *background-color
+   *     to `hsl(${rand} 100% 90%)`
+   *     over 250ms
+   */
+  private parseTransitionCommand(commandToken: Token): CommandNode {
+    const args: ASTNode[] = [];
+
+    // Parse optional target (if it looks like a selector or identifier followed by a property)
+    let target: ASTNode | null = null;
+    let property: ASTNode | null = null;
+
+    // Look ahead to determine if first token is a target or property
+    const firstToken = this.peek();
+
+    // Parse property (required)
+    // Property can be:
+    // - identifier (opacity, width, etc.)
+    // - identifier with * prefix (*background-color)
+    if (firstToken.type === TokenType.IDENTIFIER || firstToken.value === '*') {
+      let propertyValue = '';
+
+      // Handle wildcard prefix
+      if (this.check('*')) {
+        propertyValue = '*';
+        this.advance();
+      }
+
+      // Get property name
+      if (this.checkTokenType(TokenType.IDENTIFIER)) {
+        propertyValue += this.peek().value;
+        this.advance();
+
+        // Handle hyphenated properties (background-color)
+        while (this.check('-') && !this.isAtEnd()) {
+          propertyValue += '-';
+          this.advance();
+          if (this.checkTokenType(TokenType.IDENTIFIER)) {
+            propertyValue += this.peek().value;
+            this.advance();
+          }
+        }
+
+        property = {
+          type: 'string',
+          value: propertyValue,
+          start: firstToken.start || 0,
+          end: this.getPosition().end,
+          line: firstToken.line,
+          column: firstToken.column
+        };
+      }
+    }
+
+    if (!property) {
+      throw new Error('Transition command requires a CSS property');
+    }
+
+    args.push(property);
+
+    // Parse 'to' keyword and value (required)
+    if (!this.check('to')) {
+      throw new Error('Expected "to" keyword after property in transition command');
+    }
+    this.advance(); // consume 'to'
+
+    // Parse target value (can be template string, number, color, etc.)
+    const value = this.parsePrimary();
+    args.push(value);
+
+    // Parse optional 'over <duration>'
+    if (this.check('over')) {
+      this.advance(); // consume 'over'
+      const duration = this.parsePrimary();
+      args.push(duration);
+    }
+
+    // Parse optional 'with <timing-function>'
+    if (this.check('with')) {
+      this.advance(); // consume 'with'
+      const timingFunction = this.parsePrimary();
+      args.push(timingFunction);
+    }
+
+    return {
+      type: 'command',
+      name: 'transition',
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: commandToken.start || 0,
+      end: this.getPosition().end,
+      line: commandToken.line || 1,
+      column: commandToken.column || 1
+    };
+  }
+
+  /**
    * Parse if/unless command with support for single-line and multi-line forms
    *
    * Syntax:
@@ -1244,11 +1602,12 @@ export class Parser {
              !this.check('then') &&
              iterations < maxIterations) {
         const beforePos = this.current;
-        conditionTokens.push(this.parsePrimary());
+        // Use parseUnary() instead of parsePrimary() to handle unary operators like 'not' and 'no'
+        conditionTokens.push(this.parseUnary());
 
         // Safety check: ensure we're making progress
         if (this.current === beforePos) {
-          // parsePrimary didn't advance - manually advance to prevent infinite loop
+          // parseUnary didn't advance - manually advance to prevent infinite loop
           this.advance();
         }
         iterations++;
@@ -1544,17 +1903,24 @@ export class Parser {
 
     if (this.matchTokenType(TokenType.STRING)) {
       const raw = this.previous().value;
-      
+
       // Check for unclosed string (if it doesn't end with matching quote)
-      if (raw.length < 2 || 
+      if (raw.length < 2 ||
           (raw.startsWith('"') && !raw.endsWith('"')) ||
           (raw.startsWith("'") && !raw.endsWith("'"))) {
         this.addError("Unclosed string literal - string not properly closed");
         return this.createErrorNode();
       }
-      
+
       const value = raw.slice(1, -1); // Remove quotes
       return this.createLiteral(value, raw);
+    }
+
+    if (this.matchTokenType(TokenType.TEMPLATE_LITERAL)) {
+      const raw = this.previous().value;
+      // Template literals are kept as-is with backticks
+      // The runtime will evaluate them with the current context
+      return this.createLiteral(raw, raw);
     }
 
     if (this.matchTokenType(TokenType.BOOLEAN)) {
@@ -2599,6 +2965,15 @@ export class Parser {
     }
     if (lowerName === 'if' || lowerName === 'unless') {
       return this.parseIfCommand(commandToken);
+    }
+    if (lowerName === 'wait') {
+      return this.parseWaitCommand(commandToken);
+    }
+    if (lowerName === 'install') {
+      return this.parseInstallCommand(commandToken);
+    }
+    if (lowerName === 'transition') {
+      return this.parseTransitionCommand(commandToken);
     }
 
     // Delegate compound commands (put, trigger, remove, etc.) to their specialized parsers

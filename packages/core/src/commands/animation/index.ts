@@ -11,7 +11,7 @@ import { TransitionCommand } from './transition';
 export { MeasureCommand as MeasureCommand } from './measure';
 export { SettleCommand as SettleCommand } from './settle';
 export { TakeCommand as TakeCommand } from './take';
-export { TransitionCommand as TransitionCommand } from './transition';
+export { TransitionCommand as TransitionCommand, createTransitionCommand } from './transition';
 
 // Create instances with default options for easy access
 export const animationCommands = {

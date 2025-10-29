@@ -184,6 +184,7 @@ The project implements a complete hyperscript expression evaluation system with
 ```bash
 # Quick feedback after code changes (recommended)
 npm run test:quick --prefix packages/core              # Fast build + test (<10 sec)
+npm run test:comprehensive --prefix packages/core      # Comprehensive suite (51 tests)
 npm run test:feedback --prefix packages/core           # Console output (human-readable)
 npm run test:feedback:json --prefix packages/core      # JSON output (machine-parseable)
 npm run test:feedback:md --prefix packages/core        # Markdown output (documentation)
@@ -205,6 +206,8 @@ npx http-server packages/core -p 3000 -c-1
 **Test Pages Available**:
 
 - **Test Dashboard**: <http://127.0.0.1:3000/test-dashboard.html> (auto-runs, visual feedback)
+- **Comprehensive Test Runner**: <http://127.0.0.1:3000/src/compatibility/hyperscript-tests/test-runner.html> (51 comprehensive tests)
+- **Compound Examples**: <http://127.0.0.1:3000/compound-examples.html> (multiline patterns: HSL cycling, draggable)
 - **Official Suite**: <http://127.0.0.1:3000/official-test-suite.html> (81 test files)
 - **Live Demo**: <http://127.0.0.1:3000/live-demo.html> (interactive features)
 - **Compatibility**: <http://127.0.0.1:3000/compatibility-test.html> (side-by-side comparison)

@@ -35,6 +35,26 @@ function toTypedContext(context: ExecutionContext): TypedExecutionContext {
   } as TypedExecutionContext;
 }
 
+// Helper function to process escape sequences in strings
+function processEscapeSequences(str: string): string {
+  return str.replace(/\\(.)/g, (_match, char) => {
+    switch (char) {
+      case 'n': return '\n';
+      case 't': return '\t';
+      case 'r': return '\r';
+      case 'b': return '\b';
+      case 'f': return '\f';
+      case 'v': return '\v';
+      case '0': return '\0';
+      case '\\': return '\\';
+      case '"': return '"';
+      case "'": return "'";
+      case '`': return '`';
+      default: return char; // For any other escaped char, just return the char
+    }
+  });
+}
+
 // Helper function to extract value from TypedResult objects
 async function extractValue(result: any): Promise<any> {
   // If it's already a primitive value, return as-is
@@ -650,8 +670,9 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   // String literals
   if (token.type === TokenType.STRING) {
     advance(state);
-    // Remove quotes
-    const value = token.value.slice(1, -1);
+    // Remove quotes and process escape sequences
+    const rawValue = token.value.slice(1, -1);
+    const value = processEscapeSequences(rawValue);
     return {
       type: 'literal',
       value,
@@ -1229,7 +1250,12 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
     }
     return value;
   }
-  
+
+  // 5. JavaScript global objects (Date, Math, Object, Array, etc.)
+  if (typeof globalThis !== 'undefined' && name in globalThis) {
+    return (globalThis as any)[name];
+  }
+
   // Return undefined for unknown identifiers
   if (name === 'it') {
     console.debug(`  'it' not found anywhere, returning undefined`);

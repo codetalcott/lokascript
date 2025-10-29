@@ -17,7 +17,9 @@ export interface HyperScriptContext {
   me?: any;
   /** Local variables scope */
   locals?: Record<string, any>;
-  /** Result from previous operation (equivalent to 'it') */
+  /** The current result (equivalent to 'it') */
+  it?: any;
+  /** Result from previous operation (also equivalent to 'it') */
   result?: any;
   /** Target element for operations (equivalent to 'you') */
   you?: any;
@@ -39,7 +41,7 @@ function convertContext(hyperScriptContext?: HyperScriptContext | ExecutionConte
   const context: ExecutionContext = {
     me: hyperScriptContext?.me || null,
     you: hyperScriptContext?.you || null,
-    it: hyperScriptContext?.result,
+    it: (hyperScriptContext as any)?.it || hyperScriptContext?.result,
     result: hyperScriptContext?.result,
     locals: new Map(),
     globals: new Map(),
@@ -69,7 +71,7 @@ function convertContext(hyperScriptContext?: HyperScriptContext | ExecutionConte
 
   // Handle plain object format - treat unknown properties as locals
   // This supports calling evalHyperScript('expr', { var1: 'value1', var2: 'value2' })
-  const knownProperties = new Set(['me', 'you', 'result', 'locals', 'globals']);
+  const knownProperties = new Set(['me', 'you', 'it', 'result', 'locals', 'globals']);
   for (const [key, value] of Object.entries(hyperScriptContext)) {
     if (!knownProperties.has(key) && typeof value !== 'undefined') {
       context.locals.set(key, value);

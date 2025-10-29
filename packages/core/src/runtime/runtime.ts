@@ -63,11 +63,12 @@ import {
 } from '../commands/control-flow/index';
 
 // Animation commands
-import { 
-  MeasureCommand, 
-  SettleCommand, 
-  TakeCommand, 
-  TransitionCommand 
+import {
+  MeasureCommand,
+  SettleCommand,
+  TakeCommand,
+  TransitionCommand,
+  createTransitionCommand
 } from '../commands/animation/index';
 
 // Data commands
@@ -91,6 +92,8 @@ export class Runtime {
   private expressionEvaluator: ExpressionEvaluator;
   private putCommand: PutCommand;
   private enhancedRegistry: EnhancedCommandRegistry;
+  private behaviorRegistry: Map<string, any>;
+  private behaviorAPI: any;
   
   constructor(options: RuntimeOptions = {}) {
     this.options = {
@@ -103,7 +106,17 @@ export class Runtime {
     
     this.expressionEvaluator = new ExpressionEvaluator();
     this.putCommand = new PutCommand();
-    
+    this.behaviorRegistry = new Map();
+
+    // Create behavior API with install method
+    this.behaviorAPI = {
+      has: (name: string) => this.behaviorRegistry.has(name),
+      get: (name: string) => this.behaviorRegistry.get(name),
+      install: async (behaviorName: string, element: HTMLElement, parameters: Record<string, any>) => {
+        return await this.installBehaviorOnElement(behaviorName, element, parameters);
+      }
+    };
+
     // Initialize enhanced command registry with all commands for complete system
     this.enhancedRegistry = EnhancedCommandRegistry.createWithDefaults();
     this.initializeEnhancedCommands();
@@ -112,14 +125,17 @@ export class Runtime {
   /**
    * Register legacy command by adapting it to the enhanced registry
    */
-  private registerLegacyCommand(command: { name: string; execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>; validate?: (args: unknown[]) => { isValid: boolean; errors: unknown[]; suggestions: string[] } }): void {
-    // console.log('🔧 Registering legacy command:', command.name);
-    // Create an adapter for legacy commands to work with enhanced registry
+  private registerLegacyCommand(command: { name?: string; metadata?: { name: string }; execute: (context: ExecutionContext, ...args: unknown[]) => Promise<unknown>; validate?: (args: unknown[]) => { isValid: boolean; errors: unknown[]; suggestions: string[] } }): void {
+    // Get command name from either top-level name or metadata.name
     const commandAny = command as any;
+    const commandName = command.name || commandAny.metadata?.name || 'unnamed';
+
+    // console.log('🔧 Registering legacy command:', commandName);
+    // Create an adapter for legacy commands to work with enhanced registry
     const adapter = {
-      name: command.name,
-      syntax: commandAny.syntax || `${command.name} [args...]`,
-      description: commandAny.description || `${command.name} command`,
+      name: commandName,
+      syntax: commandAny.syntax || commandAny.metadata?.syntax || `${commandName} [args...]`,
+      description: commandAny.description || commandAny.metadata?.description || `${commandName} command`,
       inputSchema: null, // Legacy commands don't have schemas
       outputType: 'unknown' as const,
       
@@ -237,13 +253,36 @@ export class Runtime {
       this.registerLegacyCommand(new ReturnCommand() as any);
       this.registerLegacyCommand(new ThrowCommand() as any);
       this.registerLegacyCommand(new UnlessCommand() as any);
-      this.registerLegacyCommand(new RepeatCommand() as any);
+      // RepeatCommand is now registered as enhanced command via EnhancedCommandRegistry
       
       // Register animation commands
       this.registerLegacyCommand(new MeasureCommand() as any);
       this.registerLegacyCommand(new SettleCommand() as any);
       this.registerLegacyCommand(new TakeCommand() as any);
-      this.registerLegacyCommand(new TransitionCommand() as any);
+
+      // Register transition as enhanced command
+      try {
+        console.log('🔧 About to create transition command...');
+        const transitionCommand = createTransitionCommand();
+        console.log('🔧 Transition command created:', transitionCommand);
+        console.log('🔧 Transition command metadata:', transitionCommand.metadata);
+        console.log('🔧 Transition command name:', transitionCommand.metadata?.name);
+
+        console.log('🔧 About to register transition command...');
+        this.enhancedRegistry.register(transitionCommand);
+        console.log('✅ Transition command registered in enhanced registry');
+        console.log('✅ Available enhanced commands:', this.enhancedRegistry.getCommandNames());
+        console.log('✅ Verify transition is in registry:', this.enhancedRegistry.has('transition'));
+      } catch (e) {
+        console.error('❌ Failed to register transition command:', e);
+        console.error('❌ Error details:', {
+          message: (e as any).message,
+          stack: (e as any).stack,
+          error: e
+        });
+        // Fallback to legacy if enhanced fails
+        this.registerLegacyCommand(new TransitionCommand() as any);
+      }
 
       // Register additional data commands
       this.registerLegacyCommand(new DefaultCommand() as any);
@@ -280,16 +319,45 @@ export class Runtime {
    * Execute an AST node within the given execution context
    */
   async execute(node: ASTNode, context: ExecutionContext): Promise<unknown> {
+    // Inject behavior API into context so install command can access it
+    if (!context.locals.has('_behaviors')) {
+      context.locals.set('_behaviors', this.behaviorAPI);
+    }
+
     try {
       switch (node.type) {
         case 'command': {
           return await this.executeCommand(node as CommandNode, context);
         }
-        
+
         case 'eventHandler': {
           return await this.executeEventHandler(node as EventHandlerNode, context);
         }
-        
+
+        case 'behavior': {
+          return await this.executeBehaviorDefinition(node as any, context);
+        }
+
+        case 'initBlock':
+        case 'block': {
+          // Execute the commands in the init block or generic block
+          const block = node as any;
+          if (block.commands && Array.isArray(block.commands)) {
+            for (const command of block.commands) {
+              try {
+                await this.execute(command, context);
+              } catch (error) {
+                // Check for halt execution - stop block gracefully
+                if (error instanceof Error && (error as any).isHalt) {
+                  break; // Stop executing remaining commands in block
+                }
+                throw error; // Rethrow other errors
+              }
+            }
+          }
+          return;
+        }
+
         case 'CommandSequence': {
           return await this.executeCommandSequence(node as unknown as { commands: ASTNode[] }, context);
         }
@@ -297,16 +365,16 @@ export class Runtime {
         case 'objectLiteral': {
           return await this.executeObjectLiteral(node as unknown as { properties: Array<{ key: ASTNode; value: ASTNode }> }, context);
         }
-        
+
         default: {
           // For all other node types, use the expression evaluator
           const result = await this.expressionEvaluator.evaluate(node, context);
-          
+
           // Check if the result is a command-selector pattern from space operator
           if (result && typeof result === 'object' && result.command && result.selector) {
             return await this.executeCommandFromPattern(result.command, result.selector, context);
           }
-          
+
           return result;
         }
       }
@@ -334,13 +402,21 @@ export class Runtime {
       try {
         lastResult = await this.execute(command, context);
       } catch (error) {
+        // Check for halt execution - stop sequence gracefully
+        if (error instanceof Error && (error as any).isHalt) {
+          if (this.options.enableErrorReporting) {
+            // console.log('Halt command encountered, stopping sequence execution');
+          }
+          break; // Stop executing remaining commands
+        }
+
         if (this.options.enableErrorReporting) {
           // console.error('Error executing command in sequence:', error, command);
         }
         throw error;
       }
     }
-    
+
     // Return the result of the last command
     return lastResult;
   }
@@ -762,6 +838,10 @@ export class Runtime {
       }
 
       evaluatedArgs = [target];
+    } else if (name === 'repeat' || name === 'transition') {
+      // REPEAT and TRANSITION commands need raw AST nodes for the adapter to extract metadata
+      // Don't evaluate args - pass them as-is to the adapter
+      evaluatedArgs = args;
     } else {
       // For other commands, evaluate all arguments normally
       evaluatedArgs = await Promise.all(
@@ -916,6 +996,16 @@ export class Runtime {
       // });
     }
     
+    // Debug logging for transition command
+    if (name.toLowerCase() === 'transition') {
+      console.log('🔧 TRANSITION command check:', {
+        name,
+        useEnhancedCommands: this.options.useEnhancedCommands,
+        hasInRegistry: this.enhancedRegistry.has(name.toLowerCase()),
+        availableCommands: this.enhancedRegistry.getCommandNames()
+      });
+    }
+
     // Try enhanced commands first if enabled
     if (this.options.useEnhancedCommands && this.enhancedRegistry.has(name.toLowerCase())) {
       // console.log(`🚀 Using enhanced command path for: ${name}`);
@@ -1057,6 +1147,93 @@ export class Runtime {
         context.events!.set(eventKey, { target: htmlTarget, event, handler: eventHandler });
       }
     }
+  }
+
+  /**
+   * Execute behavior definition node and register it
+   */
+  private async executeBehaviorDefinition(node: any, _context: ExecutionContext): Promise<void> {
+    const { name, parameters, eventHandlers, initBlock } = node;
+
+    console.log(`🔧 RUNTIME: Registering behavior: ${name}`);
+
+    // Store the behavior definition in the registry
+    this.behaviorRegistry.set(name, {
+      name,
+      parameters,
+      eventHandlers,
+      initBlock
+    });
+
+    console.log(`✅ RUNTIME: Behavior registered: ${name} with ${eventHandlers.length} event handlers`);
+  }
+
+  /**
+   * Get a behavior definition from the registry
+   */
+  getBehavior(name: string): any | undefined {
+    return this.behaviorRegistry.get(name);
+  }
+
+  /**
+   * Install a behavior on an element
+   */
+  private async installBehaviorOnElement(
+    behaviorName: string,
+    element: HTMLElement,
+    parameters: Record<string, any>
+  ): Promise<void> {
+    const behavior = this.behaviorRegistry.get(behaviorName);
+    if (!behavior) {
+      throw new Error(`Behavior "${behaviorName}" not found`);
+    }
+
+    console.log(`🔧 RUNTIME: Installing behavior ${behaviorName} on element`, element);
+
+    // Create context for behavior initialization
+    const behaviorContext: ExecutionContext = {
+      me: element,
+      you: null,
+      it: null,
+      result: null,
+      locals: new Map(),
+      globals: new Map(),
+      halted: false,
+      returned: false,
+      broke: false,
+      continued: false,
+      async: false
+    };
+
+    // Add behavior parameters to context
+    for (const [key, value] of Object.entries(parameters)) {
+      behaviorContext.locals.set(key, value);
+    }
+
+    // Add behavior parameters to the context as locals
+    if (behavior.parameters) {
+      for (const param of behavior.parameters) {
+        if (param in parameters) {
+          behaviorContext.locals.set(param, parameters[param]);
+        }
+      }
+    }
+
+    // Execute init block if present
+    if (behavior.initBlock) {
+      console.log(`🔧 RUNTIME: Executing init block for ${behaviorName}`);
+      await this.execute(behavior.initBlock, behaviorContext);
+    }
+
+    // Attach event handlers to the element
+    if (behavior.eventHandlers && behavior.eventHandlers.length > 0) {
+      console.log(`🔧 RUNTIME: Attaching ${behavior.eventHandlers.length} event handlers`);
+      for (const handler of behavior.eventHandlers) {
+        await this.executeEventHandler(handler, behaviorContext);
+      }
+    }
+
+    console.log(`✅ RUNTIME: Behavior ${behaviorName} installed successfully`);
   }
 
   /**

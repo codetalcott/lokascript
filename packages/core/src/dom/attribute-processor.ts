@@ -54,12 +54,63 @@ export class AttributeProcessor {
    * Scan and process all elements with hyperscript attributes in the document
    */
   scanAndProcessAll(): void {
+    // Process elements with _ attributes
     const elements = document.querySelectorAll(`[${this.options.attributeName}]`);
     elements.forEach(element => {
       if (element instanceof HTMLElement) {
         this.processElement(element);
       }
     });
+
+    // Process <script type="text/hyperscript"> tags
+    const scriptTags = document.querySelectorAll('script[type="text/hyperscript"]');
+    scriptTags.forEach(script => {
+      if (script instanceof HTMLScriptElement) {
+        this.processHyperscriptTag(script);
+      }
+    });
+  }
+
+  /**
+   * Process a <script type="text/hyperscript"> tag
+   */
+  private processHyperscriptTag(script: HTMLScriptElement): void {
+    console.log(`🔧 SCRIPT: Processing hyperscript script tag`);
+
+    const hyperscriptCode = script.textContent || script.innerHTML;
+    if (!hyperscriptCode || !hyperscriptCode.trim()) {
+      console.log(`🔧 SCRIPT: No hyperscript code found in script tag`);
+      return;
+    }
+
+    try {
+      console.log(`🔧 SCRIPT: Compiling hyperscript code from script tag:`, hyperscriptCode.substring(0, 100));
+
+      // Create execution context (no specific element for global behavior definitions)
+      const context = createContext(null);
+
+      // Compile the hyperscript code
+      const compilationResult = hyperscript.compile(hyperscriptCode);
+
+      if (!compilationResult.success) {
+        console.error(`🔧 SCRIPT: Hyperscript compilation failed for script tag`);
+        console.error(`🔧 SCRIPT: Code that failed:`, hyperscriptCode);
+        console.error(`🔧 SCRIPT: Compilation errors:`, JSON.stringify(compilationResult.errors, null, 2));
+        compilationResult.errors?.forEach((error: any, i: number) => {
+          console.error(`🔧 SCRIPT: Error ${i + 1}:`, error.message, `at line ${error.line}, column ${error.column}`);
+        });
+        return;
+      }
+
+      console.log(`🔧 SCRIPT: Compilation succeeded, executing...`);
+
+      // Execute the compiled code (this will register behaviors)
+      hyperscript.execute(compilationResult.ast!, context);
+
+      console.log(`🔧 SCRIPT: Script tag processing complete`);
+    } catch (error) {
+      console.error(`Error processing hyperscript script tag:`, error);
+    }
   }
 
   /**
