@@ -89,6 +89,35 @@ For complete details, see:
 - [CLAUDE_CODE_INTEGRATION.md](packages/core/CLAUDE_CODE_INTEGRATION.md)
 - [INTEGRATION_RECOMMENDATIONS.md](packages/core/INTEGRATION_RECOMMENDATIONS.md)
 
+### Session 12 Finding: Dual Command Architecture (Legacy + Enhanced)
+
+**Status**: ⚠️ **ARCHITECTURAL SPLIT DISCOVERED** - Not a bug, but requires awareness
+
+**Discovery**: While fixing the RepeatCommand bug, we discovered the codebase maintains TWO distinct command implementation patterns at the architectural level, despite successful naming consolidation.
+
+**Key Points**:
+
+1. **Naming Consolidation (Sessions 1-10)**: ✅ COMPLETE
+   - All "legacy-" and "enhanced-" file prefixes removed
+   - Clean, intuitive file naming achieved
+   - No naming inconsistencies
+
+2. **Architectural Patterns**: ⚠️ TWO PATTERNS STILL EXIST
+   - **Legacy Pattern**: `execute(context, ...args)` - wraps with legacy adapter
+   - **Enhanced Pattern**: `execute(input, context)` - full TypeScript types
+   - ~20 commands use legacy pattern, ~38 commands use enhanced pattern
+   - Some commands registered in BOTH (was causing bugs)
+
+**Bug Fixed**: RepeatCommand was registered twice (legacy + enhanced), causing "Unknown repeat type: undefined" error.
+
+**For Future Sessions**: See [ARCHITECTURE_NOTE_LEGACY_ENHANCED.md](ARCHITECTURE_NOTE_LEGACY_ENHANCED.md) for:
+- Complete analysis of both patterns
+- List of commands using each pattern
+- Three migration options (complete, formalize, gradual)
+- Recommendation: Formalize dual architecture, then migrate gradually
+
+**Impact**: This is NOT blocking production use, but future command work should be aware of this architectural split to avoid bugs.
+
 ## Project Overview
 
 **Evolution Complete**: HyperFixi has evolved from a simple _hyperscript + fixi.js
