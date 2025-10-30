@@ -10,19 +10,24 @@
 import type { CommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/command-types';
 
-// Input type definition (halt takes no arguments)
+// Input type definition
 export interface HaltCommandInput {
-  // No input required
+  target?: unknown; // Can be 'the event' or other targets
 }
 
-// Output type definition  
+// Output type definition
 export interface HaltCommandOutput {
   halted: true;
   timestamp: number;
+  eventHalted?: boolean;
 }
 
 /**
  * Enhanced Halt Command with full type safety and validation
+ *
+ * Supports two modes:
+ * 1. `halt` - Stops command execution
+ * 2. `halt the event` - Prevents default event behavior without stopping execution
  */
 export class HaltCommand implements CommandImplementation<
   HaltCommandInput,
@@ -31,13 +36,14 @@ export class HaltCommand implements CommandImplementation<
 > {
   metadata = {
     name: 'halt',
-    description: 'The halt command stops execution of the current command sequence. It provides a way to immediately terminate processing without throwing an error.',
+    description: 'The halt command stops execution or prevents event defaults. Use "halt" to stop command sequence, or "halt the event" to preventDefault() without stopping.',
     examples: [
       'halt',
+      'halt the event',
       'if error then halt',
       'unless user.isValid then halt'
     ],
-    syntax: 'halt',
+    syntax: 'halt [the event]',
     category: 'flow' as const,
     version: '2.0.0'
   };
@@ -49,15 +55,52 @@ export class HaltCommand implements CommandImplementation<
         isValid: true,
         errors: [],
         suggestions: [],
-        data: {}
+        data: _input as HaltCommandInput || {}
       };
     }
   };
 
   async execute(
-    _input: HaltCommandInput,
+    input: HaltCommandInput,
     context: TypedExecutionContext
   ): Promise<HaltCommandOutput> {
+    // Check if we're halting an event (from "halt the event")
+    const targetToHalt = input?.target;
+
+    // If target is an event object, prevent its default behavior
+    if (targetToHalt && typeof targetToHalt === 'object' && 'preventDefault' in targetToHalt) {
+      const event = targetToHalt as Event;
+      event.preventDefault();
+      event.stopPropagation();
+
+      console.log('🛑 HALT: Event default prevented and propagation stopped');
+
+      // Return normally - don't stop command execution
+      return {
+        halted: true,
+        timestamp: Date.now(),
+        eventHalted: true
+      };
+    }
+
+    // Also check context.event in case "the event" resolved to context.event
+    if (!targetToHalt && context.event && 'preventDefault' in context.event) {
+      const event = context.event as Event;
+      event.preventDefault();
+      event.stopPropagation();
+
+      console.log('🛑 HALT: Event from context prevented');
+
+      return {
+        halted: true,
+        timestamp: Date.now(),
+        eventHalted: true
+      };
+    }
+
+    // No event to halt - this is a regular "halt" command to stop execution
+    console.log('🛑 HALT: Stopping command execution');
+
     // Set a halt flag in the context if it supports it
     if ('halted' in context) {
       (context as any).halted = true;

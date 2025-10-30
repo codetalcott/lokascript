@@ -271,12 +271,15 @@ export class Runtime {
    * Execute an AST node within the given execution context
    */
   async execute(node: ASTNode, context: ExecutionContext): Promise<unknown> {
+    console.log(`🚀 RUNTIME: execute() called with node type: '${node.type}'`);
+
     // Inject behavior API into context so install command can access it
     if (!context.locals.has('_behaviors')) {
       context.locals.set('_behaviors', this.behaviorAPI);
     }
 
     try {
+      console.log(`🚀 RUNTIME: About to enter switch with node.type='${node.type}'`);
       switch (node.type) {
         case 'command': {
           return await this.executeCommand(node as CommandNode, context);
@@ -288,6 +291,49 @@ export class Runtime {
 
         case 'behavior': {
           return await this.executeBehaviorDefinition(node as any, context);
+        }
+
+        case 'Program': {
+          console.log(`🚀 RUNTIME: *** PROGRAM NODE DETECTED *** with node type: ${node.type}`);
+          // Execute a program containing multiple statements (commands + event handlers)
+          const program = node as any;
+          console.log(`🚀 RUNTIME: Program node statements check:`, program.statements ? `array with ${program.statements.length} items` : 'NO STATEMENTS');
+
+          if (!program.statements || !Array.isArray(program.statements)) {
+            console.warn('Program node has no statements array:', program);
+            return;
+          }
+
+          console.log(`🔧 RUNTIME: Executing Program with ${program.statements.length} statements`);
+          program.statements.forEach((stmt: any, idx: number) => {
+            console.log(`  Statement ${idx + 1}: type=${stmt.type}, name=${stmt.name || stmt.event || 'N/A'}`);
+          });
+
+          let lastResult: unknown = undefined;
+
+          // Execute each statement in sequence
+          for (const statement of program.statements) {
+            console.log(`🔧 RUNTIME: Executing statement: type=${statement.type}`);
+            try {
+              lastResult = await this.execute(statement, context);
+            } catch (error) {
+              // Check for halt execution - stop program gracefully
+              if (error instanceof Error && (error as any).isHalt) {
+                if (this.options.enableErrorReporting) {
+                  // console.log('Halt command encountered in program, stopping execution');
+                }
+                break; // Stop executing remaining statements
+              }
+
+              if (this.options.enableErrorReporting) {
+                // console.error('Error executing statement in program:', error, statement);
+              }
+              throw error;
+            }
+          }
+
+          // Return the result of the last statement
+          return lastResult;
         }
 
         case 'initBlock':
@@ -426,6 +472,12 @@ export class Runtime {
     const adapter = this.enhancedRegistry.getAdapter(name);
     if (!adapter) {
       throw new Error(`Enhanced command not found: ${name}`);
+    }
+
+    // Inject runtime execute function into context for commands that need to execute sub-commands
+    // (e.g., repeat, if, unless, etc.)
+    if (!context.locals.has('_runtimeExecute')) {
+      context.locals.set('_runtimeExecute', (node: ASTNode) => this.execute(node, context));
     }
 
     let evaluatedArgs: unknown[];
@@ -837,6 +889,29 @@ export class Runtime {
       const input = { target: inputTarget, value, toKeyword: 'to' as const };
       // console.log('🔧 SET: Final input object:', input);
       result = await adapter.execute(context, input);
+    } else if (name === 'measure' && evaluatedArgs.length >= 1) {
+      // MEASURE command expects input object format: { target?, property?, variable? }
+      const [firstArg, ...rest] = evaluatedArgs;
+
+      let input: any = {};
+
+      // If first arg is a string, treat it as property name
+      if (typeof firstArg === 'string') {
+        input.property = firstArg;
+      } else if (firstArg instanceof HTMLElement) {
+        // If first arg is an element, it's the target
+        input.target = firstArg;
+        // Second arg might be the property
+        if (rest.length > 0 && typeof rest[0] === 'string') {
+          input.property = rest[0];
+        }
+      } else {
+        // Otherwise pass as-is and let command handle it
+        input = firstArg || {};
+      }
+
+      console.log('🔧 MEASURE: Converting args to input object:', input);
+      result = await adapter.execute(context, input);
     } else if ((name === 'increment' || name === 'decrement') && evaluatedArgs.length >= 1) {
       // INCREMENT/DECREMENT commands expect input object format
       const [target, ...rest] = evaluatedArgs;
@@ -1058,12 +1133,38 @@ export class Runtime {
    */
   private async executeEventHandler(node: EventHandlerNode, context: ExecutionContext): Promise<void> {
     const { event, commands, target } = node;
+    console.log(`🔧 RUNTIME: executeEventHandler for event '${event}', target=${target}, context.me=`, context.me);
 
     // Determine target element(s)
-    const targets = target
-      ? this.queryElements(target, context)
-      : context.me ? [context.me] : [];
-    
+    let targets: HTMLElement[] = [];
+
+    if (target) {
+      // First check if target is a variable name in the context
+      if (typeof target === 'string' && context.locals.has(target)) {
+        const resolvedTarget = context.locals.get(target);
+        console.log(`🔧 RUNTIME: Resolved target variable '${target}' to:`, resolvedTarget);
+
+        // If it's an HTMLElement, use it directly
+        if (this.isElement(resolvedTarget)) {
+          targets = [resolvedTarget as HTMLElement];
+        } else if (typeof resolvedTarget === 'string') {
+          // If it's a string, treat it as a CSS selector
+          targets = this.queryElements(resolvedTarget, context);
+        } else if (Array.isArray(resolvedTarget)) {
+          // If it's an array, filter for HTMLElements
+          targets = resolvedTarget.filter(el => this.isElement(el)) as HTMLElement[];
+        }
+      } else {
+        // Not a variable, treat as CSS selector
+        targets = this.queryElements(target, context);
+      }
+    } else {
+      // No target specified, use context.me
+      targets = context.me ? [context.me] : [];
+    }
+
+    console.log(`🔧 RUNTIME: Found ${targets.length} target elements for event '${event}'`);
+
     if (targets.length === 0) {
       console.warn(`No elements found for event handler: ${event}`);
       return;
@@ -1071,6 +1172,8 @@ export class Runtime {
     
     // Create event handler function
     const eventHandler = async (domEvent: Event) => {
+      console.log(`🎯 EVENT FIRED: ${event} on`, domEvent.target, 'with', commands.length, 'commands');
+
       // Create new context for event execution
       const eventContext: ExecutionContext = {
         ...context,
@@ -1078,15 +1181,34 @@ export class Runtime {
         it: domEvent,
         event: domEvent
       };
-      
+
+      console.log(`🔧 EVENT CONTEXT: me=`, eventContext.me, 'context.locals has:', Array.from(context.locals.keys()));
+
       // Execute all commands in sequence
       for (const command of commands) {
-        await this.execute(command, eventContext);
+        try {
+          console.log(`🚀 EXECUTING COMMAND in event handler:`, command);
+          await this.execute(command, eventContext);
+          console.log(`✅ COMMAND COMPLETED`);
+        } catch (error) {
+          console.error(`❌ COMMAND FAILED:`, error);
+          // Check for halt execution - stop event handler gracefully
+          if (error instanceof Error && (error as any).isHalt) {
+            if (this.options.enableErrorReporting) {
+              console.log('Halt command encountered, stopping event handler execution');
+            }
+            break; // Stop executing remaining commands in event handler
+          }
+          // Rethrow other errors
+          throw error;
+        }
       }
+      console.log(`✅ EVENT HANDLER COMPLETE: ${event}`);
     };
     
     // Bind event handlers to all target elements
     for (const target of targets) {
+      console.log(`✅ RUNTIME: Adding event listener for '${event}' on element:`, target);
       target.addEventListener(event, eventHandler);
 
       // Store event handler for potential cleanup
@@ -1174,7 +1296,20 @@ export class Runtime {
     // Execute init block if present
     if (behavior.initBlock) {
       console.log(`🔧 RUNTIME: Executing init block for ${behaviorName}`);
-      await this.execute(behavior.initBlock, behaviorContext);
+      try {
+        await this.execute(behavior.initBlock, behaviorContext);
+      } catch (error) {
+        // Check for halt execution - stop init block gracefully
+        if (error instanceof Error && (error as any).isHalt) {
+          if (this.options.enableErrorReporting) {
+            // console.log('Halt command encountered in init block, stopping execution');
+          }
+          // Continue with event handler attachment even if init was halted
+        } else {
+          // Rethrow other errors
+          throw error;
+        }
+      }
     }
 
     // Attach event handlers to the element

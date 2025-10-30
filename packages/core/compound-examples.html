@@ -392,13 +392,16 @@ behavior Draggable(dragHandle)
   on pointerdown(clientX, clientY) from dragHandle
     halt the event
     trigger draggable:start
-    measure my x, y
-    set xoff to clientX - x
-    set yoff to clientY - y
+    measure x
+    set startX to it
+    measure y
+    set startY to it
+    set xoff to clientX - startX
+    set yoff to clientY - startY
     repeat until event pointerup from document
-      wait for pointermove(pageX, pageY) or
-               pointerup(pageX, pageY) from document
-      add { left: ${pageX - xoff}px; top: ${pageY - yoff}px; }
+      wait for pointermove(clientX, clientY) or
+               pointerup(clientX, clientY) from document
+      add { left: ${clientX - xoff}px; top: ${clientY - yoff}px; }
       trigger draggable:move
     end
     trigger draggable:end

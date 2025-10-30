@@ -147,10 +147,59 @@ export class Parser {
       
       if (this.checkTokenType(TokenType.COMMAND) || (this.isCommand(this.peek().value) && !this.isKeyword(this.peek().value))) {
         // console.log('✅ PARSER: confirmed command sequence, calling parseCommandSequence');
-      
+
         const commandSequence = this.parseCommandSequence();
         if (commandSequence) {
-          // Check for unexpected tokens after parsing
+          // Check if there are event handlers after the command sequence
+          if (!this.isAtEnd() && this.check('on')) {
+            console.log('✅ PARSER: Found event handlers after command sequence, parsing as program');
+            const statements: ASTNode[] = [commandSequence];
+            console.log(`✅ PARSER: Starting with ${statements.length} statement(s) from command sequence`);
+
+            // Parse all event handlers
+            let eventHandlerCount = 0;
+            while (!this.isAtEnd() && this.check('on')) {
+              console.log(`✅ PARSER: Parsing event handler #${eventHandlerCount + 1}, current token: ${this.peek().value}`);
+              this.advance(); // consume 'on'
+              const eventHandler = this.parseEventHandler();
+              console.log(`✅ PARSER: parseEventHandler returned:`, eventHandler ? `type=${eventHandler.type}, event=${(eventHandler as any).event}` : 'null');
+              if (eventHandler) {
+                statements.push(eventHandler);
+                eventHandlerCount++;
+                console.log(`✅ PARSER: Added event handler, now have ${statements.length} statements total`);
+              }
+
+              console.log(`✅ PARSER: After parsing event handler, current token: ${this.isAtEnd() ? 'END' : this.peek().value}, isAtEnd=${this.isAtEnd()}, check('on')=${this.check('on')}`);
+
+              // Check if there's another event handler
+              if (!this.isAtEnd() && !this.check('on')) {
+                // No more event handlers, check if we're at the end
+                if (!this.isAtEnd()) {
+                  console.log(`⚠️ PARSER: Unexpected token after event handlers: ${this.peek().value}`);
+                  this.addError(`Unexpected token after event handlers: ${this.peek().value}`);
+                  return {
+                    success: false,
+                    node: this.createProgramNode(statements),
+                    tokens: this.tokens,
+                    error: this.error!
+                  };
+                }
+                console.log(`✅ PARSER: No more event handlers, at end of input`);
+                break;
+              }
+            }
+
+            console.log(`✅ PARSER: Finished parsing, creating Program node with ${statements.length} statements`);
+            // Return a program node containing both commands and event handlers
+            return {
+              success: true,
+              node: this.createProgramNode(statements),
+              tokens: this.tokens,
+              warnings: this.warnings
+            };
+          }
+
+          // No event handlers, check for unexpected tokens after parsing
           if (!this.isAtEnd()) {
             this.addError(`Unexpected token: ${this.peek().value}`);
             return {
@@ -160,7 +209,7 @@ export class Parser {
               error: this.error!
             };
           }
-          
+
           return {
             success: true,
             node: commandSequence,
@@ -1568,6 +1617,48 @@ export class Parser {
   }
 
   /**
+   * Parse add command: add <classes/object-literal> [to <target>]
+   * Supports:
+   * - add .class to me
+   * - add { left: 10px, top: 20px } to me
+   * - add { background: 'red' }
+   */
+  private parseAddCommand(commandToken: Token): CommandNode {
+    const args: ASTNode[] = [];
+
+    // Parse first argument - can be classes (string/identifier) or CSS object literal
+    if (this.match('{')) {
+      // Parse CSS-style object literal for inline styles
+      // Syntax: { left: ${x}px; top: ${y}px; }
+      args.push(this.parseCSSObjectLiteral());
+    } else if (!this.isAtEnd() && !this.check('to')) {
+      // Parse regular class expression
+      args.push(this.parsePrimary());
+    }
+
+    // Parse optional 'to <target>'
+    if (this.check('to')) {
+      this.advance(); // consume 'to'
+
+      // Parse target element
+      if (!this.isAtEnd() && !this.check('then') && !this.check('and')) {
+        args.push(this.parsePrimary());
+      }
+    }
+
+    return {
+      type: 'command',
+      name: 'add',
+      args: args as ExpressionNode[],
+      isBlocking: false,
+      start: commandToken.start || 0,
+      end: this.getPosition().end,
+      line: commandToken.line || 1,
+      column: commandToken.column || 1
+    };
+  }
+
+  /**
    * Parse if/unless command with support for single-line and multi-line forms
    *
    * Syntax:
@@ -1917,10 +2008,18 @@ export class Parser {
     }
 
     if (this.matchTokenType(TokenType.TEMPLATE_LITERAL)) {
-      const raw = this.previous().value;
-      // Template literals are kept as-is with backticks
-      // The runtime will evaluate them with the current context
-      return this.createLiteral(raw, raw);
+      const token = this.previous();
+      const raw = token.value;
+      // Template literals need special handling for ${} interpolation
+      // Return a templateLiteral node so the expression evaluator can interpolate variables
+      return {
+        type: 'templateLiteral',
+        value: raw,
+        start: token.start || 0,
+        end: token.end || 0,
+        line: token.line,
+        column: token.column
+      };
     }
 
     if (this.matchTokenType(TokenType.BOOLEAN)) {
@@ -2169,6 +2268,106 @@ export class Parser {
     };
   }
 
+  /**
+   * Parse CSS-style object literal for inline styles
+   * Syntax: { prop: value; prop: value; }
+   * Supports template interpolation: { left: ${x}px; top: ${y}px; }
+   */
+  private parseCSSObjectLiteral(): ASTNode {
+    const pos = this.getPosition();
+    const properties: Array<{ key: ASTNode; value: ASTNode }> = [];
+
+    do {
+      // Check for end of object
+      if (this.check('}')) {
+        break;
+      }
+
+      // Parse property name (CSS property names can have hyphens)
+      let key: ASTNode;
+      if (this.matchTokenType(TokenType.IDENTIFIER)) {
+        key = this.createIdentifier(this.previous().value);
+      } else if (this.matchTokenType(TokenType.STRING)) {
+        const raw = this.previous().value;
+        const value = raw.slice(1, -1);
+        key = this.createLiteral(value, raw);
+      } else {
+        this.addError("Expected CSS property name");
+        return this.createErrorNode();
+      }
+
+      // Expect colon
+      if (!this.consume(':', "Expected ':' after CSS property name")) {
+        return this.createErrorNode();
+      }
+
+      // Parse value - collect all tokens until semicolon or closing brace
+      // Handle nested braces in ${} template expressions
+      const valueTokens: string[] = [];
+      let hasTemplateExpression = false;
+      let braceDepth = 0;
+
+      while (!this.isAtEnd()) {
+        // Check for end of value (only when not inside ${})
+        if (braceDepth === 0 && (this.check(';') || this.check('}'))) {
+          break;
+        }
+
+        const token = this.advance();
+        valueTokens.push(token.value);
+
+        // Track brace depth for ${} template expressions
+        if (token.value === '$' && this.check('{')) {
+          hasTemplateExpression = true;
+        }
+        if (token.value === '{') {
+          braceDepth++;
+        }
+        if (token.value === '}') {
+          braceDepth--;
+        }
+      }
+
+      // Combine tokens into a single value string
+      const valueString = valueTokens.join('');
+
+      // Create value node - if it has ${} syntax, make it a template literal
+      const value: ASTNode = hasTemplateExpression
+        ? {
+            type: 'templateLiteral',
+            value: valueString,
+            start: pos.start,
+            end: this.getPosition().end,
+            line: pos.line,
+            column: pos.column
+          }
+        : this.createLiteral(valueString, valueString);
+
+      properties.push({ key, value });
+
+      // Consume optional semicolon
+      if (this.check(';')) {
+        this.advance();
+      }
+
+      // Check for another property or end of object
+      if (this.check('}')) {
+        break;
+      }
+    } while (!this.isAtEnd());
+
+    this.consume('}', "Expected '}' after CSS object literal properties");
+
+    return {
+      type: 'objectLiteral',
+      properties,
+      start: pos.start,
+      end: this.getPosition().end,
+      line: pos.line,
+      column: pos.column
+    };
+  }
+
   private parseConstructorCall(): ASTNode {
     // We've already consumed the 'new' token
     const newToken = this.previous();
@@ -2228,7 +2427,9 @@ export class Parser {
   }
 
   private parseEventHandler(): EventHandlerNode {
+    console.log(`🔧 parseEventHandler: ENTRY - parsing event handler`);
     // Event name can be EVENT token or IDENTIFIER (for cases like "keydown")
+    // Can also include namespace separator like "draggable:start"
     let eventToken: Token;
     if (this.checkTokenType(TokenType.EVENT)) {
       eventToken = this.advance();
@@ -2237,8 +2438,14 @@ export class Parser {
     } else {
       eventToken = this.consume(TokenType.EVENT, "Expected event name after 'on'");
     }
-    
-    const event = eventToken.value;
+
+    // Check if event name includes namespace (e.g., "draggable:start")
+    let event = eventToken.value;
+    if (this.check(':')) {
+      this.advance(); // consume ':'
+      const namespaceToken = this.advance(); // get the part after ':'
+      event = `${event}:${namespaceToken.value}`;
+    }
     
     // Check for conditional syntax: [condition]
     let condition: ASTNode | undefined;
@@ -2256,9 +2463,19 @@ export class Parser {
 
     // Parse commands
     const commands: CommandNode[] = [];
-    
+
+    console.log(`✅ parseEventHandler: About to parse commands, current token: ${this.isAtEnd() ? 'END' : this.peek().value}, isAtEnd: ${this.isAtEnd()}`);
+
     // Look for commands after the event (and optional selector)
     while (!this.isAtEnd()) {
+      console.log(`✅ parseEventHandler: Loop iteration, current token: ${this.peek().value}, type: ${this.peek().type}`);
+
+      // Stop parsing commands if we encounter another event handler (on ...)
+      if (this.check('on')) {
+        console.log(`✅ parseEventHandler: Stopping command parsing, found next event handler 'on'`);
+        break;
+      }
+
       if (this.checkTokenType(TokenType.COMMAND)) {
         // Check if this is actually a pseudo-command (command token used as function call)
         const nextIsOpenParen = this.tokens[this.current + 1]?.value === '(';
@@ -2405,6 +2622,7 @@ export class Parser {
               this.error = savedError;
             }
             commands.push(cmd);
+            console.log(`✅ parseEventHandler: Parsed command, next token: ${this.isAtEnd() ? 'END' : this.peek().value}`);
           } catch (error) {
             // If command parsing fails, restore error state and skip to next command
             console.log('⚠️ Command parsing threw exception, restoring error state:', error instanceof Error ? error.message : String(error));
@@ -2588,12 +2806,14 @@ export class Parser {
 
       // Skip any unexpected tokens until we find a command or separator
       // This handles cases where command parsing doesn't consume all its arguments (like HSL colors)
+      // But don't skip 'on' tokens (they start new event handlers)
       while (!this.isAtEnd() &&
              !this.checkTokenType(TokenType.COMMAND) &&
              !this.isCommand(this.peek().value) &&
              !this.check('then') &&
              !this.check('and') &&
-             !this.check(',')) {
+             !this.check(',') &&
+             !this.check('on')) {
         this.advance(); // skip the unexpected token
       }
 
@@ -2700,15 +2920,22 @@ export class Parser {
           }
         }
 
-        // Skip event source if present: from <target>
+        // Capture event source if present: from <target>
+        let eventSource: string | undefined;
         if (this.check('from')) {
           this.advance(); // consume 'from'
-          // Skip target expression (could be 'the document', 'document', '#element', etc.)
+          // Capture target expression (could be 'the document', 'document', '#element', etc.)
+          const targetTokens: string[] = [];
+
           if (this.check('the')) {
             this.advance(); // consume 'the'
           }
-          // Consume the target identifier/selector
+
+          // Capture the target identifier/selector
           if (!this.isAtEnd() && !this.checkTokenType(TokenType.COMMAND)) {
+            const targetToken = this.peek();
+            targetTokens.push(targetToken.value);
+            eventSource = targetToken.value;
             this.advance();
           }
         }
@@ -2756,11 +2983,12 @@ export class Parser {
           }
         }
 
-        // Create event handler node
+        // Create event handler node with captured target
         const handlerNode: EventHandlerNode = {
           type: 'eventHandler',
           event: eventName,
           commands: handlerCommands,
+          target: eventSource, // Add the captured target from 'from' clause
           start: handlerPos.start,
           end: this.getPosition().end,
           line: handlerPos.line,
@@ -2845,14 +3073,21 @@ export class Parser {
 
         commands.push(cmd);
 
-        // Skip any unexpected tokens until we find 'then', a command, or end
+        // Skip any unexpected tokens until we find 'then', a command, an event handler, or end
         // This handles cases where command parsing doesn't consume all its arguments (like HSL colors)
         while (!this.isAtEnd() &&
                !this.checkTokenType(TokenType.COMMAND) &&
                !this.isCommand(this.peek().value) &&
-               !this.check('then')) {
+               !this.check('then') &&
+               !this.check('on')) {  // Stop if we encounter an event handler
           console.log('⚠️  parseCommandSequence: Skipping unexpected token:', this.peek().value);
           this.advance(); // skip the unexpected token
+        }
+
+        // If we encountered an 'on' token, we're done with command sequence
+        if (this.check('on')) {
+          console.log('✅ parseCommandSequence: Found "on" token, stopping command sequence to allow event handler parsing');
+          break;
         }
 
         // Check for optional 'then' separator
@@ -2974,6 +3209,9 @@ export class Parser {
     }
     if (lowerName === 'transition') {
       return this.parseTransitionCommand(commandToken);
+    }
+    if (lowerName === 'add') {
+      return this.parseAddCommand(commandToken);
     }
 
     // Delegate compound commands (put, trigger, remove, etc.) to their specialized parsers
@@ -3415,6 +3653,36 @@ export class Parser {
       line: pos.line,
       column: pos.column
     };
+  }
+
+  /**
+   * Create a Program node that contains multiple top-level statements
+   * (e.g., commands followed by event handlers)
+   */
+  private createProgramNode(statements: ASTNode[]): ASTNode {
+    console.log(`✅ createProgramNode: Called with ${statements.length} statements`);
+
+    if (statements.length === 0) {
+      console.log(`✅ createProgramNode: Returning error node (0 statements)`);
+      return this.createErrorNode();
+    }
+
+    if (statements.length === 1) {
+      console.log(`✅ createProgramNode: Returning single statement (type=${statements[0].type})`);
+      return statements[0];
+    }
+
+    const programNode = {
+      type: 'Program',
+      statements,
+      start: statements[0]?.start || 0,
+      end: statements[statements.length - 1]?.end || 0,
+      line: statements[0]?.line || 1,
+      column: statements[0]?.column || 1
+    } as any;
+
+    console.log(`✅ createProgramNode: Returning Program node with ${statements.length} statements, type=${programNode.type}`);
+    return programNode;
   }
 
   // Token manipulation methods
