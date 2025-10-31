@@ -124,6 +124,12 @@ deno.lock
 /tools/legacy/i18n-prototypes/
 analyze_hyperscript_keywords.js
 
+# Backup directories and migration scripts
+**/src-backup/
+**/*-backup/
+*-conversion.js
+test-conversion.*
+
 # Generated LSP data files (contain local paths)
 packages/core/scripts/lsp-data/*.json
 
