@@ -60,6 +60,18 @@ export class ExpressionEvaluator {
    * Evaluate an AST node using the appropriate expression implementation
    */
   async evaluate(node: ASTNode, context: ExecutionContext): Promise<any> {
+    // Handle null/undefined nodes
+    if (!node) {
+      console.warn('⚠️ EVALUATOR: Received null/undefined node, returning null');
+      return null;
+    }
+
+    // Handle nodes without type property
+    if (!node.type) {
+      console.error('⚠️ EVALUATOR: Node missing type property:', node);
+      throw new Error(`Node missing type property: ${JSON.stringify(node)}`);
+    }
+
     switch (node.type) {
       case 'identifier':
         return this.evaluateIdentifier(node as any, context);
@@ -92,9 +104,225 @@ export class ExpressionEvaluator {
       case 'possessiveExpression':
         return this.evaluatePossessiveExpression(node as any, context);
 
+      case 'templateLiteral':
+        return this.evaluateTemplateLiteral(node as any, context);
+
+      case 'arrayLiteral':
+        return this.evaluateArrayLiteral(node as any, context);
+
+      case 'objectLiteral':
+        return this.evaluateObjectLiteral(node as any, context);
+
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
+  }
+
+  /**
+   * Evaluate array literal - evaluate each element
+   * Example: [pointermove, pointerup] -> array of evaluated event names
+   */
+  private async evaluateArrayLiteral(node: any, context: ExecutionContext): Promise<any[]> {
+    const elements = node.elements || [];
+    const evaluatedElements = [];
+
+    for (const element of elements) {
+      const value = await this.evaluate(element, context);
+      evaluatedElements.push(value);
+    }
+
+    return evaluatedElements;
+  }
+
+  /**
+   * Evaluate object literal - evaluate each property's key and value
+   * Example: { left: ${x}px, top: ${y}px } -> { left: "100px", top: "50px" }
+   */
+  private async evaluateObjectLiteral(node: any, context: ExecutionContext): Promise<Record<string, any>> {
+    const properties = node.properties || [];
+    const result: Record<string, any> = {};
+
+    for (const property of properties) {
+      // Evaluate the key
+      let key: string;
+      if (property.key.type === 'identifier') {
+        // For object literal keys that are identifiers, use the name directly
+        key = property.key.name;
+      } else if (property.key.type === 'literal') {
+        key = String(property.key.value);
+      } else {
+        // For other key types, evaluate them
+        const evaluatedKey = await this.evaluate(property.key, context);
+        key = String(evaluatedKey);
+      }
+
+      // Evaluate the value
+      const value = await this.evaluate(property.value, context);
+
+      // Add to result object
+      result[key] = value;
+    }
+
+    return result;
+  }
+
+  /**
+   * Evaluate template literal - parse ${} expressions and substitute values
+   * Example: `hsl(${rand} 100% 90%)` where rand = 180 -> "hsl(180 100% 90%)"
+   */
+  private async evaluateTemplateLiteral(node: any, context: ExecutionContext): Promise<string> {
+    const template = node.value || '';
+
+    // DEBUG: Log template literal evaluation
+    console.log('📝 TEMPLATE LITERAL: Evaluating', { template, node });
+
+    // Parse and evaluate ${} expressions
+    let result = '';
+    let i = 0;
+
+    while (i < template.length) {
+      // Find next ${ expression
+      const exprStart = template.indexOf('${', i);
+
+      if (exprStart === -1) {
+        // No more expressions, append rest of string
+        result += template.slice(i);
+        break;
+      }
+
+      // Append static text before ${
+      result += template.slice(i, exprStart);
+
+      // Find matching }
+      const exprEnd = template.indexOf('}', exprStart);
+      if (exprEnd === -1) {
+        throw new Error(`Unterminated template expression in: ${template}`);
+      }
+
+      // Extract expression code (between ${ and })
+      const exprCode = template.slice(exprStart + 2, exprEnd);
+
+      console.log('📝 TEMPLATE: Evaluating expression:', exprCode);
+
+      // Evaluate expression - check context variables first
+      let value: any;
+      const trimmed = exprCode.trim();
+
+      if (context.locals.has(trimmed)) {
+        value = context.locals.get(trimmed);
+        console.log(`📝 TEMPLATE: Found in locals: ${trimmed} =`, value);
+      } else if (context.variables && context.variables.has(trimmed)) {
+        value = context.variables.get(trimmed);
+        console.log(`📝 TEMPLATE: Found in variables: ${trimmed} =`, value);
+      } else if (context.globals && context.globals.has(trimmed)) {
+        value = context.globals.get(trimmed);
+        console.log(`📝 TEMPLATE: Found in globals: ${trimmed} =`, value);
+      } else {
+        // Expression is more complex - try to evaluate it with context
+        value = await this.evaluateSimpleExpression(exprCode, context);
+        console.log(`📝 TEMPLATE: Evaluated expression "${exprCode}" =`, value);
+      }
+
+      // Append evaluated value
+      result += String(value);
+
+      // Move past the }
+      i = exprEnd + 1;
+    }
+
+    return result;
+  }
+
+  /**
+   * Evaluate simple expressions like "clientX - xoff" or "clientX-xoff" using context variables
+   * Handles basic arithmetic: +, -, *, /, %
+   */
+  private async evaluateSimpleExpression(exprCode: string, context: ExecutionContext): Promise<any> {
+    console.log('🧮 EVAL: Evaluating arithmetic expression:', exprCode);
+
+    // Try to find an operator in the expression
+    // Match identifier/number, operator, identifier/number (with or without spaces)
+    // Use a more specific pattern that matches identifiers
+    const arithmeticMatch = exprCode.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*|\d+(?:\.\d+)?)\s*([\+\-\*\/\%])\s*([a-zA-Z_$][a-zA-Z0-9_$]*|\d+(?:\.\d+)?)$/);
+
+    if (arithmeticMatch) {
+      const [, left, operator, right] = arithmeticMatch;
+      console.log('🧮 EVAL: Parsed arithmetic:', { left, operator, right });
+
+      // Evaluate left and right sides
+      const leftValue = await this.resolveValue(left.trim(), context);
+      const rightValue = await this.resolveValue(right.trim(), context);
+      console.log('🧮 EVAL: Resolved values:', { leftValue, rightValue });
+
+      // Perform arithmetic
+      const leftNum = Number(leftValue);
+      const rightNum = Number(rightValue);
+
+      if (!isNaN(leftNum) && !isNaN(rightNum)) {
+        let result: number;
+        switch (operator) {
+          case '+': result = leftNum + rightNum; break;
+          case '-': result = leftNum - rightNum; break;
+          case '*': result = leftNum * rightNum; break;
+          case '/': result = leftNum / rightNum; break;
+          case '%': result = leftNum % rightNum; break;
+          default: result = leftNum;
+        }
+        console.log('🧮 EVAL: Arithmetic result:', result);
+        return result;
+      } else {
+        console.warn('🧮 EVAL: Non-numeric values, returning as-is');
+      }
+    } else {
+      console.log('🧮 EVAL: No arithmetic pattern matched, trying as single value');
+    }
+
+    // Fallback: try to resolve as a single value
+    const fallback = await this.resolveValue(exprCode.trim(), context);
+    console.log('🧮 EVAL: Fallback result:', fallback);
+    return fallback;
+  }
+
+  /**
+   * Resolve a value from context or parse as literal
+   */
+  private async resolveValue(name: string, context: ExecutionContext): Promise<any> {
+    console.log(`🔍 RESOLVE: Looking for '${name}' in context`, {
+      hasInLocals: context.locals.has(name),
+      localsKeys: Array.from(context.locals.keys()),
+      value: context.locals.get(name)
+    });
+
+    // Check context
+    if (context.locals.has(name)) {
+      const value = context.locals.get(name);
+      console.log(`✅ RESOLVE: Found '${name}' in locals:`, value);
+      return value;
+    }
+    if (context.variables && context.variables.has(name)) {
+      const value = context.variables.get(name);
+      console.log(`✅ RESOLVE: Found '${name}' in variables:`, value);
+      return value;
+    }
+    if (context.globals && context.globals.has(name)) {
+      const value = context.globals.get(name);
+      console.log(`✅ RESOLVE: Found '${name}' in globals:`, value);
+      return value;
+    }
+
+    // Try parsing as number
+    const num = Number(name);
+    if (!isNaN(num)) {
+      return num;
+    }
+
+    // Try parsing as string literal
+    if ((name.startsWith('"') && name.endsWith('"')) || (name.startsWith("'") && name.endsWith("'"))) {
+      return name.slice(1, -1);
+    }
+
+    // Return as-is if nothing else works
+    return name;
   }
 
   /**

@@ -158,12 +158,26 @@ export class RepeatCommand implements CommandImplementation<
   ): Promise<RepeatCommandOutput> {
     const { type, variable, collection, condition, count, indexVariable, commands } = input;
 
+    // DEBUG: Log entry to execute method
+    console.log('🔁 REPEAT.execute() called with input:', {
+      type,
+      variable,
+      collection,
+      condition,
+      count,
+      indexVariable,
+      commandsLength: commands?.length,
+      eventName: (input as any).eventName,
+      eventTarget: (input as any).eventTarget
+    });
+
     let iterations = 0;
     let completed = false;
     let lastResult: any = undefined;
     let interrupted = false;
 
     try {
+      console.log(`🔁 REPEAT: Entering switch for type: ${type}`);
       switch (type) {
         case 'for':
           ({ iterations, lastResult, interrupted } = await this.handleForLoop(
@@ -418,6 +432,14 @@ export class RepeatCommand implements CommandImplementation<
     indexVariable?: string,
     commands: Function[] = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
+    // DEBUG: Log entry
+    console.log('🔁 handleUntilEventLoop() called:', {
+      eventName,
+      eventTarget,
+      indexVariable,
+      commandsLength: commands.length
+    });
+
     let iterations = 0;
     let lastResult: any = undefined;
     let interrupted = false;

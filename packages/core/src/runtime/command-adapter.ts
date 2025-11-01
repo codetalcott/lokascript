@@ -9,6 +9,7 @@ import type {
   TypedExecutionContext,
   ValidationResult
 } from '../types/core';
+import type { ASTNode } from '../types/base-types';
 import { createAllEnhancedCommands } from '../commands/command-registry';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 
@@ -296,9 +297,9 @@ export class CommandAdapter implements RuntimeCommand {
 
           // Evaluate value, duration, timingFunction using the expression evaluator
           const evaluator = new ExpressionEvaluator();
-          const value = args[1] ? await evaluator.evaluate(args[1], context) : undefined;
-          const duration = args.length > 2 && args[2] ? await evaluator.evaluate(args[2], context) : undefined;
-          const timingFunction = args.length > 3 && args[3] ? await evaluator.evaluate(args[3], context) : undefined;
+          const value = args[1] && typeof args[1] === 'object' && 'type' in args[1] ? await evaluator.evaluate(args[1] as ASTNode, context) : args[1];
+          const duration = args.length > 2 && args[2] && typeof args[2] === 'object' && 'type' in args[2] ? await evaluator.evaluate(args[2] as ASTNode, context) : args[2];
+          const timingFunction = args.length > 3 && args[3] && typeof args[3] === 'object' && 'type' in args[3] ? await evaluator.evaluate(args[3] as ASTNode, context) : args[3];
 
           input = {
             property,
@@ -313,8 +314,26 @@ export class CommandAdapter implements RuntimeCommand {
           //   args[1]: Variable name (string node) for 'for' loops, OR event name for 'until-event'
           //   args[2]: Collection/condition/times/eventTarget expression
           //   args[3]: (for until-event with from) event target
+          //   args[...]: Commands block (last arg with type 'block' containing commands array)
 
           const loopType = args[0] ? (typeof args[0] === 'string' ? args[0] : (args[0] as any).name || (args[0] as any).value) : undefined;
+
+          // DEBUG: Log all args to diagnose repeat command issue
+          console.log('🔁 REPEAT DEBUG: Received args:', {
+            argsLength: args.length,
+            loopType,
+            arg0: args[0],
+            arg1: args[1],
+            arg2: args[2],
+            arg3: args[3],
+            allArgs: args.map((arg: any, i: number) => ({
+              index: i,
+              type: arg?.type,
+              name: arg?.name,
+              value: arg?.value,
+              keys: arg && typeof arg === 'object' ? Object.keys(arg) : []
+            }))
+          });
 
           let variable: string | undefined;
           let collection: any;
@@ -322,6 +341,7 @@ export class CommandAdapter implements RuntimeCommand {
           let count: number | undefined;
           let eventName: string | undefined;
           let eventTarget: any;
+          let commands: Function[] = [];
 
           // Create evaluator for AST node evaluation
           const evaluator = new ExpressionEvaluator();
@@ -329,16 +349,49 @@ export class CommandAdapter implements RuntimeCommand {
           // Parse based on loop type
           if (loopType === 'for') {
             variable = args[1] ? (typeof args[1] === 'string' ? args[1] : (args[1] as any).value) : undefined;
-            collection = args[2] ? await evaluator.evaluate(args[2], context) : undefined;
+            collection = args[2] && typeof args[2] === 'object' && 'type' in args[2] ? await evaluator.evaluate(args[2] as ASTNode, context) : args[2];
           } else if (loopType === 'times') {
-            const timesArg = args[1] ? await evaluator.evaluate(args[1], context) : undefined;
+            const timesArg = args[1] && typeof args[1] === 'object' && 'type' in args[1] ? await evaluator.evaluate(args[1] as ASTNode, context) : args[1];
             count = typeof timesArg === 'number' ? timesArg : undefined;
           } else if (loopType === 'while' || loopType === 'until') {
             condition = args[1]; // Keep as AST node for later evaluation
           } else if (loopType === 'until-event') {
             eventName = args[1] ? (typeof args[1] === 'string' ? args[1] : (args[1] as any).value) : undefined;
-            eventTarget = args[2] ? await evaluator.evaluate(args[2], context) : undefined;
+            eventTarget = args[2] && typeof args[2] === 'object' && 'type' in args[2] ? await evaluator.evaluate(args[2] as ASTNode, context) : args[2];
           }
+
+          // Extract command block - look for arg with type 'block' containing commands array
+          const blockArg = args.find((arg: any) => arg && typeof arg === 'object' && arg.type === 'block');
+          if (blockArg && Array.isArray((blockArg as any).commands)) {
+            // Get the runtime execute function from context
+            const runtimeExecute = context.locals.get('_runtimeExecute');
+            if (typeof runtimeExecute === 'function') {
+              // Convert each command AST node to an executable function
+              // The function receives the loop iteration context and passes it to runtime execute
+              commands = (blockArg as any).commands.map((cmdNode: any) => {
+                return async (ctx: any) => {
+                  return await runtimeExecute(cmdNode, ctx);
+                };
+              });
+              console.log(`🔁 REPEAT: Extracted ${commands.length} commands from block`);
+            } else {
+              console.warn('🔁 REPEAT: _runtimeExecute not found in context, commands will be empty');
+            }
+          } else {
+            console.warn('🔁 REPEAT: No block arg found with commands array', { args: args.map((a: any) => ({ type: a?.type, keys: a && typeof a === 'object' ? Object.keys(a) : [] })) });
+          }
+
+          // DEBUG: Log parsed values before creating input
+          console.log('🔁 REPEAT DEBUG: Parsed values:', {
+            loopType,
+            variable,
+            collection,
+            condition,
+            count,
+            eventName,
+            eventTarget,
+            commandsLength: commands.length
+          });
 
           input = {
             type: loopType,
@@ -347,10 +400,55 @@ export class CommandAdapter implements RuntimeCommand {
             condition,
             count,
             eventName,
-            eventTarget
+            eventTarget,
+            commands
           };
+
+          console.log('🔁 REPEAT DEBUG: Created input object:', input);
+        } else if (this.impl.name === 'wait' || this.impl.metadata?.name === 'wait') {
+          // WAIT command - args may be already evaluated or raw AST nodes
+          // Expected args:
+          //   Simple time wait: args[0] = time value or expression
+          //   Event wait: args[0] = array of event objects, args[1] = optional target
+
+          const evaluator = new ExpressionEvaluator();
+
+          // Helper to evaluate only if needed (if arg is AST node, not plain value)
+          const evaluateIfNeeded = async (arg: any): Promise<any> => {
+            if (arg === null || arg === undefined) {
+              return arg;
+            }
+            // If it has a 'type' property, it's an AST node - evaluate it
+            if (typeof arg === 'object' && 'type' in arg) {
+              return await evaluator.evaluate(arg, context);
+            }
+            // Otherwise it's already evaluated - return as-is
+            return arg;
+          };
+
+          // Check if this is a time-based wait or event-based wait
+          if (args.length === 1 && args[0] && !Array.isArray(args[0])) {
+            // Time-based wait: wait 1000ms or wait 1s
+            const timeValue = await evaluateIfNeeded(args[0]);
+            input = {
+              type: 'time',
+              value: typeof timeValue === 'number' ? timeValue : 1000
+            };
+          } else {
+            // Event-based wait: wait for event(args) or event from target
+            const eventsArray = args[0] ? await evaluateIfNeeded(args[0]) : [];
+            const sourceTarget = args.length > 1 ? await evaluateIfNeeded(args[1]) : context.me;
+
+            input = {
+              type: 'event',
+              events: Array.isArray(eventsArray) ? eventsArray : [],
+              source: sourceTarget
+            };
+
+            console.log('⏳ WAIT: Prepared event input:', input);
+          }
         } else {
-          // Default input handling for non-SET/non-RENDER/non-LOG/non-INSTALL/non-TRANSITION/non-REPEAT commands
+          // Default input handling for non-SET/non-RENDER/non-LOG/non-INSTALL/non-TRANSITION/non-REPEAT/non-WAIT commands
           input = args.length === 1 ? args[0] : args;
         }
         

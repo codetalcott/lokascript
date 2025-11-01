@@ -66,10 +66,9 @@ import { createGoCommand, GoCommand } from './navigation/go';
 // Behavior Commands
 import { installCommand, InstallCommand } from './behaviors/install';
 
-// Async Commands - using legacy for now
-// NOTE: Legacy commands excluded from TypeScript project (tsconfig.json)
-// TODO: Implement enhanced versions of wait and fetch commands
-// import { createWaitCommand } from '../legacy/commands/async/wait';
+// Async Commands
+import { createWaitCommand, WaitCommand } from './async/wait';
+// NOTE: Fetch command still needs implementation
 // import { createFetchCommand } from '../legacy/commands/async/fetch';
 
 // Re-export everything
@@ -137,7 +136,7 @@ export {
   InstallCommand,
 
   // Async Commands
-  // createWaitCommand,
+  createWaitCommand, WaitCommand,
   // createFetchCommand,
 };
 
@@ -213,7 +212,7 @@ export const ENHANCED_COMMAND_FACTORIES = {
   install: () => installCommand,
 
   // Async Commands
-  // wait: createWaitCommand,
+  wait: createWaitCommand,
   // fetch: createFetchCommand,
 } as const;
 

@@ -476,8 +476,9 @@ export class Runtime {
 
     // Inject runtime execute function into context for commands that need to execute sub-commands
     // (e.g., repeat, if, unless, etc.)
+    // Takes (node, optionalContext) - if optionalContext is provided, use it; otherwise use current context
     if (!context.locals.has('_runtimeExecute')) {
-      context.locals.set('_runtimeExecute', (node: ASTNode) => this.execute(node, context));
+      context.locals.set('_runtimeExecute', (node: ASTNode, ctx?: any) => this.execute(node, ctx || context));
     }
 
     let evaluatedArgs: unknown[];
@@ -996,7 +997,15 @@ export class Runtime {
    */
   private async executeCommand(node: CommandNode, context: ExecutionContext): Promise<unknown> {
     const { name, args } = node;
-    
+
+    // DEBUG: Log all command executions
+    console.log(`🎯 executeCommand() called:`, {
+      name,
+      argsLength: args?.length,
+      useEnhanced: this.options.useEnhancedCommands,
+      hasEnhanced: this.enhancedRegistry.has(name.toLowerCase())
+    });
+
     // Special debug for SET commands
     if (name.toLowerCase() === 'set') {
       // console.log('🔧 SET Command Detailed Debug:', {
@@ -1132,8 +1141,8 @@ export class Runtime {
    * Execute an event handler node (on click, on change, etc.)
    */
   private async executeEventHandler(node: EventHandlerNode, context: ExecutionContext): Promise<void> {
-    const { event, commands, target } = node;
-    console.log(`🔧 RUNTIME: executeEventHandler for event '${event}', target=${target}, context.me=`, context.me);
+    const { event, commands, target, args } = node;
+    console.log(`🔧 RUNTIME: executeEventHandler for event '${event}', target=${target}, args=${args}, context.me=`, context.me);
 
     // Determine target element(s)
     let targets: HTMLElement[] = [];
@@ -1160,7 +1169,7 @@ export class Runtime {
       }
     } else {
       // No target specified, use context.me
-      targets = context.me ? [context.me] : [];
+      targets = context.me ? [context.me as HTMLElement] : [];
     }
 
     console.log(`🔧 RUNTIME: Found ${targets.length} target elements for event '${event}'`);
@@ -1175,14 +1184,30 @@ export class Runtime {
       console.log(`🎯 EVENT FIRED: ${event} on`, domEvent.target, 'with', commands.length, 'commands');
 
       // Create new context for event execution
+      // IMPORTANT: Preserve context.me (the element where the behavior is installed)
+      // Don't overwrite it with domEvent.target (the event source)
       const eventContext: ExecutionContext = {
         ...context,
-        me: domEvent.target as HTMLElement,
+        // me: domEvent.target as HTMLElement,  // ❌ BUG: This overwrites me with event target!
+        // Keep context.me as-is (the element where the behavior/script is installed)
         it: domEvent,
         event: domEvent
       };
 
-      console.log(`🔧 EVENT CONTEXT: me=`, eventContext.me, 'context.locals has:', Array.from(context.locals.keys()));
+      // Make the event target available as 'target' variable
+      eventContext.locals.set('target', domEvent.target);
+
+      // Destructure event properties into context.locals if args are specified
+      // This allows patterns like: on pointerdown(clientX, clientY)
+      if (args && args.length > 0) {
+        for (const argName of args) {
+          const value = (domEvent as any)[argName] || (domEvent as any).detail?.[argName] || null;
+          eventContext.locals.set(argName, value);
+          console.log(`🔧 RUNTIME: Destructured event property '${argName}' = ${value}`);
+        }
+      }
+
+      console.log(`🔧 EVENT CONTEXT: me=`, eventContext.me, 'context.locals has:', Array.from(eventContext.locals.keys()));
 
       // Execute all commands in sequence
       for (const command of commands) {

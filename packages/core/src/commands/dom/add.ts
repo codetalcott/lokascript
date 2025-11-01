@@ -143,6 +143,42 @@ export class AddCommand implements TypedCommandImplementation<
   ): Promise<EvaluationResult<HTMLElement[]>> {
     const [classExpression, target] = args;
     try {
+      // Check if first argument is an object literal (for inline styles)
+      if (classExpression && typeof classExpression === 'object' && !Array.isArray(classExpression)) {
+        console.log('🎨 ADD: Detected object literal for inline styles:', classExpression);
+        // This is an object of CSS properties - add them as inline styles
+        const elements = this.resolveTargets(context, target);
+
+        if (!elements.length) {
+          return {
+            success: false,
+            error: {
+              name: 'ValidationError',
+              type: 'missing-argument',
+              message: 'No target elements found',
+              code: 'NO_TARGET_ELEMENTS',
+              suggestions: ['Check if target selector is valid', 'Ensure elements exist in DOM']
+            },
+            type: 'error'
+          };
+        }
+
+        const modifiedElements: HTMLElement[] = [];
+        for (const element of elements) {
+          const styleResult = await this.addStylesToElement(element, classExpression, context);
+          if (styleResult.success) {
+            modifiedElements.push(element);
+          }
+        }
+
+        console.log('🎨 ADD: Applied inline styles to', modifiedElements.length, 'elements');
+        return {
+          success: true,
+          value: modifiedElements,
+          type: 'element-list'
+        };
+      }
+
       // Runtime validation for type safety
       const validationResult = this.validate([classExpression, target]);
       if (!validationResult.isValid) {
@@ -161,7 +197,7 @@ export class AddCommand implements TypedCommandImplementation<
 
       // Type-safe target resolution
       const elements = this.resolveTargets(context, target);
-      
+
       if (!elements.length) {
         return {
           success: false,
@@ -175,10 +211,10 @@ export class AddCommand implements TypedCommandImplementation<
           type: 'error'
         };
       }
-      
+
       // Process elements with enhanced error handling
       const modifiedElements: HTMLElement[] = [];
-      
+
       // Check if this is attribute syntax
       if (typeof classExpression === 'string' && this.isAttributeSyntax(classExpression)) {
         for (const element of elements) {
@@ -203,7 +239,7 @@ export class AddCommand implements TypedCommandImplementation<
             type: 'error'
           };
         }
-        
+
         for (const element of elements) {
           const classResult = await this.addClassesToElement(element, classes, context);
           if (classResult.success) {
@@ -319,9 +355,61 @@ export class AddCommand implements TypedCommandImplementation<
     return [];
   }
 
+  private async addStylesToElement(
+    element: HTMLElement,
+    styles: Record<string, any>,
+    context: TypedExecutionContext
+  ): Promise<EvaluationResult<HTMLElement>> {
+    try {
+      console.log('🎨 ADD: Adding inline styles to element:', { element, styles });
+
+      // Apply each CSS property
+      for (const [property, value] of Object.entries(styles)) {
+        if (value !== undefined && value !== null) {
+          // Convert hyphenated property names to camelCase (e.g., 'background-color' -> 'backgroundColor')
+          const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+          (element.style as any)[camelProperty] = String(value);
+          console.log(`🎨 ADD: Set ${camelProperty} = ${value}`);
+        }
+      }
+
+      // Dispatch enhanced add event with rich metadata
+      dispatchCustomEvent(element, 'hyperscript:add', {
+        element,
+        context,
+        command: this.name,
+        type: 'styles',
+        styles,
+        timestamp: Date.now(),
+        metadata: this.metadata,
+        result: 'success'
+      });
+
+      return {
+        success: true,
+        value: element,
+        type: 'element'
+      };
+
+    } catch (error) {
+      console.error('🎨 ADD: Error adding styles:', error);
+      return {
+        success: false,
+        error: {
+          name: 'ValidationError',
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : 'Failed to add styles',
+          code: 'STYLE_ADD_FAILED',
+          suggestions: ['Check if element is still in DOM', 'Verify style property names are valid']
+        },
+        type: 'error'
+      };
+    }
+  }
+
   private async addClassesToElement(
-    element: HTMLElement, 
-    classes: string[], 
+    element: HTMLElement,
+    classes: string[],
     context: TypedExecutionContext
   ): Promise<EvaluationResult<HTMLElement>> {
     try {

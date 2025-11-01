@@ -212,10 +212,14 @@ export class MeasureCommand implements CommandImplementation<
         return { value: rect.bottom, unit: 'px' };
       
       case 'x':
-        return { value: rect.x, unit: 'px' };
-      
+        // For draggable/positioning use cases, return offsetLeft (position relative to offsetParent)
+        // not rect.x (position relative to viewport)
+        return { value: element.offsetLeft, unit: 'px' };
+
       case 'y':
-        return { value: rect.y, unit: 'px' };
+        // For draggable/positioning use cases, return offsetTop (position relative to offsetParent)
+        // not rect.y (position relative to viewport)
+        return { value: element.offsetTop, unit: 'px' };
       
       case 'clientwidth':
       case 'client-width':

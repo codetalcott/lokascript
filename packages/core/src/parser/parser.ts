@@ -1372,7 +1372,7 @@ export class Parser {
               value: { type: 'literal', value: event.name, raw: `"${event.name}"` } as LiteralNode
             },
             {
-              key: { type: 'identifier', name: 'params' } as IdentifierNode,
+              key: { type: 'identifier', name: 'args' } as IdentifierNode,
               value: {
                 type: 'arrayLiteral',
                 elements: event.params.map(param => ({
@@ -1463,7 +1463,7 @@ export class Parser {
 
         // Parse the parameter value
         const value = this.parseExpression();
-        params.push({ name: paramName, value });
+        params.push(paramName !== undefined ? { name: paramName, value } : { value });
 
         // Check for comma separator
         if (this.check(',')) {
@@ -1529,7 +1529,6 @@ export class Parser {
     const args: ASTNode[] = [];
 
     // Parse optional target (if it looks like a selector or identifier followed by a property)
-    let target: ASTNode | null = null;
     let property: ASTNode | null = null;
 
     // Look ahead to determine if first token is a target or property
@@ -2905,17 +2904,29 @@ export class Parser {
         const eventName = eventToken.value;
         this.advance(); // Now advance past the event name
 
-        // Skip parameter list if present: (clientX, clientY)
+        // Capture parameter list if present: (clientX, clientY)
+        const eventArgs: string[] = [];
         if (this.check('(')) {
           this.advance(); // consume '('
-          // Skip all tokens until we find the closing ')'
-          let parenDepth = 1;
-          while (!this.isAtEnd() && parenDepth > 0) {
-            if (this.check('(')) {
-              parenDepth++;
-            } else if (this.check(')')) {
-              parenDepth--;
+          // Capture parameter names
+          while (!this.isAtEnd() && !this.check(')')) {
+            const paramToken = this.peek();
+            if (paramToken.type === TokenType.IDENTIFIER) {
+              eventArgs.push(paramToken.value);
+              this.advance();
+
+              // Check for comma separator
+              if (this.check(',')) {
+                this.advance();
+              }
+            } else {
+              // Skip non-identifier tokens (shouldn't happen but be defensive)
+              this.advance();
             }
+          }
+
+          // Consume closing parenthesis
+          if (this.check(')')) {
             this.advance();
           }
         }
@@ -2983,12 +2994,13 @@ export class Parser {
           }
         }
 
-        // Create event handler node with captured target
+        // Create event handler node with captured target and args
         const handlerNode: EventHandlerNode = {
           type: 'eventHandler',
           event: eventName,
           commands: handlerCommands,
-          target: eventSource, // Add the captured target from 'from' clause
+          ...(eventSource !== undefined && { target: eventSource }), // Add the captured target from 'from' clause
+          ...(eventArgs.length > 0 && { args: eventArgs }), // Add captured event parameters
           start: handlerPos.start,
           end: this.getPosition().end,
           line: handlerPos.line,

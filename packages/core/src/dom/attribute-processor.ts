@@ -5,7 +5,6 @@
 
 import { hyperscript } from '../api/hyperscript-api';
 import { createContext } from '../core/context';
-import type { ExecutionContext } from '../types/core';
 
 export interface AttributeProcessorOptions {
   attributeName?: string;
@@ -156,16 +155,11 @@ export class AttributeProcessor {
       }
 
       console.log(`🔧 ATTR: Compilation succeeded, processing handler type`);
-      
-      // For event handlers (on syntax), we need to parse and bind them
-      if (hyperscriptCode.trim().startsWith('on ')) {
-        console.log(`🔧 ATTR: Processing as event handler`);
-        this.processEventHandler(element, hyperscriptCode, context);
-      } else {
-        console.log(`🔧 ATTR: Processing as immediate execution`);
-        // For other syntax, execute immediately (like init)
-        hyperscript.execute(compilationResult.ast!, context);
-      }
+
+      // Execute the compiled AST regardless of whether it's an event handler or immediate execution
+      // The runtime will handle event handlers properly by registering them
+      console.log(`🔧 ATTR: Executing compiled AST`);
+      hyperscript.execute(compilationResult.ast!, context);
 
       // Mark as processed
       this.processedElements.add(element);
@@ -176,52 +170,6 @@ export class AttributeProcessor {
     } catch (error) {
       console.error(`Error processing hyperscript attribute on element:`, element, error);
     }
-  }
-
-  /**
-   * Process event handler syntax like "on click put ..."
-   */
-  private processEventHandler(element: HTMLElement, code: string, context: ExecutionContext): void {
-    // Parse the event handler syntax (support multi-line handlers)
-    const match = code.match(/^on\s+(\w+)(?:\s+([\s\S]+))?$/);
-    if (!match) {
-      console.error(`Invalid event handler syntax: ${code}`);
-      return;
-    }
-
-    const [, eventType, commandCode] = match;
-    
-    if (!commandCode) {
-      console.error(`No command specified in event handler: ${code}`);
-      return;
-    }
-
-    // Add event listener with simplified command execution
-    element.addEventListener(eventType, async (event) => {
-      try {
-        console.log(`🔧 EVENT: Executing command: "${commandCode}"`);
-        
-        // Update context with event information
-        const eventContext = {
-          ...context,
-          event,
-          it: event.target
-        };
-        
-        // Use the full hyperscript API for command execution
-        if ((window as any).hyperfixi?.run) {
-          console.log(`🔧 EVENT: About to call hyperfixi.run with context`);
-          const result = await (window as any).hyperfixi.run(commandCode, eventContext);
-          console.log(`🔧 EVENT: Command execution completed:`, result);
-        } else {
-          throw new Error('HyperFixi run method not available for command execution');
-        }
-      } catch (error) {
-        console.error(`🔧 EVENT: Error executing hyperscript event handler:`, error);
-        console.error(`🔧 EVENT: Command was: "${commandCode}"`);
-        console.error(`🔧 EVENT: Element:`, element);
-      }
-    });
   }
 
   /**

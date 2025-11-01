@@ -508,6 +508,7 @@ export interface EventHandlerNode extends ASTNode {
   readonly type: 'eventHandler';
   readonly event: string;
   readonly target?: string;
+  readonly args?: string[]; // Event parameter names to destructure (e.g., ['clientX', 'clientY'])
   readonly commands: ASTNode[];
 }
 

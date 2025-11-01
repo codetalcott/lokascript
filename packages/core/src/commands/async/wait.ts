@@ -204,9 +204,10 @@ export class WaitCommand implements TypedCommandImplementation<
     ...args: any[]
   ): Promise<EvaluationResult<WaitCommandOutput>> {
     const startTime = Date.now();
-
-    // Parse input - args[0] contains the parsed input object from the parser
     const input = args[0] as WaitTimeInput | WaitEventInput;
+
+    // DEBUG: Log wait command input
+    console.log('⏳ WAIT: execute() called with input:', input);
 
     try {
       if (input.type === 'time') {
