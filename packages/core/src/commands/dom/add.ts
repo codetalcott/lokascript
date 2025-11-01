@@ -366,10 +366,16 @@ export class AddCommand implements TypedCommandImplementation<
       // Apply each CSS property
       for (const [property, value] of Object.entries(styles)) {
         if (value !== undefined && value !== null) {
-          // Convert hyphenated property names to camelCase (e.g., 'background-color' -> 'backgroundColor')
-          const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-          (element.style as any)[camelProperty] = String(value);
-          console.log(`🎨 ADD: Set ${camelProperty} = ${value}`);
+          // CSS custom properties (--variables) must use setProperty()
+          if (property.startsWith('--')) {
+            element.style.setProperty(property, String(value));
+            console.log(`🎨 ADD: Set CSS custom property ${property} = ${value}`);
+          } else {
+            // Convert hyphenated property names to camelCase (e.g., 'background-color' -> 'backgroundColor')
+            const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+            (element.style as any)[camelProperty] = String(value);
+            console.log(`🎨 ADD: Set ${camelProperty} = ${value}`);
+          }
         }
       }
 

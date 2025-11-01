@@ -1,9 +1,16 @@
 /**
  * Enhanced Measure Command Implementation
  * Measures DOM element dimensions and positions
- * 
+ *
  * Syntax: measure [<target>] [<property>] [and set <variable>]
- * 
+ *
+ * IMPORTANT - Coordinate System Differences:
+ * - x/y: Position relative to offsetParent (for drag/positioning within containers)
+ * - left/top: Position relative to viewport (for absolute screen positioning)
+ * - offsetLeft/offsetTop: Same as x/y (explicit offset positioning)
+ *
+ * Use x/y for draggable behaviors, left/top for viewport-based calculations
+ *
  * Modernized with CommandImplementation interface
  */
 
