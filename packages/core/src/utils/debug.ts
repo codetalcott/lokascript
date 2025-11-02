@@ -72,6 +72,11 @@ export const debug = {
     if (DEBUG.expressions) console.log('🔍', ...args);
   },
 
+  /** Log expression evaluation (alias for expr) */
+  expressions: (...args: any[]) => {
+    if (DEBUG.expressions) console.log('🔍', ...args);
+  },
+
   /** Log CSS/style operations */
   style: (...args: any[]) => {
     if (DEBUG.styles) console.log('🎨', ...args);
