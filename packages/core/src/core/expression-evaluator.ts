@@ -4,6 +4,7 @@
  */
 
 import type { ASTNode, ExecutionContext } from '../types/core';
+import { debug } from '../utils/debug';
 
 // Import all expression categories
 import { referenceExpressions } from '../expressions/references/index';
@@ -62,7 +63,7 @@ export class ExpressionEvaluator {
   async evaluate(node: ASTNode, context: ExecutionContext): Promise<any> {
     // Handle null/undefined nodes
     if (!node) {
-      console.warn('⚠️ EVALUATOR: Received null/undefined node, returning null');
+      debug.expressions('EVALUATOR: Received null/undefined node, returning null');
       return null;
     }
 
@@ -174,7 +175,7 @@ export class ExpressionEvaluator {
     const template = node.value || '';
 
     // DEBUG: Log template literal evaluation
-    console.log('📝 TEMPLATE LITERAL: Evaluating', { template, node });
+    debug.expressions('TEMPLATE LITERAL: Evaluating', { template, node });
 
     // Parse and evaluate ${} expressions
     let result = '';
@@ -202,7 +203,7 @@ export class ExpressionEvaluator {
       // Extract expression code (between ${ and })
       const exprCode = template.slice(exprStart + 2, exprEnd);
 
-      console.log('📝 TEMPLATE: Evaluating expression:', exprCode);
+      debug.expressions('TEMPLATE: Evaluating expression:', exprCode);
 
       // Evaluate expression - check context variables first
       let value: any;
@@ -210,17 +211,17 @@ export class ExpressionEvaluator {
 
       if (context.locals.has(trimmed)) {
         value = context.locals.get(trimmed);
-        console.log(`📝 TEMPLATE: Found in locals: ${trimmed} =`, value);
+        debug.expressions(`TEMPLATE: Found in locals: ${trimmed} =`, value);
       } else if (context.variables && context.variables.has(trimmed)) {
         value = context.variables.get(trimmed);
-        console.log(`📝 TEMPLATE: Found in variables: ${trimmed} =`, value);
+        debug.expressions(`TEMPLATE: Found in variables: ${trimmed} =`, value);
       } else if (context.globals && context.globals.has(trimmed)) {
         value = context.globals.get(trimmed);
-        console.log(`📝 TEMPLATE: Found in globals: ${trimmed} =`, value);
+        debug.expressions(`TEMPLATE: Found in globals: ${trimmed} =`, value);
       } else {
         // Expression is more complex - try to evaluate it with context
         value = await this.evaluateSimpleExpression(exprCode, context);
-        console.log(`📝 TEMPLATE: Evaluated expression "${exprCode}" =`, value);
+        debug.expressions(`TEMPLATE: Evaluated expression "${exprCode}" =`, value);
       }
 
       // Append evaluated value
@@ -238,7 +239,7 @@ export class ExpressionEvaluator {
    * Handles basic arithmetic: +, -, *, /, %
    */
   private async evaluateSimpleExpression(exprCode: string, context: ExecutionContext): Promise<any> {
-    console.log('🧮 EVAL: Evaluating arithmetic expression:', exprCode);
+    debug.expressions('EVAL: Evaluating arithmetic expression:', exprCode);
 
     // Try to find an operator in the expression
     // Match identifier/number, operator, identifier/number (with or without spaces)
@@ -247,12 +248,12 @@ export class ExpressionEvaluator {
 
     if (arithmeticMatch) {
       const [, left, operator, right] = arithmeticMatch;
-      console.log('🧮 EVAL: Parsed arithmetic:', { left, operator, right });
+      debug.expressions('EVAL: Parsed arithmetic:', { left, operator, right });
 
       // Evaluate left and right sides
       const leftValue = await this.resolveValue(left.trim(), context);
       const rightValue = await this.resolveValue(right.trim(), context);
-      console.log('🧮 EVAL: Resolved values:', { leftValue, rightValue });
+      debug.expressions('EVAL: Resolved values:', { leftValue, rightValue });
 
       // Perform arithmetic
       const leftNum = Number(leftValue);
@@ -268,18 +269,18 @@ export class ExpressionEvaluator {
           case '%': result = leftNum % rightNum; break;
           default: result = leftNum;
         }
-        console.log('🧮 EVAL: Arithmetic result:', result);
+        debug.expressions('EVAL: Arithmetic result:', result);
         return result;
       } else {
-        console.warn('🧮 EVAL: Non-numeric values, returning as-is');
+        debug.expressions('EVAL: Non-numeric values, returning as-is');
       }
     } else {
-      console.log('🧮 EVAL: No arithmetic pattern matched, trying as single value');
+      debug.expressions('EVAL: No arithmetic pattern matched, trying as single value');
     }
 
     // Fallback: try to resolve as a single value
     const fallback = await this.resolveValue(exprCode.trim(), context);
-    console.log('🧮 EVAL: Fallback result:', fallback);
+    debug.expressions('EVAL: Fallback result:', fallback);
     return fallback;
   }
 
@@ -287,7 +288,7 @@ export class ExpressionEvaluator {
    * Resolve a value from context or parse as literal
    */
   private async resolveValue(name: string, context: ExecutionContext): Promise<any> {
-    console.log(`🔍 RESOLVE: Looking for '${name}' in context`, {
+    debug.expressions(`RESOLVE: Looking for '${name}' in context`, {
       hasInLocals: context.locals.has(name),
       localsKeys: Array.from(context.locals.keys()),
       value: context.locals.get(name)
@@ -296,17 +297,17 @@ export class ExpressionEvaluator {
     // Check context
     if (context.locals.has(name)) {
       const value = context.locals.get(name);
-      console.log(`✅ RESOLVE: Found '${name}' in locals:`, value);
+      debug.expressions(`RESOLVE: Found '${name}' in locals:`, value);
       return value;
     }
     if (context.variables && context.variables.has(name)) {
       const value = context.variables.get(name);
-      console.log(`✅ RESOLVE: Found '${name}' in variables:`, value);
+      debug.expressions(`RESOLVE: Found '${name}' in variables:`, value);
       return value;
     }
     if (context.globals && context.globals.has(name)) {
       const value = context.globals.get(name);
-      console.log(`✅ RESOLVE: Found '${name}' in globals:`, value);
+      debug.expressions(`RESOLVE: Found '${name}' in globals:`, value);
       return value;
     }
 
@@ -503,21 +504,21 @@ export class ExpressionEvaluator {
         if (shouldUseStringConcatenation) {
           const stringConcatExpr = this.expressionRegistry.get('stringConcatenation');
           if (stringConcatExpr) {
-            console.log('🔧 Using string concatenation for:', { leftValue, rightValue });
+            debug.expressions('Using string concatenation for:', { leftValue, rightValue });
             const result = await stringConcatExpr.evaluate(context, { left: leftValue, right: rightValue });
             return result.success ? result.value : leftValue + rightValue;
           }
         } else {
           const additionExpr = this.expressionRegistry.get('addition');
           if (additionExpr) {
-            console.log('🔧 Using numeric addition for:', { leftValue, rightValue });
+            debug.expressions('Using numeric addition for:', { leftValue, rightValue });
             const result = await additionExpr.evaluate(context, { left: leftValue, right: rightValue });
             return result.success ? result.value : leftValue + rightValue;
           }
         }
         
         // Fallback to native JavaScript addition/concatenation
-        console.log('🔧 Using fallback + operation for:', { leftValue, rightValue });
+        debug.expressions('Using fallback + operation for:', { leftValue, rightValue });
         return leftValue + rightValue;
       
       case '-':
