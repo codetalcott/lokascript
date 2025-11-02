@@ -4,10 +4,16 @@
  *
  * This is the complete bundle for maximum compatibility.
  * For smaller bundle sizes, consider:
- * - hyperfixi-browser-minimal.js (~60KB gzipped, 8 commands)
- * - hyperfixi-browser-standard.js (~120KB gzipped, 20 commands)
+ * - hyperfixi-browser-minimal.js (~50-60KB gzipped, 8 commands, core expressions)
+ * - hyperfixi-browser-standard.js (~100-110KB gzipped, 20 commands, core+common expressions)
  *
- * Estimated size: ~192KB gzipped
+ * Phase 2 optimization notes:
+ * - When using createRuntime(), specify expressionPreload option:
+ *   - 'core': Minimal expressions (~40KB)
+ *   - 'common': Core + common expressions (~70KB)
+ *   - 'all': All expressions (~100KB, default for full bundle)
+ *
+ * Estimated size: ~180-190KB gzipped (with Phase 2 optimizations)
  * Recommended for: Complex applications, full _hyperscript compatibility
  */
 

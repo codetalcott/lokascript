@@ -13,6 +13,7 @@ import type {
 import type { TypedExecutionContext } from '../types/command-types';
 
 import { ExpressionEvaluator } from '../core/expression-evaluator';
+import { LazyExpressionEvaluator } from '../core/lazy-expression-evaluator';
 import { PutCommand } from '../commands/dom/put';
 // SetCommand now imported from data/index.js above
 
@@ -87,11 +88,21 @@ export interface RuntimeOptions {
    * If not provided, all commands are available for lazy loading
    */
   commands?: string[];
+  /**
+   * Expression preloading strategy (Phase 2 optimization)
+   * - 'core': Load only essential expressions (default, ~40KB)
+   * - 'common': Load core + common expressions (~70KB)
+   * - 'all': Eager load all expressions (legacy behavior, ~100KB)
+   * - 'none': Maximum lazy loading (load on first use)
+   *
+   * Only used when lazyLoad is true.
+   */
+  expressionPreload?: 'core' | 'common' | 'all' | 'none';
 }
 
 export class Runtime {
   private options: RuntimeOptions;
-  private expressionEvaluator: ExpressionEvaluator;
+  private expressionEvaluator: ExpressionEvaluator | LazyExpressionEvaluator;
   private putCommand: PutCommand;
   private enhancedRegistry: EnhancedCommandRegistry;
   private behaviorRegistry: Map<string, any>;
@@ -104,10 +115,19 @@ export class Runtime {
       enableErrorReporting: true,
       useEnhancedCommands: true,
       lazyLoad: true, // Default to lazy loading for optimal bundle size
+      expressionPreload: 'core', // Default to core expressions for Phase 2 optimization
       ...options
     };
 
-    this.expressionEvaluator = new ExpressionEvaluator();
+    // Phase 2 optimization: Use LazyExpressionEvaluator for lazy loading
+    if (this.options.lazyLoad) {
+      this.expressionEvaluator = new LazyExpressionEvaluator({
+        preload: this.options.expressionPreload || 'core'
+      });
+    } else {
+      // Legacy eager loading behavior
+      this.expressionEvaluator = new ExpressionEvaluator();
+    }
     this.putCommand = new PutCommand();
     this.behaviorRegistry = new Map();
 

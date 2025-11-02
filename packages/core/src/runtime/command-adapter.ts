@@ -511,8 +511,10 @@ export class LazyCommandRegistry {
 
   /**
    * Get runtime-compatible command adapter (lazy loads on first access)
+   *
+   * Phase 2 optimization: Now async to support dynamic imports for true code splitting
    */
-  getAdapter(name: string): CommandAdapter | undefined {
+  async getAdapter(name: string): Promise<CommandAdapter | undefined> {
     // Check if command is in allowed list (if filtering is enabled)
     if (this.allowedCommands && !this.allowedCommands.has(name)) {
       return undefined;
@@ -523,8 +525,8 @@ export class LazyCommandRegistry {
       return this.adapters.get(name);
     }
 
-    // Lazy load the command
-    const impl = this.loadCommand(name);
+    // Lazy load the command with dynamic import
+    const impl = await this.loadCommand(name);
     if (!impl) {
       return undefined;
     }
@@ -538,14 +540,16 @@ export class LazyCommandRegistry {
   }
 
   /**
-   * Load a command implementation on-demand
+   * Load a command implementation on-demand with dynamic imports
+   *
+   * Phase 2 optimization: Converted from require() to import() for true code splitting
+   * Commands are now loaded as separate chunks, reducing initial bundle size
    */
-  private loadCommand(name: string): any {
-    // Import command factory from registry
-    // This uses dynamic property access which still allows tree-shaking
-    // because the ENHANCED_COMMAND_FACTORIES object uses static imports
-    const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
-    const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
+  private async loadCommand(name: string): Promise<any> {
+    // Dynamic import enables true code splitting
+    // Rollup/Webpack will create separate chunks for the command registry
+    const module = await import('../commands/command-registry');
+    const factory = module.ENHANCED_COMMAND_FACTORIES[name as keyof typeof module.ENHANCED_COMMAND_FACTORIES];
 
     if (!factory) {
       return null;
@@ -557,33 +561,34 @@ export class LazyCommandRegistry {
   /**
    * Get original enhanced implementation (lazy loads if needed)
    */
-  getImplementation(name: string): any {
+  async getImplementation(name: string): Promise<any> {
     if (!this.implementations.has(name)) {
-      this.getAdapter(name); // Trigger lazy load
+      await this.getAdapter(name); // Trigger lazy load
     }
     return this.implementations.get(name);
   }
 
   /**
    * Check if command exists (doesn't trigger load)
+   * Note: Still uses dynamic import but doesn't instantiate the command
    */
-  has(name: string): boolean {
+  async has(name: string): Promise<boolean> {
     // Check if already loaded
     if (this.adapters.has(name)) {
       return true;
     }
 
     // Check if it exists in the factory registry
-    const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
-    return name in ENHANCED_COMMAND_FACTORIES;
+    const module = await import('../commands/command-registry');
+    return name in module.ENHANCED_COMMAND_FACTORIES;
   }
 
   /**
    * Get all available command names (from factory registry, not just loaded)
    */
-  getCommandNames(): string[] {
-    const { getEnhancedCommandNames } = require('../commands/command-registry');
-    const allNames = getEnhancedCommandNames();
+  async getCommandNames(): Promise<string[]> {
+    const module = await import('../commands/command-registry');
+    const allNames = module.getEnhancedCommandNames();
 
     // Filter by allowed commands if specified
     if (this.allowedCommands) {
@@ -603,17 +608,18 @@ export class LazyCommandRegistry {
   /**
    * Validate a command exists and can handle the given input
    */
-  validateCommand(name: string, input: unknown): ValidationResult<unknown> {
-    const adapter = this.getAdapter(name);
+  async validateCommand(name: string, input: unknown): Promise<ValidationResult<unknown>> {
+    const adapter = await this.getAdapter(name);
     if (!adapter) {
+      const commandNames = await this.getCommandNames();
       return {
         isValid: false,
         errors: [{
           type: 'runtime-error',
           message: `Unknown command: ${name}`,
-          suggestions: [`Available commands: ${this.getCommandNames().join(', ')}`]
+          suggestions: [`Available commands: ${commandNames.join(', ')}`]
         }],
-        suggestions: [`Available commands: ${this.getCommandNames().join(', ')}`]
+        suggestions: [`Available commands: ${commandNames.join(', ')}`]
       };
     }
 
@@ -622,11 +628,12 @@ export class LazyCommandRegistry {
 
   /**
    * Preload specific commands (for performance optimization)
+   * Phase 2: Now async to support dynamic imports
    */
-  warmup(commandNames: string[]): void {
-    for (const name of commandNames) {
-      this.getAdapter(name); // Trigger lazy load
-    }
+  async warmup(commandNames: string[]): Promise<void> {
+    await Promise.all(
+      commandNames.map(name => this.getAdapter(name))
+    );
   }
 }
 

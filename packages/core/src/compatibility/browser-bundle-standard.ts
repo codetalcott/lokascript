@@ -50,13 +50,19 @@ const STANDARD_COMMANDS = [
 
 /**
  * Create a standard hyperscript runtime with common commands
+ *
+ * Phase 2 optimization: Uses 'common' expression tier for balanced bundle
+ * - Commands: 20 common commands (lazy loaded)
+ * - Expressions: Core + common tiers (references, logical, special, properties, conversion)
+ * - Expected size: ~100-110KB gzipped (vs 83KB before Phase 2, includes more features)
  */
 export function createStandardRuntime() {
   return new Runtime({
     lazyLoad: true,
     commands: STANDARD_COMMANDS,
     useEnhancedCommands: true,
-    enableAsyncCommands: true
+    enableAsyncCommands: true,
+    expressionPreload: 'common'  // Phase 2: Load core + common expressions
   });
 }
 

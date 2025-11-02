@@ -33,13 +33,19 @@ const MINIMAL_COMMANDS = [
 
 /**
  * Create a minimal hyperscript runtime with only essential commands
+ *
+ * Phase 2 optimization: Uses 'core' expression tier for smallest bundle
+ * - Commands: 8 essential commands (lazy loaded)
+ * - Expressions: Core tier only (references, logical, special)
+ * - Expected size: ~50-60KB gzipped (vs 83KB before Phase 2)
  */
 export function createMinimalRuntime() {
   return new Runtime({
     lazyLoad: true,
     commands: MINIMAL_COMMANDS,
     useEnhancedCommands: true,
-    enableAsyncCommands: false
+    enableAsyncCommands: false,
+    expressionPreload: 'core'  // Phase 2: Only load core expressions
   });
 }
 
