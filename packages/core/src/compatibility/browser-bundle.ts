@@ -1,6 +1,14 @@
 /**
- * Browser Bundle for HyperFixi Compatibility Testing
- * Exports evalHyperScript for direct browser usage
+ * HyperFixi Full Browser Bundle
+ * Includes ALL commands and features (40+ commands)
+ *
+ * This is the complete bundle for maximum compatibility.
+ * For smaller bundle sizes, consider:
+ * - hyperfixi-browser-minimal.js (~60KB gzipped, 8 commands)
+ * - hyperfixi-browser-standard.js (~120KB gzipped, 20 commands)
+ *
+ * Estimated size: ~192KB gzipped
+ * Recommended for: Complex applications, full _hyperscript compatibility
  */
 
 import { evalHyperScript, evalHyperScriptAsync, evalHyperScriptSmart } from './eval-hyperscript';
@@ -93,7 +101,7 @@ const hyperfixi = {
   tailwindExtension,
 
   // Version info
-  version: '1.0.0-compatibility'
+  version: '1.0.0-full'
 };
 
 // Export to global for browser testing

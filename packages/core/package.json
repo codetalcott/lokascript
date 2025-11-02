@@ -32,6 +32,9 @@
   "scripts": {
     "build": "rollup -c",
     "build:browser": "rollup -c rollup.browser.config.mjs",
+    "build:browser:minimal": "rollup -c rollup.browser-minimal.config.mjs",
+    "build:browser:standard": "rollup -c rollup.browser-standard.config.mjs",
+    "build:browser:all": "npm run build:browser && npm run build:browser:minimal && npm run build:browser:standard",
     "dev": "rollup -c -w",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -63,6 +66,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
+    "analyze:usage": "node scripts/analyze-usage.mjs",
     "size": "npm run size:analysis",
     "size:analysis": "echo 'Size Analysis:' && echo 'ES Module: '$(wc -c < dist/index.mjs)' bytes' && echo 'CJS Module: '$(wc -c < dist/index.js)' bytes' && echo 'Gzipped: '$(gzip -c dist/index.mjs | wc -c)' bytes'"
   },

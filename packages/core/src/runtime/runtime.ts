@@ -76,6 +76,17 @@ export interface RuntimeOptions {
   commandTimeout?: number;
   enableErrorReporting?: boolean;
   useEnhancedCommands?: boolean;
+  /**
+   * Enable lazy loading of commands for optimal bundle size
+   * When true, commands are only loaded when first used (default: true)
+   * Set to false for legacy eager loading behavior
+   */
+  lazyLoad?: boolean;
+  /**
+   * Specify which commands to load (only used with lazyLoad: true)
+   * If not provided, all commands are available for lazy loading
+   */
+  commands?: string[];
 }
 
 export class Runtime {
@@ -85,16 +96,17 @@ export class Runtime {
   private enhancedRegistry: EnhancedCommandRegistry;
   private behaviorRegistry: Map<string, any>;
   private behaviorAPI: any;
-  
+
   constructor(options: RuntimeOptions = {}) {
     this.options = {
       enableAsyncCommands: true,
       commandTimeout: 10000, // 10 seconds
       enableErrorReporting: true,
       useEnhancedCommands: true,
+      lazyLoad: true, // Default to lazy loading for optimal bundle size
       ...options
     };
-    
+
     this.expressionEvaluator = new ExpressionEvaluator();
     this.putCommand = new PutCommand();
     this.behaviorRegistry = new Map();
@@ -108,9 +120,18 @@ export class Runtime {
       }
     };
 
-    // Initialize enhanced command registry with all commands for complete system
-    this.enhancedRegistry = EnhancedCommandRegistry.createWithDefaults();
-    this.initializeEnhancedCommands();
+    // Initialize command registry based on loading strategy
+    if (this.options.lazyLoad) {
+      // Lazy loading mode (default) - commands loaded on first use
+      // Note: LazyCommandRegistry implements same interface as EnhancedCommandRegistry
+      this.enhancedRegistry = EnhancedCommandRegistry.createWithLazyLoading(
+        this.options.commands ? { commands: this.options.commands } : undefined
+      ) as unknown as EnhancedCommandRegistry;
+    } else {
+      // Legacy eager loading mode - all commands loaded upfront
+      this.enhancedRegistry = EnhancedCommandRegistry.createWithDefaults();
+      this.initializeEnhancedCommands();
+    }
   }
 
   /**

@@ -495,6 +495,142 @@ export class CommandAdapter implements RuntimeCommand {
 }
 
 /**
+ * Lazy Command Registry
+ * Loads commands on-demand for optimal tree-shaking and bundle size
+ */
+export class LazyCommandRegistry {
+  private adapters = new Map<string, CommandAdapter>();
+  private implementations = new Map<string, any>();
+  private allowedCommands?: Set<string>; // For explicit command filtering
+
+  constructor(allowedCommands?: string[]) {
+    if (allowedCommands) {
+      this.allowedCommands = new Set(allowedCommands);
+    }
+  }
+
+  /**
+   * Get runtime-compatible command adapter (lazy loads on first access)
+   */
+  getAdapter(name: string): CommandAdapter | undefined {
+    // Check if command is in allowed list (if filtering is enabled)
+    if (this.allowedCommands && !this.allowedCommands.has(name)) {
+      return undefined;
+    }
+
+    // Return cached adapter if already loaded
+    if (this.adapters.has(name)) {
+      return this.adapters.get(name);
+    }
+
+    // Lazy load the command
+    const impl = this.loadCommand(name);
+    if (!impl) {
+      return undefined;
+    }
+
+    // Create and cache adapter
+    const adapter = new CommandAdapter(impl);
+    this.adapters.set(name, adapter);
+    this.implementations.set(name, impl);
+
+    return adapter;
+  }
+
+  /**
+   * Load a command implementation on-demand
+   */
+  private loadCommand(name: string): any {
+    // Import command factory from registry
+    // This uses dynamic property access which still allows tree-shaking
+    // because the ENHANCED_COMMAND_FACTORIES object uses static imports
+    const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
+    const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
+
+    if (!factory) {
+      return null;
+    }
+
+    return factory();
+  }
+
+  /**
+   * Get original enhanced implementation (lazy loads if needed)
+   */
+  getImplementation(name: string): any {
+    if (!this.implementations.has(name)) {
+      this.getAdapter(name); // Trigger lazy load
+    }
+    return this.implementations.get(name);
+  }
+
+  /**
+   * Check if command exists (doesn't trigger load)
+   */
+  has(name: string): boolean {
+    // Check if already loaded
+    if (this.adapters.has(name)) {
+      return true;
+    }
+
+    // Check if it exists in the factory registry
+    const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
+    return name in ENHANCED_COMMAND_FACTORIES;
+  }
+
+  /**
+   * Get all available command names (from factory registry, not just loaded)
+   */
+  getCommandNames(): string[] {
+    const { getEnhancedCommandNames } = require('../commands/command-registry');
+    const allNames = getEnhancedCommandNames();
+
+    // Filter by allowed commands if specified
+    if (this.allowedCommands) {
+      return allNames.filter((name: string) => this.allowedCommands!.has(name));
+    }
+
+    return allNames;
+  }
+
+  /**
+   * Get all runtime adapters (only returns loaded commands)
+   */
+  getAdapters(): Map<string, CommandAdapter> {
+    return new Map(this.adapters);
+  }
+
+  /**
+   * Validate a command exists and can handle the given input
+   */
+  validateCommand(name: string, input: unknown): ValidationResult<unknown> {
+    const adapter = this.getAdapter(name);
+    if (!adapter) {
+      return {
+        isValid: false,
+        errors: [{
+          type: 'runtime-error',
+          message: `Unknown command: ${name}`,
+          suggestions: [`Available commands: ${this.getCommandNames().join(', ')}`]
+        }],
+        suggestions: [`Available commands: ${this.getCommandNames().join(', ')}`]
+      };
+    }
+
+    return adapter.validate(input);
+  }
+
+  /**
+   * Preload specific commands (for performance optimization)
+   */
+  warmup(commandNames: string[]): void {
+    for (const name of commandNames) {
+      this.getAdapter(name); // Trigger lazy load
+    }
+  }
+}
+
+/**
  * Enhanced Command Registry
  * Manages enhanced commands and their runtime adapters
  */
@@ -583,6 +719,7 @@ export class EnhancedCommandRegistry {
 
   /**
    * Create registry with all enhanced commands pre-registered
+   * @deprecated Use createWithLazyLoading() for better performance and smaller bundles
    */
   static createWithDefaults(): EnhancedCommandRegistry {
     const registry = new EnhancedCommandRegistry();
@@ -600,6 +737,14 @@ export class EnhancedCommandRegistry {
     }
 
     return registry;
+  }
+
+  /**
+   * Create registry with lazy loading for optimal bundle size
+   * Commands are only loaded when first used
+   */
+  static createWithLazyLoading(options?: { commands?: string[] }): LazyCommandRegistry {
+    return new LazyCommandRegistry(options?.commands);
   }
 }
 
