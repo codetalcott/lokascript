@@ -4,13 +4,16 @@
  * Scans HTML files for hyperscript usage and recommends optimal bundle
  *
  * Usage:
- *   node scripts/analyze-usage.mjs src/**/*.html
- *   npm run analyze:usage -- src/**/*.html
+ *   node scripts/analyze-usage.mjs "src/*.html"
+ *   npm run analyze:usage -- "src/*.html"
  */
 
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Bundle configurations
 const BUNDLES = {
@@ -149,12 +152,32 @@ function calculateSavings(recommended) {
 }
 
 /**
+ * Find HTML files in directory
+ */
+function findHTMLFiles(dir, files = []) {
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+
+    if (item.isDirectory() && item.name !== 'node_modules' && item.name !== 'dist') {
+      findHTMLFiles(fullPath, files);
+    } else if (item.isFile() && item.name.endsWith('.html')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+/**
  * Main analyzer function
  */
 async function analyzeUsage(patterns) {
   if (!patterns || patterns.length === 0) {
-    console.error('Usage: node analyze-usage.mjs <glob-pattern>');
-    console.error('Example: node analyze-usage.mjs "src/**/*.html"');
+    console.error('Usage: node analyze-usage.mjs <file-or-directory>');
+    console.error('Example: node analyze-usage.mjs .');
+    console.error('Example: node analyze-usage.mjs test-dashboard.html');
     process.exit(1);
   }
 
@@ -163,8 +186,18 @@ async function analyzeUsage(patterns) {
   // Find all matching files
   const files = [];
   for (const pattern of patterns) {
-    const matches = await glob(pattern, { ignore: 'node_modules/**' });
-    files.push(...matches);
+    const stats = fs.existsSync(pattern) ? fs.statSync(pattern) : null;
+
+    if (!stats) {
+      console.warn(`Warning: ${pattern} not found, skipping...`);
+      continue;
+    }
+
+    if (stats.isDirectory()) {
+      files.push(...findHTMLFiles(pattern));
+    } else if (stats.isFile() && pattern.endsWith('.html')) {
+      files.push(pattern);
+    }
   }
 
   if (files.length === 0) {
