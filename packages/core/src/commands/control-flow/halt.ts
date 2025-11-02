@@ -1,14 +1,15 @@
 /**
  * Enhanced Halt Command Implementation
  * Stops execution of the current command sequence
- * 
+ *
  * Syntax: halt
- * 
+ *
  * Modernized with CommandImplementation interface
  */
 
 import type { CommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/command-types';
+import { debug } from '../../utils/debug';
 
 // Input type definition
 export interface HaltCommandInput {
@@ -73,7 +74,7 @@ export class HaltCommand implements CommandImplementation<
       event.preventDefault();
       event.stopPropagation();
 
-      console.log('🛑 HALT: Event default prevented and propagation stopped');
+      debug.command('HALT: Event default prevented and propagation stopped');
 
       // Return normally - don't stop command execution
       return {
@@ -89,7 +90,7 @@ export class HaltCommand implements CommandImplementation<
       event.preventDefault();
       event.stopPropagation();
 
-      console.log('🛑 HALT: Event from context prevented');
+      debug.command('HALT: Event from context prevented');
 
       return {
         halted: true,
@@ -99,7 +100,7 @@ export class HaltCommand implements CommandImplementation<
     }
 
     // No event to halt - this is a regular "halt" command to stop execution
-    console.log('🛑 HALT: Stopping command execution');
+    debug.command('HALT: Stopping command execution');
 
     // Set a halt flag in the context if it supports it
     if ('halted' in context) {
