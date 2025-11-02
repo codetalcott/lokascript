@@ -205,7 +205,7 @@ export class RenderCommand implements CommandImplementation<
 
     // Extract template content
     const templateContent = this.extractTemplateContent(template);
-    console.log('📄 Template content extracted:', templateContent);
+    debug.command('Template content extracted:', templateContent);
 
     // Create template execution context
     const templateContext = this.createTemplateContext(context, variables || {});
