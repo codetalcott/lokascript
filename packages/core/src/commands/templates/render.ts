@@ -14,6 +14,7 @@ import type { UnifiedValidationResult } from '../../types/unified-types';
 import { IfDirective } from './directives/if-directive';
 import { ElseDirective } from './directives/else-directive';
 import { RepeatDirective } from './directives/repeat-directive';
+import { debug } from '../../utils/debug';
 
 /**
  * Zod schema for RENDER command input validation
@@ -161,7 +162,7 @@ export class RenderCommand implements CommandImplementation<
     input: RenderCommandInput,
     context: TypedExecutionContext
   ): Promise<Element | null> {
-    console.log('🎨 Enhanced RENDER command executing with:', { input, contextMe: context.me?.id });
+    debug.command('Enhanced RENDER command executing with:', { input, contextMe: context.me?.id });
     
     // Handle legacy argument formats from command executor
     let normalizedInput: RenderCommandInput;

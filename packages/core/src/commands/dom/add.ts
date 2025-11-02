@@ -15,6 +15,7 @@ import type {
 import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { asHTMLElement } from '../../utils/dom-utils';
 import { dispatchCustomEvent } from '../../core/events';
+import { debug } from '../../utils/debug';
 
 export interface AddCommandOptions {
   delimiter?: string;
@@ -145,7 +146,7 @@ export class AddCommand implements TypedCommandImplementation<
     try {
       // Check if first argument is an object literal (for inline styles)
       if (classExpression && typeof classExpression === 'object' && !Array.isArray(classExpression)) {
-        console.log('🎨 ADD: Detected object literal for inline styles:', classExpression);
+        debug.style('ADD: Detected object literal for inline styles:', classExpression);
         // This is an object of CSS properties - add them as inline styles
         const elements = this.resolveTargets(context, target);
 
@@ -171,7 +172,7 @@ export class AddCommand implements TypedCommandImplementation<
           }
         }
 
-        console.log('🎨 ADD: Applied inline styles to', modifiedElements.length, 'elements');
+        debug.style('ADD: Applied inline styles to', modifiedElements.length, 'elements');
         return {
           success: true,
           value: modifiedElements,
@@ -361,7 +362,7 @@ export class AddCommand implements TypedCommandImplementation<
     context: TypedExecutionContext
   ): Promise<EvaluationResult<HTMLElement>> {
     try {
-      console.log('🎨 ADD: Adding inline styles to element:', { element, styles });
+      debug.style('ADD: Adding inline styles to element:', { element, styles });
 
       // Apply each CSS property
       for (const [property, value] of Object.entries(styles)) {
@@ -369,12 +370,12 @@ export class AddCommand implements TypedCommandImplementation<
           // CSS custom properties (--variables) must use setProperty()
           if (property.startsWith('--')) {
             element.style.setProperty(property, String(value));
-            console.log(`🎨 ADD: Set CSS custom property ${property} = ${value}`);
+            debug.style(`ADD: Set CSS custom property ${property} = ${value}`);
           } else {
             // Convert hyphenated property names to camelCase (e.g., 'background-color' -> 'backgroundColor')
             const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
             (element.style as any)[camelProperty] = String(value);
-            console.log(`🎨 ADD: Set ${camelProperty} = ${value}`);
+            debug.style(`ADD: Set ${camelProperty} = ${value}`);
           }
         }
       }

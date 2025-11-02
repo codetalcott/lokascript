@@ -9,6 +9,7 @@
 
 import type { CommandImplementation, ValidationResult } from '../../types/core';
 import type { TypedExecutionContext } from '../../types/command-types';
+import { debug } from '../../utils/debug';
 
 // Input type definition
 export interface RepeatCommandInput {
@@ -159,7 +160,7 @@ export class RepeatCommand implements CommandImplementation<
     const { type, variable, collection, condition, count, indexVariable, commands } = input;
 
     // DEBUG: Log entry to execute method
-    console.log('🔁 REPEAT.execute() called with input:', {
+    debug.loop(' REPEAT.execute() called with input:', {
       type,
       variable,
       collection,
@@ -177,7 +178,7 @@ export class RepeatCommand implements CommandImplementation<
     let interrupted = false;
 
     try {
-      console.log(`🔁 REPEAT: Entering switch for type: ${type}`);
+      debug.loop(`REPEAT: Entering switch for type: ${type}`);
       switch (type) {
         case 'for':
           ({ iterations, lastResult, interrupted } = await this.handleForLoop(
@@ -433,7 +434,7 @@ export class RepeatCommand implements CommandImplementation<
     commands: Function[] = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     // DEBUG: Log entry
-    console.log('🔁 handleUntilEventLoop() called:', {
+    debug.loop(' handleUntilEventLoop() called:', {
       eventName,
       eventTarget,
       indexVariable,

@@ -21,6 +21,7 @@ import type {
   CommandMetadata,
   LLMDocumentation
 } from '../../types/command-types';
+import { debug } from '../../utils/debug';
 
 // ============================================================================
 // Type Definitions
@@ -205,8 +206,7 @@ export class WaitCommand implements TypedCommandImplementation<
   ): Promise<EvaluationResult<WaitCommandOutput>> {
     const startTime = Date.now();
 
-    // DEBUG: Log wait command input
-    console.log('⏳ WAIT: execute() called with input:', input);
+    debug.async('WAIT: execute() called with input:', input);
 
     try {
       if (input.type === 'time') {
