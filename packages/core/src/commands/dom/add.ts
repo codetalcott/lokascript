@@ -16,6 +16,7 @@ import type { UnifiedValidationResult } from '../../types/unified-types.ts';
 import { asHTMLElement } from '../../utils/dom-utils';
 import { dispatchCustomEvent } from '../../core/events';
 import { debug } from '../../utils/debug';
+import { styleBatcher } from '../../utils/performance';
 
 export interface AddCommandOptions {
   delimiter?: string;
@@ -364,21 +365,19 @@ export class AddCommand implements TypedCommandImplementation<
     try {
       debug.style('ADD: Adding inline styles to element:', { element, styles });
 
-      // Apply each CSS property
+      // Prepare styles for batching - convert values to strings
+      const batchedStyles: Record<string, string> = {};
       for (const [property, value] of Object.entries(styles)) {
         if (value !== undefined && value !== null) {
-          // CSS custom properties (--variables) must use setProperty()
-          if (property.startsWith('--')) {
-            element.style.setProperty(property, String(value));
-            debug.style(`ADD: Set CSS custom property ${property} = ${value}`);
-          } else {
-            // Convert hyphenated property names to camelCase (e.g., 'background-color' -> 'backgroundColor')
-            const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-            (element.style as any)[camelProperty] = String(value);
-            debug.style(`ADD: Set ${camelProperty} = ${value}`);
-          }
+          batchedStyles[property] = String(value);
+          debug.style(`ADD: Queued ${property} = ${value}`);
         }
       }
+
+      // Use StyleBatcher to batch DOM writes for smooth animations
+      // This batches all style updates into a single requestAnimationFrame
+      // Dramatically improves performance during high-frequency operations (e.g., dragging)
+      styleBatcher.add(element, batchedStyles);
 
       // Dispatch enhanced add event with rich metadata
       dispatchCustomEvent(element, 'hyperscript:add', {
