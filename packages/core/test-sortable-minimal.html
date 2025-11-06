@@ -205,50 +205,29 @@
 behavior Sortable()
   on pointerdown(clientX, clientY)
     log '🖱️ Pointer down at Y:', clientY
-
-    -- Find the sortable item that was clicked
     set draggedItem to event.target.closest('.sortable-item')
-
     if no draggedItem
       log '⚠️ Click was not on a sortable item, exiting'
       exit
     end
-
     log '✅ Dragging:', draggedItem.textContent.trim()
-
-    -- Prevent default and add dragging class
     halt the event
     add .dragging to draggedItem
-
-    -- Main drag loop
     log '🔄 Entering drag loop...'
     repeat until event pointerup from document
       wait for pointermove(clientY) or pointerup from document
-
       log '📍 Pointer moved to Y:', clientY
-
-      -- Get all sortable items
       set items to <.sortable-item/> in me
       log '📋 Found', items.length, 'items'
-
-      -- Find target position
       set targetItem to null
-
       repeat for item in items with index
         if item is not draggedItem
-          -- Measure this item
           measure item's top
           set itemTop to it
-
           measure item's height
           set itemHeight to it
-
-          -- Calculate midpoint
           set itemMid to itemTop + (itemHeight / 2)
-
           log '  Item', index, '- Top:', itemTop, 'Height:', itemHeight, 'Mid:', itemMid
-
-          -- If pointer is above midpoint, this is our target
           if clientY < itemMid
             set targetItem to item
             log '  🎯 Target found: item', index
@@ -256,8 +235,6 @@ behavior Sortable()
           end
         end
       end
-
-      -- Insert at target position
       if targetItem
         log '⬆️ Inserting before target'
         call me.insertBefore(draggedItem, targetItem)
@@ -266,10 +243,7 @@ behavior Sortable()
         call me.appendChild(draggedItem)
       end
     end
-
     log '👆 Pointer released'
-
-    -- Clean up
     remove .dragging from draggedItem
     log '✨ Drag complete'
   end

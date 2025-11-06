@@ -51,19 +51,14 @@ behavior Sortable()
   on pointerdown(clientX, clientY)
     set draggedItem to event.target.closest('.sortable-item')
     if no draggedItem exit
-
     halt the event
     add .dragging to draggedItem
-
     set initialHTML to my innerHTML
     trigger sortable:start
-
     repeat until event pointerup from document
       wait for pointermove(clientY) or pointerup from document
-
       set items to <.sortable-item/> in me
       set targetItem to null
-
       repeat for item in items
         if item is not draggedItem
           measure item's top
@@ -71,26 +66,21 @@ behavior Sortable()
           measure item's height
           set itemHeight to it
           set itemMid to itemTop + (itemHeight / 2)
-
           if clientY < itemMid
             set targetItem to item
             exit
           end
         end
       end
-
       if targetItem
         call me.insertBefore(draggedItem, targetItem)
       else
         call me.appendChild(draggedItem)
       end
-
       trigger sortable:move
     end
-
     remove .dragging from draggedItem
     trigger sortable:end
-
     if my innerHTML is not initialHTML
       trigger sortable:change
     end
@@ -98,6 +88,8 @@ behavior Sortable()
 end
 </script>
 ```
+
+**Note**: HyperScript doesn't support `--` style comments in inline code. Use HTML comments `<!-- -->` outside the script tag for documentation.
 
 ### 3. Create Sortable List
 
