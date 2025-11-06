@@ -25,6 +25,7 @@ import { Parser } from '../parser/parser';
 import { Runtime } from '../runtime/runtime';
 import { tokenize } from '../parser/tokenizer';
 import { debug } from '../utils/debug';
+import { styleBatcher, ObjectPool } from '../utils/performance';
 
 // Export to global scope for browser testing
 declare global {
@@ -45,6 +46,9 @@ declare global {
       Runtime: typeof Runtime;
       tokenize: typeof tokenize;
       attributeProcessor: typeof defaultAttributeProcessor;
+      debug: typeof debug;
+      styleBatcher: typeof styleBatcher;
+      ObjectPool: typeof ObjectPool;
     };
     // Also expose as direct globals for test compatibility
     evalHyperScript: typeof evalHyperScript;
@@ -105,6 +109,13 @@ const hyperfixi = {
 
   // Extensions
   tailwindExtension,
+
+  // Performance utilities
+  styleBatcher,
+  ObjectPool,
+
+  // Debug utilities
+  debug,
 
   // Version info
   version: '1.0.0-full'

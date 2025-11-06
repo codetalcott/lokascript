@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal SET Test</title>
+    <script src="../test-nav.js"></script>
+</head>
+<body>
+    <div id="test">Test</div>
+    <script src="dist/hyperfixi-browser.js"></script>
+    <script>
+        // Simple test that should show all our debug logs
+        async function testSet() {
+            console.log('🎯 Starting minimal SET test');
+            
+            try {
+                const element = document.getElementById('test');
+                console.log('🔧 Test element:', element);
+                
+                console.log('🔧 About to call evalHyperScript with "set x to 42"');
+                const result = await hyperfixi.evalHyperScript('set x to 42', element);
+                console.log('✅ SUCCESS! Result:', result);
+                
+            } catch (error) {
+                console.error('❌ FAILED:', error.message);
+                console.error('Full error:', error);
+            }
+        }
+        
+        // Run immediately when loaded
+        window.addEventListener('load', testSet);
+    </script>
+</body>
+</html>

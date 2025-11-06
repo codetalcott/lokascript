@@ -358,8 +358,14 @@ export class ExpressionEvaluator {
       return (globalThis as any)[name];
     }
 
-    // Default to returning the name itself for unknown identifiers
-    return name;
+    // Check window object explicitly (for browser globals set by commands)
+    if (typeof window !== 'undefined' && name in window) {
+      return (window as any)[name];
+    }
+
+    // Return undefined for unknown identifiers (not the name as string)
+    // This allows patterns like (count or 0) to work correctly
+    return undefined;
   }
 
   /**
@@ -500,7 +506,7 @@ export class ExpressionEvaluator {
       case '+':
         // Smart operator resolution: choose between numeric addition and string concatenation
         const shouldUseStringConcatenation = typeof leftValue === 'string' || typeof rightValue === 'string';
-        
+
         if (shouldUseStringConcatenation) {
           const stringConcatExpr = this.expressionRegistry.get('stringConcatenation');
           if (stringConcatExpr) {
@@ -516,7 +522,7 @@ export class ExpressionEvaluator {
             return result.success ? result.value : leftValue + rightValue;
           }
         }
-        
+
         // Fallback to native JavaScript addition/concatenation
         debug.expressions('Using fallback + operation for:', { leftValue, rightValue });
         return leftValue + rightValue;

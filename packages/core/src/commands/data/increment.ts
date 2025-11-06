@@ -397,57 +397,89 @@ export class IncrementCommand implements CommandImplementation<
     if (preferredScope === 'global' && context.globals && context.globals.has(name)) {
       return context.globals.get(name);
     }
-    
+
     // Check local variables first (unless global is preferred)
     if (preferredScope !== 'global' && context.locals && context.locals.has(name)) {
       return context.locals.get(name);
     }
-    
+
     // Check global variables
     if (context.globals && context.globals.has(name)) {
       return context.globals.get(name);
     }
-    
-    // Check general variables  
+
+    // Check general variables
     if (context.variables && context.variables.has(name)) {
       return context.variables.get(name);
     }
-    
+
     // Check local variables as fallback
     if (preferredScope === 'global' && context.locals && context.locals.has(name)) {
       return context.locals.get(name);
     }
-    
+
+    // Check window/globalThis as final fallback (for browser globals)
+    if (typeof window !== 'undefined' && name in window) {
+      return (window as any)[name];
+    }
+    if (typeof globalThis !== 'undefined' && name in globalThis) {
+      return (globalThis as any)[name];
+    }
+
     // Return undefined if not found (will be converted to 0)
     return undefined;
   }
 
   private setVariableValue(name: string, value: number, context: TypedExecutionContext, preferredScope?: string): void {
+    console.log(`📝 INCREMENT setVariableValue: name='${name}', value=${value}, preferredScope='${preferredScope}'`);
+
     // If preferred scope is specified, handle it
     if (preferredScope === 'global') {
+      console.log(`  → Setting in globals AND window (preferred scope)`);
       context.globals.set(name, value);
+      // Also set on window for browser globals
+      if (typeof window !== 'undefined') {
+        (window as any)[name] = value;
+      }
       return;
     }
-    
+
     // If variable exists in local scope, update it
     if (context.locals && context.locals.has(name)) {
+      console.log(`  → Updating existing local variable`);
       context.locals.set(name, value);
       return;
     }
-    
+
     // If variable exists in global scope, update it
     if (context.globals && context.globals.has(name)) {
+      console.log(`  → Updating existing global variable`);
       context.globals.set(name, value);
+      // Also update on window if it exists there
+      if (typeof window !== 'undefined' && name in window) {
+        (window as any)[name] = value;
+      }
       return;
     }
-    
+
     // If variable exists in general variables, update it
     if (context.variables && context.variables.has(name)) {
+      console.log(`  → Updating existing variable in variables map`);
       context.variables.set(name, value);
       return;
     }
-    
+
+    // Check if variable exists on window (browser global)
+    if (typeof window !== 'undefined' && name in window) {
+      console.log(`  → Updating existing window variable`);
+      (window as any)[name] = value;
+      // Also store in globals for consistency
+      context.globals.set(name, value);
+      return;
+    }
+
     // Create new local variable
+    console.log(`  → Creating NEW local variable`);
     context.locals.set(name, value);
   }
 }

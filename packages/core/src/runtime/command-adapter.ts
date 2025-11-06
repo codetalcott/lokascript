@@ -10,7 +10,11 @@ import type {
   ValidationResult
 } from '../types/core';
 import type { ASTNode } from '../types/base-types';
-import { createAllEnhancedCommands } from '../commands/command-registry';
+import {
+  createAllEnhancedCommands,
+  ENHANCED_COMMAND_FACTORIES,
+  getEnhancedCommandNames
+} from '../commands/command-registry';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { debug } from '../utils/debug';
 
@@ -116,7 +120,7 @@ export class CommandAdapter implements RuntimeCommand {
       if (this.impl.execute && this.impl.execute.length === 2) {
         // Enhanced command expects (input, context) signature
         let input: unknown;
-        
+
         // SET command argument processing - handle context confusion
         if (this.impl.name === 'set') {
           // Check if we received the context object by mistake (has all context properties)
@@ -129,32 +133,49 @@ export class CommandAdapter implements RuntimeCommand {
           if (Array.isArray(args) && args.length >= 2) {
             // Assume format: [targetNode, valueNode] for "set target to value"
             const [targetNode, valueNode] = args;
-            
-            // Extract target name from AST node
+
+            // Extract target name and scope from targetNode
             let target;
+            let scope: 'global' | 'local' | undefined;
+
             if (typeof targetNode === 'string') {
+              // Simple string target
               target = targetNode;
-            } else if (targetNode && typeof targetNode === 'object' && 'name' in targetNode) {
+            } else if (targetNode && typeof targetNode === 'object' && (targetNode as any)._isScoped) {
+              // Scoped variable object from runtime (e.g., {_isScoped: true, name: "count", scope: "global"})
               target = (targetNode as any).name;
-            } else if (targetNode && typeof targetNode === 'object' && 'value' in targetNode) {
-              target = (targetNode as any).value;
+              scope = (targetNode as any).scope;
+            } else if (targetNode && typeof targetNode === 'object') {
+              // AST node object - extract name and scope
+              if ('scope' in targetNode) {
+                scope = (targetNode as any).scope;
+              }
+
+              // Extract target name
+              if ('name' in targetNode) {
+                target = (targetNode as any).name;
+              } else if ('value' in targetNode) {
+                target = (targetNode as any).value;
+              } else {
+                target = String(targetNode);
+              }
             } else {
               target = String(targetNode);
             }
-            
-            // Extract value from AST node  
+
+            // Extract value from AST node
             let value;
             if (typeof valueNode === 'object' && valueNode && 'value' in valueNode) {
               value = (valueNode as any).value;
             } else {
               value = valueNode;
             }
-            
+
             input = {
               target: target,
               value: value,
               toKeyword: 'to' as const,
-              scope: undefined
+              scope: scope  // Use extracted scope (global/local) or undefined
             };
           } else if (args.length === 1 && args[0] && typeof args[0] === 'object' && 'target' in args[0]) {
             // Pre-processed input object from runtime
@@ -399,8 +420,20 @@ export class CommandAdapter implements RuntimeCommand {
 
             debug.async('WAIT: Prepared event input:', input);
           }
+        } else if (this.impl.name === 'add' || this.impl.metadata?.name === 'add') {
+          // ADD command: add <classExpression> to <target>
+          // Expected input: [classExpression, target]
+          console.log('🔧 ADD command adapter - raw args:', args);
+          input = args; // Pass as tuple
+          console.log('🔧 ADD command adapter - formatted input:', input);
+        } else if (this.impl.name === 'increment' || this.impl.metadata?.name === 'increment') {
+          // INCREMENT command: Runtime already provides structured input { target, amount }
+          input = args[0]; // Pass through - already in correct format
+        } else if (this.impl.name === 'decrement' || this.impl.metadata?.name === 'decrement') {
+          // DECREMENT command: Runtime already provides structured input { target, amount }
+          input = args[0]; // Pass through - already in correct format
         } else {
-          // Default input handling for non-SET/non-RENDER/non-LOG/non-INSTALL/non-TRANSITION/non-REPEAT/non-WAIT commands
+          // Default input handling for other commands
           input = args.length === 1 ? args[0] : args;
         }
         
@@ -545,11 +578,10 @@ export class LazyCommandRegistry {
    * Phase 2 optimization: Converted from require() to import() for true code splitting
    * Commands are now loaded as separate chunks, reducing initial bundle size
    */
-  private async loadCommand(name: string): Promise<any> {
-    // Dynamic import enables true code splitting
-    // Rollup/Webpack will create separate chunks for the command registry
-    const module = await import('../commands/command-registry');
-    const factory = module.ENHANCED_COMMAND_FACTORIES[name as keyof typeof module.ENHANCED_COMMAND_FACTORIES];
+  private loadCommand(name: string): any {
+    // Access command factory from statically imported registry
+    // Note: Despite the "lazy" naming, factories are statically imported for browser compatibility
+    const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
 
     if (!factory) {
       return null;
@@ -578,17 +610,16 @@ export class LazyCommandRegistry {
       return true;
     }
 
-    // Check if it exists in the factory registry
-    const module = await import('../commands/command-registry');
-    return name in module.ENHANCED_COMMAND_FACTORIES;
+    // Check if it exists in the statically imported factory registry
+    return name in ENHANCED_COMMAND_FACTORIES;
   }
 
   /**
    * Get all available command names (from factory registry, not just loaded)
    */
-  async getCommandNames(): Promise<string[]> {
-    const module = await import('../commands/command-registry');
-    const allNames = module.getEnhancedCommandNames();
+  getCommandNames(): string[] {
+    // Use statically imported function for browser compatibility
+    const allNames = getEnhancedCommandNames();
 
     // Filter by allowed commands if specified
     if (this.allowedCommands) {
