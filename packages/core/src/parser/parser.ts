@@ -680,26 +680,27 @@ export class Parser {
   }
 
   private parseSetCommand(identifierNode: IdentifierNode): CommandNode | null {
-    // debug.parse('🚨 PARSER: parseSetCommand started', { 
-      // commandName: identifierNode.name,
-      // currentToken: this.peek()?.value,
-      // remainingTokens: this.tokens.slice(this.current).map(t => t.value).join(' '),
-      // totalTokens: this.tokens.length,
-      // currentPosition: this.current
-    // });
-    
     // SIMPLIFIED APPROACH: Try to parse target as a single expression first
     const startPosition = this.current;
     let targetExpression: ASTNode | null = null;
-    
+
     try {
-      // Check for "the X of Y" pattern directly
-      // debug.parse('🔍 PARSER: checking if next token is "the"', { 
-        // nextToken: this.peek()?.value,
-        // isAtEnd: this.isAtEnd()
-      // });
-      
-      if (this.check('the')) {
+      // Check for scope modifiers (global/local) first
+      if (this.check('global') || this.check('local')) {
+        const scopeToken = this.advance();
+        const variableToken = this.advance();
+
+        // Create a scoped variable target
+        targetExpression = {
+          type: 'identifier',
+          name: variableToken.value,
+          scope: scopeToken.value,
+          start: scopeToken.start,
+          end: variableToken.end
+        } as any;
+
+        // Scoped variable parsed successfully
+      } else if (this.check('the')) {
         // debug.parse('🎯 PARSER: detected "the" keyword! Proceeding with "X of Y" pattern recognition');
         
         this.advance(); // consume 'the'
@@ -825,44 +826,35 @@ export class Parser {
     
     this.advance(); // consume 'to'
     // debug.parse('🔍 PARSER: consumed "to" keyword');
-    
-    // Parse value expression (everything after 'to')
-    let valueExpression: ASTNode | null = null;
-    try {
-      valueExpression = this.parseExpression();
-      // debug.parse('🔍 PARSER: parsed value expression', { 
-        // type: valueExpression.type, 
-        // value: (valueExpression as any).value || (valueExpression as any).name 
-      // });
-    } catch (error) {
-      // debug.parse('⚠️ PARSER: value expression parsing failed', { error: error.message });
-      // For values, we can create a simple literal fallback
-      const currentToken = this.peek();
-      if (currentToken) {
-        valueExpression = {
-          type: 'literal',
-          value: currentToken.value,
-          start: currentToken.start,
-          end: currentToken.end,
-          line: currentToken.line,
-          column: currentToken.column
-        };
-        this.advance();
+
+    // Parse value (single expression after 'to')
+    // The value should be exactly ONE expression (e.g., count + 1, "string", variable)
+    // parseExpression() correctly handles expression boundaries and stops at 'then', 'and', etc.
+    const valueTokens: ASTNode[] = [];
+    const expr = this.parseExpression();
+    if (expr) {
+      valueTokens.push(expr);
+    } else {
+      // Fallback to primary if expression parsing fails
+      const primary = this.parsePrimary();
+      if (primary) {
+        valueTokens.push(primary);
       }
     }
-    
-    // Build final args: target + 'to' + value
+
+    // Build final args: target + 'to' + value tokens
     const finalArgs: ASTNode[] = [];
-    
+
     if (targetExpression) {
       finalArgs.push(targetExpression);
     }
-    
+
     // Add 'to' keyword
     finalArgs.push(this.createIdentifier('to'));
-    
-    if (valueExpression) {
-      finalArgs.push(valueExpression);
+
+    // Add all value tokens (runtime will handle combining them)
+    if (valueTokens.length > 0) {
+      finalArgs.push(...valueTokens);
     }
     
     const result = {
@@ -875,12 +867,6 @@ export class Parser {
       line: identifierNode.line || 1,
       column: identifierNode.column || 1
     };
-
-    // debug.parse('✅ PARSER: parseSetCommand completed', {
-      // result,
-      // argCount: finalArgs.length,
-      // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
-    // });
 
     return result;
   }
@@ -3283,26 +3269,18 @@ export class Parser {
       }
       this.advance(); // consume 'to'
       
-      // Parse value (everything after 'to')
+      // Parse value (single expression after 'to')
+      // The value should be exactly ONE expression (e.g., count + 1, "string", variable)
+      // Not multiple expressions in a loop
       const valueTokens: ASTNode[] = [];
-      while (!this.isAtEnd() && 
-             !this.check('then') && 
-             !this.check('and') && 
-             !this.check('else') && 
-             !this.checkTokenType(TokenType.COMMAND)) {
-        
-        const expr = this.parseExpression();
-        if (expr) {
-          valueTokens.push(expr);
-        } else {
-          const primary = this.parsePrimary();
-          if (primary) {
-            valueTokens.push(primary);
-          }
-        }
-        
-        if (!this.check('then') && !this.check('and') && !this.check('else') && !this.checkTokenType(TokenType.COMMAND)) {
-          break;
+      const expr = this.parseExpression();
+      if (expr) {
+        valueTokens.push(expr);
+      } else {
+        // Fallback to primary if expression parsing fails
+        const primary = this.parsePrimary();
+        if (primary) {
+          valueTokens.push(primary);
         }
       }
       

@@ -50,6 +50,13 @@
         file: 'compound-examples.html'
       },
       {
+        href: '/sortable-examples.html',
+        emoji: '📑',
+        title: 'Sortable Lists',
+        description: 'Drag-to-reorder lists',
+        file: 'sortable-examples.html'
+      },
+      {
         href: '/hyperfixi-demo.html',
         emoji: '🚀',
         title: 'HyperFixi Demo',

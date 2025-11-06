@@ -397,27 +397,35 @@ export class DecrementCommand implements CommandImplementation<
     if (preferredScope === 'global' && context.globals && context.globals.has(name)) {
       return context.globals.get(name);
     }
-    
+
     // Check local variables first (unless global is preferred)
     if (preferredScope !== 'global' && context.locals && context.locals.has(name)) {
       return context.locals.get(name);
     }
-    
+
     // Check global variables
     if (context.globals && context.globals.has(name)) {
       return context.globals.get(name);
     }
-    
-    // Check general variables  
+
+    // Check general variables
     if (context.variables && context.variables.has(name)) {
       return context.variables.get(name);
     }
-    
+
     // Check local variables as fallback
     if (preferredScope === 'global' && context.locals && context.locals.has(name)) {
       return context.locals.get(name);
     }
-    
+
+    // Check window/globalThis as final fallback (for browser globals)
+    if (typeof window !== 'undefined' && name in window) {
+      return (window as any)[name];
+    }
+    if (typeof globalThis !== 'undefined' && name in globalThis) {
+      return (globalThis as any)[name];
+    }
+
     // Return undefined if not found (will be converted to 0)
     return undefined;
   }
@@ -426,27 +434,43 @@ export class DecrementCommand implements CommandImplementation<
     // If preferred scope is specified, handle it
     if (preferredScope === 'global') {
       context.globals.set(name, value);
+      // Also set on window for browser globals
+      if (typeof window !== 'undefined') {
+        (window as any)[name] = value;
+      }
       return;
     }
-    
+
     // If variable exists in local scope, update it
     if (context.locals && context.locals.has(name)) {
       context.locals.set(name, value);
       return;
     }
-    
+
     // If variable exists in global scope, update it
     if (context.globals && context.globals.has(name)) {
       context.globals.set(name, value);
+      // Also update on window if it exists there
+      if (typeof window !== 'undefined' && name in window) {
+        (window as any)[name] = value;
+      }
       return;
     }
-    
+
     // If variable exists in general variables, update it
     if (context.variables && context.variables.has(name)) {
       context.variables.set(name, value);
       return;
     }
-    
+
+    // Check if variable exists on window (browser global)
+    if (typeof window !== 'undefined' && name in window) {
+      (window as any)[name] = value;
+      // Also store in globals for consistency
+      context.globals.set(name, value);
+      return;
+    }
+
     // Create new local variable
     context.locals.set(name, value);
   }

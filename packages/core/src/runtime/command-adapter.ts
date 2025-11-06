@@ -120,7 +120,7 @@ export class CommandAdapter implements RuntimeCommand {
       if (this.impl.execute && this.impl.execute.length === 2) {
         // Enhanced command expects (input, context) signature
         let input: unknown;
-        
+
         // SET command argument processing - handle context confusion
         if (this.impl.name === 'set') {
           // Check if we received the context object by mistake (has all context properties)
@@ -133,32 +133,49 @@ export class CommandAdapter implements RuntimeCommand {
           if (Array.isArray(args) && args.length >= 2) {
             // Assume format: [targetNode, valueNode] for "set target to value"
             const [targetNode, valueNode] = args;
-            
-            // Extract target name from AST node
+
+            // Extract target name and scope from targetNode
             let target;
+            let scope: 'global' | 'local' | undefined;
+
             if (typeof targetNode === 'string') {
+              // Simple string target
               target = targetNode;
-            } else if (targetNode && typeof targetNode === 'object' && 'name' in targetNode) {
+            } else if (targetNode && typeof targetNode === 'object' && (targetNode as any)._isScoped) {
+              // Scoped variable object from runtime (e.g., {_isScoped: true, name: "count", scope: "global"})
               target = (targetNode as any).name;
-            } else if (targetNode && typeof targetNode === 'object' && 'value' in targetNode) {
-              target = (targetNode as any).value;
+              scope = (targetNode as any).scope;
+            } else if (targetNode && typeof targetNode === 'object') {
+              // AST node object - extract name and scope
+              if ('scope' in targetNode) {
+                scope = (targetNode as any).scope;
+              }
+
+              // Extract target name
+              if ('name' in targetNode) {
+                target = (targetNode as any).name;
+              } else if ('value' in targetNode) {
+                target = (targetNode as any).value;
+              } else {
+                target = String(targetNode);
+              }
             } else {
               target = String(targetNode);
             }
-            
-            // Extract value from AST node  
+
+            // Extract value from AST node
             let value;
             if (typeof valueNode === 'object' && valueNode && 'value' in valueNode) {
               value = (valueNode as any).value;
             } else {
               value = valueNode;
             }
-            
+
             input = {
               target: target,
               value: value,
               toKeyword: 'to' as const,
-              scope: undefined
+              scope: scope  // Use extracted scope (global/local) or undefined
             };
           } else if (args.length === 1 && args[0] && typeof args[0] === 'object' && 'target' in args[0]) {
             // Pre-processed input object from runtime
@@ -403,8 +420,20 @@ export class CommandAdapter implements RuntimeCommand {
 
             debug.async('WAIT: Prepared event input:', input);
           }
+        } else if (this.impl.name === 'add' || this.impl.metadata?.name === 'add') {
+          // ADD command: add <classExpression> to <target>
+          // Expected input: [classExpression, target]
+          console.log('🔧 ADD command adapter - raw args:', args);
+          input = args; // Pass as tuple
+          console.log('🔧 ADD command adapter - formatted input:', input);
+        } else if (this.impl.name === 'increment' || this.impl.metadata?.name === 'increment') {
+          // INCREMENT command: Runtime already provides structured input { target, amount }
+          input = args[0]; // Pass through - already in correct format
+        } else if (this.impl.name === 'decrement' || this.impl.metadata?.name === 'decrement') {
+          // DECREMENT command: Runtime already provides structured input { target, amount }
+          input = args[0]; // Pass through - already in correct format
         } else {
-          // Default input handling for non-SET/non-RENDER/non-LOG/non-INSTALL/non-TRANSITION/non-REPEAT/non-WAIT commands
+          // Default input handling for other commands
           input = args.length === 1 ? args[0] : args;
         }
         

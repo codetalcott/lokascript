@@ -376,10 +376,19 @@ export class SetCommand implements CommandImplementation<
     const previousValue = context.locals?.get(variableName) ||
                          context.globals?.get(variableName) ||
                          context.variables?.get(variableName) ||
+                         (typeof window !== 'undefined' && variableName in window ? (window as any)[variableName] : undefined) ||
                          (context as any)[variableName];
 
-    // Regular variable handling - store in locals Map
-    context.locals.set(variableName, value);
+    // Check if variable exists on window (browser global)
+    if (typeof window !== 'undefined' && variableName in window) {
+      // Update window property
+      (window as any)[variableName] = value;
+      // Also store in globals for consistency
+      context.globals.set(variableName, value);
+    } else {
+      // Regular variable handling - store in locals Map
+      context.locals.set(variableName, value);
+    }
 
     // Also set special context properties for commonly used variables
     if (variableName === 'result' || variableName === 'it') {
@@ -402,13 +411,25 @@ export class SetCommand implements CommandImplementation<
     variableName: string,
     value: any
   ): SetCommandOutput {
+    console.log(`🔧 SET GLOBAL: variableName="${variableName}", value=${value}`);
+    console.log(`🔧 SET GLOBAL: globals before:`, Array.from(context.globals.keys()));
+
     // Get previous value
-    const previousValue = context.globals?.get(variableName) || 
-                         context.locals?.get(variableName) || 
-                         context.variables?.get(variableName);
+    const previousValue = context.globals?.get(variableName) ||
+                         context.locals?.get(variableName) ||
+                         context.variables?.get(variableName) ||
+                         (typeof window !== 'undefined' && variableName in window ? (window as any)[variableName] : undefined);
 
     // Set the value in global scope
     context.globals.set(variableName, value);
+
+    console.log(`🔧 SET GLOBAL: globals after:`, Array.from(context.globals.keys()));
+    console.log(`🔧 SET GLOBAL: Can retrieve value?`, context.globals.get(variableName));
+
+    // Also set on window for browser globals
+    if (typeof window !== 'undefined') {
+      (window as any)[variableName] = value;
+    }
 
     // Set in context.it
     Object.assign(context, { it: value });

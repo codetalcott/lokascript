@@ -320,11 +320,12 @@ export const andExpression: EnhancedExpressionImplementation = {
   associativity: 'Left',
   operators: ['and', '&&'],
   
-  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<any> {
     const startTime = Date.now();
     try {
-      // Convert to boolean using truthy/falsy rules
-      const result = Boolean(left) && Boolean(right);
+      // Return the first falsy value, or the last value if all are truthy
+      // This matches JavaScript && behavior: returns actual values, not booleans
+      const result = left && right;
       return trackEvaluation(this, context, [left, right], result, startTime);
     } catch (error) {
       trackEvaluation(this, context, [left, right], false, startTime, false, error instanceof Error ? error : new Error(String(error)));
@@ -422,12 +423,13 @@ export const orExpression: ExpressionImplementation = {
   precedence: 5,
   associativity: 'Left',
   operators: ['or', '||'],
-  
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    // Convert to boolean using truthy/falsy rules
-    return Boolean(left) || Boolean(right);
+
+  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<any> {
+    // Return the first truthy value, or the last value if all are falsy
+    // This matches JavaScript || behavior: returns actual values, not booleans
+    return left || right;
   },
-  
+
   validate(args: unknown[]): string | null {
     if (args.length !== 2) {
       return 'or requires exactly two arguments (left, right)';

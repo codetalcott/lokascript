@@ -6,16 +6,24 @@
 import type { ExecutionContext } from '../types/core';
 
 /**
- * Creates a new execution context
+ * Shared global variables Map across all execution contexts
+ * This ensures global variables persist between event handler invocations
  */
-export function createContext(element?: HTMLElement | null): ExecutionContext {
+const sharedGlobals = new Map<string, any>();
+
+/**
+ * Creates a new execution context with shared globals
+ * @param element - The element to use as 'me' in the context
+ * @param globals - Optional globals Map (defaults to shared globals)
+ */
+export function createContext(element?: HTMLElement | null, globals?: Map<string, any>): ExecutionContext {
   return {
     me: element || null,
     it: null,
     you: null,
     result: null,
     locals: new Map<string, any>(),
-    globals: new Map<string, any>(),
+    globals: globals || sharedGlobals, // Use shared globals by default
     flags: {
       halted: false,
       breaking: false,
@@ -24,6 +32,13 @@ export function createContext(element?: HTMLElement | null): ExecutionContext {
       async: false,
     },
   };
+}
+
+/**
+ * Get access to the shared globals Map (for Runtime integration)
+ */
+export function getSharedGlobals(): Map<string, any> {
+  return sharedGlobals;
 }
 
 /**
