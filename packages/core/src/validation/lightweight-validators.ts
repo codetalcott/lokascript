@@ -66,116 +66,15 @@ const skipValidation =
   (typeof process !== 'undefined' && process.env.HYPERFIXI_SKIP_VALIDATION === 'true') ||
   (typeof globalThis !== 'undefined' && (globalThis as any).HYPERFIXI_SKIP_VALIDATION === 'true');
 
-/**
- * Helper function to add describe method to any validator
- */
-function addDescribeMethod<T>(baseValidator: {
-  validate: (value: unknown) => ValidationResult<T>;
-  description?: string | undefined;
-}): RuntimeValidator<T> {
-  const validator = {
-    ...baseValidator,
-    describe(description: string): RuntimeValidator<T> {
-      validator.description = description;
-      return validator;
-    },
-    safeParse(value: unknown): {
-      success: boolean;
-      data?: T;
-      error?: { errors: ValidationError[] };
-    } {
-      const result = this.validate(value);
-      if (result.success) {
-        return { success: true, ...(result.data !== undefined && { data: result.data }) };
-      } else {
-        return {
-          success: false,
-          error: { errors: result.error ? [result.error] : [] },
-        };
-      }
-    },
-    // Stub implementations for chainable methods
-    strict(): RuntimeValidator<T> {
-      return validator;
-    },
-    optional(): RuntimeValidator<T | undefined> {
-      // Create a new validator that wraps the base validator
-      const optionalValidator = {
-        ...validator,
-        _isOptional: true,
-        _baseValidator: validator,
-        validate(value: unknown): ValidationResult<T | undefined> {
-          // Allow undefined for optional validators
-          if (value === undefined || value === null) {
-            return { success: true, data: undefined };
-          }
-          return validator.validate(value);
-        },
-      };
-      return optionalValidator as RuntimeValidator<T | undefined>;
-    },
-    default(defaultValue: T): RuntimeValidator<T> {
-      // Create a new validator that wraps the base validator and applies defaults
-      const defaultValidator = {
-        ...validator,
-        _defaultValue: defaultValue,
-        _baseValidator: validator,
-        validate(value: unknown): ValidationResult<T> {
-          // Apply default if value is undefined
-          if (value === undefined) {
-            return { success: true, data: defaultValue };
-          }
-          return validator.validate(value);
-        },
-      };
-      return defaultValidator;
-    },
-    min(_value: number): RuntimeValidator<T> {
-      return validator;
-    },
-    max(_value: number): RuntimeValidator<T> {
-      return validator;
-    },
-    url(): RuntimeValidator<T> {
-      return validator;
-    },
-    email(): RuntimeValidator<T> {
-      return validator;
-    },
-    uuid(): RuntimeValidator<T> {
-      return validator;
-    },
-    regex(_pattern: RegExp): RuntimeValidator<T> {
-      return validator;
-    },
-    date(): RuntimeValidator<T> {
-      return validator;
-    },
-    rest(): RuntimeValidator<T> {
-      return validator;
-    },
-    parse(value: unknown): T {
-      const result = this.validate(value);
-      if (result.success && result.data !== undefined) {
-        return result.data;
-      }
-      throw new Error(result.error?.message || 'Validation failed');
-    },
-    merge(_other: RuntimeValidator<any>): RuntimeValidator<T> {
-      return validator;
-    },
-    refine(_refineFn: (value: T) => boolean, _errorMessage?: string): RuntimeValidator<T> {
-      return validator;
-    },
-  } as RuntimeValidator<T>;
-  return validator;
-}
+// Forward declaration - will be defined later in the file
+// This allows core validator creators to reference it
+let addDescribeToValidator: <T>(validator: any) => RuntimeValidator<T>;
 
 /**
  * Creates a passthrough validator for production builds
  */
 function createPassthroughValidator<T>(): RuntimeValidator<T> {
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T> => ({
       success: true,
       data: value as T,
@@ -204,7 +103,7 @@ export function createStringValidator(
     return createPassthroughValidator<string>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<string> => {
       // Handle optional values
       if (options.optional && (value === undefined || value === null)) {
@@ -284,7 +183,7 @@ export function createObjectValidator<T extends Record<string, RuntimeValidator>
     return createPassthroughValidator() as any;
   }
 
-  const validator = addDescribeMethod({
+  const validator = addDescribeToValidator({
     validate: (value: unknown): ValidationResult => {
       if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         return {
@@ -372,7 +271,7 @@ export function createArrayValidator<T>(itemValidator: RuntimeValidator<T>): Run
     return createPassthroughValidator<T[]>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T[]> => {
       if (!Array.isArray(value)) {
         return {
@@ -410,7 +309,7 @@ export function createTupleValidator<T extends readonly RuntimeValidator[]>(
     return createPassthroughValidator();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (
       value: unknown
     ): ValidationResult<{ [K in keyof T]: T[K] extends RuntimeValidator<infer U> ? U : never }> => {
@@ -461,7 +360,7 @@ export function createUnionValidator<T>(validators: RuntimeValidator<T>[]): Runt
     return createPassthroughValidator<T>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T> => {
       const errors: string[] = [];
 
@@ -491,7 +390,7 @@ export function createLiteralValidator<T extends string | number | boolean>(
     return createPassthroughValidator<T>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T> => {
       if (value === literalValue) {
         return { success: true, data: value as T };
@@ -522,7 +421,7 @@ export function createNumberValidator(
     return createPassthroughValidator<number>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<number> => {
       const num = Number(value);
       if (isNaN(num)) {
@@ -562,7 +461,7 @@ export function createBooleanValidator(): RuntimeValidator<boolean> {
     return createPassthroughValidator<boolean>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<boolean> => {
       if (typeof value !== 'boolean') {
         return {
@@ -590,7 +489,7 @@ export function createCustomValidator<T>(
     return createPassthroughValidator<T>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T> => {
       if (validator(value)) {
         return { success: true, data: value as T };
@@ -605,7 +504,7 @@ export function createCustomValidator<T>(
 }
 
 // Quick fix: Add describe, optional, and chainable methods to all validators
-function addDescribeToValidator<T>(validator: any): RuntimeValidator<T> {
+addDescribeToValidator = function <T>(validator: any): RuntimeValidator<T> {
   if (!validator.describe) {
     validator.describe = function (description: string) {
       this.description = description;
@@ -705,7 +604,7 @@ function addDescribeToValidator<T>(validator: any): RuntimeValidator<T> {
       return Reflect.get(target, prop, receiver);
     },
   });
-}
+};
 
 /**
  * Creates a record validator (object with dynamic keys)
@@ -718,7 +617,7 @@ export function createRecordValidator<K extends string | number | symbol, V>(
     return createPassthroughValidator<Record<K, V>>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<Record<K, V>> => {
       if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         return {
@@ -774,7 +673,7 @@ export function createEnumValidator<T extends readonly string[]>(
     return createPassthroughValidator<T[number]>();
   }
 
-  return addDescribeMethod({
+  return addDescribeToValidator({
     validate: (value: unknown): ValidationResult<T[number]> => {
       if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
         return {
