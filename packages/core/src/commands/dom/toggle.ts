@@ -238,15 +238,21 @@ export class ToggleCommand
       return classExpression
         .split(/[\s,]+/)
         .map(cls => cls.trim())
+        .map(cls => cls.startsWith('.') ? cls.slice(1) : cls) // Strip leading dot from CSS selectors
         .filter(cls => cls.length > 0);
     }
 
     if (Array.isArray(classExpression)) {
-      return classExpression.map(cls => String(cls).trim()).filter(cls => cls.length > 0);
+      return classExpression
+        .map(cls => String(cls).trim())
+        .map(cls => cls.startsWith('.') ? cls.slice(1) : cls) // Strip leading dot from CSS selectors
+        .filter(cls => cls.length > 0);
     }
 
-    // Convert other types to string
-    return [String(classExpression).trim()].filter(cls => cls.length > 0);
+    // Convert other types to string and strip leading dot
+    return [String(classExpression).trim()]
+      .map(cls => cls.startsWith('.') ? cls.slice(1) : cls) // Strip leading dot from CSS selectors
+      .filter(cls => cls.length > 0);
   }
 
   private resolveTargets(
