@@ -485,9 +485,17 @@ Drop Here</pre>
     Waiting for tests to run...<br>
   </div>
 
-  <!-- Enable debug mode BEFORE loading bundle -->
+  <!-- Enable debug mode BEFORE loading bundle (CONTROLLED) -->
   <script>
-    window.__HYPERFIXI_DEBUG__ = true;
+    // Only enable debug mode if ?debug=true in URL
+    // This prevents performance issues from excessive logging
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('debug') === 'true') {
+      window.__HYPERFIXI_DEBUG__ = true;
+      console.log('🐛 Debug mode ENABLED via ?debug=true');
+    } else {
+      console.log('✅ Debug mode DISABLED (use ?debug=true to enable)');
+    }
   </script>
 
   <!-- Load HyperFixi -->
@@ -495,10 +503,27 @@ Drop Here</pre>
 
   <script>
     const consoleOutput = document.getElementById('console-output');
+    const MAX_CONSOLE_LINES = 100;  // Limit console to prevent memory issues
 
     function log(message, color = '#00ff00') {
       const timestamp = new Date().toLocaleTimeString();
-      consoleOutput.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span><br>`;
+      const line = `<span style="color: ${color}">[${timestamp}] ${message}</span><br>`;
+
+      // Use insertAdjacentHTML instead of innerHTML += (much faster, O(1) vs O(n))
+      consoleOutput.insertAdjacentHTML('beforeend', line);
+
+      // Limit console to last MAX_CONSOLE_LINES messages
+      const spans = consoleOutput.querySelectorAll('span');
+      if (spans.length > MAX_CONSOLE_LINES) {
+        // Remove oldest 20 messages at once for efficiency
+        for (let i = 0; i < 20 && i < spans.length - MAX_CONSOLE_LINES; i++) {
+          const span = spans[i];
+          const br = span.nextSibling; // Remove the <br> too
+          span.remove();
+          if (br && br.nodeName === 'BR') br.remove();
+        }
+      }
+
       consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
 
@@ -663,7 +688,10 @@ Drop Here</pre>
         updateStatus(i, 'pending');
       }
       updateSummary();
+
+      // Actually clear the console DOM (prevents memory accumulation)
       consoleOutput.innerHTML = 'Results cleared.<br>';
+
       log('Ready to run tests', '#ffff00');
     }
 
@@ -685,12 +713,19 @@ Drop Here</pre>
       }
     }
 
-    // Auto-run tests on load
+    // Auto-run tests on load (optional via URL parameter)
     window.addEventListener('load', () => {
-      setTimeout(() => {
-        log('Page loaded, starting tests in 2 seconds...', '#00ffff');
-        setTimeout(runAllTests, 2000);
-      }, 500);
+      const autoRun = urlParams.get('autorun') === 'true';
+
+      if (autoRun) {
+        setTimeout(() => {
+          log('Page loaded, starting tests in 2 seconds...', '#00ffff');
+          setTimeout(runAllTests, 2000);
+        }, 500);
+      } else {
+        log('Page loaded. Click "Run All Tests" to start.', '#00ffff');
+        log('💡 Tip: Add ?autorun=true to URL for auto-run', '#ffff00');
+      }
     });
   </script>
 </body>

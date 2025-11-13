@@ -147,7 +147,7 @@ const DEMOS = [
   },
   {
     name: 'Full Cookbook Test Suite',
-    url: 'http://127.0.0.1:3000/cookbook/full-cookbook-test.html',
+    url: 'http://127.0.0.1:3000/cookbook/full-cookbook-test.html?autorun=true',  // Enable auto-run for automated testing
     checks: [
       {
         name: 'HyperFixi loads',
