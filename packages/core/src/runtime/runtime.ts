@@ -416,6 +416,51 @@ export class Runtime {
           return await this.expressionEvaluator.evaluate(node, context);
         }
 
+        case 'memberExpression': {
+          // Handle member expressions, especially with selector objects
+          // e.g., #id.property or .class.property
+          const memberExpr = node as any;
+
+          // Check if the object is a selector (ID or CSS selector)
+          if (memberExpr.object?.type === 'selector') {
+            const selector = memberExpr.object.value;
+            const propertyName = memberExpr.property?.name || memberExpr.property?.value;
+
+            debug.runtime(
+              `RUNTIME: memberExpression with selector '${selector}' accessing property '${propertyName}'`
+            );
+
+            // Query elements using the selector
+            const elements = this.queryElements(selector, context);
+
+            if (elements.length === 0) {
+              debug.runtime(`RUNTIME: No elements found for selector '${selector}'`);
+              return undefined;
+            }
+
+            // For single element, return the property value
+            if (elements.length === 1) {
+              const value = (elements[0] as any)[propertyName];
+              debug.runtime(
+                `RUNTIME: Single element found, property '${propertyName}' value:`,
+                value
+              );
+              return value;
+            }
+
+            // For multiple elements, return array of property values
+            const values = elements.map((el: any) => el[propertyName]);
+            debug.runtime(
+              `RUNTIME: ${elements.length} elements found, property values:`,
+              values
+            );
+            return values;
+          }
+
+          // For non-selector member expressions, use expression evaluator
+          return await this.expressionEvaluator.evaluate(node, context);
+        }
+
         default: {
           // For all other node types, use the expression evaluator
           debug.runtime(
@@ -664,7 +709,7 @@ export class Runtime {
       // Handle "toggle .class on #target" and "toggle .class from #target" patterns
       // Support both 'on' (official _hyperscript) and 'from' (HyperFixi) for compatibility
 
-      // For toggle, the first argument (class) should be treated as a literal value, not evaluated as selector
+      // First argument: class expression (extract string value)
       let classArg: any = args[0];
       if (classArg?.type === 'selector' || classArg?.type === 'literal') {
         classArg = classArg.value;
@@ -674,24 +719,49 @@ export class Runtime {
         classArg = await this.execute(args[0], context);
       }
 
-      await this.execute(args[1], context); // 'on' or 'from' (evaluated for side effects)
+      // Second argument: preposition ('on' or 'from')
+      // Don't evaluate - it's just a syntax marker, not a variable
+      const preposition = args[1]?.type === 'identifier' ? args[1].name : args[1];
+      debug.runtime(`RUNTIME: toggle command preposition: '${preposition}'`);
+
+      // Third argument: target (special handling for context variables)
       let target: any = args[2];
 
       // Extract target selector/element
       if (target?.type === 'identifier' && target.name === 'me') {
+        // Special context variable - use from context
         target = context.me;
+        debug.runtime(`RUNTIME: toggle target 'me' resolved to:`, target);
+      } else if (target?.type === 'identifier' && target.name === 'it') {
+        // Special context variable - use from context
+        target = context.it;
+        debug.runtime(`RUNTIME: toggle target 'it' resolved to:`, target);
+      } else if (target?.type === 'identifier' && target.name === 'you') {
+        // Special context variable - use from context
+        target = context.you;
+        debug.runtime(`RUNTIME: toggle target 'you' resolved to:`, target);
       } else if (target?.type === 'selector') {
+        // CSS selector - pass as string
         target = target.value;
+        debug.runtime(`RUNTIME: toggle target selector: '${target}'`);
       } else if (target?.type === 'identifier') {
-        // For identifiers, check if it's a variable reference that needs to be looked up
-        // Try to evaluate it as a variable reference
-        const evaluated = await this.execute(target, context);
-        target = evaluated;
+        // Check if it's a variable in locals/globals first
+        const varName = target.name;
+        if (context.locals.has(varName)) {
+          target = context.locals.get(varName);
+          debug.runtime(`RUNTIME: toggle target from locals: '${varName}' =`, target);
+        } else if (context.globals.has(varName)) {
+          target = context.globals.get(varName);
+          debug.runtime(`RUNTIME: toggle target from globals: '${varName}' =`, target);
+        } else {
+          // Not a known variable - evaluate as expression
+          target = await this.execute(target, context);
+          debug.runtime(`RUNTIME: toggle target evaluated: '${varName}' =`, target);
+        }
       } else if (target?.type === 'literal') {
         target = target.value;
       } else {
-        const evaluated = await this.execute(target, context);
-        target = evaluated;
+        target = await this.execute(target, context);
       }
 
       // Enhanced commands expect [classExpression, target]
