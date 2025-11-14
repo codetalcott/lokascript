@@ -1009,12 +1009,18 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('set :name to "hello"');
       expect(result.success).toBe(true);
       const command = result.node as any;
+
+      // args structure: [target, 'to', value]
       expect(command.args[0]).toMatchObject({
         type: 'identifier',
         name: 'name',
         scope: 'local',
       });
       expect(command.args[1]).toMatchObject({
+        type: 'identifier',
+        name: 'to',
+      });
+      expect(command.args[2]).toMatchObject({
         type: 'literal',
         value: 'hello',
       });
