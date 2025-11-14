@@ -1651,9 +1651,10 @@ async function evaluateCSSSelector(node: any, _context: ExecutionContext): Promi
     return document.getElementById(id);
   } else if (node.selectorType === 'class') {
     // Class selector returns array of elements
-    // Remove the '.' prefix since getElementsByClassName expects just the class name
-    const className = selector.startsWith('.') ? selector.slice(1) : selector;
-    return Array.from(document.getElementsByClassName(className));
+    // Use querySelectorAll with escaped special characters for compatibility
+    // Escape colons and other CSS special characters
+    const escapedSelector = selector.replace(/:/g, '\\:');
+    return Array.from(document.querySelectorAll(escapedSelector));
   }
 
   throw new ExpressionParseError(`Unknown CSS selector type: ${node.selectorType}`);
@@ -1666,7 +1667,11 @@ async function evaluateQueryReference(node: any, _context: ExecutionContext): Pr
   const selector = node.selector;
 
   // Remove the < and /> wrapper to get the actual selector
-  const cleanSelector = selector.slice(1, -2); // Remove '<' and '/>'
+  let cleanSelector = selector.slice(1, -2); // Remove '<' and '/>'
+
+  // Escape special characters in CSS selectors (like colons)
+  // This is needed for selectors like <.foo:bar/>
+  cleanSelector = cleanSelector.replace(/:/g, '\\:');
 
   // Query references ALWAYS return NodeList (not arrays)
   // This is the key difference from other CSS selector expressions

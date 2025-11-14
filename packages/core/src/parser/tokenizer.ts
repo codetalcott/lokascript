@@ -661,7 +661,7 @@ function tokenizeCSSSelector(tokenizer: Tokenizer): void {
 
   while (tokenizer.position < tokenizer.input.length) {
     const char = tokenizer.input[tokenizer.position];
-    if (isAlphaNumeric(char) || char === '-' || char === '_') {
+    if (isAlphaNumeric(char) || char === '-' || char === '_' || char === ':') {
       value += advance(tokenizer);
     } else {
       break;
