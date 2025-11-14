@@ -525,11 +525,16 @@ export class ExpressionEvaluator {
         return lteExpr ? lteExpr.evaluate(context, leftValue, rightValue) : leftValue <= rightValue;
 
       case '==':
-      case '===':
       case 'equals':
         const equalsExpr = this.expressionRegistry.get('equals');
         return equalsExpr
           ? equalsExpr.evaluate(context, leftValue, rightValue)
+          : leftValue == rightValue;
+
+      case '===':
+        const strictEqualsExpr = this.expressionRegistry.get('strictEquals');
+        return strictEqualsExpr
+          ? strictEqualsExpr.evaluate(context, leftValue, rightValue)
           : leftValue === rightValue;
 
       case 'is equal to':
@@ -562,10 +567,15 @@ export class ExpressionEvaluator {
         return leftValue <= rightValue;
 
       case '!=':
-      case '!==':
         const notEqualsExpr = this.expressionRegistry.get('notEquals');
         return notEqualsExpr
           ? notEqualsExpr.evaluate(context, leftValue, rightValue)
+          : leftValue != rightValue;
+
+      case '!==':
+        const strictNotEqualsExpr = this.expressionRegistry.get('strictNotEquals');
+        return strictNotEqualsExpr
+          ? strictNotEqualsExpr.evaluate(context, leftValue, rightValue)
           : leftValue !== rightValue;
 
       case '+':
@@ -652,6 +662,58 @@ export class ExpressionEvaluator {
       case 'is not':
         // Negative identity comparison - strict inequality
         return leftValue !== rightValue;
+
+      case 'is a':
+      case 'is an':
+        // Type checking - check if leftValue is of type rightValue
+        const checkTypeName = String(rightValue).toLowerCase();
+        switch (checkTypeName) {
+          case 'string':
+            return typeof leftValue === 'string';
+          case 'number':
+            return typeof leftValue === 'number';
+          case 'boolean':
+            return typeof leftValue === 'boolean';
+          case 'object':
+            return typeof leftValue === 'object' && leftValue !== null;
+          case 'array':
+            return Array.isArray(leftValue);
+          case 'function':
+            return typeof leftValue === 'function';
+          case 'null':
+            return leftValue === null;
+          case 'undefined':
+            return leftValue === undefined;
+          default:
+            // Check constructor name for custom types
+            return leftValue != null && leftValue.constructor?.name === rightValue;
+        }
+
+      case 'is not a':
+      case 'is not an':
+        // Negative type checking
+        const negCheckTypeName = String(rightValue).toLowerCase();
+        switch (negCheckTypeName) {
+          case 'string':
+            return typeof leftValue !== 'string';
+          case 'number':
+            return typeof leftValue !== 'number';
+          case 'boolean':
+            return typeof leftValue !== 'boolean';
+          case 'object':
+            return !(typeof leftValue === 'object' && leftValue !== null);
+          case 'array':
+            return !Array.isArray(leftValue);
+          case 'function':
+            return typeof leftValue !== 'function';
+          case 'null':
+            return leftValue !== null;
+          case 'undefined':
+            return leftValue !== undefined;
+          default:
+            // Check constructor name for custom types
+            return !(leftValue != null && leftValue.constructor?.name === rightValue);
+        }
 
       case '=':
         // Assignment operator - set variable in context
@@ -767,6 +829,26 @@ export class ExpressionEvaluator {
       case 'no':
         const noExpr = this.expressionRegistry.get('no');
         return noExpr ? noExpr.evaluate(context, operandValue) : false;
+
+      case 'some':
+        // 'some' returns true for non-empty values (opposite of 'no')
+        if (operandValue === null || operandValue === undefined) return false;
+        if (typeof operandValue === 'string') return operandValue.length > 0;
+        if (Array.isArray(operandValue)) return operandValue.length > 0;
+        if (operandValue instanceof NodeList) return operandValue.length > 0;
+        if (operandValue instanceof HTMLCollection) return operandValue.length > 0;
+        if (typeof operandValue === 'object') return Object.keys(operandValue).length > 0;
+        return true;
+
+      case 'exists':
+        const existsExpr = this.expressionRegistry.get('exists');
+        return existsExpr ? existsExpr.evaluate(context, operandValue) : operandValue != null;
+
+      case 'does not exist':
+        const doesNotExistExpr = this.expressionRegistry.get('doesNotExist');
+        return doesNotExistExpr
+          ? doesNotExistExpr.evaluate(context, operandValue)
+          : operandValue == null;
 
       case '-':
         return -operandValue;
