@@ -1071,4 +1071,136 @@ describe('Hyperscript AST Parser', () => {
       expect(node.type).toMatch(/command|CommandSequence|Program/);
     });
   });
+
+  describe('Global Variable Syntax (::variable)', () => {
+    it('should parse ::variable in SET command target', () => {
+      const result = parse('set ::counter to 42');
+      expect(result.success).toBe(true);
+      expect(result.node).toMatchObject({
+        type: 'command',
+        name: 'set',
+        args: expect.arrayContaining([
+          expect.objectContaining({
+            type: 'identifier',
+            name: 'counter',
+            scope: 'global',
+          }),
+        ]),
+      });
+    });
+
+    it('should parse ::variable in expressions', () => {
+      const result = parse('put ::x into #result');
+      expect(result.success).toBe(true);
+      const putCommand = result.node as any;
+      expect(putCommand.type).toBe('command');
+      expect(putCommand.name).toBe('put');
+      // First arg should be ::x with scope: 'global'
+      expect(putCommand.args[0]).toMatchObject({
+        type: 'identifier',
+        name: 'x',
+        scope: 'global',
+      });
+    });
+
+    it('should parse ::variable in INCREMENT command', () => {
+      const result = parse('increment ::total by 5');
+      expect(result.success).toBe(true);
+      const command = result.node as any;
+      expect(command.type).toBe('command');
+      expect(command.name).toBe('increment');
+      expect(command.args[0]).toMatchObject({
+        type: 'identifier',
+        name: 'total',
+        scope: 'global',
+      });
+    });
+
+    it('should parse ::variable in arithmetic expressions', () => {
+      const result = parse('increment ::sum by ::amount');
+      expect(result.success).toBe(true);
+      const command = result.node as any;
+      expect(command.type).toBe('command');
+      expect(command.name).toBe('increment');
+      // Both ::sum and ::amount should have scope: 'global'
+      expect(command.args[0]).toMatchObject({
+        type: 'identifier',
+        name: 'sum',
+        scope: 'global',
+      });
+      expect(command.args[1]).toMatchObject({
+        type: 'identifier',
+        name: 'amount',
+        scope: 'global',
+      });
+    });
+
+    it('should distinguish ::global from :local', () => {
+      const localResult = parse('set :x to 5');
+      const globalResult = parse('set ::x to 5');
+
+      expect(localResult.success).toBe(true);
+      expect(globalResult.success).toBe(true);
+
+      const localCommand = localResult.node as any;
+      const globalCommand = globalResult.node as any;
+
+      // :x should have scope: 'local'
+      expect(localCommand.args[0].scope).toBe('local');
+      // ::x should have scope: 'global'
+      expect(globalCommand.args[0].scope).toBe('global');
+    });
+
+    it('should distinguish ::global from implicit global', () => {
+      const implicitResult = parse('set x to 5');
+      const explicitResult = parse('set ::x to 5');
+
+      expect(implicitResult.success).toBe(true);
+      expect(explicitResult.success).toBe(true);
+
+      const implicitCommand = implicitResult.node as any;
+      const explicitCommand = explicitResult.node as any;
+
+      // x (implicit) should have no scope
+      expect(implicitCommand.args[0].scope).toBeUndefined();
+      // ::x should have scope: 'global'
+      expect(explicitCommand.args[0].scope).toBe('global');
+    });
+
+    it('should handle ::variable in complex expressions', () => {
+      const result = parse('set ::sum to (::x + ::y)');
+      expect(result.success).toBe(true);
+      const command = result.node as any;
+      expect(command.args[0]).toMatchObject({
+        type: 'identifier',
+        name: 'sum',
+        scope: 'global',
+      });
+    });
+
+    it('should handle mixed :local and ::global in same expression', () => {
+      const result = parse('increment ::globalSum by :localAmount');
+      expect(result.success).toBe(true);
+      const command = result.node as any;
+      // Target should be global
+      expect(command.args[0]).toMatchObject({
+        type: 'identifier',
+        name: 'globalSum',
+        scope: 'global',
+      });
+      // Amount should be local
+      expect(command.args[1]).toMatchObject({
+        type: 'identifier',
+        name: 'localAmount',
+        scope: 'local',
+      });
+    });
+
+    it('should parse multiple ::variables in sequence', () => {
+      const result = parse('set ::a to 1 set ::b to 2 set ::c to 3');
+      expect(result.success).toBe(true);
+      const node = result.node as any;
+      expect(node.type).toMatch(/command|CommandSequence|Program/);
+    });
+  });
 });
