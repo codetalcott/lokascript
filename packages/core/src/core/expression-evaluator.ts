@@ -666,7 +666,11 @@ export class ExpressionEvaluator {
       case 'is a':
       case 'is an':
         // Type checking - check if leftValue is of type rightValue
-        const checkTypeName = String(rightValue).toLowerCase();
+        // Get type name from right side - use identifier name if available, otherwise stringify value
+        const checkTypeName =
+          right.type === 'identifier'
+            ? right.name.toLowerCase()
+            : String(rightValue).toLowerCase();
         switch (checkTypeName) {
           case 'string':
             return typeof leftValue === 'string';
@@ -686,13 +690,18 @@ export class ExpressionEvaluator {
             return leftValue === undefined;
           default:
             // Check constructor name for custom types
-            return leftValue != null && leftValue.constructor?.name === rightValue;
+            const typeName = right.type === 'identifier' ? right.name : String(rightValue);
+            return leftValue != null && leftValue.constructor?.name === typeName;
         }
 
       case 'is not a':
       case 'is not an':
         // Negative type checking
-        const negCheckTypeName = String(rightValue).toLowerCase();
+        // Get type name from right side - use identifier name if available, otherwise stringify value
+        const negCheckTypeName =
+          right.type === 'identifier'
+            ? right.name.toLowerCase()
+            : String(rightValue).toLowerCase();
         switch (negCheckTypeName) {
           case 'string':
             return typeof leftValue !== 'string';
@@ -712,7 +721,8 @@ export class ExpressionEvaluator {
             return leftValue !== undefined;
           default:
             // Check constructor name for custom types
-            return !(leftValue != null && leftValue.constructor?.name === rightValue);
+            const negTypeName = right.type === 'identifier' ? right.name : String(rightValue);
+            return !(leftValue != null && leftValue.constructor?.name === negTypeName);
         }
 
       case '=':

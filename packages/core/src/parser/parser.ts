@@ -416,11 +416,12 @@ export class Parser {
   }
 
   private parseUnary(): ASTNode {
-    if (this.match('not', 'no', '-', '+')) {
+    // Handle single-word unary operators
+    if (this.match('not', 'no', 'exists', 'some', '-', '+')) {
       const operator = this.previous().value;
 
       // Only flag as missing operand if this starts a complex expression and lacks proper context
-      // Valid unary: "-5", "not true", "no value", "+number"
+      // Valid unary: "-5", "not true", "no value", "+number", "exists value", "some array"
       // Invalid: "5 + + 3" (handled elsewhere), standalone "+" (handled below)
       if (this.isAtEnd()) {
         this.addError(`Expected expression after '${operator}' operator`);
@@ -429,6 +430,27 @@ export class Parser {
 
       const expr = this.parseUnary();
       return this.createUnaryExpression(operator, expr, true);
+    }
+
+    // Handle multi-word unary operator: "does not exist"
+    if (
+      this.check('does') &&
+      this.current + 1 < this.tokens.length &&
+      this.tokens[this.current + 1].value === 'not' &&
+      this.current + 2 < this.tokens.length &&
+      this.tokens[this.current + 2].value === 'exist'
+    ) {
+      this.advance(); // consume 'does'
+      this.advance(); // consume 'not'
+      this.advance(); // consume 'exist'
+
+      if (this.isAtEnd()) {
+        this.addError(`Expected expression after 'does not exist' operator`);
+        return this.createErrorNode();
+      }
+
+      const expr = this.parseUnary();
+      return this.createUnaryExpression('does not exist', expr, true);
     }
 
     return this.parseImplicitBinary();
@@ -2048,8 +2070,9 @@ export class Parser {
         iterations < maxIterations
       ) {
         const beforePos = this.current;
-        // Use parseUnary() instead of parsePrimary() to handle unary operators like 'not' and 'no'
-        conditionTokens.push(this.parseUnary());
+        // Use parseLogicalAnd() to handle binary operators like 'is a' and unary operators like 'not'
+        // This is one level below parseLogicalOr() to avoid consuming 'or' which might be part of pattern syntax
+        conditionTokens.push(this.parseLogicalAnd());
 
         // Safety check: ensure we're making progress
         if (this.current === beforePos) {

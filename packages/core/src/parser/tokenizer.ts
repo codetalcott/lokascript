@@ -163,6 +163,10 @@ const COMPARISON_OPERATORS = new Set([
   '>=',
   'is',
   'is not',
+  'is a',
+  'is an',
+  'is not a',
+  'is not an',
   'contains',
   'does not contain',
   'include',
@@ -1175,6 +1179,7 @@ function tryBuildLongestCompound(
 ): string | null {
   const originalPosition = tokenizer.position;
   let compound = `${firstWord} ${secondWord}`;
+  let compoundEndPosition = tokenizer.position; // Track position of last valid compound
   const words = [firstWord, secondWord];
 
   // Keep adding words until we can't find any more or reach a reasonable limit
@@ -1212,6 +1217,7 @@ function tryBuildLongestCompound(
     // If this compound exists, update our candidate
     if (COMPARISON_OPERATORS.has(newCompound)) {
       compound = newCompound;
+      compoundEndPosition = tokenizer.position; // Save position after this valid compound
       // Continue looking for longer compounds
     } else {
       // This compound doesn't exist, but maybe a longer one does
@@ -1222,7 +1228,8 @@ function tryBuildLongestCompound(
 
   // Check if we found a valid compound
   if (COMPARISON_OPERATORS.has(compound) && compound !== `${firstWord} ${secondWord}`) {
-    // Found a compound longer than 2 words
+    // Found a compound longer than 2 words - reset position to end of the compound
+    tokenizer.position = compoundEndPosition;
     return compound;
   }
 
