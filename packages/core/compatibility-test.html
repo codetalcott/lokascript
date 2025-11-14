@@ -70,7 +70,12 @@
         };
         
         // Set up global evalHyperScript function for test compatibility
-        window.evalHyperScript = hyperfixi.evalHyperScript;
+        window.evalHyperScript = async function(expression, context) {
+            console.log('[evalHyperScript] Evaluating:', expression);
+            const result = await hyperfixi.evalHyperScript(expression, context);
+            console.log('[evalHyperScript] Result:', result, 'length:', result?.length);
+            return result;
+        };
         window.getParseErrorFor = function(expr) {
             try {
                 hyperfixi.evalHyperScript(expr);
@@ -88,23 +93,37 @@
         // Make function for creating DOM elements with hyperscript behavior
         window.make = function(htmlString) {
             try {
+                console.log('[make] Creating element from:', htmlString);
+
                 // Create a temporary container to parse the HTML
                 const container = document.createElement('div');
                 container.innerHTML = htmlString;
-                
+
                 // Get the first child element
                 const element = container.firstElementChild;
                 if (!element) {
                     throw new Error('Invalid HTML string');
                 }
-                
+
+                console.log('[make] Created element:', element, 'className:', element.className);
+
+                // Add element to work area so it can be queried
+                const workArea = document.getElementById('work-area');
+                if (workArea) {
+                    workArea.appendChild(element);
+                    console.log('[make] Added to work area, workArea children:', workArea.children.length);
+                } else {
+                    console.warn('[make] Work area not found!');
+                }
+
                 // Check for hyperscript behavior attribute
                 const hyperschriptBehavior = element.getAttribute('_');
                 if (hyperschriptBehavior) {
                     // Use our proper hyperscript API instead of custom implementation
                     window.initHyperscriptBehaviorProper(element, hyperschriptBehavior);
                 }
-                
+
+                console.log('[make] Returning element:', element);
                 return element;
             } catch (error) {
                 console.error('make() error:', error.message);
