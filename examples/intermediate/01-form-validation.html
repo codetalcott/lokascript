@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01: Form Validation - HyperFixi Examples</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .description {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .demo {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input.error {
+            border-color: #f44336;
+        }
+
+        input.valid {
+            border-color: #4caf50;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+
+        .keyword {
+            color: #c678dd;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .comment {
+            color: #5c6370;
+        }
+
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .nav-buttons a {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-buttons a:hover {
+            background: #e0e0e0;
+        }
+
+        .requirement {
+            padding: 10px 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .requirement ul {
+            margin: 5px 0 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../index.html">← Back to Gallery</a> / <strong>Intermediate</strong> / 01: Form Validation
+        </div>
+
+        <h1>✅ Form Validation</h1>
+
+        <div class="description">
+            <strong>Client-side form validation with custom error messages</strong><br>
+            Learn how to validate user input in real-time using hyperscript's conditional logic
+            and event handling. Build better forms with instant feedback!
+        </div>
+
+        <div>
+            <span class="tag">validation</span>
+            <span class="tag">if/else</span>
+            <span class="tag">add/remove classes</span>
+            <span class="tag">forms</span>
+        </div>
+
+        <!-- Demo -->
+        <div class="demo">
+            <h2>Registration Form</h2>
+
+            <div class="requirement">
+                <strong>Requirements:</strong>
+                <ul>
+                    <li>Email must contain @ symbol</li>
+                    <li>Password must be at least 8 characters</li>
+                    <li>Password confirmation must match</li>
+                </ul>
+            </div>
+
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="you@example.com"
+                        _="on input
+                           if my value contains '@'
+                             add .valid to me
+                             remove .error from me
+                             hide #email-error
+                           else
+                             add .error to me
+                             remove .valid from me
+                             show #email-error
+                           end"
+                    />
+                    <div id="email-error" class="error-message">
+                        ❌ Email must contain @ symbol
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter password (min 8 characters)"
+                        _="on input
+                           if my value's length >= 8
+                             add .valid to me
+                             remove .error from me
+                             hide #password-error
+                           else
+                             add .error to me
+                             remove .valid from me
+                             show #password-error
+                           end"
+                    />
+                    <div id="password-error" class="error-message">
+                        ❌ Password must be at least 8 characters
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm">Confirm Password:</label>
+                    <input
+                        type="password"
+                        id="confirm"
+                        placeholder="Re-enter password"
+                        _="on input
+                           if my value == #password's value
+                             add .valid to me
+                             remove .error from me
+                             hide #confirm-error
+                           else
+                             add .error to me
+                             remove .valid from me
+                             show #confirm-error
+                           end"
+                    />
+                    <div id="confirm-error" class="error-message">
+                        ❌ Passwords do not match
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    _="on click
+                       if #email's value contains '@' and
+                          #password's value's length >= 8 and
+                          #confirm's value == #password's value
+                         show #success
+                         hide #signup-form
+                       else
+                         log 'Form has validation errors'
+                       end"
+                >
+                    Create Account
+                </button>
+            </form>
+
+            <div id="success" class="success-message">
+                🎉 Account created successfully!<br>
+                <small>Welcome aboard!</small>
+            </div>
+        </div>
+
+        <!-- Code Explanation -->
+        <h2>The Code</h2>
+
+        <h3>Email Validation:</h3>
+        <div class="code">
+&lt;input <span class="keyword">_</span>=<span class="string">"on input
+       if my value contains '@'
+         add .valid to me
+         remove .error from me
+         hide #email-error
+       else
+         add .error to me
+         remove .valid from me
+         show #email-error
+       end"</span> /&gt;
+        </div>
+
+        <h3>Password Length Check:</h3>
+        <div class="code">
+&lt;input <span class="keyword">_</span>=<span class="string">"on input
+       if my value's length >= 8
+         add .valid to me
+         remove .error from me
+         hide #password-error
+       else
+         add .error to me
+         remove .valid from me
+         show #password-error
+       end"</span> /&gt;
+        </div>
+
+        <h3>Password Confirmation:</h3>
+        <div class="code">
+&lt;input <span class="keyword">_</span>=<span class="string">"on input
+       if my value == #password's value
+         add .valid to me
+         hide #confirm-error
+       else
+         add .error to me
+         show #confirm-error
+       end"</span> /&gt;
+        </div>
+
+        <h3>Form Submission Check:</h3>
+        <div class="code">
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+        if #email's value contains '@' and
+           #password's value's length >= 8 and
+           #confirm's value == #password's value
+          show #success
+          hide #signup-form
+        else
+          log 'Form has validation errors'
+        end"</span>&gt;
+  Submit
+&lt;/button&gt;
+        </div>
+
+        <div class="explanation">
+            <h3>How it works:</h3>
+            <ul>
+                <li><code>on input</code> - Validates as user types for instant feedback</li>
+                <li><code>if/else/end</code> - Conditional logic for validation rules</li>
+                <li><code>my value contains '@'</code> - String matching for email</li>
+                <li><code>my value's length >= 8</code> - Length validation for password</li>
+                <li><code>#password's value</code> - Access other input values</li>
+                <li><code>add .valid / .error</code> - Visual feedback with CSS classes</li>
+                <li><code>show/hide</code> - Toggle error messages</li>
+            </ul>
+
+            <h3>Key Concepts:</h3>
+            <ul>
+                <li><strong>Real-time Validation:</strong> Immediate feedback as user types</li>
+                <li><strong>Conditional Logic:</strong> <code>if/else/end</code> blocks for branching</li>
+                <li><strong>String Operations:</strong> <code>contains</code>, <code>length</code>, equality</li>
+                <li><strong>Cross-field Validation:</strong> Compare multiple inputs</li>
+                <li><strong>Visual Feedback:</strong> CSS classes for valid/invalid states</li>
+                <li><strong>Compound Conditions:</strong> <code>and</code> operator for multiple checks</li>
+            </ul>
+
+            <h3>Validation Patterns:</h3>
+            <ul>
+                <li><strong>Required Fields:</strong> <code>if my value's length > 0</code></li>
+                <li><strong>Email Format:</strong> <code>contains '@'</code> (basic check)</li>
+                <li><strong>Length Requirements:</strong> <code>my value's length >= N</code></li>
+                <li><strong>Pattern Matching:</strong> <code>matches /regex/</code> (advanced)</li>
+                <li><strong>Field Equality:</strong> <code>#field1's value == #field2's value</code></li>
+                <li><strong>Numeric Ranges:</strong> <code>my value >= min and my value <= max</code></li>
+            </ul>
+
+            <h3>Advanced Validation Examples:</h3>
+            <div class="code">
+<span class="comment">&lt;!-- Phone number validation --&gt;</span>
+&lt;input <span class="keyword">_</span>=<span class="string">"on input
+        if my value matches /^\d{3}-\d{3}-\d{4}$/
+          add .valid
+        else
+          add .error
+        end"</span> /&gt;
+
+<span class="comment">&lt;!-- Age range validation --&gt;</span>
+&lt;input <span class="keyword">type</span>=<span class="string">"number"</span> <span class="keyword">_</span>=<span class="string">"on input
+        if my value >= 18 and my value <= 100
+          add .valid
+        else
+          add .error
+        end"</span> /&gt;
+
+<span class="comment">&lt;!-- Checkbox required --&gt;</span>
+&lt;input <span class="keyword">type</span>=<span class="string">"checkbox"</span> <span class="keyword">_</span>=<span class="string">"on change
+        if my checked
+          enable #submit-btn
+        else
+          disable #submit-btn
+        end"</span> /&gt;
+            </div>
+
+            <h3>Try it yourself:</h3>
+            <ul>
+                <li>Add more validation rules (username length, special characters, etc.)</li>
+                <li>Create a password strength meter</li>
+                <li>Add regex validation for phone numbers or zip codes</li>
+                <li>Implement debounced validation (wait for user to stop typing)</li>
+                <li>Add server-side validation with fetch</li>
+            </ul>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <a href="../basics/05-counter.html">← Previous: Counter</a>
+            <a href="02-fetch-data.html">Next: Fetch Data →</a>
+        </div>
+    </div>
+
+    <!-- Load HyperFixi -->
+    <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+</body>
+</html>

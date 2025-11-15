@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>03: Show/Hide Elements - HyperFixi Examples</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .description {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .demo {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: 600;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .content-box {
+            margin-top: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #d84315;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .content-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .content-box p {
+            margin: 0;
+            font-weight: normal;
+            line-height: 1.6;
+        }
+
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+
+        .keyword {
+            color: #c678dd;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .nav-buttons a {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-buttons a:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../index.html">← Back to Gallery</a> / <strong>Basics</strong> / 03: Show/Hide Elements
+        </div>
+
+        <h1>👁️ Show/Hide Elements</h1>
+
+        <div class="description">
+            <strong>Control element visibility with simple commands</strong><br>
+            Learn how to show and hide elements using hyperscript's built-in visibility commands.
+            Perfect for creating interactive UIs, modals, dropdowns, and more!
+        </div>
+
+        <div>
+            <span class="tag">show</span>
+            <span class="tag">hide</span>
+            <span class="tag">toggle</span>
+        </div>
+
+        <!-- Demo -->
+        <div class="demo">
+            <h2>Try It Out!</h2>
+            <div>
+                <button _="on click show #content">
+                    👁️ Show Content
+                </button>
+                <button class="secondary" _="on click hide #content">
+                    🙈 Hide Content
+                </button>
+                <button class="success" _="on click toggle #content">
+                    🔄 Toggle Content
+                </button>
+            </div>
+
+            <div id="content" class="content-box">
+                <h3>🎉 Surprise!</h3>
+                <p>
+                    This content can be shown, hidden, or toggled using the buttons above.
+                    Try clicking each button to see how they affect this element's visibility!
+                </p>
+            </div>
+        </div>
+
+        <!-- Code Explanation -->
+        <h2>The Code</h2>
+        <div class="code">
+<span class="comment">&lt;!-- Show button --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click show #content"</span>&gt;
+  👁️ Show Content
+&lt;/button&gt;
+
+<span class="comment">&lt;!-- Hide button --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click hide #content"</span>&gt;
+  🙈 Hide Content
+&lt;/button&gt;
+
+<span class="comment">&lt;!-- Toggle button --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle #content"</span>&gt;
+  🔄 Toggle Content
+&lt;/button&gt;
+
+&lt;div <span class="keyword">id</span>=<span class="string">"content"</span> <span class="keyword">class</span>=<span class="string">"content-box"</span>&gt;
+  Content to show/hide
+&lt;/div&gt;
+        </div>
+
+        <div class="explanation">
+            <h3>How it works:</h3>
+            <ul>
+                <li><code>show #content</code> - Makes the element visible by removing <code>display: none</code></li>
+                <li><code>hide #content</code> - Hides the element by adding <code>display: none</code></li>
+                <li><code>toggle #content</code> - Switches between visible and hidden states</li>
+            </ul>
+
+            <h3>Key Concepts:</h3>
+            <ul>
+                <li><strong>Simple Commands:</strong> <code>show</code>, <code>hide</code>, and <code>toggle</code> are built-in commands</li>
+                <li><strong>CSS Selectors:</strong> Target any element using standard CSS selectors</li>
+                <li><strong>Declarative:</strong> No need to manage display state manually</li>
+                <li><strong>Animation-Ready:</strong> Combine with transitions for smooth effects</li>
+            </ul>
+
+            <h3>Common Use Cases:</h3>
+            <ul>
+                <li><strong>Modals:</strong> Show/hide dialog boxes</li>
+                <li><strong>Dropdowns:</strong> Toggle menu visibility</li>
+                <li><strong>Accordions:</strong> Expand/collapse sections</li>
+                <li><strong>Notifications:</strong> Display and dismiss alerts</li>
+                <li><strong>Loading States:</strong> Show/hide loading indicators</li>
+            </ul>
+
+            <h3>Advanced Patterns:</h3>
+            <p>You can also show/hide multiple elements at once:</p>
+            <div class="code">
+<span class="comment">&lt;!-- Show all items with class 'item' --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click show .item"</span>&gt;Show All&lt;/button&gt;
+
+<span class="comment">&lt;!-- Hide all except the first --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click hide .item then show .item:first-child"</span>&gt;
+  Show Only First
+&lt;/button&gt;
+            </div>
+
+            <h3>Try it yourself:</h3>
+            <ul>
+                <li>Add more elements and control them independently</li>
+                <li>Use class selectors (<code>.className</code>) to show/hide groups</li>
+                <li>Combine with <code>wait 2s</code> for timed visibility changes</li>
+                <li>Chain commands: <code>hide #loading then show #content</code></li>
+            </ul>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <a href="02-toggle-class.html">← Previous: Toggle Classes</a>
+            <a href="04-input-mirror.html">Next: Input Mirroring →</a>
+        </div>
+    </div>
+
+    <!-- Load HyperFixi -->
+    <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+</body>
+</html>
