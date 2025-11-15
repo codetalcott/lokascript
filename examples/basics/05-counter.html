@@ -203,7 +203,7 @@
             <div id="count" class="counter-display">0</div>
 
             <div class="button-group">
-                <button _="on click put (#count's textContent as Int) - 1 into #count">
+                <button _="on click decrement #count">
                     ➖ Decrease
                 </button>
 
@@ -211,7 +211,7 @@
                     🔄 Reset
                 </button>
 
-                <button _="on click put (#count's textContent as Int) + 1 into #count">
+                <button _="on click increment #count">
                     ➕ Increase
                 </button>
             </div>
@@ -226,7 +226,7 @@
         <div class="code">
 &lt;div <span class="keyword">id</span>=<span class="string">"count"</span> <span class="keyword">class</span>=<span class="string">"counter-display"</span>&gt;0&lt;/div&gt;
 
-&lt;button <span class="keyword">_</span>=<span class="string">"on click put (#count's textContent as Int) - 1 into #count"</span>&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click decrement #count"</span>&gt;
   ➖ Decrease
 &lt;/button&gt;
 
@@ -234,7 +234,7 @@
   🔄 Reset
 &lt;/button&gt;
 
-&lt;button <span class="keyword">_</span>=<span class="string">"on click put (#count's textContent as Int) + 1 into #count"</span>&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click increment #count"</span>&gt;
   ➕ Increase
 &lt;/button&gt;
         </div>
@@ -242,17 +242,17 @@
         <div class="explanation">
             <h3>How it works:</h3>
             <ul>
-                <li><code>put (#count's textContent as Int) + 1 into #count</code> - Reads current value, adds 1, updates display</li>
-                <li><code>put (#count's textContent as Int) - 1 into #count</code> - Reads current value, subtracts 1, updates display</li>
-                <li><code>put 0 into #count</code> - Resets to zero</li>
+                <li><code>increment #count</code> - Adds 1 to the counter's value</li>
+                <li><code>decrement #count</code> - Subtracts 1 from the counter's value</li>
+                <li><code>put 0 into #count</code> - Resets the counter to zero</li>
             </ul>
 
-            <h3>Pattern Breakdown:</h3>
+            <h3>Advanced Increment/Decrement:</h3>
             <ul>
-                <li><code>#count's textContent</code> - Gets the text content of #count element</li>
-                <li><code>as Int</code> - Converts the text to an integer</li>
-                <li><code>+ 1</code> or <code>- 1</code> - Performs arithmetic</li>
-                <li><code>into #count</code> - Puts the result back into #count's textContent</li>
+                <li><code>increment #count by 5</code> - Add 5 instead of 1</li>
+                <li><code>decrement #count by 10</code> - Subtract 10</li>
+                <li><code>increment my value</code> - Increment an element's value attribute</li>
+                <li><code>increment @data-score</code> - Increment a data attribute</li>
             </ul>
 
             <h3>Reactive Updates:</h3>
