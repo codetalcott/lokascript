@@ -526,10 +526,82 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     else if (token.type === TokenType.OPERATOR && token.value === '[') {
       state.position++; // consume '['
 
-      // Parse the index expression
-      const index = parseLogicalExpression(state);
+      // Check for range syntax: [..end], [start..end], [start..]
+      const nextToken = peek(state);
 
-      // Consume closing bracket
+      // Handle [..end] - first N elements
+      if (nextToken && nextToken.value === '..') {
+        // Consume '..' token
+        advance(state);
+
+        // Parse end index (or could be ']' for [..])
+        const checkBracket = peek(state);
+        if (checkBracket && checkBracket.value === ']') {
+          // [..] - all elements (same as no index)
+          advance(state); // consume ']'
+          left = {
+            type: 'arrayRangeAccess',
+            object: left,
+            start: null,
+            end: null,
+          };
+          continue;
+        }
+
+        const endIndex = parseLogicalExpression(state);
+        const closeToken = advance(state);
+        if (!closeToken || closeToken.value !== ']') {
+          throw new ExpressionParseError('Expected closing bracket after range');
+        }
+
+        left = {
+          type: 'arrayRangeAccess',
+          object: left,
+          start: null,
+          end: endIndex,
+        };
+        continue;
+      }
+
+      // Parse potential start index
+      const startIndex = parseLogicalExpression(state);
+
+      // Check for '..' after start index
+      const afterStart = peek(state);
+      if (afterStart && afterStart.value === '..') {
+        // Consume '..' token
+        advance(state);
+
+        // Check if followed by ']' for [start..]
+        const checkEnd = peek(state);
+        if (checkEnd && checkEnd.value === ']') {
+          advance(state); // consume ']'
+          left = {
+            type: 'arrayRangeAccess',
+            object: left,
+            start: startIndex,
+            end: null,
+          };
+          continue;
+        }
+
+        // Parse end index for [start..end]
+        const endIndex = parseLogicalExpression(state);
+        const closeToken = advance(state);
+        if (!closeToken || closeToken.value !== ']') {
+          throw new ExpressionParseError('Expected closing bracket after range');
+        }
+
+        left = {
+          type: 'arrayRangeAccess',
+          object: left,
+          start: startIndex,
+          end: endIndex,
+        };
+        continue;
+      }
+
+      // Not a range, just regular array access
       const closeToken = advance(state);
       if (!closeToken || closeToken.value !== ']') {
         throw new ExpressionParseError('Expected closing bracket after array index');
@@ -538,7 +610,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       left = {
         type: 'arrayAccess',
         object: left,
-        index,
+        index: startIndex,
         ...(left.start !== undefined && { start: left.start }),
         end: closeToken.end,
       };
@@ -1013,8 +1085,16 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
     }
   }
 
-  // Context variables and identifiers
-  if (token.type === TokenType.CONTEXT_VAR || token.type === TokenType.IDENTIFIER) {
+  // Context variables, identifiers, and keywords (keywords can be used as identifiers in expression contexts)
+  if (
+    token.type === TokenType.CONTEXT_VAR ||
+    token.type === TokenType.IDENTIFIER ||
+    (token.type === TokenType.KEYWORD &&
+      // Exclude keywords with special handling
+      token.value !== 'new' &&
+      token.value !== 'null' &&
+      token.value !== 'undefined')
+  ) {
     const identifierToken = advance(state)!;
 
     // Check for function call syntax: identifier()
@@ -1153,6 +1233,18 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
     );
   }
 
+  // Handle standalone attribute reference syntax (@attribute)
+  if (token.type === TokenType.SYMBOL && typeof token.value === 'string' && token.value.startsWith('@')) {
+    advance(state); // consume @attribute token
+    const attributeName = token.value.substring(1); // Remove '@' prefix
+    return {
+      type: 'attributeAccess',
+      attributeName,
+      start: token.start,
+      end: token.end,
+    };
+  }
+
   // Enhanced debugging for other unexpected tokens
   debug.parse('EXPR: Unexpected token debug info:', {
     token: { type: token.type, value: token.value },
@@ -1246,6 +1338,9 @@ async function evaluateASTNode(node: ASTNode, context: ExecutionContext): Promis
 
     case 'arrayAccess':
       return evaluateArrayAccess(node, context);
+
+    case 'arrayRangeAccess':
+      return evaluateArrayRangeAccess(node, context);
 
     case 'positionalExpression':
       return evaluatePositionalExpression(node, context);
@@ -1865,6 +1960,60 @@ async function evaluateArrayAccess(node: any, context: ExecutionContext): Promis
   }
 
   throw new ExpressionParseError(`Cannot access property of ${typeof object}`);
+}
+
+/**
+ * Evaluate array range access expressions arr[start..end]
+ * Supports: [..end], [start..end], [start..]
+ */
+async function evaluateArrayRangeAccess(node: any, context: ExecutionContext): Promise<any> {
+  const object = await evaluateASTNode(node.object, context);
+
+  // Handle null/undefined objects gracefully
+  if (object === null || object === undefined) {
+    throw new ExpressionParseError(`Cannot access range of ${object}`);
+  }
+
+  // Range syntax only works on arrays and strings
+  if (!Array.isArray(object) && typeof object !== 'string') {
+    throw new ExpressionParseError(
+      `Range syntax only works on arrays and strings, got: ${typeof object}`
+    );
+  }
+
+  // Evaluate start and end indices
+  const startNode = node.start;
+  const endNode = node.end;
+
+  let startIndex: number;
+  let endIndex: number;
+
+  // Handle [..end] - from start to end (inclusive)
+  if (startNode === null || startNode === undefined) {
+    startIndex = 0;
+  } else {
+    const startValue = await evaluateASTNode(startNode, context);
+    startIndex = typeof startValue === 'number' ? startValue : parseInt(startValue, 10);
+    if (isNaN(startIndex)) {
+      throw new ExpressionParseError(`Range start index must be a number, got: ${typeof startValue}`);
+    }
+  }
+
+  // Handle [start..] - from start to end of array
+  if (endNode === null || endNode === undefined) {
+    endIndex = object.length;
+  } else {
+    const endValue = await evaluateASTNode(endNode, context);
+    endIndex = typeof endValue === 'number' ? endValue : parseInt(endValue, 10);
+    if (isNaN(endIndex)) {
+      throw new ExpressionParseError(`Range end index must be a number, got: ${typeof endValue}`);
+    }
+    // End index is inclusive in _hyperscript, so we add 1 for slice()
+    endIndex = endIndex + 1;
+  }
+
+  // Return the sliced array or string
+  return object.slice(startIndex, endIndex);
 }
 
 /**

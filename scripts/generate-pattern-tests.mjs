@@ -277,7 +277,7 @@ function generateCategoryTestPage(categoryKey, category, patterns) {
 
 ${patterns.map((pattern, index) => generatePatternTest(pattern, index, categoryKey)).join('\n')}
 
-  <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+  <script src="/dist/hyperfixi-browser.js"></script>
 
   <script>
     // Auto-validate patterns after HyperFixi loads
@@ -446,7 +446,7 @@ function generateComprehensiveTestPage(patterns) {
 
   ${categoryHTML}
 
-  <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+  <script src="/dist/hyperfixi-browser.js"></script>
   <script>
     setTimeout(() => {
       console.log('✅ Comprehensive test page loaded');

@@ -74,8 +74,7 @@ import { installCommand, InstallCommand } from './behaviors/install';
 
 // Async Commands
 import { createWaitCommand, WaitCommand } from './async/wait';
-// NOTE: Fetch command still needs implementation
-// import { createFetchCommand } from '../legacy/commands/async/fetch';
+import { createFetchCommand, FetchCommand } from './async/fetch';
 
 // Re-export everything
 export {
@@ -183,7 +182,8 @@ export {
   // Async Commands
   createWaitCommand,
   WaitCommand,
-  // createFetchCommand,
+  createFetchCommand,
+  FetchCommand,
 };
 
 import type { CommandImplementation } from '../types/core';
@@ -260,7 +260,7 @@ export const ENHANCED_COMMAND_FACTORIES = {
 
   // Async Commands
   wait: createWaitCommand,
-  // fetch: createFetchCommand,
+  fetch: createFetchCommand,
 } as const;
 
 /**

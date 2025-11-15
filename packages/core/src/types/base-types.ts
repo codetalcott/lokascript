@@ -534,6 +534,7 @@ export interface EventHandlerNode extends ASTNode {
   readonly selector?: string; // CSS selector for event delegation ("from" keyword)
   readonly condition?: ASTNode; // Optional event condition ("[condition]" syntax)
   readonly attributeName?: string; // Attribute name for mutation events ("of @attribute" syntax)
+  readonly watchTarget?: ASTNode; // Target element to watch for changes ("in <target>" syntax)
   readonly args?: string[]; // Event parameter names to destructure (e.g., ['clientX', 'clientY'])
   readonly commands: ASTNode[];
 }

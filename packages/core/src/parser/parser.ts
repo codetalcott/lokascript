@@ -2993,6 +2993,14 @@ export class Parser {
       debug.parse(`🔧 parseEventHandler: Parsed attribute name: ${attributeName}`);
     }
 
+    // Optional: handle "in <target>" for watching other elements
+    let watchTarget: ASTNode | undefined;
+    if (this.match('in')) {
+      debug.parse(`🔧 parseEventHandler: Found 'in' keyword, parsing watch target`);
+      watchTarget = this.parseExpression();
+      debug.parse(`🔧 parseEventHandler: Parsed watch target expression`);
+    }
+
     // Parse commands
     const commands: CommandNode[] = [];
 
@@ -3446,7 +3454,11 @@ export class Parser {
       node.attributeName = attributeName;
     }
 
-    debug.parse(`🔧 parseEventHandler: Created node with events: ${eventNames.join(', ')}, attributeName: ${attributeName || 'none'}`);
+    if (watchTarget) {
+      node.watchTarget = watchTarget;
+    }
+
+    debug.parse(`🔧 parseEventHandler: Created node with events: ${eventNames.join(', ')}, attributeName: ${attributeName || 'none'}, watchTarget: ${watchTarget ? 'yes' : 'none'}`);
     return node;
   }
 

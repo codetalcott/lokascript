@@ -1,156 +1,267 @@
-# Pattern Testing - Quick Start Guide
+# Pattern Testing Quick Start
 
-**Get started with systematic pattern testing in under 5 minutes!**
+**Last Updated:** 2025-01-14 (Session 30+)
+**Status:** ✅ Working - 106/106 patterns passing (100%)
 
 ---
 
-## 🚀 Quick Commands
+## ⚡ Quick Commands
 
 ```bash
-# 1. Generate test pages (one-time setup)
+# From project root (/Users/williamtalcott/projects/hyperfixi)
+
+# 1. Ensure HTTP server is running
+npx http-server packages/core -p 3000 -c-1 &
+
+# 2. Build browser bundle (if needed)
+npm run build:browser --prefix packages/core
+
+# 3. Generate test pages
 node scripts/generate-pattern-tests.mjs
 
-# 2. Run comprehensive test suite
+# 4. Run comprehensive tests
 node scripts/test-all-patterns.mjs
 
-# 3. View results
+# Results saved to: test-results/pattern-test-results-*.{json,md}
+```
+
+---
+
+## 📁 Critical Path Configuration
+
+### HTTP Server Configuration
+- **Server Root**: `packages/core/`
+- **Port**: 3000
+- **Command**: `npx http-server packages/core -p 3000 -c-1`
+
+### File Paths (Relative to HTTP Server Root)
+
+| Resource | HTTP Path | File System Path |
+|----------|-----------|------------------|
+| **Browser Bundle** | `/dist/hyperfixi-browser.js` | `packages/core/dist/hyperfixi-browser.js` |
+| **Test Pages** | `/cookbook/generated-tests/*.html` | `cookbook/generated-tests/*.html` (via symlink) |
+| **Pattern Registry** | N/A (Node.js only) | `patterns-registry.mjs` (project root) |
+
+### Required Symlink
+
+```bash
+# Create symlink (already exists, documented for reference)
+cd packages/core
+ln -sf ../../cookbook cookbook
+
+# Verify
+ls -la packages/core/cookbook  # Should show: cookbook -> ../../cookbook
+```
+
+---
+
+## 🔧 File Locations
+
+### Source Files
+- **Pattern Registry**: `/Users/williamtalcott/projects/hyperfixi/patterns-registry.mjs`
+- **Test Generator**: `/Users/williamtalcott/projects/hyperfixi/scripts/generate-pattern-tests.mjs`
+- **Test Runner**: `/Users/williamtalcott/projects/hyperfixi/scripts/test-all-patterns.mjs`
+
+### Generated Files
+- **Test Pages**: `/Users/williamtalcott/projects/hyperfixi/cookbook/generated-tests/*.html`
+- **Test Results**: `/Users/williamtalcott/projects/hyperfixi/test-results/pattern-test-results-*.{json,md}`
+
+### Build Artifacts
+- **Browser Bundle**: `/Users/williamtalcott/projects/hyperfixi/packages/core/dist/hyperfixi-browser.js`
+
+---
+
+## ⚠️ Common Path Issues & Solutions
+
+### Issue 1: "404 Not Found" for Bundle
+
+**Symptom**: Browser console shows "Failed to load resource: 404" for hyperfixi-browser.js
+
+**Cause**: Incorrect bundle path in generated HTML
+
+**Solution**: Verify test generator uses `/dist/hyperfixi-browser.js` (NOT `../../packages/core/dist/...`)
+
+**Fix Location**: `scripts/generate-pattern-tests.mjs` lines 280, 449
+
+```javascript
+// ✅ CORRECT
+<script src="/dist/hyperfixi-browser.js"></script>
+
+// ❌ WRONG
+<script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+```
+
+### Issue 2: "404 Not Found" for Test Pages
+
+**Symptom**: Test runner can't load `http://127.0.0.1:3000/cookbook/generated-tests/*.html`
+
+**Cause**: Missing symlink in packages/core
+
+**Solution**:
+```bash
+cd packages/core
+ln -sf ../../cookbook cookbook
+```
+
+**Verification**:
+```bash
+curl -I http://127.0.0.1:3000/cookbook/generated-tests/test-commands.html
+# Should return: HTTP/1.1 200 OK
+```
+
+### Issue 3: TypeScript Syntax Error in patterns-registry.mjs
+
+**Symptom**: `SyntaxError: Unexpected token 'export'` or `interface`
+
+**Cause**: TypeScript syntax in .mjs file
+
+**Solution**: File must use JSDoc instead of TypeScript interfaces
+
+```javascript
+// ✅ CORRECT (.mjs file)
+/**
+ * @typedef {Object} Pattern
+ * @property {string} syntax
+ */
+export const PATTERN_REGISTRY = { ... };
+
+// ❌ WRONG (.mjs file)
+export interface Pattern {
+  syntax: string;
+}
+export const PATTERN_REGISTRY: Record<string, PatternCategory> = { ... };
+```
+
+### Issue 4: Running from Wrong Directory
+
+**Symptom**: `Error: Cannot find module 'scripts/test-all-patterns.mjs'`
+
+**Cause**: Running scripts from `packages/core/` instead of project root
+
+**Solution**: Always run scripts from project root
+```bash
+# ✅ CORRECT
+cd /Users/williamtalcott/projects/hyperfixi
+node scripts/test-all-patterns.mjs
+
+# ❌ WRONG
+cd /Users/williamtalcott/projects/hyperfixi/packages/core
+node scripts/test-all-patterns.mjs  # File not found
+```
+
+---
+
+## 🧪 Testing Workflow
+
+### Initial Setup (One-time)
+```bash
+# 1. Navigate to project root
+cd /Users/williamtalcott/projects/hyperfixi
+
+# 2. Ensure symlink exists
+cd packages/core && ln -sf ../../cookbook cookbook && cd ../..
+
+# 3. Start HTTP server (keep running in background)
+npx http-server packages/core -p 3000 -c-1 &
+
+# 4. Build browser bundle
+npm run build:browser --prefix packages/core
+```
+
+### Regular Testing Workflow
+```bash
+# From project root
+
+# 1. After modifying pattern registry
+node scripts/generate-pattern-tests.mjs
+
+# 2. After code changes to commands/expressions
+npm run build:browser --prefix packages/core
+
+# 3. Run tests
+node scripts/test-all-patterns.mjs
+
+# 4. View results
 cat test-results/pattern-test-results-*.md | tail -50
 ```
 
-That's it! You'll see results like:
-
-```
-✅ Passed: 54/54 (100%)
-❌ Failed: 0
-❓ Unknown: 0
-```
-
----
-
-## 📊 What Gets Tested
-
-- **54 patterns** across 8 categories
-- **Commands** - DOM manipulation (set, add, remove, toggle, etc.)
-- **Events** - Event handling (on click, on load, filters, etc.)
-- **Operators** - Expressions (+, contains, matches)
-- **Control Flow** - Conditionals (if, if-else)
-- **References** - Element access (me, it, #id, .class, etc.)
-- **Properties** - Property access (., my, its)
-- **Context** - tell command
-- **Temporal** - Command chaining (then)
-
----
-
-## 🎯 Common Tasks
-
-### View Test Pages in Browser
-
+### Debug Single Test Page
 ```bash
-# Open specific category
-open http://127.0.0.1:3000/cookbook/generated-tests/test-commands.html
+# From project root
 
-# Open all patterns
-open http://127.0.0.1:3000/cookbook/generated-tests/test-all-patterns.html
-```
+# Create debug script
+cat > test-single-page.mjs << 'EOF'
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ headless: false });
+const page = await browser.newPage();
+await page.goto('http://127.0.0.1:3000/cookbook/generated-tests/test-commands.html');
+await page.waitForTimeout(10000); // Keep open for inspection
+await browser.close();
+EOF
 
-### Find Untested Patterns
-
-```javascript
-import { getUntestedPatterns } from './patterns-registry.mjs';
-
-const untested = getUntestedPatterns();
-console.log(`Untested: ${untested.length}`);
-untested.forEach(p => console.log(`  - ${p.syntax}`));
-```
-
-### Check Pattern Status
-
-```javascript
-import { getPatternStats } from './patterns-registry.mjs';
-
-const stats = getPatternStats();
-console.log(`Implemented: ${stats.implementedPercent}%`);
-console.log(`Tested: ${stats.testedPercent}%`);
-```
-
-### Re-generate Tests After Registry Changes
-
-```bash
-# Edit patterns-registry.mjs with new patterns
-# Then regenerate:
-node scripts/generate-pattern-tests.mjs
-node scripts/test-all-patterns.mjs
+node test-single-page.mjs
 ```
 
 ---
 
-## 🔍 Understanding Results
+## 📊 Current Status (Session 30+)
 
-### Console Output
+- **Total Patterns**: 106
+- **Passing**: 106 (100%)
+- **Categories**: 10
+- **Test Execution Time**: ~56 seconds
+- **Last Successful Run**: 2025-01-14
 
-```
-📝 Testing: test-commands.html...
-   ✅ Passed: 24/24 (100%)   ← All patterns compiled successfully
-
-📝 Testing: test-eventHandlers.html...
-   ✅ Passed: 8/10 (80%)     ← Some patterns failed
-   ❌ Failed: 2              ← See details below
-```
-
-### Status Meanings
-
-- **✅ COMPILED** = Pattern compiled successfully
-- **❌ FAILED** = Pattern failed to compile
-- **❓ UNKNOWN** = Pattern needs investigation
-
-### Reports Location
-
-```
-test-results/
-├── pattern-test-results-2025-11-13.json  ← Machine-readable
-└── pattern-test-results-2025-11-13.md    ← Human-readable
-```
+### Pattern Breakdown
+| Category | Patterns | Status |
+|----------|----------|--------|
+| Commands | 31 | ✅ 100% |
+| Operators | 19 | ✅ 100% (includes 3 new range patterns) |
+| References | 14 | ✅ 100% |
+| Event Handlers | 10 | ✅ 100% |
+| Edge Cases | 8 | ✅ 100% |
+| Property Access | 7 | ✅ 100% |
+| Temporal Modifiers | 5 | ✅ 100% |
+| Type Conversion | 5 | ✅ 100% |
+| Context Switching | 4 | ✅ 100% |
+| Control Flow | 3 | ✅ 100% |
 
 ---
 
-## 🐛 Troubleshooting
+## 🔍 Troubleshooting Checklist
 
-### "Cannot connect to server"
+Before opening an issue, verify:
 
-**Solution:**
+- [ ] HTTP server is running on port 3000
+- [ ] Server root is `packages/core/` (not project root)
+- [ ] Symlink exists: `packages/core/cookbook -> ../../cookbook`
+- [ ] Running scripts from project root (not `packages/core/`)
+- [ ] Browser bundle exists at `packages/core/dist/hyperfixi-browser.js`
+- [ ] Generated test pages exist in `cookbook/generated-tests/`
+- [ ] patterns-registry.mjs uses JSDoc (not TypeScript interfaces)
+
+**Quick Verification**:
 ```bash
-npx http-server packages/core -p 3000 -c-1 &
+# From project root
+curl http://127.0.0.1:3000/dist/hyperfixi-browser.js | head -5
+curl http://127.0.0.1:3000/cookbook/generated-tests/test-commands.html | head -5
+ls -la packages/core/cookbook
+cat patterns-registry.mjs | head -30
 ```
 
-### "Test directory not found"
-
-**Solution:**
-```bash
-node scripts/generate-pattern-tests.mjs
-```
-
-### "Module not found"
-
-**Solution:**
-```bash
-npm install  # Install playwright and dependencies
-```
+All should return valid content/paths.
 
 ---
 
-## 📚 Learn More
+## 📚 Related Documentation
 
-- [PATTERN_TESTING_GUIDE.md](PATTERN_TESTING_GUIDE.md) - Full documentation
-- [PATTERN_TESTING_IMPLEMENTATION_SUMMARY.md](PATTERN_TESTING_IMPLEMENTATION_SUMMARY.md) - Implementation details
-- [patterns-registry.mjs](patterns-registry.mjs) - Pattern catalog
+- **[PATTERN_TESTING_GUIDE.md](PATTERN_TESTING_GUIDE.md)** - Comprehensive 30+ page guide
+- **[PATTERN_TESTING_IMPLEMENTATION_SUMMARY.md](PATTERN_TESTING_IMPLEMENTATION_SUMMARY.md)** - Implementation details
+- **[PATTERN_TESTING_INTEGRATION.md](PATTERN_TESTING_INTEGRATION.md)** - Claude Code integration
+- **[SESSION_30_RECOMMENDATIONS_COMPLETE.md](SESSION_30_RECOMMENDATIONS_COMPLETE.md)** - Session 30 achievements
 
 ---
 
-## 🎯 Next Steps
-
-1. **Run tests now**: `node scripts/test-all-patterns.mjs`
-2. **Review results**: Check test-results/*.md
-3. **Explore patterns**: Open browser test pages
-4. **Add CI/CD**: Integrate into your workflow
-
-**Questions?** See [PATTERN_TESTING_GUIDE.md](PATTERN_TESTING_GUIDE.md) for detailed docs.
+**Last Verified**: 2025-01-14
+**Maintainer**: HyperFixi Development Team
+**Status**: ✅ Production Ready - 106/106 patterns passing

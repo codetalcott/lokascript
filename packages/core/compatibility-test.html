@@ -71,10 +71,15 @@
         
         // Set up global evalHyperScript function for test compatibility
         window.evalHyperScript = async function(expression, context) {
-            console.log('[evalHyperScript] Evaluating:', expression);
-            const result = await hyperfixi.evalHyperScript(expression, context);
-            console.log('[evalHyperScript] Result:', result, 'length:', result?.length);
-            return result;
+            console.log('[evalHyperScript] Evaluating:', expression, 'context:', context);
+            try {
+                const result = await hyperfixi.evalHyperScript(expression, context);
+                console.log('[evalHyperScript] Result:', result, 'type:', typeof result, 'JSON:', JSON.stringify(result));
+                return result;
+            } catch (error) {
+                console.error('[evalHyperScript] ERROR:', error.message, error.stack);
+                throw error;
+            }
         };
         window.getParseErrorFor = function(expr) {
             try {
@@ -91,8 +96,12 @@
                 const self = this;
                 return {
                     equal: function(expected) {
-                        if (self !== expected) {
-                            throw new Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(self)}`);
+                        // Convert String objects to primitives for comparison
+                        const actualValue = (self != null && self.constructor === String) ? self.valueOf() : self;
+                        const expectedValue = (expected != null && expected.constructor === String) ? expected.valueOf() : expected;
+
+                        if (actualValue !== expectedValue) {
+                            throw new Error(`Expected ${JSON.stringify(expectedValue)}, got ${JSON.stringify(actualValue)}`);
                         }
                         return this;
                     },

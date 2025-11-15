@@ -342,6 +342,17 @@ export function tokenize(input: string): Token[] {
     }
 
     if (char === '.') {
+      // Check if this is the range operator (..)
+      const nextChar = peek(tokenizer, 1);
+      if (nextChar === '.') {
+        // Tokenize as range operator
+        const start = tokenizer.position;
+        advance(tokenizer); // consume first '.'
+        advance(tokenizer); // consume second '.'
+        addToken(tokenizer, TokenType.OPERATOR, '..', start);
+        continue;
+      }
+
       // Check if this is a CSS selector or a member access operator
       // It's a CSS selector if it's at the start or follows whitespace/operators
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
@@ -806,8 +817,16 @@ function tokenizeNumberOrTime(tokenizer: Tokenizer): void {
     }
   }
 
-  // Handle decimal
-  if (tokenizer.position < inputLength && input[tokenizer.position] === '.') {
+  // Handle decimal (but not range operator ..)
+  if (
+    tokenizer.position < inputLength &&
+    input[tokenizer.position] === '.' &&
+    // Don't consume '.' if it's part of the range operator '..'
+    !(
+      tokenizer.position + 1 < inputLength &&
+      input[tokenizer.position + 1] === '.'
+    )
+  ) {
     value += advance(tokenizer);
     while (tokenizer.position < inputLength) {
       const char = input[tokenizer.position];

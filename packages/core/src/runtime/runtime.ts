@@ -1583,13 +1583,13 @@ export class Runtime {
     node: EventHandlerNode,
     context: ExecutionContext
   ): Promise<void> {
-    const { event, events, commands, target, args, selector, attributeName } = node as EventHandlerNode & { selector?: string; attributeName?: string };
+    const { event, events, commands, target, args, selector, attributeName, watchTarget } = node as EventHandlerNode & { selector?: string; attributeName?: string; watchTarget?: ASTNode };
 
     // Get all event names (support both single event and multiple events with "or")
     const eventNames = events && events.length > 0 ? events : [event];
 
     debug.runtime(
-      `RUNTIME: executeEventHandler for events '${eventNames.join(', ')}', target=${target}, selector=${selector}, attributeName=${attributeName}, args=${args}, context.me=`,
+      `RUNTIME: executeEventHandler for events '${eventNames.join(', ')}', target=${target}, selector=${selector}, attributeName=${attributeName}, watchTarget=${watchTarget ? 'yes' : 'no'}, args=${args}, context.me=`,
       context.me
     );
 
@@ -1672,6 +1672,76 @@ export class Runtime {
         });
 
         debug.runtime(`RUNTIME: MutationObserver attached to`, targetElement, `for attribute '${attributeName}'`);
+      }
+
+      // Return early - mutation observers don't use regular event listeners
+      return;
+    }
+
+    // Handle content change events with MutationObserver (watching other elements)
+    if (event === 'change' && watchTarget) {
+      debug.runtime(`RUNTIME: Setting up MutationObserver for content changes on watch target`);
+
+      // Evaluate the watchTarget expression to get the target element(s)
+      const watchTargetResult = await this.evaluate(watchTarget, context);
+      let watchTargetElements: HTMLElement[] = [];
+
+      if (this.isElement(watchTargetResult)) {
+        watchTargetElements = [watchTargetResult];
+      } else if (Array.isArray(watchTargetResult)) {
+        watchTargetElements = watchTargetResult.filter((el: any) => this.isElement(el));
+      }
+
+      debug.runtime(`RUNTIME: Watching ${watchTargetElements.length} target elements for content changes`);
+
+      // Set up observer for each watch target
+      for (const watchedElement of watchTargetElements) {
+        const observer = new MutationObserver(async (mutations) => {
+          for (const mutation of mutations) {
+            // Detect content changes (childList or characterData)
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              debug.event(`CONTENT CHANGE DETECTED on`, watchedElement, `mutation type:`, mutation.type);
+
+              // Create context for change event
+              const changeContext: ExecutionContext = {
+                ...context,
+                me: context.me, // Keep original 'me' (the element with the handler)
+                it: mutation,
+                locals: new Map(context.locals),
+              };
+
+              // Store the watched element in context as a local variable
+              changeContext.locals.set('target', watchedElement);
+
+              // Get old and new text content (if available)
+              const oldValue = mutation.oldValue;
+              const newValue = watchedElement.textContent;
+              if (oldValue !== null) {
+                changeContext.locals.set('oldValue', oldValue);
+              }
+              changeContext.locals.set('newValue', newValue);
+
+              // Execute all commands
+              for (const command of commands) {
+                try {
+                  await this.execute(command, changeContext);
+                } catch (error) {
+                  console.error(`❌ Error executing change handler command:`, error);
+                }
+              }
+            }
+          }
+        });
+
+        // Observe content changes
+        observer.observe(watchedElement, {
+          childList: true,      // Watch for child nodes being added/removed
+          characterData: true,  // Watch for text content changes
+          subtree: true,        // Watch all descendants
+          characterDataOldValue: true, // Track old text values
+        });
+
+        debug.runtime(`RUNTIME: MutationObserver attached to`, watchedElement, `for content changes`);
       }
 
       // Return early - mutation observers don't use regular event listeners

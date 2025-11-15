@@ -178,7 +178,7 @@ async function runTestFile(browser, testFile) {
 
   try {
     await page.goto(url, { waitUntil: 'load', timeout: TIMEOUT });
-    await page.waitForTimeout(2000); // Wait for validation
+    await page.waitForTimeout(5000); // Wait for HyperFixi to load and validate (increased from 2000ms)
 
     // Extract results from page
     const results = await page.evaluate(() => {

@@ -118,6 +118,7 @@ context.variables?.set("date", dateUtils);
 - Command implementations with comprehensive coverage
 - Performance regression testing
 - **Official compatibility**: 81 official _hyperscript test files (hundreds of test cases)
+- **Pattern Compatibility**: 77 core patterns, 68 fully working (88% realistic compatibility)
 - Integration testing with real DOM elements
 - **Automated feedback system** with structured output (console, JSON, Markdown)
 - **Claude Code integration** with automatic validation hooks
@@ -248,6 +249,7 @@ npm run test
 - **Performance Tests**: 16/18 ✅
 - **Error Recovery**: 21/21 ✅
 - **Official Compatibility**: 81 files, hundreds of test cases ✅
+- **Pattern Registry**: 77 core patterns, 68 working (88% realistic compatibility) ✅
 - **Browser Dashboard**: 18/18 command tests passing ✅
 
 ### Test Categories
@@ -317,6 +319,9 @@ for details.
 - **[TEST_IMPROVEMENTS_SUMMARY.md](packages/core/TEST_IMPROVEMENTS_SUMMARY.md)** - Session 11 test infrastructure improvements
 - **[CLAUDE_CODE_INTEGRATION.md](packages/core/CLAUDE_CODE_INTEGRATION.md)** - Complete guide for Claude Code test integration
 - **[INTEGRATION_RECOMMENDATIONS.md](packages/core/INTEGRATION_RECOMMENDATIONS.md)** - Analysis of integration patterns (hooks vs skills vs MCP)
+- **[PATTERN_TESTING_QUICKSTART.md](PATTERN_TESTING_QUICKSTART.md)** - Quick-start guide for pattern registry testing
+- **[SESSION_30_PATTERN_REGISTRY_VALIDATION.md](SESSION_30_PATTERN_REGISTRY_VALIDATION.md)** - Pattern registry validation summary (historical)
+- **[PATTERN_REGISTRY_CORRECTION_SUMMARY.md](PATTERN_REGISTRY_CORRECTION_SUMMARY.md)** - Pattern registry correction: honest metrics (77 patterns, 88% compatibility)
 
 ### Package Documentation
 
