@@ -2980,6 +2980,19 @@ export class Parser {
       selector = selectorToken.value;
     }
 
+    // Optional: handle "of attribute" for mutation events
+    let attributeName: string | undefined;
+    if (this.match('of')) {
+      const attrToken = this.advance();
+      // Handle both @attribute and attribute syntax
+      if (attrToken.value.startsWith('@')) {
+        attributeName = attrToken.value.substring(1); // Remove @ prefix
+      } else {
+        attributeName = attrToken.value;
+      }
+      debug.parse(`🔧 parseEventHandler: Parsed attribute name: ${attributeName}`);
+    }
+
     // Parse commands
     const commands: CommandNode[] = [];
 
@@ -3429,7 +3442,11 @@ export class Parser {
       node.selector = selector;
     }
 
-    debug.parse(`🔧 parseEventHandler: Created node with events: ${eventNames.join(', ')}`);
+    if (attributeName) {
+      node.attributeName = attributeName;
+    }
+
+    debug.parse(`🔧 parseEventHandler: Created node with events: ${eventNames.join(', ')}, attributeName: ${attributeName || 'none'}`);
     return node;
   }
 

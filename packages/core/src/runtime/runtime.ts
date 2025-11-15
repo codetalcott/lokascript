@@ -1583,13 +1583,13 @@ export class Runtime {
     node: EventHandlerNode,
     context: ExecutionContext
   ): Promise<void> {
-    const { event, events, commands, target, args, selector } = node as EventHandlerNode & { selector?: string };
+    const { event, events, commands, target, args, selector, attributeName } = node as EventHandlerNode & { selector?: string; attributeName?: string };
 
     // Get all event names (support both single event and multiple events with "or")
     const eventNames = events && events.length > 0 ? events : [event];
 
     debug.runtime(
-      `RUNTIME: executeEventHandler for events '${eventNames.join(', ')}', target=${target}, selector=${selector}, args=${args}, context.me=`,
+      `RUNTIME: executeEventHandler for events '${eventNames.join(', ')}', target=${target}, selector=${selector}, attributeName=${attributeName}, args=${args}, context.me=`,
       context.me
     );
 
@@ -1625,6 +1625,56 @@ export class Runtime {
 
     if (targets.length === 0) {
       console.warn(`❌ EVENT HANDLER: No elements found for event handler: ${eventNames.join(', ')}`);
+      return;
+    }
+
+    // Handle mutation events with MutationObserver
+    if (event === 'mutation' && attributeName) {
+      debug.runtime(`RUNTIME: Setting up MutationObserver for attribute '${attributeName}' on ${targets.length} elements`);
+
+      for (const targetElement of targets) {
+        const observer = new MutationObserver(async (mutations) => {
+          for (const mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.attributeName === attributeName) {
+              debug.event(`MUTATION DETECTED: attribute '${attributeName}' changed on`, targetElement);
+
+              // Create context for mutation event
+              const mutationContext: ExecutionContext = {
+                ...context,
+                me: targetElement,
+                it: mutation,
+                locals: new Map(context.locals),
+              };
+
+              // Store old and new values in context
+              const oldValue = mutation.oldValue;
+              const newValue = targetElement.getAttribute(attributeName);
+              mutationContext.locals.set('oldValue', oldValue);
+              mutationContext.locals.set('newValue', newValue);
+
+              // Execute all commands
+              for (const command of commands) {
+                try {
+                  await this.execute(command, mutationContext);
+                } catch (error) {
+                  console.error(`❌ Error executing mutation handler command:`, error);
+                }
+              }
+            }
+          }
+        });
+
+        // Observe attribute changes
+        observer.observe(targetElement, {
+          attributes: true,
+          attributeOldValue: true,
+          attributeFilter: [attributeName],
+        });
+
+        debug.runtime(`RUNTIME: MutationObserver attached to`, targetElement, `for attribute '${attributeName}'`);
+      }
+
+      // Return early - mutation observers don't use regular event listeners
       return;
     }
 

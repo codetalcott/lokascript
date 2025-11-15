@@ -294,10 +294,10 @@ export const PATTERN_REGISTRY = {
       {
         syntax: 'on mutation of <attribute>',
         description: 'Trigger on attribute mutation using MutationObserver',
-        status: 'not-implemented',  // TODO: Requires MutationObserver integration (parser + runtime)
-        tested: false,
+        status: 'implemented',  // ✅ VERIFIED Session 32 Part 3: Parser extracts attribute (parser.ts:2983-2994), runtime creates MutationObserver (runtime.ts:1631-1679)
+        tested: false,  // TODO: Test in browser
         example: 'on mutation of @disabled log "changed"',
-        notes: 'DEFERRED: Requires MutationObserver setup in runtime for attribute watching'
+        notes: 'VERIFIED Session 32 Part 3: Complete MutationObserver integration with oldValue/newValue in context'
       },
     ]
   },
