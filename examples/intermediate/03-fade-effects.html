@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>03: Fade Effects - HyperFixi Examples</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .description {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .demo {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: 600;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .fade-box {
+            margin-top: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #d84315;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .fade-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .fade-box p {
+            margin: 0;
+            font-weight: normal;
+            line-height: 1.6;
+        }
+
+        .slide-box {
+            margin-top: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            color: #1976d2;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .slide-box.slide-out {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .color-box {
+            margin-top: 20px;
+            padding: 40px;
+            background: #667eea;
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            transition: background-color 0.5s ease;
+        }
+
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+
+        .keyword {
+            color: #c678dd;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .comment {
+            color: #5c6370;
+        }
+
+        .explanation {
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .nav-buttons a {
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-buttons a:hover {
+            background: #e0e0e0;
+        }
+
+        /* Animation classes */
+        .fade-out {
+            opacity: 0 !important;
+        }
+
+        .fade-in {
+            opacity: 1 !important;
+        }
+
+        .scale-up {
+            transform: scale(1.1);
+        }
+
+        .rotate {
+            transform: rotate(5deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../index.html">← Back to Gallery</a> / <strong>Intermediate</strong> / 03: Fade Effects
+        </div>
+
+        <h1>✨ Fade & Transition Effects</h1>
+
+        <div class="description">
+            <strong>Create smooth animations without JavaScript frameworks</strong><br>
+            Learn how to use hyperscript's transition command with CSS to create beautiful
+            fade-in, fade-out, and slide effects. Perfect for polished user experiences!
+        </div>
+
+        <div>
+            <span class="tag">transitions</span>
+            <span class="tag">opacity</span>
+            <span class="tag">toggle</span>
+            <span class="tag">wait</span>
+        </div>
+
+        <!-- Demo 1: Basic Fade -->
+        <div class="demo">
+            <h2>Demo 1: Fade In/Out</h2>
+            <p>Toggle opacity for smooth fade effects:</p>
+
+            <div>
+                <button _="on click
+                          toggle *opacity of #fade-box1">
+                    ✨ Fade In/Out
+                </button>
+                <button class="secondary" _="on click
+                                              set #fade-box1's *opacity to 0.3">
+                    🌓 50% Opacity
+                </button>
+                <button class="success" _="on click
+                                            set #fade-box1's *opacity to 1">
+                    🌕 Full Opacity
+                </button>
+            </div>
+
+            <div id="fade-box1" class="fade-box">
+                <h3>💫 Fading Content</h3>
+                <p>
+                    Watch this box fade in and out smoothly using CSS transitions
+                    and hyperscript's opacity toggle!
+                </p>
+            </div>
+        </div>
+
+        <!-- Demo 2: Slide Animation -->
+        <div class="demo">
+            <h2>Demo 2: Slide Transition</h2>
+            <p>Combine transform and opacity for slide effects:</p>
+
+            <button _="on click
+                      toggle .slide-out on #slide-box">
+                🎢 Slide Toggle
+            </button>
+
+            <div id="slide-box" class="slide-box">
+                <h3>🎯 Sliding Panel</h3>
+                <p>
+                    This panel slides in and out using CSS transforms.
+                    The .slide-out class applies translateX(-100%) with opacity transition.
+                </p>
+            </div>
+        </div>
+
+        <!-- Demo 3: Notification Toast -->
+        <div class="demo">
+            <h2>Demo 3: Toast Notification</h2>
+            <p>Auto-dismissing notification with fade animation:</p>
+
+            <button _="on click
+                      add .show to #notification
+                      wait 3s
+                      remove .show from #notification">
+                🔔 Show Notification
+            </button>
+
+            <div id="notification" class="notification">
+                <strong>✅ Success!</strong> This notification will auto-dismiss in 3 seconds.
+            </div>
+        </div>
+
+        <!-- Demo 4: Sequential Animations -->
+        <div class="demo">
+            <h2>Demo 4: Sequential Fade</h2>
+            <p>Chain multiple fade animations in sequence:</p>
+
+            <button _="on click
+                      add .fade-out to #box-1
+                      wait 0.5s
+                      add .fade-out to #box-2
+                      wait 0.5s
+                      add .fade-out to #box-3">
+                📉 Fade Out Sequence
+            </button>
+
+            <button class="success" _="on click
+                                        remove .fade-out from #box-1
+                                        wait 0.5s
+                                        remove .fade-out from #box-2
+                                        wait 0.5s
+                                        remove .fade-out from #box-3">
+                📈 Fade In Sequence
+            </button>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <div id="box-1" class="fade-box" style="flex: 1; padding: 20px; font-size: 16px;">
+                    Box 1
+                </div>
+                <div id="box-2" class="fade-box" style="flex: 1; padding: 20px; font-size: 16px;">
+                    Box 2
+                </div>
+                <div id="box-3" class="fade-box" style="flex: 1; padding: 20px; font-size: 16px;">
+                    Box 3
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo 5: Combined Transforms -->
+        <div class="demo">
+            <h2>Demo 5: Scale & Rotate</h2>
+            <p>Combine multiple transform effects:</p>
+
+            <button _="on click toggle .scale-up on #transform-box">
+                🔍 Scale
+            </button>
+            <button class="secondary" _="on click toggle .rotate on #transform-box">
+                🔄 Rotate
+            </button>
+            <button class="success" _="on click
+                                        toggle .scale-up on #transform-box
+                                        toggle .rotate on #transform-box">
+                🎨 Both
+            </button>
+
+            <div id="transform-box" class="fade-box" style="margin-top: 20px;">
+                <h3>🎪 Transform Demo</h3>
+                <p>This box can scale and rotate with smooth CSS transitions!</p>
+            </div>
+        </div>
+
+        <!-- Code Explanation -->
+        <h2>The Code</h2>
+
+        <h3>Basic Fade Toggle:</h3>
+        <div class="code">
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *opacity of #element"</span>&gt;
+  Fade Toggle
+&lt;/button&gt;
+
+&lt;div <span class="keyword">id</span>=<span class="string">"element"</span> <span class="keyword">style</span>=<span class="string">"transition: opacity 0.5s"</span>&gt;
+  Content to fade
+&lt;/div&gt;
+        </div>
+
+        <h3>Auto-Dismiss Notification:</h3>
+        <div class="code">
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+        add .show to #notification
+        wait 3s
+        remove .show from #notification"</span>&gt;
+  Show Toast
+&lt;/button&gt;
+
+<span class="comment">/* CSS */</span>
+<span class="keyword">.notification</span> {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+<span class="keyword">.notification.show</span> {
+  opacity: 1;
+}
+        </div>
+
+        <h3>Sequential Animation:</h3>
+        <div class="code">
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+        add .fade-out to #box-1
+        wait 0.5s
+        add .fade-out to #box-2
+        wait 0.5s
+        add .fade-out to #box-3"</span>&gt;
+  Fade Sequence
+&lt;/button&gt;
+
+<span class="comment">/* CSS */</span>
+<span class="keyword">.fade-box</span> {
+  transition: opacity 0.5s ease;
+}
+
+<span class="keyword">.fade-out</span> {
+  opacity: 0;
+}
+        </div>
+
+        <h3>Slide Animation:</h3>
+        <div class="code">
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .slide-out on #panel"</span>&gt;
+  Slide Toggle
+&lt;/button&gt;
+
+<span class="comment">/* CSS */</span>
+<span class="keyword">.slide-box</span> {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+<span class="keyword">.slide-box.slide-out</span> {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+        </div>
+
+        <div class="explanation">
+            <h3>How it works:</h3>
+            <ul>
+                <li><code>toggle *opacity of #element</code> - Toggles opacity between 0 and 1</li>
+                <li><code>wait 3s</code> - Pauses execution for 3 seconds</li>
+                <li><code>add/remove .className</code> - Manages CSS classes for animations</li>
+                <li>CSS <code>transition</code> property creates smooth animations</li>
+            </ul>
+
+            <h3>Key Concepts:</h3>
+            <ul>
+                <li><strong>CSS Transitions:</strong> Define <code>transition</code> property for smooth changes</li>
+                <li><strong>Opacity Control:</strong> Use <code>*opacity</code> for fade effects</li>
+                <li><strong>Class Toggle:</strong> Add/remove classes to trigger transitions</li>
+                <li><strong>Wait Command:</strong> Chain animations with timing delays</li>
+                <li><strong>Transform:</strong> Use <code>translateX</code>, <code>scale</code>, <code>rotate</code> for effects</li>
+            </ul>
+
+            <h3>CSS Transition Properties:</h3>
+            <div class="code">
+<span class="comment">/* Basic transition */</span>
+transition: opacity 0.5s ease;
+
+<span class="comment">/* Multiple properties */</span>
+transition: opacity 0.3s ease, transform 0.5s ease;
+
+<span class="comment">/* Timing functions */</span>
+transition: all 0.3s ease-in-out;
+transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+<span class="comment">/* Delay */</span>
+transition: opacity 0.5s ease 0.2s; <span class="comment">/* 0.2s delay */</span>
+            </div>
+
+            <h3>Advanced Patterns:</h3>
+            <div class="code">
+<span class="comment">&lt;!-- Fade in on page load --&gt;</span>
+&lt;div <span class="keyword">_</span>=<span class="string">"on load
+         set my *opacity to 0
+         wait 0.1s
+         set my *opacity to 1"</span>&gt;
+  Content
+&lt;/div&gt;
+
+<span class="comment">&lt;!-- Stagger animation for list items --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+         repeat for item in .list-item index i
+           add .fade-in to item
+           wait 0.2s
+         end"</span>&gt;
+  Animate List
+&lt;/button&gt;
+
+<span class="comment">&lt;!-- Bounce effect --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+         add .scale-up to #element
+         wait 0.3s
+         remove .scale-up from #element"</span>&gt;
+  Bounce
+&lt;/button&gt;
+
+<span class="comment">&lt;!-- Crossfade between elements --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click
+         set #panel-1's *opacity to 0
+         wait 0.5s
+         hide #panel-1
+         show #panel-2
+         set #panel-2's *opacity to 1"</span>&gt;
+  Crossfade
+&lt;/button&gt;
+            </div>
+
+            <h3>Common Use Cases:</h3>
+            <ul>
+                <li><strong>Toast Notifications:</strong> Auto-dismissing messages</li>
+                <li><strong>Modal Overlays:</strong> Fade in/out backdrop and dialog</li>
+                <li><strong>Image Galleries:</strong> Crossfade between images</li>
+                <li><strong>Loading States:</strong> Fade out spinner, fade in content</li>
+                <li><strong>Menu Animations:</strong> Slide in/out navigation panels</li>
+                <li><strong>List Animations:</strong> Stagger fade-in for items</li>
+            </ul>
+
+            <h3>Performance Tips:</h3>
+            <ul>
+                <li>Use <code>opacity</code> and <code>transform</code> - they're GPU-accelerated</li>
+                <li>Avoid animating <code>width</code>, <code>height</code>, <code>top</code>, <code>left</code></li>
+                <li>Use <code>will-change</code> CSS property for complex animations</li>
+                <li>Keep animations under 300-500ms for snappy feel</li>
+                <li>Use <code>ease-out</code> for entrances, <code>ease-in</code> for exits</li>
+            </ul>
+
+            <h3>Try it yourself:</h3>
+            <ul>
+                <li>Create a loading skeleton that fades in content when ready</li>
+                <li>Build a carousel with crossfade transitions</li>
+                <li>Make a notification queue with staggered animations</li>
+                <li>Add hover effects that scale and change opacity</li>
+                <li>Create an accordion with smooth height transitions</li>
+            </ul>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <a href="02-fetch-data.html">← Previous: Fetch Data</a>
+            <a href="04-tabs.html">Next: Tab Navigation →</a>
+        </div>
+    </div>
+
+    <!-- Load HyperFixi -->
+    <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
+</body>
+</html>
