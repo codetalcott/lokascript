@@ -182,8 +182,9 @@ export class ToggleCommand
         };
       }
 
-      // Determine if this is an attribute or class toggle
-      const isAttribute = this.isAttributeExpression(expression);
+      // Determine toggle type: CSS property, attribute, or class
+      const isCSSProperty = this.isCSSPropertyExpression(expression);
+      const isAttribute = !isCSSProperty && this.isAttributeExpression(expression);
 
       // Parse and validate
       if (isAttribute) {
@@ -230,6 +231,53 @@ export class ToggleCommand
               const attr = attributes[0]; // Use first attribute for temporal modifier
               createToggleUntil(element, 'attribute', attr.name, untilEvent);
             }
+          }
+        }
+
+        return {
+          success: true,
+          value: modifiedElements,
+          type: 'element-list',
+        };
+      } else if (isCSSProperty) {
+        // CSS property toggle logic (*display, *visibility, *opacity)
+        const property = this.parseCSSProperty(expression);
+        if (!property) {
+          return {
+            success: false,
+            error: {
+              name: 'ValidationError',
+              type: 'missing-argument',
+              message: 'No valid CSS property provided to toggle',
+              code: 'NO_VALID_CSS_PROPERTY',
+              suggestions: ['Use *display, *visibility, or *opacity'],
+            },
+            type: 'error',
+          };
+        }
+
+        // Type-safe target resolution
+        const elements = this.resolveTargets(context, target);
+        if (!elements.length) {
+          return {
+            success: false,
+            error: {
+              name: 'ValidationError',
+              type: 'missing-argument',
+              message: 'No target elements found',
+              code: 'NO_TARGET_ELEMENTS',
+              suggestions: ['Check if target selector is valid', 'Ensure elements exist in DOM'],
+            },
+            type: 'error',
+          };
+        }
+
+        // Toggle CSS property on elements
+        const modifiedElements: HTMLElement[] = [];
+        for (const element of elements) {
+          const propResult = await this.toggleCSSPropertyOnElement(element, property, context);
+          if (propResult.success) {
+            modifiedElements.push(element);
           }
         }
 
@@ -662,6 +710,133 @@ export class ToggleCommand
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Check if expression is a CSS property toggle (starts with *)
+   */
+  private isCSSPropertyExpression(expression: any): boolean {
+    if (typeof expression !== 'string') {
+      return false;
+    }
+    const trimmed = expression.trim();
+    return trimmed.startsWith('*');
+  }
+
+  /**
+   * Parse CSS property expression like *display, *visibility, *opacity
+   * Returns the property name (display, visibility, opacity)
+   */
+  private parseCSSProperty(expression: any): string | null {
+    if (!expression || typeof expression !== 'string') {
+      return null;
+    }
+
+    const trimmed = expression.trim();
+
+    // Remove leading * and get property name
+    if (trimmed.startsWith('*')) {
+      const property = trimmed.slice(1).trim();
+
+      // Validate it's a supported CSS property
+      const supportedProperties = ['display', 'visibility', 'opacity'];
+      if (supportedProperties.includes(property)) {
+        return property;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Toggle CSS property on an element
+   */
+  private async toggleCSSPropertyOnElement(
+    element: HTMLElement,
+    property: string,
+    context: TypedExecutionContext
+  ): Promise<EvaluationResult<HTMLElement>> {
+    try {
+      const currentStyle = window.getComputedStyle(element);
+
+      switch (property) {
+        case 'display':
+          // Toggle between 'none' and previous display value (or 'block' as default)
+          if (currentStyle.display === 'none') {
+            // Restore previous display value or use 'block'
+            const previousDisplay = element.getAttribute('data-previous-display') || 'block';
+            element.style.display = previousDisplay;
+            element.removeAttribute('data-previous-display');
+          } else {
+            // Save current display value before hiding
+            element.setAttribute('data-previous-display', currentStyle.display);
+            element.style.display = 'none';
+          }
+          break;
+
+        case 'visibility':
+          // Toggle between 'hidden' and 'visible'
+          if (currentStyle.visibility === 'hidden') {
+            element.style.visibility = 'visible';
+          } else {
+            element.style.visibility = 'hidden';
+          }
+          break;
+
+        case 'opacity':
+          // Toggle between '0' and '1'
+          const currentOpacity = parseFloat(currentStyle.opacity);
+          if (currentOpacity === 0) {
+            element.style.opacity = '1';
+          } else {
+            element.style.opacity = '0';
+          }
+          break;
+
+        default:
+          return {
+            success: false,
+            error: {
+              name: 'ValidationError',
+              type: 'invalid-argument',
+              message: `Unsupported CSS property: "${property}"`,
+              code: 'UNSUPPORTED_CSS_PROPERTY',
+              suggestions: ['Use display, visibility, or opacity'],
+            },
+            type: 'error',
+          };
+      }
+
+      // Dispatch enhanced toggle event
+      dispatchCustomEvent(element, 'hyperscript:toggle', {
+        element,
+        context,
+        command: this.name,
+        type: 'css-property',
+        property,
+        timestamp: Date.now(),
+        metadata: this.metadata,
+        result: 'success',
+      });
+
+      return {
+        success: true,
+        value: element,
+        type: 'element',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'ValidationError',
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : 'Failed to toggle CSS property',
+          code: 'CSS_PROPERTY_TOGGLE_FAILED',
+          suggestions: ['Check if element is still in DOM', 'Verify property name is valid'],
+        },
+        type: 'error',
+      };
     }
   }
 }
