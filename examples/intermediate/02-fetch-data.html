@@ -250,15 +250,15 @@
                    add .loading to me
                    show #spinner
                    hide #user-data
-                   fetch https://jsonplaceholder.typicode.com/users/1 as json
-                   put result into userData
+                   fetch https://jsonplaceholder.typicode.com/users/1 as json then
+                   put it into userData then
                    put `<h3>${userData.name}</h3>
                         <p>📧 ${userData.email}</p>
                         <p>🏢 ${userData.company.name}</p>
                         <p>📍 ${userData.address.city}, ${userData.address.street}</p>
-                        <p>📞 ${userData.phone}</p>` into #user-data
-                   hide #spinner
-                   show #user-data
+                        <p>📞 ${userData.phone}</p>` into #user-data then
+                   hide #spinner then
+                   show #user-data then
                    remove .loading from me"
             >
                 Load User Data
@@ -278,18 +278,18 @@
                    add .loading to me
                    show #posts-spinner
                    hide #posts-list
-                   fetch https://jsonplaceholder.typicode.com/posts?_limit=5 as json
-                   put result into posts
-                   set html to ''
+                   fetch https://jsonplaceholder.typicode.com/posts?_limit=5 as json then
+                   put it into posts then
+                   set html to '' then
                    repeat for post in posts
                      set html to html + `<div class='list-item'>
                        <h4>${post.title}</h4>
                        <p>${post.body}</p>
                      </div>`
-                   end
-                   put html into #posts-list
-                   hide #posts-spinner
-                   show #posts-list
+                   end then
+                   put html into #posts-list then
+                   hide #posts-spinner then
+                   show #posts-list then
                    remove .loading from me"
             >
                 Load Posts
@@ -309,10 +309,10 @@
                    hide #error-box
                    add .loading to me
                    try
-                     fetch https://jsonplaceholder.typicode.com/invalid as json
-                     log result
+                     fetch https://jsonplaceholder.typicode.com/invalid as json then
+                     log it
                    catch error
-                     put 'Failed to load data: ' + error into #error-message
+                     put 'Failed to load data: ' + error into #error-message then
                      show #error-box
                    end
                    remove .loading from me"
@@ -332,8 +332,8 @@
         <h3>Basic Fetch:</h3>
         <div class="code">
 &lt;button <span class="keyword">_</span>=<span class="string">"on click
-        fetch https://api.example.com/data as json
-        put result into #output"</span>&gt;
+        fetch https://api.example.com/data as json then
+        put it into #output"</span>&gt;
   Load Data
 &lt;/button&gt;
         </div>
@@ -341,12 +341,12 @@
         <h3>With Loading State:</h3>
         <div class="code">
 &lt;button <span class="keyword">_</span>=<span class="string">"on click
-        add .loading to me
-        show #spinner
-        fetch https://api.example.com/users as json
-        put result into userData
+        add .loading to me then
+        show #spinner then
+        fetch https://api.example.com/users as json then
+        put it into userData then
         <span class="comment">-- Process the data</span>
-        hide #spinner
+        hide #spinner then
         remove .loading from me"</span>&gt;
   Fetch
 &lt;/button&gt;
@@ -355,12 +355,12 @@
         <h3>Loop Through Results:</h3>
         <div class="code">
 &lt;button <span class="keyword">_</span>=<span class="string">"on click
-        fetch https://api.example.com/posts as json
-        put result into posts
-        set html to ''
+        fetch https://api.example.com/posts as json then
+        put it into posts then
+        set html to '' then
         repeat for post in posts
           set html to html + `&lt;div&gt;${post.title}&lt;/div&gt;`
-        end
+        end then
         put html into #list"</span>&gt;
   Load Posts
 &lt;/button&gt;
@@ -370,10 +370,10 @@
         <div class="code">
 &lt;button <span class="keyword">_</span>=<span class="string">"on click
         try
-          fetch https://api.example.com/data as json
-          put result into #output
+          fetch https://api.example.com/data as json then
+          put it into #output
         catch error
-          put 'Error: ' + error into #error-message
+          put 'Error: ' + error into #error-message then
           show #error-box
         end"</span>&gt;
   Load
@@ -383,8 +383,9 @@
         <div class="explanation">
             <h3>How it works:</h3>
             <ul>
-                <li><code>fetch URL as json</code> - Makes HTTP GET request and parses JSON response</li>
-                <li><code>put result into variable</code> - Stores the response data</li>
+                <li><code>fetch URL as json then</code> - Makes HTTP GET request and parses JSON response</li>
+                <li><code>put it into variable</code> - Stores the fetched data (use <code>it</code> for the result)</li>
+                <li><code>then</code> - Chains commands after async operations</li>
                 <li><code>repeat for item in items</code> - Loops through array results</li>
                 <li><code>try/catch</code> - Handles errors gracefully</li>
                 <li>Template literals (<code>`${variable}`</code>) - Embed data in HTML</li>
@@ -392,9 +393,9 @@
 
             <h3>Key Concepts:</h3>
             <ul>
-                <li><strong>Async Operations:</strong> Fetch automatically waits for response</li>
+                <li><strong>Async Operations:</strong> Fetch is async, use <code>then</code> to chain next commands</li>
                 <li><strong>JSON Parsing:</strong> <code>as json</code> converts response to JavaScript object</li>
-                <li><strong>Result Variable:</strong> <code>result</code> contains the fetched data</li>
+                <li><strong>Result Value:</strong> <code>it</code> contains the fetched data after <code>then</code></li>
                 <li><strong>Template Literals:</strong> Use backticks for string interpolation</li>
                 <li><strong>Error Handling:</strong> <code>try/catch</code> for network errors</li>
             </ul>
@@ -414,16 +415,19 @@ fetch /api/users
   method: 'POST'
   headers: { 'Content-Type': 'application/json' }
   body: JSON.stringify({ name: 'John', email: 'john@example.com' })
-as json
+as json then
+put it into newUser
 
 <span class="comment">&lt;!-- PUT request --&gt;</span>
 fetch /api/users/1
   method: 'PUT'
   body: JSON.stringify({ name: 'Updated Name' })
-as json
+as json then
+put it into updatedUser
 
 <span class="comment">&lt;!-- DELETE request --&gt;</span>
-fetch /api/users/1 method: 'DELETE'
+fetch /api/users/1 method: 'DELETE' then
+log 'User deleted'
             </div>
 
             <h3>Common Use Cases:</h3>
