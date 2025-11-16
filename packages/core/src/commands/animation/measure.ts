@@ -198,11 +198,31 @@ export class MeasureCommand
   }
 
   private getMeasurement(element: HTMLElement, property: string): { value: number; unit: string } {
+    // Get computed style (used by both CSS property shorthand and default case)
+    const computedStyle = getComputedStyle(element);
+
+    // Handle CSS property shorthand syntax: *property (e.g., *opacity, *background-color)
+    if (property.startsWith('*')) {
+      const cssPropertyName = property.substring(1); // Remove * prefix (keep kebab-case)
+      const value = computedStyle.getPropertyValue(cssPropertyName);
+
+      // Try to parse as number
+      const numericValue = parseFloat(value);
+      if (!isNaN(numericValue)) {
+        // Extract unit from value
+        const unitMatch = value.match(/([a-zA-Z%]+)$/);
+        const unit = unitMatch ? unitMatch[1] : '';
+        return { value: numericValue, unit };
+      }
+
+      // Return string value as-is (for non-numeric CSS properties like colors)
+      return { value: value as any, unit: '' };
+    }
+
     const prop = property.toLowerCase();
 
     // Get bounding rect for position/size measurements
     const rect = element.getBoundingClientRect();
-    const computedStyle = getComputedStyle(element);
 
     switch (prop) {
       case 'width':
@@ -288,6 +308,15 @@ export class MeasureCommand
         // Return 0 if cannot parse
         return { value: 0, unit: 'px' };
     }
+  }
+
+  /**
+   * Convert CSS property name from kebab-case to camelCase
+   * Examples: 'opacity' → 'opacity', 'background-color' → 'backgroundColor'
+   */
+  private convertCSSProperty(property: string): string {
+    // Convert kebab-case to camelCase
+    return property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   }
 }
 

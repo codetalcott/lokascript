@@ -1170,7 +1170,7 @@ export class Runtime {
       evaluatedArgs = [condition, ...args.slice(1)];
     } else if (name === 'measure' && args.length >= 1) {
       // MEASURE command needs special handling for possessive expressions
-      // Pattern: "measure item's top" -> { target: item, property: 'top' }
+      // Pattern: "measure item's top" -> { target, property }
       const firstArg = args[0];
 
       if (nodeType(firstArg) === 'possessiveExpression') {
@@ -1213,6 +1213,19 @@ export class Runtime {
         });
 
         evaluatedArgs = [propertyName];
+      } else if (args.length >= 2 && nodeType(args[1]) === 'identifier') {
+        // Handle "measure <#element/> property" where property is an identifier
+        // Don't evaluate the identifier - use its name as the property
+        const target = await this.execute(args[0], context);
+        const property = (args[1] as any).name;
+
+        debug.command('MEASURE: Element + identifier pattern detected:', {
+          target,
+          property,
+          targetType: typeof target,
+        });
+
+        evaluatedArgs = [{ target, property }];
       } else {
         // No special syntax, evaluate normally
         evaluatedArgs = await Promise.all(args.map(arg => this.execute(arg, context)));
