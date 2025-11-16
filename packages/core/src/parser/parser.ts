@@ -705,6 +705,7 @@ export class Parser {
     // Added 'set' back to use the sophisticated parseSetCommand method for "the X of Y" syntax
     // Added 'show' and 'hide' to ensure they parse as commands with selector arguments
     // Added 'halt' to handle "halt the event" syntax with special parsing
+    // Added 'measure' to handle multi-argument syntax: measure <target> property
     const compoundCommands = [
       'put',
       'trigger',
@@ -716,6 +717,7 @@ export class Parser {
       'hide',
       'add',
       'halt',
+      'measure',
     ];
     return compoundCommands.includes(commandName);
   }
@@ -741,6 +743,8 @@ export class Parser {
         return this.parseSetCommand(identifierNode);
       case 'halt':
         return this.parseHaltCommand(identifierNode);
+      case 'measure':
+        return this.parseMeasureCommand(identifierNode);
       default:
         // Fallback to regular parsing
         return this.parseRegularCommand(identifierNode);
@@ -1139,6 +1143,96 @@ export class Parser {
       end: this.getPosition().end,
       line: identifierNode.line || 1,
       column: identifierNode.column || 1,
+    };
+  }
+
+  private parseMeasureCommand(identifierNode: IdentifierNode): CommandNode | null {
+    // Parse measure command with multi-argument syntax
+    // Patterns:
+    //   measure width                          → 1 arg (property)
+    //   measure <#element/> width              → 2 args (target, property)
+    //   measure <#element/> *opacity           → 2 args (target, CSS property)
+    //   measure <#element/> *opacity and set x → 2 args + modifier
+    const args: ASTNode[] = [];
+    const modifiers: Record<string, ExpressionNode> = {};
+
+    // Parse optional target (selector or expression)
+    // If next token is a selector, identifier, or context var, parse it as target
+    if (
+      this.checkTokenType(TokenType.CSS_SELECTOR) ||
+      this.checkTokenType(TokenType.ID_SELECTOR) ||
+      this.checkTokenType(TokenType.CLASS_SELECTOR) ||
+      this.checkTokenType(TokenType.QUERY_REFERENCE) ||
+      this.checkTokenType(TokenType.CONTEXT_VAR) ||
+      this.match('<')
+    ) {
+      // Parse the target element expression
+      const target = this.parsePrimary();
+      args.push(target);
+
+      // After parsing target, check for property
+      // Property can be:
+      // - Simple identifier: width, height, top, left
+      // - CSS property with *: *opacity, *background-color
+
+      // Check for CSS property shorthand: * followed by identifier
+      if (this.match('*')) {
+        // Next token should be the CSS property name
+        if (this.checkTokenType(TokenType.IDENTIFIER)) {
+          const propName = this.advance();
+          // Create identifier node with * prefix
+          args.push({
+            type: 'identifier',
+            name: '*' + propName.value,
+            start: propName.start - 1, // Include the *
+            end: propName.end,
+            line: propName.line,
+            column: propName.column,
+          } as IdentifierNode);
+        }
+      } else if (
+        this.checkTokenType(TokenType.IDENTIFIER) ||
+        this.checkTokenType(TokenType.KEYWORD)
+      ) {
+        const property = this.parsePrimary();
+        args.push(property);
+      }
+    } else if (
+      this.checkTokenType(TokenType.IDENTIFIER) ||
+      this.checkTokenType(TokenType.KEYWORD)
+    ) {
+      // Just a property name without target: "measure width"
+      const property = this.parsePrimary();
+      args.push(property);
+    }
+
+    // Parse optional "and set <variable>" modifier
+    if (this.match('and')) {
+      if (this.match('set')) {
+        if (this.checkTokenType(TokenType.IDENTIFIER)) {
+          const variableName = this.advance();
+          modifiers['set'] = {
+            type: 'identifier',
+            name: variableName.value,
+            start: variableName.start,
+            end: variableName.end,
+            line: variableName.line,
+            column: variableName.column,
+          } as IdentifierNode;
+        }
+      }
+    }
+
+    return {
+      type: 'command',
+      name: identifierNode.name,
+      args: args as ExpressionNode[],
+      modifiers: Object.keys(modifiers).length > 0 ? modifiers : undefined,
+      isBlocking: false,
+      ...(identifierNode.start !== undefined && { start: identifierNode.start }),
+      end: this.getPosition().end,
+      ...(identifierNode.line !== undefined && { line: identifierNode.line }),
+      ...(identifierNode.column !== undefined && { column: identifierNode.column }),
     };
   }
 

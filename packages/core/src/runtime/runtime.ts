@@ -651,6 +651,40 @@ export class Runtime {
         return { error };
       }
 
+      case 'measure': {
+        // measure <target> <property> [and set <variable>]
+        let target = args.length > 0 ? await this.execute(args[0], context) : undefined;
+
+        // Extract first element if target is an array/NodeList
+        if (Array.isArray(target) && target.length > 0) {
+          target = target[0];
+        }
+
+        // Property is an identifier - extract name without evaluating
+        let property: string | undefined;
+        if (args.length > 1) {
+          const propertyNode = args[1] as any;
+          if (propertyNode.type === 'identifier') {
+            property = propertyNode.name;
+          } else {
+            property = await this.execute(args[1], context);
+          }
+        }
+
+        // Variable from "and set" modifier
+        let variable: string | undefined;
+        if (modifiers.set) {
+          const setNode = modifiers.set as any;
+          if (setNode.type === 'identifier') {
+            variable = setNode.name;
+          } else {
+            variable = await this.execute(modifiers.set, context);
+          }
+        }
+
+        return { target, property, variable };
+      }
+
       default:
         // Not a multi-word command - return null to fall through to existing logic
         return null;
@@ -879,6 +913,31 @@ export class Runtime {
 
       // Use context.me as implicit target
       evaluatedArgs = [classArg, context.me];
+    } else if (name === 'measure' && args.length >= 1) {
+      // Handle "measure <target> <property>" pattern
+      let target = args.length > 0 ? await this.execute(args[0], context) : undefined;
+
+      // Extract first element if target is an array/NodeList
+      if (Array.isArray(target) && target.length > 0) {
+        target = target[0];
+      }
+
+      // Property is an identifier - extract name without evaluating
+      let property: string | undefined;
+      if (args.length > 1) {
+        const propertyNode = args[1] as any;
+        if (propertyNode.type === 'identifier') {
+          property = propertyNode.name;
+        } else {
+          property = await this.execute(args[1], context);
+        }
+      }
+
+      // Create input object for measure command
+      const input = { target, property };
+
+      // Call adapter directly with input object
+      return await adapter.execute(context, input);
     } else if (name === 'set' && args.length >= 3) {
       // Handle "set X to Y" and "set the property of element to value" patterns
 
@@ -1168,68 +1227,6 @@ export class Runtime {
       const condition = await this.execute(args[0], context);
       // Pass evaluated condition + raw block nodes
       evaluatedArgs = [condition, ...args.slice(1)];
-    } else if (name === 'measure' && args.length >= 1) {
-      // MEASURE command needs special handling for possessive expressions
-      // Pattern: "measure item's top" -> { target, property }
-      const firstArg = args[0];
-
-      if (nodeType(firstArg) === 'possessiveExpression') {
-        // Handle possessive syntax: "measure item's top"
-        const possExpr = firstArg as any;
-
-        // Evaluate the object part to get the actual element
-        const target = await this.execute(possExpr.object, context);
-
-        // Extract property name without evaluating
-        const property = possExpr.property?.name || possExpr.property?.value;
-
-        debug.command('MEASURE: Possessive expression detected:', {
-          target,
-          property,
-          targetType: typeof target,
-          targetTag: target instanceof HTMLElement ? target.tagName : 'not an element',
-        });
-
-        // Create structured input for measure command
-        evaluatedArgs = [{ target, property }];
-      } else if (nodeType(firstArg) === 'propertyOfExpression') {
-        // Handle "the X of Y" pattern: "measure the height of item"
-        const propOfExpr = firstArg as any;
-        const property = propOfExpr.property?.name || propOfExpr.property?.value;
-        const target = await this.execute(propOfExpr.target, context);
-
-        debug.command('MEASURE: PropertyOf expression detected:', {
-          target,
-          property,
-        });
-
-        evaluatedArgs = [{ target, property }];
-      } else if (nodeType(firstArg) === 'identifier') {
-        // Handle simple identifier: "measure x" -> treat identifier name as property name
-        const propertyName = (firstArg as any).name;
-
-        debug.command('MEASURE: Simple identifier detected, treating as property name:', {
-          property: propertyName,
-        });
-
-        evaluatedArgs = [propertyName];
-      } else if (args.length >= 2 && nodeType(args[1]) === 'identifier') {
-        // Handle "measure <#element/> property" where property is an identifier
-        // Don't evaluate the identifier - use its name as the property
-        const target = await this.execute(args[0], context);
-        const property = (args[1] as any).name;
-
-        debug.command('MEASURE: Element + identifier pattern detected:', {
-          target,
-          property,
-          targetType: typeof target,
-        });
-
-        evaluatedArgs = [{ target, property }];
-      } else {
-        // No special syntax, evaluate normally
-        evaluatedArgs = await Promise.all(args.map(arg => this.execute(arg, context)));
-      }
     } else if (
       name === 'repeat' ||
       name === 'transition' ||
@@ -1366,38 +1363,6 @@ export class Runtime {
         input.scope = (context as any)._pendingSetScope;
         delete (context as any)._pendingSetScope; // Clean up after use
       }
-      result = await adapter.execute(context, input);
-    } else if (name === 'measure' && evaluatedArgs.length >= 1) {
-      // MEASURE command expects input object format: { target?, property?, variable? }
-      const [firstArg, ...rest] = evaluatedArgs;
-
-      let input: any = {};
-
-      // Check if already structured from possessive expression handling above
-      if (
-        firstArg &&
-        typeof firstArg === 'object' &&
-        'target' in firstArg &&
-        'property' in firstArg
-      ) {
-        // Already structured - pass through
-        input = firstArg;
-      } else if (typeof firstArg === 'string') {
-        // If first arg is a string, treat it as property name
-        input.property = firstArg;
-      } else if (firstArg instanceof HTMLElement) {
-        // If first arg is an element, it's the target
-        input.target = firstArg;
-        // Second arg might be the property
-        if (rest.length > 0 && typeof rest[0] === 'string') {
-          input.property = rest[0];
-        }
-      } else {
-        // Otherwise pass as-is and let command handle it
-        input = firstArg || {};
-      }
-
-      debug.command('MEASURE: Converting args to input object:', input);
       result = await adapter.execute(context, input);
     } else if ((name === 'increment' || name === 'decrement') && evaluatedArgs.length >= 1) {
       // INCREMENT/DECREMENT commands expect input object format
