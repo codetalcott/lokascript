@@ -431,7 +431,29 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     if (token.type === TokenType.OPERATOR && token.value === "'s") {
       state.position++; // consume "'s" operator
 
-      const property = parsePrimaryExpression(state);
+      // Check for CSS property syntax: *property (e.g., #element's *opacity)
+      let property: ASTNode;
+      const nextToken = peek(state);
+
+      if (nextToken && nextToken.type === TokenType.OPERATOR && nextToken.value === '*') {
+        // Consume the * operator
+        state.position++;
+        const cssPropertyStart = nextToken.start;
+
+        // Parse the property name after *
+        const propertyName = parsePrimaryExpression(state);
+
+        // Create identifier with * prefix
+        property = {
+          type: 'identifier',
+          name: '*' + ((propertyName as any).name || (propertyName as any).value),
+          start: cssPropertyStart,
+          ...(propertyName.end !== undefined && { end: propertyName.end }),
+        };
+      } else {
+        // Normal property access
+        property = parsePrimaryExpression(state);
+      }
 
       left = {
         type: 'possessiveExpression',

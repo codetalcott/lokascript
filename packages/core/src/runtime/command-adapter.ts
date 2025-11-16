@@ -574,6 +574,9 @@ export class CommandAdapter implements RuntimeCommand {
 
       // Extract value from EvaluationResult if needed
       if (result && typeof result === 'object' && 'success' in result) {
+        // Return the value on success
+        // Return full result on error (for error inspection without try/catch)
+        // Note: try/catch support will be implemented later
         return result.success ? result.value : result;
       }
 

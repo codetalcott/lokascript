@@ -216,14 +216,14 @@ export class FetchCommand
    * Execute the fetch command
    */
   async execute(
-    context: TypedExecutionContext,
-    ...args: any[]
+    input: FetchCommandInput,
+    context: TypedExecutionContext
   ): Promise<EvaluationResult<FetchCommandOutput>> {
     const startTime = Date.now();
 
-    // Parse input - args[0] contains the parsed input object from the parser
-    const input = args[0] as FetchCommandInputData;
-    const { url, responseType = 'text', options = {} } = input;
+    // Parse input from structured input object
+    const inputData = input as FetchCommandInputData;
+    const { url, responseType = 'text', options = {} } = inputData;
 
     // Setup abort controller for cancellation support
     const abortController = new AbortController();
@@ -268,6 +268,8 @@ export class FetchCommand
       }
 
       // Parse response based on type
+      // Note: HTTP errors (4xx, 5xx) are returned as successful results
+      // Users should check it.status to handle errors
       let result: any;
 
       if (responseType === 'response') {
@@ -371,6 +373,27 @@ export class FetchCommand
       cancelable: true,
     });
     target.dispatchEvent(event);
+  }
+
+  /**
+   * Get friendly message for HTTP status codes
+   */
+  private getStatusMessage(status: number): string {
+    const messages: Record<number, string> = {
+      400: 'Bad Request - Server cannot process the request',
+      401: 'Unauthorized - Authentication required',
+      403: 'Forbidden - Access denied',
+      404: 'Not Found - Resource does not exist',
+      405: 'Method Not Allowed - HTTP method not supported',
+      408: 'Request Timeout - Server timed out waiting',
+      409: 'Conflict - Request conflicts with server state',
+      429: 'Too Many Requests - Rate limit exceeded',
+      500: 'Internal Server Error - Server encountered an error',
+      502: 'Bad Gateway - Invalid response from upstream server',
+      503: 'Service Unavailable - Server temporarily unavailable',
+      504: 'Gateway Timeout - Upstream server timed out',
+    };
+    return messages[status] || (status >= 400 && status < 500 ? 'Client Error' : 'Server Error');
   }
 }
 

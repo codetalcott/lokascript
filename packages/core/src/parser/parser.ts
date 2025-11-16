@@ -2354,11 +2354,29 @@ export class Parser {
       } else if (this.check("'s")) {
         // Handle possessive syntax: element's property (tokenized as single 's operator)
         this.advance(); // consume 's'
-        const property = this.consume(
-          TokenType.IDENTIFIER,
-          'Expected property name after possessive'
-        );
-        expr = this.createPossessiveExpression(expr, this.createIdentifier(property.value));
+
+        // Check for CSS property syntax: *property (e.g., element's *opacity)
+        let propertyName: string;
+        if (this.check('*')) {
+          // Consume the * operator
+          this.advance();
+          // Get the property name after *
+          const propertyToken = this.consume(
+            TokenType.IDENTIFIER,
+            'Expected property name after * in CSS property syntax'
+          );
+          // Combine * with property name
+          propertyName = '*' + propertyToken.value;
+        } else {
+          // Normal property access
+          const property = this.consume(
+            TokenType.IDENTIFIER,
+            'Expected property name after possessive'
+          );
+          propertyName = property.value;
+        }
+
+        expr = this.createPossessiveExpression(expr, this.createIdentifier(propertyName));
       } else {
         break;
       }
@@ -3822,6 +3840,8 @@ export class Parser {
     const modifiers: Record<string, ExpressionNode> = {};
 
     // Parse primary arguments (before any keywords)
+    // IMPORTANT: Use parsePrimary() instead of parseExpression() to avoid consuming modifiers
+    // For example, "fetch URL as json" should NOT parse "URL as json" as one expression
     while (
       !this.isAtEnd() &&
       !this.isKeyword(this.peek(), pattern.keywords) &&
@@ -3831,7 +3851,9 @@ export class Parser {
       !this.check('end') &&
       !this.checkTokenType(TokenType.COMMAND)
     ) {
-      const expr = this.parseExpression();
+      // Use parsePrimary() to parse just the value, not full expressions
+      // This prevents "URL as json" from being parsed as one expression
+      const expr = this.parsePrimary();
       if (expr) {
         args.push(expr);
       } else {
@@ -3866,6 +3888,7 @@ export class Parser {
     }
 
     const pos = this.getPosition();
+
     return {
       type: 'command',
       name: commandName,

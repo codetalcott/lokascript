@@ -197,7 +197,7 @@
                 <button class="secondary" _="on click hide #content">
                     🙈 Hide Content
                 </button>
-                <button class="success" _="on click toggle *display of #content">
+                <button class="success" _="on click toggle .hidden on #content">
                     🔄 Toggle Content
                 </button>
             </div>
@@ -224,8 +224,8 @@
   🙈 Hide Content
 &lt;/button&gt;
 
-<span class="comment">&lt;!-- Toggle button (CSS property syntax) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *display of #content"</span>&gt;
+<span class="comment">&lt;!-- Toggle button (class syntax) --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .hidden on #content"</span>&gt;
   🔄 Toggle Content
 &lt;/button&gt;
 
@@ -239,7 +239,7 @@
             <ul>
                 <li><code>show #content</code> - Makes the element visible by removing <code>display: none</code></li>
                 <li><code>hide #content</code> - Hides the element by adding <code>display: none</code></li>
-                <li><code>toggle *display of #content</code> - Toggles the CSS display property between none and visible</li>
+                <li><code>toggle .hidden on #content</code> - Toggles the .hidden class (which sets <code>display: none</code>)</li>
             </ul>
 
             <h3>Key Concepts:</h3>
@@ -260,16 +260,12 @@
             </ul>
 
             <h3>Toggle Command Syntax:</h3>
-            <p>The toggle command supports CSS properties, classes, and attributes:</p>
+            <p>The toggle command supports CSS classes and attributes:</p>
             <div class="code">
-<span class="comment">&lt;!-- Toggle CSS properties (recommended for visibility) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *display of #element"</span>&gt;Toggle Display&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *visibility of #element"</span>&gt;Toggle Visibility&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *opacity of #element"</span>&gt;Toggle Opacity&lt;/button&gt;
-
-<span class="comment">&lt;!-- Toggle CSS classes --&gt;</span>
+<span class="comment">&lt;!-- Toggle CSS classes (recommended for visibility) --&gt;</span>
 &lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .active on #element"</span>&gt;Toggle Class&lt;/button&gt;
 &lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .hidden on #element"</span>&gt;Toggle Hidden&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .visible on #element"</span>&gt;Toggle Visible&lt;/button&gt;
 
 <span class="comment">&lt;!-- Toggle attributes --&gt;</span>
 &lt;button <span class="keyword">_</span>=<span class="string">"on click toggle @disabled on #submit-btn"</span>&gt;Enable/Disable&lt;/button&gt;

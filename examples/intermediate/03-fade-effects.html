@@ -258,12 +258,12 @@
 
             <div>
                 <button _="on click
-                          toggle *opacity of #fade-box1">
+                          toggle .fade-out on #fade-box1">
                     ✨ Fade In/Out
                 </button>
                 <button class="secondary" _="on click
                                               set #fade-box1's *opacity to 0.3">
-                    🌓 50% Opacity
+                    🌓 30% Opacity
                 </button>
                 <button class="success" _="on click
                                             set #fade-box1's *opacity to 1">
@@ -380,13 +380,15 @@
 
         <h3>Basic Fade Toggle:</h3>
         <div class="code">
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *opacity of #element"</span>&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .fade-out on #element"</span>&gt;
   Fade Toggle
 &lt;/button&gt;
 
-&lt;div <span class="keyword">id</span>=<span class="string">"element"</span> <span class="keyword">style</span>=<span class="string">"transition: opacity 0.5s"</span>&gt;
+&lt;div <span class="keyword">id</span>=<span class="string">"element"</span> <span class="keyword">class</span>=<span class="string">"fade-box"</span> <span class="keyword">style</span>=<span class="string">"transition: opacity 0.5s"</span>&gt;
   Content to fade
 &lt;/div&gt;
+
+<span class="comment">&lt;!-- CSS: .fade-out { opacity: 0 !important; } --&gt;</span>
         </div>
 
         <h3>Auto-Dismiss Notification:</h3>
@@ -450,7 +452,8 @@
         <div class="explanation">
             <h3>How it works:</h3>
             <ul>
-                <li><code>toggle *opacity of #element</code> - Toggles opacity between 0 and 1</li>
+                <li><code>toggle .fade-out on #element</code> - Toggles CSS class for fade effect</li>
+                <li><code>set #element's style.opacity to '0.5'</code> - Sets opacity directly</li>
                 <li><code>wait 3s</code> - Pauses execution for 3 seconds</li>
                 <li><code>add/remove .className</code> - Manages CSS classes for animations</li>
                 <li>CSS <code>transition</code> property creates smooth animations</li>
@@ -459,7 +462,8 @@
             <h3>Key Concepts:</h3>
             <ul>
                 <li><strong>CSS Transitions:</strong> Define <code>transition</code> property for smooth changes</li>
-                <li><strong>Opacity Control:</strong> Use <code>*opacity</code> for fade effects</li>
+                <li><strong>Class-Based Animation:</strong> Use CSS classes (like <code>.fade-out</code>) for fade effects</li>
+                <li><strong>Direct Style Access:</strong> Use <code>element's style.property</code> to set CSS values</li>
                 <li><strong>Class Toggle:</strong> Add/remove classes to trigger transitions</li>
                 <li><strong>Wait Command:</strong> Chain animations with timing delays</li>
                 <li><strong>Transform:</strong> Use <code>translateX</code>, <code>scale</code>, <code>rotate</code> for effects</li>
@@ -485,9 +489,9 @@ transition: opacity 0.5s ease 0.2s; <span class="comment">/* 0.2s delay */</span
             <div class="code">
 <span class="comment">&lt;!-- Fade in on page load --&gt;</span>
 &lt;div <span class="keyword">_</span>=<span class="string">"on load
-         set my *opacity to 0
+         add .fade-out to me
          wait 0.1s
-         set my *opacity to 1"</span>&gt;
+         remove .fade-out from me"</span>&gt;
   Content
 &lt;/div&gt;
 
@@ -510,11 +514,11 @@ transition: opacity 0.5s ease 0.2s; <span class="comment">/* 0.2s delay */</span
 
 <span class="comment">&lt;!-- Crossfade between elements --&gt;</span>
 &lt;button <span class="keyword">_</span>=<span class="string">"on click
-         set #panel-1's *opacity to 0
+         add .fade-out to #panel-1
          wait 0.5s
          hide #panel-1
          show #panel-2
-         set #panel-2's *opacity to 1"</span>&gt;
+         remove .fade-out from #panel-2"</span>&gt;
   Crossfade
 &lt;/button&gt;
             </div>

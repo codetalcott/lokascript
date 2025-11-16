@@ -36,7 +36,7 @@ import { createSendCommand } from '../commands/events/send';
 import { createTriggerCommand } from '../commands/events/trigger';
 // Legacy commands excluded from TypeScript project
 // import { createWaitCommand } from '../legacy/commands/async/wait';
-// import { createFetchCommand } from '../legacy/commands/async/fetch';
+import { createFetchCommand } from '../commands/async/fetch';
 import { createPutCommand } from '../commands/dom/put';
 import { createSetCommand } from '../commands/data/set';
 import { createIncrementCommand } from '../commands/data/increment';
@@ -197,7 +197,7 @@ export class Runtime {
       // Register async commands
       // Legacy commands excluded - TODO: Implement enhanced versions
       // this.enhancedRegistry.register(createWaitCommand());
-      // this.enhancedRegistry.register(createFetchCommand());
+      this.enhancedRegistry.register(createFetchCommand());
 
       // Register data commands (enhanced)
       try {
@@ -613,9 +613,20 @@ export class Runtime {
       case 'fetch': {
         // fetch <url> [as <type>] [with <options>]
         const url = args.length > 0 ? await this.execute(args[0], context) : undefined;
-        const responseType = modifiers.as
-          ? await this.execute(modifiers.as, context)
-          : undefined;
+
+        // For 'as', extract the identifier name directly (json, html, text, etc.)
+        let responseType: string | undefined;
+        if (modifiers.as) {
+          const asNode = modifiers.as as any;
+          if (asNode.type === 'identifier') {
+            // Use the identifier name as the response type
+            responseType = asNode.name;
+          } else {
+            // Evaluate if it's an expression
+            responseType = await this.execute(modifiers.as, context);
+          }
+        }
+
         const options = modifiers.with ? await this.execute(modifiers.with, context) : undefined;
         return { url, responseType, options };
       }
@@ -924,10 +935,12 @@ export class Runtime {
               target = await this.execute(targetArg, context);
             }
           } else if (nodeType(targetArg) === 'possessiveExpression') {
-            // Handle possessive syntax: "#element's property"
+            // Handle possessive syntax: "#element's property" or "#element's *property"
             const possExpr = targetArg as any;
             const selector = possExpr.object?.value || possExpr.object?.name;
-            const property = possExpr.property?.name || possExpr.property?.value;
+
+            // Check if property has CSS prefix (*property)
+            let property = possExpr.property?.name || possExpr.property?.value;
 
             // Create structured target for property setting
             target = { element: selector, property: property };
@@ -1822,8 +1835,13 @@ export class Runtime {
       for (const command of commands) {
         try {
           debug.command(`EXECUTING COMMAND in event handler:`, command);
-          await this.execute(command, eventContext);
-          debug.command(`COMMAND COMPLETED`);
+          const result = await this.execute(command, eventContext);
+          // Update 'it' with command result for next command in sequence
+          if (result !== undefined) {
+            eventContext.it = result;
+            eventContext.result = result;
+          }
+          debug.command(`COMMAND COMPLETED, it =`, eventContext.it);
         } catch (error) {
           // Check for control flow commands - stop event handler gracefully
           if (error instanceof Error) {

@@ -541,6 +541,12 @@ export class SetCommand
   }
 
   private getElementProperty(element: HTMLElement, property: string): unknown {
+    // Handle CSS property shorthand (e.g., '*opacity', '*background-color')
+    if (property.startsWith('*')) {
+      const cssProperty = this.convertCSSProperty(property.substring(1));
+      return element.style[cssProperty as any];
+    }
+
     // Handle common properties
     if (property === 'textContent') return element.textContent;
     if (property === 'innerHTML') return element.innerHTML;
@@ -562,6 +568,13 @@ export class SetCommand
   }
 
   private setElementPropertyValue(element: HTMLElement, property: string, value: unknown): void {
+    // Handle CSS property shorthand (e.g., '*opacity', '*background-color')
+    if (property.startsWith('*')) {
+      const cssProperty = this.convertCSSProperty(property.substring(1));
+      element.style[cssProperty as any] = String(value);
+      return;
+    }
+
     // Handle nested property paths (e.g., 'style.color')
     if (property.includes('.')) {
       const parts = property.split('.');
@@ -711,6 +724,15 @@ export class SetCommand
       console.warn('Invalid selector:', selector, error);
       return null;
     }
+  }
+
+  /**
+   * Convert CSS property name from kebab-case to camelCase
+   * Examples: 'opacity' → 'opacity', 'background-color' → 'backgroundColor'
+   */
+  private convertCSSProperty(property: string): string {
+    // Convert kebab-case to camelCase
+    return property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
   }
 }
 
