@@ -163,7 +163,7 @@
 &lt;button _="on click toggle #infoDialog"&gt;Toggle Info&lt;/button&gt;
 
 &lt;dialog id="infoDialog"&gt;
-  &lt;button _="on click toggle me"&gt;Close&lt;/button&gt;
+  &lt;button _="on click toggle #infoDialog"&gt;Close&lt;/button&gt;
 &lt;/dialog&gt;
     </div>
 
@@ -183,25 +183,25 @@
       <p><strong>Notice:</strong> No backdrop, no focus trap.</p>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me">Close Dialog</button>
+      <button class="secondary" _="on click toggle #infoDialog">Close Dialog</button>
     </div>
   </dialog>
 
   <!-- Example 2: Modal Dialog -->
   <div class="example">
     <h3>2. Modal Dialog <span class="badge modal">showModal()</span></h3>
-    <p>Use <code>as modal</code> to open with <code>showModal()</code>. Blocks page interaction.</p>
+    <p>Use <code>modal</code> parameter to open with <code>showModal()</code>. Blocks page interaction.</p>
 
     <div class="code">
-&lt;button _="on click toggle #confirmDialog as modal"&gt;Open Modal&lt;/button&gt;
+&lt;button _="on click toggle #confirmDialog modal"&gt;Open Modal&lt;/button&gt;
 
 &lt;dialog id="confirmDialog"&gt;
-  &lt;button _="on click toggle me as modal"&gt;Close&lt;/button&gt;
+  &lt;button _="on click toggle #confirmDialog"&gt;Close&lt;/button&gt;
 &lt;/dialog&gt;
     </div>
 
     <div class="demo-content">
-      <button _="on click toggle #confirmDialog as modal">Open Confirmation Modal</button>
+      <button _="on click toggle #confirmDialog modal">Open Confirmation Modal</button>
       <p class="status">Modal dialogs block interaction with the page and have a backdrop.</p>
     </div>
   </div>
@@ -216,8 +216,8 @@
       <p>Press ESC to close, or use the buttons below.</p>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me as modal">Cancel</button>
-      <button class="danger" _="on click toggle me as modal then log 'Confirmed!'">Confirm</button>
+      <button class="secondary" _="on click toggle #confirmDialog">Cancel</button>
+      <button class="danger" _="on click toggle #confirmDialog then log 'Confirmed!'">Confirm</button>
     </div>
   </dialog>
 
@@ -227,12 +227,12 @@
     <p>Dialog with a form that closes on submit.</p>
 
     <div class="code">
-&lt;button _="on click toggle #formDialog as modal"&gt;Open Form&lt;/button&gt;
+&lt;button _="on click toggle #formDialog modal"&gt;Open Form&lt;/button&gt;
 
 &lt;dialog id="formDialog"&gt;
   &lt;form _="on submit
             halt the event
-            then toggle #formDialog as modal
+            then toggle #formDialog
             then log 'Form submitted: ' + my.name.value"&gt;
     &lt;input name="name" required&gt;
     &lt;button type="submit"&gt;Submit&lt;/button&gt;
@@ -241,7 +241,7 @@
     </div>
 
     <div class="demo-content">
-      <button _="on click toggle #formDialog as modal">Open Form Dialog</button>
+      <button _="on click toggle #formDialog modal">Open Form Dialog</button>
       <p class="status">Form submission closes the dialog automatically.</p>
     </div>
   </div>
@@ -252,7 +252,7 @@
     </div>
     <form _="on submit
               halt the event
-              then toggle #formDialog as modal
+              then toggle #formDialog
               then log 'Form submitted with name: ' + my.name.value">
       <div class="dialog-body">
         <label for="userName" style="display: block; margin-bottom: 5px;">Name:</label>
@@ -272,7 +272,7 @@
           style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
       </div>
       <div class="dialog-footer">
-        <button type="button" class="secondary" _="on click toggle #formDialog as modal">Cancel</button>
+        <button type="button" class="secondary" _="on click toggle #formDialog">Cancel</button>
         <button type="submit">Submit Form</button>
       </div>
     </form>
@@ -284,7 +284,7 @@
     <p>Toggle multiple dialogs independently.</p>
 
     <div class="demo-content">
-      <button _="on click toggle #dialog1 as modal">Open Dialog 1</button>
+      <button _="on click toggle #dialog1 modal">Open Dialog 1</button>
       <button _="on click toggle #dialog2">Open Dialog 2 (non-modal)</button>
       <p class="status">Each dialog can be toggled independently.</p>
     </div>
@@ -300,7 +300,7 @@
       <button _="on click toggle #dialog2">Open Dialog 2</button>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me as modal">Close</button>
+      <button class="secondary" _="on click toggle #dialog1">Close</button>
     </div>
   </dialog>
 
@@ -313,7 +313,7 @@
       <p>Notice you can still interact with other elements!</p>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me">Close</button>
+      <button class="secondary" _="on click toggle #dialog2">Close</button>
     </div>
   </dialog>
 
@@ -324,7 +324,7 @@
 
     <div class="code">
 &lt;button _="on click
-            toggle #chainDialog as modal
+            toggle #chainDialog modal
             then add .pulse to me"&gt;
   Open & Pulse
 &lt;/button&gt;
@@ -332,7 +332,7 @@
 
     <div class="demo-content">
       <button _="on click
-                  toggle #chainDialog as modal
+                  toggle #chainDialog modal
                   then wait 100ms
                   then log 'Dialog toggled!'">
         Open with Logging
@@ -352,7 +352,7 @@
     <div class="dialog-footer">
       <button class="secondary"
               _="on click
-                toggle me as modal
+                toggle #chainDialog
                 then put 'Dialog closed!' into #chainStatus">
         Close with Update
       </button>
@@ -379,19 +379,14 @@
           <td style="padding: 10px; border: 1px solid #e2e8f0;">Non-modal (default, safer)</td>
         </tr>
         <tr style="background: #f8fafc;">
-          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>toggle #myDialog as modal</code></td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>toggle #myDialog modal</code></td>
           <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>showModal()</code></td>
           <td style="padding: 10px; border: 1px solid #e2e8f0;">Modal (blocks page)</td>
         </tr>
         <tr>
-          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>toggle me</code></td>
-          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>show()</code></td>
-          <td style="padding: 10px; border: 1px solid #e2e8f0;">Toggle self (inside dialog)</td>
-        </tr>
-        <tr style="background: #f8fafc;">
-          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>toggle me as modal</code></td>
-          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>showModal()</code></td>
-          <td style="padding: 10px; border: 1px solid #e2e8f0;">Toggle self in modal mode</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>toggle #myDialog</code></td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>close()</code></td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;">Close dialog (from inside or outside)</td>
         </tr>
       </tbody>
     </table>
@@ -399,7 +394,7 @@
     <h3 style="margin-top: 20px;">Key Points</h3>
     <ul>
       <li><strong>Default is non-modal:</strong> <code>toggle #dialog</code> uses <code>show()</code></li>
-      <li><strong>Explicit modal:</strong> Add <code>as modal</code> for <code>showModal()</code></li>
+      <li><strong>Explicit modal:</strong> Add <code>modal</code> parameter for <code>showModal()</code></li>
       <li><strong>Backward compatible:</strong> Class/attribute toggle still works on dialogs</li>
       <li><strong>Accessibility:</strong> Non-modal is safer for screen readers</li>
       <li><strong>Smart detection:</strong> Automatically detects <code>&lt;dialog&gt;</code> elements</li>
@@ -407,12 +402,8 @@
   </div>
 
   <!-- Load HyperFixi -->
-  <script type="module">
-    import hyperscript from '../../dist/hyperscript.browser.js';
-
-    // Initialize hyperscript
-    hyperscript.browserInit();
-
+  <script src="../../dist/hyperfixi-browser.js"></script>
+  <script>
     console.log('HyperFixi loaded with dialog toggle support!');
     console.log('Try opening the dialogs and watch for events in the console.');
 
