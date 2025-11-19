@@ -55,8 +55,8 @@ export class ToggleCommand
     >
 {
   public readonly name = 'toggle' as const;
-  public readonly syntax = 'toggle <class-expression|@attribute> [on|from <target-expression>] [until <event>]';
-  public readonly description = 'Toggles CSS classes or attributes on elements with optional temporal modifier (supports "on", "from", @attribute, [@attribute="value"], and "until" syntax)';
+  public readonly syntax = 'toggle <class-expression|@attribute|dialog-selector> [on|from <target-expression>] [until <event>] [as modal|dialog]';
+  public readonly description = 'Toggles CSS classes, attributes, or <dialog> elements with optional temporal modifier. For dialogs: defaults to non-modal (show), use "as modal" for modal mode (showModal)';
   public readonly inputSchema = ToggleCommandInputSchema;
   public readonly outputType = 'element-list' as const;
 
@@ -90,8 +90,23 @@ export class ToggleCommand
         description: 'Toggle multiple classes on elements with buttons class',
         expectedOutput: [],
       },
+      {
+        code: 'toggle #myDialog',
+        description: 'Toggle dialog element (non-modal by default using show/close)',
+        expectedOutput: [],
+      },
+      {
+        code: 'toggle #confirmDialog as modal',
+        description: 'Toggle dialog in modal mode (using showModal/close)',
+        expectedOutput: [],
+      },
+      {
+        code: 'toggle me',
+        description: 'Toggle current element (if it\'s a dialog, toggles open/closed state)',
+        expectedOutput: [],
+      },
     ],
-    relatedCommands: ['add', 'remove', 'hide', 'show', 'set'],
+    relatedCommands: ['add', 'remove', 'hide', 'show', 'set', 'call'],
   };
 
   public readonly documentation: LLMDocumentation = {
@@ -142,9 +157,27 @@ export class ToggleCommand
         explanation: 'Toggles both "loading" and "complete" classes on submit button',
         output: [],
       },
+      {
+        title: 'Toggle dialog (non-modal)',
+        code: 'on click toggle #myDialog',
+        explanation: 'Toggles dialog open/closed using show() (non-modal, default behavior)',
+        output: [],
+      },
+      {
+        title: 'Toggle dialog (modal)',
+        code: 'on click toggle #confirmDialog as modal',
+        explanation: 'Toggles dialog in modal mode using showModal() (blocks page, traps focus)',
+        output: [],
+      },
+      {
+        title: 'Toggle dialog from inside',
+        code: 'on click toggle me',
+        explanation: 'When used inside a dialog, toggles the dialog itself (closes it)',
+        output: [],
+      },
     ],
-    seeAlso: ['add', 'remove', 'hide', 'show', 'set'],
-    tags: ['dom', 'css', 'classes', 'attributes'],
+    seeAlso: ['add', 'remove', 'hide', 'show', 'set', 'call'],
+    tags: ['dom', 'css', 'classes', 'attributes', 'dialog', 'modal'],
   };
 
   private readonly _options: ToggleCommandOptions; // Reserved for future enhancements - configuration storage
@@ -164,7 +197,7 @@ export class ToggleCommand
     context: TypedExecutionContext,
     ...args: ToggleCommandInput
   ): Promise<EvaluationResult<HTMLElement[]>> {
-    const [expression, target, untilEvent] = args;
+    const [expression, target, untilEvent, mode] = args;
     try {
       // Runtime validation for type safety
       const validationResult = this.validate([expression, target]);
@@ -180,6 +213,17 @@ export class ToggleCommand
           },
           type: 'error',
         };
+      }
+
+      // Check for dialog toggle: if expression looks like a selector and target is undefined,
+      // try to resolve it and check if it's a dialog element
+      const isDialogToggle = await this.checkDialogToggle(expression, target, context);
+      if (isDialogToggle.isDialog) {
+        return await this.executeDialogToggle(
+          isDialogToggle.elements!,
+          mode as string | undefined,
+          context
+        );
       }
 
       // Determine toggle type: CSS property, attribute, or class
@@ -834,6 +878,124 @@ export class ToggleCommand
           message: error instanceof Error ? error.message : 'Failed to toggle CSS property',
           code: 'CSS_PROPERTY_TOGGLE_FAILED',
           suggestions: ['Check if element is still in DOM', 'Verify property name is valid'],
+        },
+        type: 'error',
+      };
+    }
+  }
+
+  /**
+   * Check if this is a dialog element toggle (smart detection)
+   * Returns dialog elements if expression resolves to dialog(s) and no class/attr/prop specified
+   */
+  private async checkDialogToggle(
+    expression: any,
+    target: any,
+    context: TypedExecutionContext
+  ): Promise<{isDialog: boolean; elements?: HTMLDialogElement[]}> {
+    // Skip if expression is a class, attribute, or CSS property
+    if (
+      this.isAttributeExpression(expression) ||
+      this.isCSSPropertyExpression(expression) ||
+      (typeof expression === 'string' && expression.startsWith('.'))
+    ) {
+      return {isDialog: false};
+    }
+
+    // Try to resolve elements
+    let elements: HTMLElement[] = [];
+
+    // If target is undefined/null, expression might be the selector
+    if (target === undefined || target === null) {
+      // expression is the target selector
+      try {
+        elements = this.resolveTargets(context, expression);
+      } catch {
+        return {isDialog: false};
+      }
+    } else {
+      // Standard pattern: expression is class/attr, target is selector
+      // Not a dialog toggle
+      return {isDialog: false};
+    }
+
+    // Check if all resolved elements are dialogs
+    if (elements.length === 0) {
+      return {isDialog: false};
+    }
+
+    const allDialogs = elements.every(el => el.tagName === 'DIALOG');
+    if (allDialogs) {
+      return {
+        isDialog: true,
+        elements: elements as HTMLDialogElement[],
+      };
+    }
+
+    return {isDialog: false};
+  }
+
+  /**
+   * Execute dialog toggle (open/close with show/showModal)
+   * Mode: undefined (default to non-modal), 'modal', or 'dialog'
+   */
+  private async executeDialogToggle(
+    dialogs: HTMLDialogElement[],
+    mode: string | undefined,
+    context: TypedExecutionContext
+  ): Promise<EvaluationResult<HTMLElement[]>> {
+    try {
+      const useModal = mode === 'modal';
+      const modifiedElements: HTMLDialogElement[] = [];
+
+      for (const dialog of dialogs) {
+        // Toggle dialog state
+        if (dialog.open) {
+          // Close dialog
+          dialog.close();
+        } else {
+          // Open dialog
+          if (useModal) {
+            dialog.showModal(); // Modal mode (blocks page, traps focus)
+          } else {
+            dialog.show(); // Non-modal mode (default)
+          }
+        }
+
+        modifiedElements.push(dialog);
+
+        // Dispatch toggle event
+        dispatchCustomEvent(dialog, 'hyperscript:toggle', {
+          element: dialog,
+          context,
+          command: this.name,
+          type: 'dialog',
+          mode: useModal ? 'modal' : 'non-modal',
+          state: dialog.open ? 'opened' : 'closed',
+          timestamp: Date.now(),
+          metadata: this.metadata,
+          result: 'success',
+        });
+      }
+
+      return {
+        success: true,
+        value: modifiedElements,
+        type: 'element-list',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          name: 'ValidationError',
+          type: 'runtime-error',
+          message: error instanceof Error ? error.message : 'Failed to toggle dialog',
+          code: 'DIALOG_TOGGLE_FAILED',
+          suggestions: [
+            'Ensure dialog element is in the DOM',
+            'Check if dialog is properly initialized',
+            'For modal dialogs, ensure page allows modal dialogs',
+          ],
         },
         type: 'error',
       };
