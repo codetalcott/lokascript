@@ -55,8 +55,8 @@ export class ToggleCommand
     >
 {
   public readonly name = 'toggle' as const;
-  public readonly syntax = 'toggle <class-expression|@attribute|dialog-selector> [on|from <target-expression>] [until <event>] [as modal|dialog]';
-  public readonly description = 'Toggles CSS classes, attributes, or <dialog> elements with optional temporal modifier. For dialogs: defaults to non-modal (show), use "as modal" for modal mode (showModal)';
+  public readonly syntax = 'toggle <class-expression|@attribute|element-selector> [on|from <target-expression>] [until <event>] [as modal|dialog]';
+  public readonly description = 'Toggles CSS classes, attributes, or interactive elements (<dialog>, <details>, <select>) with smart detection. For dialogs: defaults to non-modal (show), use "as modal" for modal mode';
   public readonly inputSchema = ToggleCommandInputSchema;
   public readonly outputType = 'element-list' as const;
 
@@ -103,6 +103,16 @@ export class ToggleCommand
       {
         code: 'toggle me',
         description: 'Toggle current element (if it\'s a dialog, toggles open/closed state)',
+        expectedOutput: [],
+      },
+      {
+        code: 'toggle #faqSection',
+        description: 'Toggle details element (expands/collapses content)',
+        expectedOutput: [],
+      },
+      {
+        code: 'toggle #countrySelect',
+        description: 'Toggle select dropdown (opens/closes options)',
         expectedOutput: [],
       },
     ],
@@ -175,9 +185,21 @@ export class ToggleCommand
         explanation: 'When used inside a dialog, toggles the dialog itself (closes it)',
         output: [],
       },
+      {
+        title: 'Toggle details element',
+        code: 'on click toggle #faqItem',
+        explanation: 'Toggles details element open/closed (for accordions, FAQs, etc.)',
+        output: [],
+      },
+      {
+        title: 'Toggle select dropdown',
+        code: 'on focus toggle #dropdown',
+        explanation: 'Opens/closes select dropdown programmatically',
+        output: [],
+      },
     ],
     seeAlso: ['add', 'remove', 'hide', 'show', 'set', 'call'],
-    tags: ['dom', 'css', 'classes', 'attributes', 'dialog', 'modal'],
+    tags: ['dom', 'css', 'classes', 'attributes', 'dialog', 'modal', 'details', 'select', 'interactive'],
   };
 
   private readonly _options: ToggleCommandOptions; // Reserved for future enhancements - configuration storage
@@ -215,12 +237,12 @@ export class ToggleCommand
         };
       }
 
-      // Check for dialog toggle: if expression looks like a selector and target is undefined,
-      // try to resolve it and check if it's a dialog element
-      const isDialogToggle = await this.checkDialogToggle(expression, target, context);
-      if (isDialogToggle.isDialog) {
-        return await this.executeDialogToggle(
-          isDialogToggle.elements!,
+      // Check for smart element toggle: dialog, details, select, etc.
+      const smartElement = await this.checkSmartElementToggle(expression, target, context);
+      if (smartElement.type !== 'none') {
+        return await this.executeSmartElementToggle(
+          smartElement.elements!,
+          smartElement.type,
           mode as string | undefined,
           context
         );
@@ -885,21 +907,21 @@ export class ToggleCommand
   }
 
   /**
-   * Check if this is a dialog element toggle (smart detection)
-   * Returns dialog elements if expression resolves to dialog(s) and no class/attr/prop specified
+   * Check if this is a smart element toggle (dialog, details, select, etc.)
+   * Returns element type and elements if expression resolves to interactive elements
    */
-  private async checkDialogToggle(
+  private async checkSmartElementToggle(
     expression: any,
     target: any,
     context: TypedExecutionContext
-  ): Promise<{isDialog: boolean; elements?: HTMLDialogElement[]}> {
+  ): Promise<{type: 'dialog' | 'details' | 'select' | 'none'; elements?: HTMLElement[]}> {
     // Skip if expression is a class, attribute, or CSS property
     if (
       this.isAttributeExpression(expression) ||
       this.isCSSPropertyExpression(expression) ||
       (typeof expression === 'string' && expression.startsWith('.'))
     ) {
-      return {isDialog: false};
+      return {type: 'none'};
     }
 
     // Try to resolve elements
@@ -911,67 +933,78 @@ export class ToggleCommand
       try {
         elements = this.resolveTargets(context, expression);
       } catch {
-        return {isDialog: false};
+        return {type: 'none'};
       }
     } else {
       // Standard pattern: expression is class/attr, target is selector
-      // Not a dialog toggle
-      return {isDialog: false};
+      // Not a smart element toggle
+      return {type: 'none'};
     }
 
-    // Check if all resolved elements are dialogs
+    // Check if no elements found
     if (elements.length === 0) {
-      return {isDialog: false};
+      return {type: 'none'};
     }
 
-    const allDialogs = elements.every(el => el.tagName === 'DIALOG');
-    if (allDialogs) {
-      return {
-        isDialog: true,
-        elements: elements as HTMLDialogElement[],
-      };
+    // Check element types (all must be the same type for smart toggle)
+    const firstTag = elements[0].tagName;
+    const allSameType = elements.every(el => el.tagName === firstTag);
+
+    if (!allSameType) {
+      return {type: 'none'};
     }
 
-    return {isDialog: false};
+    // Detect element type
+    switch (firstTag) {
+      case 'DIALOG':
+        return {type: 'dialog', elements: elements as HTMLDialogElement[]};
+      case 'DETAILS':
+        return {type: 'details', elements: elements as HTMLDetailsElement[]};
+      case 'SELECT':
+        return {type: 'select', elements: elements as HTMLSelectElement[]};
+      default:
+        return {type: 'none'};
+    }
   }
 
   /**
-   * Execute dialog toggle (open/close with show/showModal)
-   * Mode: undefined (default to non-modal), 'modal', or 'dialog'
+   * Execute smart element toggle (dialog, details, select)
+   * Handles different element types with appropriate toggle logic
    */
-  private async executeDialogToggle(
-    dialogs: HTMLDialogElement[],
+  private async executeSmartElementToggle(
+    elements: HTMLElement[],
+    elementType: 'dialog' | 'details' | 'select',
     mode: string | undefined,
     context: TypedExecutionContext
   ): Promise<EvaluationResult<HTMLElement[]>> {
     try {
-      const useModal = mode === 'modal';
-      const modifiedElements: HTMLDialogElement[] = [];
+      const modifiedElements: HTMLElement[] = [];
 
-      for (const dialog of dialogs) {
-        // Toggle dialog state
-        if (dialog.open) {
-          // Close dialog
-          dialog.close();
-        } else {
-          // Open dialog
-          if (useModal) {
-            dialog.showModal(); // Modal mode (blocks page, traps focus)
-          } else {
-            dialog.show(); // Non-modal mode (default)
-          }
+      for (const element of elements) {
+        let state: 'opened' | 'closed' = 'closed';
+
+        switch (elementType) {
+          case 'dialog':
+            state = await this.toggleDialog(element as HTMLDialogElement, mode);
+            break;
+          case 'details':
+            state = this.toggleDetails(element as HTMLDetailsElement);
+            break;
+          case 'select':
+            state = this.toggleSelect(element as HTMLSelectElement);
+            break;
         }
 
-        modifiedElements.push(dialog);
+        modifiedElements.push(element);
 
-        // Dispatch toggle event
-        dispatchCustomEvent(dialog, 'hyperscript:toggle', {
-          element: dialog,
+        // Dispatch toggle event with element-specific metadata
+        dispatchCustomEvent(element, 'hyperscript:toggle', {
+          element,
           context,
           command: this.name,
-          type: 'dialog',
-          mode: useModal ? 'modal' : 'non-modal',
-          state: dialog.open ? 'opened' : 'closed',
+          type: elementType,
+          mode: elementType === 'dialog' && mode === 'modal' ? 'modal' : 'non-modal',
+          state,
           timestamp: Date.now(),
           metadata: this.metadata,
           result: 'success',
@@ -989,16 +1022,65 @@ export class ToggleCommand
         error: {
           name: 'ValidationError',
           type: 'runtime-error',
-          message: error instanceof Error ? error.message : 'Failed to toggle dialog',
-          code: 'DIALOG_TOGGLE_FAILED',
+          message: error instanceof Error ? error.message : `Failed to toggle ${elementType}`,
+          code: `${elementType.toUpperCase()}_TOGGLE_FAILED`,
           suggestions: [
-            'Ensure dialog element is in the DOM',
-            'Check if dialog is properly initialized',
-            'For modal dialogs, ensure page allows modal dialogs',
+            'Ensure element is in the DOM',
+            'Check if element is properly initialized',
+            elementType === 'dialog' && mode === 'modal' ? 'For modal dialogs, ensure page allows modal dialogs' : 'Verify element state',
           ],
         },
         type: 'error',
       };
+    }
+  }
+
+  /**
+   * Toggle dialog element
+   */
+  private async toggleDialog(dialog: HTMLDialogElement, mode?: string): Promise<'opened' | 'closed'> {
+    const useModal = mode === 'modal';
+
+    if (dialog.open) {
+      dialog.close();
+      return 'closed';
+    } else {
+      if (useModal) {
+        dialog.showModal(); // Modal mode (blocks page, traps focus)
+      } else {
+        dialog.show(); // Non-modal mode (default)
+      }
+      return 'opened';
+    }
+  }
+
+  /**
+   * Toggle details element
+   */
+  private toggleDetails(details: HTMLDetailsElement): 'opened' | 'closed' {
+    details.open = !details.open;
+    return details.open ? 'opened' : 'closed';
+  }
+
+  /**
+   * Toggle select dropdown
+   */
+  private toggleSelect(select: HTMLSelectElement): 'opened' | 'closed' {
+    // Select elements don't have a native "open" property
+    // We can trigger focus/blur or dispatch events
+    if (document.activeElement === select) {
+      select.blur();
+      return 'closed';
+    } else {
+      select.focus();
+      // Trigger click to open dropdown (browser-dependent)
+      const clickEvent = new MouseEvent('mousedown', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      select.dispatchEvent(clickEvent);
+      return 'opened';
     }
   }
 }

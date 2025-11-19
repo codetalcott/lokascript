@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Element Toggle - HyperFixi Examples</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #f8f9fa;
+    }
+
+    h1 {
+      color: #2563eb;
+      border-bottom: 3px solid #dbeafe;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #1e40af;
+      margin-top: 40px;
+    }
+
+    .example {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .example h3 {
+      margin-top: 0;
+      color: #334155;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    button.secondary {
+      background: #64748b;
+    }
+
+    button.secondary:hover {
+      background: #475569;
+    }
+
+    /* Details styling */
+    details {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #1e293b;
+      padding: 5px 0;
+      user-select: none;
+    }
+
+    summary:hover {
+      color: #3b82f6;
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    details p {
+      margin: 10px 0;
+      color: #475569;
+    }
+
+    /* Select styling */
+    select {
+      padding: 8px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Dialog styling */
+    dialog {
+      border: none;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      min-width: 400px;
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .dialog-header {
+      background: #f1f5f9;
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dialog-body {
+      padding: 20px;
+    }
+
+    .dialog-footer {
+      background: #f8fafc;
+      padding: 15px 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .code {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .badge.dialog {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.details {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge.select {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .demo-content {
+      background: #f8f9fa;
+      padding: 15px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #e2e8f0;
+    }
+
+    .summary-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+
+    .summary-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .highlight {
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Smart Element Toggle</h1>
+  <p>Demonstrating smart detection and toggle for <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, and <code>&lt;select&gt;</code> elements.</p>
+
+  <!-- ========== Dialog Examples ========== -->
+  <h2>📱 Dialog Elements <span class="badge dialog">Dialog</span></h2>
+
+  <div class="example">
+    <h3>Dialog Toggle (Non-Modal & Modal)</h3>
+    <div class="code">
+&lt;button _="on click toggle #infoDialog"&gt;Non-Modal&lt;/button&gt;
+&lt;button _="on click toggle #alertDialog as modal"&gt;Modal&lt;/button&gt;
+    </div>
+
+    <div class="demo-content">
+      <button _="on click toggle #infoDialog">Open Non-Modal Dialog</button>
+      <button _="on click toggle #alertDialog as modal">Open Modal Dialog</button>
+    </div>
+  </div>
+
+  <dialog id="infoDialog">
+    <div class="dialog-header">
+      <h3>ℹ️ Non-Modal Dialog</h3>
+    </div>
+    <div class="dialog-body">
+      <p>This dialog opened with <code>show()</code>.</p>
+      <p>You can still interact with the page!</p>
+    </div>
+    <div class="dialog-footer">
+      <button class="secondary" _="on click toggle me">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="alertDialog">
+    <div class="dialog-header">
+      <h3>⚠️ Modal Dialog</h3>
+    </div>
+    <div class="dialog-body">
+      <p>This dialog opened with <code>showModal()</code>.</p>
+      <p>Page interaction is blocked!</p>
+    </div>
+    <div class="dialog-footer">
+      <button class="secondary" _="on click toggle me as modal">Close</button>
+    </div>
+  </dialog>
+
+  <!-- ========== Details Examples ========== -->
+  <h2>📂 Details Elements <span class="badge details">Details</span></h2>
+
+  <div class="example">
+    <h3>Accordion / FAQ with Toggle</h3>
+    <div class="code">
+&lt;button _="on click toggle #faq1"&gt;Toggle FAQ 1&lt;/button&gt;
+
+&lt;details id="faq1"&gt;
+  &lt;summary&gt;What is HyperFixi?&lt;/summary&gt;
+  &lt;p&gt;Content here...&lt;/p&gt;
+&lt;/details&gt;
+    </div>
+
+    <div class="demo-content">
+      <button _="on click toggle #faq1">Toggle FAQ 1</button>
+      <button _="on click toggle #faq2">Toggle FAQ 2</button>
+      <button _="on click toggle #faq3">Toggle FAQ 3</button>
+      <button _="on click toggle details">Toggle All</button>
+
+      <details id="faq1">
+        <summary>What is HyperFixi?</summary>
+        <p>HyperFixi is a complete hyperscript ecosystem with smart element detection, making web interactions natural and concise.</p>
+      </details>
+
+      <details id="faq2">
+        <summary>How does smart toggle work?</summary>
+        <p>Smart toggle automatically detects interactive elements like dialog, details, and select, and toggles their state appropriately without needing explicit method calls.</p>
+      </details>
+
+      <details id="faq3">
+        <summary>Is it compatible with _hyperscript?</summary>
+        <p>Yes! HyperFixi maintains compatibility with official _hyperscript syntax while adding enhanced features and smart detection.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- ========== Select Examples ========== -->
+  <h2>🎚️ Select Elements <span class="badge select">Select</span></h2>
+
+  <div class="example">
+    <h3>Programmatic Dropdown Control</h3>
+    <div class="code">
+&lt;button _="on click toggle #countrySelect"&gt;Toggle Dropdown&lt;/button&gt;
+
+&lt;select id="countrySelect"&gt;
+  &lt;option&gt;USA&lt;/option&gt;
+  &lt;option&gt;Canada&lt;/option&gt;
+&lt;/select&gt;
+    </div>
+
+    <div class="demo-content">
+      <button _="on click toggle #countrySelect">Toggle Country Dropdown</button>
+      <button _="on click toggle #languageSelect">Toggle Language Dropdown</button>
+
+      <select id="countrySelect">
+        <option>🇺🇸 United States</option>
+        <option>🇨🇦 Canada</option>
+        <option>🇬🇧 United Kingdom</option>
+        <option>🇦🇺 Australia</option>
+      </select>
+
+      <select id="languageSelect">
+        <option>English</option>
+        <option>Spanish</option>
+        <option>French</option>
+        <option>German</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ========== Combined Example ========== -->
+  <h2>🎨 Combined Smart Toggle</h2>
+
+  <div class="example">
+    <h3>Interactive Settings Panel</h3>
+    <div class="demo-content">
+      <div class="grid">
+        <div>
+          <button _="on click toggle #settingsDialog as modal">⚙️ Open Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="settingsDialog">
+    <div class="dialog-header">
+      <h3>⚙️ Settings</h3>
+    </div>
+    <div class="dialog-body">
+      <details id="generalSettings">
+        <summary>General Settings</summary>
+        <p>
+          <label>Theme:</label>
+          <select id="themeSelect">
+            <option>Light</option>
+            <option>Dark</option>
+            <option>Auto</option>
+          </select>
+        </p>
+        <p>
+          <label>Language:</label>
+          <select id="langSelect">
+            <option>English</option>
+            <option>Spanish</option>
+          </select>
+        </p>
+      </details>
+
+      <details id="advancedSettings">
+        <summary>Advanced Settings</summary>
+        <p>Enable experimental features and developer options.</p>
+        <button _="on click toggle #experimentalDialog as modal">Experimental Features</button>
+      </details>
+
+      <details id="aboutSettings">
+        <summary>About</summary>
+        <p>HyperFixi v1.0.0 - Smart Element Toggle Demo</p>
+      </details>
+    </div>
+    <div class="dialog-footer">
+      <button class="secondary" _="on click toggle me as modal">Close</button>
+      <button _="on click toggle #settingsDialog as modal then log 'Settings saved'">Save</button>
+    </div>
+  </dialog>
+
+  <dialog id="experimentalDialog">
+    <div class="dialog-header">
+      <h3>🧪 Experimental Features</h3>
+    </div>
+    <div class="dialog-body">
+      <details>
+        <summary>Beta Feature 1</summary>
+        <p>This is a beta feature currently in testing.</p>
+      </details>
+      <details>
+        <summary>Beta Feature 2</summary>
+        <p>Another experimental capability.</p>
+      </details>
+    </div>
+    <div class="dialog-footer">
+      <button class="secondary" _="on click toggle me as modal">Close</button>
+    </div>
+  </dialog>
+
+  <!-- ========== Summary ========== -->
+  <h2>📊 Summary Reference</h2>
+
+  <div class="example">
+    <h3>Smart Element Toggle Syntax</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Element</th>
+          <th>Syntax</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&lt;dialog&gt;</code></td>
+          <td><code>toggle #myDialog</code></td>
+          <td>Non-modal (show/close)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;dialog&gt;</code></td>
+          <td><code>toggle #myDialog as modal</code></td>
+          <td>Modal (showModal/close)</td>
+        </tr>
+        <tr>
+          <td><code>&lt;details&gt;</code></td>
+          <td><code>toggle #myDetails</code></td>
+          <td>Expand/collapse</td>
+        </tr>
+        <tr>
+          <td><code>&lt;select&gt;</code></td>
+          <td><code>toggle #mySelect</code></td>
+          <td>Focus/blur dropdown</td>
+        </tr>
+        <tr>
+          <td>Any element</td>
+          <td><code>toggle .className</code></td>
+          <td>Toggle CSS class</td>
+        </tr>
+        <tr>
+          <td>Any element</td>
+          <td><code>toggle @attribute</code></td>
+          <td>Toggle HTML attribute</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Key Features</h3>
+    <ul>
+      <li>✅ <strong>Smart Detection:</strong> Automatically recognizes dialog, details, and select elements</li>
+      <li>✅ <strong>Backward Compatible:</strong> Class and attribute toggle still works on all elements</li>
+      <li>✅ <strong>Natural Syntax:</strong> <code>toggle #element</code> - that's it!</li>
+      <li>✅ <strong>Event Dispatching:</strong> All toggles fire <code>hyperscript:toggle</code> events</li>
+      <li>✅ <strong>Type Safety:</strong> Full TypeScript support with comprehensive tests</li>
+    </ul>
+
+    <h3>Compatibility Matrix</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Dialog</th>
+          <th>Details</th>
+          <th>Select</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Smart Toggle</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+        </tr>
+        <tr>
+          <td>Class Toggle</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+        </tr>
+        <tr>
+          <td>Attribute Toggle</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+        </tr>
+        <tr>
+          <td>Event Dispatch</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+        </tr>
+        <tr>
+          <td>Multiple Elements</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Load HyperFixi -->
+  <script type="module">
+    import hyperscript from '../../dist/hyperscript.browser.js';
+
+    // Initialize hyperscript
+    hyperscript.browserInit();
+
+    console.log('HyperFixi loaded with smart element toggle!');
+    console.log('Supported elements: dialog, details, select');
+
+    // Add event listeners to log toggle events
+    const logToggle = (type, color) => {
+      document.querySelectorAll(type).forEach(el => {
+        el.addEventListener('hyperscript:toggle', (e) => {
+          console.log(
+            `%c${type} toggled:`,
+            `color: ${color}; font-weight: bold`,
+            {
+              id: el.id,
+              type: e.detail.type,
+              state: e.detail.state,
+              mode: e.detail.mode
+            }
+          );
+        });
+      });
+    };
+
+    logToggle('dialog', '#f59e0b');
+    logToggle('details', '#3b82f6');
+    logToggle('select', '#10b981');
+  </script>
+</body>
+</html>
