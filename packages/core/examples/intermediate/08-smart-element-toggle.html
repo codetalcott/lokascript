@@ -234,12 +234,12 @@
     <h3>Dialog Toggle (Non-Modal & Modal)</h3>
     <div class="code">
 &lt;button _="on click toggle #infoDialog"&gt;Non-Modal&lt;/button&gt;
-&lt;button _="on click toggle #alertDialog as modal"&gt;Modal&lt;/button&gt;
+&lt;button _="on click toggle #alertDialog modal"&gt;Modal&lt;/button&gt;
     </div>
 
     <div class="demo-content">
       <button _="on click toggle #infoDialog">Open Non-Modal Dialog</button>
-      <button _="on click toggle #alertDialog as modal">Open Modal Dialog</button>
+      <button _="on click toggle #alertDialog modal">Open Modal Dialog</button>
     </div>
   </div>
 
@@ -252,7 +252,7 @@
       <p>You can still interact with the page!</p>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me">Close</button>
+      <button class="secondary" _="on click toggle #infoDialog">Close</button>
     </div>
   </dialog>
 
@@ -265,7 +265,7 @@
       <p>Page interaction is blocked!</p>
     </div>
     <div class="dialog-footer">
-      <button class="secondary" _="on click toggle me as modal">Close</button>
+      <button class="secondary" _="on click toggle #alertDialog">Close</button>
     </div>
   </dialog>
 
