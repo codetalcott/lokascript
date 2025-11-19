@@ -27,8 +27,10 @@ export interface ToggleCommandOptions {
  */
 const ToggleCommandInputSchema = v.tuple([
   v.union([
-    v.string(), // Class names
+    v.string(), // Class names, CSS selectors, or attributes
     v.array(v.string()), // Array of class names
+    v.custom((value: unknown) => value instanceof HTMLElement), // Direct element reference
+    v.array(v.custom((value: unknown) => value instanceof HTMLElement)), // Array of elements
   ]),
   v
     .union([
@@ -56,7 +58,7 @@ export class ToggleCommand
 {
   public readonly name = 'toggle' as const;
   public readonly syntax = 'toggle <class-expression|@attribute|element-selector> [on|from <target-expression>] [until <event>] [as modal|dialog]';
-  public readonly description = 'Toggles CSS classes, attributes, or interactive elements (<dialog>, <details>, <select>) with smart detection. For dialogs: defaults to non-modal (show), use "as modal" for modal mode';
+  public readonly description = 'Toggles CSS classes, attributes, or interactive elements (<dialog>, <details>, <summary>, <select>) with smart detection. Summary elements toggle their parent details. For dialogs: defaults to non-modal (show), use "as modal" for modal mode';
   public readonly inputSchema = ToggleCommandInputSchema;
   public readonly outputType = 'element-list' as const;
 
@@ -113,6 +115,11 @@ export class ToggleCommand
       {
         code: 'toggle #countrySelect',
         description: 'Toggle select dropdown (opens/closes options)',
+        expectedOutput: [],
+      },
+      {
+        code: 'toggle me',
+        description: 'When used on a summary element, toggles parent details element',
         expectedOutput: [],
       },
     ],
@@ -197,9 +204,15 @@ export class ToggleCommand
         explanation: 'Opens/closes select dropdown programmatically',
         output: [],
       },
+      {
+        title: 'Toggle from summary element',
+        code: '<details><summary _="on click toggle me">FAQ</summary><p>Answer</p></details>',
+        explanation: 'When used on a summary element, automatically toggles the parent details element',
+        output: [],
+      },
     ],
     seeAlso: ['add', 'remove', 'hide', 'show', 'set', 'call'],
-    tags: ['dom', 'css', 'classes', 'attributes', 'dialog', 'modal', 'details', 'select', 'interactive'],
+    tags: ['dom', 'css', 'classes', 'attributes', 'dialog', 'modal', 'details', 'summary', 'select', 'interactive'],
   };
 
   private readonly _options: ToggleCommandOptions; // Reserved for future enhancements - configuration storage
@@ -239,6 +252,14 @@ export class ToggleCommand
 
       // Check for smart element toggle: dialog, details, select, etc.
       const smartElement = await this.checkSmartElementToggle(expression, target, context);
+      if (smartElement.type === 'summary-orphan') {
+        // Summary element without parent details - return empty success
+        return {
+          success: true,
+          value: [],
+          type: 'element-list',
+        };
+      }
       if (smartElement.type !== 'none') {
         return await this.executeSmartElementToggle(
           smartElement.elements!,
@@ -701,7 +722,17 @@ export class ToggleCommand
       }
 
       // Additional semantic validation
-      const [classExpression, target] = parsed.data as [string | string[], unknown];
+      const [classExpression, target] = parsed.data as [string | string[] | HTMLElement | HTMLElement[], unknown];
+
+      // Skip validation if expression is an HTMLElement (smart toggle)
+      if (classExpression instanceof HTMLElement || Array.isArray(classExpression) && classExpression.every(e => e instanceof HTMLElement)) {
+        // HTMLElement references are always valid
+        return {
+          isValid: true,
+          errors: [],
+          suggestions: [],
+        };
+      }
 
       // Validate class expression is not empty
       if (
@@ -927,11 +958,19 @@ export class ToggleCommand
     // Try to resolve elements
     let elements: HTMLElement[] = [];
 
-    // If target is undefined/null, expression might be the selector
+    // If target is undefined/null, expression might be the selector or element
     if (target === undefined || target === null) {
-      // expression is the target selector
+      // expression is the target selector or element
       try {
-        elements = this.resolveTargets(context, expression);
+        // Handle direct HTMLElement or array of HTMLElements
+        if (expression instanceof HTMLElement) {
+          elements = [expression];
+        } else if (Array.isArray(expression) && expression.every(e => e instanceof HTMLElement)) {
+          elements = expression;
+        } else {
+          // Try to resolve as selector
+          elements = this.resolveTargets(context, expression);
+        }
       } catch {
         return {type: 'none'};
       }
@@ -962,6 +1001,17 @@ export class ToggleCommand
         return {type: 'details', elements: elements as HTMLDetailsElement[]};
       case 'SELECT':
         return {type: 'select', elements: elements as HTMLSelectElement[]};
+      case 'SUMMARY':
+        // Summary elements toggle their parent details element
+        const parentDetails = elements
+          .map(el => el.closest('details'))
+          .filter((parent): parent is HTMLDetailsElement => parent !== null);
+
+        if (parentDetails.length > 0) {
+          return {type: 'details', elements: parentDetails};
+        }
+        // Summary without parent details - return special marker for empty success
+        return {type: 'summary-orphan' as any};
       default:
         return {type: 'none'};
     }

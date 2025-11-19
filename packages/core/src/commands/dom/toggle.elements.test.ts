@@ -245,6 +245,104 @@ describe('ToggleCommand - Smart Element Support', () => {
     });
   });
 
+  describe('Summary Element Toggle', () => {
+    let testDetails: HTMLDetailsElement;
+    let testSummary: HTMLElement;
+
+    beforeEach(() => {
+      testDetails = document.createElement('details');
+      testDetails.id = 'test-details';
+      testSummary = document.createElement('summary');
+      testSummary.id = 'test-summary';
+      testSummary.textContent = 'Click to expand';
+
+      const content = document.createElement('p');
+      content.textContent = 'Hidden content';
+
+      testDetails.appendChild(testSummary);
+      testDetails.appendChild(content);
+      document.body.appendChild(testDetails);
+    });
+
+    it('should detect summary element and toggle parent details', async () => {
+      expect(testDetails.open).toBe(false);
+
+      const result = await toggleCommand.execute(mockContext, '#test-summary');
+
+      expect(result.success).toBe(true);
+      expect(testDetails.open).toBe(true);
+      expect(result.value).toHaveLength(1);
+      expect(result.value?.[0]).toBe(testDetails);
+    });
+
+    it('should toggle parent details when using "me" on summary', async () => {
+      mockContext.me = testSummary;
+
+      const result = await toggleCommand.execute(mockContext, testSummary);
+
+      expect(result.success).toBe(true);
+      expect(testDetails.open).toBe(true);
+    });
+
+    it('should close open details when toggling summary', async () => {
+      testDetails.open = true;
+
+      const result = await toggleCommand.execute(mockContext, '#test-summary');
+
+      expect(result.success).toBe(true);
+      expect(testDetails.open).toBe(false);
+    });
+
+    it('should dispatch event on parent details when toggling summary', async () => {
+      let eventFired = false;
+      let eventDetail: any = null;
+
+      testDetails.addEventListener('hyperscript:toggle', ((e: CustomEvent) => {
+        eventFired = true;
+        eventDetail = e.detail;
+      }) as EventListener);
+
+      await toggleCommand.execute(mockContext, '#test-summary');
+
+      expect(eventFired).toBe(true);
+      expect(eventDetail).toBeDefined();
+      expect(eventDetail.type).toBe('details');
+      expect(eventDetail.state).toBe('opened');
+    });
+
+    it('should handle summary without parent details gracefully', async () => {
+      // Create orphan summary (not inside details)
+      const orphanSummary = document.createElement('summary');
+      orphanSummary.id = 'orphan';
+      document.body.appendChild(orphanSummary);
+
+      const result = await toggleCommand.execute(mockContext, orphanSummary);
+
+      // Should succeed but return empty since no parent details
+      // Falls back to no action (no parent to toggle)
+      expect(result.success).toBe(true);
+      expect(result.value).toHaveLength(0);
+    });
+
+    it('should allow class toggle on summary elements', async () => {
+      // Create second details with summary
+      const details2 = document.createElement('details');
+      const summary2 = document.createElement('summary');
+      summary2.id = 'summary2';
+      details2.appendChild(summary2);
+      document.body.appendChild(details2);
+
+      // Test that we can toggle classes on summaries using explicit class + target pattern
+      const result = await toggleCommand.execute(mockContext, '.faq-summary', testSummary);
+
+      expect(result.success).toBe(true);
+      // Should have toggled the class, not the parent details
+      expect(testSummary.classList.contains('faq-summary')).toBe(true);
+      // Details state should NOT change
+      expect(testDetails.open).toBe(false);
+    });
+  });
+
   describe('Integration with Dialog Tests', () => {
     it('should handle all smart element types independently', async () => {
       const dialog = document.createElement('dialog');
@@ -266,6 +364,18 @@ describe('ToggleCommand - Smart Element Support', () => {
       expect(dialog.open).toBe(true);
       expect(details.open).toBe(true);
       expect(document.activeElement).toBe(select);
+    });
+
+    it('should handle summary elements as part of smart toggle system', async () => {
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.id = 'summary1';
+      details.appendChild(summary);
+      document.body.appendChild(details);
+
+      await toggleCommand.execute(mockContext, '#summary1');
+
+      expect(details.open).toBe(true);
     });
   });
 });

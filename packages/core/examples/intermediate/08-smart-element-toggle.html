@@ -225,7 +225,7 @@
 </head>
 <body>
   <h1>🎯 Smart Element Toggle</h1>
-  <p>Demonstrating smart detection and toggle for <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, and <code>&lt;select&gt;</code> elements.</p>
+  <p>Demonstrating smart detection and toggle for <code>&lt;dialog&gt;</code>, <code>&lt;details&gt;</code>, <code>&lt;summary&gt;</code>, and <code>&lt;select&gt;</code> elements.</p>
 
   <!-- ========== Dialog Examples ========== -->
   <h2>📱 Dialog Elements <span class="badge dialog">Dialog</span></h2>
@@ -302,6 +302,39 @@
       <details id="faq3">
         <summary>Is it compatible with _hyperscript?</summary>
         <p>Yes! HyperFixi maintains compatibility with official _hyperscript syntax while adding enhanced features and smart detection.</p>
+      </details>
+    </div>
+  </div>
+
+  <div class="example">
+    <h3>Summary Element Toggle (Automatic Parent Detection)</h3>
+    <div class="code">
+&lt;!-- Toggle by targeting summary element directly --&gt;
+&lt;button _="on click toggle #summary1"&gt;Toggle via Summary&lt;/button&gt;
+
+&lt;details&gt;
+  &lt;summary id="summary1"&gt;Click me or the button&lt;/summary&gt;
+  &lt;p&gt;Content expands when you toggle the summary!&lt;/p&gt;
+&lt;/details&gt;
+    </div>
+
+    <div class="demo-content">
+      <button _="on click toggle #summaryDemo">Toggle via Summary Element</button>
+      <p style="font-size: 14px; color: #64748b; margin: 10px 0;">
+        When you toggle a <code>&lt;summary&gt;</code> element, it automatically finds and toggles the parent <code>&lt;details&gt;</code>.
+      </p>
+
+      <details id="detailsDemo">
+        <summary id="summaryDemo">✨ Advanced Summary Toggle</summary>
+        <div style="padding: 10px;">
+          <p>This demonstrates that you can target the summary element directly!</p>
+          <p>The toggle command automatically detects the parent details and toggles it.</p>
+          <ul>
+            <li>✅ <code>toggle #summaryElement</code> works</li>
+            <li>✅ <code>toggle #detailsElement</code> works</li>
+            <li>✅ Both achieve the same result</li>
+          </ul>
+        </div>
       </details>
     </div>
   </div>
@@ -444,6 +477,11 @@
           <td>Expand/collapse</td>
         </tr>
         <tr>
+          <td><code>&lt;summary&gt;</code></td>
+          <td><code>toggle #mySummary</code></td>
+          <td>Toggle parent details</td>
+        </tr>
+        <tr>
           <td><code>&lt;select&gt;</code></td>
           <td><code>toggle #mySelect</code></td>
           <td>Focus/blur dropdown</td>
@@ -463,7 +501,8 @@
 
     <h3>Key Features</h3>
     <ul>
-      <li>✅ <strong>Smart Detection:</strong> Automatically recognizes dialog, details, and select elements</li>
+      <li>✅ <strong>Smart Detection:</strong> Automatically recognizes dialog, details, summary, and select elements</li>
+      <li>✅ <strong>Parent Detection:</strong> Summary elements automatically toggle their parent details</li>
       <li>✅ <strong>Backward Compatible:</strong> Class and attribute toggle still works on all elements</li>
       <li>✅ <strong>Natural Syntax:</strong> <code>toggle #element</code> - that's it!</li>
       <li>✅ <strong>Event Dispatching:</strong> All toggles fire <code>hyperscript:toggle</code> events</li>
@@ -523,7 +562,7 @@
     hyperscript.browserInit();
 
     console.log('HyperFixi loaded with smart element toggle!');
-    console.log('Supported elements: dialog, details, select');
+    console.log('Supported elements: dialog, details, summary, select');
 
     // Add event listeners to log toggle events
     const logToggle = (type, color) => {
