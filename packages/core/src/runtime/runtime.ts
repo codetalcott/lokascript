@@ -904,8 +904,11 @@ export class Runtime {
       evaluatedArgs = [classArg, target];
     } else if (name === 'toggle' && args.length === 1) {
       // Handle single-arg pattern: "toggle .active" (implicit target: me)
+      // OR smart element pattern: "toggle #dialog" (no implicit target)
       let classArg: unknown = args[0];
       const classArgAny = classArg as any;
+
+      // Extract the value
       if (classArgAny?.type === 'selector' || classArgAny?.type === 'literal') {
         classArg = classArgAny.value;
       } else if (classArgAny?.type === 'identifier') {
@@ -914,8 +917,23 @@ export class Runtime {
         classArg = await this.execute(args[0], context);
       }
 
-      // Use context.me as implicit target
-      evaluatedArgs = [classArg, context.me];
+      // Check if this might be a smart element selector (ID or tag selector)
+      // Smart elements: dialog, details, summary, select
+      // If it's a class selector (starts with .), attribute (@), or CSS property (*), use implicit target
+      const isSmartElementCandidate =
+        typeof classArg === 'string' &&
+        !classArg.startsWith('.') &&
+        !classArg.startsWith('@') &&
+        !classArg.startsWith('*') &&
+        (classArg.startsWith('#') || ['dialog', 'details', 'summary', 'select'].includes(classArg.toLowerCase()));
+
+      if (isSmartElementCandidate) {
+        // Pass as selector without implicit target - let toggle command detect smart element
+        evaluatedArgs = [classArg];
+      } else {
+        // Use context.me as implicit target for class/attribute toggle
+        evaluatedArgs = [classArg, context.me];
+      }
     } else if (name === 'toggle' && args.length === 2) {
       // Handle pattern: "toggle #dialog as modal" or "toggle #dialog"
       // Check if first arg is a binary expression with 'as' operator (from parser)
