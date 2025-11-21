@@ -46,23 +46,12 @@ const configurations = {
   },
 
   minimal: {
-    name: 'Minimal (hide, show)',
-    description: 'Just hide and show commands - testing tree-shaking effectiveness',
-    commands: ['hide', 'show'],
+    name: 'Minimal (hide, show, log)',
+    description: 'Just hide, show, and log commands - testing tree-shaking effectiveness',
+    commands: ['hide', 'show', 'log'],
     imports: `
-      import { RuntimeBase } from './packages/core/src/runtime/runtime-base';
-      import { HideCommand } from './packages/core/src/commands-v2/dom/hide-standalone';
-      import { ShowCommand } from './packages/core/src/commands-v2/dom/show-standalone';
-
-      const runtime = new RuntimeBase({
-        registry: {
-          commands: {
-            hide: new HideCommand(),
-            show: new ShowCommand(),
-          },
-        },
-      });
-
+      import { createMinimalRuntime } from './packages/core/src/runtime/runtime-minimal';
+      const runtime = createMinimalRuntime();
       (window as any).runtime = runtime;
     `,
   },
