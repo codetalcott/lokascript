@@ -1034,16 +1034,11 @@ export class Parser {
       }
     }
 
-    return {
-      type: 'command',
-      name: 'halt',
-      args: args as ExpressionNode[],
-      isBlocking: false,
-      start: identifierNode.start || 0,
-      end: this.getPosition().end,
-      line: identifierNode.line || 1,
-      column: identifierNode.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.fromIdentifier(identifierNode)
+      .withArgs(...args)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   private parseMeasureCommand(identifierNode: IdentifierNode): CommandNode | null {
@@ -1123,17 +1118,16 @@ export class Parser {
       }
     }
 
-    return {
-      type: 'command',
-      name: identifierNode.name,
-      args: args as ExpressionNode[],
-      modifiers: Object.keys(modifiers).length > 0 ? modifiers : undefined,
-      isBlocking: false,
-      ...(identifierNode.start !== undefined && { start: identifierNode.start }),
-      end: this.getPosition().end,
-      ...(identifierNode.line !== undefined && { line: identifierNode.line }),
-      ...(identifierNode.column !== undefined && { column: identifierNode.column }),
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    const builder = CommandNodeBuilder.fromIdentifier(identifierNode)
+      .withArgs(...args)
+      .endingAt(this.getPosition());
+
+    if (Object.keys(modifiers).length > 0) {
+      builder.withModifiers(modifiers);
+    }
+
+    return builder.build();
   }
 
   private parseTriggerCommand(identifierNode: IdentifierNode): CommandNode | null {
@@ -1190,24 +1184,16 @@ export class Parser {
       finalArgs.push(...targetArgs);
     }
 
-    const result = {
-      type: 'command' as const,
-      name: identifierNode.name,
-      args: finalArgs as ExpressionNode[],
-      isBlocking: false,
-      start: identifierNode.start || 0,
-      end: this.getPosition().end,
-      line: identifierNode.line || 1,
-      column: identifierNode.column || 1,
-    };
-
     // debug.parse('✅ PARSER: parseTriggerCommand completed', {
-    // result,
     // argCount: finalArgs.length,
     // finalArgs: finalArgs.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
     // });
 
-    return result;
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.fromIdentifier(identifierNode)
+      .withArgs(...finalArgs)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   /**
