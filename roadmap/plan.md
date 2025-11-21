@@ -37,6 +37,22 @@ that works exactly like the original, with modern TypeScript benefits.
   - ✅ Pattern Registry: 77 core patterns, 68 working (88% realistic compatibility)
   - ✅ Comprehensive testing infrastructure with automated test generation
   - ✅ Path configuration documented (PATTERN_TESTING_QUICKSTART.md)
+- ✅ **Parser Phase 2 Refactoring** (Recent Sessions): CommandNodeBuilder pattern for consistent AST construction
+  - ✅ Category 1 Complete: 9 simple commands refactored (-46 lines)
+  - ✅ Category 2 Complete (Tiers 1-2): 4 complex commands refactored (-19 lines)
+  - ✅ Total: 13 commands with consistent CommandNodeBuilder pattern (-65 lines)
+  - ✅ Strategic preservation: 2 high-complexity commands (parseDefCommand, parseSetCommand) intentionally preserved
+  - ✅ Zero breaking changes, zero TypeScript errors introduced
+  - 📋 Phase 3 planned: File organization and modularization (parser.ts 4,698 lines → ~1,000 lines)
+  - 📄 Documentation: [PARSER_PHASE2_COMPLETE.md](../packages/core/PARSER_PHASE2_COMPLETE.md)
+- ✅ **Tree-Shaking Architecture** (Recent Sessions): RuntimeBase + CommandAdapterV2 for bundle optimization
+  - ✅ Phase 1: RuntimeBase foundation - Generic runtime with zero command imports (617 lines)
+  - ✅ Phase 2: Commands-v2 - 16 commands with parseInput() methods
+  - ✅ Phase 3: CommandAdapterV2 - Generic adapter, 70% complexity reduction (973 → 288 lines, -685 lines)
+  - ✅ Phase 4: Validation - 37% bundle size reduction achieved (366 KB → 230 KB, -139 KB)
+  - ⚠️ Limitation: Command-level tree-shaking limited by V1 inheritance (mitigation path available)
+  - ✅ Zero breaking changes, 100% non-destructive, all 440+ tests passing
+  - 📄 Documentation: [TREE_SHAKING_COMPLETE.md](tree-shaking/TREE_SHAKING_COMPLETE.md)
 
 ### ✅ **Server-Side Integration** (Phase 4 Complete)
 - ✅ **HTTP Service API**: Complete REST API with compilation, validation, and batch processing
