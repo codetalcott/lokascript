@@ -6,9 +6,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AddCommand } from '../add-standalone';
+import { AddCommand } from '../add';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/ast';
+import type { ASTNode } from '../../../types/base-types';
 
 // ========== Test Utilities ==========
 
@@ -73,7 +73,7 @@ describe('AddCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput({ args: [], modifiers: {} }, evaluator as any, context)
-      ).rejects.toThrow('add command requires class names');
+      ).rejects.toThrow('add command requires an argument');
     });
 
     it('should parse single class with leading dot', async () => {
@@ -88,8 +88,9 @@ describe('AddCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['active']);
-      expect(input.targets).toEqual([context.me]); // Default target
+      expect(input.type).toBe('classes');
+      expect((input as any).classes).toEqual(['active']);
+      expect((input as any).targets).toEqual([context.me]); // Default target
     });
 
     it('should parse single class without leading dot', async () => {
@@ -336,7 +337,7 @@ describe('AddCommand (Standalone V2)', () => {
       const element = document.createElement('div');
 
       await command.execute(
-        { classes: ['active'], targets: [element] },
+        { type: 'classes', classes: ['active'], targets: [element] },
         context
       );
 
@@ -348,7 +349,7 @@ describe('AddCommand (Standalone V2)', () => {
       const element = document.createElement('div');
 
       await command.execute(
-        { classes: ['active', 'selected', 'highlighted'], targets: [element] },
+        { type: 'classes', classes: ['active', 'selected', 'highlighted'], targets: [element] },
         context
       );
 
@@ -364,7 +365,7 @@ describe('AddCommand (Standalone V2)', () => {
       const el3 = document.createElement('div');
 
       await command.execute(
-        { classes: ['active'], targets: [el1, el2, el3] },
+        { type: 'classes', classes: ['active'], targets: [el1, el2, el3] },
         context
       );
 
@@ -379,7 +380,7 @@ describe('AddCommand (Standalone V2)', () => {
       const el2 = document.createElement('div');
 
       await command.execute(
-        { classes: ['active', 'selected'], targets: [el1, el2] },
+        { type: 'classes', classes: ['active', 'selected'], targets: [el1, el2] },
         context
       );
 
@@ -397,7 +398,7 @@ describe('AddCommand (Standalone V2)', () => {
       const addSpy = vi.spyOn(element.classList, 'add');
 
       await command.execute(
-        { classes: ['existing'], targets: [element] },
+        { type: 'classes', classes: ['existing'], targets: [element] },
         context
       );
 
@@ -411,7 +412,7 @@ describe('AddCommand (Standalone V2)', () => {
       element.className = 'existing-1 existing-2';
 
       await command.execute(
-        { classes: ['new-class'], targets: [element] },
+        { type: 'classes', classes: ['new-class'], targets: [element] },
         context
       );
 
@@ -425,7 +426,7 @@ describe('AddCommand (Standalone V2)', () => {
       const element = document.createElement('div');
 
       await command.execute(
-        { classes: ['first-class'], targets: [element] },
+        { type: 'classes', classes: ['first-class'], targets: [element] },
         context
       );
 
@@ -436,14 +437,14 @@ describe('AddCommand (Standalone V2)', () => {
   describe('validate', () => {
     it('should validate correct input with single class and target', () => {
       const element = document.createElement('div');
-      const input = { classes: ['active'], targets: [element] };
+      const input = { type: 'classes', classes: ['active'], targets: [element] };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate correct input with multiple classes and targets', () => {
       const el1 = document.createElement('div');
       const el2 = document.createElement('div');
-      const input = { classes: ['active', 'selected'], targets: [el1, el2] };
+      const input = { type: 'classes', classes: ['active', 'selected'], targets: [el1, el2] };
       expect(command.validate(input)).toBe(true);
     });
 
@@ -463,40 +464,40 @@ describe('AddCommand (Standalone V2)', () => {
     });
 
     it('should reject input without targets', () => {
-      expect(command.validate({ classes: ['active'] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: ['active'] })).toBe(false);
     });
 
     it('should reject input with non-array classes', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: 'active', targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: 'active', targets: [element] })).toBe(false);
     });
 
     it('should reject input with non-array targets', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: ['active'], targets: element })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: ['active'], targets: element })).toBe(false);
     });
 
     it('should reject input with empty classes array', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: [], targets: [element] })).toBe(false);
     });
 
     it('should reject input with empty targets array', () => {
-      expect(command.validate({ classes: ['active'], targets: [] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: ['active'], targets: [] })).toBe(false);
     });
 
     it('should reject input with non-string class names', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [123], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: [123], targets: [element] })).toBe(false);
     });
 
     it('should reject input with empty string class names', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [''], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: [''], targets: [element] })).toBe(false);
     });
 
     it('should reject input with non-HTMLElement targets', () => {
-      expect(command.validate({ classes: ['active'], targets: [document.createTextNode('text')] })).toBe(false);
+      expect(command.validate({ type: 'classes', classes: ['active'], targets: [document.createTextNode('text')] })).toBe(false);
     });
   });
 

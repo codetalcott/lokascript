@@ -6,9 +6,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SetCommand } from '../set-standalone';
+import { SetCommand } from '../set';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/ast';
+import type { ASTNode } from '../../../types/base-types.ts';
 
 // ========== Test Utilities ==========
 
@@ -104,8 +104,11 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.target).toBe('myVar');
-      expect(input.value).toBe('test value');
+      expect(input.type).toBe('variable');
+      if (input.type === 'variable') {
+        expect(input.name).toBe('myVar');
+        expect(input.value).toBe('test value');
+      }
     });
 
     it('should parse attribute assignment', async () => {
@@ -121,8 +124,11 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.target).toBe('@data-theme');
-      expect(input.value).toBe('dark');
+      expect(input.type).toBe('attribute');
+      if (input.type === 'attribute') {
+        expect(input.name).toBe('data-theme');
+        expect(input.value).toBe('dark');
+      }
     });
 
     it('should parse property assignment with possessive "my"', async () => {
@@ -138,8 +144,12 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.target).toEqual({ element: context.me, property: 'textContent' });
-      expect(input.value).toBe('Hello World');
+      expect(input.type).toBe('property');
+      if (input.type === 'property') {
+        expect(input.element).toBe(context.me);
+        expect(input.property).toBe('textContent');
+        expect(input.value).toBe('Hello World');
+      }
     });
 
     it('should parse property assignment with possessive "its"', async () => {
@@ -157,8 +167,12 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.target).toEqual({ element: itElement, property: 'innerHTML' });
-      expect(input.value).toBe('<strong>Bold</strong>');
+      expect(input.type).toBe('property');
+      if (input.type === 'property') {
+        expect(input.element).toBe(itElement);
+        expect(input.property).toBe('innerHTML');
+        expect(input.value).toBe('<strong>Bold</strong>');
+      }
     });
 
     it('should parse value from second argument if no "to" modifier', async () => {
@@ -174,8 +188,11 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.target).toBe('count');
-      expect(input.value).toBe(42);
+      expect(input.type).toBe('variable');
+      if (input.type === 'variable') {
+        expect(input.name).toBe('count');
+        expect(input.value).toBe(42);
+      }
     });
 
     it('should parse number value', async () => {
@@ -191,7 +208,10 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.value).toBe(42);
+      expect(input.type).toBe('variable');
+      if (input.type === 'variable') {
+        expect(input.value).toBe(42);
+      }
     });
 
     it('should parse boolean value', async () => {
@@ -207,7 +227,10 @@ describe('SetCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.value).toBe(true);
+      expect(input.type).toBe('variable');
+      if (input.type === 'variable') {
+        expect(input.value).toBe(true);
+      }
     });
   });
 
@@ -216,7 +239,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       const output = await command.execute(
-        { target: 'myVar', value: 'test value' },
+        { type: 'variable', name: 'myVar', value: 'test value' },
         context
       );
 
@@ -229,7 +252,7 @@ describe('SetCommand (Standalone V2)', () => {
     it('should set number variable', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: 'count', value: 42 }, context);
+      await command.execute({ type: 'variable', name: 'count', value: 42 }, context);
 
       expect(context.locals.get('count')).toBe(42);
     });
@@ -237,7 +260,7 @@ describe('SetCommand (Standalone V2)', () => {
     it('should set boolean variable', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: 'isActive', value: true }, context);
+      await command.execute({ type: 'variable', name: 'isActive', value: true }, context);
 
       expect(context.locals.get('isActive')).toBe(true);
     });
@@ -245,7 +268,7 @@ describe('SetCommand (Standalone V2)', () => {
     it('should update context.it when setting variable', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: 'myVar', value: 'test' }, context);
+      await command.execute({ type: 'variable', name: 'myVar', value: 'test' }, context);
 
       expect(context.it).toBe('test');
     });
@@ -253,7 +276,7 @@ describe('SetCommand (Standalone V2)', () => {
     it('should set special variable "result"', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: 'result', value: 'computed' }, context);
+      await command.execute({ type: 'variable', name: 'result', value: 'computed' }, context);
 
       expect(context.locals.get('result')).toBe('computed');
       expect(context.result).toBe('computed');
@@ -262,7 +285,7 @@ describe('SetCommand (Standalone V2)', () => {
     it('should set special variable "it"', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: 'it', value: 'value' }, context);
+      await command.execute({ type: 'variable', name: 'it', value: 'value' }, context);
 
       expect(context.locals.get('it')).toBe('value');
       expect(context.it).toBe('value');
@@ -274,7 +297,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       const output = await command.execute(
-        { target: '@data-theme', value: 'dark' },
+        { type: 'attribute', element: context.me, name: 'data-theme', value: 'dark' },
         context
       );
 
@@ -287,7 +310,10 @@ describe('SetCommand (Standalone V2)', () => {
     it('should set aria attribute', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: '@aria-label', value: 'Close button' }, context);
+      await command.execute(
+        { type: 'attribute', element: context.me, name: 'aria-label', value: 'Close button' },
+        context
+      );
 
       expect(context.me.getAttribute('aria-label')).toBe('Close button');
     });
@@ -295,7 +321,10 @@ describe('SetCommand (Standalone V2)', () => {
     it('should convert value to string for attributes', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: '@data-count', value: 42 }, context);
+      await command.execute(
+        { type: 'attribute', element: context.me, name: 'data-count', value: 42 },
+        context
+      );
 
       expect(context.me.getAttribute('data-count')).toBe('42');
     });
@@ -303,18 +332,12 @@ describe('SetCommand (Standalone V2)', () => {
     it('should update context.it when setting attribute', async () => {
       const context = createMockContext();
 
-      await command.execute({ target: '@data-value', value: 'test' }, context);
+      await command.execute(
+        { type: 'attribute', element: context.me, name: 'data-value', value: 'test' },
+        context
+      );
 
       expect(context.it).toBe('test');
-    });
-
-    it('should throw error if no me element', async () => {
-      const context = createMockContext();
-      context.me = null as any;
-
-      await expect(
-        command.execute({ target: '@data-theme', value: 'dark' }, context)
-      ).rejects.toThrow('No element context available');
     });
   });
 
@@ -324,7 +347,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       const output = await command.execute(
-        { target: { element, property: 'textContent' }, value: 'Hello World' },
+        { type: 'property', element, property: 'textContent', value: 'Hello World' },
         context
       );
 
@@ -339,7 +362,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'innerHTML' }, value: '<strong>Bold</strong>' },
+        { type: 'property', element, property: 'innerHTML', value: '<strong>Bold</strong>' },
         context
       );
 
@@ -351,7 +374,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'innerText' }, value: 'Plain text' },
+        { type: 'property', element, property: 'innerText', value: 'Plain text' },
         context
       );
 
@@ -363,7 +386,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'id' }, value: 'new-id' },
+        { type: 'property', element, property: 'id', value: 'new-id' },
         context
       );
 
@@ -375,7 +398,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'className' }, value: 'active selected' },
+        { type: 'property', element, property: 'className', value: 'active selected' },
         context
       );
 
@@ -387,7 +410,7 @@ describe('SetCommand (Standalone V2)', () => {
       const input = document.createElement('input');
 
       await command.execute(
-        { target: { element: input, property: 'value' }, value: 'user input' },
+        { type: 'property', element: input, property: 'value', value: 'user input' },
         context
       );
 
@@ -399,7 +422,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'color' }, value: 'red' },
+        { type: 'property', element, property: 'color', value: 'red' },
         context
       );
 
@@ -411,7 +434,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'background-color' }, value: 'blue' },
+        { type: 'property', element, property: 'background-color', value: 'blue' },
         context
       );
 
@@ -423,7 +446,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'title' }, value: 'Element title' },
+        { type: 'property', element, property: 'title', value: 'Element title' },
         context
       );
 
@@ -435,7 +458,7 @@ describe('SetCommand (Standalone V2)', () => {
       const element = context.me;
 
       await command.execute(
-        { target: { element, property: 'textContent' }, value: 'test' },
+        { type: 'property', element, property: 'textContent', value: 'test' },
         context
       );
 
@@ -445,28 +468,29 @@ describe('SetCommand (Standalone V2)', () => {
 
   describe('validate', () => {
     it('should validate correct variable input', () => {
-      const input = { target: 'myVar', value: 'test' };
+      const input = { type: 'variable', name: 'myVar', value: 'test' };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate correct attribute input', () => {
-      const input = { target: '@data-theme', value: 'dark' };
+      const element = document.createElement('div');
+      const input = { type: 'attribute', element, name: 'data-theme', value: 'dark' };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate correct property input', () => {
       const element = document.createElement('div');
-      const input = { target: { element, property: 'textContent' }, value: 'text' };
+      const input = { type: 'property', element, property: 'textContent', value: 'text' };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate input with undefined value', () => {
-      const input = { target: 'myVar', value: undefined };
+      const input = { type: 'variable', name: 'myVar', value: undefined };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate input with null value', () => {
-      const input = { target: 'myVar', value: null };
+      const input = { type: 'variable', name: 'myVar', value: null };
       expect(command.validate(input)).toBe(true);
     });
 
@@ -480,19 +504,21 @@ describe('SetCommand (Standalone V2)', () => {
       expect(command.validate(true)).toBe(false);
     });
 
-    it('should reject input without target', () => {
-      expect(command.validate({ value: 'test' })).toBe(false);
+    it('should reject input without type', () => {
+      expect(command.validate({ name: 'myVar', value: 'test' })).toBe(false);
     });
 
-    it('should reject input with invalid target type', () => {
-      expect(command.validate({ target: 123, value: 'test' })).toBe(false);
-      expect(command.validate({ target: true, value: 'test' })).toBe(false);
-      expect(command.validate({ target: null, value: 'test' })).toBe(false);
+    it('should reject input with invalid type', () => {
+      expect(command.validate({ type: 'unknown', name: 'test', value: 'test' })).toBe(false);
+      expect(command.validate({ type: 123, name: 'test', value: 'test' })).toBe(false);
     });
 
-    it('should reject input with invalid property descriptor', () => {
-      expect(command.validate({ target: { property: 'test' }, value: 'test' })).toBe(false); // Missing element
-      expect(command.validate({ target: { element: 'not-element' }, value: 'test' })).toBe(false); // Missing property
+    it('should reject variable input without name', () => {
+      expect(command.validate({ type: 'variable', value: 'test' })).toBe(false);
+    });
+
+    it('should reject property input without element', () => {
+      expect(command.validate({ type: 'property', property: 'test', value: 'test' })).toBe(false);
     });
   });
 

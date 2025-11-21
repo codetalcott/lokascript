@@ -6,9 +6,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RemoveCommand } from '../remove-standalone';
+import { RemoveCommand } from '../remove';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/ast';
+import type { ASTNode } from '../../../types/base-types.ts';
 
 // ========== Test Utilities ==========
 
@@ -73,7 +73,7 @@ describe('RemoveCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput({ args: [], modifiers: {} }, evaluator as any, context)
-      ).rejects.toThrow('remove command requires class names');
+      ).rejects.toThrow('remove command requires an argument');
     });
 
     it('should parse single class with leading dot', async () => {
@@ -88,8 +88,11 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['active']);
-      expect(input.targets).toEqual([context.me]); // Default target
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['active']);
+        expect(input.targets).toEqual([context.me]); // Default target
+      }
     });
 
     it('should parse single class without leading dot', async () => {
@@ -104,8 +107,11 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['selected']);
-      expect(input.targets).toEqual([context.me]);
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['selected']);
+        expect(input.targets).toEqual([context.me]);
+      }
     });
 
     it('should parse multiple classes from space-separated string', async () => {
@@ -120,7 +126,10 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      }
     });
 
     it('should parse multiple classes with leading dots', async () => {
@@ -135,7 +144,10 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      }
     });
 
     it('should parse classes from array', async () => {
@@ -150,7 +162,10 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      }
     });
 
     it('should filter out invalid class names', async () => {
@@ -166,7 +181,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       );
 
       // 123invalid starts with digit (invalid), others are valid
-      expect(input.classes).toEqual(['valid-class', '-also-valid', '_underscore']);
+      expect(input.type).toBe('classes');
+      if (input.type === 'classes') {
+        expect(input.classes).toEqual(['valid-class', '-also-valid', '_underscore']);
+      }
     });
 
     it('should throw error when no valid class names found', async () => {
@@ -207,6 +225,7 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
+      expect(input.type).toBe('classes');
       expect(input.targets).toEqual([targetElement]);
     });
 
@@ -236,6 +255,7 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
+      expect(input.type).toBe('classes');
       expect(input.targets).toEqual([targetElement]);
 
       // Cleanup
@@ -271,6 +291,7 @@ describe('RemoveCommand (Standalone V2)', () => {
         context
       );
 
+      expect(input.type).toBe('classes');
       expect(input.targets).toContain(el1);
       expect(input.targets).toContain(el2);
 
@@ -337,7 +358,7 @@ describe('RemoveCommand (Standalone V2)', () => {
       element.className = 'active selected';
 
       await command.execute(
-        { classes: ['active'], targets: [element] },
+        { type: 'classes', classes: ['active'], targets: [element] },
         context
       );
 
@@ -351,7 +372,7 @@ describe('RemoveCommand (Standalone V2)', () => {
       element.className = 'active selected highlighted';
 
       await command.execute(
-        { classes: ['active', 'selected', 'highlighted'], targets: [element] },
+        { type: 'classes', classes: ['active', 'selected', 'highlighted'], targets: [element] },
         context
       );
 
@@ -370,7 +391,7 @@ describe('RemoveCommand (Standalone V2)', () => {
       el3.className = 'active';
 
       await command.execute(
-        { classes: ['active'], targets: [el1, el2, el3] },
+        { type: 'classes', classes: ['active'], targets: [el1, el2, el3] },
         context
       );
 
@@ -387,7 +408,7 @@ describe('RemoveCommand (Standalone V2)', () => {
       el2.className = 'active selected';
 
       await command.execute(
-        { classes: ['active', 'selected'], targets: [el1, el2] },
+        { type: 'classes', classes: ['active', 'selected'], targets: [el1, el2] },
         context
       );
 
@@ -404,7 +425,7 @@ describe('RemoveCommand (Standalone V2)', () => {
 
       // Should not throw error
       await command.execute(
-        { classes: ['nonexistent'], targets: [element] },
+        { type: 'classes', classes: ['nonexistent'], targets: [element] },
         context
       );
 
@@ -418,7 +439,7 @@ describe('RemoveCommand (Standalone V2)', () => {
       element.className = 'keep-1 remove-me keep-2';
 
       await command.execute(
-        { classes: ['remove-me'], targets: [element] },
+        { type: 'classes', classes: ['remove-me'], targets: [element] },
         context
       );
 
@@ -433,7 +454,7 @@ describe('RemoveCommand (Standalone V2)', () => {
 
       // Should not throw error
       await command.execute(
-        { classes: ['active'], targets: [element] },
+        { type: 'classes', classes: ['active'], targets: [element] },
         context
       );
 
@@ -444,14 +465,14 @@ describe('RemoveCommand (Standalone V2)', () => {
   describe('validate', () => {
     it('should validate correct input with single class and target', () => {
       const element = document.createElement('div');
-      const input = { classes: ['active'], targets: [element] };
+      const input = { type: 'classes' as const, classes: ['active'], targets: [element] };
       expect(command.validate(input)).toBe(true);
     });
 
     it('should validate correct input with multiple classes and targets', () => {
       const el1 = document.createElement('div');
       const el2 = document.createElement('div');
-      const input = { classes: ['active', 'selected'], targets: [el1, el2] };
+      const input = { type: 'classes' as const, classes: ['active', 'selected'], targets: [el1, el2] };
       expect(command.validate(input)).toBe(true);
     });
 
@@ -465,46 +486,46 @@ describe('RemoveCommand (Standalone V2)', () => {
       expect(command.validate(true)).toBe(false);
     });
 
-    it('should reject input without classes', () => {
+    it('should reject input without type', () => {
       const element = document.createElement('div');
-      expect(command.validate({ targets: [element] })).toBe(false);
+      expect(command.validate({ classes: ['active'], targets: [element] })).toBe(false);
     });
 
     it('should reject input without targets', () => {
-      expect(command.validate({ classes: ['active'] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: ['active'] })).toBe(false);
     });
 
     it('should reject input with non-array classes', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: 'active', targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: 'active', targets: [element] })).toBe(false);
     });
 
     it('should reject input with non-array targets', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: ['active'], targets: element })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: ['active'], targets: element })).toBe(false);
     });
 
     it('should reject input with empty classes array', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: [], targets: [element] })).toBe(false);
     });
 
     it('should reject input with empty targets array', () => {
-      expect(command.validate({ classes: ['active'], targets: [] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: ['active'], targets: [] })).toBe(false);
     });
 
     it('should reject input with non-string class names', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [123], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: [123], targets: [element] })).toBe(false);
     });
 
     it('should reject input with empty string class names', () => {
       const element = document.createElement('div');
-      expect(command.validate({ classes: [''], targets: [element] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: [''], targets: [element] })).toBe(false);
     });
 
     it('should reject input with non-HTMLElement targets', () => {
-      expect(command.validate({ classes: ['active'], targets: [document.createTextNode('text')] })).toBe(false);
+      expect(command.validate({ type: 'classes' as const, classes: ['active'], targets: [document.createTextNode('text')] })).toBe(false);
     });
   });
 
