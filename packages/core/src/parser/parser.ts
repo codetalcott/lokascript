@@ -1687,16 +1687,12 @@ export class Parser {
       }
     }
 
-    return {
-      type: 'command',
-      name: 'wait',
-      args: args as ExpressionNode[],
-      isBlocking: true,
-      start: commandToken.start || 0,
-      end: this.getPosition().end,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .blocking() // wait is a blocking command
+      .endingAt(this.getPosition())
+      .build();
   }
 
   /**
@@ -1790,16 +1786,11 @@ export class Parser {
       }
     }
 
-    return {
-      type: 'command',
-      name: 'install',
-      args: args as ExpressionNode[],
-      isBlocking: false,
-      start: commandToken.start || 0,
-      end: this.getPosition().end,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   /**
@@ -1895,16 +1886,11 @@ export class Parser {
       args.push(timingFunction);
     }
 
-    return {
-      type: 'command',
-      name: 'transition',
-      args: args as ExpressionNode[],
-      isBlocking: false,
-      start: commandToken.start || 0,
-      end: this.getPosition().end,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   /**
