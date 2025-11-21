@@ -1528,16 +1528,11 @@ export class Parser {
       column: commandToken.column,
     } as any);
 
-    return {
-      type: 'command',
-      name: 'repeat',
-      args: args as ExpressionNode[],
-      isBlocking: false,
-      start: commandToken.start || 0,
-      end: commandToken.end || 0,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   /**
@@ -1941,7 +1936,6 @@ export class Parser {
    *   unless <condition> then ... end       (multi-line)
    */
   private parseIfCommand(commandToken: Token): CommandNode {
-    const commandName = commandToken.value.toLowerCase(); // Preserve 'if' or 'unless'
     const args: ASTNode[] = [];
 
     // Check if this is multi-line:
@@ -2131,16 +2125,11 @@ export class Parser {
       }
     }
 
-    return {
-      type: 'command',
-      name: commandName, // Use actual command name ('if' or 'unless')
-      args: args as ExpressionNode[],
-      isBlocking: false,
-      start: commandToken.start || 0,
-      end: this.getPosition().end,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .endingAt(this.getPosition())
+      .build();
   }
 
   // @ts-expect-error - Reserved for future command parsing
