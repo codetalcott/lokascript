@@ -271,3 +271,38 @@ This provides the best ROI: moderate effort for targeted tree-shaking where it m
 - dist/test-baseline.js (366 KB) - All commands (original Runtime)
 
 **Testing Results**: All bundles build successfully and load in browser without errors.
+
+---
+
+## Update: Parser Refactoring Integration (2025-01-21)
+
+**Status**: ✅ Successfully integrated parser refactoring with tree-shaking architecture
+
+The parser refactoring (Phase 1) was merged into the tree-shaking branch with **zero conflicts**:
+
+### What Was Added
+
+- **parser-constants.ts** - Centralized keywords and command classifications
+- **command-node-builder.ts** - Fluent API for AST node creation
+- **token-consumer.ts** - Common token consumption patterns
+- **Refactored parser.ts** - Uses new helpers (-155 lines)
+
+### Compatibility Results
+
+✅ **Zero merge conflicts** - Parser and runtime changes are orthogonal
+✅ **All bundles build** - test-minimal, test-standard, test-baseline
+✅ **Bundle sizes unchanged** - Parser refactoring has zero runtime impact
+✅ **Both improvements active** - Parse-time AND runtime improvements work together
+
+### Why They're Compatible
+
+Parser refactoring operates at **parse time** (hyperscript text → AST), while tree-shaking operates at **runtime** (AST → execution). They don't interfere with each other.
+
+See [COMBINED_REFACTORING_SUMMARY.md](COMBINED_REFACTORING_SUMMARY.md) for complete integration details.
+
+### Future Parser Work
+
+**Phase 2**: Apply helpers to remaining 26+ command parsers (~400-600 line reduction)
+**Phase 3**: Split parser into multiple files for better organization
+
+**Branch**: `feature/tree-shaking-plus-parser-refactor`
