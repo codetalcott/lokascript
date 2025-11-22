@@ -98,7 +98,7 @@ export class MinimalAttributeProcessor {
     if (!code) return;
 
     // Create context with element as 'me'
-    const context = createContext({ me: element });
+    const context = createContext(element as HTMLElement);
 
     // Execute hyperscript code
     this.runtime.execute(code, context).catch((error) => {

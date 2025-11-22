@@ -1,162 +1,135 @@
 /**
- * HyperFixi Standard Browser Bundle V2
- * Tree-Shakeable Implementation - 19 Common Commands
+ * HyperFixi Standard Browser Bundle V2 - Experimental
+ * Uses RuntimeBase + CommandAdapterV2 + V2 Commands
  *
- * This bundle bypasses the Runtime class to achieve true tree-shaking.
- * It imports only the 19 most commonly used commands, resulting in
- * a 50-60% smaller bundle size compared to the full version.
+ * This bundle uses the experimental RuntimeExperimental class which:
+ * - Extends RuntimeBase (generic, zero direct command imports)
+ * - Uses EnhancedCommandRegistryV2 (parseInput() adapter)
+ * - Imports V2 commands with parseInput() methods
  *
- * Commands included:
- * - DOM: add, remove, toggle, show, hide, put (6)
- * - Control Flow: if, halt, return (3)
+ * Commands included (16 standard):
+ * - DOM: add, remove, toggle, show, hide, put, make (7)
  * - Data: set, increment, decrement (3)
  * - Events: send, trigger (2)
- * - Async: wait (1)
- * - Creation: make (1)
- * - Content: append (1)
- * - Execution: call (1)
+ * - Async: wait, fetch (2)
+ * - Navigation: go (1)
  * - Utility: log (1)
  *
- * Expected size: ~185KB uncompressed (~64-73KB gzipped)
+ * Expected size: ~230KB uncompressed (~75KB gzipped)
  * Full bundle: ~511KB uncompressed (~112KB gzipped)
- * Reduction: ~59% smaller
+ * Reduction: ~55% smaller
  */
 
 import { parse } from '../parser/parser';
-import { MinimalCommandRegistry } from '../runtime/minimal-command-registry';
-import { ExpressionEvaluator } from '../core/expression-evaluator';
-import { createMinimalAttributeProcessor, type MinimalRuntime } from '../dom/minimal-attribute-processor';
+import { createMinimalRuntime } from '../runtime/runtime-experimental';
+import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
 import { createContext } from '../core/context';
-import type { ExecutionContext } from '../types/base-types';
 
-// Minimal commands (8)
-import { createAddCommand } from '../commands/dom/add';
-import { createRemoveCommand } from '../commands/dom/remove';
-import { createToggleCommand } from '../commands/dom/toggle';
-import { createPutCommand } from '../commands/dom/put';
-import { createSetCommand } from '../commands/data/set';
-import { createIfCommand } from '../commands/control-flow/if';
-import { createSendCommand } from '../commands/events/send';
-import { createLogCommand } from '../commands/utility/log';
+// Import all 16 V2 standard commands
+// DOM Commands (7)
+import { createAddCommand } from '../commands-v2/dom/add';
+import { createRemoveCommand } from '../commands-v2/dom/remove';
+import { createToggleCommand } from '../commands-v2/dom/toggle';
+import { createShowCommand } from '../commands-v2/dom/show';
+import { createHideCommand } from '../commands-v2/dom/hide';
+import { createPutCommand } from '../commands-v2/dom/put';
+import { createMakeCommand } from '../commands-v2/dom/make';
 
-// Additional standard commands (11)
-import { createShowCommand } from '../commands/dom/show';
-import { createHideCommand } from '../commands/dom/hide';
-import { createIncrementCommand } from '../commands/data/increment';
-import { createDecrementCommand } from '../commands/data/decrement';
-import { createTriggerCommand } from '../commands/events/trigger';
-import { createWaitCommand } from '../commands/async/wait';
-import { createHaltCommand } from '../commands/control-flow/halt';
-import { createReturnCommand } from '../commands/control-flow/return';
-import { createMakeCommand } from '../commands/creation/make';
-import { createAppendCommand } from '../commands/content/append';
-import { createCallCommand } from '../commands/execution/call';
+// Data Commands (3)
+import { createSetCommand } from '../commands-v2/data/set';
+import { createIncrementCommand } from '../commands-v2/data/increment';
+import { createDecrementCommand } from '../commands-v2/data/decrement';
 
-/**
- * Standard Runtime - Direct Implementation
- * Bypasses Runtime class to avoid importing all commands
- */
-class StandardRuntimeV2 {
-  private registry: MinimalCommandRegistry;
-  private evaluator: ExpressionEvaluator;
+// Event Commands (2)
+import { createSendCommand } from '../commands-v2/events/send';
+import { createTriggerCommand } from '../commands-v2/events/trigger';
 
-  constructor() {
-    this.registry = new MinimalCommandRegistry();
-    this.evaluator = new ExpressionEvaluator();
+// Async Commands (2)
+import { createWaitCommand } from '../commands-v2/async/wait';
+import { createFetchCommand } from '../commands-v2/async/fetch';
 
-    // Register minimal commands (8)
-    this.registry.register(createAddCommand());
-    this.registry.register(createRemoveCommand());
-    this.registry.register(createToggleCommand());
-    this.registry.register(createPutCommand());
-    this.registry.register(createSetCommand());
-    this.registry.register(createIfCommand());
-    this.registry.register(createSendCommand());
-    this.registry.register(createLogCommand());
+// Navigation Commands (1)
+import { createGoCommand } from '../commands-v2/navigation/go';
 
-    // Register additional standard commands (12)
-    this.registry.register(createShowCommand());
-    this.registry.register(createHideCommand());
-    this.registry.register(createIncrementCommand());
-    this.registry.register(createDecrementCommand());
-    this.registry.register(createTriggerCommand());
-    this.registry.register(createWaitCommand());
-    this.registry.register(createHaltCommand());
-    this.registry.register(createReturnCommand());
-    this.registry.register(createMakeCommand());
-    this.registry.register(createAppendCommand());
-    this.registry.register(createCallCommand());
-  }
+// Utility Commands (1)
+import { createLogCommand } from '../commands-v2/utility/log';
 
-  /**
-   * Parse hyperscript code
-   */
-  parse(code: string) {
-    return parse(code);
-  }
+// Create runtime instance with standard commands
+const runtimeExperimental = createMinimalRuntime([
+  // DOM (7)
+  createAddCommand(),
+  createRemoveCommand(),
+  createToggleCommand(),
+  createShowCommand(),
+  createHideCommand(),
+  createPutCommand(),      // Includes memberExpression fix for "put X into #el.innerHTML"
+  createMakeCommand(),
+  // Data (3)
+  createSetCommand(),
+  createIncrementCommand(),
+  createDecrementCommand(),
+  // Events (2)
+  createSendCommand(),
+  createTriggerCommand(),
+  // Async (2)
+  createWaitCommand(),
+  createFetchCommand(),
+  // Navigation (1)
+  createGoCommand(),
+  // Utility (1)
+  createLogCommand(),
+]);
 
-  /**
-   * Execute hyperscript code
-   */
-  async execute(code: string, context?: ExecutionContext): Promise<any> {
+// Create adapter for MinimalAttributeProcessor
+// RuntimeExperimental has execute(node, context), but MinimalAttributeProcessor needs execute(code, context)
+const runtimeAdapter = {
+  parse: (code: string) => parse(code),
+  execute: async (code: string, context?: any) => {
     const ctx = context || createContext();
     const parseResult = parse(code);
-
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');
     }
-
-    return await this.registry.execute(parseResult.node, ctx);
+    return await runtimeExperimental.execute(parseResult.node, ctx);
   }
+};
+
+// Create minimal attribute processor with adapter
+const attributeProcessor = createMinimalAttributeProcessor(runtimeAdapter);
+
+// Create the API object (this is what gets exposed globally AND exported)
+const api = {
+  runtime: runtimeAdapter,
+  parse: (code: string) => runtimeAdapter.parse(code),
+  execute: async (code: string, context?: any) => runtimeAdapter.execute(code, context),
+  createContext,
+  attributeProcessor,
+  version: '1.1.0-standard-v2-experimental',
+  commands: [
+    'add', 'remove', 'toggle', 'show', 'hide', 'put', 'make',       // DOM (7)
+    'set', 'increment', 'decrement',                                 // Data (3)
+    'send', 'trigger',                                               // Events (2)
+    'wait', 'fetch',                                                 // Async (2)
+    'go',                                                            // Navigation (1)
+    'log'                                                            // Utility (1)
+  ],
 
   /**
-   * Get command registry (for advanced usage)
+   * Evaluate hyperscript code (convenience method)
    */
-  getRegistry(): MinimalCommandRegistry {
-    return this.registry;
-  }
+  eval: async (code: string, context?: any) => runtimeAdapter.execute(code, context),
 
   /**
-   * Get expression evaluator (for advanced usage)
+   * Initialize DOM scanning for _="" attributes
    */
-  getEvaluator(): ExpressionEvaluator {
-    return this.evaluator;
+  init: () => {
+    attributeProcessor.init();
   }
-}
-
-// Create runtime instance
-const runtime = new StandardRuntimeV2();
-
-// Create minimal attribute processor
-const attributeProcessor = createMinimalAttributeProcessor(runtime);
+};
 
 // Expose global API
 if (typeof window !== 'undefined') {
-  (window as any).hyperfixi = {
-    runtime,
-    parse: (code: string) => runtime.parse(code),
-    execute: async (code: string, context?: any) => runtime.execute(code, context),
-    createContext,
-    attributeProcessor,
-    version: '1.1.0-standard-v2',
-    commands: [
-      'add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log',  // Minimal (8)
-      'show', 'hide', 'increment', 'decrement', 'trigger', 'wait',    // Additional (6)
-      'halt', 'return', 'make', 'append', 'call'                      // Additional (5)
-    ],
-
-    /**
-     * Evaluate hyperscript code (convenience method)
-     */
-    eval: async (code: string, context?: any) => runtime.execute(code, context),
-
-    /**
-     * Initialize DOM scanning for _="" attributes
-     */
-    init: () => {
-      attributeProcessor.init();
-    }
-  };
+  (window as any).hyperfixi = api;
 
   // Auto-initialize on DOMContentLoaded
   if (document.readyState === 'loading') {
@@ -169,6 +142,5 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Export for module usage
-export { runtime, parse, createContext, attributeProcessor, StandardRuntimeV2 };
-export default runtime;
+// Export the API object (this is what rollup's IIFE format will use)
+export default api;

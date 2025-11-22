@@ -1,129 +1,95 @@
 /**
- * HyperFixi Minimal Browser Bundle V2
- * Tree-Shakeable Implementation - Only 8 Core Commands
+ * HyperFixi Minimal Browser Bundle V2 - Experimental
+ * Uses RuntimeBase + CommandAdapterV2 + V2 Commands
  *
- * This bundle bypasses the Runtime class to achieve true tree-shaking.
- * It imports only the 8 most common commands directly, resulting in
- * a 60-70% smaller bundle size compared to the full version.
+ * This bundle uses the experimental RuntimeExperimental class which:
+ * - Extends RuntimeBase (generic, zero direct command imports)
+ * - Uses EnhancedCommandRegistryV2 (parseInput() adapter)
+ * - Imports V2 commands with parseInput() methods
  *
- * Commands included:
+ * Commands included (8 minimal):
  * - add, remove, toggle (DOM manipulation)
- * - put (content insertion)
+ * - put (content insertion, with memberExpression fix)
  * - set (variable assignment)
- * - if (control flow)
- * - send (event dispatch)
  * - log (debugging)
+ * - send (event dispatch)
+ * - wait (async timing)
  *
- * Expected size: ~128KB uncompressed (~45-55KB gzipped)
+ * Expected size: ~180KB uncompressed (~60KB gzipped)
  * Full bundle: ~511KB uncompressed (~112KB gzipped)
- * Reduction: ~71% smaller
+ * Reduction: ~60% smaller
  */
 
 import { parse } from '../parser/parser';
-import { MinimalCommandRegistry } from '../runtime/minimal-command-registry';
-import { ExpressionEvaluator } from '../core/expression-evaluator';
-import { createMinimalAttributeProcessor, type MinimalRuntime } from '../dom/minimal-attribute-processor';
+import { createMinimalRuntime } from '../runtime/runtime-experimental';
+import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
 import { createContext } from '../core/context';
-import type { ExecutionContext } from '../types/base-types';
 
-// Import ONLY the 8 minimal commands (tree-shaking works!)
-import { createAddCommand } from '../commands/dom/add';
-import { createRemoveCommand } from '../commands/dom/remove';
-import { createToggleCommand } from '../commands/dom/toggle';
-import { createPutCommand } from '../commands/dom/put';
-import { createSetCommand } from '../commands/data/set';
-import { createIfCommand } from '../commands/control-flow/if';
-import { createSendCommand } from '../commands/events/send';
-import { createLogCommand } from '../commands/utility/log';
+// Import ONLY the 8 minimal V2 commands (tree-shaking works!)
+import { createAddCommand } from '../commands-v2/dom/add';
+import { createRemoveCommand } from '../commands-v2/dom/remove';
+import { createToggleCommand } from '../commands-v2/dom/toggle';
+import { createPutCommand } from '../commands-v2/dom/put';
+import { createSetCommand } from '../commands-v2/data/set';
+import { createSendCommand } from '../commands-v2/events/send';
+import { createLogCommand } from '../commands-v2/utility/log';
+import { createWaitCommand } from '../commands-v2/async/wait';
 
-/**
- * Minimal Runtime - Direct Implementation
- * Bypasses Runtime class to avoid importing all commands
- */
-class MinimalRuntimeV2 {
-  private registry: MinimalCommandRegistry;
-  private evaluator: ExpressionEvaluator;
+// Create runtime instance with minimal commands
+const runtimeExperimental = createMinimalRuntime([
+  createAddCommand(),
+  createRemoveCommand(),
+  createToggleCommand(),
+  createPutCommand(),      // Includes memberExpression fix for "put X into #el.innerHTML"
+  createSetCommand(),
+  createSendCommand(),
+  createLogCommand(),
+  createWaitCommand(),
+]);
 
-  constructor() {
-    this.registry = new MinimalCommandRegistry();
-    this.evaluator = new ExpressionEvaluator();
-
-    // Register only minimal commands
-    this.registry.register(createAddCommand());
-    this.registry.register(createRemoveCommand());
-    this.registry.register(createToggleCommand());
-    this.registry.register(createPutCommand());
-    this.registry.register(createSetCommand());
-    this.registry.register(createIfCommand());
-    this.registry.register(createSendCommand());
-    this.registry.register(createLogCommand());
-  }
-
-  /**
-   * Parse hyperscript code
-   */
-  parse(code: string) {
-    return parse(code);
-  }
-
-  /**
-   * Execute hyperscript code
-   */
-  async execute(code: string, context?: ExecutionContext): Promise<any> {
+// Create adapter for MinimalAttributeProcessor
+// RuntimeExperimental has execute(node, context), but MinimalAttributeProcessor needs execute(code, context)
+const runtimeAdapter = {
+  parse: (code: string) => parse(code),
+  execute: async (code: string, context?: any) => {
     const ctx = context || createContext();
     const parseResult = parse(code);
-
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');
     }
-
-    return await this.registry.execute(parseResult.node, ctx);
+    return await runtimeExperimental.execute(parseResult.node, ctx);
   }
+};
+
+// Create minimal attribute processor with adapter
+const attributeProcessor = createMinimalAttributeProcessor(runtimeAdapter);
+
+// Create the API object (this is what gets exposed globally AND exported)
+const api = {
+  runtime: runtimeAdapter,
+  parse: (code: string) => runtimeAdapter.parse(code),
+  execute: async (code: string, context?: any) => runtimeAdapter.execute(code, context),
+  createContext,
+  attributeProcessor,
+  version: '1.1.0-minimal-v2-experimental',
+  commands: ['add', 'remove', 'toggle', 'put', 'set', 'send', 'log', 'wait'],
 
   /**
-   * Get command registry (for advanced usage)
+   * Evaluate hyperscript code (convenience method)
    */
-  getRegistry(): MinimalCommandRegistry {
-    return this.registry;
-  }
+  eval: async (code: string, context?: any) => runtimeAdapter.execute(code, context),
 
   /**
-   * Get expression evaluator (for advanced usage)
+   * Initialize DOM scanning for _="" attributes
    */
-  getEvaluator(): ExpressionEvaluator {
-    return this.evaluator;
+  init: () => {
+    attributeProcessor.init();
   }
-}
-
-// Create runtime instance
-const runtime = new MinimalRuntimeV2();
-
-// Create minimal attribute processor
-const attributeProcessor = createMinimalAttributeProcessor(runtime);
+};
 
 // Expose global API
 if (typeof window !== 'undefined') {
-  (window as any).hyperfixi = {
-    runtime,
-    parse: (code: string) => runtime.parse(code),
-    execute: async (code: string, context?: any) => runtime.execute(code, context),
-    createContext,
-    attributeProcessor,
-    version: '1.1.0-minimal-v2',
-    commands: ['add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log'],
-
-    /**
-     * Evaluate hyperscript code (convenience method)
-     */
-    eval: async (code: string, context?: any) => runtime.execute(code, context),
-
-    /**
-     * Initialize DOM scanning for _="" attributes
-     */
-    init: () => {
-      attributeProcessor.init();
-    }
-  };
+  (window as any).hyperfixi = api;
 
   // Auto-initialize on DOMContentLoaded
   if (document.readyState === 'loading') {
@@ -136,6 +102,5 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Export for module usage
-export { runtime, parse, createContext, attributeProcessor, MinimalRuntimeV2 };
-export default runtime;
+// Export the API object (this is what rollup's IIFE format will use)
+export default api;
