@@ -1,8 +1,8 @@
 # Hybrid Tree-Shaking Implementation Guide
 
-**Date**: 2025-11-21
-**Status**: 🚧 **IN PROGRESS** - Week 1 of 3
-**Goal**: Achieve 60% bundle reduction through standalone V2 command rewrites
+**Date**: 2025-11-21 (Updated: 2025-11-22)
+**Status**: ✅ **WEEK 2 COMPLETE** - 7/16 commands (43%)
+**Goal**: Achieve 51-59% bundle reduction through standalone V2 command rewrites
 
 ---
 
@@ -653,18 +653,34 @@ V2 standalone should handle 90% use cases in 200-400 lines.
 - [x] log (2-3 hours) ✅
 - **Result**: 20 KB savings, minimal bundle ~100 KB
 
-### Week 2: 🚧 IN PROGRESS (Target: 4 commands)
-- [ ] add (6-8 hours)
-- [ ] remove (6-8 hours)
-- [ ] set (12-16 hours)
-- [ ] wait (8-10 hours)
-- **Target**: 70 KB cumulative savings
+### Week 2: ✅ COMPLETE (Target: 4 commands)
 
-### Week 3: ⏳ PENDING (Target: 3 commands)
-- [ ] trigger (10-12 hours)
-- [ ] increment (6-8 hours)
-- [ ] decrement (6-8 hours)
-- **Target**: 108 KB total savings (47% reduction)
+- [x] add (6-8 hours) ✅
+- [x] remove (6-8 hours) ✅
+- [x] set (12-16 hours) ✅
+- [x] wait (8-10 hours) ✅
+- **Result**: 308+ tests passing, 42% reduction achieved (213 KB minimal bundle)
+
+### Week 3: 🚧 NEXT (Target: 3 commands)
+
+- [ ] toggle (12-16 hours) - High complexity, temporal modifiers
+- [ ] put (6-8 hours) - Minimal bundle impact
+- [ ] send (8-10 hours) - Event creation
+- **Target**: 10/16 commands complete (62%)
+
+### Week 4: ⏳ PENDING (Target: 3 commands)
+
+- [ ] fetch (8-10 hours) - HTTP requests
+- [ ] trigger (8-10 hours) - Event triggering
+- [ ] make (6-8 hours) - DOM creation
+- **Target**: 13/16 commands complete (81%)
+
+### Week 5: ⏳ PENDING (Target: 3 commands)
+
+- [ ] increment (6-8 hours) - Variable manipulation
+- [ ] decrement (6-8 hours) - Variable manipulation
+- [ ] go (6-8 hours) - Navigation
+- **Target**: 16/16 commands complete (100%), 51-59% total reduction
 
 ---
 

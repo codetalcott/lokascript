@@ -45,14 +45,15 @@ that works exactly like the original, with modern TypeScript benefits.
   - ✅ Zero breaking changes, zero TypeScript errors introduced
   - 📋 Phase 3 planned: File organization and modularization (parser.ts 4,698 lines → ~1,000 lines)
   - 📄 Documentation: [PARSER_PHASE2_COMPLETE.md](../packages/core/PARSER_PHASE2_COMPLETE.md)
-- ✅ **Tree-Shaking Architecture** (Recent Sessions): RuntimeBase + CommandAdapterV2 for bundle optimization
+- 🚧 **Tree-Shaking Architecture** (Ongoing - Phase 5): RuntimeBase + Hybrid Standalone for maximum optimization
   - ✅ Phase 1: RuntimeBase foundation - Generic runtime with zero command imports (617 lines)
   - ✅ Phase 2: Commands-v2 - 16 commands with parseInput() methods
   - ✅ Phase 3: CommandAdapterV2 - Generic adapter, 70% complexity reduction (973 → 288 lines, -685 lines)
   - ✅ Phase 4: Validation - 37% bundle size reduction achieved (366 KB → 230 KB, -139 KB)
-  - ⚠️ Limitation: Command-level tree-shaking limited by V1 inheritance (mitigation path available)
-  - ✅ Zero breaking changes, 100% non-destructive, all 440+ tests passing
-  - 📄 Documentation: [TREE_SHAKING_COMPLETE.md](tree-shaking/TREE_SHAKING_COMPLETE.md)
+  - ✅ Phase 5 (Weeks 1-2): Hybrid standalone approach - 7/16 commands complete, 42% reduction (366 KB → 213 KB)
+  - 🚧 Phase 5 (Weeks 3-5): Remaining 9 commands - targeting 51-59% total reduction (366 KB → 150-180 KB)
+  - ✅ Zero breaking changes, 308+ tests passing, proven sustainable pattern
+  - 📄 Documentation: [TREE_SHAKING_COMPLETE.md](tree-shaking/TREE_SHAKING_COMPLETE.md), [WEEK3_5_COMPLETION_PLAN.md](tree-shaking/WEEK3_5_COMPLETION_PLAN.md)
 
 ### ✅ **Server-Side Integration** (Phase 4 Complete)
 - ✅ **HTTP Service API**: Complete REST API with compilation, validation, and batch processing
