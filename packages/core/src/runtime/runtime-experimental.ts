@@ -1,11 +1,11 @@
 /**
- * RuntimeExperimental - Test runtime using RuntimeBase + CommandAdapterV2 + commands-v2
+ * RuntimeExperimental - Test runtime using RuntimeBase + CommandAdapterV2 + commands
  *
  * This is an experimental runtime for testing the tree-shaking refactoring.
  * It uses:
  * - RuntimeBase (generic, zero command imports)
  * - EnhancedCommandRegistryV2 (generic adapter)
- * - Commands from commands-v2/ (with parseInput() methods)
+ * - Commands from commands/ (with parseInput() methods)
  *
  * This runtime is for validation and testing only. DO NOT use in production
  * until Phase 5 validation is complete.
@@ -19,83 +19,83 @@ import { LazyExpressionEvaluator } from '../core/lazy-expression-evaluator';
 
 // Import commands-v2 (with parseInput() methods)
 // DOM Commands (7)
-import { createHideCommand } from '../commands-v2/dom/hide';
-import { createShowCommand } from '../commands-v2/dom/show';
-import { createAddCommand } from '../commands-v2/dom/add';
-import { createRemoveCommand } from '../commands-v2/dom/remove';
-import { createToggleCommand } from '../commands-v2/dom/toggle';
-import { createPutCommand } from '../commands-v2/dom/put';
-import { createMakeCommand } from '../commands-v2/dom/make';
+import { createHideCommand } from '../commands/dom/hide';
+import { createShowCommand } from '../commands/dom/show';
+import { createAddCommand } from '../commands/dom/add';
+import { createRemoveCommand } from '../commands/dom/remove';
+import { createToggleCommand } from '../commands/dom/toggle';
+import { createPutCommand } from '../commands/dom/put';
+import { createMakeCommand } from '../commands/dom/make';
 
 // Async Commands (2)
-import { createWaitCommand } from '../commands-v2/async/wait';
-import { createFetchCommand } from '../commands-v2/async/fetch';
+import { createWaitCommand } from '../commands/async/wait';
+import { createFetchCommand } from '../commands/async/fetch';
 
 // Data Commands (3)
-import { createSetCommand } from '../commands-v2/data/set';
-import { createIncrementCommand } from '../commands-v2/data/increment';
-import { createDecrementCommand } from '../commands-v2/data/decrement';
+import { createSetCommand } from '../commands/data/set';
+import { createIncrementCommand } from '../commands/data/increment';
+import { createDecrementCommand } from '../commands/data/decrement';
 
 // Utility Commands (1)
-import { createLogCommand } from '../commands-v2/utility/log';
+import { createLogCommand } from '../commands/utility/log';
 
 // Event Commands (2)
-import { createTriggerCommand } from '../commands-v2/events/trigger';
-import { createSendCommand } from '../commands-v2/events/send';
+import { createTriggerCommand } from '../commands/events/trigger';
+import { createSendCommand } from '../commands/events/send';
 
 // Navigation Commands (1)
-import { createGoCommand } from '../commands-v2/navigation/go';
+import { createGoCommand } from '../commands/navigation/go';
 
 // Control Flow Commands (7)
-import { createIfCommand } from '../commands-v2/control-flow/if';
-import { createRepeatCommand } from '../commands-v2/control-flow/repeat';
-import { createBreakCommand } from '../commands-v2/control-flow/break';
-import { createContinueCommand } from '../commands-v2/control-flow/continue';
-import { createHaltCommand } from '../commands-v2/control-flow/halt';
-import { createReturnCommand } from '../commands-v2/control-flow/return';
-import { createExitCommand } from '../commands-v2/control-flow/exit';
+import { createIfCommand } from '../commands/control-flow/if';
+import { createRepeatCommand } from '../commands/control-flow/repeat';
+import { createBreakCommand } from '../commands/control-flow/break';
+import { createContinueCommand } from '../commands/control-flow/continue';
+import { createHaltCommand } from '../commands/control-flow/halt';
+import { createReturnCommand } from '../commands/control-flow/return';
+import { createExitCommand } from '../commands/control-flow/exit';
 
 // Data Commands - Phase 6-2 (1)
-import { createBindCommand } from '../commands-v2/data/bind';
+import { createBindCommand } from '../commands/data/bind';
 
 // Execution Commands (1)
-import { createCallCommand } from '../commands-v2/execution/call';
+import { createCallCommand } from '../commands/execution/call';
 
 // Content Commands (1)
-import { createAppendCommand } from '../commands-v2/content/append';
+import { createAppendCommand } from '../commands/content/append';
 
 // Animation Commands - Phase 6-3 (3)
-import { createTransitionCommand } from '../commands-v2/animation/transition';
-import { createMeasureCommand } from '../commands-v2/animation/measure';
-import { createSettleCommand } from '../commands-v2/animation/settle';
+import { createTransitionCommand } from '../commands/animation/transition';
+import { createMeasureCommand } from '../commands/animation/measure';
+import { createSettleCommand } from '../commands/animation/settle';
 
 // Data Persistence - Phase 6-3 (1)
-import { createPersistCommand } from '../commands-v2/data/persist';
+import { createPersistCommand } from '../commands/data/persist';
 
 // Advanced Commands - Phase 6-4 (2)
-import { createJsCommand } from '../commands-v2/advanced/js';
-import { createAsyncCommand } from '../commands-v2/advanced/async';
+import { createJsCommand } from '../commands/advanced/js';
+import { createAsyncCommand } from '../commands/advanced/async';
 
 // Control Flow - Phase 6-4 (1)
-import { createUnlessCommand } from '../commands-v2/control-flow/unless';
+import { createUnlessCommand } from '../commands/control-flow/unless';
 
 // Data Commands - Phase 6-4 (1)
-import { createDefaultCommand } from '../commands-v2/data/default';
+import { createDefaultCommand } from '../commands/data/default';
 
 // Execution Commands - Phase 6-4 (1)
-import { createPseudoCommand } from '../commands-v2/execution/pseudo-command';
+import { createPseudoCommand } from '../commands/execution/pseudo-command';
 
 // Utility & Specialized - Phase 6-5 (6)
-import { createTellCommand } from '../commands-v2/utility/tell';
-import { createCopyCommand } from '../commands-v2/utility/copy';
-import { createPickCommand } from '../commands-v2/utility/pick';
-import { createThrowCommand } from '../commands-v2/control-flow/throw';
-import { createBeepCommand } from '../commands-v2/utility/beep';
-import { createInstallCommand } from '../commands-v2/behaviors/install';
+import { createTellCommand } from '../commands/utility/tell';
+import { createCopyCommand } from '../commands/utility/copy';
+import { createPickCommand } from '../commands/utility/pick';
+import { createThrowCommand } from '../commands/control-flow/throw';
+import { createBeepCommand } from '../commands/utility/beep';
+import { createInstallCommand } from '../commands/behaviors/install';
 
 // Final Commands - Phase 6-6 (2)
-import { createTakeCommand } from '../commands-v2/animation/take';
-import { createRenderCommand } from '../commands-v2/templates/render';
+import { createTakeCommand } from '../commands/animation/take';
+import { createRenderCommand } from '../commands/templates/render';
 
 export interface RuntimeExperimentalOptions {
   /**
@@ -133,12 +133,12 @@ export interface RuntimeExperimentalOptions {
  * RuntimeExperimental - Test runtime for tree-shaking validation
  *
  * This runtime extends RuntimeBase and pre-registers all 43 V2 commands from
- * commands-v2/ for testing purposes (Phase 6 COMPLETE - All commands migrated).
+ * commands/ for testing purposes (Phase 6 COMPLETE - All commands migrated).
  *
  * Key differences from Runtime:
  * - Uses RuntimeBase (generic AST traversal)
  * - Uses EnhancedCommandRegistryV2 (generic adapter)
- * - Uses commands-v2 (with parseInput())
+ * - Uses standalone commands (with parseInput())
  * - Registers 43 V2 commands by default (16 Phase 5 + 5 Phase 6-1 + 5 Phase 6-2 + 4 Phase 6-3 + 5 Phase 6-4 + 6 Phase 6-5 + 2 Phase 6-6)
  * - Much smaller bundle size (estimated ~218KB vs 368KB baseline, 41% reduction)
  */
@@ -259,7 +259,7 @@ export function createRuntimeExperimental(options: RuntimeExperimentalOptions = 
  * Example usage:
  * ```typescript
  * import { createMinimalRuntime } from './runtime-experimental';
- * import { createHideCommand, createShowCommand } from '../commands-v2';
+ * import { createHideCommand, createShowCommand } from '../commands';
  *
  * const runtime = createMinimalRuntime([
  *   createHideCommand(),

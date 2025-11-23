@@ -1,91 +1,112 @@
 /**
- * Enhanced Throw Command Implementation
- * Throws an error with a specified message
+ * ThrowCommand - Standalone V2 Implementation
  *
- * Syntax: throw <message>
+ * Throws an error with a specified message, terminating execution
  *
- * Modernized with CommandImplementation interface
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Throw errors with custom messages
+ * - Support Error objects or strings
+ * - Immediate execution termination
+ * - Error propagation up call stack
+ *
+ * Syntax:
+ *   throw <message>
+ *
+ * @example
+ *   throw "Invalid input"
+ *   if not valid then throw "Validation failed"
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for ThrowCommand
+ */
 export interface ThrowCommandInput {
+  /** Error message or Error object to throw */
   message: string | Error | any;
 }
 
-// Output type definition (throw never returns normally)
+/**
+ * Output from throw command (never returned as throw always throws)
+ */
 export interface ThrowCommandOutput {
-  // This will never be returned as throw always throws
   error: Error;
 }
 
 /**
- * Enhanced Throw Command with full type safety and validation
+ * ThrowCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 127 lines
+ * V2 Target: ~110 lines (inline utilities, standalone)
  */
-export class ThrowCommand
-  implements CommandImplementation<ThrowCommandInput, ThrowCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'throw',
-    description:
-      'The throw command throws an error with a specified message, immediately terminating execution and propagating the error up the call stack.',
+export class ThrowCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'throw';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Throw an error with a specified message',
+    syntax: ['throw <message>'],
     examples: [
       'throw "Invalid input"',
       'throw new Error("Custom error")',
       'if not valid then throw "Validation failed"',
-      'throw `User ${user.name} not found`',
     ],
-    syntax: 'throw <message>',
-    category: 'flow' as const,
-    version: '2.0.0',
+    category: 'control-flow',
+    sideEffects: ['error-throwing', 'execution-termination'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<ThrowCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Throw command requires a message or error object',
-              suggestions: ['Provide an error message string or Error object to throw'],
-            },
-          ],
-          suggestions: ['Provide an error message string or Error object to throw'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<ThrowCommandInput> {
+    if (raw.args.length < 1) {
+      throw new Error('throw command requires a message or error object');
+    }
 
-      const inputObj = input as any;
+    // First arg is the message/error
+    const message = await evaluator.evaluate(raw.args[0], context);
 
-      if (!('message' in inputObj) && !inputObj.message) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Throw command requires a message property',
-              suggestions: ['Provide a message property with the error message'],
-            },
-          ],
-          suggestions: ['Provide a message property with the error message'],
-        };
-      }
+    return {
+      message,
+    };
+  }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          message: inputObj.message,
-        },
-      };
-    },
-  };
-
-  execute(input: ThrowCommandInput, _context: TypedExecutionContext): Promise<ThrowCommandOutput> {
+  /**
+   * Execute the throw command
+   *
+   * Throws an error, immediately terminating execution.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Never returns (always throws)
+   */
+  async execute(
+    input: ThrowCommandInput,
+    _context: TypedExecutionContext
+  ): Promise<ThrowCommandOutput> {
     const { message } = input;
 
     // Create appropriate error object
@@ -98,30 +119,18 @@ export class ThrowCommand
       // Create a new error with the message
       errorToThrow = new Error(message);
     } else {
-      // Convert other types to string
+      // Convert other types to string for error message
       errorToThrow = new Error(String(message));
     }
 
-    // Add context information to the error if possible
-    if ('stack' in errorToThrow && typeof errorToThrow.stack === 'string') {
-      // Error already has stack trace
-    } else {
-      // Try to capture stack trace
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(errorToThrow, this.execute);
-      }
-    }
-
-    // Throw the error
+    // Throw the error (execution stops here)
     throw errorToThrow;
   }
 }
 
 /**
- * Factory function to create the enhanced throw command
+ * Factory function to create ThrowCommand instance
  */
 export function createThrowCommand(): ThrowCommand {
   return new ThrowCommand();
 }
-
-export default ThrowCommand;

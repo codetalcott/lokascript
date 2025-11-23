@@ -1,24 +1,44 @@
 /**
- * Enhanced Pick Command Implementation
- * Selects a random element from a collection or choice from options
+ * PickCommand - Standalone V2 Implementation
  *
- * Syntax: pick <item1>, <item2>, ... | pick from <array>
+ * Selects a random element from a collection
  *
- * Modernized with CommandImplementation interface
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Random selection from array
+ * - Direct item list or array-based picking
+ * - Result stored in context.it
+ * - Index tracking
+ *
+ * Syntax:
+ *   pick <item1>, <item2>, ...
+ *   pick from <array>
+ *
+ * @example
+ *   pick "red", "green", "blue"
+ *   pick from colors
+ *   pick 1, 2, 3, 4, 5
  */
 
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for PickCommand
+ */
 export interface PickCommandInput {
-  items?: any[]; // For direct item list
-  array?: any[]; // For array-based picking
-  fromKeyword?: 'from'; // For syntax validation
+  /** Direct item list */
+  items?: any[];
+  /** Array to pick from */
+  array?: any[];
 }
 
-// Output type definition
+/**
+ * Output from pick command execution
+ */
 export interface PickCommandOutput {
   selectedItem: any;
   selectedIndex: number;
@@ -27,153 +47,100 @@ export interface PickCommandOutput {
 }
 
 /**
- * Enhanced Pick Command with full type safety and validation
+ * PickCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 195 lines
+ * V2 Target: ~165 lines (inline utilities, standalone)
  */
-export class PickCommand
-  implements CommandImplementation<PickCommandInput, PickCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'pick',
-    description:
-      'The pick command selects a random element from a collection of items or from an array. It sets the selected item to the "it" context variable.',
+export class PickCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'pick';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Select a random element from a collection',
+    syntax: ['pick <item1>, <item2>, ...', 'pick from <array>'],
     examples: [
       'pick "red", "green", "blue"',
       'pick from colors',
       'pick 1, 2, 3, 4, 5',
       'pick from document.querySelectorAll(".option")',
-      'pick "heads", "tails"',
     ],
-    syntax: 'pick <item1>, <item2>, ... | pick from <array>',
-    category: 'utility' as const,
-    version: '2.0.0',
+    category: 'utility',
+    sideEffects: ['random-selection'],
   };
 
-  validation = {
-    validate(input: unknown): UnifiedValidationResult<PickCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Pick command requires an object input',
-              suggestions: ['Provide an object with items array or array property'],
-            },
-          ],
-          suggestions: ['Provide an object with items array or array property'],
-        };
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<PickCommandInput> {
+    // Check for "from" modifier (pick from array)
+    if (raw.modifiers?.from) {
+      const array = await evaluator.evaluate(raw.modifiers.from, context);
+
+      if (!Array.isArray(array)) {
+        throw new Error('pick from requires an array');
       }
 
-      const inputObj = input as any;
-
-      // Must have either items or array
-      if (!inputObj.items && !inputObj.array) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Pick command requires items to choose from',
-              suggestions: ['Provide an items array or use "from" with an array'],
-            },
-          ],
-          suggestions: ['Provide an items array or use "from" with an array'],
-        };
+      if (array.length === 0) {
+        throw new Error('Cannot pick from empty array');
       }
 
-      // Cannot have both items and array
-      if (inputObj.items && inputObj.array) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Pick command cannot have both direct items and array',
-              suggestions: ['Use either direct items or "from" array syntax, not both'],
-            },
-          ],
-          suggestions: ['Use either direct items or "from" array syntax, not both'],
-        };
-      }
+      return { array };
+    }
 
-      // Validate items if provided
-      if (inputObj.items && !Array.isArray(inputObj.items)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Items must be an array',
-              suggestions: ['Provide an array of items to pick from'],
-            },
-          ],
-          suggestions: ['Provide an array of items to pick from'],
-        };
-      }
+    // Direct item list (pick item1, item2, ...)
+    if (raw.args.length === 0) {
+      throw new Error('pick command requires items to choose from');
+    }
 
-      // Validate array if provided
-      if (inputObj.array && !Array.isArray(inputObj.array)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Array must be an array type',
-              suggestions: ['Provide a valid array to pick from'],
-            },
-          ],
-          suggestions: ['Provide a valid array to pick from'],
-        };
-      }
+    const items = await Promise.all(
+      raw.args.map((arg) => evaluator.evaluate(arg, context))
+    );
 
-      // Check that we have at least one item
-      const sourceArray = inputObj.items || inputObj.array;
-      if (sourceArray.length === 0) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Cannot pick from empty collection',
-              suggestions: ['Provide at least one item to pick from'],
-            },
-          ],
-          suggestions: ['Provide at least one item to pick from'],
-        };
-      }
+    return { items };
+  }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          items: inputObj.items,
-          array: inputObj.array,
-          fromKeyword: inputObj.fromKeyword,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the pick command
+   *
+   * Selects a random item from the collection.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Pick operation result
+   */
   async execute(
     input: PickCommandInput,
     context: TypedExecutionContext
   ): Promise<PickCommandOutput> {
     const { items, array } = input;
 
-    // Determine source array and type
-    const sourceArray = items || array;
+    // Determine source
+    const sourceArray = items || array!;
     const sourceType: 'items' | 'array' = items ? 'items' : 'array';
 
-    if (!sourceArray || sourceArray.length === 0) {
-      throw new Error('Cannot pick from empty collection');
-    }
-
-    // Generate random index
+    // Pick random index
     const selectedIndex = Math.floor(Math.random() * sourceArray.length);
     const selectedItem = sourceArray[selectedIndex];
 
-    // Set the selected item in context
+    // Set result in context
     Object.assign(context, { it: selectedItem });
 
     return {
@@ -186,10 +153,8 @@ export class PickCommand
 }
 
 /**
- * Factory function to create the enhanced pick command
+ * Factory function to create PickCommand instance
  */
 export function createPickCommand(): PickCommand {
   return new PickCommand();
 }
-
-export default PickCommand;

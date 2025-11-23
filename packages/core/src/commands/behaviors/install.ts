@@ -1,6 +1,18 @@
 /**
- * Install Command Implementation
- * Installs a behavior on an element
+ * InstallCommand - Standalone V2 Implementation
+ *
+ * Installs a behavior on an element with optional parameters
+ *
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Behavior installation on elements
+ * - Parameter passing to behaviors
+ * - Target resolution (me, selector, element, array)
+ * - Behavior registry integration
+ * - PascalCase validation
+ * - Multiple target support
  *
  * Syntax:
  *   install <BehaviorName>
@@ -8,29 +20,32 @@
  *   install <BehaviorName>(param: value, param2: value2)
  *   install <BehaviorName>(param: value) on <element>
  *
- * Examples:
+ * @example
  *   install Removable
  *   install Draggable on #box
  *   install Tooltip(text: "Help", position: "top")
  *   install Sortable(axis: "y") on .list
- *
- * This implements the official _hyperscript install command for behaviors
- * See: https://hyperscript.org/features/behavior/
  */
 
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
-import type { ValidationError } from '../../types/base-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for InstallCommand
+ */
 export interface InstallCommandInput {
+  /** Behavior name (PascalCase) */
   behaviorName: string;
+  /** Optional parameters for behavior */
   parameters?: Record<string, unknown>;
-  target?: unknown; // Element or expression that resolves to element(s)
+  /** Target element(s) to install on (defaults to 'me') */
+  target?: unknown;
 }
 
-// Output type definition
+/**
+ * Output from install command execution
+ */
 export interface InstallCommandOutput {
   success: boolean;
   behaviorName: string;
@@ -39,18 +54,31 @@ export interface InstallCommandOutput {
 }
 
 /**
- * Install Command with full type safety and validation
- * Connects hyperscript syntax to programmatic behaviors API
+ * InstallCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 321 lines
+ * V2 Target: ~310 lines (inline utilities, standalone)
  */
-export class InstallCommand
-  implements CommandImplementation<InstallCommandInput, InstallCommandOutput, TypedExecutionContext>
-{
-  name = 'install';
+export class InstallCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'install';
 
-  metadata = {
-    name: 'install',
-    description:
-      'Installs a behavior on an element. Behaviors are reusable bundles of hyperscript code that can be attached to elements.',
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Install a behavior on an element with optional parameters',
+    syntax: [
+      'install <BehaviorName>',
+      'install <BehaviorName> on <element>',
+      'install <BehaviorName>(param: value)',
+      'install <BehaviorName>(param: value) on <element>',
+    ],
     examples: [
       'install Removable',
       'install Draggable on #box',
@@ -58,103 +86,75 @@ export class InstallCommand
       'install Sortable(axis: "y") on .list',
       'install MyBehavior(foo: 42) on the first <div/>',
     ],
-    syntax:
-      'install <BehaviorName> | install <BehaviorName>(<params>) | install <BehaviorName> on <element> | install <BehaviorName>(<params>) on <element>',
-    category: 'behaviors' as const,
-    version: '1.0.0',
+    category: 'behaviors',
+    sideEffects: ['behavior-installation', 'element-modification'],
   };
 
-  validation = {
-    validate(input: unknown): UnifiedValidationResult<InstallCommandInput> {
-      const errors: ValidationError[] = [];
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<InstallCommandInput> {
+    if (raw.args.length < 1) {
+      throw new Error('install command requires a behavior name');
+    }
 
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Install command requires an object input',
-              suggestions: ['Provide an object with behaviorName and optional parameters/target'],
-            },
-          ],
-          suggestions: ['Provide an object with behaviorName and optional parameters/target'],
-        };
-      }
+    // First arg is behavior name
+    const behaviorName = String(await evaluator.evaluate(raw.args[0], context));
 
-      const inputObj = input as any;
+    // Validate PascalCase
+    if (!/^[A-Z][a-zA-Z0-9_]*$/.test(behaviorName)) {
+      throw new Error(
+        `Behavior name must be PascalCase (start with uppercase): "${behaviorName}"`
+      );
+    }
 
-      // Validate behavior name is present and is a string
-      if (!inputObj.behaviorName) {
-        errors.push({
-          type: 'missing-argument',
-          message: 'Install command requires a behavior name',
-          suggestions: ['Provide the name of a behavior to install'],
-        });
-      } else if (typeof inputObj.behaviorName !== 'string') {
-        errors.push({
-          type: 'type-mismatch',
-          message: 'Behavior name must be a string',
-          suggestions: ['Provide a valid behavior name as a string'],
-        });
-      } else if (!/^[A-Z][a-zA-Z0-9_]*$/.test(inputObj.behaviorName)) {
-        errors.push({
-          type: 'validation-error',
-          message:
-            'Behavior name must start with uppercase letter and contain only letters, numbers, and underscores',
-          suggestions: [
-            'Use PascalCase for behavior names (e.g., "Removable", "MyBehavior")',
-            'Behavior names should start with a capital letter',
-          ],
-        });
-      }
+    // Second arg (if present) is parameters object
+    let parameters: Record<string, unknown> | undefined;
+    if (raw.args.length >= 2) {
+      const params = await evaluator.evaluate(raw.args[1], context);
+      if (params && typeof params === 'object' && !Array.isArray(params)) {
+        parameters = params as Record<string, unknown>;
 
-      // Validate parameters if provided
-      if (inputObj.parameters !== undefined) {
-        if (
-          typeof inputObj.parameters !== 'object' ||
-          inputObj.parameters === null ||
-          Array.isArray(inputObj.parameters)
-        ) {
-          errors.push({
-            type: 'type-mismatch',
-            message: 'Parameters must be an object with key-value pairs',
-            suggestions: ['Provide parameters as { key: value, ... }'],
-          });
-        } else {
-          // Validate parameter names are valid identifiers
-          for (const paramName of Object.keys(inputObj.parameters)) {
-            if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(paramName)) {
-              errors.push({
-                type: 'validation-error',
-                message: `Invalid parameter name: "${paramName}"`,
-                suggestions: ['Parameter names must be valid JavaScript identifiers'],
-              });
-            }
+        // Validate parameter names
+        for (const paramName of Object.keys(parameters)) {
+          if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(paramName)) {
+            throw new Error(`Invalid parameter name: "${paramName}"`);
           }
         }
       }
+    }
 
-      // Target validation is light - will be resolved at execution time
-      // (could be 'me', CSS selector, or expression)
+    // Check for "on" modifier (target)
+    let target: unknown;
+    if (raw.modifiers?.on) {
+      target = await evaluator.evaluate(raw.modifiers.on, context);
+    }
 
-      if (errors.length > 0) {
-        return {
-          isValid: false,
-          errors,
-          suggestions: errors.flatMap(e => e.suggestions || []),
-        };
-      }
+    return {
+      behaviorName,
+      parameters,
+      target,
+    };
+  }
 
-      return {
-        isValid: true,
-        data: inputObj as InstallCommandInput,
-        errors: [],
-        suggestions: [],
-      };
-    },
-  };
-
+  /**
+   * Execute the install command
+   *
+   * Installs a behavior on target element(s).
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Installation result
+   */
   async execute(
     input: InstallCommandInput,
     context: TypedExecutionContext
@@ -163,7 +163,7 @@ export class InstallCommand
 
     try {
       // Resolve target element(s)
-      const targetElements = await this.resolveTarget(target, context);
+      const targetElements = this.resolveTarget(target, context);
 
       if (targetElements.length === 0) {
         throw new Error('No target elements found to install behavior on');
@@ -181,7 +181,12 @@ export class InstallCommand
       // Install behavior on each target element
       const instances = [];
       for (const element of targetElements) {
-        const instance = await this.installBehavior(behaviorName, element, parameters, context);
+        const instance = await this.installBehavior(
+          behaviorName,
+          element,
+          parameters,
+          context
+        );
         instances.push(instance);
       }
 
@@ -193,22 +198,28 @@ export class InstallCommand
       };
     } catch (error) {
       throw new Error(
-        `Failed to install behavior "${behaviorName}": ${error instanceof Error ? error.message : String(error)}`
+        `Failed to install behavior "${behaviorName}": ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
     }
   }
 
+  // ========== Private Utility Methods ==========
+
   /**
    * Resolve the target element(s) for installation
-   * Returns array of HTMLElements
+   *
+   * @param target - Target element(s) or selector
+   * @param context - Execution context
+   * @returns Array of HTMLElements
    */
-  private async resolveTarget(
+  private resolveTarget(
     target: unknown,
     context: TypedExecutionContext
-  ): Promise<HTMLElement[]> {
+  ): HTMLElement[] {
     // If no target specified, use 'me' (current element)
     if (target === undefined || target === null) {
-      // Check context.me first (primary location), then fall back to locals
       const me = context.me || context.locals.get('me');
       if (me instanceof HTMLElement) {
         return [me];
@@ -223,17 +234,16 @@ export class InstallCommand
 
     // If array of elements
     if (Array.isArray(target)) {
-      const elements = target.filter(t => t instanceof HTMLElement);
+      const elements = target.filter((t) => t instanceof HTMLElement);
       if (elements.length === 0) {
         throw new Error('Target array contains no valid HTMLElements');
       }
       return elements;
     }
 
-    // If string (CSS selector)
+    // If string (CSS selector or 'me')
     if (typeof target === 'string') {
       if (target === 'me') {
-        // Check context.me first (primary location), then fall back to locals
         const me = context.me || context.locals.get('me');
         if (me instanceof HTMLElement) {
           return [me];
@@ -244,13 +254,26 @@ export class InstallCommand
       // Query document for selector
       if (typeof document !== 'undefined') {
         const elements = document.querySelectorAll(target);
-        const htmlElements = Array.from(elements).filter(el => el instanceof HTMLElement);
+        const htmlElements = Array.from(elements).filter(
+          (el) => el instanceof HTMLElement
+        );
         if (htmlElements.length === 0) {
           throw new Error(`No elements found matching selector: "${target}"`);
         }
-        return htmlElements;
+        return htmlElements as HTMLElement[];
       }
       throw new Error('document is not available (not in browser environment)');
+    }
+
+    // Handle NodeList
+    if (target && typeof target === 'object' && 'length' in target) {
+      const elements = Array.from(target as any).filter(
+        (t) => t instanceof HTMLElement
+      );
+      if (elements.length === 0) {
+        throw new Error('Target collection contains no valid HTMLElements');
+      }
+      return elements;
     }
 
     // If it's an object with element property (some wrapper type)
@@ -265,7 +288,11 @@ export class InstallCommand
   }
 
   /**
-   * Check if behavior is defined
+   * Check if behavior is defined in registry
+   *
+   * @param behaviorName - Name of behavior to check
+   * @param context - Execution context
+   * @returns True if behavior exists
    */
   private behaviorExists(behaviorName: string, context: TypedExecutionContext): boolean {
     // Check context for behaviors registry
@@ -288,6 +315,12 @@ export class InstallCommand
 
   /**
    * Install behavior on element using programmatic API
+   *
+   * @param behaviorName - Name of behavior to install
+   * @param element - Target element
+   * @param parameters - Behavior parameters
+   * @param context - Execution context
+   * @returns Behavior instance
    */
   private async installBehavior(
     behaviorName: string,
@@ -308,7 +341,11 @@ export class InstallCommand
     if (typeof globalThis !== 'undefined') {
       const hyperscriptGlobal = (globalThis as any)._hyperscript;
       if (hyperscriptGlobal?.behaviors?.install) {
-        return await hyperscriptGlobal.behaviors.install(behaviorName, element, parameters);
+        return await hyperscriptGlobal.behaviors.install(
+          behaviorName,
+          element,
+          parameters
+        );
       }
     }
 
@@ -316,5 +353,9 @@ export class InstallCommand
   }
 }
 
-// Export singleton instance for registration
-export const installCommand = new InstallCommand();
+/**
+ * Factory function to create InstallCommand instance
+ */
+export function createInstallCommand(): InstallCommand {
+  return new InstallCommand();
+}

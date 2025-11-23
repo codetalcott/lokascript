@@ -1,24 +1,49 @@
 /**
- * Enhanced Settle Command Implementation
+ * SettleCommand - Standalone V2 Implementation
+ *
  * Waits for CSS transitions and animations to complete
  *
- * Syntax: settle [<target>] [for <timeout>]
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with CommandImplementation interface
+ * Features:
+ * - Wait for CSS transitions to complete
+ * - Wait for CSS animations to complete
+ * - Calculate total animation time from computed styles
+ * - Configurable timeout with fallback
+ * - Settle immediately if no animations running
+ * - Event-based completion detection
+ *
+ * Syntax:
+ *   settle
+ *   settle <target>
+ *   settle for <timeout>
+ *   settle <target> for <timeout>
+ *
+ * @example
+ *   settle
+ *   settle #animated-element
+ *   settle for 3000
+ *   settle .loading for 5s
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import { asHTMLElement } from '../../utils/dom-utils';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for SettleCommand
+ */
 export interface SettleCommandInput {
-  target?: string | HTMLElement; // Target element (defaults to me)
-  timeout?: number | string; // Timeout in milliseconds or with unit
-  forKeyword?: 'for'; // Syntax support
+  /** Target element (defaults to me) */
+  target?: string | HTMLElement;
+  /** Timeout in milliseconds or with unit */
+  timeout?: number | string;
 }
 
-// Output type definition
+/**
+ * Output from Settle command execution
+ */
 export interface SettleCommandOutput {
   element: HTMLElement;
   settled: boolean;
@@ -27,98 +52,96 @@ export interface SettleCommandOutput {
 }
 
 /**
- * Enhanced Settle Command with full type safety and validation
+ * SettleCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 326 lines (with dom-utils dependency)
+ * V2 Target: ~340 lines (inline utilities, standalone)
  */
-export class SettleCommand
-  implements CommandImplementation<SettleCommandInput, SettleCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'settle',
-    description:
-      'The settle command waits for CSS transitions and animations to complete on the target element. It monitors animation and transition events to determine when the element has settled.',
+export class SettleCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'settle';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Wait for CSS transitions and animations to complete on the target element',
+    syntax: [
+      'settle',
+      'settle <target>',
+      'settle for <timeout>',
+      'settle <target> for <timeout>',
+    ],
     examples: [
       'settle',
-      'settle <#animated-element/>',
+      'settle #animated-element',
       'settle for 3000',
-      'settle <.loading/> for 5s',
+      'settle .loading for 5s',
     ],
-    syntax: 'settle [<target>] [for <timeout>]',
-    category: 'animation' as const,
-    version: '2.0.0',
+    category: 'animation',
+    sideEffects: ['async'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<SettleCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: true,
-          errors: [],
-          suggestions: [],
-          data: {}, // Settle can work with no arguments
-        };
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<SettleCommandInput> {
+    let target: string | HTMLElement | undefined;
+    let timeout: number | string | undefined;
+
+    // Parse optional target from args
+    if (raw.args && raw.args.length > 0) {
+      const firstArg = await evaluator.evaluate(raw.args[0], context);
+
+      // Check if this is a target element
+      if (
+        firstArg instanceof HTMLElement ||
+        (typeof firstArg === 'string' && (
+          firstArg.startsWith('#') ||
+          firstArg.startsWith('.') ||
+          firstArg === 'me' ||
+          firstArg === 'it' ||
+          firstArg === 'you'
+        ))
+      ) {
+        target = firstArg as string | HTMLElement;
       }
+    }
 
-      const inputObj = input as any;
+    // Parse optional timeout from 'for' modifier
+    if (raw.modifiers?.for) {
+      timeout = await evaluator.evaluate(raw.modifiers.for, context);
+    }
 
-      // Validate timeout if provided
-      if (inputObj.timeout !== undefined) {
-        if (typeof inputObj.timeout === 'string') {
-          const trimmed = inputObj.timeout.trim();
-          if (!/^\d*\.?\d+(s|ms)?$/i.test(trimmed)) {
-            return {
-              isValid: false,
-              errors: [
-                {
-                  type: 'syntax-error',
-                  message: 'Invalid timeout format',
-                  suggestions: ['Use format like "3s", "500ms", or numeric milliseconds'],
-                },
-              ],
-              suggestions: ['Use format like "3s", "500ms", or numeric milliseconds'],
-            };
-          }
-        } else if (typeof inputObj.timeout === 'number') {
-          if (inputObj.timeout < 0) {
-            return {
-              isValid: false,
-              errors: [
-                {
-                  type: 'syntax-error',
-                  message: 'Timeout cannot be negative',
-                  suggestions: ['Use positive timeout values'],
-                },
-              ],
-              suggestions: ['Use positive timeout values'],
-            };
-          }
-        } else {
-          return {
-            isValid: false,
-            errors: [
-              {
-                type: 'type-mismatch',
-                message: 'Timeout must be a number or string',
-                suggestions: ['Use numeric milliseconds or string with unit like "3s"'],
-              },
-            ],
-            suggestions: ['Use numeric milliseconds or string with unit like "3s"'],
-          };
-        }
-      }
+    return {
+      target,
+      timeout,
+    };
+  }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          target: inputObj.target,
-          timeout: inputObj.timeout,
-          forKeyword: inputObj.forKeyword,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the settle command
+   *
+   * Waits for animations and transitions to complete on the target element.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Settle result with completion status and duration
+   */
   async execute(
     input: SettleCommandInput,
     context: TypedExecutionContext
@@ -126,24 +149,9 @@ export class SettleCommand
     const { target, timeout: timeoutInput } = input;
 
     // Resolve target element (default to context.me)
-    let targetElement: HTMLElement;
-    if (target) {
-      const resolved = await this.resolveElement(target, context);
-      if (!resolved) {
-        throw new Error(`Target element not found: ${target}`);
-      }
-      targetElement = resolved;
-    } else {
-      if (!context.me) {
-        throw new Error(
-          'No target element available - provide explicit target or ensure context.me is available'
-        );
-      }
-      const htmlElement = asHTMLElement(context.me);
-      if (!htmlElement) {
-        throw new Error('context.me is not an HTMLElement');
-      }
-      targetElement = htmlElement;
+    const targetElement = await this.resolveElement(target, context);
+    if (!targetElement) {
+      throw new Error('settle command requires a valid target element');
     }
 
     // Parse timeout
@@ -154,7 +162,7 @@ export class SettleCommand
     const settled = await this.waitForSettle(targetElement, timeout);
     const duration = Date.now() - startTime;
 
-    // Set the result in context
+    // Set result in context
     Object.assign(context, { it: targetElement });
 
     return {
@@ -165,36 +173,98 @@ export class SettleCommand
     };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Resolve target element from various input types
+   *
+   * @param target - Target (element, selector, context ref, or undefined for me)
+   * @param context - Execution context
+   * @returns Resolved HTML element
+   * @throws Error if element cannot be resolved
+   */
   private async resolveElement(
-    element: string | HTMLElement,
+    target: string | HTMLElement | undefined,
     context: TypedExecutionContext
-  ): Promise<HTMLElement | null> {
-    if (element instanceof HTMLElement) {
-      return element;
+  ): Promise<HTMLElement> {
+    // If target is already an HTMLElement, return it
+    if (target instanceof HTMLElement) {
+      return target;
     }
 
-    if (typeof element === 'string') {
-      const trimmed = element.trim();
+    // If no target specified, use context.me
+    if (!target) {
+      const me = context.me;
+      if (!me) {
+        throw new Error('No target element - provide explicit target or ensure context.me is set');
+      }
+      return this.asHTMLElement(me);
+    }
+
+    // Handle string targets (context refs or CSS selectors)
+    if (typeof target === 'string') {
+      const trimmed = target.trim();
 
       // Handle context references
-      if (trimmed === 'me' && context.me) return asHTMLElement(context.me);
-      if (trimmed === 'it' && context.it instanceof HTMLElement) return context.it;
-      if (trimmed === 'you' && context.you) return asHTMLElement(context.you);
+      if (trimmed === 'me') {
+        if (!context.me) {
+          throw new Error('Context reference "me" is not available');
+        }
+        return this.asHTMLElement(context.me);
+      }
+
+      if (trimmed === 'it') {
+        if (!(context.it instanceof HTMLElement)) {
+          throw new Error('Context reference "it" is not an HTMLElement');
+        }
+        return context.it;
+      }
+
+      if (trimmed === 'you') {
+        if (!context.you) {
+          throw new Error('Context reference "you" is not available');
+        }
+        return this.asHTMLElement(context.you);
+      }
 
       // Handle CSS selector
       if (typeof document !== 'undefined') {
-        try {
-          const found = document.querySelector(trimmed);
-          return found instanceof HTMLElement ? found : null;
-        } catch {
-          return null;
+        const element = document.querySelector(trimmed);
+        if (!element) {
+          throw new Error(`Element not found with selector: ${trimmed}`);
         }
+        if (!(element instanceof HTMLElement)) {
+          throw new Error(`Element found but is not an HTMLElement: ${trimmed}`);
+        }
+        return element;
       }
+
+      throw new Error('DOM not available - cannot resolve element selector');
     }
 
-    return null;
+    throw new Error(`Invalid target type: ${typeof target}`);
   }
 
+  /**
+   * Convert value to HTMLElement
+   *
+   * @param value - Value to convert
+   * @returns HTMLElement
+   * @throws Error if value is not an HTMLElement
+   */
+  private asHTMLElement(value: unknown): HTMLElement {
+    if (value instanceof HTMLElement) {
+      return value;
+    }
+    throw new Error('Value is not an HTMLElement');
+  }
+
+  /**
+   * Parse timeout from various formats
+   *
+   * @param value - Timeout value
+   * @returns Timeout in milliseconds
+   */
   private parseTimeout(value: number | string): number {
     if (typeof value === 'number') {
       return Math.max(0, value);
@@ -208,7 +278,7 @@ export class SettleCommand
         return parseInt(trimmed, 10);
       }
 
-      // Parse with time units
+      // Parse with time units (e.g., "1.5s", "500ms")
       const match = trimmed.match(/^(\d*\.?\d+)(s|ms)?$/i);
       if (match) {
         const [, numberStr, unit] = match;
@@ -223,6 +293,13 @@ export class SettleCommand
     return 5000; // Default timeout
   }
 
+  /**
+   * Wait for element to settle (animations/transitions complete)
+   *
+   * @param element - Element to wait for
+   * @param timeout - Maximum time to wait
+   * @returns Promise that resolves to true if settled, false if timeout
+   */
   private async waitForSettle(element: HTMLElement, timeout: number): Promise<boolean> {
     return new Promise<boolean>(resolve => {
       let settled = false;
@@ -234,7 +311,7 @@ export class SettleCommand
       const animationDurations = this.parseDurations(computedStyle.animationDuration);
       const animationDelays = this.parseDurations(computedStyle.animationDelay);
 
-      // Calculate total time for transitions
+      // Calculate total time for transitions/animations
       const maxTransitionTime = this.calculateMaxTime(transitionDurations, transitionDelays);
       const maxAnimationTime = this.calculateMaxTime(animationDurations, animationDelays);
       const totalAnimationTime = Math.max(maxTransitionTime, maxAnimationTime);
@@ -277,7 +354,7 @@ export class SettleCommand
       element.addEventListener('transitionend', onTransitionEnd);
       element.addEventListener('animationend', onAnimationEnd);
 
-      // Set timeout based on computed animation time (with small buffer)
+      // Set timeout based on computed animation time (with 50ms buffer)
       const animationTimeoutId = setTimeout(() => settle(), totalAnimationTime + 50);
 
       // Set overall timeout
@@ -285,6 +362,12 @@ export class SettleCommand
     });
   }
 
+  /**
+   * Parse CSS duration string into array of milliseconds
+   *
+   * @param durationString - CSS duration string (e.g., "1s, 0.5s")
+   * @returns Array of durations in milliseconds
+   */
   private parseDurations(durationString: string): number[] {
     if (!durationString || durationString === 'none') {
       return [0];
@@ -302,6 +385,13 @@ export class SettleCommand
     });
   }
 
+  /**
+   * Calculate maximum total time from durations and delays
+   *
+   * @param durations - Array of durations in milliseconds
+   * @param delays - Array of delays in milliseconds
+   * @returns Maximum total time (duration + delay)
+   */
   private calculateMaxTime(durations: number[], delays: number[]): number {
     let maxTime = 0;
 
@@ -317,10 +407,8 @@ export class SettleCommand
 }
 
 /**
- * Factory function to create the enhanced settle command
+ * Factory function to create SettleCommand instance
  */
 export function createSettleCommand(): SettleCommand {
   return new SettleCommand();
 }
-
-export default SettleCommand;

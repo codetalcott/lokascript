@@ -1,36 +1,42 @@
 /**
- * Enhanced Async Command Implementation
+ * AsyncCommand - Standalone V2 Implementation
+ *
  * Executes commands asynchronously using async/await patterns
  *
- * Syntax: async <command1> [<command2> ...]
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with TypedCommandImplementation interface
+ * Features:
+ * - Sequential async command execution
+ * - Result tracking
+ * - Context updates between commands
+ * - Duration measurement
+ * - Error handling with command context
+ *
+ * Syntax:
+ *   async <command> [<command> ...]
+ *
+ * @example
+ *   async command1 command2
+ *   async fetchData processData
+ *   async animateIn showContent
  */
 
-import type { ValidationResult, TypedExecutionContext } from '../../types/index';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Define TypedCommandImplementation locally for now
-interface TypedCommandImplementation<TInput, TOutput, TContext> {
-  readonly metadata: {
-    readonly name: string;
-    readonly description: string;
-    readonly examples: string[];
-    readonly syntax: string;
-    readonly category: string;
-    readonly version: string;
-  };
-  readonly validation: {
-    validate(input: unknown): ValidationResult<TInput>;
-  };
-  execute(input: TInput, context: TContext): Promise<TOutput>;
-}
-
-// Input type definition
+/**
+ * Typed input for AsyncCommand
+ */
 export interface AsyncCommandInput {
-  commands: Array<{ name: string; execute: Function }>; // Commands to execute asynchronously
+  /** Commands to execute asynchronously */
+  commands: any[];
 }
 
-// Output type definition
+/**
+ * Output from async command execution
+ */
 export interface AsyncCommandOutput {
   commandCount: number;
   results: any[];
@@ -39,106 +45,70 @@ export interface AsyncCommandOutput {
 }
 
 /**
- * Enhanced Async Command with full type safety and validation
+ * AsyncCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 205 lines
+ * V2 Target: ~190 lines (inline utilities, standalone)
  */
-export class AsyncCommand
-  implements
-    TypedCommandImplementation<AsyncCommandInput, AsyncCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'async',
-    description:
-      'The async command executes other commands asynchronously without blocking the main execution flow. It runs commands in sequence using async/await patterns.',
+export class AsyncCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'async';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Execute commands asynchronously without blocking',
+    syntax: ['async <command> [<command> ...]'],
     examples: [
       'async command1 command2',
       'async fetchData processData',
       'async animateIn showContent',
       'async loadImage fadeIn',
     ],
-    syntax: 'async <command> [<command> ...]',
-    category: 'advanced' as const,
-    version: '2.0.0',
+    category: 'advanced',
+    sideEffects: ['async-execution'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<AsyncCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Async command requires at least one command to execute',
-              suggestions: ['Provide command objects to execute asynchronously'],
-            },
-          ],
-          suggestions: ['Provide command objects to execute asynchronously'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<AsyncCommandInput> {
+    if (raw.args.length < 1) {
+      throw new Error('async command requires at least one command to execute');
+    }
 
-      const inputObj = input as any;
+    // All args are commands to execute
+    const commands = raw.args;
 
-      if (!inputObj.commands || !Array.isArray(inputObj.commands)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Commands must be provided as an array',
-              suggestions: ['Provide an array of command objects'],
-            },
-          ],
-          suggestions: ['Provide an array of command objects'],
-        };
-      }
+    return {
+      commands,
+    };
+  }
 
-      if (inputObj.commands.length === 0) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Async command requires at least one command to execute',
-              suggestions: ['Provide at least one command to execute'],
-            },
-          ],
-          suggestions: ['Provide at least one command to execute'],
-        };
-      }
-
-      // Validate that all items are command objects
-      for (const command of inputObj.commands) {
-        if (
-          !command ||
-          typeof command !== 'object' ||
-          typeof command.name !== 'string' ||
-          typeof command.execute !== 'function'
-        ) {
-          return {
-            isValid: false,
-            errors: [
-              {
-                type: 'type-mismatch',
-                message: 'All items must be valid command objects with name and execute method',
-                suggestions: ['Ensure all commands have name and execute properties'],
-              },
-            ],
-            suggestions: ['Ensure all commands have name and execute properties'],
-          };
-        }
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          commands: inputObj.commands,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the async command
+   *
+   * Executes commands asynchronously in sequence.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Execution result with duration and results
+   */
   async execute(
     input: AsyncCommandInput,
     context: TypedExecutionContext
@@ -169,36 +139,87 @@ export class AsyncCommand
     }
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Execute commands asynchronously in sequence
+   *
+   * @param context - Execution context
+   * @param commands - Commands to execute
+   * @returns Array of command results
+   */
   private async executeCommandsAsync(
     context: TypedExecutionContext,
-    commands: Array<{ name: string; execute: Function }>
+    commands: any[]
   ): Promise<any[]> {
     const results: any[] = [];
 
-    for (const command of commands) {
+    for (let i = 0; i < commands.length; i++) {
+      const command = commands[i];
+
       try {
         // Execute command asynchronously
-        const result = await command.execute(context);
+        const result = await this.executeCommand(command, context);
         results.push(result);
 
         // Update context for next command
         Object.assign(context, { it: result });
       } catch (error) {
+        const commandName = this.getCommandName(command);
         throw new Error(
-          `Command '${command.name}' failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Command '${commandName}' (${i + 1}/${commands.length}) failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
         );
       }
     }
 
     return results;
   }
+
+  /**
+   * Execute a single command
+   *
+   * @param command - Command to execute
+   * @param context - Execution context
+   * @returns Command result
+   */
+  private async executeCommand(command: any, context: TypedExecutionContext): Promise<any> {
+    // Handle function commands
+    if (typeof command === 'function') {
+      return await command(context);
+    }
+
+    // Handle command objects with execute method
+    if (command && typeof command === 'object' && typeof command.execute === 'function') {
+      return await command.execute(context);
+    }
+
+    throw new Error('Invalid command: must be a function or object with execute method');
+  }
+
+  /**
+   * Get command name for error messages
+   *
+   * @param command - Command object
+   * @returns Command name
+   */
+  private getCommandName(command: any): string {
+    if (typeof command === 'function') {
+      return command.name || 'anonymous function';
+    }
+
+    if (command && typeof command === 'object') {
+      return command.name || 'unnamed command';
+    }
+
+    return 'unknown';
+  }
 }
 
 /**
- * Factory function to create the enhanced async command
+ * Factory function to create AsyncCommand instance
  */
 export function createAsyncCommand(): AsyncCommand {
   return new AsyncCommand();
 }
-
-export default AsyncCommand;

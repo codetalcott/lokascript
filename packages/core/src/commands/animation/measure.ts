@@ -1,33 +1,57 @@
 /**
- * Enhanced Measure Command Implementation
- * Measures DOM element dimensions and positions
+ * MeasureCommand - Standalone V2 Implementation
  *
- * Syntax: measure [<target>] [<property>] [and set <variable>]
+ * Measures DOM element dimensions, positions, and properties
+ *
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Measure element dimensions (width, height)
+ * - Measure positions (top, left, x, y)
+ * - Measure scroll properties (scrollTop, scrollLeft, scrollWidth, scrollHeight)
+ * - Measure client/offset dimensions
+ * - Measure CSS properties with * prefix
+ * - Store results in variables
+ * - Multiple coordinate systems (viewport vs offsetParent)
  *
  * IMPORTANT - Coordinate System Differences:
  * - x/y: Position relative to offsetParent (for drag/positioning within containers)
  * - left/top: Position relative to viewport (for absolute screen positioning)
  * - offsetLeft/offsetTop: Same as x/y (explicit offset positioning)
  *
- * Use x/y for draggable behaviors, left/top for viewport-based calculations
+ * Syntax:
+ *   measure
+ *   measure <property>
+ *   measure <target> <property>
+ *   measure <property> and set <variable>
  *
- * Modernized with CommandImplementation interface
+ * @example
+ *   measure
+ *   measure width
+ *   measure #element height
+ *   measure scrollTop and set scrollPosition
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import { asHTMLElement } from '../../utils/dom-utils';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for MeasureCommand
+ */
 export interface MeasureCommandInput {
-  target?: string | HTMLElement; // Target element (defaults to me)
-  property?: string; // Property to measure (width, height, etc.)
-  variable?: string; // Variable to store result
-  andKeyword?: 'and'; // Syntax support
-  setKeyword?: 'set'; // Syntax support
+  /** Target element (defaults to me) */
+  target?: string | HTMLElement;
+  /** Property to measure (width, height, etc.) */
+  property?: string;
+  /** Variable name to store result */
+  variable?: string;
 }
 
-// Output type definition
+/**
+ * Output from Measure command execution
+ */
 export interface MeasureCommandOutput {
   element: HTMLElement;
   property: string;
@@ -37,84 +61,107 @@ export interface MeasureCommandOutput {
 }
 
 /**
- * Enhanced Measure Command with full type safety and validation
+ * MeasureCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 326 lines (with dom-utils dependency)
+ * V2 Target: ~350 lines (inline utilities, standalone)
  */
-export class MeasureCommand
-  implements CommandImplementation<MeasureCommandInput, MeasureCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'measure',
-    description:
-      'The measure command measures DOM element dimensions, positions, and properties. It can measure width, height, positions, and store the result in a variable.',
+export class MeasureCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'measure';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Measure DOM element dimensions, positions, and properties',
+    syntax: [
+      'measure',
+      'measure <property>',
+      'measure <target> <property>',
+      'measure <property> and set <variable>',
+    ],
     examples: [
       'measure',
-      'measure <#element/> width',
-      'measure height and set elementHeight',
-      'measure <.box/> scrollTop and set scrollPosition',
+      'measure width',
+      'measure #element height',
+      'measure scrollTop and set scrollPosition',
+      'measure x and set dragX',
     ],
-    syntax: 'measure [<target>] [<property>] [and set <variable>]',
-    category: 'animation' as const,
-    version: '2.0.0',
+    category: 'animation',
+    sideEffects: ['data-mutation'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<MeasureCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: true,
-          errors: [],
-          suggestions: [],
-          data: {}, // Measure can work with no arguments
-        };
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<MeasureCommandInput> {
+    let target: string | HTMLElement | undefined;
+    let property: string | undefined;
+    let variable: string | undefined;
+
+    // Parse arguments (optional target and/or property)
+    if (raw.args && raw.args.length > 0) {
+      const firstArg = await evaluator.evaluate(raw.args[0], context);
+
+      // Check if first arg is a target element
+      if (
+        firstArg instanceof HTMLElement ||
+        (typeof firstArg === 'string' && (
+          firstArg.startsWith('#') ||
+          firstArg.startsWith('.') ||
+          firstArg === 'me' ||
+          firstArg === 'it' ||
+          firstArg === 'you'
+        ))
+      ) {
+        target = firstArg as string | HTMLElement;
+
+        // Second arg is property
+        if (raw.args.length > 1) {
+          property = String(await evaluator.evaluate(raw.args[1], context));
+        }
+      } else {
+        // First arg is property
+        property = String(firstArg);
       }
+    }
 
-      const inputObj = input as any;
+    // Extract variable from 'set' modifier (after 'and')
+    if (raw.modifiers?.set) {
+      variable = String(await evaluator.evaluate(raw.modifiers.set, context));
+    }
 
-      // Validate property if provided
-      if (inputObj.property && typeof inputObj.property !== 'string') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Property must be a string',
-              suggestions: ['Use property names like "width", "height", "top", "left"'],
-            },
-          ],
-          suggestions: ['Use property names like "width", "height", "top", "left"'],
-        };
-      }
+    return {
+      target,
+      property,
+      variable,
+    };
+  }
 
-      // Validate variable name if provided
-      if (inputObj.variable && typeof inputObj.variable !== 'string') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Variable name must be a string',
-              suggestions: ['Use valid variable names'],
-            },
-          ],
-          suggestions: ['Use valid variable names'],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          target: inputObj.target,
-          property: inputObj.property,
-          variable: inputObj.variable,
-          andKeyword: inputObj.andKeyword,
-          setKeyword: inputObj.setKeyword,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the measure command
+   *
+   * Measures a property of an element and stores the result.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Measurement result with value and unit
+   */
   async execute(
     input: MeasureCommandInput,
     context: TypedExecutionContext
@@ -122,84 +169,135 @@ export class MeasureCommand
     const { target, property, variable } = input;
 
     // Resolve target element (default to context.me)
-    let targetElement: HTMLElement;
-    if (target) {
-      const resolved = await this.resolveElement(target, context);
-      if (!resolved) {
-        throw new Error(`Target element not found: ${target}`);
-      }
-      targetElement = resolved;
-    } else {
-      if (!context.me) {
-        throw new Error(
-          'No target element available - provide explicit target or ensure context.me is available'
-        );
-      }
-      const htmlElement = asHTMLElement(context.me);
-      if (!htmlElement) {
-        throw new Error('context.me is not an HTMLElement');
-      }
-      targetElement = htmlElement;
+    const targetElement = await this.resolveElement(target, context);
+    if (!targetElement) {
+      throw new Error('measure command requires a valid target element');
     }
 
     // Default property to 'width' if not specified
     const measureProperty = property || 'width';
 
     // Get the measurement
-    const measurementResult = this.getMeasurement(targetElement, measureProperty);
+    const measurement = this.getMeasurement(targetElement, measureProperty);
 
     // Store in variable if specified
     if (variable) {
       if (context.locals) {
-        context.locals.set(variable, measurementResult.value);
+        context.locals.set(variable, measurement.value);
       }
     }
 
-    // Set the result in context
-    Object.assign(context, { it: measurementResult.value });
+    // Set the result in context.it
+    Object.assign(context, { it: measurement.value });
 
-    // Return just the value (for `it` context and `put it into` commands)
-    // Note: The full measurement details are available in context.it metadata if needed
-    return measurementResult.value as any;
+    return {
+      element: targetElement,
+      property: measureProperty,
+      value: measurement.value,
+      unit: measurement.unit,
+      stored: !!variable,
+    };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Resolve target element from various input types
+   *
+   * @param target - Target (element, selector, context ref, or undefined for me)
+   * @param context - Execution context
+   * @returns Resolved HTML element
+   * @throws Error if element cannot be resolved
+   */
   private async resolveElement(
-    element: string | HTMLElement,
+    target: string | HTMLElement | undefined,
     context: TypedExecutionContext
-  ): Promise<HTMLElement | null> {
-    if (element instanceof HTMLElement) {
-      return element;
+  ): Promise<HTMLElement> {
+    // If target is already an HTMLElement, return it
+    if (target instanceof HTMLElement) {
+      return target;
     }
 
-    if (typeof element === 'string') {
-      const trimmed = element.trim();
+    // If no target specified, use context.me
+    if (!target) {
+      const me = context.me;
+      if (!me) {
+        throw new Error('No target element - provide explicit target or ensure context.me is set');
+      }
+      return this.asHTMLElement(me);
+    }
+
+    // Handle string targets (context refs or CSS selectors)
+    if (typeof target === 'string') {
+      const trimmed = target.trim();
 
       // Handle context references
-      if (trimmed === 'me' && context.me) return asHTMLElement(context.me);
-      if (trimmed === 'it' && context.it instanceof HTMLElement) return context.it;
-      if (trimmed === 'you' && context.you) return asHTMLElement(context.you);
+      if (trimmed === 'me') {
+        if (!context.me) {
+          throw new Error('Context reference "me" is not available');
+        }
+        return this.asHTMLElement(context.me);
+      }
+
+      if (trimmed === 'it') {
+        if (!(context.it instanceof HTMLElement)) {
+          throw new Error('Context reference "it" is not an HTMLElement');
+        }
+        return context.it;
+      }
+
+      if (trimmed === 'you') {
+        if (!context.you) {
+          throw new Error('Context reference "you" is not available');
+        }
+        return this.asHTMLElement(context.you);
+      }
 
       // Handle CSS selector
       if (typeof document !== 'undefined') {
-        try {
-          const found = document.querySelector(trimmed);
-          return found instanceof HTMLElement ? found : null;
-        } catch {
-          return null;
+        const element = document.querySelector(trimmed);
+        if (!element) {
+          throw new Error(`Element not found with selector: ${trimmed}`);
         }
+        if (!(element instanceof HTMLElement)) {
+          throw new Error(`Element found but is not an HTMLElement: ${trimmed}`);
+        }
+        return element;
       }
+
+      throw new Error('DOM not available - cannot resolve element selector');
     }
 
-    return null;
+    throw new Error(`Invalid target type: ${typeof target}`);
   }
 
+  /**
+   * Convert value to HTMLElement
+   *
+   * @param value - Value to convert
+   * @returns HTMLElement
+   * @throws Error if value is not an HTMLElement
+   */
+  private asHTMLElement(value: unknown): HTMLElement {
+    if (value instanceof HTMLElement) {
+      return value;
+    }
+    throw new Error('Value is not an HTMLElement');
+  }
+
+  /**
+   * Get measurement for a specific property
+   *
+   * @param element - Element to measure
+   * @param property - Property name to measure
+   * @returns Measurement value and unit
+   */
   private getMeasurement(element: HTMLElement, property: string): { value: number; unit: string } {
-    // Get computed style (used by both CSS property shorthand and default case)
     const computedStyle = getComputedStyle(element);
 
     // Handle CSS property shorthand syntax: *property (e.g., *opacity, *background-color)
     if (property.startsWith('*')) {
-      const cssPropertyName = property.substring(1); // Remove * prefix (keep kebab-case)
+      const cssPropertyName = property.substring(1);
       const value = computedStyle.getPropertyValue(cssPropertyName);
 
       // Try to parse as number
@@ -211,7 +309,7 @@ export class MeasureCommand
         return { value: numericValue, unit };
       }
 
-      // Return string value as-is (for non-numeric CSS properties like colors)
+      // Return string value as-is for non-numeric properties
       return { value: value as any, unit: '' };
     }
 
@@ -221,12 +319,14 @@ export class MeasureCommand
     const rect = element.getBoundingClientRect();
 
     switch (prop) {
+      // Dimension measurements
       case 'width':
         return { value: rect.width, unit: 'px' };
 
       case 'height':
         return { value: rect.height, unit: 'px' };
 
+      // Viewport-relative positions
       case 'top':
         return { value: rect.top, unit: 'px' };
 
@@ -239,16 +339,14 @@ export class MeasureCommand
       case 'bottom':
         return { value: rect.bottom, unit: 'px' };
 
+      // OffsetParent-relative positions (for dragging/positioning)
       case 'x':
-        // For draggable/positioning use cases, return offsetLeft (position relative to offsetParent)
-        // not rect.x (position relative to viewport)
         return { value: element.offsetLeft, unit: 'px' };
 
       case 'y':
-        // For draggable/positioning use cases, return offsetTop (position relative to offsetParent)
-        // not rect.y (position relative to viewport)
         return { value: element.offsetTop, unit: 'px' };
 
+      // Client dimensions (content + padding)
       case 'clientwidth':
       case 'client-width':
         return { value: element.clientWidth, unit: 'px' };
@@ -257,6 +355,7 @@ export class MeasureCommand
       case 'client-height':
         return { value: element.clientHeight, unit: 'px' };
 
+      // Offset dimensions (content + padding + border)
       case 'offsetwidth':
       case 'offset-width':
         return { value: element.offsetWidth, unit: 'px' };
@@ -265,6 +364,7 @@ export class MeasureCommand
       case 'offset-height':
         return { value: element.offsetHeight, unit: 'px' };
 
+      // Scroll dimensions
       case 'scrollwidth':
       case 'scroll-width':
         return { value: element.scrollWidth, unit: 'px' };
@@ -273,6 +373,7 @@ export class MeasureCommand
       case 'scroll-height':
         return { value: element.scrollHeight, unit: 'px' };
 
+      // Scroll positions
       case 'scrolltop':
       case 'scroll-top':
         return { value: element.scrollTop, unit: 'px' };
@@ -281,6 +382,7 @@ export class MeasureCommand
       case 'scroll-left':
         return { value: element.scrollLeft, unit: 'px' };
 
+      // Offset positions
       case 'offsettop':
       case 'offset-top':
         return { value: element.offsetTop, unit: 'px' };
@@ -289,7 +391,7 @@ export class MeasureCommand
       case 'offset-left':
         return { value: element.offsetLeft, unit: 'px' };
 
-      // CSS property measurements
+      // CSS property measurements (fallback)
       default:
         const cssValue = computedStyle.getPropertyValue(property);
         const numericValue = parseFloat(cssValue);
@@ -305,22 +407,11 @@ export class MeasureCommand
         return { value: 0, unit: 'px' };
     }
   }
-
-  /**
-   * Convert CSS property name from kebab-case to camelCase
-   * Examples: 'opacity' → 'opacity', 'background-color' → 'backgroundColor'
-   */
-  private convertCSSProperty(property: string): string {
-    // Convert kebab-case to camelCase
-    return property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-  }
 }
 
 /**
- * Factory function to create the enhanced measure command
+ * Factory function to create MeasureCommand instance
  */
 export function createMeasureCommand(): MeasureCommand {
   return new MeasureCommand();
 }
-
-export default MeasureCommand;

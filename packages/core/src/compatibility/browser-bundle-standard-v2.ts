@@ -27,32 +27,32 @@ import { createContext } from '../core/context';
 
 // Import all 16 V2 standard commands
 // DOM Commands (7)
-import { createAddCommand } from '../commands-v2/dom/add';
-import { createRemoveCommand } from '../commands-v2/dom/remove';
-import { createToggleCommand } from '../commands-v2/dom/toggle';
-import { createShowCommand } from '../commands-v2/dom/show';
-import { createHideCommand } from '../commands-v2/dom/hide';
-import { createPutCommand } from '../commands-v2/dom/put';
-import { createMakeCommand } from '../commands-v2/dom/make';
+import { createAddCommand } from '../commands/dom/add';
+import { createRemoveCommand } from '../commands/dom/remove';
+import { createToggleCommand } from '../commands/dom/toggle';
+import { createShowCommand } from '../commands/dom/show';
+import { createHideCommand } from '../commands/dom/hide';
+import { createPutCommand } from '../commands/dom/put';
+import { createMakeCommand } from '../commands/dom/make';
 
 // Data Commands (3)
-import { createSetCommand } from '../commands-v2/data/set';
-import { createIncrementCommand } from '../commands-v2/data/increment';
-import { createDecrementCommand } from '../commands-v2/data/decrement';
+import { createSetCommand } from '../commands/data/set';
+import { createIncrementCommand } from '../commands/data/increment';
+import { createDecrementCommand } from '../commands/data/decrement';
 
 // Event Commands (2)
-import { createSendCommand } from '../commands-v2/events/send';
-import { createTriggerCommand } from '../commands-v2/events/trigger';
+import { createSendCommand } from '../commands/events/send';
+import { createTriggerCommand } from '../commands/events/trigger';
 
 // Async Commands (2)
-import { createWaitCommand } from '../commands-v2/async/wait';
-import { createFetchCommand } from '../commands-v2/async/fetch';
+import { createWaitCommand } from '../commands/async/wait';
+import { createFetchCommand } from '../commands/async/fetch';
 
 // Navigation Commands (1)
-import { createGoCommand } from '../commands-v2/navigation/go';
+import { createGoCommand } from '../commands/navigation/go';
 
 // Utility Commands (1)
-import { createLogCommand } from '../commands-v2/utility/log';
+import { createLogCommand } from '../commands/utility/log';
 
 // Create runtime instance with standard commands
 const runtimeExperimental = createMinimalRuntime([

@@ -1,31 +1,50 @@
 /**
- * Pseudo-Command Implementation
+ * PseudoCommand - Standalone V2 Implementation
+ *
  * Allows treating a method on an object as a top-level command
  *
- * Syntax: <method name>(<arg list>) [(to | on | with | into | from | at)] <expression>
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Examples:
+ * Features:
+ * - Method calls as commands
+ * - Prepositional syntax (from, on, with, into, at, to)
+ * - Property path resolution (window.location.reload)
+ * - Target expression resolution
+ * - Proper method binding
+ * - Promise handling
+ *
+ * Syntax:
+ *   <method name>(<arg list>) [(to | on | with | into | from | at)] <expression>
+ *
+ * @example
  *   getElementById("d1") from the document
  *   reload() the location of the window
  *   setAttribute('foo', 'bar') on me
  *   foo() on me
- *
- * This implements the official _hyperscript pseudo-command feature
- * See: https://hyperscript.org/commands/pseudo-commands/
  */
 
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
-import type { ValidationError } from '../../types/base-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
+/**
+ * Typed input for PseudoCommand
+ */
 export interface PseudoCommandInput {
+  /** Method name to call */
   methodName: string;
+  /** Arguments to pass to method */
   methodArgs: unknown[];
+  /** Optional preposition for clarity */
   preposition?: 'from' | 'on' | 'with' | 'into' | 'at' | 'to';
+  /** Target object to call method on */
   targetExpression: unknown;
 }
 
+/**
+ * Output from pseudo-command execution
+ */
 export interface PseudoCommandOutput {
   result: unknown;
   methodName: string;
@@ -33,129 +52,101 @@ export interface PseudoCommandOutput {
 }
 
 /**
- * Pseudo-Command with full type safety and validation
- * Implements official _hyperscript pseudo-command behavior
+ * PseudoCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 366 lines
+ * V2 Target: ~360 lines (inline utilities, standalone)
  */
-export class PseudoCommand
-  implements CommandImplementation<PseudoCommandInput, PseudoCommandOutput, TypedExecutionContext>
-{
-  name = 'pseudo-command';
+export class PseudoCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'pseudo-command';
 
-  metadata = {
-    name: 'pseudo-command',
-    description:
-      'Pseudo-commands allow you to treat a method on an object as a top level command. The method name must be followed by an argument list, then optional prepositional syntax to clarify the code, then an expression.',
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Treat a method on an object as a top-level command',
+    syntax: ['<method>(<args>) [(to|on|with|into|from|at)] <expression>'],
     examples: [
       'getElementById("d1") from the document',
       'reload() the location of the window',
       'setAttribute("foo", "bar") on me',
       'foo() on me',
-      'bar.foo() me',
-      'getValue() with myObject',
     ],
-    syntax: '<method name>(<arg list>) [(to | on | with | into | from | at)] <expression>',
-    category: 'execution' as const,
-    version: '1.0.0',
+    category: 'execution',
+    sideEffects: ['method-execution'],
   };
 
-  validation = {
-    validate(input: unknown): UnifiedValidationResult<PseudoCommandInput> {
-      const errors: ValidationError[] = [];
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<PseudoCommandInput> {
+    if (raw.args.length < 2) {
+      throw new Error('pseudo-command requires method name and target expression');
+    }
 
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Pseudo-command requires an object input',
-              suggestions: ['Provide an object with methodName, methodArgs, and targetExpression'],
-            },
-          ],
-          suggestions: ['Provide an object with methodName, methodArgs, and targetExpression'],
-        };
+    // First arg is method name
+    const methodName = String(await evaluator.evaluate(raw.args[0], context));
+
+    // Second arg is method arguments (array)
+    const methodArgs = Array.isArray(raw.args[1])
+      ? await Promise.all(raw.args[1].map((arg) => evaluator.evaluate(arg, context)))
+      : [];
+
+    // Third arg or modifier is target expression
+    let targetExpression: unknown;
+    let preposition: PseudoCommandInput['preposition'];
+
+    // Check for prepositional modifiers
+    const validPrepositions = ['from', 'on', 'with', 'into', 'at', 'to'] as const;
+    for (const prep of validPrepositions) {
+      if (raw.modifiers?.[prep]) {
+        preposition = prep;
+        targetExpression = await evaluator.evaluate(raw.modifiers[prep], context);
+        break;
       }
+    }
 
-      const inputObj = input as Record<string, unknown>;
+    // If no preposition modifier, use third arg
+    if (!targetExpression && raw.args.length >= 3) {
+      targetExpression = await evaluator.evaluate(raw.args[2], context);
+    }
 
-      // Validate method name is present and is a string
-      if (!inputObj.methodName) {
-        errors.push({
-          type: 'missing-argument',
-          message: 'Pseudo-command requires a method name',
-          suggestions: ['Provide a method name to call on the target object'],
-        });
-      } else if (typeof inputObj.methodName !== 'string') {
-        errors.push({
-          type: 'type-mismatch',
-          message: 'Method name must be a string',
-          suggestions: ['Provide a valid method name as a string'],
-        });
-      }
+    if (!targetExpression) {
+      throw new Error('pseudo-command requires a target expression');
+    }
 
-      // Validate method args is an array
-      if (inputObj.methodArgs !== undefined && !Array.isArray(inputObj.methodArgs)) {
-        errors.push({
-          type: 'type-mismatch',
-          message: 'Method arguments must be an array',
-          suggestions: ['Provide method arguments as an array, or omit for no arguments'],
-        });
-      }
+    return {
+      methodName,
+      methodArgs,
+      preposition,
+      targetExpression,
+    };
+  }
 
-      // Validate preposition if provided
-      if (inputObj.preposition !== undefined) {
-        const validPrepositions = ['from', 'on', 'with', 'into', 'at', 'to'];
-        if (!validPrepositions.includes(inputObj.preposition as string)) {
-          errors.push({
-            type: 'syntax-error',
-            message: `Invalid preposition "${inputObj.preposition}"`,
-            suggestions: ['Use one of: from, on, with, into, at, to'],
-          });
-        }
-      }
-
-      // Validate target expression is present
-      if (inputObj.targetExpression === undefined) {
-        errors.push({
-          type: 'missing-argument',
-          message: 'Pseudo-command requires a target expression',
-          suggestions: ['Provide an object to call the method on'],
-        });
-      }
-
-      if (errors.length > 0) {
-        return {
-          isValid: false,
-          errors,
-          suggestions: [
-            'Pseudo-commands must be function calls',
-            'Provide a target expression after the optional preposition',
-            'Example: getElementById("test") from the document',
-          ],
-        };
-      }
-
-      // Use conditional spread to satisfy exactOptionalPropertyTypes
-      const data: PseudoCommandInput = {
-        methodName: inputObj.methodName as string,
-        methodArgs: (inputObj.methodArgs as unknown[]) || [],
-        targetExpression: inputObj.targetExpression,
-        ...(inputObj.preposition !== undefined
-          ? {
-              preposition: inputObj.preposition as 'from' | 'on' | 'with' | 'into' | 'at' | 'to',
-            }
-          : {}),
-      };
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data,
-      };
-    },
-  };
-
+  /**
+   * Execute the pseudo-command
+   *
+   * Calls the specified method on the target object.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Method execution result
+   */
   async execute(
     input: PseudoCommandInput,
     context: TypedExecutionContext
@@ -201,8 +192,14 @@ export class PseudoCommand
     }
   }
 
+  // ========== Private Utility Methods ==========
+
   /**
    * Resolve the target expression to an object
+   *
+   * @param targetExpression - Expression to resolve
+   * @param context - Execution context
+   * @returns Resolved target object
    */
   private async resolveTarget(
     targetExpression: unknown,
@@ -259,6 +256,10 @@ export class PseudoCommand
 
   /**
    * Resolve a property path like "window.location" or "document.body"
+   *
+   * @param path - Property path to resolve
+   * @param context - Execution context
+   * @returns Resolved value
    */
   private resolvePropertyPath(path: string, context: TypedExecutionContext): unknown {
     const parts = path.split('.');
@@ -297,6 +298,10 @@ export class PseudoCommand
   /**
    * Resolve a method from the target object
    * Supports nested paths like "location.reload"
+   *
+   * @param target - Target object
+   * @param methodName - Method name or path
+   * @returns Method function or null
    */
   private resolveMethod(target: any, methodName: string): Function | null {
     if (!target) {
@@ -336,6 +341,11 @@ export class PseudoCommand
 
   /**
    * Execute a method with proper binding and argument handling
+   *
+   * @param method - Method to execute
+   * @param target - Target object for binding
+   * @param args - Arguments to pass
+   * @returns Method result
    */
   private async executeMethod(method: Function, target: any, args: unknown[]): Promise<unknown> {
     try {
@@ -356,10 +366,8 @@ export class PseudoCommand
 }
 
 /**
- * Factory function to create the pseudo-command
+ * Factory function to create PseudoCommand instance
  */
 export function createPseudoCommand(): PseudoCommand {
   return new PseudoCommand();
 }
-
-export default PseudoCommand;

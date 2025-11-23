@@ -1,29 +1,55 @@
 /**
- * Enhanced Transition Command Implementation
- * Animates CSS properties with transitions
+ * TransitionCommand - Standalone V2 Implementation
  *
- * Syntax: transition [<target>] <property> to <value> [over <duration>] [with <timing-function>]
+ * Animates CSS properties using CSS transitions
  *
- * Modernized with CommandImplementation interface
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Animate CSS properties with smooth transitions
+ * - Configurable duration and timing functions
+ * - Element resolution (me/it/you, CSS selectors)
+ * - Property name conversion (camelCase/kebab-case, * prefix)
+ * - Transition event detection (end/cancel)
+ * - Original transition restoration after completion
+ *
+ * Syntax:
+ *   transition <property> to <value>
+ *   transition <property> to <value> over <duration>
+ *   transition <property> to <value> over <duration> with <timing-function>
+ *   transition <target> <property> to <value>
+ *
+ * @example
+ *   transition opacity to 0.5
+ *   transition left to 100px over 500ms
+ *   transition background-color to red over 1s with ease-in-out
+ *   transition #box width to 200px
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import { asHTMLElement } from '../../utils/dom-utils';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for TransitionCommand
+ */
 export interface TransitionCommandInput {
-  target?: string | HTMLElement; // Target element (defaults to me)
-  property: string; // CSS property to animate
-  value: string | number; // Target value
-  duration?: number | string; // Duration in milliseconds or with unit
-  timingFunction?: string; // Timing function (ease, linear, etc.)
-  toKeyword?: 'to'; // Syntax support
-  overKeyword?: 'over'; // Syntax support
-  withKeyword?: 'with'; // Syntax support
+  /** Target element (defaults to me) */
+  target?: string | HTMLElement;
+  /** CSS property to animate */
+  property: string;
+  /** Target value for the property */
+  value: string | number;
+  /** Duration in milliseconds or with unit (e.g., "1s", "500ms") */
+  duration?: number | string;
+  /** CSS timing function (ease, linear, ease-in-out, etc.) */
+  timingFunction?: string;
 }
 
-// Output type definition
+/**
+ * Output from Transition command execution
+ */
 export interface TransitionCommandOutput {
   element: HTMLElement;
   property: string;
@@ -34,92 +60,129 @@ export interface TransitionCommandOutput {
 }
 
 /**
- * Enhanced Transition Command with full type safety and validation
+ * TransitionCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 335 lines (with dom-utils dependency)
+ * V2 Target: ~350 lines (inline utilities, standalone)
  */
-export class TransitionCommand
-  implements
-    CommandImplementation<TransitionCommandInput, TransitionCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'transition',
-    description:
-      'The transition command animates CSS properties using CSS transitions. It smoothly changes a property from its current value to a new value over a specified duration.',
+export class TransitionCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'transition';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Animate CSS properties using CSS transitions with configurable duration and timing',
+    syntax: [
+      'transition <property> to <value>',
+      'transition <property> to <value> over <duration>',
+      'transition <property> to <value> over <duration> with <timing-function>',
+      'transition <target> <property> to <value>',
+    ],
     examples: [
       'transition opacity to 0.5',
-      'transition <#box/> left to 100px over 500ms',
+      'transition left to 100px over 500ms',
       'transition background-color to red over 1s with ease-in-out',
-      'transition width to 200px',
+      'transition #box width to 200px',
+      'transition me left to 50px over 2s',
     ],
-    syntax:
-      'transition [<target>] <property> to <value> [over <duration>] [with <timing-function>]',
-    category: 'animation' as const,
-    version: '2.0.0',
+    category: 'animation',
+    sideEffects: ['dom-mutation', 'async'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<TransitionCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Transition command requires property and value',
-              suggestions: ['Provide CSS property and target value'],
-            },
-          ],
-          suggestions: ['Provide CSS property and target value'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<TransitionCommandInput> {
+    // Extract arguments
+    if (!raw.args || raw.args.length === 0) {
+      throw new Error('transition command requires property and value arguments');
+    }
 
-      const inputObj = input as any;
+    // Parse property (first arg or second if target specified)
+    let property: string;
+    let target: string | HTMLElement | undefined;
+    let valueModifier: ExpressionNode | undefined;
+    let duration: number | string | undefined;
+    let timingFunction: string | undefined;
 
-      if (!inputObj.property || typeof inputObj.property !== 'string') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Transition command requires a CSS property',
-              suggestions: ['Provide a CSS property name like "opacity", "width", "left"'],
-            },
-          ],
-          suggestions: ['Provide a CSS property name like "opacity", "width", "left"'],
-        };
-      }
+    // Check if first arg is a target element
+    const firstArg = await evaluator.evaluate(raw.args[0], context);
 
-      if (inputObj.value === undefined) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Transition command requires a target value',
-              suggestions: ['Provide a target value for the CSS property'],
-            },
-          ],
-          suggestions: ['Provide a target value for the CSS property'],
-        };
-      }
+    // If first arg is an element or looks like selector, treat as target
+    if (
+      firstArg instanceof HTMLElement ||
+      (typeof firstArg === 'string' && (
+        firstArg.startsWith('#') ||
+        firstArg.startsWith('.') ||
+        firstArg === 'me' ||
+        firstArg === 'it' ||
+        firstArg === 'you'
+      ))
+    ) {
+      target = firstArg as string | HTMLElement;
+      property = String(await evaluator.evaluate(raw.args[1], context));
+    } else {
+      property = String(firstArg);
+    }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          target: inputObj.target,
-          property: inputObj.property,
-          value: inputObj.value,
-          duration: inputObj.duration,
-          timingFunction: inputObj.timingFunction,
-          toKeyword: inputObj.toKeyword,
-          overKeyword: inputObj.overKeyword,
-          withKeyword: inputObj.withKeyword,
-        },
-      };
-    },
-  };
+    // Validate property
+    if (!property) {
+      throw new Error('transition command requires a CSS property');
+    }
 
+    // Extract value from 'to' modifier
+    if (raw.modifiers?.to) {
+      valueModifier = raw.modifiers.to;
+    } else {
+      throw new Error('transition command requires "to <value>" modifier');
+    }
+
+    const value = await evaluator.evaluate(valueModifier, context);
+
+    // Extract optional duration from 'over' modifier
+    if (raw.modifiers?.over) {
+      duration = await evaluator.evaluate(raw.modifiers.over, context);
+    }
+
+    // Extract optional timing function from 'with' modifier
+    if (raw.modifiers?.with) {
+      timingFunction = String(await evaluator.evaluate(raw.modifiers.with, context));
+    }
+
+    return {
+      target,
+      property,
+      value: value as string | number,
+      duration,
+      timingFunction,
+    };
+  }
+
+  /**
+   * Execute the transition command
+   *
+   * Animates a CSS property from its current value to a target value.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Transition result with completion status
+   */
   async execute(
     input: TransitionCommandInput,
     context: TypedExecutionContext
@@ -127,64 +190,27 @@ export class TransitionCommand
     const { target, value, duration: durationInput, timingFunction } = input;
     let { property } = input;
 
-    // Validate that we have a property and value
+    // Validate property and value
     if (!property || typeof property !== 'string') {
-      console.warn(
-        '⚠️ Transition command called without property argument - this may be due to parser limitations with multiline syntax. Skipping transition.'
-      );
-      // Return a dummy result to avoid breaking execution
-      return {
-        element: context.me as HTMLElement,
-        property: 'none',
-        fromValue: '',
-        toValue: '',
-        duration: 0,
-        completed: false,
-      };
+      throw new Error('transition command requires a CSS property');
     }
 
     if (value === undefined || value === null) {
-      console.warn(
-        `⚠️ Transition command for property "${property}" called without target value - skipping transition.`
-      );
-      return {
-        element: context.me as HTMLElement,
-        property,
-        fromValue: '',
-        toValue: '',
-        duration: 0,
-        completed: false,
-      };
+      throw new Error(`transition command for property "${property}" requires a target value`);
     }
 
     // Handle CSS property prefix (*property means use the actual CSS property name)
-    // In _hyperscript, * prefix indicates to use the property as-is
     if (property.startsWith('*')) {
-      property = property.substring(1); // Remove the * prefix
+      property = property.substring(1);
     }
 
     // Convert camelCase to kebab-case for CSS properties
-    property = property.replace(/([A-Z])/g, '-$1').toLowerCase();
+    property = this.camelToKebab(property);
 
-    // Resolve target element (default to context.me)
-    let targetElement: HTMLElement;
-    if (target) {
-      const resolved = await this.resolveElement(target, context);
-      if (!resolved) {
-        throw new Error(`Target element not found: ${target}`);
-      }
-      targetElement = resolved;
-    } else {
-      if (!context.me) {
-        throw new Error(
-          'No target element available - provide explicit target or ensure context.me is available'
-        );
-      }
-      const htmlElement = asHTMLElement(context.me);
-      if (!htmlElement) {
-        throw new Error('context.me is not an HTMLElement');
-      }
-      targetElement = htmlElement;
+    // Resolve target element
+    const targetElement = await this.resolveElement(target, context);
+    if (!targetElement) {
+      throw new Error('transition command requires a valid target element');
     }
 
     // Parse duration
@@ -210,7 +236,7 @@ export class TransitionCommand
     // Clean up transition
     targetElement.style.transition = originalTransition;
 
-    // Set the result in context
+    // Set result in context
     Object.assign(context, { it: targetElement });
 
     return {
@@ -223,36 +249,114 @@ export class TransitionCommand
     };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Resolve target element from various input types
+   *
+   * @param target - Target (element, selector, context ref, or undefined for me)
+   * @param context - Execution context
+   * @returns Resolved HTML element
+   * @throws Error if element cannot be resolved
+   */
   private async resolveElement(
-    element: string | HTMLElement,
+    target: string | HTMLElement | undefined,
     context: TypedExecutionContext
-  ): Promise<HTMLElement | null> {
-    if (element instanceof HTMLElement) {
-      return element;
+  ): Promise<HTMLElement> {
+    // If target is already an HTMLElement, return it
+    if (target instanceof HTMLElement) {
+      return target;
     }
 
-    if (typeof element === 'string') {
-      const trimmed = element.trim();
+    // If no target specified, use context.me
+    if (!target) {
+      const me = context.me;
+      if (!me) {
+        throw new Error('No target element - provide explicit target or ensure context.me is set');
+      }
+      return this.asHTMLElement(me);
+    }
+
+    // Handle string targets (context refs or CSS selectors)
+    if (typeof target === 'string') {
+      const trimmed = target.trim();
 
       // Handle context references
-      if (trimmed === 'me' && context.me) return asHTMLElement(context.me);
-      if (trimmed === 'it' && context.it instanceof HTMLElement) return context.it;
-      if (trimmed === 'you' && context.you) return asHTMLElement(context.you);
+      if (trimmed === 'me') {
+        if (!context.me) {
+          throw new Error('Context reference "me" is not available');
+        }
+        return this.asHTMLElement(context.me);
+      }
+
+      if (trimmed === 'it') {
+        if (!(context.it instanceof HTMLElement)) {
+          throw new Error('Context reference "it" is not an HTMLElement');
+        }
+        return context.it;
+      }
+
+      if (trimmed === 'you') {
+        if (!context.you) {
+          throw new Error('Context reference "you" is not available');
+        }
+        return this.asHTMLElement(context.you);
+      }
 
       // Handle CSS selector
       if (typeof document !== 'undefined') {
-        try {
-          const found = document.querySelector(trimmed);
-          return found instanceof HTMLElement ? found : null;
-        } catch {
-          return null;
+        const element = document.querySelector(trimmed);
+        if (!element) {
+          throw new Error(`Element not found with selector: ${trimmed}`);
         }
+        if (!(element instanceof HTMLElement)) {
+          throw new Error(`Element found but is not an HTMLElement: ${trimmed}`);
+        }
+        return element;
       }
+
+      throw new Error('DOM not available - cannot resolve element selector');
     }
 
-    return null;
+    throw new Error(`Invalid target type: ${typeof target}`);
   }
 
+  /**
+   * Convert value to HTMLElement
+   *
+   * @param value - Value to convert
+   * @returns HTMLElement
+   * @throws Error if value is not an HTMLElement
+   */
+  private asHTMLElement(value: unknown): HTMLElement {
+    if (value instanceof HTMLElement) {
+      return value;
+    }
+    throw new Error('Value is not an HTMLElement');
+  }
+
+  /**
+   * Convert camelCase to kebab-case
+   *
+   * @param str - String in camelCase
+   * @returns String in kebab-case
+   */
+  private camelToKebab(str: string): string {
+    return str.replace(/([A-Z])/g, '-$1').toLowerCase();
+  }
+
+  /**
+   * Parse duration from various formats
+   *
+   * Supports:
+   * - Numbers (treated as milliseconds)
+   * - Strings with "ms" suffix (e.g., "500ms")
+   * - Strings with "s" suffix (e.g., "1.5s")
+   * - Plain numeric strings (e.g., "500")
+   *
+   * @param value - Duration value
+   * @returns Duration in milliseconds
+   */
   private parseDuration(value: number | string): number {
     if (typeof value === 'number') {
       return Math.max(0, value);
@@ -266,7 +370,7 @@ export class TransitionCommand
         return parseInt(trimmed, 10);
       }
 
-      // Parse with time units
+      // Parse with time units (e.g., "1.5s", "500ms")
       const match = trimmed.match(/^(\d*\.?\d+)(s|ms)?$/i);
       if (match) {
         const [, numberStr, unit] = match;
@@ -281,6 +385,17 @@ export class TransitionCommand
     return 300; // Default duration
   }
 
+  /**
+   * Wait for CSS transition to complete
+   *
+   * Listens for transitionend and transitioncancel events.
+   * Falls back to timeout if events don't fire.
+   *
+   * @param element - Element being transitioned
+   * @param property - CSS property being transitioned
+   * @param duration - Expected duration in milliseconds
+   * @returns Promise that resolves to true if completed, false if cancelled
+   */
   private async waitForTransition(
     element: HTMLElement,
     property: string,
@@ -319,17 +434,15 @@ export class TransitionCommand
       element.addEventListener('transitionend', onTransitionEnd);
       element.addEventListener('transitioncancel', onTransitionCancel);
 
-      // Set timeout as fallback
+      // Set timeout as fallback (duration + 50ms buffer)
       const timeoutId = setTimeout(() => finish(true), duration + 50);
     });
   }
 }
 
 /**
- * Factory function to create the enhanced transition command
+ * Factory function to create TransitionCommand instance
  */
 export function createTransitionCommand(): TransitionCommand {
   return new TransitionCommand();
 }
-
-export default TransitionCommand;

@@ -26,14 +26,14 @@ import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-proces
 import { createContext } from '../core/context';
 
 // Import ONLY the 8 minimal V2 commands (tree-shaking works!)
-import { createAddCommand } from '../commands-v2/dom/add';
-import { createRemoveCommand } from '../commands-v2/dom/remove';
-import { createToggleCommand } from '../commands-v2/dom/toggle';
-import { createPutCommand } from '../commands-v2/dom/put';
-import { createSetCommand } from '../commands-v2/data/set';
-import { createSendCommand } from '../commands-v2/events/send';
-import { createLogCommand } from '../commands-v2/utility/log';
-import { createWaitCommand } from '../commands-v2/async/wait';
+import { createAddCommand } from '../commands/dom/add';
+import { createRemoveCommand } from '../commands/dom/remove';
+import { createToggleCommand } from '../commands/dom/toggle';
+import { createPutCommand } from '../commands/dom/put';
+import { createSetCommand } from '../commands/data/set';
+import { createSendCommand } from '../commands/events/send';
+import { createLogCommand } from '../commands/utility/log';
+import { createWaitCommand } from '../commands/async/wait';
 
 // Create runtime instance with minimal commands
 const runtimeExperimental = createMinimalRuntime([

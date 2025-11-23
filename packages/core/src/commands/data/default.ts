@@ -1,113 +1,129 @@
 /**
- * Enhanced Default Command Implementation
+ * DefaultCommand - Standalone V2 Implementation
+ *
  * Sets values only if they don't already exist
  *
- * Syntax: default <expression> to <expression>
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with CommandImplementation interface
+ * Features:
+ * - Set variable defaults
+ * - Set attribute defaults (@data-attr)
+ * - Set property defaults (my innerHTML, its value)
+ * - Skip setting if value already exists
+ * - Context-aware element resolution
+ *
+ * Syntax:
+ *   default <expression> to <expression>
+ *
+ * @example
+ *   default myVar to "fallback"
+ *   default @data-theme to "light"
+ *   default my innerHTML to "No content"
+ *   default count to 0
  */
 
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
-import { asHTMLElement } from '../../utils/dom-utils';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for DefaultCommand
+ */
 export interface DefaultCommandInput {
-  target: string | HTMLElement; // Target variable, element, or attribute
-  value: any; // Value to set if target doesn't exist
-  toKeyword?: 'to'; // Syntax support
+  /** Target variable, element, or attribute */
+  target: string | HTMLElement;
+  /** Value to set if target doesn't exist */
+  value: any;
 }
 
-// Output type definition
+/**
+ * Output from default command execution
+ */
 export interface DefaultCommandOutput {
   target: string;
   value: any;
-  wasSet: boolean; // Whether the default value was actually set
-  existingValue?: any; // The existing value if it was already set
+  wasSet: boolean;
+  existingValue?: any;
   targetType: 'variable' | 'attribute' | 'property' | 'element';
 }
 
 /**
- * Enhanced Default Command with full type safety and validation
+ * DefaultCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 382 lines
+ * V2 Target: ~380 lines (inline asHTMLElement, standalone)
  */
-export class DefaultCommand
-  implements CommandImplementation<DefaultCommandInput, DefaultCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'default',
-    description:
-      "The default command sets a value only if it doesn't already exist. It provides a way to set fallback values for variables, attributes, and properties.",
+export class DefaultCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'default';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Set a value only if it doesn\'t already exist',
+    syntax: ['default <expression> to <expression>'],
     examples: [
       'default myVar to "fallback"',
       'default @data-theme to "light"',
       'default my innerHTML to "No content"',
       'default count to 0',
     ],
-    syntax: 'default <expression> to <expression>',
-    category: 'data' as const,
-    version: '2.0.0',
+    category: 'data',
+    sideEffects: ['data-mutation', 'dom-mutation'],
   };
 
-  validation = {
-    validate(input: unknown): UnifiedValidationResult<DefaultCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Default command requires target and value',
-              suggestions: ['Provide target and value with "to" keyword'],
-            },
-          ],
-          suggestions: ['Provide target and value with "to" keyword'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<DefaultCommandInput> {
+    if (raw.args.length < 1) {
+      throw new Error('default command requires a target');
+    }
 
-      const inputObj = input as any;
+    // First arg is the target
+    const target = await evaluator.evaluate(raw.args[0], context);
 
-      if (!inputObj.target) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Default command requires a target',
-              suggestions: ['Provide a variable name, attribute, or property reference'],
-            },
-          ],
-          suggestions: ['Provide a variable name, attribute, or property reference'],
-        };
-      }
+    // Value can be from "to" modifier or second arg
+    let value: any;
+    if (raw.modifiers?.to) {
+      value = await evaluator.evaluate(raw.modifiers.to, context);
+    } else if (raw.args.length >= 2) {
+      value = await evaluator.evaluate(raw.args[1], context);
+    } else {
+      throw new Error('default command requires a value (use "to <value>")');
+    }
 
-      if (inputObj.value === undefined) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Default command requires a value',
-              suggestions: ['Provide a default value to set'],
-            },
-          ],
-          suggestions: ['Provide a default value to set'],
-        };
-      }
+    return {
+      target,
+      value,
+    };
+  }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          target: inputObj.target,
-          value: inputObj.value,
-          toKeyword: inputObj.toKeyword,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the default command
+   *
+   * Sets the value only if the target doesn't already have a value.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Default operation result
+   */
   async execute(
     input: DefaultCommandInput,
     context: TypedExecutionContext
@@ -140,6 +156,16 @@ export class DefaultCommand
     throw new Error(`Invalid target type: ${typeof target}`);
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Set default value for a variable
+   *
+   * @param context - Execution context
+   * @param variableName - Variable name
+   * @param value - Default value
+   * @returns Operation result
+   */
   private defaultVariable(
     context: TypedExecutionContext,
     variableName: string,
@@ -177,6 +203,14 @@ export class DefaultCommand
     };
   }
 
+  /**
+   * Set default value for an attribute
+   *
+   * @param context - Execution context
+   * @param attributeName - Attribute name
+   * @param value - Default value
+   * @returns Operation result
+   */
   private defaultAttribute(
     context: TypedExecutionContext,
     attributeName: string,
@@ -210,6 +244,15 @@ export class DefaultCommand
     };
   }
 
+  /**
+   * Set default value for an element property
+   *
+   * @param context - Execution context
+   * @param possessive - Possessive reference (my, its, your)
+   * @param property - Property name
+   * @param value - Default value
+   * @returns Operation result
+   */
   private defaultElementProperty(
     context: TypedExecutionContext,
     possessive: string,
@@ -222,11 +265,8 @@ export class DefaultCommand
     switch (possessive) {
       case 'my':
         if (!context.me) throw new Error('No "me" element in context');
-        targetElement =
-          asHTMLElement(context.me) ||
-          (() => {
-            throw new Error('context.me is not an HTMLElement');
-          })();
+        targetElement = this.asHTMLElement(context.me) ||
+          (() => { throw new Error('context.me is not an HTMLElement'); })();
         break;
       case 'its':
       case 'it':
@@ -236,11 +276,8 @@ export class DefaultCommand
       case 'your':
       case 'you':
         if (!context.you) throw new Error('No "you" element in context');
-        targetElement =
-          asHTMLElement(context.you) ||
-          (() => {
-            throw new Error('context.you is not an HTMLElement');
-          })();
+        targetElement = this.asHTMLElement(context.you) ||
+          (() => { throw new Error('context.you is not an HTMLElement'); })();
         break;
       default:
         throw new Error(`Unknown possessive: ${possessive}`);
@@ -271,6 +308,14 @@ export class DefaultCommand
     };
   }
 
+  /**
+   * Set default value for an element
+   *
+   * @param context - Execution context
+   * @param element - Target element
+   * @param value - Default value
+   * @returns Operation result
+   */
   private defaultElementValue(
     context: TypedExecutionContext,
     element: HTMLElement,
@@ -300,6 +345,26 @@ export class DefaultCommand
     };
   }
 
+  /**
+   * Inline utility: Convert element to HTMLElement
+   * (Replaces V1 dependency on dom-utils.asHTMLElement)
+   *
+   * @param element - Element to convert
+   * @returns HTMLElement or null
+   */
+  private asHTMLElement(element: Element | null | undefined): HTMLElement | null {
+    if (!element) return null;
+    if (element instanceof HTMLElement) return element;
+    return null;
+  }
+
+  /**
+   * Get element property value
+   *
+   * @param element - Target element
+   * @param property - Property name
+   * @returns Property value
+   */
   private getElementProperty(element: HTMLElement, property: string): any {
     // Handle common properties
     if (property === 'textContent') return element.textContent;
@@ -318,6 +383,13 @@ export class DefaultCommand
     return (element as any)[property];
   }
 
+  /**
+   * Set element property value
+   *
+   * @param element - Target element
+   * @param property - Property name
+   * @param value - Value to set
+   */
   private setElementProperty(element: HTMLElement, property: string, value: any): void {
     // Handle common properties
     if (property === 'textContent') {
@@ -355,6 +427,12 @@ export class DefaultCommand
     (element as any)[property] = value;
   }
 
+  /**
+   * Get element value
+   *
+   * @param element - Target element
+   * @returns Element value
+   */
   private getElementValue(element: HTMLElement): any {
     if ('value' in element) {
       return (element as any).value;
@@ -362,6 +440,12 @@ export class DefaultCommand
     return element.textContent;
   }
 
+  /**
+   * Set element value
+   *
+   * @param element - Target element
+   * @param value - Value to set
+   */
   private setElementValue(element: HTMLElement, value: any): void {
     if ('value' in element) {
       (element as any).value = value;
@@ -372,10 +456,8 @@ export class DefaultCommand
 }
 
 /**
- * Factory function to create the enhanced default command
+ * Factory function to create DefaultCommand instance
  */
 export function createDefaultCommand(): DefaultCommand {
   return new DefaultCommand();
 }
-
-export default DefaultCommand;

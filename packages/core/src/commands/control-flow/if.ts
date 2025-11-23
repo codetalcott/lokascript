@@ -1,176 +1,168 @@
 /**
- * Enhanced If Command Implementation
+ * IfCommand - Standalone V2 Implementation
+ *
  * Conditional execution based on boolean expressions
  *
- * Syntax: if <condition> then <commands> [else <commands>]
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with CommandImplementation interface
+ * Features:
+ * - Condition evaluation (boolean, string, number, objects)
+ * - Then branch execution (when condition is true)
+ * - Else branch execution (when condition is false, optional)
+ * - Variable lookup in context (locals, globals, variables)
+ * - Smart truthiness evaluation (JavaScript semantics)
+ *
+ * Syntax:
+ *   if <condition> then <commands>
+ *   if <condition> then <commands> else <commands>
+ *
+ * @example
+ *   if x > 5 then add .active
+ *   if user.isAdmin then show #adminPanel else hide #adminPanel
+ *   if form.checkValidity() then submit else show .error
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import { debug } from '../../utils/debug';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for IfCommand
+ * Represents parsed condition and command branches ready for execution
+ */
 export interface IfCommandInput {
+  /** Evaluated condition value (already evaluated by parseInput) */
   condition: any;
-  thenCommands: any[];
-  elseCommands?: any[];
+  /** Commands to execute when condition is true (AST nodes) */
+  thenCommands: any;
+  /** Commands to execute when condition is false (AST nodes, optional) */
+  elseCommands?: any;
 }
 
-// Output type definition
+/**
+ * Output from If command execution
+ */
 export interface IfCommandOutput {
+  /** Boolean result of condition evaluation */
   conditionResult: boolean;
+  /** Which branch was executed */
   executedBranch: 'then' | 'else' | 'none';
+  /** Result from executed branch */
   result: any;
 }
 
 /**
- * Enhanced If Command with full type safety and validation
+ * IfCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 310 lines (with validation, type guards, debug logging)
+ * V2 Target: ~250 lines (19% reduction, all features preserved)
  */
-export class IfCommand
-  implements CommandImplementation<IfCommandInput, IfCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'if',
-    description:
-      'The if command provides conditional execution. It evaluates a condition and executes the then branch if true, or the optional else branch if false.',
+export class IfCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'if';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Conditional execution based on boolean expressions',
+    syntax: [
+      'if <condition> then <commands>',
+      'if <condition> then <commands> else <commands>',
+    ],
     examples: [
       'if x > 5 then add .active',
       'if user.isAdmin then show #adminPanel else hide #adminPanel',
       'if localStorage.getItem("theme") == "dark" then add .dark-mode',
       'if form.checkValidity() then submit else show .error',
     ],
-    syntax: 'if <condition> then <commands> [else <commands>]',
-    category: 'flow' as const,
-    version: '2.0.0',
+    category: 'control-flow',
+    sideEffects: ['conditional-execution'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<IfCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'If command requires an object input',
-              suggestions: ['Provide an object with condition and thenCommands properties'],
-            },
-          ],
-          suggestions: ['Provide an object with condition and thenCommands properties'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * Extracts condition and command branches from AST.
+   * The condition is NOT evaluated here - it's passed as-is to execute()
+   * which will evaluate it using the context at execution time.
+   *
+   * Note: The parser should have already structured the AST with:
+   * - raw.args[0] = condition expression
+   * - raw.modifiers.then = then branch commands
+   * - raw.modifiers.else = else branch commands (optional)
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<IfCommandInput> {
+    // Validate that we have a condition
+    if (!raw.args || raw.args.length === 0) {
+      throw new Error('if command requires a condition to evaluate');
+    }
 
-      const inputObj = input as any;
+    // Validate that we have then commands
+    if (!raw.modifiers?.then) {
+      throw new Error('if command requires "then" branch with commands');
+    }
 
-      // Validate condition is present
-      if (inputObj.condition === undefined) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'If command requires a condition to evaluate',
-              suggestions: ['Provide a boolean expression as the condition'],
-            },
-          ],
-          suggestions: ['Provide a boolean expression as the condition'],
-        };
-      }
+    // Evaluate the condition
+    const condition = await evaluator.evaluate(raw.args[0], context);
 
-      // Validate thenCommands
-      if (!inputObj.thenCommands) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'If command requires commands for the then branch',
-              suggestions: ['Provide commands to execute when condition is true'],
-            },
-          ],
-          suggestions: ['Provide commands to execute when condition is true'],
-        };
-      }
+    // Extract then and else branches (these are AST nodes, not evaluated)
+    const thenCommands = raw.modifiers.then;
+    const elseCommands = raw.modifiers.else;
 
-      if (!Array.isArray(inputObj.thenCommands)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Then commands must be an array',
-              suggestions: ['Provide an array of commands for the then branch'],
-            },
-          ],
-          suggestions: ['Provide an array of commands for the then branch'],
-        };
-      }
+    return {
+      condition,
+      thenCommands,
+      elseCommands,
+    };
+  }
 
-      // Validate elseCommands if provided
-      if (inputObj.elseCommands !== undefined && !Array.isArray(inputObj.elseCommands)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Else commands must be an array',
-              suggestions: ['Provide an array of commands for the else branch'],
-            },
-          ],
-          suggestions: ['Provide an array of commands for the else branch'],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          condition: inputObj.condition,
-          thenCommands: inputObj.thenCommands,
-          elseCommands: inputObj.elseCommands,
-        },
-      };
-    },
-  };
-
-  async execute(input: IfCommandInput, context: TypedExecutionContext): Promise<IfCommandOutput> {
+  /**
+   * Execute the if command
+   *
+   * Evaluates the condition to a boolean and executes the appropriate branch.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Result indicating which branch was executed and its result
+   */
+  async execute(
+    input: IfCommandInput,
+    context: TypedExecutionContext
+  ): Promise<IfCommandOutput> {
     const { condition, thenCommands, elseCommands } = input;
 
-    debug.command('IF COMMAND received input:', {
-      condition,
-      conditionType: typeof condition,
-      thenCommands,
-      thenType: (thenCommands as any)?.type,
-      elseCommands,
-      elseType: (elseCommands as any)?.type,
-    });
-
-    // Evaluate the condition (might already be evaluated by runtime)
+    // Evaluate condition to boolean
     const conditionResult = this.evaluateCondition(condition, context);
-
-    debug.command('IF COMMAND: conditionResult =', conditionResult);
 
     let executedBranch: 'then' | 'else' | 'none';
     let result: any = undefined;
 
     if (conditionResult) {
       // Execute then branch
-      debug.command('IF COMMAND: Executing THEN branch');
       executedBranch = 'then';
       result = await this.executeCommandsOrBlock(thenCommands, context);
-    } else if (
-      elseCommands &&
-      (Array.isArray(elseCommands) ? elseCommands.length > 0 : elseCommands)
-    ) {
-      // Execute else branch
-      debug.command('IF COMMAND: Executing ELSE branch');
+    } else if (elseCommands) {
+      // Execute else branch (if present)
       executedBranch = 'else';
       result = await this.executeCommandsOrBlock(elseCommands, context);
     } else {
-      debug.command('IF COMMAND: No branch executed (no else)');
+      // No branch executed (condition false, no else)
       executedBranch = 'none';
     }
 
@@ -181,52 +173,81 @@ export class IfCommand
     };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Evaluate condition to boolean
+   *
+   * Handles various condition types:
+   * - boolean: direct value
+   * - string: variable lookup or truthy check
+   * - number: JavaScript truthiness (0 = false, non-zero = true)
+   * - object: truthy (except null)
+   * - function: truthy (but not called to avoid side effects)
+   * - Promise: error (must be awaited before if command)
+   *
+   * @param condition - Condition value to evaluate
+   * @param context - Execution context for variable lookup
+   * @returns Boolean result
+   */
   private evaluateCondition(condition: any, context: TypedExecutionContext): boolean {
-    // Handle different condition types
+    // Handle boolean directly
     if (typeof condition === 'boolean') {
       return condition;
     }
 
+    // Handle functions (truthy, but don't call them)
     if (typeof condition === 'function') {
-      // Functions are always truthy (they're objects)
-      // Don't call them - they might require arguments (e.g., DOM methods like querySelector)
       return true;
     }
 
+    // Handle Promises (error - must be awaited)
     if (condition instanceof Promise) {
       throw new Error(
-        'If command does not support async conditions - use await in the condition expression'
+        'if command does not support async conditions - use await in the condition expression'
       );
     }
 
-    // Handle string conditions (variable names or expressions)
+    // Handle string conditions (variable names or literal strings)
     if (typeof condition === 'string') {
-      // Check if it's a context reference
+      // Check context references
       if (condition === 'me') return Boolean(context.me);
       if (condition === 'it') return Boolean(context.it);
       if (condition === 'you') return Boolean(context.you);
 
-      // Check variables
+      // Try variable lookup
       const value = this.getVariableValue(condition, context);
 
-      // If variable lookup failed (undefined), treat the string as a literal value
-      // This handles cases like CSS colors "rgb(100, 200, 150)" which should be truthy
-      if (value === undefined) {
-        return Boolean(condition); // Non-empty string is truthy
+      // If variable exists, use its truthiness
+      if (value !== undefined) {
+        return Boolean(value);
       }
 
-      return Boolean(value);
+      // Otherwise, non-empty string is truthy
+      return Boolean(condition);
     }
 
     // For numbers, objects, etc., use JavaScript truthiness
     return Boolean(condition);
   }
 
+  /**
+   * Execute commands or block node
+   *
+   * Handles different command formats:
+   * - Block node (type: 'block', commands: [...]) - from parser
+   * - Array of commands - from simplified syntax
+   * - Single command or value - literal
+   *
+   * @param commandsOrBlock - Commands to execute
+   * @param context - Execution context
+   * @returns Result of execution
+   */
   private async executeCommandsOrBlock(
     commandsOrBlock: any,
     context: TypedExecutionContext
   ): Promise<any> {
-    // Handle block nodes from parser (type: 'block', commands: [...])
+    // Handle block nodes from parser
     if (
       commandsOrBlock &&
       typeof commandsOrBlock === 'object' &&
@@ -244,6 +265,16 @@ export class IfCommand
     return commandsOrBlock;
   }
 
+  /**
+   * Execute a block node using runtime
+   *
+   * Block nodes are structured as: { type: 'block', commands: [...] }
+   * We use the runtime's execute function from context to run each command.
+   *
+   * @param block - Block node from parser
+   * @param context - Execution context
+   * @returns Result of last command in block
+   */
   private async executeBlock(block: any, context: TypedExecutionContext): Promise<any> {
     // Get the runtime execute function from context
     const runtimeExecute = context.locals.get('_runtimeExecute') as any;
@@ -253,7 +284,7 @@ export class IfCommand
 
     let lastResult: any = undefined;
 
-    // Execute each command in the block using runtime
+    // Execute each command in the block
     if (block.commands && Array.isArray(block.commands)) {
       for (const command of block.commands) {
         lastResult = await runtimeExecute(command, context);
@@ -263,16 +294,30 @@ export class IfCommand
     return lastResult;
   }
 
+  /**
+   * Execute an array of commands
+   *
+   * Each command can be:
+   * - Command object with execute() method
+   * - Function to call
+   * - Literal value or expression
+   *
+   * @param commands - Array of commands to execute
+   * @param context - Execution context
+   * @returns Result of last command
+   */
   private async executeCommands(commands: any[], context: TypedExecutionContext): Promise<any> {
     let lastResult: any = undefined;
 
     for (const command of commands) {
       if (command && typeof command.execute === 'function') {
+        // Command object
         lastResult = await command.execute(context);
       } else if (typeof command === 'function') {
+        // Function
         lastResult = await command();
       } else {
-        // Handle literal values or expressions
+        // Literal value
         lastResult = command;
       }
     }
@@ -280,6 +325,18 @@ export class IfCommand
     return lastResult;
   }
 
+  /**
+   * Get variable value from context
+   *
+   * Searches in order:
+   * 1. Local variables (context.locals)
+   * 2. Global variables (context.globals)
+   * 3. General variables (context.variables)
+   *
+   * @param name - Variable name to look up
+   * @param context - Execution context
+   * @returns Variable value or undefined if not found
+   */
   private getVariableValue(name: string, context: TypedExecutionContext): any {
     // Check local variables first
     if (context.locals && context.locals.has(name)) {
@@ -301,10 +358,8 @@ export class IfCommand
 }
 
 /**
- * Factory function to create the enhanced if command
+ * Factory function to create IfCommand instance
  */
 export function createIfCommand(): IfCommand {
   return new IfCommand();
 }
-
-export default IfCommand;

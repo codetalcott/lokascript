@@ -1,22 +1,44 @@
 /**
- * Enhanced Unless Command Implementation
+ * UnlessCommand - Standalone V2 Implementation
+ *
  * Conditionally executes commands only if the condition is false (inverse of if)
  *
- * Syntax: unless <condition> <command1> [<command2> ...]
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with CommandImplementation interface
+ * Features:
+ * - Inverse conditional logic (executes when condition is false)
+ * - Multiple command execution
+ * - Result tracking
+ * - Context updates between commands
+ * - Comprehensive condition evaluation
+ *
+ * Syntax:
+ *   unless <condition> <command> [<command> ...]
+ *
+ * @example
+ *   unless user.isLoggedIn showLoginForm
+ *   unless data.isValid clearForm showError
+ *   unless element.isVisible fadeIn
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for UnlessCommand
+ */
 export interface UnlessCommandInput {
-  condition: any; // Condition to evaluate (inverse logic)
-  commands: Function[]; // Commands to execute if condition is false
+  /** Condition to evaluate (inverse logic) */
+  condition: any;
+  /** Commands to execute if condition is false */
+  commands: any[];
 }
 
-// Output type definition
+/**
+ * Output from unless command execution
+ */
 export interface UnlessCommandOutput {
   conditionResult: boolean;
   executed: boolean;
@@ -26,98 +48,74 @@ export interface UnlessCommandOutput {
 }
 
 /**
- * Enhanced Unless Command with full type safety and validation
+ * UnlessCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 224 lines
+ * V2 Target: ~210 lines (inline utilities, standalone)
  */
-export class UnlessCommand
-  implements CommandImplementation<UnlessCommandInput, UnlessCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'unless',
-    description:
-      'The unless command executes commands only if the condition is false. It provides inverse conditional logic to the if command.',
+export class UnlessCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'unless';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Execute commands only if condition is false (inverse of if)',
+    syntax: ['unless <condition> <command> [<command> ...]'],
     examples: [
       'unless user.isLoggedIn showLoginForm',
       'unless data.isValid clearForm showError',
       'unless element.isVisible fadeIn',
       'unless count > 10 increment',
     ],
-    syntax: 'unless <condition> <command> [<command> ...]',
-    category: 'flow' as const,
-    version: '2.0.0',
+    category: 'control-flow',
+    sideEffects: ['conditional-execution'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<UnlessCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Unless command requires condition and commands',
-              suggestions: ['Provide condition and commands to execute'],
-            },
-          ],
-          suggestions: ['Provide condition and commands to execute'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<UnlessCommandInput> {
+    if (raw.args.length < 2) {
+      throw new Error('unless command requires a condition and at least one command');
+    }
 
-      const inputObj = input as any;
+    // First arg is the condition
+    const condition = await evaluator.evaluate(raw.args[0], context);
 
-      if (inputObj.condition === undefined) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Unless command requires a condition',
-              suggestions: ['Provide a condition to evaluate'],
-            },
-          ],
-          suggestions: ['Provide a condition to evaluate'],
-        };
-      }
+    // Remaining args are commands to execute
+    const commands = raw.args.slice(1);
 
-      if (!inputObj.commands || !Array.isArray(inputObj.commands)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Unless command requires commands to execute',
-              suggestions: ['Provide commands to execute when condition is false'],
-            },
-          ],
-          suggestions: ['Provide commands to execute when condition is false'],
-        };
-      }
+    return {
+      condition,
+      commands,
+    };
+  }
 
-      if (inputObj.commands.length === 0) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Unless command requires at least one command',
-              suggestions: ['Provide at least one command to execute'],
-            },
-          ],
-          suggestions: ['Provide at least one command to execute'],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          condition: inputObj.condition,
-          commands: inputObj.commands,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the unless command
+   *
+   * Executes commands only if condition is FALSE (inverse of if).
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Execution result with condition and results
+   */
   async execute(
     input: UnlessCommandInput,
     context: TypedExecutionContext
@@ -166,6 +164,15 @@ export class UnlessCommand
     };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Evaluate condition as boolean
+   *
+   * @param condition - Condition value to evaluate
+   * @param context - Execution context
+   * @returns Boolean result
+   */
   private evaluateCondition(condition: any, context: TypedExecutionContext): boolean {
     // Handle boolean conditions
     if (typeof condition === 'boolean') {
@@ -200,6 +207,13 @@ export class UnlessCommand
     return Boolean(condition);
   }
 
+  /**
+   * Execute a command
+   *
+   * @param command - Command to execute (function or object with execute method)
+   * @param context - Execution context
+   * @returns Command result
+   */
   private async executeCommand(command: any, context: TypedExecutionContext): Promise<any> {
     if (typeof command === 'function') {
       return await command(context);
@@ -214,10 +228,8 @@ export class UnlessCommand
 }
 
 /**
- * Factory function to create the enhanced unless command
+ * Factory function to create UnlessCommand instance
  */
 export function createUnlessCommand(): UnlessCommand {
   return new UnlessCommand();
 }
-
-export default UnlessCommand;

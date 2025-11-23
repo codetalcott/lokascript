@@ -6,7 +6,7 @@
  */
 
 import { createMinimalRuntime } from '../runtime/runtime-experimental';
-import { createHideCommand, createShowCommand } from '../commands-v2';
+import { createHideCommand, createShowCommand } from '../commands';
 
 // Create runtime with only 2 commands
 export const runtime = createMinimalRuntime([

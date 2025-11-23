@@ -1,54 +1,59 @@
 /**
- * Persist Command Implementation
+ * PersistCommand - Standalone V2 Implementation
+ *
  * Saves and restores values from localStorage or sessionStorage
+ *
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Save values to localStorage or sessionStorage
+ * - Restore values with automatic expiration checking
+ * - Remove values from storage
+ * - TTL (time-to-live) support for automatic expiration
+ * - JSON serialization with metadata
+ * - Custom events for operations
+ * - Type-safe storage handling
  *
  * Syntax:
  *   persist <value> to local as <key>
  *   persist <value> to session as <key>
+ *   persist <value> to local as <key> with ttl <milliseconds>
  *   restore <key> from local
  *   restore <key> from session
+ *   remove <key> from local
  *
- * Examples:
- *   persist my.value to local as 'username'
- *   restore 'username' from local then set my.value to it
- *   persist formData to session as 'draft' with ttl 3600000
- *
- * Features:
- * - Supports localStorage and sessionStorage
- * - Optional TTL (time-to-live) for automatic expiration
- * - Cross-tab synchronization via storage events
- * - Type-safe JSON serialization
+ * @example
+ *   persist myValue to local as 'username'
+ *   persist formData to session as 'draft'
+ *   persist data to local as 'cache' with ttl 3600000
+ *   restore 'username' from local
+ *   remove 'cache' from local
  */
 
-import { v } from '../../validation/lightweight-validators';
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 /**
- * Zod schema for PERSIST command input validation
- * Note: storage and operation defaults are handled in execute() method
+ * Typed input for PersistCommand
  */
-export const PersistCommandInputSchema = v.object({
-  key: v.string().min(1).describe('Storage key'),
-  value: v.any().describe('Value to persist (for save operations)').optional(),
-  storage: v.enum(['local', 'session']).describe('Storage type (local or session - defaults to local)').optional(),
-  ttl: v.number().describe('Time-to-live in milliseconds').optional(),
-  operation: v.enum(['save', 'restore', 'remove']).describe('Operation type (defaults to save)').optional(),
-}).describe('PERSIST command input parameters');
-
-// Input type definition
 export interface PersistCommandInput {
+  /** Storage key */
   key: string;
+  /** Value to persist (for save operations) */
   value?: unknown;
+  /** Storage type (local or session) */
   storage?: 'local' | 'session';
+  /** Time-to-live in milliseconds */
   ttl?: number;
+  /** Operation type */
   operation?: 'save' | 'restore' | 'remove';
 }
 
-type PersistCommandInputType = any; // Inferred from RuntimeValidator
-
-// Output type definition
+/**
+ * Output from Persist command execution
+ */
 export interface PersistCommandOutput {
   success: boolean;
   operation: 'save' | 'restore' | 'remove';
@@ -69,59 +74,123 @@ interface StoredValue {
 }
 
 /**
- * Persist Command with full type safety and validation
- * Handles localStorage and sessionStorage with TTL support
+ * PersistCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 390 lines (with validation dependencies)
+ * V2 Target: ~370 lines (inline validation, standalone)
  */
-export class PersistCommand implements CommandImplementation<
-  PersistCommandInputType,
-  PersistCommandOutput,
-  TypedExecutionContext
-> {
-  name = 'persist' as const;
-  inputSchema = PersistCommandInputSchema;
+export class PersistCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'persist';
 
-  metadata = {
-    name: 'persist',
-    description: 'Save and restore values from browser storage',
-    examples: [
-      'persist my.value to local as "username"',
-      'restore "username" from local',
-      'persist formData to session as "draft"',
-      'persist data to local as "cache" with ttl 3600000'
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Save and restore values from browser storage with TTL support',
+    syntax: [
+      'persist <value> to <storage> as <key>',
+      'persist <value> to <storage> as <key> with ttl <ms>',
+      'restore <key> from <storage>',
+      'remove <key> from <storage>',
     ],
-    syntax: 'persist <value> to <storage> as <key> [with ttl <ms>] | restore <key> from <storage>',
+    examples: [
+      'persist myValue to local as "username"',
+      'persist formData to session as "draft"',
+      'persist data to local as "cache" with ttl 3600000',
+      'restore "username" from local',
+      'remove "cache" from local',
+    ],
     category: 'data',
-    version: '1.0.0'
+    sideEffects: ['storage', 'data-mutation'],
   };
 
-  validation = {
-    validate: (input: unknown) => this.validate(input)
-  };
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<PersistCommandInput> {
+    // Detect operation from command name/modifiers
+    let operation: 'save' | 'restore' | 'remove' = 'save';
+    let key: string;
+    let value: unknown;
+    let storage: 'local' | 'session' | undefined;
+    let ttl: number | undefined;
 
-  async execute(
-    input: PersistCommandInputType,
-    context: TypedExecutionContext
-  ): Promise<PersistCommandOutput> {
-    // Parse input - handle different formats
-    let normalizedInput: PersistCommandInput;
-
-    if (typeof input === 'object' && input !== null) {
-      normalizedInput = input as PersistCommandInput;
+    // Check for 'restore' or 'remove' operations (might be separate command names)
+    if (raw.modifiers?.from) {
+      operation = 'restore';
+      // First arg is key for restore
+      key = String(await evaluator.evaluate(raw.args[0], context));
+      storage = String(await evaluator.evaluate(raw.modifiers.from, context)) as 'local' | 'session';
     } else {
-      throw new Error('Invalid persist command input');
+      // Save operation
+      operation = 'save';
+      // First arg is value
+      value = await evaluator.evaluate(raw.args[0], context);
+
+      // Extract storage from 'to' modifier
+      if (raw.modifiers?.to) {
+        storage = String(await evaluator.evaluate(raw.modifiers.to, context)) as 'local' | 'session';
+      }
+
+      // Extract key from 'as' modifier
+      if (raw.modifiers?.as) {
+        key = String(await evaluator.evaluate(raw.modifiers.as, context));
+      } else {
+        throw new Error('persist command requires "as <key>" modifier');
+      }
+
+      // Extract optional TTL from 'ttl' modifier
+      if (raw.modifiers?.ttl) {
+        ttl = Number(await evaluator.evaluate(raw.modifiers.ttl, context));
+      }
     }
 
-    const {
+    return {
       key,
       value,
-      storage = 'local',
+      storage: storage || 'local',
       ttl,
-      operation = 'save'
-    } = normalizedInput;
+      operation,
+    };
+  }
 
-    // Get the appropriate storage
+  /**
+   * Execute the persist command
+   *
+   * Performs save, restore, or remove operation on browser storage.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Operation result with success status
+   */
+  async execute(
+    input: PersistCommandInput,
+    context: TypedExecutionContext
+  ): Promise<PersistCommandOutput> {
+    const { key, value, storage = 'local', ttl, operation = 'save' } = input;
+
+    // Validate key
+    if (!key || typeof key !== 'string' || key.trim() === '') {
+      throw new Error('persist command requires a valid storage key');
+    }
+
+    // Get storage object
     const storageObj = this.getStorage(storage);
-
     if (!storageObj) {
       throw new Error(`Storage not available: ${storage}Storage`);
     }
@@ -142,8 +211,13 @@ export class PersistCommand implements CommandImplementation<
     }
   }
 
+  // ========== Private Utility Methods ==========
+
   /**
    * Get storage object (localStorage or sessionStorage)
+   *
+   * @param type - Storage type ('local' or 'session')
+   * @returns Storage object or null if not available
    */
   private getStorage(type: 'local' | 'session'): Storage | null {
     if (typeof window === 'undefined') {
@@ -160,6 +234,14 @@ export class PersistCommand implements CommandImplementation<
 
   /**
    * Save a value to storage with optional TTL
+   *
+   * @param key - Storage key
+   * @param value - Value to save
+   * @param storage - Storage object
+   * @param storageType - Storage type name
+   * @param ttl - Optional time-to-live in milliseconds
+   * @param context - Execution context
+   * @returns Save operation result
    */
   private async saveValue(
     key: string,
@@ -175,7 +257,7 @@ export class PersistCommand implements CommandImplementation<
     const storedValue: StoredValue = {
       value,
       timestamp,
-      ...(ttl !== undefined && { ttl })
+      ...(ttl !== undefined && { ttl }),
     };
 
     try {
@@ -189,7 +271,7 @@ export class PersistCommand implements CommandImplementation<
         value,
         storage: storageType,
         timestamp,
-        ttl
+        ttl,
       });
 
       return {
@@ -198,22 +280,30 @@ export class PersistCommand implements CommandImplementation<
         key,
         value,
         storage: storageType,
-        timestamp
+        timestamp,
       };
     } catch (error) {
       // Handle storage quota exceeded or other errors
       this.dispatchEvent(context, 'persist:error', {
         key,
         operation: 'save',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      throw new Error(`Failed to persist value: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to persist value: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Restore a value from storage, checking TTL
+   *
+   * @param key - Storage key
+   * @param storage - Storage object
+   * @param storageType - Storage type name
+   * @param context - Execution context
+   * @returns Restore operation result
    */
   private async restoreValue(
     key: string,
@@ -233,7 +323,7 @@ export class PersistCommand implements CommandImplementation<
           operation: 'restore',
           key,
           value: null,
-          storage: storageType
+          storage: storageType,
         };
       }
 
@@ -243,7 +333,7 @@ export class PersistCommand implements CommandImplementation<
 
       // Check if expired
       const now = Date.now();
-      const isExpired = ttl !== undefined && (now - timestamp) > ttl;
+      const isExpired = ttl !== undefined && now - timestamp > ttl;
 
       if (isExpired) {
         // Remove expired value
@@ -257,7 +347,7 @@ export class PersistCommand implements CommandImplementation<
           key,
           value: null,
           storage: storageType,
-          expired: true
+          expired: true,
         };
       }
 
@@ -265,11 +355,11 @@ export class PersistCommand implements CommandImplementation<
       this.dispatchEvent(context, 'persist:restore', {
         key,
         value,
-        storage: storageType
+        storage: storageType,
       });
 
       // Set the restored value in context.it for chaining
-      context.it = value;
+      Object.assign(context, { it: value });
 
       return {
         success: true,
@@ -277,21 +367,29 @@ export class PersistCommand implements CommandImplementation<
         key,
         value,
         storage: storageType,
-        timestamp
+        timestamp,
       };
     } catch (error) {
       this.dispatchEvent(context, 'persist:error', {
         key,
         operation: 'restore',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      throw new Error(`Failed to restore value: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to restore value: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Remove a value from storage
+   *
+   * @param key - Storage key
+   * @param storage - Storage object
+   * @param storageType - Storage type name
+   * @param context - Execution context
+   * @returns Remove operation result
    */
   private async removeValue(
     key: string,
@@ -304,28 +402,34 @@ export class PersistCommand implements CommandImplementation<
 
       this.dispatchEvent(context, 'persist:remove', {
         key,
-        storage: storageType
+        storage: storageType,
       });
 
       return {
         success: true,
         operation: 'remove',
         key,
-        storage: storageType
+        storage: storageType,
       };
     } catch (error) {
       this.dispatchEvent(context, 'persist:error', {
         key,
         operation: 'remove',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      throw new Error(`Failed to remove value: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to remove value: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Dispatch custom events for persist operations
+   *
+   * @param context - Execution context
+   * @param eventName - Event name
+   * @param detail - Event detail object
    */
   private dispatchEvent(
     context: TypedExecutionContext,
@@ -336,55 +440,16 @@ export class PersistCommand implements CommandImplementation<
       const event = new CustomEvent(eventName, {
         detail,
         bubbles: true,
-        cancelable: false
+        cancelable: false,
       });
       context.me.dispatchEvent(event);
-    }
-  }
-
-  validate(input: unknown): UnifiedValidationResult<PersistCommandInputType> {
-    try {
-      const validInput = this.inputSchema.parse(input);
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: validInput
-      };
-    } catch (error: any) {
-      // Construct helpful error message and suggestions
-      const suggestions = [
-        'persist my.value to local as "username"',
-        'restore "username" from local',
-        'persist data to session as "draft"',
-        'persist data to local as "key" with ttl 3600000'
-      ];
-
-      const errorMessage = error?.issues?.[0]?.message ||
-                          error?.message ||
-                          'Invalid PERSIST command input';
-
-      return {
-        isValid: false,
-        errors: [{
-          type: 'validation-error',
-          code: 'VALIDATION_ERROR',
-          message: `PERSIST command validation failed: ${errorMessage}`,
-          path: '',
-          suggestions
-        }],
-        suggestions
-      };
     }
   }
 }
 
 /**
- * Factory function to create a new PersistCommand instance
+ * Factory function to create PersistCommand instance
  */
 export function createPersistCommand(): PersistCommand {
   return new PersistCommand();
 }
-
-// Export command instance for direct use
-export const enhancedPersistCommand = createPersistCommand();

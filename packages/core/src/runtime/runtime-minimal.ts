@@ -19,9 +19,9 @@ import { EnhancedCommandRegistry } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 
 // Import standalone V2 commands (zero V1 dependencies)
-import { HideCommand } from '../commands-v2/dom/hide-standalone';
-import { ShowCommand } from '../commands-v2/dom/show-standalone';
-import { LogCommand } from '../commands-v2/utility/log-standalone';
+import { HideCommand } from '../commands/dom/hide-standalone';
+import { ShowCommand } from '../commands/dom/show-standalone';
+import { LogCommand } from '../commands/utility/log-standalone';
 
 /**
  * Create a minimal runtime with only hide, show, and log commands

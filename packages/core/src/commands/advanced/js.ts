@@ -1,38 +1,46 @@
 /**
- * Enhanced JS Command Implementation
- * Executes inline JavaScript code with parameter passing and return values
+ * JsCommand - Standalone V2 Implementation
  *
- * Syntax: js([param1, param2, ...]) <javascript_code> end
+ * Executes inline JavaScript code with access to hyperscript context
  *
- * Modernized with TypedCommandImplementation interface
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Execute JavaScript code using new Function()
+ * - Access to hyperscript context (me, it, you, locals, globals)
+ * - Optional parameter passing
+ * - Result stored in context.it
+ * - Error handling with context
+ *
+ * Syntax:
+ *   js <code> end
+ *   js([param1, param2]) <code> end
+ *
+ * @example
+ *   js console.log("Hello World") end
+ *   js([x, y]) return x + y end
+ *   js me.style.color = "red" end
  */
 
-import type { ValidationResult, TypedExecutionContext } from '../../types/index';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Define TypedCommandImplementation locally for now
-interface TypedCommandImplementation<TInput, TOutput, TContext> {
-  readonly metadata: {
-    readonly name: string;
-    readonly description: string;
-    readonly examples: string[];
-    readonly syntax: string;
-    readonly category: string;
-    readonly version: string;
-  };
-  readonly validation: {
-    validate(input: unknown): ValidationResult<TInput>;
-  };
-  execute(input: TInput, context: TContext): Promise<TOutput>;
+/**
+ * Typed input for JsCommand
+ */
+export interface JsCommandInput {
+  /** JavaScript code to execute */
+  code: string;
+  /** Optional parameter names */
+  parameters?: string[];
 }
 
-// Input type definition
-export interface JSCommandInput {
-  code: string; // JavaScript code to execute
-  parameters?: string[]; // Parameter names for the code
-}
-
-// Output type definition
-export interface JSCommandOutput {
+/**
+ * Output from js command execution
+ */
+export interface JsCommandOutput {
   result: any;
   executed: boolean;
   codeLength: number;
@@ -40,182 +48,83 @@ export interface JSCommandOutput {
 }
 
 /**
- * Enhanced JS Command with full type safety and validation
+ * JsCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 297 lines
+ * V2 Target: ~280 lines (inline utilities, standalone)
  */
-export class JSCommand
-  implements TypedCommandImplementation<JSCommandInput, JSCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'js',
-    description:
-      'The js command executes inline JavaScript code with access to the hyperscript context and optional parameters. It provides a way to run custom JavaScript within hyperscript.',
+export class JsCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'js';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Execute inline JavaScript code with access to hyperscript context',
+    syntax: ['js <code> end', 'js([params]) <code> end'],
     examples: [
-      'js console.log("Hello World") end',
+      'js console.log("Hello") end',
       'js([x, y]) return x + y end',
       'js me.style.color = "red" end',
       'js([element]) element.classList.add("active") end',
     ],
-    syntax: 'js([param1, param2, ...]) <javascript_code> end',
-    category: 'advanced' as const,
-    version: '2.0.0',
+    category: 'advanced',
+    sideEffects: ['code-execution', 'data-mutation'],
   };
 
-  // Compatibility properties for legacy tests
-  get name() {
-    return this.metadata.name;
-  }
-  get description() {
-    return this.metadata.description;
-  }
-  get syntax() {
-    return this.metadata.syntax;
-  }
-  get isBlocking() {
-    return false;
-  }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<JsCommandInput> {
+    let code: string;
+    let parameters: string[] | undefined;
 
-  validation = {
-    validate(input: unknown): ValidationResult<JSCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'JS command requires JavaScript code',
-              suggestions: ['Provide JavaScript code to execute'],
-            },
-          ],
-          suggestions: ['Provide JavaScript code to execute'],
-        };
-      }
-
-      const inputObj = input as any;
-
-      if (!inputObj.code || typeof inputObj.code !== 'string') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'JS command requires code string',
-              suggestions: ['Provide JavaScript code as a string'],
-            },
-          ],
-          suggestions: ['Provide JavaScript code as a string'],
-        };
-      }
-
-      // Validate parameters if provided
-      if (inputObj.parameters && !Array.isArray(inputObj.parameters)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'type-mismatch',
-              message: 'Parameters must be an array of strings',
-              suggestions: ['Use array format: ["param1", "param2"]'],
-            },
-          ],
-          suggestions: ['Use array format: ["param1", "param2"]'],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          code: inputObj.code,
-          parameters: inputObj.parameters,
-        },
-      };
-    },
-  };
-
-  // Compatibility method for legacy tests
-  validate(args: any[]): string | null {
-    if (!Array.isArray(args) || args.length === 0) {
-      return 'JS command requires JavaScript code';
+    // Check if first arg is parameters array
+    if (raw.args.length >= 2 && Array.isArray(raw.args[0])) {
+      // Format: js([param1, param2]) <code> end
+      parameters = raw.args[0] as string[];
+      code = String(await evaluator.evaluate(raw.args[1], context));
+    } else if (raw.args.length >= 1) {
+      // Format: js <code> end
+      code = String(await evaluator.evaluate(raw.args[0], context));
+    } else {
+      throw new Error('js command requires JavaScript code');
     }
 
-    const [firstArg, secondArg] = args;
-
-    // Check if first arg is parameters array (when used with parameters)
-    if (Array.isArray(firstArg)) {
-      if (!secondArg || typeof secondArg !== 'string') {
-        return 'JS command requires code as string';
-      }
-      return null;
-    }
-
-    // Check if first arg is the code
-    if (typeof firstArg !== 'string') {
-      if (firstArg === null) {
-        return 'Code must be a string';
-      }
-      if (typeof firstArg === 'number') {
-        return 'Code must be a string';
-      }
-      // If it's an object, it means they're trying to pass parameters as object instead of array
-      if (typeof firstArg === 'object') {
-        return 'Parameters must be an array';
-      }
-      return 'JS command requires code as string';
-    }
-
-    // If there's a second arg when first is code, second should be parameters array
-    if (secondArg !== undefined) {
-      if (typeof secondArg === 'object' && !Array.isArray(secondArg)) {
-        return 'Parameters must be an array';
-      }
-      if (typeof secondArg === 'string') {
-        return 'Parameters must be an array';
-      }
-    }
-
-    return null;
+    return {
+      code,
+      parameters,
+    };
   }
 
-  // Overloaded execute method for compatibility
+  /**
+   * Execute the js command
+   *
+   * Executes JavaScript code with access to hyperscript context.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Execution result with code result
+   */
   async execute(
-    contextOrInput: TypedExecutionContext | JSCommandInput,
-    codeOrContext?: string | TypedExecutionContext,
-    ...additionalArgs: any[]
-  ): Promise<any> {
-    // Legacy API: execute(context, code) or execute(context, params, code)
-    if ('me' in contextOrInput || 'locals' in contextOrInput) {
-      const context = contextOrInput as TypedExecutionContext;
-
-      // Case 1: execute(context, code)
-      if (typeof codeOrContext === 'string') {
-        const code = codeOrContext;
-        const output = await this.executeTyped({ code }, context);
-        return output.result; // Return just the result for legacy API
-      }
-
-      // Case 2: execute(context, params, code)
-      if (Array.isArray(codeOrContext) && additionalArgs.length > 0) {
-        const parameters = codeOrContext;
-        const code = additionalArgs[0] as string;
-        const output = await this.executeTyped({ code, parameters }, context);
-        return output.result; // Return just the result for legacy API
-      }
-
-      // If we get here, code is missing
-      throw new Error('JS command requires JavaScript code to execute');
-    }
-
-    // Enhanced API: execute(input, context)
-    const input = contextOrInput;
-    const context = codeOrContext as TypedExecutionContext;
-    return await this.executeTyped(input, context);
-  }
-
-  private async executeTyped(
-    input: JSCommandInput,
+    input: JsCommandInput,
     context: TypedExecutionContext
-  ): Promise<JSCommandOutput | any> {
+  ): Promise<JsCommandOutput> {
     const { code, parameters = [] } = input;
 
     // Skip execution if code is empty or only whitespace
@@ -252,6 +161,17 @@ export class JSCommand
     }
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Create execution context for JavaScript code
+   *
+   * Provides access to hyperscript context variables and parameters.
+   *
+   * @param context - Hyperscript execution context
+   * @param parameters - Parameter names to extract from context
+   * @returns Execution context object for Function constructor
+   */
   private createExecutionContext(
     context: TypedExecutionContext,
     parameters: string[]
@@ -287,10 +207,8 @@ export class JSCommand
 }
 
 /**
- * Factory function to create the enhanced js command
+ * Factory function to create JsCommand instance
  */
-export function createJSCommand(): JSCommand {
-  return new JSCommand();
+export function createJsCommand(): JsCommand {
+  return new JsCommand();
 }
-
-export default JSCommand;

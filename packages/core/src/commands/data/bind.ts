@@ -1,48 +1,50 @@
 /**
- * Bind Command Implementation
- * Two-way data binding using explicit event-based pattern
+ * BindCommand - Standalone V2 Implementation
+ *
+ * Two-way data binding between variables and DOM elements
+ *
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Three binding directions: to, from, bidirectional
+ * - Event-based synchronization (no signals library)
+ * - MutationObserver for DOM change detection
+ * - Property access: value, checked, textContent, attributes, nested properties
+ * - Cleanup system for memory management
  *
  * Syntax:
- *   bind :variable to <element-property>
- *   bind :variable from <element-property>
+ *   bind :variable to <element>.<property>
+ *   bind :variable from <element>.<property>
+ *   bind :variable to <element>.<property> bidirectional
  *
- * Examples:
- *   bind :username to my.value              (element → variable)
- *   bind :username from #display.textContent (variable → element)
- *   bind :count to my.textContent bidirectional
- *
- * Philosophy: Explicit event-based binding (no implicit reactivity)
- * - Uses custom events for synchronization
- * - MutationObserver for DOM changes
- * - Clear data flow direction
+ * @example
+ *   bind :username to my.value
+ *   bind :count from #display.textContent
+ *   bind :message to #input.value bidirectional
  */
 
-import { v } from '../../validation/lightweight-validators';
-import type { CommandImplementation } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 /**
- * Zod schema for BIND command input validation
+ * Typed input for BindCommand
  */
-export const BindCommandInputSchema = v.object({
-  variable: v.string().min(1).describe('Variable name (with or without : prefix)'),
-  target: v.any().describe('Target element (string selector or HTMLElement)'),
-  property: v.string().optional().describe('Element property to bind (value, textContent, etc.)'),
-  direction: v.enum(['to', 'from', 'bidirectional']).optional().describe('Binding direction'),
-}).describe('BIND command input parameters');
-
-// Input type definition
 export interface BindCommandInput {
+  /** Variable name (without : prefix) */
   variable: string;
-  target: string | HTMLElement;
-  property?: string;
-  direction?: 'to' | 'from' | 'bidirectional';
+  /** Target element */
+  target: HTMLElement;
+  /** Element property to bind (default: 'value') */
+  property: string;
+  /** Binding direction */
+  direction: 'to' | 'from' | 'bidirectional';
 }
 
-type BindCommandInputType = any; // Inferred from RuntimeValidator
-
-// Output type definition
+/**
+ * Output from Bind command execution
+ */
 export interface BindCommandOutput {
   success: boolean;
   variable: string;
@@ -53,7 +55,7 @@ export interface BindCommandOutput {
 }
 
 /**
- * Binding registry to track active bindings
+ * Active binding registry
  */
 interface ActiveBinding {
   id: string;
@@ -64,66 +66,147 @@ interface ActiveBinding {
   cleanup: () => void;
 }
 
+/**
+ * Global binding registry (shared across all BindCommand instances)
+ */
 const activeBindings: Map<string, ActiveBinding> = new Map();
 
 /**
- * Bind Command with event-based two-way data binding
- * No signals library - uses explicit events and observers
+ * BindCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 496 lines (with validation, event system, MutationObserver)
+ * V2 Target: ~480 lines (3% reduction, all features preserved)
  */
-export class BindCommand implements CommandImplementation<
-  BindCommandInputType,
-  BindCommandOutput,
-  TypedExecutionContext
-> {
-  name = 'bind' as const;
-  inputSchema = BindCommandInputSchema;
+export class BindCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'bind';
 
-  metadata = {
-    name: 'bind',
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
     description: 'Create two-way data binding between variables and DOM elements',
+    syntax: [
+      'bind :variable to <element>.<property>',
+      'bind :variable from <element>.<property>',
+      'bind :variable to <element>.<property> bidirectional',
+    ],
     examples: [
       'bind :username to my.value',
       'bind :count from #display.textContent',
-      'bind :message to #input.value bidirectional'
+      'bind :message to #input.value bidirectional',
+      'bind :checked to #checkbox.checked',
+      'bind :theme from @data-theme',
     ],
-    syntax: 'bind :variable to|from <element>.<property> [bidirectional]',
     category: 'data',
-    version: '1.0.0'
+    sideEffects: ['data-binding', 'event-listeners', 'dom-observation'],
   };
 
-  validation = {
-    validate: (input: unknown) => this.validate(input)
-  };
-
-  async execute(
-    input: BindCommandInputType,
-    context: TypedExecutionContext
-  ): Promise<BindCommandOutput> {
-    // Parse input
-    let normalizedInput: BindCommandInput;
-
-    if (typeof input === 'object' && input !== null) {
-      normalizedInput = input as BindCommandInput;
-    } else {
-      throw new Error('Invalid bind command input');
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * Expected patterns:
+   * - bind :variable to <target>.<property>
+   * - bind :variable from <target>.<property>
+   * - bind :variable to <target>.<property> bidirectional
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<BindCommandInput> {
+    // Validate arguments
+    if (!raw.args || raw.args.length < 1) {
+      throw new Error('bind command requires a variable name');
     }
 
-    const {
-      variable: rawVariable,
-      target,
-      property = 'value',
-      direction = 'to'
-    } = normalizedInput;
+    // Parse variable name (first argument, may have : prefix)
+    const variableRaw = await evaluator.evaluate(raw.args[0], context);
+    const variable = typeof variableRaw === 'string' && variableRaw.startsWith(':')
+      ? variableRaw.substring(1)
+      : String(variableRaw);
 
-    // Normalize variable name (remove : prefix if present)
-    const variable = rawVariable.startsWith(':') ? rawVariable.substring(1) : rawVariable;
+    // Determine direction (default: 'to')
+    let direction: 'to' | 'from' | 'bidirectional' = 'to';
+    if (raw.modifiers?.bidirectional || (raw as any).bidirectional) {
+      direction = 'bidirectional';
+    } else if (raw.modifiers?.to || (raw as any).direction === 'to') {
+      direction = 'to';
+    } else if (raw.modifiers?.from || (raw as any).direction === 'from') {
+      direction = 'from';
+    }
 
-    // Resolve target element
-    const element = this.resolveElement(target, context);
+    // Parse target and property
+    // Pattern: <target>.<property> or just <target> (property defaults to 'value')
+    let target: any;
+    let property = 'value'; // default property
 
-    if (!element) {
+    if (raw.modifiers?.to || raw.modifiers?.from) {
+      // Parse from modifier (e.g., "to my.value" or "from #display.textContent")
+      const targetExpr = raw.modifiers.to || raw.modifiers.from;
+      const targetValue = await evaluator.evaluate(targetExpr, context);
+
+      if (targetValue instanceof HTMLElement) {
+        target = targetValue;
+      } else if (typeof targetValue === 'string') {
+        // Parse property from string (e.g., "my.value" → target=me, property=value)
+        const parts = targetValue.split('.');
+        if (parts.length > 1) {
+          target = parts[0]; // "my", "#element", etc.
+          property = parts.slice(1).join('.'); // "value", "style.color", etc.
+        } else {
+          target = targetValue;
+        }
+      } else {
+        target = targetValue;
+      }
+    } else if ((raw as any).target) {
+      target = (raw as any).target;
+      property = (raw as any).property || 'value';
+    } else {
+      throw new Error('bind command requires a target element (to/from)');
+    }
+
+    // Resolve target to HTMLElement
+    const targetElement = await this.resolveElement(target, evaluator, context);
+
+    if (!targetElement) {
       throw new Error(`Cannot resolve target element: ${target}`);
     }
+
+    return {
+      variable,
+      target: targetElement,
+      property,
+      direction,
+    };
+  }
+
+  /**
+   * Execute the bind command
+   *
+   * Creates bidirectional data binding between variable and element property.
+   * Sets up event listeners and MutationObserver for synchronization.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Binding result with ID for cleanup
+   */
+  async execute(
+    input: BindCommandInput,
+    context: TypedExecutionContext
+  ): Promise<BindCommandOutput> {
+    const { variable, target: element, property, direction } = input;
 
     // Create binding based on direction
     const bindingId = this.createBinding(variable, element, property, direction, context);
@@ -134,7 +217,7 @@ export class BindCommand implements CommandImplementation<
       element,
       property,
       direction,
-      bindingId
+      bindingId,
     });
 
     return {
@@ -143,45 +226,26 @@ export class BindCommand implements CommandImplementation<
       element,
       property,
       direction,
-      bindingId
+      bindingId,
     };
   }
 
-  /**
-   * Resolve element from target (string selector or HTMLElement)
-   */
-  private resolveElement(target: string | HTMLElement, context: TypedExecutionContext): HTMLElement | null {
-    if (target instanceof HTMLElement) {
-      return target;
-    }
-
-    // Handle special context references
-    if (target === 'me' || target === 'my') {
-      return context.me as HTMLElement;
-    }
-
-    if (target === 'it' || target === 'its') {
-      return context.it instanceof HTMLElement ? context.it : null;
-    }
-
-    if (target === 'you' || target === 'your') {
-      return context.you as HTMLElement;
-    }
-
-    // Try querySelector
-    if (typeof document !== 'undefined') {
-      try {
-        return document.querySelector(target) as HTMLElement;
-      } catch {
-        return null;
-      }
-    }
-
-    return null;
-  }
+  // ========== Private Binding Logic ==========
 
   /**
    * Create a binding between variable and element property
+   *
+   * Sets up event listeners and observers based on direction:
+   * - 'to': Element → Variable (element changes update variable)
+   * - 'from': Variable → Element (variable changes update element)
+   * - 'bidirectional': Both directions
+   *
+   * @param variable - Variable name
+   * @param element - Target element
+   * @param property - Element property to bind
+   * @param direction - Binding direction
+   * @param context - Execution context
+   * @returns Binding ID for cleanup
    */
   private createBinding(
     variable: string,
@@ -191,7 +255,6 @@ export class BindCommand implements CommandImplementation<
     context: TypedExecutionContext
   ): string {
     const bindingId = `bind-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
     const cleanupFunctions: Array<() => void> = [];
 
     // Direction: 'to' - Element changes update variable
@@ -203,10 +266,10 @@ export class BindCommand implements CommandImplementation<
         context.locals.set(variable, value);
 
         // Dispatch custom event for other bindings to listen
-        // Include originElement to prevent updating the element that triggered the change
+        // Include originElement to prevent update loops
         const event = new CustomEvent(`variable:${variable}:change`, {
           detail: { value, source: 'variable', originElement: element },
-          bubbles: true
+          bubbles: true,
         });
         element.dispatchEvent(event);
       };
@@ -252,7 +315,7 @@ export class BindCommand implements CommandImplementation<
         observer.observe(element, {
           attributes: true,
           childList: true,
-          characterData: true
+          characterData: true,
         });
 
         cleanupFunctions.push(() => observer.disconnect());
@@ -272,14 +335,79 @@ export class BindCommand implements CommandImplementation<
       element,
       property,
       direction,
-      cleanup: () => cleanupFunctions.forEach(fn => fn())
+      cleanup: () => cleanupFunctions.forEach(fn => fn()),
     });
 
     return bindingId;
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Resolve element from target expression
+   *
+   * Handles:
+   * - HTMLElement (passthrough)
+   * - Context references (me, my, it, its, you, your)
+   * - CSS selectors (#id, .class, etc.)
+   *
+   * @param target - Target expression
+   * @param evaluator - Expression evaluator
+   * @param context - Execution context
+   * @returns Resolved HTML element or null
+   */
+  private async resolveElement(
+    target: any,
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<HTMLElement | null> {
+    // If already an element, return it
+    if (target instanceof HTMLElement) {
+      return target;
+    }
+
+    // Evaluate if it's an AST node
+    if (target && typeof target === 'object' && target.type) {
+      target = await evaluator.evaluate(target, context);
+    }
+
+    // Handle string targets
+    if (typeof target === 'string') {
+      // Handle special context references
+      if (target === 'me' || target === 'my') {
+        return context.me as HTMLElement;
+      }
+      if (target === 'it' || target === 'its') {
+        return context.it instanceof HTMLElement ? context.it : null;
+      }
+      if (target === 'you' || target === 'your') {
+        return context.you as HTMLElement;
+      }
+
+      // Try querySelector
+      if (typeof document !== 'undefined') {
+        try {
+          return document.querySelector(target) as HTMLElement;
+        } catch {
+          return null;
+        }
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Get appropriate event type for property
+   *
+   * Maps properties to their standard DOM events:
+   * - value: 'input' (text inputs)
+   * - checked: 'change' (checkboxes)
+   * - textContent/innerHTML: 'input'
+   * - default: 'change'
+   *
+   * @param property - Property name
+   * @returns Event type string
    */
   private getEventTypeForProperty(property: string): string {
     const eventMap: Record<string, string> = {
@@ -294,9 +422,19 @@ export class BindCommand implements CommandImplementation<
 
   /**
    * Get property value from element
+   *
+   * Handles:
+   * - Attributes (@attribute)
+   * - Special properties (value, checked, textContent, innerHTML)
+   * - Nested properties (style.color)
+   * - Generic property access
+   *
+   * @param element - Target element
+   * @param property - Property path
+   * @returns Property value
    */
   private getElementProperty(element: HTMLElement, property: string): any {
-    // Handle attribute syntax
+    // Handle attribute syntax (@attribute)
     if (property.startsWith('@')) {
       return element.getAttribute(property.substring(1));
     }
@@ -328,9 +466,19 @@ export class BindCommand implements CommandImplementation<
 
   /**
    * Set property value on element
+   *
+   * Handles:
+   * - Attributes (@attribute)
+   * - Special properties (value, checked, textContent, innerHTML)
+   * - Nested properties (style.color)
+   * - Generic property setting
+   *
+   * @param element - Target element
+   * @param property - Property path
+   * @param value - Value to set
    */
   private setElementProperty(element: HTMLElement, property: string, value: any): void {
-    // Handle attribute syntax
+    // Handle attribute syntax (@attribute)
     if (property.startsWith('@')) {
       element.setAttribute(property.substring(1), String(value));
       return;
@@ -354,7 +502,7 @@ export class BindCommand implements CommandImplementation<
       return;
     }
 
-    // Handle nested properties
+    // Handle nested properties (e.g., 'style.color')
     if (property.includes('.')) {
       const parts = property.split('.');
       let target: any = element;
@@ -371,6 +519,10 @@ export class BindCommand implements CommandImplementation<
 
   /**
    * Dispatch custom events for bind operations
+   *
+   * @param context - Execution context
+   * @param eventName - Event name
+   * @param detail - Event detail object
    */
   private dispatchEvent(
     context: TypedExecutionContext,
@@ -381,77 +533,27 @@ export class BindCommand implements CommandImplementation<
       const event = new CustomEvent(eventName, {
         detail,
         bubbles: true,
-        cancelable: false
+        cancelable: false,
       });
       context.me.dispatchEvent(event);
-    }
-  }
-
-  validate(input: unknown): UnifiedValidationResult<BindCommandInputType> {
-    try {
-      // Normalize input to ensure defaults are applied and types are correct
-      let normalizedInput: any = input;
-
-      // If input is an object, ensure it has valid structure
-      if (typeof input === 'object' && input !== null && !Array.isArray(input)) {
-        const inputObj = input as any;
-
-        // Basic validation
-        if (!inputObj.variable) {
-          throw new Error('Variable is required');
-        }
-        if (!inputObj.target) {
-          throw new Error('Target is required');
-        }
-
-        // Normalize with defaults
-        normalizedInput = {
-          variable: inputObj.variable,
-          target: inputObj.target,
-          property: inputObj.property,
-          direction: inputObj.direction || 'to'
-        };
-
-        // Validate direction if provided
-        if (inputObj.direction && !['to', 'from', 'bidirectional'].includes(inputObj.direction)) {
-          throw new Error('Invalid direction. Must be "to", "from", or "bidirectional"');
-        }
-      }
-
-      // Return success - detailed schema validation happens in execute()
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: normalizedInput
-      };
-    } catch (error: any) {
-      // Construct helpful error message and suggestions
-      const suggestions = [
-        'bind :username to my.value',
-        'bind :count from #display.textContent',
-        'bind :message to #input.value bidirectional'
-      ];
-
-      const errorMessage = error?.message || 'Invalid BIND command input';
-
-      return {
-        isValid: false,
-        errors: [{
-          type: 'validation-error',
-          code: 'VALIDATION_ERROR',
-          message: `BIND command validation failed: ${errorMessage}`,
-          path: '',
-          suggestions
-        }],
-        suggestions
-      };
     }
   }
 }
 
 /**
+ * Factory function to create BindCommand instance
+ */
+export function createBindCommand(): BindCommand {
+  return new BindCommand();
+}
+
+// ========== Utility Functions ==========
+
+/**
  * Unbind a specific binding by ID
+ *
+ * @param bindingId - Binding ID to remove
+ * @returns true if binding was found and removed
  */
 export function unbind(bindingId: string): boolean {
   const binding = activeBindings.get(bindingId);
@@ -465,6 +567,9 @@ export function unbind(bindingId: string): boolean {
 
 /**
  * Unbind all bindings for a variable
+ *
+ * @param variable - Variable name
+ * @returns Number of bindings removed
  */
 export function unbindVariable(variable: string): number {
   let count = 0;
@@ -480,17 +585,9 @@ export function unbindVariable(variable: string): number {
 
 /**
  * Get all active bindings
+ *
+ * @returns Array of all active bindings
  */
 export function getActiveBindings(): ActiveBinding[] {
   return Array.from(activeBindings.values());
 }
-
-/**
- * Factory function to create a new BindCommand instance
- */
-export function createBindCommand(): BindCommand {
-  return new BindCommand();
-}
-
-// Export command instance for direct use
-export const enhancedBindCommand = createBindCommand();

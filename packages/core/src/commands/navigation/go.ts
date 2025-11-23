@@ -1,330 +1,52 @@
 /**
- * Enhanced Go Command - Deep TypeScript Integration
- * Handles URL navigation, element scrolling, and browser history management with validation
- * Enhanced for LLM code agents with full type safety
+ * GoCommand V2 - Standalone Implementation (Zero V1 Dependencies)
+ *
+ * Provides navigation functionality with full support for:
+ * - URL navigation: go to url <url> [in new window]
+ * - History navigation: go back
+ * - Element scrolling: go to [position] [of] <element> [offset] [behavior]
+ *
+ * Part of Phase 5: Hybrid Tree-Shaking Architecture
+ * Week 5 Migration - Complete standalone rewrite with zero V1 dependencies
  */
 
-import { v, z } from '../../validation/lightweight-validators';
-import { validators } from '../../validation/common-validators.ts';
-import type {
-  TypedCommandImplementation,
-  TypedExecutionContext,
-  EvaluationResult,
-  CommandMetadata,
-  LLMDocumentation,
-} from '../../types/command-types';
-import type { UnifiedValidationResult } from '../../types/unified-types.ts';
-import { dispatchCustomEvent } from '../../core/events';
-import { asHTMLElement } from '../../utils/dom-utils';
+import type { ASTNode, ExecutionContext } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-export interface GoCommandOptions {
-  validateUrls?: boolean;
-  allowNewWindow?: boolean;
-  scrollBehavior?: 'smooth' | 'instant' | 'auto';
+/**
+ * Raw input from RuntimeBase (before evaluation)
+ */
+export interface GoCommandRawInput {
+  args: ASTNode[];
+  modifiers: Record<string, ASTNode>;
 }
 
 /**
- * Input validation schema for LLM understanding
+ * Standalone GoCommand V2 - Zero V1 dependencies
+ *
+ * This implementation completely rewrites go command logic with:
+ * - Inlined utilities (zero external dependencies)
+ * - parseInput() for AST parsing
+ * - execute() for command execution
+ * - Type-only imports for tree-shaking
  */
-const GoCommandInputSchema = z.union([
-  // URL navigation: go [to] url <url> [in new window]
-  v
-    .tuple([
-      v.literal('url'),
-      v.string().describe('URL to navigate to'),
-      z.enum(['in', 'new', 'window']).optional(),
-    ])
-    .rest(),
+export class GoCommand {
+  readonly name = 'go';
 
-  // History navigation: go back
-  v.tuple([v.literal('back')]),
+  // ============================================================================
+  // INLINED UTILITIES (Zero External Dependencies)
+  // ============================================================================
 
-  // Element scrolling: complex pattern
-  v
-    .array(
-      v.union([
-        v.string(),
-        v.number(),
-        v.boolean(),
-        validators.htmlElement,
-        v.null(),
-        v.undefined(),
-      ])
-    )
-    .min(1)
-    .max(10),
-]);
-
-type GoCommandInput = any; // Inferred from RuntimeValidator
-
-/**
- * Enhanced Go Command with full type safety for LLM agents
- */
-export class GoCommand
-  implements
-    TypedCommandImplementation<
-      GoCommandInput,
-      string | HTMLElement, // Returns URL or target element
-      TypedExecutionContext
-    >
-{
-  public readonly name = 'go' as const;
-  public readonly syntax =
-    'go [to] url <url> [in new window] | go [to] [position] [of] <target> [offset] [behavior] | go back';
-  public readonly description =
-    'Provides navigation functionality including URL navigation, element scrolling, and browser history management';
-  public readonly inputSchema = GoCommandInputSchema;
-  public readonly outputType = 'object' as const;
-
-  public readonly metadata: CommandMetadata = (
-    typeof process !== 'undefined' && process.env.NODE_ENV === 'production'
-      ? undefined
-      : {
-          category: 'Control',
-          complexity: 'complex',
-          sideEffects: ['navigation', 'dom-query', 'history'],
-          examples: [
-            {
-              code: 'go to url "https://example.com"',
-              description: 'Navigate to a URL',
-              expectedOutput: 'https://example.com',
-            },
-            {
-              code: 'go back',
-              description: 'Navigate back in browser history',
-              expectedOutput: 'back',
-            },
-            {
-              code: 'go to top of <#header/>',
-              description: 'Scroll to top of header element',
-              expectedOutput: 'HTMLElement',
-            },
-          ],
-          relatedCommands: ['fetch', 'redirect', 'scroll'],
-        }
-  ) as CommandMetadata;
-
-  public readonly documentation: LLMDocumentation = (
-    typeof process !== 'undefined' && process.env.NODE_ENV === 'production'
-      ? undefined
-      : {
-          summary:
-            'Provides comprehensive navigation functionality for URLs, elements, and browser history',
-          parameters: [
-            {
-              name: 'type',
-              type: 'string',
-              description: 'Navigation type: "url", "back", or position keywords',
-              optional: false,
-              examples: ['url', 'back', 'top', 'middle', 'bottom'],
-            },
-            {
-              name: 'target',
-              type: 'string',
-              description: 'URL string or target element for scrolling',
-              optional: true,
-              examples: ['"https://example.com"', '<#header/>', 'me'],
-            },
-          ],
-          returns: {
-            type: 'object',
-            description: 'URL string for navigation or target element for scrolling',
-            examples: ['"https://example.com"', 'HTMLElement', '"back"'],
-          },
-          examples: [
-            {
-              title: 'URL navigation',
-              code: 'go to url "https://example.com"',
-              explanation: 'Navigate to the specified URL in the current window',
-              output: '"https://example.com"',
-            },
-            {
-              title: 'New window navigation',
-              code: 'go to url "https://example.com" in new window',
-              explanation: 'Open URL in a new window/tab',
-              output: '"https://example.com"',
-            },
-            {
-              title: 'Element scrolling',
-              code: 'go to top of <#header/>',
-              explanation: 'Scroll to the top of the header element',
-              output: 'HTMLElement',
-            },
-            {
-              title: 'History navigation',
-              code: 'go back',
-              explanation: 'Navigate back in browser history',
-              output: '"back"',
-            },
-          ],
-          seeAlso: ['fetch', 'redirect', 'scroll', 'history'],
-          tags: ['navigation', 'url', 'scroll', 'history', 'browser'],
-        }
-  ) as LLMDocumentation;
-
-  private options: GoCommandOptions;
-
-  constructor(options: GoCommandOptions = {}) {
-    this.options = {
-      validateUrls: true,
-      allowNewWindow: true,
-      scrollBehavior: 'smooth',
-      ...options,
-    };
-  }
-
-  async execute(
-    context: TypedExecutionContext,
-    ...args: GoCommandInput
-  ): Promise<EvaluationResult<string | HTMLElement>> {
-    try {
-      // Runtime validation for type safety
-      const validationResult = this.validate(args);
-      if (!validationResult.isValid) {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'validation-error',
-            message: validationResult.errors[0]?.message || 'Invalid input',
-            code: 'GO_VALIDATION_FAILED',
-            suggestions: validationResult.suggestions,
-          },
-          type: 'error',
-        };
-      }
-
-      if (args.length === 0) {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'missing-argument',
-            message: 'Go command requires arguments',
-            code: 'NO_ARGUMENTS',
-            suggestions: ['Use: go back, go to url <url>, or go to <position> of <element>'],
-          },
-          type: 'error',
-        };
-      }
-
-      // Handle "go back" command (case insensitive)
-      if (typeof args[0] === 'string' && args[0].toLowerCase() === 'back') {
-        const result = await this.goBack(context);
-        return result;
-      }
-
-      // Handle URL navigation
-      if (this.isUrlNavigation(args)) {
-        const result = await this.navigateToUrl(args, context);
-        return result;
-      }
-
-      // Handle element scrolling
-      const result = await this.scrollToElement(args, context);
-      return result;
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          name: 'ValidationError',
-          type: 'runtime-error',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          code: 'GO_EXECUTION_FAILED',
-          suggestions: [
-            'Check navigation parameters',
-            'Verify target elements exist',
-            'Ensure URLs are valid',
-          ],
-        },
-        type: 'error',
-      };
-    }
-  }
-
-  validate(args: unknown[]): UnifiedValidationResult {
-    try {
-      // Schema validation
-      const parsed = this.inputSchema.safeParse(args);
-
-      if (!parsed.success) {
-        return {
-          isValid: false,
-          errors:
-            parsed.error?.errors.map(err => ({
-              type: 'type-mismatch' as const,
-              message: `Invalid argument: ${err.message}`,
-              suggestions: [this.getValidationSuggestion(err.code ?? 'unknown')],
-            })) ?? [],
-          suggestions: ['Use: go back, go to url <url>, or go to <position> of <element>'],
-        };
-      }
-
-      // Additional semantic validation
-      if (args.length === 0) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument' as const,
-              message: 'Go command requires at least one argument',
-              suggestions: ['Use supported go command patterns'],
-            },
-          ],
-          suggestions: ['Use: go back, go to url <url>, or go to <position> of <element>'],
-        };
-      }
-
-      // Validate "go back" (case insensitive)
-      if (typeof args[0] === 'string' && args[0].toLowerCase() === 'back') {
-        if (args.length > 1) {
-          return {
-            isValid: false,
-            errors: [
-              {
-                type: 'syntax-error' as const,
-                message: 'Go back command does not accept additional arguments',
-                suggestions: ['Use "go back" without additional parameters'],
-              },
-            ],
-            suggestions: ['Use: go back'],
-          };
-        }
-        return {
-          isValid: true,
-          errors: [],
-          suggestions: [],
-        };
-      }
-
-      // Validate URL navigation
-      if (this.isUrlNavigation(args)) {
-        return this.validateUrlNavigation(args);
-      }
-
-      // Validate element scrolling - most flexible pattern
-      return this.validateElementScrolling(args);
-    } catch (error) {
-      return {
-        isValid: false,
-        errors: [
-          {
-            type: 'runtime-error' as const,
-            message: 'Validation failed with exception',
-            suggestions: ['Check input types and values'],
-          },
-        ],
-        suggestions: ['Ensure arguments match expected types'],
-      };
-    }
-  }
-
-  private isUrlNavigation(args: unknown[]): boolean {
-    // Check for "url" keyword
-    const urlIndex = args.findIndex(arg => arg === 'url');
-    return urlIndex !== -1;
-  }
-
+  /**
+   * Check if URL is valid
+   *
+   * Handles:
+   * - Relative URLs: /, #anchor
+   * - Absolute URLs: https://example.com
+   *
+   * @param url - URL string to validate
+   * @returns true if valid URL
+   */
   private isValidUrl(url: string): boolean {
     try {
       // Allow relative URLs (starting with /, #) and absolute URLs
@@ -340,303 +62,219 @@ export class GoCommand
     }
   }
 
-  private getValidationSuggestion(errorCode: string): string {
-    const suggestions: Record<string, string> = {
-      invalid_type: 'Use valid argument types for go command',
-      invalid_union: 'Use supported go command patterns',
-      too_small: 'Go command requires at least one argument',
-      too_big: 'Too many arguments for go command',
-    };
-
-    return suggestions[errorCode] || 'Check argument types and syntax';
+  /**
+   * Check if arguments match URL navigation pattern
+   *
+   * Pattern: go to url <url> [in new window]
+   *
+   * @param args - Evaluated arguments
+   * @returns true if URL navigation
+   */
+  private isUrlNavigation(args: any[]): boolean {
+    // Check for "url" keyword
+    const urlIndex = args.findIndex(arg => arg === 'url');
+    return urlIndex !== -1;
   }
 
-  private async navigateToUrl(
-    args: unknown[],
-    context: TypedExecutionContext
-  ): Promise<EvaluationResult<string>> {
-    try {
-      const urlIndex = args.findIndex(arg => arg === 'url');
-      const url = args[urlIndex + 1];
+  /**
+   * Navigate to URL
+   *
+   * Handles:
+   * - Current window: go to url "https://example.com"
+   * - New window: go to url "https://example.com" in new window
+   * - Anchor links: go to url "#section"
+   *
+   * @param args - Evaluated arguments
+   * @param context - Execution context
+   * @returns URL navigated to
+   */
+  private async navigateToUrl(args: any[], context: ExecutionContext): Promise<string> {
+    const urlIndex = args.findIndex(arg => arg === 'url');
+    const url = args[urlIndex + 1];
 
-      if (!url) {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'missing-argument',
-            message: 'URL is required after "url" keyword',
-            code: 'MISSING_URL',
-            suggestions: ['Provide URL string after "url" keyword'],
-          },
-          type: 'error',
-        };
+    if (!url) {
+      throw new Error('URL is required after "url" keyword');
+    }
+
+    // Check for "in new window" modifier
+    const inNewWindow = args.includes('new') && args.includes('window');
+
+    // Resolve URL (could be from context variables)
+    const resolvedUrl = this.resolveUrl(url, context);
+
+    // Validate resolved URL
+    if (!this.isValidUrl(resolvedUrl)) {
+      throw new Error(`Invalid URL: "${resolvedUrl}"`);
+    }
+
+    if (inNewWindow) {
+      // Open in new window/tab
+      if (typeof window !== 'undefined' && window.open) {
+        const newWindow = window.open(resolvedUrl, '_blank');
+        if (newWindow && newWindow.focus) {
+          newWindow.focus();
+        }
       }
-
-      // Check for "in new window" modifier
-      const inNewWindow = args.includes('new') && args.includes('window');
-
-      // Resolve URL (could be from context variables)
-      const resolvedUrl = this.resolveUrl(url, context);
-
-      // Validate resolved URL if validation is enabled
-      if (this.options.validateUrls && !this.isValidUrl(resolvedUrl)) {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'invalid-argument',
-            message: `Invalid URL: "${resolvedUrl}"`,
-            code: 'INVALID_URL',
-            suggestions: ['Use valid URL format', 'Include protocol for absolute URLs'],
-          },
-          type: 'error',
-        };
-      }
-
-      if (inNewWindow) {
-        // Open in new window/tab
-        if (typeof window !== 'undefined' && window.open) {
-          const newWindow = window.open(resolvedUrl, '_blank');
-          if (newWindow && newWindow.focus) {
-            newWindow.focus();
-          }
+    } else {
+      // Handle anchor navigation (hash-only URLs)
+      if (resolvedUrl.startsWith('#')) {
+        if (typeof window !== 'undefined' && window.location) {
+          window.location.hash = resolvedUrl;
         }
       } else {
-        // Handle anchor navigation (hash-only URLs)
-        if (resolvedUrl.startsWith('#')) {
-          if (typeof window !== 'undefined' && window.location) {
-            window.location.hash = resolvedUrl;
-          }
-        } else {
-          // Navigate in current window using assign method
-          try {
-            if (typeof window !== 'undefined' && window.location && window.location.assign) {
-              window.location.assign(resolvedUrl);
-            } else if (typeof window !== 'undefined' && window.location) {
-              window.location.href = resolvedUrl;
-            }
-          } catch (error) {
-            // Handle navigation errors gracefully
-            console.warn('Navigation failed:', error);
-            return {
-              success: false,
-              error: {
-                name: 'ValidationError',
-                type: 'runtime-error',
-                message: `Navigation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                code: 'NAVIGATION_FAILED',
-                suggestions: ['Check if URL is accessible', 'Verify network connectivity'],
-              },
-              type: 'error',
-            };
-          }
+        // Navigate in current window using assign method
+        if (typeof window !== 'undefined' && window.location && window.location.assign) {
+          window.location.assign(resolvedUrl);
+        } else if (typeof window !== 'undefined' && window.location) {
+          window.location.href = resolvedUrl;
         }
       }
-
-      // Dispatch enhanced navigation event
-      const eventTarget = (context.me instanceof HTMLElement ? context.me : null) || document.body;
-      dispatchCustomEvent(eventTarget, 'hyperscript:go', {
-        context,
-        command: this.name,
-        type: 'url',
-        url: resolvedUrl,
-        newWindow: inNewWindow,
-        timestamp: Date.now(),
-        metadata: this.metadata,
-        result: 'success',
-      });
-
-      return {
-        success: true,
-        value: resolvedUrl,
-        type: 'string',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          name: 'ValidationError',
-          type: 'runtime-error',
-          message: error instanceof Error ? error.message : 'URL navigation failed',
-          code: 'URL_NAVIGATION_FAILED',
-          suggestions: ['Check URL format and accessibility'],
-        },
-        type: 'error',
-      };
     }
+
+    return resolvedUrl;
   }
 
-  private async scrollToElement(
-    args: unknown[],
-    context: TypedExecutionContext
-  ): Promise<EvaluationResult<HTMLElement>> {
-    try {
-      const position = this.parseScrollPosition(args);
-      const target = this.parseScrollTarget(args);
-      const offset = this.parseScrollOffset(args);
-      const smooth = this.parseScrollBehavior(args);
-
-      // Resolve target element
-      const element = this.resolveScrollTarget(target, context);
-      if (!element) {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'runtime-error',
-            message: `Target element not found: ${target}`,
-            code: 'TARGET_NOT_FOUND',
-            suggestions: ['Check if element exists in DOM', 'Verify selector syntax'],
-          },
-          type: 'error',
-        };
-      }
-
-      // Calculate scroll position
-      const { x, y } = this.calculateScrollPosition(element, position, offset);
-
-      // Perform scroll
-      if (typeof window !== 'undefined') {
-        const behavior = smooth ? 'smooth' : 'instant';
-
-        // Map position to scrollIntoView options
-        let block: ScrollLogicalPosition = 'start';
-        let inline: ScrollLogicalPosition = 'nearest';
-
-        switch (position.vertical) {
-          case 'top':
-            block = 'start';
-            break;
-          case 'middle':
-            block = 'center';
-            break;
-          case 'bottom':
-            block = 'end';
-            break;
-          case 'nearest':
-            block = 'nearest';
-            break;
-          default:
-            block = 'start';
-            break;
-        }
-
-        switch (position.horizontal) {
-          case 'left':
-            inline = 'start';
-            break;
-          case 'center':
-            inline = 'center';
-            break;
-          case 'right':
-            inline = 'end';
-            break;
-          case 'nearest':
-          default:
-            inline = 'nearest';
-            break;
-        }
-
-        // For scrolling with offsets, calculate position and use scrollTo
-        if (offset !== 0) {
-          try {
-            // Still call scrollIntoView first to handle basic positioning
-            if (element.scrollIntoView) {
-              element.scrollIntoView({
-                behavior: behavior as ScrollBehavior,
-                block,
-                inline,
-              });
-            }
-
-            // Then adjust with scrollTo for offset
-            if (window.scrollTo) {
-              window.scrollTo({
-                left: x,
-                top: y,
-                behavior: behavior as ScrollBehavior,
-              });
-            }
-          } catch (error) {
-            // Handle scroll errors gracefully
-            console.warn('Scroll with offset failed:', error);
-            return {
-              success: false,
-              error: {
-                name: 'ValidationError',
-                type: 'runtime-error',
-                message: `Scroll with offset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                code: 'SCROLL_OFFSET_FAILED',
-                suggestions: ['Check if element is visible', 'Verify scroll container'],
-              },
-              type: 'error',
-            };
-          }
-        } else {
-          try {
-            // For basic element scrolling, use scrollIntoView
-            if (element.scrollIntoView) {
-              element.scrollIntoView({
-                behavior: behavior as ScrollBehavior,
-                block,
-                inline,
-              });
-            }
-          } catch (error) {
-            // Handle scroll errors gracefully
-            console.warn('Scroll failed:', error);
-            return {
-              success: false,
-              error: {
-                name: 'ValidationError',
-                type: 'runtime-error',
-                message: `Scroll failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                code: 'SCROLL_FAILED',
-                suggestions: ['Check if element is visible', 'Verify element is scrollable'],
-              },
-              type: 'error',
-            };
-          }
-        }
-      }
-
-      // Dispatch enhanced scroll event
-      const scrollEventTarget =
-        (context.me instanceof HTMLElement ? context.me : null) || document.body;
-      dispatchCustomEvent(scrollEventTarget, 'hyperscript:go', {
-        context,
-        command: this.name,
-        type: 'scroll',
-        target: target,
-        position: position,
-        offset: offset,
-        coordinates: { x, y },
-        timestamp: Date.now(),
-        metadata: this.metadata,
-        result: 'success',
-      });
-
-      return {
-        success: true,
-        value: element,
-        type: 'element',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          name: 'ValidationError',
-          type: 'runtime-error',
-          message: error instanceof Error ? error.message : 'Element scrolling failed',
-          code: 'SCROLL_EXECUTION_FAILED',
-          suggestions: ['Check target element validity', 'Verify scroll parameters'],
-        },
-        type: 'error',
-      };
+  /**
+   * Resolve URL from string or context variable
+   *
+   * @param url - URL value
+   * @param context - Execution context
+   * @returns Resolved URL string
+   */
+  private resolveUrl(url: unknown, context: ExecutionContext): string {
+    // If URL is a string, return it
+    if (typeof url === 'string') {
+      return url;
     }
+
+    return String(url);
   }
 
+  /**
+   * Navigate back in browser history
+   *
+   * @param context - Execution context
+   * @returns "back" string
+   */
+  private async goBack(context: ExecutionContext): Promise<string> {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.back();
+    } else {
+      throw new Error('Browser history API not available');
+    }
+
+    return 'back';
+  }
+
+  /**
+   * Scroll to element
+   *
+   * Handles:
+   * - Position: top, middle, bottom (vertical); left, center, right (horizontal)
+   * - Offset: +100px, -50, etc.
+   * - Behavior: smooth (default), instant
+   *
+   * @param args - Evaluated arguments
+   * @param context - Execution context
+   * @returns Target element
+   */
+  private async scrollToElement(args: any[], context: ExecutionContext): Promise<HTMLElement> {
+    const position = this.parseScrollPosition(args);
+    const target = this.parseScrollTarget(args);
+    const offset = this.parseScrollOffset(args);
+    const smooth = this.parseScrollBehavior(args);
+
+    // Resolve target element
+    const element = this.resolveScrollTarget(target, context);
+    if (!element) {
+      throw new Error(`Target element not found: ${target}`);
+    }
+
+    // Perform scroll
+    if (typeof window !== 'undefined') {
+      const behavior = smooth ? 'smooth' : 'instant';
+
+      // Map position to scrollIntoView options
+      let block: ScrollLogicalPosition = 'start';
+      let inline: ScrollLogicalPosition = 'nearest';
+
+      switch (position.vertical) {
+        case 'top':
+          block = 'start';
+          break;
+        case 'middle':
+          block = 'center';
+          break;
+        case 'bottom':
+          block = 'end';
+          break;
+        case 'nearest':
+          block = 'nearest';
+          break;
+        default:
+          block = 'start';
+          break;
+      }
+
+      switch (position.horizontal) {
+        case 'left':
+          inline = 'start';
+          break;
+        case 'center':
+          inline = 'center';
+          break;
+        case 'right':
+          inline = 'end';
+          break;
+        case 'nearest':
+        default:
+          inline = 'nearest';
+          break;
+      }
+
+      // For scrolling with offsets, calculate position and use scrollTo
+      if (offset !== 0) {
+        // Still call scrollIntoView first to handle basic positioning
+        if (element.scrollIntoView) {
+          element.scrollIntoView({
+            behavior: behavior as ScrollBehavior,
+            block,
+            inline,
+          });
+        }
+
+        // Then adjust with scrollTo for offset
+        if (window.scrollTo) {
+          const { x, y } = this.calculateScrollPosition(element, position, offset);
+          window.scrollTo({
+            left: x,
+            top: y,
+            behavior: behavior as ScrollBehavior,
+          });
+        }
+      } else {
+        // For basic element scrolling, use scrollIntoView
+        if (element.scrollIntoView) {
+          element.scrollIntoView({
+            behavior: behavior as ScrollBehavior,
+            block,
+            inline,
+          });
+        }
+      }
+    }
+
+    return element;
+  }
+
+  /**
+   * Parse scroll position from arguments
+   *
+   * Looks for: top, middle, bottom, left, center, right
+   *
+   * @param args - Evaluated arguments
+   * @returns Position object {vertical, horizontal}
+   */
   private parseScrollPosition(args: any[]): { vertical: string; horizontal: string } {
     const position = { vertical: 'top', horizontal: 'nearest' }; // Default values
 
@@ -667,7 +305,18 @@ export class GoCommand
     return position;
   }
 
-  private parseScrollTarget(args: any[]): string {
+  /**
+   * Parse scroll target from arguments
+   *
+   * Looks for:
+   * - After "of" keyword: go to top of <element>
+   * - Direct element: go to <element>
+   * - After "the" keyword: go to the <element>
+   *
+   * @param args - Evaluated arguments
+   * @returns Target identifier
+   */
+  private parseScrollTarget(args: any[]): string | HTMLElement {
     // Find target after "of" keyword
     const ofIndex = args.findIndex(arg => arg === 'of');
     if (ofIndex !== -1 && ofIndex + 1 < args.length) {
@@ -683,7 +332,7 @@ export class GoCommand
 
     // Handle direct element arguments (not strings)
     for (const arg of args) {
-      if (typeof arg === 'object' && arg && arg.nodeType) {
+      if (typeof arg === 'object' && arg && (arg as any).nodeType) {
         // This is likely an HTMLElement
         return arg;
       }
@@ -738,6 +387,14 @@ export class GoCommand
     return 'body'; // Default to body
   }
 
+  /**
+   * Parse scroll offset from arguments
+   *
+   * Looks for: +100px, -50, +25, etc.
+   *
+   * @param args - Evaluated arguments
+   * @returns Offset in pixels
+   */
   private parseScrollOffset(args: any[]): number {
     // Look for +/- number patterns
     for (let i = 0; i < args.length; i++) {
@@ -765,6 +422,14 @@ export class GoCommand
     return 0;
   }
 
+  /**
+   * Parse scroll behavior from arguments
+   *
+   * Looks for: smoothly (default), instantly
+   *
+   * @param args - Evaluated arguments
+   * @returns true for smooth, false for instant
+   */
   private parseScrollBehavior(args: any[]): boolean {
     if (args.includes('instantly')) {
       return false; // instant scrolling
@@ -772,24 +437,25 @@ export class GoCommand
     return true; // smooth by default, or if 'smoothly' is specified
   }
 
-  private resolveUrl(url: unknown, context: TypedExecutionContext): string {
-    // If URL is a string, return it
-    if (typeof url === 'string') {
-      return url;
-    }
-
-    // Try to resolve from context variables if it's a variable name
-    if (typeof url === 'string') {
-      const variable = this.getVariableValue(url, context);
-      if (variable) {
-        return String(variable);
-      }
-    }
-
-    return String(url);
-  }
-
-  private resolveScrollTarget(target: unknown, context: TypedExecutionContext): HTMLElement | null {
+  /**
+   * Resolve scroll target to HTMLElement
+   *
+   * Handles:
+   * - Direct HTMLElement objects
+   * - Special elements: body, html
+   * - Context references: me, it, you
+   * - Variables
+   * - CSS selectors
+   * - Tag names
+   *
+   * @param target - Target identifier
+   * @param context - Execution context
+   * @returns Resolved element or null
+   */
+  private resolveScrollTarget(
+    target: unknown,
+    context: ExecutionContext
+  ): HTMLElement | null {
     // Handle direct HTMLElement objects
     if (typeof target === 'object' && target && (target as any).nodeType) {
       return target as HTMLElement;
@@ -809,12 +475,12 @@ export class GoCommand
     }
 
     // Handle context references
-    if (target === 'me' && context.me) {
-      return asHTMLElement(context.me) || null;
+    if (target === 'me' && context.me instanceof HTMLElement) {
+      return context.me;
     } else if (target === 'it' && context.it instanceof HTMLElement) {
       return context.it;
-    } else if (target === 'you' && context.you) {
-      return asHTMLElement(context.you) || null;
+    } else if (target === 'you' && context.you instanceof HTMLElement) {
+      return context.you as HTMLElement;
     }
 
     // Handle variable references
@@ -847,6 +513,14 @@ export class GoCommand
     return null;
   }
 
+  /**
+   * Calculate scroll position with offset
+   *
+   * @param element - Target element
+   * @param position - Position {vertical, horizontal}
+   * @param offset - Offset in pixels
+   * @returns Coordinates {x, y}
+   */
   private calculateScrollPosition(
     element: HTMLElement,
     position: { vertical: string; horizontal: string },
@@ -863,7 +537,9 @@ export class GoCommand
         (document.documentElement && document.documentElement.scrollLeft) ||
         0;
       const scrollTop =
-        window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || 0;
+        window.pageYOffset ||
+        (document.documentElement && document.documentElement.scrollTop) ||
+        0;
       const innerWidth = window.innerWidth || 800; // Default width for testing
       const innerHeight = window.innerHeight || 600; // Default height for testing
 
@@ -900,149 +576,14 @@ export class GoCommand
     return { x: Math.max(0, x), y: Math.max(0, y) };
   }
 
-  private async goBack(context: TypedExecutionContext): Promise<EvaluationResult<string>> {
-    try {
-      if (typeof window !== 'undefined' && window.history) {
-        window.history.back();
-      } else {
-        return {
-          success: false,
-          error: {
-            name: 'ValidationError',
-            type: 'runtime-error',
-            message: 'Browser history API not available',
-            code: 'HISTORY_API_UNAVAILABLE',
-            suggestions: ['Check if running in browser environment'],
-          },
-          type: 'error',
-        };
-      }
-
-      // Dispatch enhanced history event
-      const historyEventTarget =
-        (context.me instanceof HTMLElement ? context.me : null) || document.body;
-      dispatchCustomEvent(historyEventTarget, 'hyperscript:go', {
-        context,
-        command: this.name,
-        type: 'history',
-        direction: 'back',
-        timestamp: Date.now(),
-        metadata: this.metadata,
-        result: 'success',
-      });
-
-      return {
-        success: true,
-        value: 'back',
-        type: 'string',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: {
-          name: 'ValidationError',
-          type: 'runtime-error',
-          message: error instanceof Error ? error.message : 'History navigation failed',
-          code: 'HISTORY_NAVIGATION_FAILED',
-          suggestions: ['Check browser history support', 'Verify navigation context'],
-        },
-        type: 'error',
-      };
-    }
-  }
-
-  private validateUrlNavigation(args: unknown[]): UnifiedValidationResult {
-    const urlIndex = args.findIndex(arg => arg === 'url');
-    if (urlIndex === -1) {
-      return {
-        isValid: false,
-        errors: [
-          {
-            type: 'syntax-error' as const,
-            message: 'URL navigation requires "url" keyword',
-            suggestions: ['Use syntax: go to url <url>'],
-          },
-        ],
-        suggestions: ['Use: go to url "https://example.com"'],
-      };
-    }
-
-    if (urlIndex + 1 >= args.length) {
-      return {
-        isValid: false,
-        errors: [
-          {
-            type: 'missing-argument' as const,
-            message: 'URL is required after "url" keyword',
-            suggestions: ['Provide URL string after "url" keyword'],
-          },
-        ],
-        suggestions: [
-          'Use: go to url "https://example.com"',
-          'Include URL string as next argument',
-        ],
-      };
-    }
-
-    // Validate URL format if basic validation enabled
-    if (this.options.validateUrls) {
-      const url = args[urlIndex + 1];
-      if (typeof url === 'string' && !this.isValidUrl(url)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error' as const,
-              message: `Invalid URL format: "${url}"`,
-              suggestions: ['Use valid URL format like "https://example.com"'],
-            },
-          ],
-          suggestions: ['Include protocol (http:// or https://)', 'Check URL syntax'],
-        };
-      }
-    }
-
-    return {
-      isValid: true,
-      errors: [],
-      suggestions: [],
-    };
-  }
-
-  private validateElementScrolling(args: unknown[]): UnifiedValidationResult {
-    // Element scrolling is very flexible, so minimal validation
-    // Most patterns are allowed: go to top of <element>, go to <element>, etc.
-
-    // Check for obviously invalid patterns
-    if (args.length >= 2 && typeof args[0] === 'string' && typeof args[1] === 'string') {
-      const firstArg = args[0].toLowerCase();
-      const secondArg = args[1].toLowerCase();
-
-      // Check for clearly invalid combinations
-      if (firstArg === 'invalid' && secondArg === 'combination') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error' as const,
-              message: 'Invalid go command syntax',
-              suggestions: ['Use valid go command patterns'],
-            },
-          ],
-          suggestions: ['Use: go to top of <element>', 'Use: go to <element>', 'Use: go back'],
-        };
-      }
-    }
-
-    // Allow most other patterns - they'll be validated at runtime
-    return {
-      isValid: true,
-      errors: [],
-      suggestions: [],
-    };
-  }
-
-  private getVariableValue(name: string, context: TypedExecutionContext): unknown {
+  /**
+   * Get variable value from execution context
+   *
+   * @param name - Variable name
+   * @param context - Execution context
+   * @returns Variable value or undefined
+   */
+  private getVariableValue(name: string, context: ExecutionContext): unknown {
     // Check local variables first
     if (context.locals && context.locals.has(name)) {
       return context.locals.get(name);
@@ -1060,14 +601,99 @@ export class GoCommand
 
     return undefined;
   }
+
+  // ============================================================================
+  // COMMAND INTERFACE
+  // ============================================================================
+
+  /**
+   * Parse raw AST input into evaluated arguments
+   *
+   * Go command syntax patterns:
+   * - "go back" - Browser history navigation
+   * - "go to url <url> [in new window]" - URL navigation
+   * - "go to [position] [of] <element> [offset] [behavior]" - Element scrolling
+   *
+   * The GoCommand's execute method handles the complex pattern matching internally.
+   *
+   * @param raw - Raw AST nodes and modifiers from the parser
+   * @param evaluator - Expression evaluator for resolving AST nodes
+   * @param context - Execution context
+   * @returns Array of evaluated arguments for execute()
+   */
+  async parseInput(
+    raw: GoCommandRawInput,
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<any[]> {
+    if (!raw.args || raw.args.length === 0) {
+      return [];
+    }
+
+    // Evaluate all arguments - the GoCommand handles complex pattern matching
+    const evaluatedArgs = await Promise.all(
+      raw.args.map((arg: ASTNode) => evaluator.evaluate(arg, context))
+    );
+
+    return evaluatedArgs;
+  }
+
+  /**
+   * Execute the go command
+   *
+   * Handles three patterns:
+   * 1. go back - Navigate browser history
+   * 2. go to url <url> [in new window] - URL navigation
+   * 3. go to [position] [of] <element> [offset] [behavior] - Element scrolling
+   *
+   * @param args - Evaluated arguments from parseInput()
+   * @param context - Execution context
+   * @returns URL string, "back", or target element
+   */
+  async execute(args: any[], context: ExecutionContext): Promise<string | HTMLElement> {
+    if (args.length === 0) {
+      throw new Error('Go command requires arguments');
+    }
+
+    // Handle "go back" command (case insensitive)
+    if (typeof args[0] === 'string' && args[0].toLowerCase() === 'back') {
+      return await this.goBack(context);
+    }
+
+    // Handle URL navigation
+    if (this.isUrlNavigation(args)) {
+      return await this.navigateToUrl(args, context);
+    }
+
+    // Handle element scrolling
+    return await this.scrollToElement(args, context);
+  }
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  static metadata = {
+    description:
+      'Provides navigation functionality including URL navigation, element scrolling, and browser history management',
+    syntax:
+      'go [to] url <url> [in new window] | go [to] [position] [of] <target> [offset] [behavior] | go back',
+    examples: [
+      'go to url "https://example.com"',
+      'go back',
+      'go to top of <#header/>',
+      'go to url "https://example.com" in new window',
+      'go to middle of <.content/>',
+      'go to bottom of <#footer/> +100px smoothly',
+    ],
+    category: 'navigation',
+  };
 }
 
 /**
- * Factory function to create a GoCommand instance
- * Used by enhanced-command-registry.ts
+ * Factory function for creating GoCommand instances
+ * Maintains compatibility with existing command registration
  */
-export function createGoCommand(options?: GoCommandOptions): GoCommand {
-  return new GoCommand(options);
+export function createGoCommand(): GoCommand {
+  return new GoCommand();
 }
-
-export default GoCommand;

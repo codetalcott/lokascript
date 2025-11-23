@@ -1,187 +1,247 @@
 /**
- * Enhanced Repeat Command Implementation
+ * RepeatCommand - Standalone V2 Implementation
+ *
  * Provides iteration in the hyperscript language
  *
- * Syntax: repeat for <identifier> in <expression> [index <identifier>] { <command> } end
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
  *
- * Modernized with CommandImplementation interface
+ * Features:
+ * - For-in loops (iterate over collections)
+ * - Counted loops (repeat N times)
+ * - Conditional loops (while/until)
+ * - Event-driven loops (until event fires)
+ * - Forever loops (with safety limits)
+ * - Index variable support
+ * - Break/continue control flow
+ *
+ * Syntax:
+ *   repeat for <var> in <collection> [index <indexVar>] { <commands> }
+ *   repeat <count> times [index <indexVar>] { <commands> }
+ *   repeat while <condition> [index <indexVar>] { <commands> }
+ *   repeat until <condition> [index <indexVar>] { <commands> }
+ *   repeat until <event> [from <target>] [index <indexVar>] { <commands> }
+ *   repeat forever [index <indexVar>] { <commands> }
+ *
+ * @example
+ *   repeat for item in items { log item }
+ *   repeat 5 times { log "hello" }
+ *   repeat while count < 10 { increment count }
+ *   repeat until done { checkStatus }
+ *   repeat until click from #button { animate }
+ *   repeat forever { monitor }
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
-import { debug } from '../../utils/debug';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for RepeatCommand
+ * Represents parsed loop configuration ready for execution
+ */
 export interface RepeatCommandInput {
-  type: 'for' | 'times' | 'while' | 'until' | 'until-event' | 'forever'; // Type of repeat
-  variable?: string; // Variable name for iteration
-  collection?: any; // Collection to iterate over
-  condition?: any; // Condition for while/until
-  count?: number; // Number of times for 'times' type
-  indexVariable?: string; // Index variable name
-  commands?: Function[]; // Commands to execute in loop
-
-  // Event-driven loop support (for 'until-event' type)
-  eventName?: string; // Event name to wait for
-  eventTarget?: any; // Target element/expression for event
+  /** Type of loop */
+  type: 'for' | 'times' | 'while' | 'until' | 'until-event' | 'forever';
+  /** Variable name for iteration (for-in loops) */
+  variable?: string;
+  /** Collection to iterate over (for-in loops) */
+  collection?: any;
+  /** Condition for while/until loops */
+  condition?: any;
+  /** Number of times for counted loops */
+  count?: number;
+  /** Index variable name (optional, all loop types) */
+  indexVariable?: string;
+  /** Commands to execute in loop (AST nodes) */
+  commands?: any;
+  /** Event name for event-driven loops */
+  eventName?: string;
+  /** Event target for event-driven loops */
+  eventTarget?: any;
 }
 
-// Output type definition
+/**
+ * Output from Repeat command execution
+ */
 export interface RepeatCommandOutput {
+  /** Loop type that was executed */
   type: string;
+  /** Number of iterations completed */
   iterations: number;
+  /** Whether loop completed normally */
   completed: boolean;
+  /** Result from last iteration */
   lastResult?: any;
+  /** Whether loop was interrupted by break */
   interrupted?: boolean;
 }
 
 /**
- * Enhanced Repeat Command with full type safety and validation
+ * RepeatCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 641 lines (with debug logging, validation, all loop types)
+ * V2 Target: ~550 lines (14% reduction, all features preserved)
  */
-export class RepeatCommand
-  implements CommandImplementation<RepeatCommandInput, RepeatCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'repeat',
-    description:
-      'The repeat command provides iteration in the hyperscript language. It supports for-in loops, counted loops, conditional loops, and infinite loops.',
+export class RepeatCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'repeat';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Iteration in hyperscript - for-in, counted, conditional, event-driven, and infinite loops',
+    syntax: [
+      'repeat for <var> in <collection> [index <indexVar>] { <commands> }',
+      'repeat <count> times [index <indexVar>] { <commands> }',
+      'repeat while <condition> [index <indexVar>] { <commands> }',
+      'repeat until <condition> [index <indexVar>] { <commands> }',
+      'repeat until <event> [from <target>] [index <indexVar>] { <commands> }',
+      'repeat forever [index <indexVar>] { <commands> }',
+    ],
     examples: [
       'repeat for item in items { log item }',
       'repeat 5 times { log "hello" }',
       'repeat while count < 10 { increment count }',
       'repeat until done { checkStatus }',
+      'repeat until click from #button { animate }',
       'repeat forever { monitor }',
     ],
-    syntax: 'repeat for <identifier> in <expression> [index <identifier>] { <command> } end',
-    category: 'flow' as const,
-    version: '2.0.0',
+    category: 'control-flow',
+    sideEffects: ['iteration', 'conditional-execution'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<RepeatCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Repeat command requires loop configuration',
-              suggestions: ['Provide loop type and parameters'],
-            },
-          ],
-          suggestions: ['Provide loop type and parameters'],
-        };
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * Determines loop type and extracts parameters.
+   * Loop type is detected from raw.modifiers or first argument.
+   *
+   * Note: The parser should structure the AST with:
+   * - Loop type detection from keywords (for, times, while, until, forever)
+   * - Variable and collection for for-in loops
+   * - Count for counted loops
+   * - Condition for while/until loops
+   * - Event name and target for event-driven loops
+   * - Commands block in raw.modifiers or separate field
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<RepeatCommandInput> {
+    // Detect loop type from raw structure
+    let type: RepeatCommandInput['type'];
+    let variable: string | undefined;
+    let collection: any;
+    let condition: any;
+    let count: number | undefined;
+    let indexVariable: string | undefined;
+    let commands: any;
+    let eventName: string | undefined;
+    let eventTarget: any;
+
+    // Extract index variable if present
+    if (raw.modifiers?.index) {
+      const indexValue = await evaluator.evaluate(raw.modifiers.index, context);
+      if (typeof indexValue === 'string') {
+        indexVariable = indexValue;
       }
+    }
 
-      const inputObj = input as any;
+    // Extract commands (usually in a block or modifier)
+    commands = raw.modifiers?.block || raw.modifiers?.commands;
 
-      if (!inputObj.type) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Repeat command requires a loop type',
-              suggestions: ['Use types: for, times, while, until, forever'],
-            },
-          ],
-          suggestions: ['Use types: for, times, while, until, forever'],
-        };
+    // Detect loop type based on modifiers and args
+    if (raw.modifiers?.for || (raw as any).loopType === 'for') {
+      // For-in loop: repeat for <var> in <collection>
+      type = 'for';
+      variable = (raw as any).variable || (await evaluator.evaluate(raw.args[0], context));
+      collection = (raw as any).collection || (await evaluator.evaluate(raw.args[1] || raw.modifiers?.in, context));
+    } else if (raw.modifiers?.times || (raw as any).loopType === 'times') {
+      // Counted loop: repeat <count> times
+      type = 'times';
+      const countValue = (raw as any).count || (await evaluator.evaluate(raw.args[0], context));
+      count = typeof countValue === 'number' ? countValue : parseInt(String(countValue), 10);
+    } else if (raw.modifiers?.while || (raw as any).loopType === 'while') {
+      // While loop: repeat while <condition>
+      type = 'while';
+      condition = (raw as any).condition || raw.modifiers?.while;
+    } else if (raw.modifiers?.until || (raw as any).loopType === 'until') {
+      // Until loop or event-driven loop
+      const untilValue = raw.modifiers?.until || (raw as any).condition;
+
+      // Check if it's an event-driven loop (until <event> from <target>)
+      if (raw.modifiers?.from || (raw as any).eventTarget) {
+        type = 'until-event';
+        eventName = typeof untilValue === 'string' ? untilValue : await evaluator.evaluate(untilValue, context);
+        eventTarget = (raw as any).eventTarget || (await evaluator.evaluate(raw.modifiers?.from, context));
+      } else {
+        type = 'until';
+        condition = untilValue;
       }
+    } else if (raw.modifiers?.forever || (raw as any).loopType === 'forever') {
+      // Forever loop: repeat forever
+      type = 'forever';
+    } else {
+      throw new Error('repeat command requires a loop type (for/times/while/until/forever)');
+    }
 
-      const validTypes = ['for', 'times', 'while', 'until', 'until-event', 'forever'];
-      if (!validTypes.includes(inputObj.type)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: `Invalid repeat type: ${inputObj.type}`,
-              suggestions: ['Use types: for, times, while, until, until-event, forever'],
-            },
-          ],
-          suggestions: ['Use types: for, times, while, until, until-event, forever'],
-        };
-      }
+    // Validate type-specific requirements
+    if (type === 'for' && (!variable || collection === undefined)) {
+      throw new Error('for loops require variable and collection');
+    }
+    if (type === 'times' && (count === undefined || isNaN(count))) {
+      throw new Error('times loops require a count number');
+    }
+    if (type === 'while' && condition === undefined) {
+      throw new Error('while loops require a condition');
+    }
+    if (type === 'until' && condition === undefined) {
+      throw new Error('until loops require a condition');
+    }
+    if (type === 'until-event' && !eventName) {
+      throw new Error('until-event loops require an event name');
+    }
 
-      // Validate type-specific requirements
-      if (inputObj.type === 'for' && (!inputObj.variable || !inputObj.collection)) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'For loops require variable and collection',
-              suggestions: ['Use: repeat for item in items'],
-            },
-          ],
-          suggestions: ['Use: repeat for item in items'],
-        };
-      }
-
-      if (inputObj.type === 'times' && typeof inputObj.count !== 'number') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Times loops require a count number',
-              suggestions: ['Use: repeat 5 times'],
-            },
-          ],
-          suggestions: ['Use: repeat 5 times'],
-        };
-      }
-
-      if (['while', 'until'].includes(inputObj.type) && !inputObj.condition) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: `${inputObj.type} loops require a condition`,
-              suggestions: [`Use: repeat ${inputObj.type} condition`],
-            },
-          ],
-          suggestions: [`Use: repeat ${inputObj.type} condition`],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          type: inputObj.type,
-          variable: inputObj.variable,
-          collection: inputObj.collection,
-          condition: inputObj.condition,
-          count: inputObj.count,
-          indexVariable: inputObj.indexVariable,
-          commands: inputObj.commands,
-        },
-      };
-    },
-  };
-
-  async execute(
-    input: RepeatCommandInput,
-    context: TypedExecutionContext
-  ): Promise<RepeatCommandOutput> {
-    const { type, variable, collection, condition, count, indexVariable, commands } = input;
-
-    // DEBUG: Log entry to execute method
-    debug.loop(' REPEAT.execute() called with input:', {
+    return {
       type,
       variable,
       collection,
       condition,
       count,
       indexVariable,
-      commandsLength: commands?.length,
-      eventName: (input as any).eventName,
-      eventTarget: (input as any).eventTarget,
-    });
+      commands,
+      eventName,
+      eventTarget,
+    };
+  }
+
+  /**
+   * Execute the repeat command
+   *
+   * Delegates to appropriate loop handler based on type.
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Result with iteration count and status
+   */
+  async execute(
+    input: RepeatCommandInput,
+    context: TypedExecutionContext
+  ): Promise<RepeatCommandOutput> {
+    const { type, variable, collection, condition, count, indexVariable, commands, eventName, eventTarget } = input;
 
     let iterations = 0;
     let completed = false;
@@ -189,7 +249,6 @@ export class RepeatCommand
     let interrupted = false;
 
     try {
-      debug.loop(`REPEAT: Entering switch for type: ${type}`);
       switch (type) {
         case 'for':
           ({ iterations, lastResult, interrupted } = await this.handleForLoop(
@@ -197,7 +256,7 @@ export class RepeatCommand
             variable!,
             collection,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
@@ -206,7 +265,7 @@ export class RepeatCommand
             context,
             count!,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
@@ -215,7 +274,7 @@ export class RepeatCommand
             context,
             condition,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
@@ -224,17 +283,17 @@ export class RepeatCommand
             context,
             condition,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
         case 'until-event':
           ({ iterations, lastResult, interrupted } = await this.handleUntilEventLoop(
             context,
-            input.eventName!,
-            input.eventTarget,
+            eventName!,
+            eventTarget,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
@@ -242,7 +301,7 @@ export class RepeatCommand
           ({ iterations, lastResult, interrupted } = await this.handleForeverLoop(
             context,
             indexVariable,
-            commands || []
+            commands
           ));
           break;
 
@@ -251,6 +310,8 @@ export class RepeatCommand
       }
 
       completed = !interrupted;
+
+      // Update context.it to last result
       Object.assign(context, { it: lastResult });
 
       return {
@@ -261,7 +322,7 @@ export class RepeatCommand
         interrupted,
       };
     } catch (error) {
-      // Handle control flow errors (break, continue, return)
+      // Handle control flow errors (break, continue)
       if (error instanceof Error) {
         if (error.message.includes('BREAK')) {
           return {
@@ -287,12 +348,17 @@ export class RepeatCommand
     }
   }
 
+  // ========== Loop Handlers ==========
+
+  /**
+   * Handle for-in loop: repeat for <var> in <collection>
+   */
   private async handleForLoop(
     context: TypedExecutionContext,
     variable: string,
     collection: any,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     let iterations = 0;
     let lastResult: any = undefined;
@@ -313,37 +379,37 @@ export class RepeatCommand
       }
 
       // Execute commands
-      for (const command of commands) {
-        try {
-          lastResult = await command(context);
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.message.includes('BREAK')) {
-              interrupted = true;
-              break;
-            }
-            if (error.message.includes('CONTINUE')) {
-              break;
-            }
-            // If we reach here, it's not a control flow error - rethrow
-            throw error;
+      try {
+        lastResult = await this.executeCommands(commands, context);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('BREAK')) {
+            interrupted = true;
+            break;
           }
-          throw error;
+          if (error.message.includes('CONTINUE')) {
+            // Continue to next iteration
+            iterations++;
+            continue;
+          }
         }
+        throw error;
       }
 
-      if (interrupted) break;
       iterations++;
     }
 
     return { iterations, lastResult, interrupted };
   }
 
+  /**
+   * Handle counted loop: repeat <count> times
+   */
   private async handleTimesLoop(
     context: TypedExecutionContext,
     count: number,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     let iterations = 0;
     let lastResult: any = undefined;
@@ -359,37 +425,36 @@ export class RepeatCommand
       Object.assign(context, { it: i + 1 });
 
       // Execute commands
-      for (const command of commands) {
-        try {
-          lastResult = await command(context);
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.message.includes('BREAK')) {
-              interrupted = true;
-              break;
-            }
-            if (error.message.includes('CONTINUE')) {
-              break;
-            }
-            // If we reach here, it's not a control flow error - rethrow
-            throw error;
+      try {
+        lastResult = await this.executeCommands(commands, context);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('BREAK')) {
+            interrupted = true;
+            break;
           }
-          throw error;
+          if (error.message.includes('CONTINUE')) {
+            iterations++;
+            continue;
+          }
         }
+        throw error;
       }
 
-      if (interrupted) break;
       iterations++;
     }
 
     return { iterations, lastResult, interrupted };
   }
 
+  /**
+   * Handle while loop: repeat while <condition>
+   */
   private async handleWhileLoop(
     context: TypedExecutionContext,
     condition: any,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     let iterations = 0;
     let lastResult: any = undefined;
@@ -403,37 +468,36 @@ export class RepeatCommand
       }
 
       // Execute commands
-      for (const command of commands) {
-        try {
-          lastResult = await command(context);
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.message.includes('BREAK')) {
-              interrupted = true;
-              break;
-            }
-            if (error.message.includes('CONTINUE')) {
-              break;
-            }
-            // If we reach here, it's not a control flow error - rethrow
-            throw error;
+      try {
+        lastResult = await this.executeCommands(commands, context);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('BREAK')) {
+            interrupted = true;
+            break;
           }
-          throw error;
+          if (error.message.includes('CONTINUE')) {
+            iterations++;
+            continue;
+          }
         }
+        throw error;
       }
 
-      if (interrupted) break;
       iterations++;
     }
 
     return { iterations, lastResult, interrupted };
   }
 
+  /**
+   * Handle until loop: repeat until <condition>
+   */
   private async handleUntilLoop(
     context: TypedExecutionContext,
     condition: any,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     let iterations = 0;
     let lastResult: any = undefined;
@@ -447,26 +511,22 @@ export class RepeatCommand
       }
 
       // Execute commands
-      for (const command of commands) {
-        try {
-          lastResult = await command(context);
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.message.includes('BREAK')) {
-              interrupted = true;
-              break;
-            }
-            if (error.message.includes('CONTINUE')) {
-              break;
-            }
-            // If we reach here, it's not a control flow error - rethrow
-            throw error;
+      try {
+        lastResult = await this.executeCommands(commands, context);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('BREAK')) {
+            interrupted = true;
+            break;
           }
-          throw error;
+          if (error.message.includes('CONTINUE')) {
+            iterations++;
+            continue;
+          }
         }
+        throw error;
       }
 
-      if (interrupted) break;
       iterations++;
     }
 
@@ -474,24 +534,15 @@ export class RepeatCommand
   }
 
   /**
-   * Handle event-driven loop: repeat until event <eventName> from <target>
-   * Based on original _hyperscript implementation
+   * Handle event-driven loop: repeat until <event> from <target>
    */
   private async handleUntilEventLoop(
     context: TypedExecutionContext,
     eventName: string,
     eventTarget: any,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
-    // DEBUG: Log entry
-    debug.loop(' handleUntilEventLoop() called:', {
-      eventName,
-      eventTarget,
-      indexVariable,
-      commandsLength: commands.length,
-    });
-
     let iterations = 0;
     let lastResult: any = undefined;
     let interrupted = false;
@@ -500,11 +551,12 @@ export class RepeatCommand
     // Resolve event target (defaults to context.me)
     let target: EventTarget = context.me as EventTarget;
     if (eventTarget) {
-      // Evaluate event target expression
-      if (typeof eventTarget === 'function') {
-        target = await eventTarget(context);
-      } else if (eventTarget.type === 'identifier' && eventTarget.name === 'document') {
+      if (eventTarget instanceof EventTarget) {
+        target = eventTarget;
+      } else if (typeof eventTarget === 'string' && eventTarget === 'document') {
         target = document;
+      } else if (typeof eventTarget === 'function') {
+        target = await eventTarget(context);
       } else {
         target = eventTarget;
       }
@@ -527,28 +579,27 @@ export class RepeatCommand
         }
 
         // Execute commands
-        for (const command of commands) {
-          try {
-            lastResult = await command(context);
-          } catch (error) {
-            if (error instanceof Error) {
-              if (error.message.includes('BREAK')) {
-                interrupted = true;
-                break;
-              }
-              if (error.message.includes('CONTINUE')) {
-                break;
-              }
+        try {
+          lastResult = await this.executeCommands(commands, context);
+        } catch (error) {
+          if (error instanceof Error) {
+            if (error.message.includes('BREAK')) {
+              interrupted = true;
+              break;
             }
-            throw error;
+            if (error.message.includes('CONTINUE')) {
+              iterations++;
+              // Wait a tick before continuing
+              await new Promise(resolve => setTimeout(resolve, 0));
+              continue;
+            }
           }
+          throw error;
         }
 
-        if (interrupted) break;
         iterations++;
 
         // Wait a tick to allow events to trigger
-        // This matches the original _hyperscript implementation
         await new Promise(resolve => setTimeout(resolve, 0));
       }
     } finally {
@@ -561,10 +612,13 @@ export class RepeatCommand
     return { iterations, lastResult, interrupted };
   }
 
+  /**
+   * Handle forever loop: repeat forever
+   */
   private async handleForeverLoop(
     context: TypedExecutionContext,
     indexVariable?: string,
-    commands: Function[] = []
+    commands: any = []
   ): Promise<{ iterations: number; lastResult: any; interrupted: boolean }> {
     let iterations = 0;
     let lastResult: any = undefined;
@@ -578,34 +632,44 @@ export class RepeatCommand
       }
 
       // Execute commands
-      for (const command of commands) {
-        try {
-          lastResult = await command(context);
-        } catch (error) {
-          if (error instanceof Error) {
-            if (error.message.includes('BREAK')) {
-              interrupted = true;
-              break;
-            }
-            if (error.message.includes('CONTINUE')) {
-              break;
-            }
-            // If we reach here, it's not a control flow error - rethrow
-            throw error;
+      try {
+        lastResult = await this.executeCommands(commands, context);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message.includes('BREAK')) {
+            interrupted = true;
+            break;
           }
-          throw error;
+          if (error.message.includes('CONTINUE')) {
+            iterations++;
+            continue;
+          }
         }
+        throw error;
       }
 
-      if (interrupted) break;
       iterations++;
     }
 
     return { iterations, lastResult, interrupted };
   }
 
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Evaluate condition to boolean
+   *
+   * Handles various condition types:
+   * - boolean: direct value
+   * - function: call with context
+   * - string: variable lookup
+   * - other: JavaScript truthiness
+   *
+   * @param condition - Condition value to evaluate
+   * @param context - Execution context for variable lookup
+   * @returns Boolean result
+   */
   private evaluateCondition(condition: any, context: TypedExecutionContext): boolean {
-    // Simple condition evaluation
     if (typeof condition === 'boolean') {
       return condition;
     }
@@ -629,13 +693,78 @@ export class RepeatCommand
 
     return Boolean(condition);
   }
+
+  /**
+   * Execute commands block or array
+   *
+   * Handles different command formats:
+   * - Block node (type: 'block', commands: [...])
+   * - Array of commands
+   * - Single command or function
+   *
+   * @param commands - Commands to execute
+   * @param context - Execution context
+   * @returns Result of last command
+   */
+  private async executeCommands(commands: any, context: TypedExecutionContext): Promise<any> {
+    // Handle block nodes from parser
+    if (commands && typeof commands === 'object' && commands.type === 'block') {
+      return this.executeBlock(commands, context);
+    }
+
+    // Handle array of commands
+    if (Array.isArray(commands)) {
+      let lastResult: any = undefined;
+      for (const command of commands) {
+        if (typeof command === 'function') {
+          lastResult = await command(context);
+        } else if (command && typeof command.execute === 'function') {
+          lastResult = await command.execute(context);
+        } else {
+          lastResult = command;
+        }
+      }
+      return lastResult;
+    }
+
+    // Single command or function
+    if (typeof commands === 'function') {
+      return await commands(context);
+    }
+
+    return commands;
+  }
+
+  /**
+   * Execute a block node using runtime
+   *
+   * @param block - Block node from parser
+   * @param context - Execution context
+   * @returns Result of last command in block
+   */
+  private async executeBlock(block: any, context: TypedExecutionContext): Promise<any> {
+    // Get the runtime execute function from context
+    const runtimeExecute = context.locals.get('_runtimeExecute') as any;
+    if (!runtimeExecute) {
+      throw new Error('Runtime execute function not available in context');
+    }
+
+    let lastResult: any = undefined;
+
+    // Execute each command in the block
+    if (block.commands && Array.isArray(block.commands)) {
+      for (const command of block.commands) {
+        lastResult = await runtimeExecute(command, context);
+      }
+    }
+
+    return lastResult;
+  }
 }
 
 /**
- * Factory function to create the enhanced repeat command
+ * Factory function to create RepeatCommand instance
  */
 export function createRepeatCommand(): RepeatCommand {
   return new RepeatCommand();
 }
-
-export default RepeatCommand;

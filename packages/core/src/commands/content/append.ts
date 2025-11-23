@@ -1,24 +1,46 @@
 /**
- * Enhanced Append Command Implementation
- * The append command adds a string value to the end of another string, array, or HTML Element.
- * If no target variable is defined, then the standard result variable is used by default.
+ * AppendCommand - Standalone V2 Implementation
  *
- * Syntax: append <content> [to <target>]
+ * Adds content to the end of a string, array, or HTML element
  *
- * Modernized with CommandImplementation interface
+ * This is a standalone implementation with NO V1 dependencies,
+ * enabling true tree-shaking by inlining essential utilities.
+ *
+ * Features:
+ * - Append to variables (creates if doesn't exist)
+ * - Append to arrays (push operation)
+ * - Append to HTML elements (innerHTML +=)
+ * - Append to result variable (context.it) by default
+ * - Context references (me, it, you)
+ *
+ * Syntax:
+ *   append <content>
+ *   append <content> to <target>
+ *
+ * @example
+ *   append "Hello"
+ *   append "World" to greeting
+ *   append item to myArray
+ *   append "<p>New</p>" to #content
  */
 
-import type { CommandImplementation, ValidationResult } from '../../types/core';
-import type { TypedExecutionContext } from '../../types/command-types';
+import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
-// Input type definition
+/**
+ * Typed input for AppendCommand
+ */
 export interface AppendCommandInput {
+  /** Content to append */
   content: unknown;
+  /** Target (variable name, element, or array) */
   target?: string | HTMLElement | unknown[];
-  toKeyword?: 'to'; // For syntax validation
 }
 
-// Output type definition
+/**
+ * Output from Append command execution
+ */
 export interface AppendCommandOutput {
   result: unknown;
   targetType: 'result' | 'variable' | 'array' | 'element' | 'string';
@@ -26,15 +48,29 @@ export interface AppendCommandOutput {
 }
 
 /**
- * Enhanced Append Command with full type safety and validation
+ * AppendCommand - Standalone V2 Implementation
+ *
+ * Self-contained implementation with no V1 dependencies.
+ * Achieves tree-shaking by inlining all required utilities.
+ *
+ * V1 Size: 309 lines (with validation, multiple target types)
+ * V2 Target: ~290 lines (6% reduction, all features preserved)
  */
-export class AppendCommand
-  implements CommandImplementation<AppendCommandInput, AppendCommandOutput, TypedExecutionContext>
-{
-  metadata = {
-    name: 'append',
-    description:
-      'The append command adds a string value to the end of another string, array, or HTML Element. If no target variable is defined, then the standard result variable is used by default.',
+export class AppendCommand {
+  /**
+   * Command name as registered in runtime
+   */
+  readonly name = 'append';
+
+  /**
+   * Command metadata for documentation and tooling
+   */
+  static readonly metadata = {
+    description: 'Add content to the end of a string, array, or HTML element',
+    syntax: [
+      'append <content>',
+      'append <content> to <target>',
+    ],
     examples: [
       'append "Hello"',
       'append "World" to greeting',
@@ -42,79 +78,59 @@ export class AppendCommand
       'append "<p>New paragraph</p>" to #content',
       'append text to me',
     ],
-    syntax: 'append <content> [to <target>]',
-    category: 'data' as const,
-    version: '2.0.0',
+    category: 'content',
+    sideEffects: ['data-mutation', 'dom-mutation'],
   };
 
-  validation = {
-    validate(input: unknown): ValidationResult<AppendCommandInput> {
-      if (!input || typeof input !== 'object') {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'syntax-error',
-              message: 'Append command requires an object input',
-              suggestions: ['Provide an object with content property'],
-            },
-          ],
-          suggestions: ['Provide an object with content property'],
-        };
-      }
+  /**
+   * Parse raw AST nodes into typed command input
+   *
+   * @param raw - Raw command node with args and modifiers from AST
+   * @param evaluator - Expression evaluator for evaluating AST nodes
+   * @param context - Execution context with me, you, it, etc.
+   * @returns Typed input object for execute()
+   */
+  async parseInput(
+    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<AppendCommandInput> {
+    // Validate content argument
+    if (!raw.args || raw.args.length === 0) {
+      throw new Error('append command requires content to append');
+    }
 
-      const inputObj = input as any;
+    // Evaluate content
+    const content = await evaluator.evaluate(raw.args[0], context);
 
-      // Validate content is present
-      if (inputObj.content === undefined) {
-        return {
-          isValid: false,
-          errors: [
-            {
-              type: 'missing-argument',
-              message: 'Append command requires content to append',
-              suggestions: ['Provide content to append as the first argument'],
-            },
-          ],
-          suggestions: ['Provide content to append as the first argument'],
-        };
-      }
+    // Evaluate target (optional)
+    let target: string | HTMLElement | unknown[] | undefined;
+    if (raw.modifiers?.to) {
+      target = await evaluator.evaluate(raw.modifiers.to, context);
+    } else if ((raw as any).target) {
+      target = (raw as any).target;
+    }
 
-      // If target is provided, validate it
-      if (inputObj.target !== undefined) {
-        const target = inputObj.target;
-        if (
-          typeof target !== 'string' &&
-          !(target instanceof HTMLElement) &&
-          !Array.isArray(target)
-        ) {
-          return {
-            isValid: false,
-            errors: [
-              {
-                type: 'type-mismatch',
-                message: 'Target must be a string (variable name/selector), HTMLElement, or Array',
-                suggestions: ['Use a variable name, CSS selector, element reference, or array'],
-              },
-            ],
-            suggestions: ['Use a variable name, CSS selector, element reference, or array'],
-          };
-        }
-      }
+    return {
+      content,
+      target,
+    };
+  }
 
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-        data: {
-          content: inputObj.content,
-          target: inputObj.target,
-          toKeyword: inputObj.toKeyword,
-        },
-      };
-    },
-  };
-
+  /**
+   * Execute the append command
+   *
+   * Appends content to target based on target type:
+   * - No target: Append to context.it
+   * - Variable: Append to variable value (string or array)
+   * - Array: Push to array
+   * - Element: Append to innerHTML
+   * - Selector: Query and append to innerHTML
+   *
+   * @param input - Typed command input from parseInput()
+   * @param context - Typed execution context
+   * @returns Append result with target info
+   */
   async execute(
     input: AppendCommandInput,
     context: TypedExecutionContext
@@ -141,7 +157,7 @@ export class AppendCommand
     if (typeof target === 'string') {
       // Check if this is a CSS selector
       if (target.startsWith('#') || target.startsWith('.') || target.includes('[')) {
-        const element = this.resolveDOMElement(target, context);
+        const element = this.resolveDOMElement(target);
         element.innerHTML += contentStr;
         return {
           result: element,
@@ -222,7 +238,16 @@ export class AppendCommand
     }
   }
 
-  private resolveDOMElement(selector: string, _context: TypedExecutionContext): HTMLElement {
+  // ========== Private Utility Methods ==========
+
+  /**
+   * Resolve DOM element from CSS selector
+   *
+   * @param selector - CSS selector string
+   * @returns Resolved HTML element
+   * @throws Error if element not found
+   */
+  private resolveDOMElement(selector: string): HTMLElement {
     if (typeof document === 'undefined') {
       throw new Error('DOM not available - cannot resolve element selector');
     }
@@ -235,6 +260,14 @@ export class AppendCommand
     return element as HTMLElement;
   }
 
+  /**
+   * Resolve context reference (me, it, you)
+   *
+   * @param ref - Context reference name
+   * @param context - Execution context
+   * @returns Referenced value
+   * @throws Error if reference unknown
+   */
   private resolveContextReference(ref: string, context: TypedExecutionContext): any {
     switch (ref) {
       case 'me':
@@ -248,6 +281,13 @@ export class AppendCommand
     }
   }
 
+  /**
+   * Check if variable exists in context
+   *
+   * @param name - Variable name
+   * @param context - Execution context
+   * @returns true if variable exists
+   */
   private variableExists(name: string, context: TypedExecutionContext): boolean {
     return (
       !!(context.locals && context.locals.has(name)) ||
@@ -256,6 +296,15 @@ export class AppendCommand
     );
   }
 
+  /**
+   * Get variable value from context
+   *
+   * Searches in order: locals, globals, variables
+   *
+   * @param name - Variable name
+   * @param context - Execution context
+   * @returns Variable value or undefined
+   */
   private getVariableValue(name: string, context: TypedExecutionContext): any {
     // Check local variables first
     if (context.locals && context.locals.has(name)) {
@@ -275,6 +324,15 @@ export class AppendCommand
     return undefined;
   }
 
+  /**
+   * Set variable value in context
+   *
+   * Updates existing variable or creates new local variable
+   *
+   * @param name - Variable name
+   * @param value - Value to set
+   * @param context - Execution context
+   */
   private setVariableValue(name: string, value: any, context: TypedExecutionContext): void {
     // If variable exists in local scope, update it
     if (context.locals && context.locals.has(name)) {
@@ -300,10 +358,8 @@ export class AppendCommand
 }
 
 /**
- * Factory function to create the enhanced append command
+ * Factory function to create AppendCommand instance
  */
 export function createAppendCommand(): AppendCommand {
   return new AppendCommand();
 }
-
-export default AppendCommand;
