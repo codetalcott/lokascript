@@ -72,6 +72,19 @@ import { createSettleCommand } from '../commands-v2/animation/settle';
 // Data Persistence - Phase 6-3 (1)
 import { createPersistCommand } from '../commands-v2/data/persist';
 
+// Advanced Commands - Phase 6-4 (2)
+import { createJsCommand } from '../commands-v2/advanced/js';
+import { createAsyncCommand } from '../commands-v2/advanced/async';
+
+// Control Flow - Phase 6-4 (1)
+import { createUnlessCommand } from '../commands-v2/control-flow/unless';
+
+// Data Commands - Phase 6-4 (1)
+import { createDefaultCommand } from '../commands-v2/data/default';
+
+// Execution Commands - Phase 6-4 (1)
+import { createPseudoCommand } from '../commands-v2/execution/pseudo-command';
+
 export interface RuntimeExperimentalOptions {
   /**
    * Enable lazy loading of expressions
@@ -107,15 +120,15 @@ export interface RuntimeExperimentalOptions {
 /**
  * RuntimeExperimental - Test runtime for tree-shaking validation
  *
- * This runtime extends RuntimeBase and pre-registers all 30 V2 commands from
- * commands-v2/ for testing purposes (Phase 5 + Phase 6-1 + Phase 6-2 + Phase 6-3).
+ * This runtime extends RuntimeBase and pre-registers all 35 V2 commands from
+ * commands-v2/ for testing purposes (Phase 5 + Phase 6-1 + Phase 6-2 + Phase 6-3 + Phase 6-4).
  *
  * Key differences from Runtime:
  * - Uses RuntimeBase (generic AST traversal)
  * - Uses EnhancedCommandRegistryV2 (generic adapter)
  * - Uses commands-v2 (with parseInput())
- * - Registers 30 V2 commands by default (16 Phase 5 + 5 Phase 6-1 + 5 Phase 6-2 + 4 Phase 6-3)
- * - Much smaller bundle size (estimated ~195KB vs 366KB baseline, 47% reduction)
+ * - Registers 35 V2 commands by default (16 Phase 5 + 5 Phase 6-1 + 5 Phase 6-2 + 4 Phase 6-3 + 5 Phase 6-4)
+ * - Much smaller bundle size (estimated ~210KB vs 368KB baseline, 43% reduction)
  */
 export class RuntimeExperimental extends RuntimeBase {
   constructor(options: RuntimeExperimentalOptions = {}) {
@@ -172,7 +185,14 @@ export class RuntimeExperimental extends RuntimeBase {
       registry.register(createSettleCommand());
       registry.register(createPersistCommand());
 
-      console.log('RuntimeExperimental: Registered 30 V2 commands (Phase 5 + Phase 6-1 + Phase 6-2 + Phase 6-3)');
+      // Phase 6-4 Commands (5)
+      registry.register(createJsCommand());
+      registry.register(createAsyncCommand());
+      registry.register(createUnlessCommand());
+      registry.register(createDefaultCommand());
+      registry.register(createPseudoCommand());
+
+      console.log('RuntimeExperimental: Registered 35 V2 commands (Phase 5 + Phase 6-1 + Phase 6-2 + Phase 6-3 + Phase 6-4)');
     }
 
     // Create expression evaluator (lazy or standard)
