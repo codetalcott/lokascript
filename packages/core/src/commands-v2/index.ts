@@ -62,6 +62,19 @@ export { SettleCommand, createSettleCommand } from './animation/settle';
 // Data Persistence (Phase 6-3)
 export { PersistCommand, createPersistCommand } from './data/persist';
 
+// Advanced Commands (Phase 6-4)
+export { JsCommand, createJsCommand } from './advanced/js';
+export { AsyncCommand, createAsyncCommand } from './advanced/async';
+
+// Control Flow - Phase 6-4
+export { UnlessCommand, createUnlessCommand } from './control-flow/unless';
+
+// Data Commands - Phase 6-4
+export { DefaultCommand, createDefaultCommand } from './data/default';
+
+// Execution Commands - Phase 6-4
+export { PseudoCommand, createPseudoCommand } from './execution/pseudo-command';
+
 // Export raw input types for documentation
 export type { HideCommandRawInput } from './dom/hide';
 export type { ShowCommandRawInput } from './dom/show';
@@ -93,3 +106,8 @@ export type { TransitionCommandInput } from './animation/transition';
 export type { MeasureCommandInput } from './animation/measure';
 export type { SettleCommandInput } from './animation/settle';
 export type { PersistCommandInput } from './data/persist';
+export type { JsCommandInput } from './advanced/js';
+export type { AsyncCommandInput } from './advanced/async';
+export type { UnlessCommandInput } from './control-flow/unless';
+export type { DefaultCommandInput } from './data/default';
+export type { PseudoCommandInput } from './execution/pseudo-command';
