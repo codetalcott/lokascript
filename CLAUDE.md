@@ -115,7 +115,7 @@ For complete details, see:
 
 ### Parser Phase 2 & Tree-Shaking Architecture (Recent Sessions)
 
-**Status**: ✅ **BOTH COMPLETE** - Parser refactoring + Runtime optimization achieved
+**Status**: ✅ **BOTH COMPLETE** - Parser refactoring + Runtime optimization + Phase 6 migration achieved
 
 **Parser Phase 2 Refactoring**:
 
@@ -129,12 +129,12 @@ For complete details, see:
 
 **Tree-Shaking Architecture** (RuntimeBase + CommandAdapterV2):
 
-- ✅ **37% bundle reduction** achieved (366 KB → 230 KB, -139 KB savings)
+- ✅ **39% bundle reduction** achieved (366 KB → 224 KB, -142 KB savings)
 - ✅ **RuntimeBase**: Generic runtime with zero command imports (617 lines)
 - ✅ **CommandAdapterV2**: 70% complexity reduction (973 → 288 lines, -685 lines removed)
-- ✅ **16 commands-v2**: All implement parseInput() pattern for clean separation
-- ⚠️ **Limitation identified**: Command-level tree-shaking blocked by V1 inheritance (mitigation path available)
-- ✅ **100% non-destructive**, all 440+ tests passing, easy rollback
+- ✅ **43 commands-v2**: All implement parseInput() pattern for clean separation (Phase 6 COMPLETE)
+- ✅ **Zero V1 dependencies**: Complete standalone V2 implementations
+- ✅ **100% non-destructive**, all tests passing, easy rollback
 
 **Key Achievements**:
 
@@ -151,7 +151,53 @@ For complete details, see:
 - [PARSER_PHASE2_CATEGORY2_PLAN.md](packages/core/PARSER_PHASE2_CATEGORY2_PLAN.md) - Detailed Category 2 execution plan
 - [PARSER_NEXT_PHASES.md](packages/core/PARSER_NEXT_PHASES.md) - Phase 3 file organization plan
 
-**Results**: Both initiatives successfully completed with excellent risk management. Parser achieved consistent patterns across all suitable commands. Tree-shaking delivered 37% bundle reduction with clean architecture. Foundation established for future Phase 3 (file organization) and hybrid tree-shaking approach if needed.
+**Results**: Both initiatives successfully completed with excellent risk management. Parser achieved consistent patterns across all suitable commands. Tree-shaking delivered 39% bundle reduction with clean architecture. Foundation established for future Phase 3 (file organization) and hybrid tree-shaking approach if needed.
+
+### Phase 6 Command Migration (Complete)
+
+**Status**: ✅ **100% COMPLETE** - All 43 user-facing commands migrated to standalone V2
+
+**Migration Journey** (Phase 5 → Phase 6-6):
+
+- **Phase 5**: Initial 16 commands (DOM, Async, Data, Utility, Events, Navigation, Control Flow)
+- **Phase 6-1**: +5 commands (Control Flow extensions)
+- **Phase 6-2**: +5 commands (Data & Execution - bind, call, append)
+- **Phase 6-3**: +4 commands (Animation & Persistence - transition, measure, settle, persist)
+- **Phase 6-4**: +5 commands (Advanced - js, async, unless, default, pseudo-command)
+- **Phase 6-5**: +6 commands (Utility & Specialized - tell, copy, pick, throw, beep, install)
+- **Phase 6-6**: +2 commands (Final - take, render) ✅
+
+**Final Achievements**:
+
+- ✅ **43/43 commands** migrated to standalone V2 pattern
+- ✅ **224 KB final bundle** (39% reduction from 366 KB V1 baseline)
+- ✅ **Zero V1 dependencies** across entire command system
+- ✅ **100% tree-shakeable** architecture
+- ✅ **Minimal bundles enabled** via `createMinimalRuntime()`
+
+**Bundle Evolution**:
+
+```text
+Phase 5:  16 commands → 218 KB
+Phase 6-1: 21 commands → 217 KB (control flow)
+Phase 6-2: 26 commands → 220 KB (data/execution)
+Phase 6-3: 30 commands → 221 KB (animation/persistence)
+Phase 6-4: 35 commands → 222 KB (advanced features)
+Phase 6-5: 41 commands → 223 KB (utility/specialized)
+Phase 6-6: 43 commands → 224 KB (final 2 commands) ✅
+```
+
+**Key Implementation Highlights**:
+
+- **RenderCommand** (520 lines): Inline @if/@else/@repeat directive logic, zero external dependencies
+- **TakeCommand** (360 lines): Property/attribute/class transfer between elements, 61% size reduction from V1
+- **Template Rendering**: Variable interpolation with HTML escaping, conditional rendering, iteration
+- **Property Transfer**: CSS properties, attributes, classes with context switching (me, it, you)
+
+**Documentation**:
+
+- [PHASE_6_COMPLETE.md](packages/core/PHASE_6_COMPLETE.md) - Complete migration summary with all 43 commands
+- [roadmap/tree-shaking/](roadmap/tree-shaking/) - Phase 6 planning and execution documents
 
 ## Project Overview
 
