@@ -12,7 +12,7 @@
  */
 
 import { RuntimeBase } from './runtime-base';
-import { EnhancedCommandRegistryV2 } from './command-adapter-v2';
+import { EnhancedCommandRegistryV2 } from './command-adapter';
 import type { EnhancedCommandRegistry } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { LazyExpressionEvaluator } from '../core/lazy-expression-evaluator';

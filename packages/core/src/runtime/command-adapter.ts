@@ -1,16 +1,18 @@
 /**
- * Enhanced Command Adapter
- * Bridges enhanced TypeScript commands with the runtime system
- * Converts TypedCommandImplementation to runtime-compatible format
+ * Command Adapter V2 - Generic adapter with parseInput() support
+ *
+ * This is a simplified adapter that delegates argument parsing to commands
+ * via their parseInput() method, enabling tree-shakable RuntimeBase.
+ *
+ * Key differences from V1:
+ * - No command-specific logic (generic for all commands)
+ * - Calls command.parseInput() when available
+ * - Falls back to generic argument evaluation
+ * - Much shorter (~150 lines vs 973 lines)
  */
 
 import type { ExecutionContext, TypedExecutionContext, ValidationResult } from '../types/core';
 import type { ASTNode } from '../types/base-types';
-import {
-  createAllEnhancedCommands,
-  ENHANCED_COMMAND_FACTORIES,
-  getEnhancedCommandNames,
-} from '../commands/command-registry';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { debug } from '../utils/debug';
 
@@ -29,7 +31,23 @@ export interface RuntimeCommand {
 }
 
 /**
+ * Command with optional parseInput() method
+ */
+export interface CommandWithParseInput {
+  name: string;
+  parseInput?(
+    raw: { args: ASTNode[]; modifiers: Record<string, ASTNode> },
+    evaluator: ExpressionEvaluator,
+    context: ExecutionContext
+  ): Promise<any[]>;
+  execute(input: unknown, context: TypedExecutionContext): Promise<unknown>;
+  validate?(input: unknown): ValidationResult<unknown>;
+  metadata?: any;
+}
+
+/**
  * Context bridge between ExecutionContext and TypedExecutionContext
+ * (Copied from V1 - this part is generic and works well)
  */
 export class ContextBridge {
   /**
@@ -85,11 +103,17 @@ export class ContextBridge {
 }
 
 /**
- * Enhanced Command Adapter
- * Wraps TypedCommandImplementation for runtime compatibility
+ * Command Adapter V2 - Generic adapter with parseInput() support
+ *
+ * This adapter is much simpler than V1 because it delegates argument parsing
+ * to the commands themselves via parseInput().
  */
-export class CommandAdapter implements RuntimeCommand {
-  constructor(private impl: any) {}
+export class CommandAdapterV2 implements RuntimeCommand {
+  private expressionEvaluator: ExpressionEvaluator;
+
+  constructor(private impl: CommandWithParseInput) {
+    this.expressionEvaluator = new ExpressionEvaluator();
+  }
 
   get name(): string {
     return this.impl.name || this.impl.metadata?.name;
@@ -97,805 +121,126 @@ export class CommandAdapter implements RuntimeCommand {
 
   get metadata() {
     return {
-      description: this.impl.description,
+      description: this.impl.metadata?.description || '',
       examples: this.impl.metadata?.examples || [],
-      syntax: this.impl.syntax,
+      syntax: this.impl.metadata?.syntax || '',
     };
   }
 
   /**
-   * Execute command with context conversion
+   * Execute command with generic argument handling
+   *
+   * This is the key method that enables tree-shaking. Instead of having
+   * command-specific logic here (like V1), we delegate to the command's
+   * parseInput() method.
    */
   async execute(context: ExecutionContext, ...args: unknown[]): Promise<unknown> {
     try {
-      // Get command name from either impl.name or metadata.name
-      const implName = this.impl.name || this.impl.metadata?.name;
+      debug.command(`CommandAdapterV2: Executing '${this.name}' with args:`, args);
 
       // Convert to typed context
       const typedContext = ContextBridge.toTyped(context);
 
-      // Execute enhanced command - different signature for enhanced vs legacy commands
+      // Parse input arguments
+      let parsedInput: any;
+
+      // Check if command has parseInput() method (V2 commands)
+      if (this.impl.parseInput && typeof this.impl.parseInput === 'function') {
+        debug.command(`CommandAdapterV2: '${this.name}' has parseInput(), calling it`);
+
+        // Command has parseInput() - use it to parse raw AST input
+        // The first arg should be the raw input object with { args, modifiers }
+        const rawInput = args[0] as any;
+
+        if (rawInput && typeof rawInput === 'object' && ('args' in rawInput || 'modifiers' in rawInput)) {
+          // Raw AST input - pass to parseInput()
+          parsedInput = await this.impl.parseInput(
+            {
+              args: rawInput.args || [],
+              modifiers: rawInput.modifiers || {},
+            },
+            this.expressionEvaluator,
+            context
+          );
+        } else {
+          // Already parsed - use as-is
+          parsedInput = args;
+        }
+      } else {
+        // No parseInput() - command expects already-parsed arguments (V1 pattern)
+        debug.command(`CommandAdapterV2: '${this.name}' has no parseInput(), using args as-is`);
+        parsedInput = args;
+      }
+
+      debug.command(`CommandAdapterV2: Calling execute with parsed input:`, parsedInput);
+
+      // Execute command with parsed input
+      // V2 commands expect: execute(input, context) where input is the parsed args
+      // V1 commands expect: execute(context, ...args)
       let result;
 
-      // Check if this is a TypedCommandImplementation (enhanced command)
-      if (this.impl.execute && this.impl.execute.length === 2) {
-        // Enhanced command expects (input, context) signature
-        let input: unknown;
-
-        // SET command argument processing - handle context confusion
-        if (this.impl.name === 'set') {
-          // Check if we received the context object by mistake (has all context properties)
-          if (
-            args.length === 1 &&
-            args[0] &&
-            typeof args[0] === 'object' &&
-            'me' in args[0] &&
-            'locals' in args[0] &&
-            'globals' in args[0] &&
-            'result' in args[0]
-          ) {
-            throw new Error(
-              'SET command received context object instead of parsed arguments. Check runtime command adapter routing.'
-            );
-          }
-
-          // Simple approach: create input object from raw arguments
-          if (Array.isArray(args) && args.length >= 2) {
-            // Assume format: [targetNode, valueNode] for "set target to value"
-            const [targetNode, valueNode] = args;
-
-            // Extract target name and scope from targetNode
-            let target;
-            let scope: 'global' | 'local' | undefined;
-
-            if (typeof targetNode === 'string') {
-              // Simple string target
-              target = targetNode;
-            } else if (
-              targetNode &&
-              typeof targetNode === 'object' &&
-              (targetNode as any)._isScoped
-            ) {
-              // Scoped variable object from runtime (e.g., {_isScoped: true, name: "count", scope: "global"})
-              target = (targetNode as any).name;
-              scope = (targetNode as any).scope;
-            } else if (targetNode && typeof targetNode === 'object') {
-              // AST node object - extract name and scope
-              if ('scope' in targetNode) {
-                scope = (targetNode as any).scope;
-              }
-
-              // Extract target name
-              if ('name' in targetNode) {
-                target = (targetNode as any).name;
-              } else if ('value' in targetNode) {
-                target = (targetNode as any).value;
-              } else {
-                target = String(targetNode);
-              }
-            } else {
-              target = String(targetNode);
-            }
-
-            // Extract value from AST node
-            let value;
-            if (typeof valueNode === 'object' && valueNode && 'value' in valueNode) {
-              value = (valueNode as any).value;
-            } else {
-              value = valueNode;
-            }
-
-            input = {
-              target: target,
-              value: value,
-              toKeyword: 'to' as const,
-              scope: scope, // Use extracted scope (global/local) or undefined
-            };
-          } else if (
-            args.length === 1 &&
-            args[0] &&
-            typeof args[0] === 'object' &&
-            'target' in args[0]
-          ) {
-            // Pre-processed input object from runtime
-            input = args[0];
-          } else if (args.length === 1) {
-            // Single argument - could be just the target, treat as fallback case
-            input = {
-              target: args[0],
-              value: undefined,
-              toKeyword: 'to' as const,
-              scope: undefined,
-            };
-          } else {
-            // Multiple arguments fallback: create input from first two arguments
-            input = {
-              target: args[0],
-              value: args[1],
-              toKeyword: 'to' as const,
-              scope: undefined,
-            };
-          }
-        } else if ((implName === 'if' || implName === 'unless') && Array.isArray(args)) {
-          // IF/UNLESS command - convert [condition, thenBlock, elseBlock?] to structured input
-          // Args from runtime:
-          //   args[0]: evaluated condition (boolean/value)
-          //   args[1]: thenBlock (block AST node with { type: 'block', commands: [...] })
-          //   args[2]: elseBlock (block AST node, optional)
-          input = {
-            condition: args[0],
-            thenCommands: args[1], // Block node, will be handled by IfCommand
-            elseCommands: args[2], // Block node or undefined
-          };
-        } else if (
-          this.impl.name === 'render' &&
-          Array.isArray(args) &&
-          args.length >= 3 &&
-          args[1] === 'with'
-        ) {
-          // Convert ['template', 'with', 'data'] to structured input
-          input = {
-            template: args[0],
-            variables: args[2],
-            withKeyword: 'with' as const,
-          };
-        } else if (this.impl.name === 'log') {
-          // LOG command - all arguments are values to log
-          input = {
-            values: Array.isArray(args) ? args : [args],
-          };
-        } else if (this.impl.name === 'install') {
-          // INSTALL command - convert [behaviorNameNode, paramsNode?, targetNode?] to structured input
-          // Expected args from parser:
-          //   args[0]: Identifier node with behavior name
-          //   args[1]: ObjectLiteral node with parameters (optional)
-          //   args[2]: Target expression (optional, defaults to 'me')
-
-          let behaviorName: string | undefined;
-          let parameters: Record<string, unknown> | undefined;
-          let target: unknown | undefined;
-
-          // Extract behavior name
-          if (args.length > 0 && args[0]) {
-            const nameNode = args[0];
-            if (typeof nameNode === 'string') {
-              behaviorName = nameNode;
-            } else if (typeof nameNode === 'object' && nameNode && 'name' in nameNode) {
-              behaviorName = (nameNode as any).name;
-            } else if (typeof nameNode === 'object' && nameNode && 'value' in nameNode) {
-              behaviorName = (nameNode as any).value;
-            }
-          }
-
-          // Extract parameters (if present)
-          if (args.length > 1 && args[1]) {
-            const paramsNode = args[1];
-            debug.command(`INSTALL ADAPTER: paramsNode type check:`, {
-              isObject: typeof paramsNode === 'object',
-              isNull: paramsNode === null,
-              hasType: 'type' in (paramsNode || {}),
-              hasProperties: 'properties' in (paramsNode || {}),
-              typeValue: (paramsNode as any)?.type,
-              keys: Object.keys(paramsNode || {})
-            });
-
-            // Check if it's already a plain evaluated object (from runtime.ts special handling)
-            if (
-              typeof paramsNode === 'object' &&
-              paramsNode !== null &&
-              !('type' in paramsNode) &&
-              !('properties' in paramsNode)
-            ) {
-              debug.command(`INSTALL ADAPTER: Branch 1 - Already evaluated object`);
-              debug.command(`INSTALL ADAPTER: Evaluated params keys:`, Object.keys(paramsNode));
-              debug.command(`INSTALL ADAPTER: Evaluated params values:`, paramsNode);
-              // Already evaluated to a plain object by runtime
-              parameters = paramsNode as Record<string, unknown>;
-            } else if (
-              typeof paramsNode === 'object' &&
-              paramsNode !== null &&
-              ('properties' in paramsNode || (paramsNode as any).type === 'objectLiteral')
-            ) {
-              debug.command(`INSTALL ADAPTER: Branch 2 - AST objectLiteral node`);
-              // AST objectLiteral node - need to evaluate property values
-              const props = (paramsNode as any).properties || [];
-              parameters = {};
-
-              // Evaluate each property value in the current context
-              debug.command(`INSTALL ADAPTER: Evaluating ${props.length} parameter(s)`);
-              for (const prop of props) {
-                const key = prop.key?.name || prop.key?.value;
-                if (key && prop.value) {
-                  debug.command(`INSTALL ADAPTER: Evaluating parameter "${key}" with value node type:`, prop.value?.type);
-                  // Evaluate the property value using the expression evaluator
-                  const evaluator = new ExpressionEvaluator(typedContext);
-                  try {
-                    parameters[key] = await evaluator.evaluate(prop.value);
-                    debug.command(`INSTALL ADAPTER: Parameter "${key}" evaluated to:`, parameters[key]);
-                  } catch (error) {
-                    debug.command(`INSTALL ADAPTER: Failed to evaluate parameter "${key}":`, error);
-                    // If evaluation fails, use undefined
-                    parameters[key] = undefined;
-                  }
-                }
-              }
-            } else if (typeof paramsNode === 'object' && paramsNode !== null) {
-              debug.command(`INSTALL ADAPTER: Branch 3 - Fallback object`);
-              // Fallback: treat as evaluated object
-              parameters = paramsNode as Record<string, unknown>;
-            }
-          }
-
-          // Extract target (if present)
-          if (args.length > 2) {
-            target = args[2];
-          }
-
-          input = {
-            behaviorName,
-            parameters,
-            target,
-          };
-        } else if (this.impl.name === 'transition' || this.impl.metadata?.name === 'transition') {
-          // TRANSITION command - receives raw AST nodes, extract metadata then evaluate values
-          // Expected args from parser:
-          //   args[0]: String node with property name (may include * prefix)
-          //   args[1]: Value expression node (needs evaluation with context)
-          //   args[2]: Duration expression node (optional, needs evaluation)
-          //   args[3]: Timing function expression node (optional, needs evaluation)
-
-          const property = args[0]
-            ? typeof args[0] === 'string'
-              ? args[0]
-              : (args[0] as any).value || (args[0] as any).content
-            : undefined;
-
-          // CSS keyword values that should not be evaluated as variables
-          const cssKeywords = ['initial', 'inherit', 'unset', 'revert', 'auto', 'none'];
-
-          // Evaluate value - handle CSS keywords specially
-          let value: unknown;
-          if (args[1] && typeof args[1] === 'object' && 'type' in args[1]) {
-            const valueNode = args[1] as any;
-            // Check if it's an identifier node with a CSS keyword value
-            if (valueNode.type === 'identifier' && cssKeywords.includes(valueNode.name)) {
-              // Use the keyword string directly, don't evaluate it as a variable
-              value = valueNode.name;
-            } else {
-              // Evaluate normally for other expressions (template literals, variables, etc.)
-              const evaluator = new ExpressionEvaluator();
-              value = await evaluator.evaluate(args[1] as ASTNode, context);
-            }
-          } else {
-            value = args[1];
-          }
-
-          // Evaluate duration and timing function
-          const evaluator = new ExpressionEvaluator();
-          const duration =
-            args.length > 2 && args[2] && typeof args[2] === 'object' && 'type' in args[2]
-              ? await evaluator.evaluate(args[2] as ASTNode, context)
-              : args[2];
-          const timingFunction =
-            args.length > 3 && args[3] && typeof args[3] === 'object' && 'type' in args[3]
-              ? await evaluator.evaluate(args[3] as ASTNode, context)
-              : args[3];
-
-          input = {
-            property,
-            value,
-            duration,
-            timingFunction,
-          };
-        } else if (this.impl.name === 'repeat' || this.impl.metadata?.name === 'repeat') {
-          // REPEAT command - receives raw AST nodes, extract loop type then evaluate as needed
-          // Expected args from parser:
-          //   args[0]: Identifier node with loop type ('for', 'times', 'while', 'until', 'until-event', 'forever')
-          //   args[1]: Variable name (string node) for 'for' loops, OR event name for 'until-event'
-          //   args[2]: Collection/condition/times/eventTarget expression
-          //   args[3]: (for until-event with from) event target
-          //   args[...]: Commands block (last arg with type 'block' containing commands array)
-
-          const loopType = args[0]
-            ? typeof args[0] === 'string'
-              ? args[0]
-              : (args[0] as any).name || (args[0] as any).value
-            : undefined;
-
-          debug.loop('REPEAT: Received args:', {
-            argsLength: args.length,
-            loopType,
-            arg0: args[0],
-            arg1: args[1],
-            arg2: args[2],
-            arg3: args[3],
-            allArgs: args.map((arg: any, i: number) => ({
-              index: i,
-              type: arg?.type,
-              name: arg?.name,
-              value: arg?.value,
-              keys: arg && typeof arg === 'object' ? Object.keys(arg) : [],
-            })),
-          });
-
-          let variable: string | undefined;
-          let collection: any;
-          let condition: any;
-          let count: number | undefined;
-          let eventName: string | undefined;
-          let eventTarget: any;
-          let indexVariable: string | undefined;
-          let commands: Function[] = [];
-
-          // Create evaluator for AST node evaluation
-          const evaluator = new ExpressionEvaluator();
-
-          // Parse based on loop type
-          if (loopType === 'for') {
-            variable = args[1]
-              ? typeof args[1] === 'string'
-                ? args[1]
-                : (args[1] as any).value
-              : undefined;
-            collection =
-              args[2] && typeof args[2] === 'object' && 'type' in args[2]
-                ? await evaluator.evaluate(args[2] as ASTNode, context)
-                : args[2];
-            // Check for optional indexVariable in args[3] (from "with index" clause)
-            if (args[3] && typeof args[3] === 'object' && (args[3] as any).type === 'string') {
-              indexVariable = (args[3] as any).value;
-            }
-          } else if (loopType === 'times') {
-            const timesArg =
-              args[1] && typeof args[1] === 'object' && 'type' in args[1]
-                ? await evaluator.evaluate(args[1] as ASTNode, context)
-                : args[1];
-            count = typeof timesArg === 'number' ? timesArg : undefined;
-          } else if (loopType === 'while' || loopType === 'until') {
-            condition = args[1]; // Keep as AST node for later evaluation
-          } else if (loopType === 'until-event') {
-            eventName = args[1]
-              ? typeof args[1] === 'string'
-                ? args[1]
-                : (args[1] as any).value
-              : undefined;
-            eventTarget =
-              args[2] && typeof args[2] === 'object' && 'type' in args[2]
-                ? await evaluator.evaluate(args[2] as ASTNode, context)
-                : args[2];
-          }
-
-          // Extract command block - look for arg with type 'block' containing commands array
-          const blockArg = args.find(
-            (arg: any) => arg && typeof arg === 'object' && arg.type === 'block'
-          );
-          if (blockArg && Array.isArray((blockArg as any).commands)) {
-            // Get the runtime execute function from context
-            const runtimeExecute = context.locals.get('_runtimeExecute');
-            if (typeof runtimeExecute === 'function') {
-              // Convert each command AST node to an executable function
-              // The function receives the loop iteration context and passes it to runtime execute
-              commands = (blockArg as any).commands.map((cmdNode: any) => {
-                return async (ctx: any) => {
-                  return await runtimeExecute(cmdNode, ctx);
-                };
-              });
-              debug.loop(`REPEAT: Extracted ${commands.length} commands from block`);
-            } else {
-              console.warn('REPEAT: _runtimeExecute not found in context, commands will be empty');
-            }
-          } else {
-            console.warn('REPEAT: No block arg found with commands array', {
-              args: args.map((a: any) => ({
-                type: a?.type,
-                keys: a && typeof a === 'object' ? Object.keys(a) : [],
-              })),
-            });
-          }
-
-          debug.loop('REPEAT: Parsed values:', {
-            loopType,
-            variable,
-            collection,
-            condition,
-            count,
-            eventName,
-            eventTarget,
-            indexVariable,
-            commandsLength: commands.length,
-          });
-
-          input = {
-            type: loopType,
-            variable,
-            collection,
-            condition,
-            count,
-            eventName,
-            eventTarget,
-            indexVariable,
-            commands,
-          };
-
-          debug.loop('REPEAT: Created input object:', input);
-        } else if (this.impl.name === 'wait' || this.impl.metadata?.name === 'wait') {
-          // WAIT command - args may be already evaluated or raw AST nodes
-          // Expected args:
-          //   Simple time wait: args[0] = time value or expression
-          //   Event wait: args[0] = array of event objects, args[1] = optional target
-
-          const evaluator = new ExpressionEvaluator();
-
-          // Helper to evaluate only if needed (if arg is AST node, not plain value)
-          const evaluateIfNeeded = async (arg: any): Promise<any> => {
-            if (arg === null || arg === undefined) {
-              return arg;
-            }
-            // If it has a 'type' property, it's an AST node - evaluate it
-            if (typeof arg === 'object' && 'type' in arg) {
-              return await evaluator.evaluate(arg, context);
-            }
-            // Otherwise it's already evaluated - return as-is
-            return arg;
-          };
-
-          // Check if this is a time-based wait or event-based wait
-          if (args.length === 1 && args[0] && !Array.isArray(args[0])) {
-            // Time-based wait: wait 1000ms or wait 1s
-            const timeValue = await evaluateIfNeeded(args[0]);
-            input = {
-              type: 'time',
-              value: typeof timeValue === 'number' ? timeValue : 1000,
-            };
-          } else {
-            // Event-based wait: wait for event(args) or event from target
-            const eventsArray = args[0] ? await evaluateIfNeeded(args[0]) : [];
-            const sourceTarget = args.length > 1 ? await evaluateIfNeeded(args[1]) : context.me;
-
-            input = {
-              type: 'event',
-              events: Array.isArray(eventsArray) ? eventsArray : [],
-              source: sourceTarget,
-            };
-
-            debug.async('WAIT: Prepared event input:', input);
-          }
-        } else if (this.impl.name === 'add' || this.impl.metadata?.name === 'add') {
-          // ADD command: add <classExpression> to <target>
-          // Expected input: [classExpression, target]
-          input = args; // Pass as tuple
-        } else if (this.impl.name === 'increment' || this.impl.metadata?.name === 'increment') {
-          // INCREMENT command: Runtime already provides structured input { target, amount }
-          input = args[0]; // Pass through - already in correct format
-        } else if (this.impl.name === 'decrement' || this.impl.metadata?.name === 'decrement') {
-          // DECREMENT command: Runtime already provides structured input { target, amount }
-          input = args[0]; // Pass through - already in correct format
-        } else if (this.impl.name === 'halt' || this.impl.metadata?.name === 'halt') {
-          // HALT command - check for "halt the event" pattern
-          // Args from runtime: raw AST nodes like [{type: 'identifier', name: 'the'}, {type: 'identifier', name: 'event'}]
-          if (Array.isArray(args) && args.length >= 2) {
-            const firstArg = args[0];
-            const secondArg = args[1];
-
-            // Check for "the event" pattern
-            if (
-              firstArg &&
-              typeof firstArg === 'object' &&
-              'name' in firstArg &&
-              (firstArg as any).name === 'the' &&
-              secondArg &&
-              typeof secondArg === 'object' &&
-              'name' in secondArg &&
-              (secondArg as any).name === 'event'
-            ) {
-              // This is "halt the event" - pass 'the' string so halt command uses context.event
-              input = { target: 'the' };
-            } else {
-              // Other halt syntax - pass through
-              input = args.length === 1 ? args[0] : args;
-            }
-          } else if (args.length === 1) {
-            input = args[0];
-          } else {
-            input = {};
-          }
-        } else if (this.impl.name === 'call' || this.impl.metadata?.name === 'call' ||
-                   this.impl.name === 'get' || this.impl.metadata?.name === 'get') {
-          // CALL/GET commands expect {expression: ...} format
-          input = { expression: args.length === 1 ? args[0] : args };
-        } else {
-          // Default input handling for other commands
-          input = args.length === 1 ? args[0] : args;
-        }
-
-        result = await this.impl.execute(input, typedContext);
+      if (this.impl.execute.length === 2) {
+        // Enhanced signature: execute(input, context)
+        result = await this.impl.execute(parsedInput, typedContext);
       } else {
-        // Legacy command adapter expects (context, ...args) signature
-        result = await this.impl.execute(typedContext, ...args);
+        // Legacy signature: execute(context, ...args)
+        result = await (this.impl.execute as any)(typedContext, ...parsedInput);
       }
 
-      // Update original context with changes
+      debug.command(`CommandAdapterV2: Command result:`, result);
+
+      // Update original context with changes from typed context
       Object.assign(context, ContextBridge.fromTyped(typedContext, context));
-
-      // Extract value from EvaluationResult if needed
-      if (result && typeof result === 'object' && 'success' in result) {
-        // Return the value on success
-        // Return full result on error (for error inspection without try/catch)
-        // Note: try/catch support will be implemented later
-        return result.success ? result.value : result;
-      }
 
       return result;
     } catch (error) {
-      // Check for control flow errors - don't wrap, just rethrow
-      if (error instanceof Error) {
-        const errorAny = error as any;
-        if (
-          errorAny.isHalt ||
-          errorAny.isExit ||
-          errorAny.isReturn ||
-          errorAny.isBreak ||
-          errorAny.isContinue
-        ) {
-          throw error;
-        }
-      }
-
-      // Enhanced error handling with suggestions
-      if (error instanceof Error) {
-        const enhancedError = new Error(`${this.name} command error: ${error.message}`);
-
-        // Add suggestions if available from validation
-        if (this.impl.validation) {
-          const suggestions = this.generateSuggestions(args);
-          if (suggestions.length > 0) {
-            enhancedError.message += `\n\nSuggestions:\n${suggestions.map(s => `  • ${s}`).join('\n')}`;
-          }
-        }
-
-        throw enhancedError;
-      }
-
+      debug.command(`CommandAdapterV2: Error executing '${this.name}':`, error);
       throw error;
     }
   }
 
-  /**
-   * Validate command input
-   */
   validate(input: unknown): ValidationResult<unknown> {
-    if (!this.impl.validate) {
-      return { isValid: true, errors: [], suggestions: [], data: input };
+    if (this.impl.validate) {
+      return this.impl.validate(input);
     }
-
-    // Use the command's validate method - pass input directly since commands expect tuple format
-    const result = this.impl.validate(input);
-    return {
-      isValid: result.isValid,
-      errors: result.errors || [],
-      suggestions: result.suggestions || [],
-      data: input,
-      error: result.errors?.[0],
-    };
-  }
-
-  /**
-   * Generate helpful suggestions for command usage
-   */
-  private generateSuggestions(args: unknown[]): string[] {
-    const suggestions: string[] = [];
-
-    // Add basic syntax suggestion
-    if (this.impl.syntax) {
-      suggestions.push(`Correct syntax: ${this.impl.syntax}`);
-    }
-
-    // Add example usage
-    if (this.impl.metadata?.examples?.length > 0) {
-      const firstExample = this.impl.metadata.examples[0];
-      const exampleCode = typeof firstExample === 'object' ? firstExample.code : firstExample;
-      suggestions.push(`Example: ${exampleCode}`);
-    }
-
-    // Add argument count suggestion
-    if (args.length === 0) {
-      suggestions.push('This command requires arguments');
-    }
-
-    return suggestions;
+    return { isValid: true, errors: [], suggestions: [] };
   }
 }
 
 /**
- * Lazy Command Registry
- * Loads commands on-demand for optimal tree-shaking and bundle size
+ * Enhanced Command Registry V2
+ *
+ * Registry that uses CommandAdapterV2 for all commands.
+ * Much simpler than V1 because it doesn't need command-specific logic.
  */
-export class LazyCommandRegistry {
-  private adapters = new Map<string, CommandAdapter>();
-  private implementations = new Map<string, any>();
-  private allowedCommands?: Set<string>; // For explicit command filtering
-
-  constructor(allowedCommands?: string[]) {
-    if (allowedCommands) {
-      this.allowedCommands = new Set(allowedCommands);
-    }
-  }
+export class EnhancedCommandRegistryV2 {
+  private adapters = new Map<string, CommandAdapterV2>();
+  private implementations = new Map<string, CommandWithParseInput>();
 
   /**
-   * Get runtime-compatible command adapter (lazy loads on first access)
-   *
-   * Phase 2 optimization: Now async to support dynamic imports for true code splitting
+   * Register a command (V1 or V2 format)
    */
-  async getAdapter(name: string): Promise<CommandAdapter | undefined> {
-    // Check if command is in allowed list (if filtering is enabled)
-    if (this.allowedCommands && !this.allowedCommands.has(name)) {
-      return undefined;
-    }
+  register(impl: CommandWithParseInput): void {
+    const name = (impl.name || impl.metadata?.name).toLowerCase();
 
-    // Return cached adapter if already loaded
-    if (this.adapters.has(name)) {
-      return this.adapters.get(name);
-    }
+    debug.runtime(`EnhancedCommandRegistryV2: Registering command '${name}'`);
 
-    // Lazy load the command with dynamic import
-    const impl = await this.loadCommand(name);
-    if (!impl) {
-      return undefined;
-    }
-
-    // Create and cache adapter
-    const adapter = new CommandAdapter(impl);
-    this.adapters.set(name, adapter);
     this.implementations.set(name, impl);
-
-    return adapter;
+    this.adapters.set(name, new CommandAdapterV2(impl));
   }
 
   /**
-   * Load a command implementation on-demand with dynamic imports
-   *
-   * Phase 2 optimization: Converted from require() to import() for true code splitting
-   * Commands are now loaded as separate chunks, reducing initial bundle size
+   * Get adapter for a command
    */
-  private loadCommand(name: string): any {
-    // Access command factory from statically imported registry
-    // Note: Despite the "lazy" naming, factories are statically imported for browser compatibility
-    const factory = ENHANCED_COMMAND_FACTORIES[name as keyof typeof ENHANCED_COMMAND_FACTORIES];
-
-    if (!factory) {
-      return null;
-    }
-
-    return factory();
-  }
-
-  /**
-   * Get original enhanced implementation (lazy loads if needed)
-   */
-  async getImplementation(name: string): Promise<any> {
-    if (!this.implementations.has(name)) {
-      await this.getAdapter(name); // Trigger lazy load
-    }
-    return this.implementations.get(name);
-  }
-
-  /**
-   * Check if command exists (doesn't trigger load)
-   * Note: Still uses dynamic import but doesn't instantiate the command
-   */
-  async has(name: string): Promise<boolean> {
-    // Check if already loaded
-    if (this.adapters.has(name)) {
-      return true;
-    }
-
-    // Check if it exists in the statically imported factory registry
-    return name in ENHANCED_COMMAND_FACTORIES;
-  }
-
-  /**
-   * Get all available command names (from factory registry, not just loaded)
-   */
-  getCommandNames(): string[] {
-    // Use statically imported function for browser compatibility
-    const allNames = getEnhancedCommandNames();
-
-    // Filter by allowed commands if specified
-    if (this.allowedCommands) {
-      return allNames.filter((name: string) => this.allowedCommands!.has(name));
-    }
-
-    return allNames;
-  }
-
-  /**
-   * Get all runtime adapters (only returns loaded commands)
-   */
-  getAdapters(): Map<string, CommandAdapter> {
-    return new Map(this.adapters);
-  }
-
-  /**
-   * Validate a command exists and can handle the given input
-   */
-  async validateCommand(name: string, input: unknown): Promise<ValidationResult<unknown>> {
-    const adapter = await this.getAdapter(name);
-    if (!adapter) {
-      const commandNames = await this.getCommandNames();
-      return {
-        isValid: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Unknown command: ${name}`,
-            suggestions: [`Available commands: ${commandNames.join(', ')}`],
-          },
-        ],
-        suggestions: [`Available commands: ${commandNames.join(', ')}`],
-      };
-    }
-
-    return adapter.validate(input);
-  }
-
-  /**
-   * Preload specific commands (for performance optimization)
-   * Phase 2: Now async to support dynamic imports
-   */
-  async warmup(commandNames: string[]): Promise<void> {
-    await Promise.all(commandNames.map(name => this.getAdapter(name)));
-  }
-}
-
-/**
- * Enhanced Command Registry
- * Manages enhanced commands and their runtime adapters
- */
-export class EnhancedCommandRegistry {
-  private adapters = new Map<string, CommandAdapter>();
-  private implementations = new Map<string, any>();
-
-  /**
-   * Register an enhanced command
-   */
-  register(impl: any): void {
-    const adapter = new CommandAdapter(impl);
-    const name = adapter.name; // Use adapter.name which handles both impl.name and impl.metadata.name
-
-    // Debug logging for undefined names
-    if (!name || name === 'undefined') {
-      console.warn('⚠️  Attempting to register command with undefined name:', {
-        impl,
-        implName: impl?.name,
-        implMetadata: impl?.metadata,
-        implMetadataName: impl?.metadata?.name,
-        adapterName: adapter.name,
-      });
-    }
-
-    this.adapters.set(name, adapter);
-    this.implementations.set(name, impl);
-  }
-
-  /**
-   * Get runtime-compatible command adapter
-   */
-  getAdapter(name: string): CommandAdapter | undefined {
-    return this.adapters.get(name);
-  }
-
-  /**
-   * Get original enhanced implementation
-   */
-  getImplementation(name: string): any {
-    return this.implementations.get(name);
+  getAdapter(name: string): CommandAdapterV2 | undefined {
+    return this.adapters.get(name.toLowerCase());
   }
 
   /**
    * Check if command is registered
    */
   has(name: string): boolean {
-    return this.adapters.has(name);
+    return this.adapters.has(name.toLowerCase());
   }
 
   /**
@@ -906,14 +251,21 @@ export class EnhancedCommandRegistry {
   }
 
   /**
-   * Get all runtime adapters
+   * Get command implementation (for advanced use)
    */
-  getAdapters(): Map<string, CommandAdapter> {
+  getImplementation(name: string): CommandWithParseInput | undefined {
+    return this.implementations.get(name.toLowerCase());
+  }
+
+  /**
+   * Get all runtime adapters (for compatibility with V1)
+   */
+  getAdapters(): Map<string, CommandAdapterV2> {
     return new Map(this.adapters);
   }
 
   /**
-   * Validate a command exists and can handle the given input
+   * Validate a command exists and can handle the given input (for compatibility with V1)
    */
   validateCommand(name: string, input: unknown): ValidationResult<unknown> {
     const adapter = this.getAdapter(name);
@@ -933,41 +285,18 @@ export class EnhancedCommandRegistry {
 
     return adapter.validate(input);
   }
-
-  /**
-   * Create registry with all enhanced commands pre-registered
-   * @deprecated Use createWithLazyLoading() for better performance and smaller bundles
-   */
-  static createWithDefaults(): EnhancedCommandRegistry {
-    const registry = new EnhancedCommandRegistry();
-
-    // Import and register all enhanced commands from the enhanced command registry
-    try {
-      const commands = createAllEnhancedCommands();
-
-      // Register all commands
-      for (const [_name, command] of commands.entries()) {
-        registry.register(command);
-      }
-    } catch (error) {
-      console.warn('Failed to load enhanced commands:', error);
-    }
-
-    return registry;
-  }
-
-  /**
-   * Create registry with lazy loading for optimal bundle size
-   * Commands are only loaded when first used
-   */
-  static createWithLazyLoading(options?: { commands?: string[] }): LazyCommandRegistry {
-    return new LazyCommandRegistry(options?.commands);
-  }
 }
 
 /**
- * Factory function to create enhanced command adapters
+ * Factory function for creating a pre-populated registry
+ * (For backward compatibility with V1)
  */
-export function createEnhancedAdapter(impl: any): CommandAdapter {
-  return new CommandAdapter(impl);
+export function createEnhancedCommandRegistryV2(commands: CommandWithParseInput[]): EnhancedCommandRegistryV2 {
+  const registry = new EnhancedCommandRegistryV2();
+
+  for (const command of commands) {
+    registry.register(command);
+  }
+
+  return registry;
 }
