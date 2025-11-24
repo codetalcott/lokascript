@@ -12,7 +12,7 @@
 import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, Token } from '../../types/core';
 import { CommandNodeBuilder } from '../command-node-builder';
-import { KEYWORDS } from '../parser-constants';
+import { KEYWORDS, PUT_OPERATIONS, PUT_OPERATION_KEYWORDS } from '../parser-constants';
 
 /**
  * Parse remove command
@@ -180,5 +180,90 @@ export function parseAddCommand(
   return CommandNodeBuilder.from(commandToken)
     .withArgs(...args)
     .endingAt(ctx.getPosition())
+    .build();
+}
+
+/**
+ * Parse put command
+ *
+ * Syntax:
+ *   - put <content> into <target>
+ *   - put <content> before <target>
+ *   - put <content> after <target>
+ *   - put <content> at start of <target>
+ *   - put <content> at end of <target>
+ *   - put <content> at <position>
+ *
+ * This command inserts content into the DOM at various positions relative
+ * to a target element. It handles complex expressions for both content and target.
+ *
+ * Examples:
+ *   - put (#count's textContent as Int) + 1 into #count
+ *   - put <div>Hello</div> before <button/>
+ *   - put "text" at end of <p/>
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param identifierNode - The 'put' identifier node
+ * @returns CommandNode representing the put command, or null on error
+ *
+ * Phase 9-3b: Extracted from Parser.parsePutCommand
+ */
+export function parsePutCommand(
+  ctx: ParserContext,
+  identifierNode: IdentifierNode
+) {
+  // Parse the content expression (everything before operation keyword)
+  const contentExpr = ctx.parseExpression();
+
+  if (!contentExpr) {
+    ctx.addError('Put command requires content expression');
+    return null;
+  }
+
+  // Look for operation keyword (into, before, after, at)
+  const currentToken = ctx.peek();
+
+  if (!currentToken || !PUT_OPERATION_KEYWORDS.includes(currentToken.value as any)) {
+    ctx.addError(`Expected operation keyword (${PUT_OPERATION_KEYWORDS.join(', ')}) after put expression, got: ${currentToken?.value}`);
+    return null;
+  }
+
+  let operation = ctx.advance().value;  // consume 'into', 'before', 'after', or 'at'
+
+  // Handle "at start of" / "at end of" multi-word operations
+  if (operation === PUT_OPERATIONS.AT) {
+    if (ctx.check(KEYWORDS.START) || ctx.check(KEYWORDS.THE)) {
+      if (ctx.check(KEYWORDS.THE)) {
+        ctx.advance();  // consume 'the'
+      }
+      if (ctx.check(KEYWORDS.START)) {
+        ctx.advance();  // consume 'start'
+        if (ctx.check(KEYWORDS.OF)) {
+          ctx.advance();  // consume 'of'
+          operation = PUT_OPERATIONS.AT_START_OF;
+        }
+      }
+    } else if (ctx.check(KEYWORDS.END)) {
+      ctx.advance();  // consume 'end'
+      if (ctx.check(KEYWORDS.OF)) {
+        ctx.advance();  // consume 'of'
+        operation = PUT_OPERATIONS.AT_END_OF;
+      }
+    }
+  }
+
+  // Parse the target expression
+  const targetExpr = ctx.parseExpression();
+
+  if (!targetExpr) {
+    ctx.addError('Put command requires target expression after operation keyword');
+    return null;
+  }
+
+  // Create command node using builder pattern
+  const pos = ctx.getPosition();
+  return CommandNodeBuilder.fromIdentifier(identifierNode)
+    .withArgs(contentExpr, ctx.createIdentifier(operation, pos), targetExpr)
+    .endingAt(pos)
     .build();
 }

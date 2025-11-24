@@ -1,0 +1,242 @@
+/**
+ * Variable Command Parsers
+ *
+ * Pure function implementations of variable assignment command parsers.
+ * These functions use ParserContext for dependency injection, enabling
+ * clean separation from the Parser class.
+ *
+ * Phase 9-3b: Command Extraction (Batch 2)
+ * @module parser/command-parsers/variable-commands
+ */
+
+import type { ParserContext, IdentifierNode } from '../parser-types';
+import type { ASTNode, ExpressionNode } from '../../types/core';
+import { TokenType } from '../tokenizer';
+
+/**
+ * Parse set command
+ *
+ * Syntax:
+ *   - set <variable> to <value>
+ *   - set :localVar to <value>
+ *   - set ::globalVar to <value>
+ *   - set global <variable> to <value>
+ *   - set local <variable> to <value>
+ *   - set the <property> of <target> to <value>
+ *
+ * This command assigns values to variables with support for:
+ * - Local scope (colon-variable or local variable)
+ * - Global scope (double-colon-variable or global variable)
+ * - Property assignment (the X of Y)
+ * - Complex expression targets and values
+ *
+ * Examples:
+ *   - set count to 0
+ *   - set :localVar to "hello"
+ *   - set ::globalConfig to { enabled: true }
+ *   - set the textContent of #counter to count + 1
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param identifierNode - The 'set' identifier node
+ * @returns CommandNode representing the set command, or null on error
+ *
+ * Phase 9-3b: Extracted from Parser.parseSetCommand
+ */
+export function parseSetCommand(
+  ctx: ParserContext,
+  identifierNode: IdentifierNode
+) {
+  const startPosition = ctx.current;
+  let targetExpression: ASTNode | null = null;
+
+  try {
+    // Check for global variable prefix double-colon or local prefix colon FIRST
+    if (ctx.check(':')) {
+      ctx.advance();
+
+      if (ctx.check(':')) {
+        // This is double-colon-variable (explicit global scope)
+        ctx.advance();
+        const varToken = ctx.advance();
+        targetExpression = {
+          type: 'identifier',
+          name: varToken.value,
+          scope: 'global',
+          start: varToken.start - 2,
+          end: varToken.end,
+        } as any;
+      } else {
+        // This is colon-variable (local scope)
+        const varToken = ctx.advance();
+        targetExpression = {
+          type: 'identifier',
+          name: varToken.value,
+          scope: 'local',
+          start: varToken.start - 1,
+          end: varToken.end,
+        } as any;
+      }
+    }
+    // Check for scope modifiers (global/local) first
+    else if (ctx.check('global') || ctx.check('local')) {
+      const scopeToken = ctx.advance();
+      const variableToken = ctx.advance();
+
+      targetExpression = {
+        type: 'identifier',
+        name: variableToken.value,
+        scope: scopeToken.value,
+        start: scopeToken.start,
+        end: variableToken.end,
+      } as any;
+    } else if (ctx.check('the')) {
+      const thePosition = ctx.current;
+      ctx.advance();
+
+      const nextToken = ctx.peek();
+      const tokenAfterNext =
+        ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
+
+      if (nextToken && tokenAfterNext && tokenAfterNext.value === 'of') {
+        const propertyToken = ctx.advance();
+
+        if (ctx.check('of')) {
+          ctx.advance();
+
+          const targetToken = ctx.advance();
+
+          targetExpression = {
+            type: 'propertyOfExpression',
+            property: {
+              type: 'identifier',
+              name: propertyToken.value,
+              start: propertyToken.start,
+              end: propertyToken.end,
+            },
+            target: {
+              type: targetToken.type === TokenType.ID_SELECTOR ? 'idSelector' : 'cssSelector',
+              value: targetToken.value,
+              start: targetToken.start,
+              end: targetToken.end,
+            },
+            start: startPosition,
+            end: ctx.current,
+          };
+        } else {
+          ctx.current = startPosition;
+          targetExpression = null;
+        }
+      } else {
+        ctx.current = thePosition;
+        targetExpression = null;
+      }
+    } else {
+      targetExpression = ctx.parseExpression();
+    }
+  } catch (error) {
+    ctx.current = startPosition;
+    targetExpression = null;
+  }
+
+  const targetTokens: ASTNode[] = [];
+  if (!targetExpression) {
+    if (ctx.match(':')) {
+      const varToken = ctx.advance();
+      targetExpression = {
+        type: 'identifier',
+        name: varToken.value,
+        scope: 'local',
+        start: varToken.start,
+        end: varToken.end,
+      } as any;
+    } else {
+      while (
+        !ctx.isAtEnd() &&
+        !ctx.check('to') &&
+        !ctx.check('then') &&
+        !ctx.check('and') &&
+        !ctx.check('else') &&
+        !ctx.check('end')
+      ) {
+        const token = ctx.parsePrimary();
+        targetTokens.push(token);
+      }
+    }
+
+    if (targetTokens.length > 0) {
+      if (
+        targetTokens.length >= 4 &&
+        (targetTokens[0] as any).value === 'the' &&
+        (targetTokens[2] as any).value === 'of'
+      ) {
+        targetExpression = {
+          type: 'propertyOfExpression',
+          property: {
+            type: 'identifier',
+            name: (targetTokens[1] as any).value || (targetTokens[1] as any).name,
+            start: (targetTokens[1] as any).start,
+            end: (targetTokens[1] as any).end,
+          },
+          target: {
+            type: (targetTokens[3] as any).type === 'idSelector' ? 'idSelector' : 'cssSelector',
+            value: (targetTokens[3] as any).value || (targetTokens[3] as any).name,
+            start: (targetTokens[3] as any).start,
+            end: (targetTokens[3] as any).end,
+          },
+          start: (targetTokens[0] as any).start,
+          end: (targetTokens[3] as any).end,
+        };
+      } else if (targetTokens.length === 1) {
+        targetExpression = targetTokens[0];
+      } else {
+        targetExpression = null;
+      }
+    }
+  }
+
+  if (!ctx.check('to')) {
+    const found = ctx.isAtEnd() ? 'end of input' : ctx.peek().value;
+    throw new Error(`Expected 'to' in set command, found: ${found}`);
+  }
+
+  ctx.advance();
+
+  const valueTokens: ASTNode[] = [];
+  const expr = ctx.parseExpression();
+  if (expr) {
+    valueTokens.push(expr);
+  } else {
+    const primary = ctx.parsePrimary();
+    if (primary) {
+      valueTokens.push(primary);
+    }
+  }
+
+  const finalArgs: ASTNode[] = [];
+
+  if (targetExpression) {
+    finalArgs.push(targetExpression);
+  } else if (targetTokens.length > 0) {
+    finalArgs.push(...targetTokens);
+  }
+
+  const pos = ctx.getPosition();
+  finalArgs.push(ctx.createIdentifier('to', pos));
+
+  if (valueTokens.length > 0) {
+    finalArgs.push(...valueTokens);
+  }
+
+  const result = {
+    type: 'command' as const,
+    name: identifierNode.name,
+    args: finalArgs as ExpressionNode[],
+    isBlocking: false,
+    start: identifierNode.start || 0,
+    end: ctx.getPosition().end,
+    line: identifierNode.line || 1,
+    column: identifierNode.column || 1,
+  };
+
+  return result;
+}

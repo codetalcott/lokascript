@@ -183,3 +183,114 @@ export function parseWaitCommand(
     .endingAt(ctx.getPosition())
     .build();
 }
+
+/**
+ * Parse install command
+ *
+ * Syntax: install <behavior-name> [(<params>)]
+ *
+ * This command installs a behavior on the current element. Parameters can be
+ * positional or named (name: value syntax).
+ *
+ * Examples:
+ *   - install MyBehavior
+ *   - install Draggable(axis: 'x')
+ *   - install CustomBehavior(param1, param2, named: value)
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param commandToken - The 'install' command token
+ * @returns CommandNode representing the install command
+ *
+ * Phase 9-3b: Extracted from Parser.parseInstallCommand
+ */
+export function parseInstallCommand(
+  ctx: ParserContext,
+  commandToken: Token
+) {
+  const args: ASTNode[] = [];
+
+  // Parse behavior name (identifier)
+  if (!ctx.checkTokenType(TokenType.IDENTIFIER)) {
+    throw new Error('Expected behavior name after "install"');
+  }
+
+  const behaviorName = ctx.advance().value;
+  const prevToken = ctx.previous();
+  args.push({
+    type: 'identifier',
+    name: behaviorName,
+    start: prevToken.start,
+    end: prevToken.end,
+    line: prevToken.line,
+    column: prevToken.column,
+  } as IdentifierNode);
+
+  // Check for parameter list
+  if (ctx.check('(')) {
+    ctx.advance(); // consume '('
+
+    // Parse parameters (can be named or positional)
+    const params: Array<{ name?: string; value: ASTNode }> = [];
+
+    while (!ctx.isAtEnd() && !ctx.check(')')) {
+      // Check if this is a named parameter (identifier followed by ':')
+      const checkpoint = ctx.current;
+      let paramName: string | undefined;
+
+      if (ctx.checkTokenType(TokenType.IDENTIFIER)) {
+        const possibleName = ctx.peek().value;
+        ctx.advance(); // consume identifier
+
+        if (ctx.check(':')) {
+          // This is a named parameter
+          ctx.advance(); // consume ':'
+          paramName = possibleName;
+        } else {
+          // Not a named parameter, rewind
+          ctx.current = checkpoint;
+        }
+      }
+
+      // Parse the parameter value
+      const value = ctx.parseExpression();
+      params.push(paramName !== undefined ? { name: paramName, value } : { value });
+
+      // Check for comma separator
+      if (ctx.check(',')) {
+        ctx.advance();
+      } else if (!ctx.check(')')) {
+        // No comma and not at closing paren - might be end of params
+        break;
+      }
+    }
+
+    // Consume closing parenthesis
+    if (!ctx.check(')')) {
+      throw new Error('Expected ")" after behavior parameters');
+    }
+    ctx.advance();
+
+    // Add parameters as an object literal node
+    if (params.length > 0) {
+      args.push({
+        type: 'objectLiteral',
+        properties: params.map(param => ({
+          key: param.name
+            ? ({ type: 'identifier', name: param.name } as IdentifierNode)
+            : ({ type: 'literal', value: '_positional' } as LiteralNode),
+          value: param.value,
+        })),
+        start: commandToken.start,
+        end: ctx.getPosition().end,
+        line: commandToken.line,
+        column: commandToken.column,
+      } as any);
+    }
+  }
+
+  // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+  return CommandNodeBuilder.from(commandToken)
+    .withArgs(...args)
+    .endingAt(ctx.getPosition())
+    .build();
+}

@@ -53,6 +53,8 @@ import * as controlFlowCommands from './command-parsers/control-flow-commands';
 import * as animationCommands from './command-parsers/animation-commands';
 import * as domCommands from './command-parsers/dom-commands';
 import * as asyncCommands from './command-parsers/async-commands';
+import * as utilityCommands from './command-parsers/utility-commands';
+import * as variableCommands from './command-parsers/variable-commands';
 
 // Use core types for consistency
 export type ParseResult = CoreParseResult;
@@ -623,339 +625,13 @@ export class Parser {
   }
 
   private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
-    // Phase 1 Refactoring: Demonstrates new helpers
-    // Strategy 1: Parse expressions properly instead of primitives
-    // This handles complex expressions like: put (#count's textContent as Int) + 1 into #count
-
-    // Step 1: Parse the content expression (everything before operation keyword)
-    const contentExpr = this.parseExpression();
-
-    if (!contentExpr) {
-      this.addError('Put command requires content expression');
-      return null;
-    }
-
-    // Step 2: Look for operation keyword (into, before, after, at)
-    // Phase 1: Use constants instead of magic strings
-    const currentToken = this.peek();
-
-    if (!currentToken || !PUT_OPERATION_KEYWORDS.includes(currentToken.value as any)) {
-      this.addError(`Expected operation keyword (${PUT_OPERATION_KEYWORDS.join(', ')}) after put expression, got: ${currentToken?.value}`);
-      return null;
-    }
-
-    let operation = this.advance().value;  // consume 'into', 'before', 'after', or 'at'
-
-    // Step 3: Handle "at start of" / "at end of" multi-word operations
-    if (operation === PUT_OPERATIONS.AT) {
-      if (this.check(KEYWORDS.START) || this.check(KEYWORDS.THE)) {
-        if (this.check(KEYWORDS.THE)) {
-          this.advance();  // consume 'the'
-        }
-        if (this.check(KEYWORDS.START)) {
-          this.advance();  // consume 'start'
-          if (this.check(KEYWORDS.OF)) {
-            this.advance();  // consume 'of'
-            operation = PUT_OPERATIONS.AT_START_OF;
-          }
-        }
-      } else if (this.check(KEYWORDS.END)) {
-        this.advance();  // consume 'end'
-        if (this.check(KEYWORDS.OF)) {
-          this.advance();  // consume 'of'
-          operation = PUT_OPERATIONS.AT_END_OF;
-        }
-      }
-    }
-
-    // Step 4: Parse the target expression
-    const targetExpr = this.parseExpression();
-
-    if (!targetExpr) {
-      this.addError('Put command requires target expression after operation keyword');
-      return null;
-    }
-
-    // Step 5: Create command node using builder pattern
-    // Phase 1: Use CommandNodeBuilder instead of manual object creation
-    return CommandNodeBuilder.fromIdentifier(identifierNode)
-      .withArgs(contentExpr, this.createIdentifier(operation), targetExpr)
-      .endingAt(this.getPosition())
-      .build();
+    // Phase 9-3b: Delegate to extracted DOM command parser
+    return domCommands.parsePutCommand(this.getContext(), identifierNode);
   }
 
   private parseSetCommand(identifierNode: IdentifierNode): CommandNode | null {
-    // SIMPLIFIED APPROACH: Try to parse target as a single expression first
-    const startPosition = this.current;
-    let targetExpression: ASTNode | null = null;
-
-    try {
-      // Check for global variable prefix `::` or local prefix `:` FIRST (before any other parsing)
-      if (this.check(':')) {
-        this.advance(); // consume first `:`
-
-        // Check if this is `::variable` (global) or `:variable` (local)
-        if (this.check(':')) {
-          // This is `::variable` (explicit global scope)
-          this.advance(); // consume second `:`
-          const varToken = this.advance(); // get variable name
-          targetExpression = {
-            type: 'identifier',
-            name: varToken.value,
-            scope: 'global',
-            start: varToken.start - 2, // Include both `::` in the start position
-            end: varToken.end,
-          } as any;
-        } else {
-          // This is `:variable` (local scope)
-          const varToken = this.advance(); // get variable name
-          targetExpression = {
-            type: 'identifier',
-            name: varToken.value,
-            scope: 'local',
-            start: varToken.start - 1, // Include the `:` in the start position
-            end: varToken.end,
-          } as any;
-        }
-      }
-      // Check for scope modifiers (global/local) first
-      else if (this.check('global') || this.check('local')) {
-        const scopeToken = this.advance();
-        const variableToken = this.advance();
-
-        // Create a scoped variable target
-        targetExpression = {
-          type: 'identifier',
-          name: variableToken.value,
-          scope: scopeToken.value,
-          start: scopeToken.start,
-          end: variableToken.end,
-        } as any;
-
-        // Scoped variable parsed successfully
-      } else if (this.check('the')) {
-        // debug.parse('🎯 PARSER: detected "the" keyword! Proceeding with "X of Y" pattern recognition');
-
-        // Look ahead to check if this is actually a "the X of Y" pattern
-        // before consuming any tokens
-        const thePosition = this.current;
-        this.advance(); // consume 'the'
-
-        // Peek at next token to see if we have "X of Y" pattern
-        const nextToken = this.peek();
-        const tokenAfterNext =
-          this.current + 1 < this.tokens.length ? this.tokens[this.current + 1] : null;
-
-        // Only proceed with "the X of Y" parsing if we actually have "X of Y"
-        if (nextToken && tokenAfterNext && tokenAfterNext.value === 'of') {
-          // Get the property name (X)
-          const propertyToken = this.advance();
-          // debug.parse('🔍 PARSER: property token:', propertyToken?.value, 'type:', propertyToken?.type);
-
-          // Check for 'of' keyword
-          // debug.parse('🔍 PARSER: checking for "of" keyword, next token:', this.peek()?.value);
-          if (this.check('of')) {
-            // debug.parse('✅ PARSER: found "of" keyword, advancing');
-            this.advance(); // consume 'of'
-
-            // Get the target element (Y)
-            const targetToken = this.advance();
-            // debug.parse('🔍 PARSER: target token:', targetToken?.value, 'type:', targetToken?.type);
-
-            // Create a propertyOfExpression AST node
-            targetExpression = {
-              type: 'propertyOfExpression',
-              property: {
-                type: 'identifier',
-                name: propertyToken.value,
-                start: propertyToken.start,
-                end: propertyToken.end,
-              },
-              target: {
-                type: targetToken.type === TokenType.ID_SELECTOR ? 'idSelector' : 'cssSelector',
-                value: targetToken.value,
-                start: targetToken.start,
-                end: targetToken.end,
-              },
-              start: startPosition,
-              end: this.current,
-            };
-
-            // debug.parse('🔍 PARSER: created propertyOfExpression AST node', {
-            // property: propertyToken.value,
-            // target: targetToken.value,
-            // type: targetExpression.type
-            // });
-          } else {
-            // debug.parse('⚠️ PARSER: "the" not followed by "X of Y" pattern, reverting', {
-            // expectedOf: this.peek()?.value,
-            // position: this.current,
-            // startPosition
-            // });
-            this.current = startPosition;
-            targetExpression = null;
-          }
-        } else {
-          // Lookahead determined this is NOT a "the X of Y" pattern
-          // Revert to before consuming "the" and let token-by-token parsing handle it
-          // debug.parse('⚠️ PARSER: "the" not part of "X of Y" pattern, reverting');
-          this.current = thePosition;
-          targetExpression = null;
-        }
-      } else {
-        // Not a "the X of Y" pattern, try regular expression parsing
-        targetExpression = this.parseExpression();
-        // debug.parse('🔍 PARSER: regular expression parsing success', {
-        // type: targetExpression.type,
-        // value: (targetExpression as any).value || (targetExpression as any).name
-        // });
-      }
-    } catch (error) {
-      // console.error('⚠️ PARSER: direct "the X of Y" parsing failed, falling back to token-by-token', {
-      // error: (error as Error).message
-      // });
-      // Reset position and fall back to token-by-token parsing
-      this.current = startPosition;
-      targetExpression = null;
-    }
-
-    // If single expression parsing failed, fall back to collecting individual tokens
-    const targetTokens: ASTNode[] = [];
-    if (!targetExpression) {
-      debug.parse('🔍 PARSER (SET): Fallback token collection, current token:', this.peek().value);
-      // Check for local variable prefix `:` (hyperscript syntax for local variables)
-      if (this.match(':')) {
-        debug.parse('✅ PARSER (SET): Found `:` prefix, parsing local variable');
-        // Consume the `:` and get the variable name
-        const varToken = this.advance();
-        debug.parse('✅ PARSER (SET): Variable name after `:`:', varToken.value);
-        // Create a variable node with local scope
-        targetExpression = {
-          type: 'identifier',
-          name: varToken.value,
-          scope: 'local',
-          start: varToken.start,
-          end: varToken.end,
-        } as any;
-      } else {
-        debug.parse('🔍 PARSER (SET): No `:` prefix, collecting tokens until "to"');
-        // Original token collection logic
-        while (
-          !this.isAtEnd() &&
-          !this.check('to') &&
-          !this.check('then') &&
-          !this.check('and') &&
-          !this.check('else') &&
-          !this.check('end')
-        ) {
-          const token = this.parsePrimary();
-          targetTokens.push(token);
-        }
-      }
-
-      // debug.parse('🔍 PARSER: collected target tokens via fallback', {
-      // targetTokens: targetTokens.map(a => ({ type: a.type, value: (a as any).value || (a as any).name }))
-      // });
-
-      // Reconstruct complex expressions from collected tokens
-      if (targetTokens.length > 0) {
-        // Check if we have a "the X of Y" pattern in the tokens
-        if (
-          targetTokens.length >= 4 &&
-          (targetTokens[0] as any).value === 'the' &&
-          (targetTokens[2] as any).value === 'of'
-        ) {
-          // Create propertyOfExpression node
-          targetExpression = {
-            type: 'propertyOfExpression',
-            property: {
-              type: 'identifier',
-              name: (targetTokens[1] as any).value || (targetTokens[1] as any).name,
-              start: (targetTokens[1] as any).start,
-              end: (targetTokens[1] as any).end,
-            },
-            target: {
-              type: (targetTokens[3] as any).type === 'idSelector' ? 'idSelector' : 'cssSelector',
-              value: (targetTokens[3] as any).value || (targetTokens[3] as any).name,
-              start: (targetTokens[3] as any).start,
-              end: (targetTokens[3] as any).end,
-            },
-            start: (targetTokens[0] as any).start,
-            end: (targetTokens[3] as any).end,
-          };
-
-          // debug.parse('🔧 PARSER: reconstructed propertyOfExpression from tokens', {
-          // property: (targetTokens[1] as any).value,
-          // target: (targetTokens[3] as any).value,
-          // type: targetExpression.type
-          // });
-        } else if (targetTokens.length === 1) {
-          // Single token target (simple case like "count" or "myVar")
-          targetExpression = targetTokens[0];
-        } else {
-          // Multiple tokens but not "the X of Y" pattern
-          // Don't combine them into a single expression - leave as null
-          // and we'll add all tokens to finalArgs below
-          targetExpression = null;
-        }
-      }
-    }
-
-    // Expect 'to' keyword
-    if (!this.check('to')) {
-      const found = this.isAtEnd() ? 'end of input' : this.peek().value;
-      throw new Error(`Expected 'to' in set command, found: ${found}`);
-    }
-
-    this.advance(); // consume 'to'
-    // debug.parse('🔍 PARSER: consumed "to" keyword');
-
-    // Parse value (single expression after 'to')
-    // The value should be exactly ONE expression (e.g., count + 1, "string", variable)
-    // parseExpression() correctly handles expression boundaries and stops at 'then', 'and', etc.
-    const valueTokens: ASTNode[] = [];
-    const expr = this.parseExpression();
-    if (expr) {
-      valueTokens.push(expr);
-    } else {
-      // Fallback to primary if expression parsing fails
-      const primary = this.parsePrimary();
-      if (primary) {
-        valueTokens.push(primary);
-      }
-    }
-
-    // Build final args: target + 'to' + value tokens
-    const finalArgs: ASTNode[] = [];
-
-    if (targetExpression) {
-      // Single expression target
-      finalArgs.push(targetExpression);
-    } else if (targetTokens.length > 0) {
-      // Multiple tokens: add them all (e.g., ["the", "dragHandle"])
-      finalArgs.push(...targetTokens);
-    }
-
-    // Add 'to' keyword
-    finalArgs.push(this.createIdentifier('to'));
-
-    // Add all value tokens (runtime will handle combining them)
-    if (valueTokens.length > 0) {
-      finalArgs.push(...valueTokens);
-    }
-
-    const result = {
-      type: 'command' as const,
-      name: identifierNode.name,
-      args: finalArgs as ExpressionNode[],
-      isBlocking: false,
-      start: identifierNode.start || 0,
-      end: this.getPosition().end,
-      line: identifierNode.line || 1,
-      column: identifierNode.column || 1,
-    };
-
-    return result;
+    // Phase 9-3b: Delegate to extracted variable command parser
+    return variableCommands.parseSetCommand(this.getContext(), identifierNode);
   }
 
   /**
@@ -1346,101 +1022,12 @@ export class Parser {
   }
 
   /**
-   * Parse install command with support for named parameters
+   * Parse install command
    *
-   * Syntax:
-   *   install BehaviorName                        (simple installation)
-   *   install BehaviorName()                      (with empty params)
-   *   install BehaviorName(param1, param2)        (positional params)
-   *   install BehaviorName(name: value)           (named params)
-   *   install BehaviorName(name: value, name2: value2)  (multiple named params)
+   * Phase 9-3b: Delegated to extracted command parser
    */
   private parseInstallCommand(commandToken: Token): CommandNode {
-    const args: ASTNode[] = [];
-
-    // Parse behavior name (identifier)
-    if (!this.checkTokenType(TokenType.IDENTIFIER)) {
-      throw new Error('Expected behavior name after "install"');
-    }
-
-    const behaviorName = this.advance().value;
-    args.push({
-      type: 'identifier',
-      name: behaviorName,
-      start: this.previous().start,
-      end: this.previous().end,
-      line: this.previous().line,
-      column: this.previous().column,
-    } as IdentifierNode);
-
-    // Check for parameter list
-    if (this.check('(')) {
-      this.advance(); // consume '('
-
-      // Parse parameters (can be named or positional)
-      const params: Array<{ name?: string; value: ASTNode }> = [];
-
-      while (!this.isAtEnd() && !this.check(')')) {
-        // Check if this is a named parameter (identifier followed by ':')
-        const checkpoint = this.current;
-        let paramName: string | undefined;
-
-        if (this.checkTokenType(TokenType.IDENTIFIER)) {
-          const possibleName = this.peek().value;
-          this.advance(); // consume identifier
-
-          if (this.check(':')) {
-            // This is a named parameter
-            this.advance(); // consume ':'
-            paramName = possibleName;
-          } else {
-            // Not a named parameter, rewind
-            this.current = checkpoint;
-          }
-        }
-
-        // Parse the parameter value
-        const value = this.parseExpression();
-        params.push(paramName !== undefined ? { name: paramName, value } : { value });
-
-        // Check for comma separator
-        if (this.check(',')) {
-          this.advance();
-        } else if (!this.check(')')) {
-          // No comma and not at closing paren - might be end of params
-          break;
-        }
-      }
-
-      // Consume closing parenthesis
-      if (!this.check(')')) {
-        throw new Error('Expected ")" after behavior parameters');
-      }
-      this.advance();
-
-      // Add parameters as an object literal node
-      if (params.length > 0) {
-        args.push({
-          type: 'objectLiteral',
-          properties: params.map(param => ({
-            key: param.name
-              ? ({ type: 'identifier', name: param.name } as IdentifierNode)
-              : ({ type: 'literal', value: '_positional' } as LiteralNode),
-            value: param.value,
-          })),
-          start: commandToken.start,
-          end: this.getPosition().end,
-          line: commandToken.line,
-          column: commandToken.column,
-        } as any);
-      }
-    }
-
-    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
-    return CommandNodeBuilder.from(commandToken)
-      .withArgs(...args)
-      .endingAt(this.getPosition())
-      .build();
+    return asyncCommands.parseInstallCommand(this.getContext(), commandToken);
   }
 
   /**
@@ -1741,41 +1328,13 @@ export class Parser {
     return domCommands.parseToggleCommand(this.getContext(), identifierNode);
   }
 
+  /**
+   * Parse regular command
+   *
+   * Phase 9-3b: Delegated to extracted command parser
+   */
   private parseRegularCommand(identifierNode: IdentifierNode): CommandNode | null {
-    const args: ASTNode[] = [];
-
-    // Parse command arguments (space-separated, not comma-separated)
-    while (
-      !this.isAtEnd() &&
-      !this.check('then') &&
-      !this.check('and') &&
-      !this.check('else') &&
-      !this.check('end') &&
-      !this.checkTokenType(TokenType.COMMAND)
-    ) {
-      if (
-        this.checkTokenType(TokenType.CONTEXT_VAR) ||
-        this.checkTokenType(TokenType.IDENTIFIER) ||
-        this.checkTokenType(TokenType.KEYWORD) ||
-        this.checkTokenType(TokenType.CSS_SELECTOR) ||
-        this.checkTokenType(TokenType.ID_SELECTOR) ||
-        this.checkTokenType(TokenType.CLASS_SELECTOR) ||
-        this.checkTokenType(TokenType.STRING) ||
-        this.checkTokenType(TokenType.NUMBER) ||
-        this.checkTokenType(TokenType.TIME_EXPRESSION) ||
-        this.match('<')
-      ) {
-        args.push(this.parsePrimary());
-      } else {
-        break;
-      }
-    }
-
-    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
-    return CommandNodeBuilder.fromIdentifier(identifierNode)
-      .withArgs(...args)
-      .endingAt(this.getPosition())
-      .build();
+    return utilityCommands.parseRegularCommand(this.getContext(), identifierNode);
   }
 
   private parseCall(): ASTNode {
@@ -3275,70 +2834,8 @@ export class Parser {
    * Returns null if this command doesn't use multi-word syntax
    */
   private parseMultiWordCommand(commandToken: Token, commandName: string): CommandNode | null {
-    const pattern = this.getMultiWordPattern(commandName);
-    if (!pattern) return null;
-
-    const args: ASTNode[] = [];
-    const modifiers: Record<string, ExpressionNode> = {};
-
-    // Parse primary arguments (before any keywords)
-    // IMPORTANT: Use parsePrimary() instead of parseExpression() to avoid consuming modifiers
-    // For example, "fetch URL as json" should NOT parse "URL as json" as one expression
-    while (
-      !this.isAtEnd() &&
-      !this.isKeyword(this.peek(), pattern.keywords) &&
-      !this.check('then') &&
-      !this.check('and') &&
-      !this.check('else') &&
-      !this.check('end') &&
-      !this.checkTokenType(TokenType.COMMAND)
-    ) {
-      // Use parsePrimary() to parse just the value, not full expressions
-      // This prevents "URL as json" from being parsed as one expression
-      const expr = this.parsePrimary();
-      if (expr) {
-        args.push(expr);
-      } else {
-        break;
-      }
-
-      // Handle comma-separated arguments
-      if (this.match(',')) {
-        continue;
-      }
-
-      // Check if we're at a modifier keyword
-      if (this.isKeyword(this.peek(), pattern.keywords)) {
-        break;
-      }
-    }
-
-    // Parse modifiers (keywords + their arguments)
-    while (!this.isAtEnd() && this.isKeyword(this.peek(), pattern.keywords)) {
-      const keyword = this.advance().value;
-
-      // Parse the expression after the keyword
-      const modifierValue = this.parseExpression();
-      if (modifierValue) {
-        modifiers[keyword] = modifierValue as ExpressionNode;
-      }
-
-      // Check for more modifiers
-      if (!this.isKeyword(this.peek(), pattern.keywords)) {
-        break;
-      }
-    }
-
-    // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
-    const builder = CommandNodeBuilder.from(commandToken)
-      .withArgs(...args)
-      .endingAt(this.getPosition());
-
-    if (Object.keys(modifiers).length > 0) {
-      builder.withModifiers(modifiers);
-    }
-
-    return builder.build();
+    // Phase 9-3b: Delegate to extracted utility command parser
+    return utilityCommands.parseMultiWordCommand(this.getContext(), commandToken, commandName);
   }
 
   private parseCommand(): CommandNode {
