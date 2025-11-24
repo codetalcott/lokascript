@@ -2704,12 +2704,6 @@ export class Parser {
     return this.peek().type === tokenType;
   }
 
-  // @ts-expect-error - Reserved for future token lookahead
-  private _checkNext(value: string): boolean {
-    if (this.current + 1 >= this.tokens.length) return false;
-    return this.tokens[this.current + 1].value === value;
-  }
-
   private advance(): Token {
     if (!this.isAtEnd()) this.current++;
     return this.previous();
