@@ -168,7 +168,24 @@ export class ToggleCommand {
 
     // Evaluate first argument to determine toggle type
     const firstArg = raw.args[0];
-    const firstValue = await evaluator.evaluate(firstArg, context);
+
+    // CRITICAL: Check for selector nodes before evaluating
+    // Selector nodes (type: 'selector') should extract their value directly
+    // rather than being evaluated as DOM queries (which return empty NodeList)
+    let firstValue: unknown;
+    const argValue = (firstArg as any)?.value;
+    if (
+      ((firstArg as any)?.type === 'selector' ||
+       (firstArg as any)?.type === 'cssSelector' ||
+       (firstArg as any)?.type === 'classSelector') &&
+      typeof argValue === 'string'
+    ) {
+      // Extract value directly from selector node
+      firstValue = argValue;
+    } else {
+      // Evaluate normally for other node types
+      firstValue = await evaluator.evaluate(firstArg, context);
+    }
 
     // Pattern detection:
     // 1. Check if first value is an HTMLElement (smart element toggle)
