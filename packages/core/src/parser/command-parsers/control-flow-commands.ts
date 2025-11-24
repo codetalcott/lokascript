@@ -301,3 +301,230 @@ export function parseRepeatCommand(
     .endingAt(ctx.getPosition())
     .build();
 }
+
+/**
+ * Parse if command
+ *
+ * Syntax:
+ *   - if <condition> then ... end (multi-line with explicit 'then')
+ *   - if <condition> ... end (multi-line implicit, commands on different lines)
+ *   - if <condition> <command> (single-line, command on same line)
+ *   - if <condition> then ... else ... end (with else clause)
+ *
+ * This command creates conditional execution with support for:
+ * - Single-line and multi-line forms
+ * - Explicit 'then' keyword or implicit multi-line detection
+ * - Optional 'else' clause
+ * - Complex condition expressions
+ * - Automatic form detection via line position analysis
+ *
+ * Examples:
+ *   - if count > 10 then log 'high' end
+ *   - if isActive log 'active'
+ *   - if no dragHandle then set x to y else set x to z end
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param commandToken - The 'if' command token
+ * @returns CommandNode representing the if command
+ *
+ * Phase 9-3b: Extracted from Parser.parseIfCommand
+ */
+export function parseIfCommand(
+  ctx: ParserContext,
+  commandToken: Token
+): CommandNode {
+  const args: ASTNode[] = [];
+
+  // Check if this is multi-line:
+  // 1. Explicit 'then' keyword: if <condition> then ... end
+  // 2. Implicit multi-line (no 'then' but multiple commands on separate lines): if <condition>\n  <cmd>\n  <cmd>\n end
+  // 3. Single-line (no 'then', single command on same line): if <condition> <command>
+  const hasThen = ctx.check('then');
+
+  // Look ahead to check for multi-line form without 'then'
+  // We need to distinguish:
+  //   if no dragHandle set x to y    (single-line, command on SAME line as if)
+  //   if no dragHandle               (multi-line, command on DIFFERENT line)
+  //     log 'test'
+  //   end
+  // Key insight: Only check the FIRST command's line position
+  let hasImplicitMultiLineEnd = false;
+  if (!hasThen) {
+    const savedPosition = ctx.current;
+    const ifStatementLine = commandToken.line; // Line where 'if' keyword appears
+    const maxLookahead = 100;
+
+    // Scan forward to find the FIRST command after the condition
+    while (!ctx.isAtEnd() && ctx.current - savedPosition < maxLookahead) {
+      const token = ctx.peek();
+      const tokenValue = token.value?.toLowerCase();
+
+      // Stop at structural boundaries
+      if (
+        tokenValue === 'behavior' ||
+        tokenValue === 'def' ||
+        tokenValue === 'on' ||
+        tokenValue === 'end'
+      ) {
+        break;
+      }
+
+      // When we find the FIRST command, check its line position
+      if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(tokenValue)) {
+        // If first command is on a DIFFERENT line than if, it's multi-line
+        // If first command is on the SAME line as if, it's single-line
+        if (token.line !== undefined && token.line !== ifStatementLine) {
+          hasImplicitMultiLineEnd = true;
+        }
+        // Found first command, stop scanning
+        break;
+      }
+
+      ctx.advance();
+    }
+
+    ctx.current = savedPosition;
+  }
+
+  const isMultiLine = hasThen || hasImplicitMultiLineEnd;
+
+  let condition: ASTNode;
+  if (isMultiLine) {
+    // Multi-line form: parse condition using standard expression parser
+    // This works for both explicit (with 'then') and implicit (without 'then') forms
+    // because parseExpression naturally stops at command boundaries
+    condition = ctx.parseExpression();
+  } else {
+    // Single-line form: parse condition carefully, stopping at COMMAND tokens
+    // Parse tokens until we hit a command token (which will be the action)
+    const conditionTokens: ASTNode[] = [];
+    const maxIterations = 20; // Safety limit to prevent infinite loops
+    let iterations = 0;
+
+    while (
+      !ctx.isAtEnd() &&
+      !ctx.checkTokenType(TokenType.COMMAND) &&
+      !ctx.isCommand(ctx.peek().value) &&
+      !ctx.check('then') &&
+      iterations < maxIterations
+    ) {
+      const beforePos = ctx.current;
+      // Use parseLogicalAnd() to handle binary operators like 'is a' and unary operators like 'not'
+      // This is one level below parseLogicalOr() to avoid consuming 'or' which might be part of pattern syntax
+      conditionTokens.push(ctx.parseLogicalAnd());
+
+      // Safety check: ensure we're making progress
+      if (ctx.current === beforePos) {
+        // parseUnary didn't advance - manually advance to prevent infinite loop
+        ctx.advance();
+      }
+      iterations++;
+    }
+
+    // Combine condition tokens into a single expression
+    if (conditionTokens.length === 0) {
+      throw new Error('Expected condition after if/unless');
+    } else if (conditionTokens.length === 1) {
+      condition = conditionTokens[0];
+    } else {
+      // Multiple tokens - create a compound expression
+      condition = {
+        type: 'expression',
+        tokens: conditionTokens,
+        start: conditionTokens[0].start,
+        end: conditionTokens[conditionTokens.length - 1].end,
+        line: commandToken.line,
+        column: commandToken.column,
+      } as any;
+    }
+  }
+
+  args.push(condition);
+
+  if (isMultiLine) {
+    // Multi-line form: if condition then ... end (or if condition ... end)
+    if (hasThen) {
+      ctx.advance(); // consume 'then' if present
+    }
+
+    // Parse command block until 'else' or 'end'
+    const thenCommands: ASTNode[] = [];
+    while (!ctx.isAtEnd() && !ctx.check('else') && !ctx.check('end')) {
+      if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
+        ctx.advance(); // consume command token
+        const cmd = ctx.parseCommand();
+        if (cmd) {
+          thenCommands.push(cmd);
+        }
+      } else {
+        break;
+      }
+    }
+
+    // Add then block
+    args.push({
+      type: 'block',
+      commands: thenCommands,
+      start: commandToken.start,
+      end: ctx.getPosition().end,
+      line: commandToken.line,
+      column: commandToken.column,
+    } as any);
+
+    // Check for optional 'else' clause
+    if (ctx.check('else')) {
+      ctx.advance(); // consume 'else'
+
+      const elseCommands: ASTNode[] = [];
+      while (!ctx.isAtEnd() && !ctx.check('end')) {
+        if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
+          ctx.advance(); // consume command token
+          const cmd = ctx.parseCommand();
+          if (cmd) {
+            elseCommands.push(cmd);
+          }
+        } else {
+          break;
+        }
+      }
+
+      // Add else block
+      args.push({
+        type: 'block',
+        commands: elseCommands,
+        start: commandToken.start,
+        end: ctx.getPosition().end,
+        line: commandToken.line,
+        column: commandToken.column,
+      } as any);
+    }
+
+    // Consume 'end' for multi-line form
+    ctx.consume('end', "Expected 'end' after if block");
+  } else {
+    // Single-line form: if condition command
+    // Parse exactly one command (no 'end' expected)
+    if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
+      ctx.advance(); // consume command token
+      const singleCommand = ctx.parseCommand();
+
+      // Wrap single command in a block for consistency
+      args.push({
+        type: 'block',
+        commands: [singleCommand],
+        start: commandToken.start,
+        end: ctx.getPosition().end,
+        line: commandToken.line,
+        column: commandToken.column,
+      } as any);
+    } else {
+      throw new Error('Expected command after if condition in single-line form');
+    }
+  }
+
+  // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
+  return CommandNodeBuilder.from(commandToken)
+    .withArgs(...args)
+    .endingAt(ctx.getPosition())
+    .build();
+}
