@@ -107,8 +107,12 @@ export class AddCommand {
     // Handle CSS selector nodes directly without evaluation
     // For "add .active", .active is a selector node with value='.active'
     // not evaluated as a DOM query (which would return an empty NodeList)
+    //
+    // Parser creates TWO different node types:
+    // - { type: 'selector', value: '.active' } - uses 'value' property
+    // - { type: 'cssSelector', selectorType: 'class', selector: '.active' } - uses 'selector' property
     let firstValue: unknown;
-    const argValue = firstArg['value'];
+    const argValue = firstArg['value'] || firstArg['selector'];
     if (
       (firstArg.type === 'selector' || firstArg.type === 'cssSelector' || firstArg.type === 'classSelector') &&
       typeof argValue === 'string' &&
@@ -414,8 +418,20 @@ export class AddCommand {
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
   ): Promise<HTMLElement[]> {
+    // Filter out keyword identifiers (on, from, to, etc.) that are prepositions in syntax
+    // For "add .active to #box", args would be ['.active', 'to', '#box']
+    // We need to skip the 'to' identifier
+    const KEYWORD_PREPOSITIONS = ['on', 'from', 'to', 'in', 'with', 'at'];
+    const filteredArgs = args.filter(arg => {
+      const argAny = arg as any;
+      if (argAny?.type === 'identifier' && typeof argAny.name === 'string') {
+        return !KEYWORD_PREPOSITIONS.includes(argAny.name.toLowerCase());
+      }
+      return true;
+    });
+
     // Default to context.me if no target args
-    if (!args || args.length === 0) {
+    if (!filteredArgs || filteredArgs.length === 0) {
       if (!context.me) {
         throw new Error('add command: no target specified and context.me is null');
       }
@@ -427,7 +443,7 @@ export class AddCommand {
 
     const targets: HTMLElement[] = [];
 
-    for (const arg of args) {
+    for (const arg of filteredArgs) {
       const evaluated = await evaluator.evaluate(arg, context);
 
       if (evaluated instanceof HTMLElement) {

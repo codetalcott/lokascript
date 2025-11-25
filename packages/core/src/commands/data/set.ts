@@ -140,17 +140,21 @@ export class SetCommand {
     }
 
     // Extract first argument
-    const firstArg = raw.args[0];
+    const firstArg = raw.args[0] as any;
 
     // Handle identifier nodes directly without evaluation
     // For "set x to 42", x is an identifier node that should become a variable name
     // not evaluated as a variable lookup (which would return undefined)
+    //
+    // Parser may create:
+    // - { type: 'identifier', name: 'x' } - standard identifier
+    // - { type: 'variable', name: 'x' } - alternative variable node
     let firstValue: unknown;
-    const argName = firstArg['name'];
+    const argName = firstArg?.name || firstArg?.value;
 
     // Handle memberExpression for possessive property access: "set my innerHTML to X"
     // Parser creates: { type: 'memberExpression', object: {name: 'me'}, property: {name: 'innerHTML'} }
-    if (firstArg.type === 'memberExpression') {
+    if (firstArg?.type === 'memberExpression') {
       const objectNode = firstArg['object'] as { type: string; name?: string } | undefined;
       const propertyNode = firstArg['property'] as { type: string; name?: string } | undefined;
 
@@ -170,7 +174,12 @@ export class SetCommand {
       }
     }
 
-    if (firstArg.type === 'identifier' && typeof argName === 'string') {
+    // Check for identifier or variable node types
+    // These should NOT be evaluated (would return undefined for undefined variables)
+    if (
+      (firstArg?.type === 'identifier' || firstArg?.type === 'variable') &&
+      typeof argName === 'string'
+    ) {
       // Use identifier name directly for variable assignment
       firstValue = argName;
     } else {

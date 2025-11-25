@@ -172,8 +172,12 @@ export class ToggleCommand {
     // CRITICAL: Check for selector nodes before evaluating
     // Selector nodes (type: 'selector') should extract their value directly
     // rather than being evaluated as DOM queries (which return empty NodeList)
+    //
+    // Parser creates TWO different node types:
+    // - { type: 'selector', value: '.active' } - uses 'value' property
+    // - { type: 'cssSelector', selectorType: 'class', selector: '.active' } - uses 'selector' property
     let firstValue: unknown;
-    const argValue = (firstArg as any)?.value;
+    const argValue = (firstArg as any)?.value || (firstArg as any)?.selector;
     if (
       ((firstArg as any)?.type === 'selector' ||
        (firstArg as any)?.type === 'cssSelector' ||
@@ -387,8 +391,20 @@ export class ToggleCommand {
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
   ): Promise<HTMLElement[]> {
+    // Filter out keyword identifiers (on, from, to, etc.) that are prepositions in syntax
+    // For "toggle .active on #box", args would be ['.active', 'on', '#box']
+    // We need to skip the 'on' identifier
+    const KEYWORD_PREPOSITIONS = ['on', 'from', 'to', 'in', 'with', 'at'];
+    const filteredArgs = args.filter(arg => {
+      const argAny = arg as any;
+      if (argAny?.type === 'identifier' && typeof argAny.name === 'string') {
+        return !KEYWORD_PREPOSITIONS.includes(argAny.name.toLowerCase());
+      }
+      return true;
+    });
+
     // Default to context.me if no target args
-    if (!args || args.length === 0) {
+    if (!filteredArgs || filteredArgs.length === 0) {
       if (!context.me) {
         throw new Error('toggle command: no target specified and context.me is null');
       }
@@ -400,7 +416,7 @@ export class ToggleCommand {
 
     const targets: HTMLElement[] = [];
 
-    for (const arg of args) {
+    for (const arg of filteredArgs) {
       const evaluated = await evaluator.evaluate(arg, context);
 
       if (evaluated instanceof HTMLElement) {

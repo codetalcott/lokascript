@@ -93,10 +93,15 @@ export class IfCommand {
    * The condition is NOT evaluated here - it's passed as-is to execute()
    * which will evaluate it using the context at execution time.
    *
-   * Note: The parser should have already structured the AST with:
-   * - raw.args[0] = condition expression
-   * - raw.modifiers.then = then branch commands
-   * - raw.modifiers.else = else branch commands (optional)
+   * Note: The parser structures the AST in TWO possible ways:
+   * 1. Args-based (from parser):
+   *    - raw.args[0] = condition expression
+   *    - raw.args[1] = then block (type: 'block', commands: [...])
+   *    - raw.args[2] = else block (optional)
+   * 2. Modifiers-based (alternative):
+   *    - raw.args[0] = condition expression
+   *    - raw.modifiers.then = then branch commands
+   *    - raw.modifiers.else = else branch commands (optional)
    *
    * @param raw - Raw command node with args and modifiers from AST
    * @param evaluator - Expression evaluator for evaluating AST nodes
@@ -113,17 +118,29 @@ export class IfCommand {
       throw new Error('if command requires a condition to evaluate');
     }
 
+    // Determine then/else branches - check both args and modifiers
+    // Parser puts blocks in args[1]/args[2], but some paths may use modifiers
+    let thenCommands: any;
+    let elseCommands: any;
+
+    // Check args-based format first (primary parser output)
+    if (raw.args.length >= 2 && raw.args[1]) {
+      thenCommands = raw.args[1];
+      elseCommands = raw.args.length >= 3 ? raw.args[2] : undefined;
+    }
+    // Fallback to modifiers-based format
+    else if (raw.modifiers?.then) {
+      thenCommands = raw.modifiers.then;
+      elseCommands = raw.modifiers.else;
+    }
+
     // Validate that we have then commands
-    if (!raw.modifiers?.then) {
+    if (!thenCommands) {
       throw new Error('if command requires "then" branch with commands');
     }
 
     // Evaluate the condition
     const condition = await evaluator.evaluate(raw.args[0], context);
-
-    // Extract then and else branches (these are AST nodes, not evaluated)
-    const thenCommands = raw.modifiers.then;
-    const elseCommands = raw.modifiers.else;
 
     return {
       condition,

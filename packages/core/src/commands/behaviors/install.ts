@@ -108,7 +108,18 @@ export class InstallCommand {
     }
 
     // First arg is behavior name
-    const behaviorName = String(await evaluator.evaluate(raw.args[0], context));
+    // For "install Draggable", the behavior name is an identifier node
+    // that should NOT be evaluated (which would return undefined for an undefined variable)
+    const firstArg = raw.args[0] as any;
+    let behaviorName: string;
+
+    if (firstArg?.type === 'identifier' && typeof firstArg.name === 'string') {
+      // Extract identifier name directly (e.g., "Draggable")
+      behaviorName = firstArg.name;
+    } else {
+      // Evaluate for other node types (e.g., string literals)
+      behaviorName = String(await evaluator.evaluate(firstArg, context));
+    }
 
     // Validate PascalCase
     if (!/^[A-Z][a-zA-Z0-9_]*$/.test(behaviorName)) {
