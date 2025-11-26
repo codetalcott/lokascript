@@ -56,6 +56,21 @@ const defaultRuntime = new Runtime({
   lazyLoad: false, // Eager load all expressions synchronously
 });
 
+// Expose default runtime globally for behavior registration/lookup
+// This allows behaviors defined in <script type="text/hyperscript"> to be found by install command
+if (typeof globalThis !== 'undefined') {
+  (globalThis as any)._hyperscript = (globalThis as any)._hyperscript || {};
+  (globalThis as any)._hyperscript.runtime = defaultRuntime;
+  // Create a behaviors object with both Map-like has() and install() methods
+  (globalThis as any)._hyperscript.behaviors = {
+    has: (name: string) => defaultRuntime.behaviorRegistry.has(name),
+    get: (name: string) => defaultRuntime.behaviorRegistry.get(name),
+    install: async (name: string, element: HTMLElement, params: Record<string, any>) => {
+      return await (defaultRuntime as any).installBehaviorOnElement(name, element, params);
+    },
+  };
+}
+
 // ============================================================================
 // API Implementation
 // ============================================================================

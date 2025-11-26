@@ -147,12 +147,20 @@ export class TriggerCommand {
       if (funcCall.args && funcCall.args.length > 0) {
         detail = await this.parseEventDetail(funcCall.args, evaluator, context);
       }
+    } else if (firstType === 'identifier' || firstType === 'keyword') {
+      // For identifiers, extract the name directly (don't evaluate as variable)
+      eventName = (firstArg as any).name;
+    } else if (firstType === 'string' || firstType === 'literal') {
+      // For string literals, get the value
+      const val = (firstArg as any).value;
+      eventName = typeof val === 'string' ? val : String(val);
     } else {
-      // Simple event name
-      eventName = await evaluator.evaluate(firstArg, context);
-      if (typeof eventName !== 'string') {
-        throw new Error(`trigger command: event name must be a string, got ${typeof eventName}`);
+      // For other types, try evaluating
+      const evaluated = await evaluator.evaluate(firstArg, context);
+      if (typeof evaluated !== 'string') {
+        throw new Error(`trigger command: event name must be a string, got ${typeof evaluated}`);
       }
+      eventName = evaluated;
     }
 
     // Step 2: Find target keyword ('on')

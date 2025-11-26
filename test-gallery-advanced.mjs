@@ -17,8 +17,8 @@ async function testExample(page, name, url, testFn) {
   });
 
   try {
-    await page.goto(url, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(1000);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(500);
 
     // Check that HyperFixi loaded
     const hyperfixiLoaded = await page.evaluate(() => typeof hyperfixi !== 'undefined');
@@ -230,29 +230,59 @@ async function testExample(page, name, url, testFn) {
     '05 - State Machine',
     `${BASE_URL}/05-state-machine.html`,
     async (page) => {
-      // Get initial state
+      // Wait for init block to complete and set up the state machine
+      await page.waitForTimeout(500);
+
+      // Get initial state from the correct element (#current-state shows state text)
       const initialState = await page.evaluate(() => {
-        const stateElem = document.querySelector('.state, [class*="state"], [data-state]');
-        return stateElem ?
-          (stateElem.getAttribute('data-state') || stateElem.textContent?.trim())
-          : null;
+        const stateElem = document.querySelector('#current-state');
+        return stateElem?.textContent?.trim() ?? null;
       });
 
-      // Click button to transition state
-      const transitionBtn = page.locator('button').first();
-      await transitionBtn.click();
+      if (!initialState) {
+        console.log('  [debug] Initial state element not found');
+        return false;
+      }
+
+      console.log(`  [debug] Initial state: "${initialState}"`);
+
+      // Verify we start in "Shopping Cart" state (init sets :state to 'cart')
+      if (initialState !== 'Shopping Cart') {
+        console.log(`  [debug] Unexpected initial state, expected "Shopping Cart"`);
+        return false;
+      }
+
+      // Dispatch click event on the checkout button to trigger state transition
+      await page.evaluate(() => {
+        const checkoutBtn = document.querySelector('#btn-checkout');
+        if (checkoutBtn) {
+          checkoutBtn.click();
+        }
+      });
+
+      // Wait for state transition to complete
       await page.waitForTimeout(300);
 
       // Get new state
       const newState = await page.evaluate(() => {
-        const stateElem = document.querySelector('.state, [class*="state"], [data-state]');
-        return stateElem ?
-          (stateElem.getAttribute('data-state') || stateElem.textContent?.trim())
-          : null;
+        const stateElem = document.querySelector('#current-state');
+        return stateElem?.textContent?.trim() ?? null;
       });
 
-      // Verify state changed or at least state exists
-      return (initialState && newState) && (initialState !== newState || initialState.length > 0);
+      console.log(`  [debug] New state: "${newState}"`);
+
+      // Verify state changed from "Shopping Cart" to "Checkout"
+      const stateChanged = initialState !== newState && newState === 'Checkout';
+
+      // Also verify the active class moved to the checkout state box
+      const activeBoxCorrect = await page.evaluate(() => {
+        const activeBox = document.querySelector('.state-box.active');
+        return activeBox?.id === 'state-checkout';
+      });
+
+      console.log(`  [debug] State changed: ${stateChanged}, Active box correct: ${activeBoxCorrect}`);
+
+      return stateChanged && activeBoxCorrect;
     }
   );
   results.passed += test5 ? 1 : 0;

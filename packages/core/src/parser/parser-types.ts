@@ -139,8 +139,8 @@ export interface ParserContext {
   /** Array of tokens being parsed */
   readonly tokens: Token[];
 
-  /** Current position in token stream */
-  readonly current: number;
+  /** Current position in token stream (synced with parser via getter/setter) */
+  current: number;
 
   // ==========================================
   // Token Navigation Methods

@@ -354,7 +354,7 @@
 
                     -- Helper to update UI based on current state
                     on updateUI
-                      -- Update state boxes
+                      -- Update state boxes (remove .active from all)
                       for box in .state-box
                         remove .active from box
                       end

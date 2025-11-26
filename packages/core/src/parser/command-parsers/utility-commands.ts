@@ -117,10 +117,12 @@ export function parseRegularCommand(
     !ctx.check('end') &&
     !ctx.checkTokenType(TokenType.COMMAND)
   ) {
+    // Include EVENT tokens to allow DOM event names as arguments (e.g., 'send reset to #element')
     if (
       ctx.checkTokenType(TokenType.CONTEXT_VAR) ||
       ctx.checkTokenType(TokenType.IDENTIFIER) ||
       ctx.checkTokenType(TokenType.KEYWORD) ||
+      ctx.checkTokenType(TokenType.EVENT) ||
       ctx.checkTokenType(TokenType.CSS_SELECTOR) ||
       ctx.checkTokenType(TokenType.ID_SELECTOR) ||
       ctx.checkTokenType(TokenType.CLASS_SELECTOR) ||

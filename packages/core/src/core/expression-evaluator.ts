@@ -250,9 +250,31 @@ export class ExpressionEvaluator {
     exprCode: string,
     context: ExecutionContext
   ): Promise<any> {
-    debug.expressions('EVAL: Evaluating arithmetic expression:', exprCode);
+    debug.expressions('EVAL: Evaluating expression:', exprCode);
 
-    // Try to find an operator in the expression
+    // Handle ternary expressions: condition ? trueValue : falseValue
+    const ternaryMatch = exprCode.match(/^(.+?)\s*\?\s*(.+?)\s*:\s*(.+)$/);
+    if (ternaryMatch) {
+      const [, conditionExpr, trueExpr, falseExpr] = ternaryMatch;
+      debug.expressions('EVAL: Parsed ternary:', { conditionExpr, trueExpr, falseExpr });
+
+      // Evaluate condition
+      const conditionValue = await this.resolveValue(conditionExpr.trim(), context);
+      debug.expressions('EVAL: Ternary condition value:', conditionValue);
+
+      // Return appropriate branch
+      if (conditionValue) {
+        const trueValue = await this.resolveValue(trueExpr.trim(), context);
+        debug.expressions('EVAL: Ternary returned true branch:', trueValue);
+        return trueValue;
+      } else {
+        const falseValue = await this.resolveValue(falseExpr.trim(), context);
+        debug.expressions('EVAL: Ternary returned false branch:', falseValue);
+        return falseValue;
+      }
+    }
+
+    // Try to find an arithmetic operator in the expression
     // Match identifier/number, operator, identifier/number (with or without spaces)
     // Use a more specific pattern that matches identifiers
     const arithmeticMatch = exprCode.match(
@@ -347,6 +369,35 @@ export class ExpressionEvaluator {
       (name.startsWith("'") && name.endsWith("'"))
     ) {
       return name.slice(1, -1);
+    }
+
+    // Handle property access (e.g., "todoData.id", "userData.company.name")
+    if (name.includes('.')) {
+      const parts = name.split('.');
+      const baseName = parts[0];
+
+      // Resolve base object from context
+      let obj: any = null;
+      if (context.locals.has(baseName)) {
+        obj = context.locals.get(baseName);
+      } else if (context.variables && context.variables.has(baseName)) {
+        obj = context.variables.get(baseName);
+      } else if (context.globals && context.globals.has(baseName)) {
+        obj = context.globals.get(baseName);
+      }
+
+      if (obj !== null && obj !== undefined) {
+        // Navigate through property chain
+        for (let i = 1; i < parts.length; i++) {
+          if (obj === null || obj === undefined) {
+            debug.expressions(`RESOLVE: Property access failed at '${parts[i - 1]}' - value is null/undefined`);
+            return undefined;
+          }
+          obj = obj[parts[i]];
+        }
+        debug.expressions(`RESOLVE: Property access '${name}' =`, obj);
+        return obj;
+      }
     }
 
     // Return as-is if nothing else works

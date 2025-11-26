@@ -101,7 +101,18 @@ export class HaltCommand {
   ): Promise<HaltCommandInput> {
     // Check if we have arguments (e.g., "halt the event")
     if (raw.args && raw.args.length > 0) {
-      // Evaluate first argument
+      // Check for "halt the event" pattern by examining AST structure
+      // Parser produces: args = [{type: 'identifier', name: 'the'}, {type: 'identifier', name: 'event'}]
+      const firstArg = raw.args[0] as any;
+      const secondArg = raw.args.length > 1 ? raw.args[1] as any : null;
+
+      if (firstArg.type === 'identifier' && firstArg.name === 'the' &&
+          secondArg && secondArg.type === 'identifier' && secondArg.name === 'event') {
+        // Return the event from context directly
+        return { target: context.event };
+      }
+
+      // For other patterns, evaluate first argument
       const target = await evaluator.evaluate(raw.args[0], context);
       return { target };
     }

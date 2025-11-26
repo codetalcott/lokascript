@@ -155,6 +155,7 @@ export function parseTransitionCommand(
   commandToken: Token
 ) {
   const args: ASTNode[] = [];
+  const modifiers: Record<string, ExpressionNode> = {};
 
   // Parse optional target (if it looks like a selector or identifier followed by a property)
   let property: ASTNode | null = null;
@@ -207,7 +208,7 @@ export function parseTransitionCommand(
 
   args.push(property);
 
-  // Parse 'to' keyword and value (required)
+  // Parse 'to' keyword and value (required) - store in modifiers for V2 command
   if (!ctx.check('to')) {
     throw new Error('Expected "to" keyword after property in transition command');
   }
@@ -215,25 +216,26 @@ export function parseTransitionCommand(
 
   // Parse target value (can be template string, number, color, etc.)
   const value = ctx.parsePrimary();
-  args.push(value);
+  modifiers['to'] = value;
 
-  // Parse optional 'over <duration>'
+  // Parse optional 'over <duration>' - store in modifiers
   if (ctx.check('over')) {
     ctx.advance(); // consume 'over'
     const duration = ctx.parsePrimary();
-    args.push(duration);
+    modifiers['over'] = duration;
   }
 
-  // Parse optional 'with <timing-function>'
+  // Parse optional 'with <timing-function>' - store in modifiers
   if (ctx.check('with')) {
     ctx.advance(); // consume 'with'
     const timingFunction = ctx.parsePrimary();
-    args.push(timingFunction);
+    modifiers['with'] = timingFunction;
   }
 
   // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
   return CommandNodeBuilder.from(commandToken)
     .withArgs(...args)
+    .withModifiers(modifiers)
     .endingAt(ctx.getPosition())
     .build();
 }

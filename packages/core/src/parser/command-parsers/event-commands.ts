@@ -36,9 +36,43 @@ export function parseTriggerCommand(
   ctx: ParserContext,
   identifierNode: IdentifierNode
 ): CommandNode | null {
-  // Use the same flexible approach as put/set commands
+  // Special handling for event names with colons (e.g., "draggable:start")
+  // The tokenizer splits these into: identifier, ':', identifier
+  // We need to combine them into a single event name
   const allArgs: ASTNode[] = [];
 
+  // First, parse the event name (may include colons)
+  let eventName = '';
+  let eventStart = ctx.peek().start || 0;
+  let eventLine = ctx.peek().line || 1;
+  let eventColumn = ctx.peek().column || 1;
+
+  // Check if first token is an identifier (event name)
+  if (ctx.checkTokenType(TokenType.IDENTIFIER) || ctx.checkTokenType(TokenType.KEYWORD)) {
+    eventName = ctx.advance().value;
+
+    // Check for colon-separated parts (e.g., "draggable:start")
+    while (ctx.check(':') && !ctx.isAtEnd()) {
+      ctx.advance(); // consume ':'
+      eventName += ':';
+      // Next part should be an identifier or keyword
+      if (ctx.checkTokenType(TokenType.IDENTIFIER) || ctx.checkTokenType(TokenType.KEYWORD)) {
+        eventName += ctx.advance().value;
+      }
+    }
+
+    // Create a string literal node for the combined event name
+    allArgs.push({
+      type: 'string',
+      value: eventName,
+      start: eventStart,
+      end: ctx.getPosition().end,
+      line: eventLine,
+      column: eventColumn,
+    } as ASTNode);
+  }
+
+  // Continue parsing remaining args (on, target, etc.)
   while (
     !ctx.isAtEnd() &&
     !ctx.check('then') &&

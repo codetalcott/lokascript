@@ -643,10 +643,12 @@ export class Parser {
       !this.check('else') &&
       !this.checkTokenType(TokenType.COMMAND)
     ) {
+      // Include EVENT tokens to allow DOM event names as arguments (e.g., 'send reset to #element')
       if (
         this.checkTokenType(TokenType.CONTEXT_VAR) ||
         this.checkTokenType(TokenType.IDENTIFIER) ||
         this.checkTokenType(TokenType.KEYWORD) || // Add KEYWORD support for words like "into"
+        this.checkTokenType(TokenType.EVENT) ||
         this.checkTokenType(TokenType.CSS_SELECTOR) ||
         this.checkTokenType(TokenType.ID_SELECTOR) ||
         this.checkTokenType(TokenType.CLASS_SELECTOR) ||
@@ -1206,12 +1208,16 @@ export class Parser {
         currentToken.value === 'else' ||
         currentToken.value === 'then');
 
+    // Handle identifiers, keywords, events, and commands
+    // EVENT tokens (like 'reset', 'submit', 'click') should be treated as identifiers
+    // when used as arguments to commands like 'send reset to #element'
     if (
       !isStructuralKeyword &&
       (this.matchTokenType(TokenType.IDENTIFIER) ||
         this.matchTokenType(TokenType.KEYWORD) ||
         this.matchTokenType(TokenType.CONTEXT_VAR) ||
-        this.matchTokenType(TokenType.COMMAND))
+        this.matchTokenType(TokenType.COMMAND) ||
+        this.matchTokenType(TokenType.EVENT))
     ) {
       const token = this.previous();
 

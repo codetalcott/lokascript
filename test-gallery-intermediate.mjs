@@ -101,15 +101,16 @@ async function testExample(page, name, url, testFn) {
     '02 - Fetch Data',
     `${BASE_URL}/02-fetch-data.html`,
     async (page) => {
-      // Click button to fetch data
-      const fetchBtn = page.locator('button').first();
+      // Click the native fetch button
+      const fetchBtn = page.locator('#fetch-native-btn');
       await fetchBtn.click();
-      await page.waitForTimeout(2000); // Wait for fetch
+      await page.waitForTimeout(3000); // Wait for fetch
 
-      // Check if data was loaded
+      // Check if data was loaded and interpolated correctly
       const hasData = await page.evaluate(() => {
-        const container = document.querySelector('#data, .data, [class*="result"]');
-        return container && container.textContent.trim().length > 0;
+        const container = document.querySelector('#native-output');
+        // Check for actual interpolated content (not literal variable names)
+        return container && container.textContent.includes('Todo #1');
       });
 
       return hasData;
