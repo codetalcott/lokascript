@@ -20,10 +20,10 @@ test.describe('Gallery Example Regression Tests', () => {
       });
       await page.waitForTimeout(300);
 
-      // Increment counter several times
-      await page.click('button:has-text("Increment")');
-      await page.click('button:has-text("Increment")');
-      await page.click('button:has-text("Increment")');
+      // Increment counter several times (button text is "Increase")
+      await page.click('button:has-text("Increase")');
+      await page.click('button:has-text("Increase")');
+      await page.click('button:has-text("Increase")');
       await page.waitForTimeout(100);
 
       const countBefore = await page.textContent('#count');
@@ -47,8 +47,8 @@ test.describe('Gallery Example Regression Tests', () => {
 
       // Increment and reset multiple times
       for (let i = 0; i < 3; i++) {
-        await page.click('button:has-text("Increment")');
-        await page.click('button:has-text("Increment")');
+        await page.click('button:has-text("Increase")');
+        await page.click('button:has-text("Increase")');
         await page.click('button:has-text("Reset")');
         await page.waitForTimeout(50);
 
@@ -66,8 +66,8 @@ test.describe('Gallery Example Regression Tests', () => {
       });
       await page.waitForTimeout(300);
 
-      // Type into input
-      await page.type('#name-input', 'wim');
+      // Type into input (ID is 'name', not 'name-input')
+      await page.type('#name', 'wim');
       await page.waitForTimeout(100);
 
       // Should be exactly "wim", not "wwiwim" (concatenated)
@@ -82,13 +82,13 @@ test.describe('Gallery Example Regression Tests', () => {
       });
       await page.waitForTimeout(300);
 
-      // Type first value
-      await page.fill('#name-input', 'hello');
+      // Type first value (ID is 'name', not 'name-input')
+      await page.fill('#name', 'hello');
       await page.waitForTimeout(100);
       expect((await page.textContent('#name-mirror'))?.trim()).toBe('hello');
 
       // Clear and type new value
-      await page.fill('#name-input', 'world');
+      await page.fill('#name', 'world');
       await page.waitForTimeout(100);
       expect((await page.textContent('#name-mirror'))?.trim()).toBe('world');
     });
