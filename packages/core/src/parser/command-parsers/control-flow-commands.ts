@@ -494,35 +494,63 @@ export function parseIfCommand(
     } as any);
 
     // Check for optional 'else' clause
+    // Track if we consumed 'else if' (nested if handles its own 'end')
+    let consumedElseIf = false;
+
     if (ctx.check('else')) {
       ctx.advance(); // consume 'else'
 
-      const elseCommands: ASTNode[] = [];
-      while (!ctx.isAtEnd() && !ctx.check('end')) {
-        if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
-          ctx.advance(); // consume command token
-          const cmd = ctx.parseCommand();
-          if (cmd) {
-            elseCommands.push(cmd);
-          }
-        } else {
-          break;
-        }
-      }
+      // Check for 'else if' continuation (if is a KEYWORD token)
+      if (ctx.check('if') || ctx.checkTokenType(TokenType.KEYWORD) && ctx.peek().value === 'if') {
+        // This is 'else if' - recursively parse as a nested if command
+        // The nested if will consume its own 'end', which serves as the end for the entire chain
+        const ifToken = ctx.peek();
+        ctx.advance(); // consume 'if'
+        const elseIfCommand = parseIfCommand(ctx, ifToken);
 
-      // Add else block
-      args.push({
-        type: 'block',
-        commands: elseCommands,
-        start: commandToken.start,
-        end: ctx.getPosition().end,
-        line: commandToken.line,
-        column: commandToken.column,
-      } as any);
+        // Add the else-if as the else block (it's a nested if that shares our 'end')
+        args.push({
+          type: 'block',
+          commands: [elseIfCommand],
+          start: ifToken.start,
+          end: ctx.getPosition().end,
+          line: ifToken.line,
+          column: ifToken.column,
+        } as any);
+
+        consumedElseIf = true;
+      } else {
+        // Regular else block
+        const elseCommands: ASTNode[] = [];
+        while (!ctx.isAtEnd() && !ctx.check('end')) {
+          if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
+            ctx.advance(); // consume command token
+            const cmd = ctx.parseCommand();
+            if (cmd) {
+              elseCommands.push(cmd);
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Add else block
+        args.push({
+          type: 'block',
+          commands: elseCommands,
+          start: commandToken.start,
+          end: ctx.getPosition().end,
+          line: commandToken.line,
+          column: commandToken.column,
+        } as any);
+      }
     }
 
     // Consume 'end' for multi-line form
-    ctx.consume('end', "Expected 'end' after if block");
+    // Skip if we consumed 'else if' because the nested if already consumed 'end'
+    if (!consumedElseIf) {
+      ctx.consume('end', "Expected 'end' after if block");
+    }
   } else {
     // Single-line form: if condition command
     // Parse exactly one command (no 'end' expected)

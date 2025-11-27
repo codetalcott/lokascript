@@ -34,8 +34,10 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 /**
  * Insertion position types
+ * - 'replace' is used for "put X into Y" to replace content
+ * - Other positions are for relative insertion (before, after, at start, at end)
  */
-export type InsertPosition = 'beforeend' | 'afterend' | 'beforebegin' | 'afterbegin';
+export type InsertPosition = 'replace' | 'beforeend' | 'afterend' | 'beforebegin' | 'afterbegin';
 
 /**
  * Typed input for PutCommand
@@ -325,7 +327,7 @@ export class PutCommand {
   private mapPrepositionToPosition(preposition: string): InsertPosition {
     switch (preposition) {
       case 'into':
-        return 'beforeend';
+        return 'replace';
       case 'before':
         return 'beforebegin';
       case 'after':
@@ -423,6 +425,23 @@ export class PutCommand {
     content: string | HTMLElement,
     position: InsertPosition
   ): void {
+    // Handle 'replace' position - clear content first, then set
+    if (position === 'replace') {
+      if (content instanceof HTMLElement) {
+        target.innerHTML = '';
+        target.appendChild(content);
+      } else {
+        // Check if content contains HTML
+        const containsHTML = content.includes('<') && content.includes('>');
+        if (containsHTML) {
+          target.innerHTML = content;
+        } else {
+          target.textContent = content;
+        }
+      }
+      return;
+    }
+
     if (content instanceof HTMLElement) {
       // Insert element
       switch (position) {

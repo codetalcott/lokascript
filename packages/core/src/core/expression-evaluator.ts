@@ -549,6 +549,23 @@ export class ExpressionEvaluator {
       return Array.from(nodeList);
     }
 
+    // Special handling for 'matches' operator - use selector string directly
+    // Syntax: target matches .selector
+    // The right side should be treated as a selector string, not evaluated to elements
+    if (operator === 'matches' && (right.type === 'selector' || right.type === 'cssSelector' || right.type === 'classSelector')) {
+      const leftValue = await this.evaluate(left, context);
+      const selectorStr = right.value || right.selector;
+
+      if (leftValue && typeof leftValue.matches === 'function') {
+        try {
+          return leftValue.matches(selectorStr);
+        } catch {
+          return false; // Invalid selector
+        }
+      }
+      return false;
+    }
+
     // Evaluate operands normally for other operators
     const leftValue = await this.evaluate(left, context);
     const rightValue = await this.evaluate(right, context);
@@ -830,6 +847,19 @@ export class ExpressionEvaluator {
         }
         return false;
 
+      case 'matches':
+        // Check if DOM element matches a CSS selector
+        // Syntax: "target matches .selector" or "element matches .class"
+        if (leftValue && typeof leftValue.matches === 'function') {
+          const selectorStr = typeof rightValue === 'string' ? rightValue : String(rightValue);
+          try {
+            return leftValue.matches(selectorStr);
+          } catch {
+            return false; // Invalid selector
+          }
+        }
+        return false;
+
       case 'in':
         // DOM query within context (fallback for non-selector cases)
         // Note: Most common case (.selector in element) is handled before the switch
@@ -1023,20 +1053,21 @@ export class ExpressionEvaluator {
 
   /**
    * Evaluate CSS selector nodes
+   *
+   * Returns ALL matching elements using querySelectorAll.
+   * Commands like `remove .active from .tab` need all matches, not just the first.
    */
   private async evaluateSelector(
     node: { value: string },
     context: ExecutionContext
   ): Promise<HTMLElement[]> {
-    const selectorExpr = this.expressionRegistry.get('querySelector');
-    if (selectorExpr) {
-      const element = await selectorExpr.evaluate(context, node.value);
-      return element ? [element] : [];
-    }
-
-    // Fallback to basic querySelector
+    // Always use querySelectorAll to return ALL matching elements
+    // This is critical for commands like "remove .active from .tab"
+    // which need to target all elements with the class, not just the first one
     const elements = document.querySelectorAll(node.value);
-    return Array.from(elements) as HTMLElement[];
+    return Array.from(elements).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement
+    );
   }
 
   /**

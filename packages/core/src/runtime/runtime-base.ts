@@ -175,7 +175,12 @@ export class RuntimeBase {
                 runtime: this 
             });
         } catch (e) {
-             console.error(`Error executing command '${commandName}':`, e);
+             // Don't log HALT_EXECUTION errors - they're expected control flow
+             const isHaltError = e instanceof Error &&
+                 ((e as any).isHalt === true || e.message === 'HALT_EXECUTION');
+             if (!isHaltError) {
+                 console.error(`Error executing command '${commandName}':`, e);
+             }
              throw e;
         }
     }
@@ -391,12 +396,19 @@ export class RuntimeBase {
   ): Promise<void> {
     const { event, events, commands, target, args, selector, attributeName, watchTarget } = node as any;
     const eventNames = events && events.length > 0 ? events : [event];
-    
+
     let targets: HTMLElement[] = [];
+    let globalTarget: Window | Document | null = null;
 
     // Target Resolution
     if (target) {
-        if (typeof target === 'string' && context.locals.has(target)) {
+        // Check for global event sources (window, document)
+        const targetLower = typeof target === 'string' ? target.toLowerCase() : '';
+        if (targetLower === 'window' || targetLower === 'the window') {
+            globalTarget = window;
+        } else if (targetLower === 'document' || targetLower === 'the document' || targetLower === 'body') {
+            globalTarget = document;
+        } else if (typeof target === 'string' && context.locals.has(target)) {
             const resolved = context.locals.get(target);
             if (this.isElement(resolved)) targets = [resolved];
             else if (Array.isArray(resolved)) targets = resolved.filter(el => this.isElement(el));
@@ -408,7 +420,7 @@ export class RuntimeBase {
         targets = context.me ? [context.me as HTMLElement] : [];
     }
 
-    if (targets.length === 0) return;
+    if (targets.length === 0 && !globalTarget) return;
 
     // SPECIAL CASE 1: Mutation Observer
     if (event === 'mutation' && attributeName) {
@@ -486,10 +498,18 @@ export class RuntimeBase {
     };
 
     // Attach Listeners
-    for (const el of targets) {
+    if (globalTarget) {
+        // Attach to global event source (window or document)
         for (const evt of eventNames) {
-            el.addEventListener(evt, eventHandler);
-            // Optional: Store handler ref for cleanup if needed
+            globalTarget.addEventListener(evt, eventHandler);
+        }
+    } else {
+        // Attach to HTMLElement targets
+        for (const el of targets) {
+            for (const evt of eventNames) {
+                el.addEventListener(evt, eventHandler);
+                // Optional: Store handler ref for cleanup if needed
+            }
         }
     }
   }

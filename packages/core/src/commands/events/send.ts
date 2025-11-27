@@ -145,8 +145,15 @@ export class SendCommand {
       if (funcCall.args && funcCall.args.length > 0) {
         detail = await this.parseEventDetail(funcCall.args, evaluator, context);
       }
+    } else if (firstType === 'identifier') {
+      // For identifier nodes, extract the name directly (don't evaluate as variable)
+      // This handles cases like: send myEvent, send reset, send customEvent
+      eventName = (firstArg as any).name;
+    } else if (firstType === 'literal' || firstType === 'string') {
+      // For string literals, get the value directly
+      eventName = (firstArg as any).value;
     } else {
-      // Simple event name
+      // For other node types, try to evaluate
       eventName = await evaluator.evaluate(firstArg, context);
       if (typeof eventName !== 'string') {
         throw new Error(`send command: event name must be a string, got ${typeof eventName}`);

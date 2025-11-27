@@ -152,6 +152,55 @@ export class SetCommand {
     let firstValue: unknown;
     const argName = firstArg?.name || firstArg?.value;
 
+    // Handle possessiveExpression for element property/style access: "set #element's *opacity to X"
+    // Parser creates: { type: 'possessiveExpression', object: {selector}, property: {cssProperty} }
+    // Must handle BEFORE evaluation to extract element and property separately
+    if (firstArg?.type === 'possessiveExpression') {
+      const objectNode = firstArg['object'] as any;
+      const propertyNode = firstArg['property'] as any;
+
+      // Evaluate the object to get the element
+      let element = await evaluator.evaluate(objectNode, context);
+
+      // Handle array result from selector (querySelectorAll returns NodeList converted to array)
+      if (Array.isArray(element) && element.length > 0) {
+        element = element[0];
+      }
+
+      if (!(element instanceof HTMLElement)) {
+        throw new Error('set command: possessive object must resolve to an HTMLElement');
+      }
+
+      // Get property name
+      const propertyName = propertyNode?.name || propertyNode?.value;
+
+      if (!propertyName) {
+        throw new Error('set command: possessive property name not found');
+      }
+
+      const value = await this.extractValue(raw, evaluator, context);
+
+      // Check if it's a CSS style property (from *opacity syntax)
+      // Parser creates { type: 'cssProperty', name: 'opacity' } for *opacity
+      if (propertyNode?.type === 'cssProperty' || propertyName.startsWith('*')) {
+        const styleProp = propertyName.startsWith('*') ? propertyName.substring(1) : propertyName;
+        return {
+          type: 'style',
+          element,
+          property: styleProp,
+          value: String(value),
+        };
+      }
+
+      // Regular property assignment
+      return {
+        type: 'property',
+        element,
+        property: propertyName,
+        value,
+      };
+    }
+
     // Handle memberExpression for possessive property access: "set my innerHTML to X"
     // Parser creates: { type: 'memberExpression', object: {name: 'me'}, property: {name: 'innerHTML'} }
     if (firstArg?.type === 'memberExpression') {
