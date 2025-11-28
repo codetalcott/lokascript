@@ -145,7 +145,8 @@ async function evaluateIdentifier(node: any, context: ExecutionContext): Promise
   let value: any;
 
   // Handle context variables using Phase 3 reference expressions
-  if (name === 'me') {
+  // Note: 'I' is a _hyperscript alias for 'me' (case-sensitive to avoid conflict with loop var 'i')
+  if (name === 'me' || name === 'I') {
     value = referencesExpressions.me.evaluate(context);
   } else if (name === 'you') {
     value = referencesExpressions.you.evaluate(context);
@@ -248,6 +249,7 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
     case 'contains':
       return logicalExpressions.contains.evaluate(context, left, right);
 
+    case 'match':
     case 'matches':
       return logicalExpressions.matches.evaluate(context, left, right);
 

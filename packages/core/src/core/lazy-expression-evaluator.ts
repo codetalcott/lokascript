@@ -306,9 +306,27 @@ export class LazyExpressionEvaluator {
       case 'objectLiteral':
         return this.evaluateObjectLiteral(node as any, context);
 
+      case 'conditionalExpression':
+        return this.evaluateConditionalExpression(node as any, context);
+
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
+  }
+
+  /**
+   * Evaluate conditional expressions (if-then-else / ternary)
+   */
+  private async evaluateConditionalExpression(node: any, context: ExecutionContext): Promise<any> {
+    const test = await this.evaluateNode(node.test, context);
+
+    if (test) {
+      return this.evaluateNode(node.consequent, context);
+    } else if (node.alternate) {
+      return this.evaluateNode(node.alternate, context);
+    }
+
+    return undefined;
   }
 
   /**
@@ -320,12 +338,27 @@ export class LazyExpressionEvaluator {
   ): Promise<any> {
     const { name } = node;
 
-    // Check for special context variables first
+    // Handle context references FIRST - these return the element directly
+    // (before checking registry, since 'my'/'your'/'its' expressions expect property args)
+    if (name === 'me' || name === 'my' || name === 'I') {
+      return context.me;
+    }
+    if (name === 'you' || name === 'your') {
+      return context.you;
+    }
+    if (name === 'it' || name === 'its') {
+      return context.it;
+    }
+    if (name === 'result') {
+      return context.result;
+    }
+
+    // Check for special context variables
     if (name === 'event' && 'event' in context) {
       return (context as any).event;
     }
 
-    // Check if it's a built-in reference expression
+    // Check if it's a built-in reference expression (for other expressions)
     const expression = this.expressionRegistry.get(name);
     if (expression) {
       return expression.evaluate(context);
@@ -483,6 +516,20 @@ export class LazyExpressionEvaluator {
           return rightValue.includes(String(leftValue));
         } else if (rightValue && typeof rightValue === 'object') {
           return leftValue in rightValue;
+        }
+        return false;
+
+      case 'match':
+      case 'matches':
+        // Check if DOM element matches a CSS selector
+        // Syntax: "target matches .selector" or "element matches .class"
+        if (leftValue && typeof leftValue.matches === 'function') {
+          const selectorStr = typeof rightValue === 'string' ? rightValue : String(rightValue);
+          try {
+            return leftValue.matches(selectorStr);
+          } catch {
+            return false; // Invalid selector
+          }
         }
         return false;
 

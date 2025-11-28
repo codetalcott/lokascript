@@ -286,7 +286,8 @@ export class CommandRuntime {
       const name = expr.value;
 
       // Handle context variables
-      if (name === 'me') return context.me;
+      // Note: 'I' is a _hyperscript alias for 'me' (case-sensitive to avoid conflict with loop var 'i')
+      if (name === 'me' || name === 'I') return context.me;
       if (name === 'it') return context.it;
       if (name === 'event') return context.event;
 

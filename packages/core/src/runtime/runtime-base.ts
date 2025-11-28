@@ -168,17 +168,17 @@ export class RuntimeBase {
         // The Adapter (or the Command Implementation inside it) determines 
         // if it needs to evaluate arguments or treat them as raw AST.
         try {
-            return await adapter.execute(context, { 
-                args: args || [], 
+            return await adapter.execute(context, {
+                args: args || [],
                 modifiers: modifiers || {},
                 // Pass runtime reference just in case command needs to re-enter runtime
-                runtime: this 
+                runtime: this
             });
         } catch (e) {
-             // Don't log HALT_EXECUTION errors - they're expected control flow
-             const isHaltError = e instanceof Error &&
-                 ((e as any).isHalt === true || e.message === 'HALT_EXECUTION');
-             if (!isHaltError) {
+             // Don't log control flow errors - they're expected signals
+             const isControlFlowError = e instanceof Error &&
+                 ((e as any).isHalt === true || (e as any).isExit === true || e.message === 'HALT_EXECUTION' || e.message === 'EXIT_COMMAND');
+             if (!isControlFlowError) {
                  console.error(`Error executing command '${commandName}':`, e);
              }
              throw e;
@@ -472,11 +472,34 @@ export class RuntimeBase {
                 const result = await this.execute(command, eventContext);
                 if (result !== undefined) {
                     // Logic for extracting actual results from complex return types
-                    // (e.g. CallCommand result wrapper)
+                    // (e.g. CallCommand result wrapper, GetCommand { value }, etc.)
                     let val = result;
                     if (val && typeof val === 'object') {
-                        if ('result' in val && 'wasAsync' in val) val = (val as any).result;
-                        else if ('lastResult' in val && 'type' in val) val = (val as any).lastResult;
+                        const valObj = val as any;
+
+                        // CallCommand returns { result, wasAsync }
+                        if ('result' in valObj && 'wasAsync' in valObj) {
+                            val = valObj.result;
+                        }
+                        // RepeatCommand/IfCommand returns { type, lastResult } or { conditionResult, executedBranch }
+                        else if ('lastResult' in valObj && 'type' in valObj) {
+                            val = valObj.lastResult;
+                        }
+                        // IfCommand returns { conditionResult, executedBranch, result }
+                        // Don't clobber context.result with if command metadata - only update if branch produced a result
+                        else if ('conditionResult' in valObj && 'executedBranch' in valObj) {
+                            // Only update context.result if the branch actually produced a meaningful result
+                            if (valObj.result !== undefined) {
+                                val = valObj.result;
+                            } else {
+                                // Don't update it/result - the if command didn't produce a value
+                                continue;
+                            }
+                        }
+                        // GetCommand returns { value }
+                        else if ('value' in valObj && Object.keys(valObj).length === 1) {
+                            val = valObj.value;
+                        }
                     }
                     if (Array.isArray(val) && val.length > 0) val = val[0];
 

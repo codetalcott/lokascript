@@ -13,12 +13,12 @@ import { comparisonExpressions } from '../expressions/comparison/index';
 import { mathematicalExpressions } from '../expressions/mathematical/index';
 import { propertyExpressions } from '../expressions/property/index';
 import { positionalExpressions } from '../expressions/positional/index';
+import { logicalExpressions } from '../expressions/logical/index';
 
 // Import legacy conversion system for Date conversion compatibility
 import { conversionExpressions as legacyConversionExpressions } from '../expressions/conversion/index';
 
-// Create aliases for backward compatibility
-const logicalExpressions = comparisonExpressions;
+// Keep comparison alias for backward compatibility (logicalExpressions is now imported directly)
 const specialExpressions = mathematicalExpressions;
 // propertyExpressions already imported with correct name
 const conversionExpressions = legacyConversionExpressions; // Use legacy system for Date conversion
@@ -1406,8 +1406,9 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
     return value;
   }
 
-  // 3. Element scope - context variables (me, you, it, result)
-  if (name === 'me') return context.me;
+  // 3. Element scope - context variables (me, I, you, it, result)
+  // Note: 'I' is a _hyperscript alias for 'me' (case-sensitive to avoid conflict with loop var 'i')
+  if (name === 'me' || name === 'I') return context.me;
   if (name === 'you') return context.you;
   if (name === 'it') return context.it;
   if (name === 'result') return context.result;
@@ -1503,8 +1504,11 @@ async function evaluateBinaryExpression(node: any, context: ExecutionContext): P
     case '^':
     case '**':
       return Math.pow(Number(left), Number(right));
+    case 'match':
     case 'matches':
-      return String(left).match(new RegExp(String(right))) !== null;
+      // Use the CSS-aware matches expression from logicalExpressions
+      // This handles both DOM element CSS matching and string pattern matching
+      return logicalExpressions.matches.evaluate(context, left, right);
     case 'contains':
     case 'include':
     case 'includes':

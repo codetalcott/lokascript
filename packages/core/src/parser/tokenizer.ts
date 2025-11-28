@@ -173,6 +173,7 @@ const COMPARISON_OPERATORS = new Set([
   'include',
   'includes',
   'does not include',
+  'match',
   'matches',
   'exists',
   'does not exist',
@@ -1099,6 +1100,12 @@ function classifyIdentifier(value: string): TokenType {
 
   if (COMPARISON_OPERATORS.has(lowerValue)) {
     return TokenType.COMPARISON_OPERATOR;
+  }
+
+  // Special case: 'I' (uppercase only) is a _hyperscript alias for 'me'
+  // We check the original value to avoid conflict with lowercase 'i' used in loops
+  if (value === 'I') {
+    return TokenType.CONTEXT_VAR;
   }
 
   if (CONTEXT_VARS.has(lowerValue)) {

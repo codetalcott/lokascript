@@ -165,6 +165,7 @@ const COMPARISON_OPERATORS = new Set([
   'is',
   'is not',
   'contains',
+  'match',
   'matches',
   'exists',
 ]);
@@ -376,6 +377,12 @@ function tokenizeIdentifierOptimized(tokenizer: OptimizedTokenizer): void {
 }
 
 function classifyIdentifierOptimized(value: string): TokenType {
+  // Special case: 'I' (uppercase only) is a _hyperscript alias for 'me'
+  // Check original value to avoid conflict with lowercase 'i' used in loops
+  if (value === 'I') {
+    return TokenType.CONTEXT_VAR;
+  }
+
   // Fast lookup using pre-computed map
   const lowerValue = value.toLowerCase();
   const type = TOKEN_TYPE_MAP.get(lowerValue);

@@ -236,6 +236,7 @@ export const HYPERSCRIPT_KEYWORDS = new Set([
   'as',
   'in',
   'of',
+  'match',
   'matches',
   'contains',
   'exists',
