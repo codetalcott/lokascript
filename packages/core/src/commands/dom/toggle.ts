@@ -275,14 +275,34 @@ export class ToggleCommand {
           elements = await this.resolveTargets([firstArg], evaluator, context);
         }
 
-        // Check for mode specifier (e.g., "as modal")
+        // Check for mode specifier (e.g., "as modal" or "modal")
+        // Can come from:
+        // 1. raw.modifiers.as (parsed as "as modal" modifier)
+        // 2. raw.args[1] being "modal" directly
+        // 3. raw.args[1] being "as" and raw.args[2] being "modal"
         let mode: 'modal' | 'non-modal' = 'non-modal';
-        if (raw.args.length >= 2) {
+
+        // Check modifiers.as first (e.g., toggle #dialog as modal)
+        if (raw.modifiers?.as) {
+          const asValue = await evaluator.evaluate(raw.modifiers.as, context);
+          if (typeof asValue === 'string' && asValue.toLowerCase() === 'modal') {
+            mode = 'modal';
+          }
+        }
+
+        // Check args for modal specifier
+        if (mode === 'non-modal' && raw.args.length >= 2) {
           const secondArg = await evaluator.evaluate(raw.args[1], context);
           if (typeof secondArg === 'string') {
             const normalized = secondArg.toLowerCase();
             if (normalized === 'modal' || normalized === 'as modal') {
               mode = 'modal';
+            } else if (normalized === 'as' && raw.args.length >= 3) {
+              // Handle case where "as" and "modal" are separate args
+              const thirdArg = await evaluator.evaluate(raw.args[2], context);
+              if (typeof thirdArg === 'string' && thirdArg.toLowerCase() === 'modal') {
+                mode = 'modal';
+              }
             }
           }
         }
