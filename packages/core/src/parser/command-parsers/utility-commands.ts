@@ -297,19 +297,8 @@ export function parseJsCommand(
   const codeTokens: string[] = [];
   while (!ctx.check('end') && !ctx.isAtEnd()) {
     const token = ctx.advance();
-    // Preserve string delimiters for string tokens
-    if (token.type === TokenType.STRING) {
-      // Check if original value used single or double quotes
-      const raw = token.value;
-      // Token value is the string content, we need to add quotes back
-      if (raw.includes("'") && !raw.includes('"')) {
-        codeTokens.push(`"${raw}"`);
-      } else {
-        codeTokens.push(`'${raw}'`);
-      }
-    } else {
-      codeTokens.push(token.value);
-    }
+    // Token values already include quotes for strings, so use directly
+    codeTokens.push(token.value);
   }
   ctx.consume('end', 'Expected end after js code body');
 
