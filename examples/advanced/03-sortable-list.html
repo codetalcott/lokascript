@@ -464,11 +464,10 @@
                           set input to first #new-item-input
                           set title to input.value
                           if title is not '' then
-                            set list to first #task-list
-                            set num to list.children.length + 1
-                            js(title, num)
+                            js(title)
                               var template = document.getElementById('task-template');
                               var listEl = document.getElementById('task-list');
+                              var num = listEl.children.length + 1;
                               var clone = template.content.firstElementChild.cloneNode(true);
                               clone.querySelector('.item-number').textContent = num;
                               clone.querySelector('.item-title').textContent = title;
