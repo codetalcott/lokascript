@@ -262,6 +262,19 @@
         .status-message.show {
             display: block;
         }
+
+        /* Visual insertion marker */
+        #insert-marker {
+            position: fixed;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 100ms ease;
+            z-index: 1000;
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -314,33 +327,68 @@
                 </button>
             </div>
 
-            <ul id="task-list" class="sortable-list">
-                <li class="sortable-item" draggable="true"
-                    _="on dragstart
-                         add .dragging to me
-                         set the dataTransfer.effectAllowed to 'move'
-                         set the dataTransfer.dropEffect to 'move'
-                       on dragend
-                         remove .dragging from me
-                       on dragover
-                         halt the event
-                         set the dataTransfer.dropEffect to 'move'
-                         if I match .dragging then exit end
-                         add .drag-over to me
-                       on dragleave
-                         remove .drag-over from me
-                       on drop
-                         halt the event
-                         remove .drag-over from me
-                         if I match .dragging then exit end
-                         get first .dragging in #task-list
-                         if result exists
-                           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-                             call my.parentNode.insertBefore(result, my.nextSibling)
-                           else
-                             call my.parentNode.insertBefore(result, me)
-                           end
-                         end">
+            <!-- Visual insertion marker -->
+            <div id="insert-marker"></div>
+
+            <ul id="task-list" class="sortable-list"
+                _="on dragstart
+                     set item to target.closest('.sortable-item')
+                     if item is not null then
+                       add .dragging to item
+                       set the dataTransfer.effectAllowed to 'move'
+                     end
+
+                   on dragend
+                     get first .dragging in me
+                     if result is not null then remove .dragging from result end
+                     add { opacity: 0; } to #insert-marker
+
+                   on dragover
+                     halt the event
+                     set the dataTransfer.dropEffect to 'move'
+
+                     -- Find the drop target
+                     set dropTarget to target.closest('.sortable-item')
+                     if dropTarget is null then exit end
+                     if dropTarget matches .dragging then exit end
+
+                     -- Calculate position relative to target
+                     set box to dropTarget.getBoundingClientRect()
+                     set midpoint to box.top + box.height / 2
+                     if event.clientY < midpoint then
+                       set markerTop to box.top
+                     else
+                       set markerTop to box.bottom
+                     end
+
+                     -- Position the marker
+                     add { top: ${markerTop}px; left: ${box.left}px; width: ${box.width}px; opacity: 1; } to #insert-marker
+
+                   on dragleave
+                     if event.relatedTarget is null or not me.contains(event.relatedTarget) then
+                       add { opacity: 0; } to #insert-marker
+                     end
+
+                   on drop
+                     halt the event
+                     add { opacity: 0; } to #insert-marker
+
+                     -- Find drop target and dragged item
+                     set dropTarget to target.closest('.sortable-item')
+                     get first .dragging in me
+                     set draggedItem to result
+
+                     if dropTarget is null or draggedItem is null or dropTarget == draggedItem then exit end
+
+                     -- Insert before or after based on cursor position
+                     set box to dropTarget.getBoundingClientRect()
+                     set midpoint to box.top + box.height / 2
+                     if event.clientY < midpoint then
+                       call me.insertBefore(draggedItem, dropTarget)
+                     else
+                       call me.insertBefore(draggedItem, dropTarget.nextSibling)
+                     end">
+                <li class="sortable-item" draggable="true">
                     <span class="drag-handle">☰</span>
                     <span class="item-number">1</span>
                     <div class="item-content">
@@ -350,31 +398,7 @@
                     <button class="delete-btn" _="on click remove closest .sortable-item">×</button>
                 </li>
 
-                <li class="sortable-item" draggable="true"
-                    _="on dragstart
-                         add .dragging to me
-                         set the dataTransfer.effectAllowed to 'move'
-                       on dragend
-                         remove .dragging from me
-                       on dragover
-                         halt the event
-                         set the dataTransfer.dropEffect to 'move'
-                         if I match .dragging then exit end
-                         add .drag-over to me
-                       on dragleave
-                         remove .drag-over from me
-                       on drop
-                         halt the event
-                         remove .drag-over from me
-                         if I match .dragging then exit end
-                         get first .dragging in #task-list
-                         if result exists
-                           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-                             call my.parentNode.insertBefore(result, my.nextSibling)
-                           else
-                             call my.parentNode.insertBefore(result, me)
-                           end
-                         end">
+                <li class="sortable-item" draggable="true">
                     <span class="drag-handle">☰</span>
                     <span class="item-number">2</span>
                     <div class="item-content">
@@ -384,31 +408,7 @@
                     <button class="delete-btn" _="on click remove closest .sortable-item">×</button>
                 </li>
 
-                <li class="sortable-item" draggable="true"
-                    _="on dragstart
-                         add .dragging to me
-                         set the dataTransfer.effectAllowed to 'move'
-                       on dragend
-                         remove .dragging from me
-                       on dragover
-                         halt the event
-                         set the dataTransfer.dropEffect to 'move'
-                         if I match .dragging then exit end
-                         add .drag-over to me
-                       on dragleave
-                         remove .drag-over from me
-                       on drop
-                         halt the event
-                         remove .drag-over from me
-                         if I match .dragging then exit end
-                         get first .dragging in #task-list
-                         if result exists
-                           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-                             call my.parentNode.insertBefore(result, my.nextSibling)
-                           else
-                             call my.parentNode.insertBefore(result, me)
-                           end
-                         end">
+                <li class="sortable-item" draggable="true">
                     <span class="drag-handle">☰</span>
                     <span class="item-number">3</span>
                     <div class="item-content">
@@ -418,31 +418,7 @@
                     <button class="delete-btn" _="on click remove closest .sortable-item">×</button>
                 </li>
 
-                <li class="sortable-item" draggable="true"
-                    _="on dragstart
-                         add .dragging to me
-                         set the dataTransfer.effectAllowed to 'move'
-                       on dragend
-                         remove .dragging from me
-                       on dragover
-                         halt the event
-                         set the dataTransfer.dropEffect to 'move'
-                         if I match .dragging then exit end
-                         add .drag-over to me
-                       on dragleave
-                         remove .drag-over from me
-                       on drop
-                         halt the event
-                         remove .drag-over from me
-                         if I match .dragging then exit end
-                         get first .dragging in #task-list
-                         if result exists
-                           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-                             call my.parentNode.insertBefore(result, my.nextSibling)
-                           else
-                             call my.parentNode.insertBefore(result, me)
-                           end
-                         end">
+                <li class="sortable-item" draggable="true">
                     <span class="drag-handle">☰</span>
                     <span class="item-number">4</span>
                     <div class="item-content">
@@ -452,31 +428,7 @@
                     <button class="delete-btn" _="on click remove closest .sortable-item">×</button>
                 </li>
 
-                <li class="sortable-item" draggable="true"
-                    _="on dragstart
-                         add .dragging to me
-                         set the dataTransfer.effectAllowed to 'move'
-                       on dragend
-                         remove .dragging from me
-                       on dragover
-                         halt the event
-                         set the dataTransfer.dropEffect to 'move'
-                         if I match .dragging then exit end
-                         add .drag-over to me
-                       on dragleave
-                         remove .drag-over from me
-                       on drop
-                         halt the event
-                         remove .drag-over from me
-                         if I match .dragging then exit end
-                         get first .dragging in #task-list
-                         if result exists
-                           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-                             call my.parentNode.insertBefore(result, my.nextSibling)
-                           else
-                             call my.parentNode.insertBefore(result, me)
-                           end
-                         end">
+                <li class="sortable-item" draggable="true">
                     <span class="drag-handle">☰</span>
                     <span class="item-number">5</span>
                     <div class="item-content">
@@ -514,40 +466,63 @@
         <!-- Code Explanation -->
         <h2>The Code</h2>
 
-        <h3>Draggable List Item:</h3>
+        <h3>Event Delegation Pattern (Container-Level Handlers):</h3>
         <div class="code">
-&lt;li <span class="keyword">class</span>=<span class="string">"sortable-item"</span> <span class="keyword">draggable</span>=<span class="string">"true"</span>
+<span class="comment">&lt;!-- Visual insertion marker --&gt;</span>
+&lt;div <span class="keyword">id</span>=<span class="string">"insert-marker"</span>&gt;&lt;/div&gt;
+
+<span class="comment">&lt;!-- All drag handlers on the container, not each item --&gt;</span>
+&lt;ul <span class="keyword">id</span>=<span class="string">"task-list"</span>
     <span class="keyword">_</span>=<span class="string">"on dragstart
-         add .dragging to me
-         set the dataTransfer.effectAllowed to 'move'
+         set item to target.closest('.sortable-item')
+         if item is not null then
+           add .dragging to item
+           set the dataTransfer.effectAllowed to 'move'
+         end
 
        on dragend
-         remove .dragging from me
+         get first .dragging in me
+         if result is not null then remove .dragging from result end
+         add { opacity: 0; } to #insert-marker
 
        on dragover
          halt the event
-         set the dataTransfer.dropEffect to 'move'
-         if I match .dragging then exit end
-         add .drag-over to me
+         set dropTarget to target.closest('.sortable-item')
+         if dropTarget is null then exit end
+         if dropTarget matches .dragging then exit end
 
-       on dragleave
-         remove .drag-over from me
+         -- Position insertion marker
+         set box to dropTarget.getBoundingClientRect()
+         set midpoint to box.top + box.height / 2
+         if event.clientY < midpoint then
+           set markerTop to box.top
+         else
+           set markerTop to box.bottom
+         end
+         add { top: ${markerTop}px; left: ${box.left}px;
+               width: ${box.width}px; opacity: 1; } to #insert-marker
 
        on drop
          halt the event
-         remove .drag-over from me
-         if I match .dragging then exit end
-         get first .dragging in #task-list
-         if result exists
-           if event.clientY > my.offsetTop + (my.offsetHeight / 2)
-             call my.parentNode.insertBefore(result, my.nextSibling)
-           else
-             call my.parentNode.insertBefore(result, me)
-           end
+         add { opacity: 0; } to #insert-marker
+         set dropTarget to target.closest('.sortable-item')
+         get first .dragging in me
+         set draggedItem to result
+         if dropTarget is null or draggedItem is null then exit end
+
+         set box to dropTarget.getBoundingClientRect()
+         if event.clientY < box.top + box.height / 2 then
+           call me.insertBefore(draggedItem, dropTarget)
+         else
+           call me.insertBefore(draggedItem, dropTarget.nextSibling)
          end"</span>&gt;
-  &lt;span class="drag-handle"&gt;☰&lt;/span&gt;
-  &lt;div class="item-content"&gt;Task content&lt;/div&gt;
-&lt;/li&gt;
+
+  <span class="comment">&lt;!-- Items are simple - no individual handlers needed --&gt;</span>
+  &lt;li <span class="keyword">class</span>=<span class="string">"sortable-item"</span> <span class="keyword">draggable</span>=<span class="string">"true"</span>&gt;
+    &lt;span class="drag-handle"&gt;☰&lt;/span&gt;
+    &lt;div class="item-content"&gt;Task content&lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
         </div>
 
         <h3>Delete Item:</h3>
@@ -573,19 +548,21 @@
             <ul>
                 <li><code>draggable="true"</code> - Makes element draggable</li>
                 <li><code>on dragstart</code> - Fired when drag begins, adds visual feedback</li>
-                <li><code>on dragover</code> - Fired when dragging over element, shows drop zone</li>
+                <li><code>on dragover</code> - Fired when dragging over element, positions marker</li>
                 <li><code>on drop</code> - Fired when dropped, reorders the items</li>
                 <li><code>halt the event</code> - Prevents default browser behavior</li>
                 <li><code>insertBefore()</code> - Repositions elements in the DOM</li>
+                <li><code>add { ... } to #marker</code> - CSS template literals for dynamic styling</li>
             </ul>
 
             <h3>Key Concepts:</h3>
             <ul>
+                <li><strong>Event Delegation:</strong> All handlers on container, not each item (DRY principle)</li>
+                <li><strong>Visual Marker:</strong> Fixed-position line shows precise drop location</li>
+                <li><strong>CSS Template Literals:</strong> <code>add { top: ${y}px; }</code> for dynamic styles</li>
                 <li><strong>Drag Events:</strong> dragstart, dragend, dragover, dragleave, drop</li>
-                <li><strong>Visual Feedback:</strong> Add/remove classes during drag operations</li>
-                <li><strong>Position Detection:</strong> Use event.clientY to determine drop position</li>
+                <li><strong>Position Detection:</strong> Use event.clientY and getBoundingClientRect()</li>
                 <li><strong>DOM Manipulation:</strong> insertBefore() to reorder elements</li>
-                <li><strong>Event Handling:</strong> halt prevents default browser drag behavior</li>
             </ul>
 
             <h3>Drag Event Sequence:</h3>
