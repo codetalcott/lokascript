@@ -466,15 +466,12 @@
                           if title is not '' then
                             set list to #task-list
                             set num to list.children.length + 1
-                            js
-                              var listEl = locals.get('list');
-                              var titleVal = locals.get('title');
-                              var numVal = locals.get('num');
+                            js(list, title, num)
                               var template = document.getElementById('task-template');
                               var clone = template.content.firstElementChild.cloneNode(true);
-                              clone.querySelector('.item-number').textContent = numVal;
-                              clone.querySelector('.item-title').textContent = titleVal;
-                              listEl.appendChild(clone);
+                              clone.querySelector('.item-number').textContent = num;
+                              clone.querySelector('.item-title').textContent = title;
+                              list.appendChild(clone);
                               return clone;
                             end
                             set newItem to it

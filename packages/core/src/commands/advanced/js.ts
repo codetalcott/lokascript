@@ -9,17 +9,17 @@
  * Features:
  * - Execute JavaScript code using new Function()
  * - Access to hyperscript context (me, it, you, locals, globals)
- * - Optional parameter passing
+ * - Optional parameter passing - parameters are looked up from locals
  * - Result stored in context.it
  * - Error handling with context
  *
  * Syntax:
  *   js <code> end
- *   js([param1, param2]) <code> end
+ *   js(param1, param2) <code> end
  *
  * @example
  *   js console.log("Hello World") end
- *   js([x, y]) return x + y end
+ *   js(x, y) return x + y end
  *   js me.style.color = "red" end
  */
 
@@ -67,12 +67,12 @@ export class JsCommand {
    */
   static readonly metadata = {
     description: 'Execute inline JavaScript code with access to hyperscript context',
-    syntax: ['js <code> end', 'js([params]) <code> end'],
+    syntax: ['js <code> end', 'js(param1, param2) <code> end'],
     examples: [
       'js console.log("Hello") end',
-      'js([x, y]) return x + y end',
+      'js(x, y) return x + y end',
       'js me.style.color = "red" end',
-      'js([element]) element.classList.add("active") end',
+      'js(element) element.classList.add("active") end',
     ],
     category: 'advanced',
     sideEffects: ['code-execution', 'data-mutation'],
@@ -81,6 +81,10 @@ export class JsCommand {
   /**
    * Parse raw AST nodes into typed command input
    *
+   * The parser now provides:
+   * - args[0]: literal node with code string
+   * - args[1]: arrayLiteral node with parameter names
+   *
    * @param raw - Raw command node with args and modifiers from AST
    * @param evaluator - Expression evaluator for evaluating AST nodes
    * @param context - Execution context with me, you, it, etc.
@@ -88,22 +92,37 @@ export class JsCommand {
    */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
-    evaluator: ExpressionEvaluator,
-    context: ExecutionContext
+    _evaluator: ExpressionEvaluator,
+    _context: ExecutionContext
   ): Promise<JsCommandInput> {
     let code: string;
     let parameters: string[] | undefined;
 
-    // Check if first arg is parameters array
-    if (raw.args.length >= 2 && Array.isArray(raw.args[0])) {
-      // Format: js([param1, param2]) <code> end
-      parameters = raw.args[0] as string[];
-      code = String(await evaluator.evaluate(raw.args[1], context));
-    } else if (raw.args.length >= 1) {
-      // Format: js <code> end
-      code = String(await evaluator.evaluate(raw.args[0], context));
+    if (raw.args.length === 0) {
+      throw new Error('js command requires JavaScript code');
+    }
+
+    // New format from parseJsCommand:
+    // args[0] = { type: 'literal', value: 'code string' }
+    // args[1] = { type: 'arrayLiteral', elements: [{type: 'literal', value: 'paramName'}, ...] }
+    const codeNode = raw.args[0] as ASTNode & { value?: unknown };
+    const paramsNode = raw.args[1] as ASTNode & { elements?: Array<ASTNode & { value?: unknown }> };
+
+    // Extract code from literal node
+    if (codeNode && codeNode.type === 'literal' && typeof codeNode.value === 'string') {
+      code = codeNode.value;
+    } else if (codeNode && typeof codeNode.value !== 'undefined') {
+      // Fallback: value might be directly on the node
+      code = String(codeNode.value);
     } else {
       throw new Error('js command requires JavaScript code');
+    }
+
+    // Extract parameter names from arrayLiteral node
+    if (paramsNode && paramsNode.type === 'arrayLiteral' && Array.isArray(paramsNode.elements)) {
+      parameters = paramsNode.elements
+        .map((el) => (typeof el.value === 'string' ? el.value : String(el.value)))
+        .filter((p) => p && p.length > 0);
     }
 
     return {

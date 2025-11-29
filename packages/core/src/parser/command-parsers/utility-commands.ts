@@ -73,6 +73,8 @@ export function parseCompoundCommand(
       return controlFlowCommands.parseHaltCommand(ctx, identifierNode);
     case 'measure':
       return animationCommands.parseMeasureCommand(ctx, identifierNode);
+    case 'js':
+      return parseJsCommand(ctx, identifierNode);
     default:
       // Fallback to regular parsing
       return parseRegularCommand(ctx, identifierNode);
@@ -243,4 +245,98 @@ export function parseMultiWordCommand(
   }
 
   return builder.build();
+}
+
+/**
+ * Parse js command
+ *
+ * Syntax:
+ *   js <code> end
+ *   js(param1, param2, ...) <code> end
+ *
+ * This parser handles the inline JavaScript command which allows executing
+ * raw JavaScript code with access to hyperscript context variables.
+ *
+ * When parameters are specified, they are extracted as identifier names (strings)
+ * and their values are looked up from context.locals at runtime.
+ *
+ * The JavaScript code body is reconstructed from tokens until 'end' keyword.
+ *
+ * Examples:
+ *   - js console.log("Hello") end
+ *   - js(x, y) return x + y end
+ *   - js(element) element.classList.add("active") end
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param identifierNode - The command identifier node
+ * @returns CommandNode representing the js command
+ */
+export function parseJsCommand(
+  ctx: ParserContext,
+  identifierNode: IdentifierNode
+): CommandNode {
+  const parameters: string[] = [];
+
+  // Check for optional parameters: js(param1, param2)
+  if (ctx.match('(')) {
+    while (!ctx.check(')') && !ctx.isAtEnd()) {
+      // Collect parameter names as identifier strings
+      if (ctx.checkTokenType(TokenType.IDENTIFIER)) {
+        parameters.push(ctx.advance().value);
+      } else if (ctx.checkTokenType(TokenType.CONTEXT_VAR)) {
+        // Also allow context vars like 'me', 'it', etc.
+        parameters.push(ctx.advance().value);
+      }
+      // Skip commas between parameters
+      ctx.match(',');
+    }
+    ctx.consume(')', 'Expected ) after js parameters');
+  }
+
+  // Collect tokens until 'end' keyword and reconstruct code
+  const codeTokens: string[] = [];
+  while (!ctx.check('end') && !ctx.isAtEnd()) {
+    const token = ctx.advance();
+    // Preserve string delimiters for string tokens
+    if (token.type === TokenType.STRING) {
+      // Check if original value used single or double quotes
+      const raw = token.value;
+      // Token value is the string content, we need to add quotes back
+      if (raw.includes("'") && !raw.includes('"')) {
+        codeTokens.push(`"${raw}"`);
+      } else {
+        codeTokens.push(`'${raw}'`);
+      }
+    } else {
+      codeTokens.push(token.value);
+    }
+  }
+  ctx.consume('end', 'Expected end after js code body');
+
+  const code = codeTokens.join(' ');
+
+  // Build args: first arg is code string, second is parameters array
+  const codeNode: ASTNode = {
+    type: 'literal',
+    value: code,
+    start: identifierNode.start,
+    end: ctx.getPosition().end,
+  };
+
+  const paramsNode: ASTNode = {
+    type: 'arrayLiteral',
+    elements: parameters.map((p) => ({
+      type: 'literal',
+      value: p,
+      start: identifierNode.start,
+      end: identifierNode.end,
+    })),
+    start: identifierNode.start,
+    end: ctx.getPosition().end,
+  };
+
+  return CommandNodeBuilder.fromIdentifier(identifierNode)
+    .withArgs(codeNode, paramsNode)
+    .endingAt(ctx.getPosition())
+    .build();
 }
