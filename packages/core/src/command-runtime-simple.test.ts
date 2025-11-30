@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CommandRuntime } from './command-runtime';
-import type { CommandNode } from './hyperscript-parser';
+import type { CommandNode } from './types/core';
 import { createMutableTestContext } from './test-helpers/context-factory';
 
 describe('CommandRuntime - Simple Tests', () => {

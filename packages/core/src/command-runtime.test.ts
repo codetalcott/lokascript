@@ -1,7 +1,66 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CommandRuntime } from './command-runtime';
-import { parseHyperscript } from './hyperscript-parser';
+import { parse } from './parser/parser';
 import { createMutableTestContext } from './test-helpers/context-factory';
+
+/**
+ * Helper to wrap main parser output in program-style format
+ * This mirrors the wrapAsProgramNode function in hyperscript-api.ts
+ */
+function parseHyperscript(code: string): { success: boolean; node?: any; error?: any } {
+  const result = parse(code);
+
+  if (!result.success || !result.node) {
+    return {
+      success: false,
+      error: result.error || { message: 'Parse error', line: 1, column: 1 },
+    };
+  }
+
+  const node = result.node;
+
+  // Determine the feature keyword based on node type
+  let keyword: string;
+  let body: any[];
+
+  if (node.type === 'eventHandler') {
+    keyword = 'on';
+    body = node.commands || [node];
+  } else if (node.type === 'command') {
+    keyword = 'command';
+    body = [node];
+  } else if (node.type === 'def' || node.type === 'function') {
+    keyword = 'def';
+    body = [node];
+  } else if (node.type === 'init') {
+    keyword = 'init';
+    body = [node];
+  } else if (node.type === 'behavior') {
+    keyword = 'behavior';
+    body = [node];
+  } else {
+    keyword = 'command';
+    body = [node];
+  }
+
+  const feature = {
+    type: 'feature',
+    keyword,
+    body,
+    children: body,
+    source: '',
+  };
+
+  return {
+    success: true,
+    node: {
+      type: 'program',
+      features: [feature],
+      source: code,
+      children: [feature],
+    },
+  };
+}
 
 // Mock DOM environment
 const mockElement = {
@@ -62,7 +121,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "Hello" into me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       // Should convert to fragment and append
@@ -76,7 +135,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "Hello" into #target');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockDocument.getElementById).toHaveBeenCalledWith('target');
@@ -89,7 +148,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "Hello" into .target');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockDocument.querySelector).toHaveBeenCalledWith('.target');
@@ -99,7 +158,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript("put 'test' into my innerHTML");
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       // Should set innerHTML property
@@ -110,7 +169,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "value" into @data-test');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.setAttribute).toHaveBeenCalledWith('data-test', 'value');
@@ -120,7 +179,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "red" into *color');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(context.me.style.color).toBe('red');
@@ -132,7 +191,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('add .active to me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.classList.add).toHaveBeenCalledWith('active');
@@ -142,7 +201,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('add active to me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.classList.add).toHaveBeenCalledWith('active');
@@ -152,7 +211,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('add @disabled to me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.setAttribute).toHaveBeenCalledWith('disabled', '');
@@ -164,7 +223,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('remove .active from me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.classList.remove).toHaveBeenCalledWith('active');
@@ -174,7 +233,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('remove @disabled from me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.removeAttribute).toHaveBeenCalledWith('disabled');
@@ -186,7 +245,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('toggle .active on me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.classList.toggle).toHaveBeenCalledWith('active');
@@ -198,7 +257,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('toggle @disabled on me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.hasAttribute).toHaveBeenCalledWith('disabled');
@@ -211,7 +270,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('toggle @disabled on me');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(mockElement.hasAttribute).toHaveBeenCalledWith('disabled');
@@ -224,7 +283,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('set myVar to "hello"');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect((context as any).myVar).toBe('hello');
@@ -236,7 +295,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('log "test message"');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(console.log).toHaveBeenCalledWith('test message');
@@ -248,7 +307,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('log myVar');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(console.log).toHaveBeenCalledWith('hello world');
@@ -260,7 +319,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('unknownCommand "test"');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
 
       await expect(runtime.executeCommand(command, context)).rejects.toThrow(
         'Unknown command: unknownCommand'
@@ -273,7 +332,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('put "hello" into #nonexistent');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
 
       // Should not throw
       await expect(runtime.executeCommand(command, context)).resolves.toBeUndefined();
@@ -287,7 +346,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript('log it');
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(console.log).toHaveBeenCalledWith('test value');
@@ -300,7 +359,7 @@ describe('CommandRuntime', () => {
       const result = parseHyperscript("log myObj's prop");
       expect(result.success).toBe(true);
 
-      const command = result.result!.features[0].body[0];
+      const command = result.node!.features[0].body[0];
       await runtime.executeCommand(command, context);
 
       expect(console.log).toHaveBeenCalledWith('test value');

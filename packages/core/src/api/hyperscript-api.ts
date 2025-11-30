@@ -4,7 +4,6 @@
  */
 
 import { parse as parseToResult } from '../parser/parser';
-import { parseHyperscript } from '../hyperscript-parser';
 import { tokenize } from '../parser/tokenizer';
 import { Runtime, type RuntimeOptions } from '../runtime/runtime';
 import { createContext, createChildContext } from '../core/context';
@@ -77,6 +76,62 @@ if (typeof globalThis !== 'undefined') {
 // ============================================================================
 
 /**
+ * Wrap main parser AST output in program-style format for API compatibility
+ * Transforms: { type: 'command', name: 'log', ... }
+ * Into: { type: 'program', features: [{ type: 'feature', keyword: 'command', body: [...] }] }
+ */
+function wrapAsProgramNode(node: ASTNode, source: string): ASTNode {
+  // Determine the feature keyword based on node type
+  let keyword: string;
+  let body: ASTNode[];
+
+  if (node.type === 'eventHandler') {
+    keyword = 'on';
+    // Extract commands from event handler
+    body = (node as { commands?: ASTNode[] }).commands || [node];
+  } else if (node.type === 'command') {
+    keyword = 'command';
+    body = [node];
+  } else if (node.type === 'def' || node.type === 'function') {
+    keyword = 'def';
+    body = [node];
+  } else if (node.type === 'init') {
+    keyword = 'init';
+    body = [node];
+  } else if (node.type === 'behavior') {
+    keyword = 'behavior';
+    body = [node];
+  } else {
+    // Default: wrap as command feature
+    keyword = 'command';
+    body = [node];
+  }
+
+  const feature: ASTNode = {
+    type: 'feature',
+    keyword,
+    body,
+    children: body,
+    source: '',
+    start: node.start || 0,
+    end: node.end || 0,
+    line: node.line || 1,
+    column: node.column || 1,
+  };
+
+  return {
+    type: 'program',
+    features: [feature],
+    source,
+    children: [feature],
+    start: 0,
+    end: source.length,
+    line: 1,
+    column: 1,
+  } as ASTNode;
+}
+
+/**
  * Parse hyperscript code and return AST directly
  * Compatible with official _hyperscript.parse() API
  * Throws an error if parsing fails
@@ -86,11 +141,11 @@ function parse(code: string): ASTNode {
     throw new TypeError('Code must be a string');
   }
 
-  // Use parseHyperscript for program-style AST (type: 'program' with features array)
-  const result = parseHyperscript(code);
+  // Use main parser and wrap result in program-style format
+  const result = parseToResult(code);
 
   if (result.success && result.node) {
-    return result.node;
+    return wrapAsProgramNode(result.node, code);
   }
 
   // Throw error with details if parsing failed
