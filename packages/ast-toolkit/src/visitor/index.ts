@@ -11,7 +11,8 @@ import type { ASTNode, VisitorHandlers, VisitorContext } from '../types.js';
 class VisitorContextImpl implements VisitorContext {
   private _skipped = false;
   private _stopped = false;
-  private _replaced: ASTNode | null = null;
+  private _replaced: ASTNode | ASTNode[] | null | undefined = undefined;
+  private _hasReplacement = false;
   private _path: (string | number)[] = [];
   private _parent: ASTNode | null = null;
   private _scope = new Map<string, any>();
@@ -29,8 +30,9 @@ class VisitorContextImpl implements VisitorContext {
     this._stopped = true;
   }
 
-  replace(node: ASTNode): void {
+  replace(node: ASTNode | ASTNode[] | null): void {
     this._replaced = node;
+    this._hasReplacement = true;
   }
 
   getPath(): (string | number)[] {
@@ -58,8 +60,12 @@ class VisitorContextImpl implements VisitorContext {
     return this._stopped;
   }
 
-  get replacement(): ASTNode | null {
+  get replacement(): ASTNode | ASTNode[] | null | undefined {
     return this._replaced;
+  }
+
+  get hasReplacement(): boolean {
+    return this._hasReplacement;
   }
 
   createChild(key: string | number, parent: ASTNode): VisitorContextImpl {
@@ -81,7 +87,7 @@ export class ASTVisitor {
   /**
    * Visit a node and its children
    */
-  visit(node: ASTNode, context: VisitorContextImpl): ASTNode | null {
+  visit(node: ASTNode, context: VisitorContextImpl): ASTNode | ASTNode[] | null {
     if (!node) return null;
 
     // Call enter handler
@@ -95,9 +101,9 @@ export class ASTVisitor {
       typeHandler(node, context);
     }
 
-    // Check if traversal should stop
-    if (context.stopped) {
-      return context.replacement || node;
+    // Check if traversal should stop or replacement was set
+    if (context.stopped || context.hasReplacement) {
+      return context.replacement as ASTNode | ASTNode[] | null;
     }
 
     // Check if children should be skipped
@@ -114,7 +120,11 @@ export class ASTVisitor {
       this.handlers.exit(node, context);
     }
 
-    return context.replacement || node;
+    // Return replacement if set, otherwise return the (possibly modified) node
+    if (context.hasReplacement) {
+      return context.replacement as ASTNode | ASTNode[] | null;
+    }
+    return node;
   }
 
   /**
@@ -138,13 +148,18 @@ export class ASTVisitor {
           if (this.isASTNode(item)) {
             const childContext = context.createChild(`${key}/${i}`, node);
             const visitedChild = this.visit(item, childContext);
-            if (visitedChild) {
+            if (visitedChild === null) {
+              // Node was removed
+              modified = true;
+            } else if (Array.isArray(visitedChild)) {
+              // Node was replaced with multiple nodes - spread them
+              newArray.push(...visitedChild);
+              modified = true;
+            } else {
               newArray.push(visitedChild);
               if (visitedChild !== item) {
                 modified = true;
               }
-            } else {
-              modified = true; // Child was removed
             }
             if (childContext.stopped) {
               break;
@@ -325,13 +340,24 @@ export function measureDepth(ast: ASTNode): number {
  */
 export function countNodeTypes(ast: ASTNode): Record<string, number> {
   const counts: Record<string, number> = {};
-  
+
   const visitor = new ASTVisitor({
     enter(node) {
       counts[node.type] = (counts[node.type] || 0) + 1;
     }
   });
-  
+
   visit(ast, visitor);
   return counts;
 }
+
+/**
+ * Create a new visitor context for use in transformations
+ * This is the factory function to create a proper VisitorContextImpl
+ */
+export function createVisitorContext(): VisitorContextImpl {
+  return new VisitorContextImpl();
+}
+
+// Export the implementation class for type compatibility
+export { VisitorContextImpl };

@@ -3,7 +3,8 @@
  * Provides a clean, type-safe public interface for hyperscript compilation and execution
  */
 
-import { parse } from '../parser/parser';
+import { parse as parseToResult } from '../parser/parser';
+import { parseHyperscript } from '../hyperscript-parser';
 import { tokenize } from '../parser/tokenizer';
 import { Runtime, type RuntimeOptions } from '../runtime/runtime';
 import { createContext, createChildContext } from '../core/context';
@@ -43,7 +44,7 @@ export interface HyperscriptAPI {
 
   // Advanced
   createRuntime(options?: RuntimeOptions): Runtime;
-  parse: typeof parse;
+  parse(code: string): ASTNode;
 }
 
 // ============================================================================
@@ -76,6 +77,33 @@ if (typeof globalThis !== 'undefined') {
 // ============================================================================
 
 /**
+ * Parse hyperscript code and return AST directly
+ * Compatible with official _hyperscript.parse() API
+ * Throws an error if parsing fails
+ */
+function parse(code: string): ASTNode {
+  if (typeof code !== 'string') {
+    throw new TypeError('Code must be a string');
+  }
+
+  // Use parseHyperscript for program-style AST (type: 'program' with features array)
+  const result = parseHyperscript(code);
+
+  if (result.success && result.node) {
+    return result.node;
+  }
+
+  // Throw error with details if parsing failed
+  const errorMsg = result.error?.message || 'Unknown parse error';
+  const error = new Error(`Parse error: ${errorMsg}`);
+  if (result.error) {
+    (error as any).line = result.error.line;
+    (error as any).column = result.error.column;
+  }
+  throw error;
+}
+
+/**
  * Compile hyperscript code into an Abstract Syntax Tree (AST)
  */
 function compile(code: string): CompilationResult {
@@ -94,7 +122,7 @@ function compile(code: string): CompilationResult {
 
   try {
     debug.runtime('COMPILE: about to call parse()');
-    const parseResult = parse(code);
+    const parseResult = parseToResult(code);
     debug.runtime('COMPILE: parse() returned', {
       success: parseResult.success,
       hasNode: !!parseResult.node,
@@ -421,7 +449,7 @@ function processHyperscriptAttribute(element: Element, hyperscriptCode: string):
       // Also try to parse manually to get more details
       try {
         console.error(`🔧 Attempting manual parse for debugging...`);
-        const parseResult = parse(hyperscriptCode);
+        const parseResult = parseToResult(hyperscriptCode);
         console.error(`🔧 Manual parse result:`, {
           success: parseResult.success,
           errorCount: parseResult.error ? 1 : 0,

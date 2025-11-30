@@ -529,14 +529,16 @@ describe('Optimization Suggestions', () => {
 describe('Pattern Analysis', () => {
   it('should detect common patterns', () => {
     const ast = createSimpleAST();
-    
+
     const patterns = analyzePatterns(ast);
-    
-    expect(patterns).toContainEqual({
-      type: 'event-handler',
-      confidence: expect.any(Number),
-      suggestion: expect.any(String)
-    });
+
+    expect(patterns).toContainEqual(
+      expect.objectContaining({
+        type: 'event-handler',
+        confidence: expect.any(Number),
+        suggestion: expect.any(String)
+      })
+    );
   });
 
   it('should detect toggle patterns', () => {

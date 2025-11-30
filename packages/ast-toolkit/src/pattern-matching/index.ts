@@ -246,41 +246,76 @@ function matchTokensToAst(
   const astValues = extractAstValues(ast);
   let matchedTokens = 0;
   let tokenIndex = 0;
-  
-  for (const value of astValues) {
-    if (tokenIndex >= tokens.length) break;
+  let astIndex = 0;
 
+  // Syntactic keywords that may not appear in AST values
+  const syntacticKeywords = new Set(['on', 'to', 'from', 'into', 'then', 'else', 'in', 'at', 'of', 'with']);
+
+  while (tokenIndex < tokens.length && astIndex <= astValues.length) {
     const token = tokens[tokenIndex];
     if (!token) break;
 
+    // Skip syntactic keywords that aren't in the AST
+    if (token.type === 'keyword' && syntacticKeywords.has(token.value.toLowerCase())) {
+      matchedTokens++; // Count as matched since it's structural
+      tokenIndex++;
+      continue;
+    }
+
+    // If we've exhausted AST values but still have non-syntactic tokens
+    if (astIndex >= astValues.length) {
+      break;
+    }
+
+    const value = astValues[astIndex];
+
     switch (token.type) {
       case 'keyword':
-        if (value === token.value) {
-          matchedTokens++;
-          tokenIndex++;
-        }
-        break;
-      
       case 'literal':
-        if (value === token.value) {
+        if (value === token.value || value?.toLowerCase() === token.value.toLowerCase()) {
           matchedTokens++;
           tokenIndex++;
+          astIndex++;
+        } else {
+          // Try to find this token in remaining AST values
+          const foundIndex = astValues.slice(astIndex).findIndex(
+            v => v === token.value || v?.toLowerCase() === token.value.toLowerCase()
+          );
+          if (foundIndex >= 0) {
+            astIndex += foundIndex;
+          } else {
+            // Token not found, skip it
+            tokenIndex++;
+          }
         }
         break;
-      
+
       case 'variable':
         bindings[token.value] = value;
         matchedTokens++;
         tokenIndex++;
+        astIndex++;
         break;
-      
+
       case 'wildcard':
         matchedTokens++;
         tokenIndex++;
+        astIndex++;
         break;
     }
   }
-  
+
+  // Count remaining syntactic keywords as matched
+  while (tokenIndex < tokens.length) {
+    const token = tokens[tokenIndex];
+    if (token && token.type === 'keyword' && syntacticKeywords.has(token.value.toLowerCase())) {
+      matchedTokens++;
+      tokenIndex++;
+    } else {
+      break;
+    }
+  }
+
   return tokens.length > 0 ? matchedTokens / tokens.length : 0;
 }
 

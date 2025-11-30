@@ -119,10 +119,12 @@ export interface AnalysisResult {
 // ============================================================================
 
 export interface PatternMatch {
+  type?: string;
   pattern: string;
   node: ASTNode;
-  bindings: Record<string, ASTNode>;
+  bindings: Record<string, any>;
   confidence: number;
+  suggestion?: string;
 }
 
 export interface PatternTemplate {
@@ -140,6 +142,8 @@ export interface TransformOptions {
   minify?: boolean;
   preserveComments?: boolean;
   batchOperations?: boolean;
+  batchSimilarOperations?: boolean;
+  redundantClassOperations?: boolean;
 }
 
 export interface OptimizationPass {
@@ -184,10 +188,10 @@ export interface SimilarityMatch {
 }
 
 export interface CodeSuggestion {
-  type: 'simplification' | 'optimization' | 'refactoring' | 'modernization';
+  type: 'simplification' | 'optimization' | 'refactoring' | 'modernization' | 'batch-operations';
   description: string;
   suggestion: string;
-  impact: 'readability' | 'performance' | 'maintainability';
+  impact: 'readability' | 'performance' | 'maintainability' | 'high' | 'medium' | 'low';
   confidence: number;
 }
 

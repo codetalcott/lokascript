@@ -48,31 +48,66 @@ export function query(ast: ASTNode | null, selector: string): QueryMatch | null 
  */
 export function queryAll(ast: ASTNode | null, selector: string): QueryMatch[] {
   if (!ast) return [];
-  
+
   // Handle multiple selectors (comma-separated)
   const selectorParts = selector.split(',').map(s => s.trim());
   const allMatches: QueryMatch[] = [];
-  
+
   for (const selectorPart of selectorParts) {
     const parsedSelector = parseSingleSelector(selectorPart);
     const matches: QueryMatch[] = [];
-    
-    const visitor = new ASTVisitor({
-      enter(node, context) {
-        if (matchesSelector(node, parsedSelector, context)) {
-          matches.push({
-            node,
-            path: context.getPath(),
-            matches: extractCaptures(node, parsedSelector)
-          });
+
+    // Track ancestors during traversal
+    const ancestorStack: ASTNode[] = [];
+
+    function traverse(node: ASTNode, path: string[], parent: ASTNode | null, siblingIndex: number, siblings: ASTNode[]) {
+      // Create a context-like object with ancestor access
+      const queryContext = {
+        getParent: () => parent,
+        getPath: () => path,
+        getAncestors: () => [...ancestorStack],
+        getSiblingIndex: () => siblingIndex,
+        getSiblings: () => siblings
+      };
+
+      if (matchesSelector(node, parsedSelector, queryContext)) {
+        matches.push({
+          node,
+          path: [...path],
+          matches: extractCaptures(node, parsedSelector)
+        });
+      }
+
+      // Add current node to ancestor stack before visiting children
+      ancestorStack.push(node);
+
+      // Visit all children
+      for (const [key, value] of Object.entries(node)) {
+        if (key === 'type' || key === 'start' || key === 'end' || key === 'line' || key === 'column') {
+          continue;
+        }
+
+        if (Array.isArray(value)) {
+          const childNodes = value.filter((v: any) => v && typeof v === 'object' && typeof v.type === 'string') as ASTNode[];
+          for (let i = 0; i < value.length; i++) {
+            const item = value[i];
+            if (item && typeof item === 'object' && typeof item.type === 'string') {
+              traverse(item, [...path, `${key}/${i}`], node, i, childNodes);
+            }
+          }
+        } else if (value && typeof value === 'object' && typeof (value as any).type === 'string') {
+          traverse(value as ASTNode, [...path, key], node, 0, [value as ASTNode]);
         }
       }
-    });
-    
-    visit(ast, visitor);
+
+      // Remove from ancestor stack when leaving
+      ancestorStack.pop();
+    }
+
+    traverse(ast, [], null, 0, [ast]);
     allMatches.push(...matches);
   }
-  
+
   return allMatches;
 }
 
@@ -174,50 +209,58 @@ function parseAttributeValue(value: string): any {
 // ============================================================================
 
 function matchesSelector(node: ASTNode, selector: ParsedSelector, context: any): boolean {
-  // If we have a combinator, we need to match the left side first
+  // If we have a combinator, the structure is:
+  // selector = { type: 'leftType', combinator: { type: '>', right: { type: 'rightType' } } }
+  // For 'eventHandler command': selector.type = 'eventHandler', combinator.right.type = 'command'
+  // We want to find nodes that match the RIGHTMOST part and have proper ancestor/sibling relationship
   if (selector.combinator) {
-    // This is the target node (right side of combinator)
-    // We need to find if there's a matching ancestor/sibling for the left side
-    const leftSide = {
+    // First check if current node matches the right side of the combinator
+    if (!matchesSimpleSelector(node, selector.combinator.right)) {
+      return false;
+    }
+
+    // Build the left side selector from the current selector (without the rightmost combinator)
+    const leftSide: ParsedSelector = {
       type: selector.type,
       attributes: selector.attributes,
       pseudos: selector.pseudos,
       combinator: null
     };
-    
-    // Check if current node matches the right side
-    if (!matchesSimpleSelector(node, leftSide)) {
-      return false;
-    }
-    
-    // Check combinator relationship
-    return checkCombinator(node, selector.combinator, context);
+
+    // Check combinator relationship with the left side
+    return checkCombinatorRelationship(node, selector.combinator.type, leftSide, context);
   }
-  
+
   // Simple selector matching
-  return matchesSimpleSelector(node, selector);
+  return matchesSimpleSelector(node, selector, context);
 }
 
-function matchesSimpleSelector(node: ASTNode, selector: ParsedSelector): boolean {
+function matchesSimpleSelector(node: ASTNode, selector: ParsedSelector, context?: any): boolean {
   // Check type
   if (selector.type && node.type !== selector.type) {
     return false;
   }
-  
+
   // Check attributes
   for (const attr of selector.attributes) {
     if (!matchesAttribute(node, attr)) {
       return false;
     }
   }
-  
-  // Check pseudo selectors (simplified for now)
+
+  // Check pseudo selectors
   for (const pseudo of selector.pseudos) {
-    if (!matchesPseudoSimple(node, pseudo)) {
-      return false;
+    if (context) {
+      if (!matchesPseudo(node, pseudo, context)) {
+        return false;
+      }
+    } else {
+      if (!matchesPseudoSimple(node, pseudo)) {
+        return false;
+      }
     }
   }
-  
+
   return true;
 }
 
@@ -278,19 +321,17 @@ function matchesPseudoSimple(node: ASTNode, pseudo: PseudoSelector): boolean {
   }
 }
 
-function checkCombinator(node: ASTNode, combinator: ParsedSelector['combinator'], context: any): boolean {
-  if (!combinator) return true;
-  
-  switch (combinator.type) {
-    case '>': // Direct child - parent must match the right side
+function checkCombinatorRelationship(node: ASTNode, combinatorType: string, leftSelector: ParsedSelector, context: any): boolean {
+  switch (combinatorType) {
+    case '>': // Direct child - parent must match the left side
       const parent = context.getParent();
-      return parent ? matchesSimpleSelector(parent, combinator.right) : false;
-    case '+': // Adjacent sibling
-      return hasAdjacentSiblingMatching(node, context, combinator.right);
-    case '~': // General sibling
-      return hasGeneralSiblingMatching(node, context, combinator.right);
-    case ' ': // Descendant - any ancestor must match the right side
-      return hasAncestorMatching(node, context, combinator.right);
+      return parent ? matchesSimpleSelector(parent, leftSelector) : false;
+    case '+': // Adjacent sibling - previous sibling must match the left side
+      return hasPreviousSiblingMatching(node, context, leftSelector);
+    case '~': // General sibling - any previous sibling must match the left side
+      return hasAnyPreviousSiblingMatching(node, context, leftSelector);
+    case ' ': // Descendant - any ancestor must match the left side
+      return hasAncestorMatching(node, context, leftSelector);
     default:
       return false;
   }
@@ -301,9 +342,14 @@ function checkCombinator(node: ASTNode, combinator: ParsedSelector['combinator']
 // ============================================================================
 
 function isFirstChild(node: ASTNode, context: any): boolean {
+  if (context.getSiblingIndex) {
+    return context.getSiblingIndex() === 0;
+  }
+
+  // Fallback: check in parent
   const parent = context.getParent();
   if (!parent) return false;
-  
+
   // Find the array that contains this node
   for (const [key, value] of Object.entries(parent)) {
     if (Array.isArray(value) && value.length > 0 && value[0] === node) {
@@ -314,9 +360,15 @@ function isFirstChild(node: ASTNode, context: any): boolean {
 }
 
 function isLastChild(node: ASTNode, context: any): boolean {
+  if (context.getSiblingIndex && context.getSiblings) {
+    const siblings = context.getSiblings();
+    return context.getSiblingIndex() === siblings.length - 1;
+  }
+
+  // Fallback: check in parent
   const parent = context.getParent();
   if (!parent) return false;
-  
+
   // Find the array that contains this node
   for (const [key, value] of Object.entries(parent)) {
     if (Array.isArray(value) && value.length > 0 && value[value.length - 1] === node) {
@@ -378,26 +430,47 @@ function isGeneralSibling(node: ASTNode, parent: ASTNode, selector: ParsedSelect
 }
 
 function hasAncestorMatching(node: ASTNode, context: any, selector: ParsedSelector): boolean {
-  let currentParent = context.getParent();
-  
-  while (currentParent) {
-    if (matchesSimpleSelector(currentParent, selector)) {
+  // Use getAncestors if available, otherwise fall back to getParent
+  if (context.getAncestors) {
+    const ancestors = context.getAncestors();
+    for (const ancestor of ancestors) {
+      if (matchesSimpleSelector(ancestor, selector)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Fallback: just check direct parent
+  const parent = context.getParent();
+  return parent ? matchesSimpleSelector(parent, selector) : false;
+}
+
+function hasPreviousSiblingMatching(node: ASTNode, context: any, selector: ParsedSelector): boolean {
+  if (!context.getSiblings || !context.getSiblingIndex) {
+    return false;
+  }
+  const siblings = context.getSiblings();
+  const index = context.getSiblingIndex();
+  if (index > 0) {
+    const prevSibling = siblings[index - 1];
+    return prevSibling ? matchesSimpleSelector(prevSibling, selector) : false;
+  }
+  return false;
+}
+
+function hasAnyPreviousSiblingMatching(node: ASTNode, context: any, selector: ParsedSelector): boolean {
+  if (!context.getSiblings || !context.getSiblingIndex) {
+    return false;
+  }
+  const siblings = context.getSiblings();
+  const index = context.getSiblingIndex();
+  for (let i = 0; i < index; i++) {
+    const sibling = siblings[i];
+    if (sibling && matchesSimpleSelector(sibling, selector)) {
       return true;
     }
-    // Move up the tree - this is simplified, real implementation would need proper context chain
-    currentParent = null; // For now, just check direct parent
   }
-  
-  return false;
-}
-
-function hasAdjacentSiblingMatching(node: ASTNode, context: any, selector: ParsedSelector): boolean {
-  // Simplified implementation
-  return false;
-}
-
-function hasGeneralSiblingMatching(node: ASTNode, context: any, selector: ParsedSelector): boolean {
-  // Simplified implementation
   return false;
 }
 

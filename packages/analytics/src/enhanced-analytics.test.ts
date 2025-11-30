@@ -607,8 +607,9 @@ describe('Enhanced Analytics Implementation', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errors).toBeDefined();
-      expect(result.suggestions).toBeDefined();
+      expect(result.error).toBeDefined();
+      // Suggestions are included in the error object
+      expect(result.error?.suggestions).toBeDefined();
     });
   });
 

@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
-import { referenceExpressions } from './index';
+import { referencesExpressions as referenceExpressions } from './index';
 import type { ExecutionContext } from '../../types/core';
 
 describe('Reference Expressions', () => {

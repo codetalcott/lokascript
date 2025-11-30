@@ -442,21 +442,29 @@ export function findDeadCode(ast: ASTNode): Array<{
   const definedVars = new Set<string>();
   const usedVars = new Set<string>();
   const varDefinitions = new Map<string, ASTNode>();
-  
+  const definitionIdentifiers = new Set<string>(); // Track identifiers that are part of definitions
+
   const visitor = new ASTVisitor({
     enter(node) {
+      // Track variable definitions
       if ((node as any).name === 'set' && (node as any).variable) {
         const varName = (node as any).variable.name;
         definedVars.add(varName);
         varDefinitions.set(varName, node);
+        definitionIdentifiers.add(varName); // Mark as definition, not usage
       }
-      
+
+      // Track identifier usages (excluding definition targets)
       if (node.type === 'identifier' && (node as any).name) {
-        usedVars.add((node as any).name);
+        const name = (node as any).name;
+        // Only count as usage if not a definition target
+        if (!definitionIdentifiers.has(name)) {
+          usedVars.add(name);
+        }
       }
     }
   });
-  
+
   visit(ast, visitor);
   
   // Check for unused variables
@@ -537,10 +545,10 @@ function suggestBatchOperations(ast: ASTNode): CodeSuggestion[] {
         for (const group of sameCmdGroups) {
           if (group.length >= 3 && group[0].name === 'add' && sameTarget(group)) {
             suggestions.push({
-              type: 'optimization',
+              type: 'batch-operations',
               description: 'Group class operations',
               suggestion: `Combine multiple add operations: add ${group.map(c => c.args[0].value).join(' ')} to ${group[0].target?.name || 'target'}`,
-              impact: 'performance',
+              impact: 'high',
               confidence: 0.9
             });
           }
@@ -556,8 +564,9 @@ function suggestBatchOperations(ast: ASTNode): CodeSuggestion[] {
 function suggestSimplifyConditionals(ast: ASTNode): CodeSuggestion[] {
   const suggestions: CodeSuggestion[] = [];
   const complexity = calculateComplexity(ast);
-  
-  if (complexity.cognitive > 10) {
+
+  // Suggest simplification for moderately complex code (cognitive > 3 or cyclomatic > 3)
+  if (complexity.cognitive > 3 || complexity.cyclomatic > 3) {
     suggestions.push({
       type: 'simplification',
       description: 'Simplify complex conditionals',
@@ -566,7 +575,7 @@ function suggestSimplifyConditionals(ast: ASTNode): CodeSuggestion[] {
       confidence: 0.8
     });
   }
-  
+
   return suggestions;
 }
 
@@ -620,10 +629,12 @@ export function analyzePatterns(ast: ASTNode): PatternMatch[] {
   // Detect event handler patterns
   if (ast.type === 'eventHandler') {
     patterns.push({
+      type: 'event-handler',
       pattern: 'event-handler',
       node: ast,
       bindings: { event: (ast as any).event },
-      confidence: 0.9
+      confidence: 0.9,
+      suggestion: 'Consider using event delegation for multiple similar handlers'
     });
   }
   
@@ -636,13 +647,15 @@ export function analyzePatterns(ast: ASTNode): PatternMatch[] {
         
         if (toggleCommands.length >= 2) {
           patterns.push({
+            type: 'toggle-pair',
             pattern: 'toggle-pair',
             node,
-            bindings: { 
+            bindings: {
               count: toggleCommands.length,
               targets: toggleCommands.map((cmd: any) => cmd.target?.name || cmd.target?.value)
             },
-            confidence: 0.85
+            confidence: 0.85,
+            suggestion: 'Consider using a single toggle with multiple targets'
           });
         }
       }
@@ -702,18 +715,19 @@ function calculateMaintainabilityIndex(complexity: ComplexityMetrics, smells: Co
 
 function calculateReadabilityScore(ast: ASTNode, smells: CodeSmell[]): number {
   let score = 100;
-  
-  // Penalize deep nesting
+
+  // Penalize deep nesting - only penalize depths > 3 (normal structure)
   const depth = measureDepth(ast);
-  score -= Math.min(depth * 5, 25);
-  
+  const excessDepth = Math.max(0, depth - 3);
+  score -= Math.min(excessDepth * 5, 25);
+
   // Penalize long command chains
   const longChains = smells.filter(s => s.type === 'long-command-chain').length;
   score -= longChains * 10;
-  
+
   // Penalize complex conditions
   const complexConditions = smells.filter(s => s.type === 'complex-condition').length;
   score -= complexConditions * 12;
-  
+
   return Math.max(0, Math.min(100, score));
 }

@@ -3,7 +3,7 @@
  * Provides utilities for modifying, optimizing, and refactoring ASTs
  */
 
-import { ASTVisitor, visit, findNodes } from '../visitor/index.js';
+import { ASTVisitor, visit, findNodes, createVisitorContext } from '../visitor/index.js';
 import type { 
   ASTNode, 
   VisitorHandlers, 
@@ -25,7 +25,7 @@ export function transform(
   options: TransformOptions = {}
 ): ASTNode {
   const transformVisitor = new ASTVisitor(visitor);
-  let result = transformVisitor.visit(ast, createTransformContext()) || ast;
+  let result = transformVisitor.visit(ast, createVisitorContext()) || ast;
   
   // Apply optimizations if requested
   if (options.optimize) {
@@ -45,17 +45,20 @@ export function transform(
  */
 export function optimize(ast: ASTNode, options: TransformOptions = {}): ASTNode {
   const passes: OptimizationPass[] = [];
-  
+
   // Build optimization passes based on options
-  if (options.batchOperations || options.optimize) {
+  if (options.batchOperations || options.batchSimilarOperations || options.optimize) {
     passes.push(createBatchOperationsPass());
   }
-  
-  if (options.optimize) {
+
+  if (options.redundantClassOperations || options.optimize) {
     passes.push(createRemoveRedundantOperationsPass());
+  }
+
+  if (options.optimize) {
     passes.push(createSimplifyConditionsPass());
   }
-  
+
   return applyOptimizationPasses(ast, passes);
 }
 
@@ -81,7 +84,7 @@ function applyOptimizationPass(ast: ASTNode, pass: OptimizationPass): ASTNode {
     }
   });
   
-  return visitor.visit(ast, createTransformContext()) || ast;
+  return visitor.visit(ast, createVisitorContext()) || ast;
 }
 
 // ============================================================================
@@ -146,7 +149,8 @@ function createSimplifyConditionsPass(): OptimizationPass {
  */
 export function normalize(ast: ASTNode): ASTNode {
   const visitor = new ASTVisitor({
-    enter(node, context) {
+    // Use exit handler so children are processed first
+    exit(node, context) {
       // Create normalized node with only standard properties
       const normalized: any = {
         type: node.type,
@@ -155,7 +159,7 @@ export function normalize(ast: ASTNode): ASTNode {
         line: node.line,
         column: node.column
       };
-      
+
       // Copy known properties based on node type
       if (node.type === 'command') {
         normalized.name = (node as any).name;
@@ -172,12 +176,12 @@ export function normalize(ast: ASTNode): ASTNode {
         normalized.value = (node as any).value;
       }
       // Add other node types as needed
-      
+
       context.replace(normalized);
     }
   });
-  
-  return visitor.visit(ast, createTransformContext()) || ast;
+
+  return visitor.visit(ast, createVisitorContext()) || ast;
 }
 
 /**
@@ -210,7 +214,7 @@ export function inlineVariables(ast: ASTNode): ASTNode {
     }
   });
   
-  return inlineVisitor.visit(ast, createTransformContext()) || ast;
+  return inlineVisitor.visit(ast, createVisitorContext()) || ast;
 }
 
 /**
@@ -279,7 +283,7 @@ export function extractCommonExpressions(ast: ASTNode): ASTNode {
     }
   });
   
-  let result = replaceVisitor.visit(ast, createTransformContext()) || ast;
+  let result = replaceVisitor.visit(ast, createVisitorContext()) || ast;
   
   // Add extracted variable assignments to the beginning
   if (newCommands.length > 0 && (result as any).commands) {
@@ -312,19 +316,6 @@ export function createOptimizationPass(config: {
 // Helper Functions
 // ============================================================================
 
-function createTransformContext(): any {
-  // This would need to be integrated with the actual visitor context
-  // For now, return a mock context
-  return {
-    skip: () => {},
-    stop: () => {},
-    replace: () => {},
-    getPath: () => [],
-    getParent: () => null,
-    getScope: () => new Map(),
-    setScope: () => {}
-  };
-}
 
 function batchSimilarCommands(commands: any[]): any[] {
   const groups = new Map<string, any[]>();
@@ -465,5 +456,5 @@ function minify(ast: ASTNode): ASTNode {
     }
   });
   
-  return visitor.visit(ast, createTransformContext()) || ast;
+  return visitor.visit(ast, createVisitorContext()) || ast;
 }
