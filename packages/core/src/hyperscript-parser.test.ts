@@ -168,12 +168,7 @@ describe('HyperscriptParser', () => {
   });
 
   describe('complex features', () => {
-    // Note: The main parser doesn't support top-level 'def' function definitions
-    // as standalone features. Function definitions in hyperscript are typically
-    // defined within behavior blocks or as part of the element's script.
-    // This test is skipped because the main parser was designed for runtime
-    // parsing where def is not a top-level construct.
-    it.skip('should parse function definitions', () => {
+    it('should parse function definitions', () => {
       const result = parseHyperscript(`
         def greet(name)
           log "Hello " + name
@@ -183,6 +178,8 @@ describe('HyperscriptParser', () => {
       expect(result.success).toBe(true);
       const program = result.node!;
       expect(program.type).toBe('program');
+      expect(program.features).toHaveLength(1);
+      expect(program.features[0].keyword).toBe('def');
     });
 
     it('should parse init features', () => {

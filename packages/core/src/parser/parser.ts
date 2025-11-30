@@ -124,11 +124,11 @@ export class Parser {
         };
       }
 
-      // Check if this starts with init, on, or a comment (top-level features)
-      if (this.check('init') || this.check('on') || this.checkTokenType(TokenType.COMMENT)) {
+      // Check if this starts with init, on, def, or a comment (top-level features)
+      if (this.check('init') || this.check('on') || this.check('def') || this.checkTokenType(TokenType.COMMENT)) {
         const statements: ASTNode[] = [];
 
-        // Parse all top-level features (init blocks and event handlers), skipping comments
+        // Parse all top-level features (init blocks, event handlers, function defs), skipping comments
         while (!this.isAtEnd()) {
           // Skip any top-level comments
           if (this.checkTokenType(TokenType.COMMENT)) {
@@ -136,7 +136,7 @@ export class Parser {
             continue;
           }
 
-          // Check for init or on
+          // Check for init, on, or def
           if (this.check('init')) {
             this.advance(); // consume 'init'
             const initBlock = this.parseTopLevelInitBlock();
@@ -148,6 +148,12 @@ export class Parser {
             const eventHandler = this.parseEventHandler();
             if (eventHandler) {
               statements.push(eventHandler);
+            }
+          } else if (this.check('def')) {
+            this.advance(); // consume 'def'
+            const defFeature = this.parseDefFeature();
+            if (defFeature) {
+              statements.push(defFeature);
             }
           } else {
             // Not a feature we recognize, break out
@@ -1657,6 +1663,137 @@ export class Parser {
     return {
       type: 'initBlock',
       commands: initCommands,
+      start: pos.start,
+      end: this.getPosition().end,
+      line: pos.line,
+      column: pos.column,
+    };
+  }
+
+  /**
+   * Parse a function definition (def feature)
+   * Syntax: def <name>(<params>) <commands> [catch <id> <commands>] [finally <commands>] end
+   */
+  private parseDefFeature(): ASTNode {
+    const pos = this.getPosition();
+
+    // Parse function name (can be namespaced like utils.myFunc)
+    let funcName = '';
+    if (this.checkTokenType(TokenType.IDENTIFIER)) {
+      funcName = this.advance().value;
+
+      // Check for namespaced name (dots)
+      while (this.check('.')) {
+        this.advance(); // consume '.'
+        if (this.checkTokenType(TokenType.IDENTIFIER)) {
+          funcName += '.' + this.advance().value;
+        }
+      }
+    } else {
+      this.addError("Expected function name after 'def'");
+      return this.createErrorNode();
+    }
+
+    // Parse parameters
+    const params: string[] = [];
+    if (this.check('(')) {
+      this.advance(); // consume '('
+
+      if (!this.check(')')) {
+        // Parse first parameter
+        if (this.checkTokenType(TokenType.IDENTIFIER)) {
+          params.push(this.advance().value);
+        }
+
+        // Parse additional parameters
+        while (this.check(',')) {
+          this.advance(); // consume ','
+          if (this.checkTokenType(TokenType.IDENTIFIER)) {
+            params.push(this.advance().value);
+          }
+        }
+      }
+
+      this.consume(')', "Expected ')' after parameter list");
+    }
+
+    // Parse command list (body)
+    const bodyCommands: CommandNode[] = [];
+    while (!this.isAtEnd() && !this.check('end') && !this.check('catch') && !this.check('finally')) {
+      // Skip any comment tokens
+      if (this.checkTokenType(TokenType.COMMENT)) {
+        this.advance();
+        continue;
+      }
+
+      // Check if this is a command
+      if (this.checkTokenType(TokenType.COMMAND) || this.isCommand(this.peek().value)) {
+        this.advance();
+        const cmd = this.parseCommand();
+        bodyCommands.push(cmd);
+      } else {
+        // Unexpected token, break out
+        break;
+      }
+    }
+
+    // Parse optional catch block
+    let errorSymbol: string | undefined;
+    let errorHandler: CommandNode[] | undefined;
+    if (this.check('catch')) {
+      this.advance(); // consume 'catch'
+      if (this.checkTokenType(TokenType.IDENTIFIER)) {
+        errorSymbol = this.advance().value;
+      }
+
+      errorHandler = [];
+      while (!this.isAtEnd() && !this.check('end') && !this.check('finally')) {
+        if (this.checkTokenType(TokenType.COMMENT)) {
+          this.advance();
+          continue;
+        }
+        if (this.checkTokenType(TokenType.COMMAND) || this.isCommand(this.peek().value)) {
+          this.advance();
+          const cmd = this.parseCommand();
+          errorHandler.push(cmd);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Parse optional finally block
+    let finallyHandler: CommandNode[] | undefined;
+    if (this.check('finally')) {
+      this.advance(); // consume 'finally'
+
+      finallyHandler = [];
+      while (!this.isAtEnd() && !this.check('end')) {
+        if (this.checkTokenType(TokenType.COMMENT)) {
+          this.advance();
+          continue;
+        }
+        if (this.checkTokenType(TokenType.COMMAND) || this.isCommand(this.peek().value)) {
+          this.advance();
+          const cmd = this.parseCommand();
+          finallyHandler.push(cmd);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Consume the 'end' keyword
+    this.consume('end', "Expected 'end' after function definition");
+
+    return {
+      type: 'def',
+      name: funcName,
+      params,
+      body: bodyCommands,
+      errorSymbol,
+      errorHandler,
+      finallyHandler,
       start: pos.start,
       end: this.getPosition().end,
       line: pos.line,
