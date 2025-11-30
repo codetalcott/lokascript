@@ -103,6 +103,11 @@ const KEYWORDS = new Set([
   'less',
   'than',
   'really',
+  // Exception handling keywords
+  'catch',
+  'finally',
+  'throw',
+  'return',
 ]);
 
 const COMMANDS = new Set([

@@ -15,6 +15,7 @@ import type {
   ParseWarning,
   EventHandlerNode,
   BehaviorNode,
+  DefNode,
 } from '../types/core';
 import { debug } from '../utils/debug';
 
@@ -1674,7 +1675,7 @@ export class Parser {
    * Parse a function definition (def feature)
    * Syntax: def <name>(<params>) <commands> [catch <id> <commands>] [finally <commands>] end
    */
-  private parseDefFeature(): ASTNode {
+  private parseDefFeature(): DefNode {
     const pos = this.getPosition();
 
     // Parse function name (can be namespaced like utils.myFunc)
@@ -1691,7 +1692,16 @@ export class Parser {
       }
     } else {
       this.addError("Expected function name after 'def'");
-      return this.createErrorNode();
+      return {
+        type: 'def',
+        name: '',
+        params: [],
+        body: [],
+        start: pos.start,
+        end: this.getPosition().end,
+        line: pos.line,
+        column: pos.column,
+      };
     }
 
     // Parse parameters
@@ -1786,14 +1796,15 @@ export class Parser {
     // Consume the 'end' keyword
     this.consume('end', "Expected 'end' after function definition");
 
+    // Build result object, conditionally including optional properties
     return {
-      type: 'def',
+      type: 'def' as const,
       name: funcName,
       params,
       body: bodyCommands,
-      errorSymbol,
-      errorHandler,
-      finallyHandler,
+      ...(errorSymbol !== undefined && { errorSymbol }),
+      ...(errorHandler !== undefined && { errorHandler }),
+      ...(finallyHandler !== undefined && { finallyHandler }),
       start: pos.start,
       end: this.getPosition().end,
       line: pos.line,

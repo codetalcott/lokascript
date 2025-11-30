@@ -553,6 +553,35 @@ export interface BehaviorNode extends ASTNode {
 }
 
 /**
+ * Function definition AST node (def feature)
+ * Represents a user-defined function in hyperscript
+ *
+ * Syntax:
+ *   def <name>(<params>)
+ *     <commands>
+ *   [catch <errorSymbol>
+ *     <commands>]
+ *   [finally
+ *     <commands>]
+ *   end
+ */
+export interface DefNode extends ASTNode {
+  readonly type: 'def';
+  /** Function name (can be namespaced, e.g., "utils.calculate") */
+  readonly name: string;
+  /** Parameter names */
+  readonly params: string[];
+  /** Function body commands */
+  readonly body: CommandNode[];
+  /** Error symbol name for catch block (if present) */
+  readonly errorSymbol?: string;
+  /** Error handler commands (catch block) */
+  readonly errorHandler?: CommandNode[];
+  /** Finally handler commands */
+  readonly finallyHandler?: CommandNode[];
+}
+
+/**
  * Enhanced AST node with type information
  */
 export interface TypedASTNode extends ASTNode {

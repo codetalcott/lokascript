@@ -117,6 +117,8 @@ export function parseRegularCommand(
     !ctx.check('and') &&
     !ctx.check('else') &&
     !ctx.check('end') &&
+    !ctx.check('catch') &&
+    !ctx.check('finally') &&
     !ctx.checkTokenType(TokenType.COMMAND)
   ) {
     // Include EVENT tokens to allow DOM event names as arguments (e.g., 'send reset to #element')
@@ -197,6 +199,8 @@ export function parseMultiWordCommand(
     !ctx.check('and') &&
     !ctx.check('else') &&
     !ctx.check('end') &&
+    !ctx.check('catch') &&
+    !ctx.check('finally') &&
     !ctx.checkTokenType(TokenType.COMMAND)
   ) {
     // Use parsePrimary() to parse just the value, not full expressions

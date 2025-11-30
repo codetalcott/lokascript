@@ -196,6 +196,129 @@ describe('HyperscriptParser', () => {
     });
   });
 
+  describe('def feature parsing', () => {
+    it('should parse basic function definition', () => {
+      const result = parseHyperscript(`
+        def greet(name)
+          log "Hello " + name
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const program = result.node!;
+      expect(program.features[0].keyword).toBe('def');
+
+      const def = program.features[0].body[0];
+      expect(def.type).toBe('def');
+      expect(def.name).toBe('greet');
+      expect(def.params).toEqual(['name']);
+      expect(def.body).toHaveLength(1);
+    });
+
+    it('should parse namespaced function names', () => {
+      const result = parseHyperscript(`
+        def utils.helpers.calculate(x, y)
+          return x + y
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.name).toBe('utils.helpers.calculate');
+      expect(def.params).toEqual(['x', 'y']);
+    });
+
+    it('should parse function with no parameters', () => {
+      const result = parseHyperscript(`
+        def getAnswer()
+          return 42
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.name).toBe('getAnswer');
+      expect(def.params).toEqual([]);
+    });
+
+    it('should parse function with multiple parameters', () => {
+      const result = parseHyperscript(`
+        def calculate(a, b, c, d)
+          return a + b + c + d
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.params).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('should parse function with catch block', () => {
+      const result = parseHyperscript(`
+        def riskyOperation()
+          throw "error"
+        catch e
+          log e
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.type).toBe('def');
+      expect(def.errorSymbol).toBe('e');
+      expect(def.errorHandler).toBeDefined();
+      expect(def.errorHandler.length).toBeGreaterThan(0);
+    });
+
+    it('should parse function with finally block', () => {
+      const result = parseHyperscript(`
+        def withCleanup()
+          log "doing work"
+        finally
+          log "cleanup"
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.type).toBe('def');
+      expect(def.finallyHandler).toBeDefined();
+      expect(def.finallyHandler.length).toBeGreaterThan(0);
+    });
+
+    it('should parse function with catch and finally blocks', () => {
+      const result = parseHyperscript(`
+        def fullExample()
+          log "work"
+        catch err
+          log "error: " + err
+        finally
+          log "done"
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.type).toBe('def');
+      expect(def.errorSymbol).toBe('err');
+      expect(def.errorHandler).toBeDefined();
+      expect(def.finallyHandler).toBeDefined();
+    });
+
+    it('should parse function with empty body', () => {
+      const result = parseHyperscript(`
+        def noop()
+        end
+      `);
+
+      expect(result.success).toBe(true);
+      const def = result.node!.features[0].body[0];
+      expect(def.type).toBe('def');
+      expect(def.name).toBe('noop');
+      expect(def.body).toEqual([]);
+    });
+  });
+
   describe('_hyperscript API integration', () => {
     it('should work with the _hyperscript.parse() method', async () => {
       const { _hyperscript } = await import('./api/hyperscript-api');

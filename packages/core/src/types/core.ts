@@ -27,6 +27,7 @@ export type {
   CommandNode as BaseCommandNode,
   EventHandlerNode,
   BehaviorNode,
+  DefNode,
 } from './base-types';
 
 // Import types for use within this file

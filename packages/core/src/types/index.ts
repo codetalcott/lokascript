@@ -65,6 +65,9 @@ export type {
   ASTNode,
   ParseError,
   LLMDocumentation,
+  EventHandlerNode,
+  BehaviorNode,
+  DefNode,
 } from './base-types';
 
 // ============================================================================
