@@ -94,15 +94,30 @@ The test `should work with the _hyperscript.parse() method` passes successfully.
 
 ---
 
-## Note: Legacy Parser Test Removed
+## Parser Consolidation Complete
 
-The skipped test in `hyperscript-parser.test.ts:54` was **removed** (commit f0490cb) because:
+**Commit**: 482ccaa
 
-1. The legacy `HyperscriptParser` cannot parse complex possessives (fails with "Expected 'into'")
-2. The test expectations were semantically incorrect
-3. The main parser (`parser.ts`) correctly handles these expressions
+The legacy `hyperscript-parser.ts` (655 lines) was **deleted** and replaced with the main parser.
 
-A comment was added directing developers to `parser.test.ts` for comprehensive possessive expression tests.
+**Changes Made**:
+
+1. Deleted `packages/core/src/hyperscript-parser.ts` - legacy parser that was never refactored
+2. Updated `hyperscript-api.ts` - uses main parser with `wrapAsProgramNode()` wrapper
+3. Migrated `hyperscript-parser.test.ts` - uses main parser with local wrapper
+4. Fixed `command-runtime.test.ts` - changed `result.result` to `result.node` (was a bug)
+5. Updated `command-runtime-simple.test.ts` - imports `CommandNode` from `types/core`
+
+**Net Result**:
+
+- 725 lines deleted
+- 224 lines added (wrappers + migrated test code)
+- **~500 lines net reduction**
+- Single source of truth for parsing
+
+**Note**: The skipped test for `def` function definitions exists because the main parser
+doesn't support top-level `def` as a standalone construct (it's designed for runtime parsing
+where functions are defined within behaviors or element scripts).
 
 ---
 
