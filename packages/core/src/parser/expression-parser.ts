@@ -1820,8 +1820,19 @@ async function evaluateUnaryExpression(node: any, context: ExecutionContext): Pr
       // Fallback implementation for logical not
       return !operand;
     case 'no':
-      // Fallback implementation for 'no' - similar to 'not'
-      return !operand;
+      // 'no' checks for emptiness, not falsiness
+      // Empty values: null, undefined, empty string, empty array, empty object, empty NodeList
+      // NOT empty: false, 0 (these are valid values, just falsy)
+      if (operand === null || operand === undefined) return true;
+      if (typeof operand === 'string') return operand.length === 0;
+      if (Array.isArray(operand)) return operand.length === 0;
+      // NodeList/HTMLCollection check
+      if (operand && typeof operand === 'object' && 'length' in operand && typeof operand.length === 'number') {
+        return operand.length === 0;
+      }
+      if (typeof operand === 'object' && operand !== null) return Object.keys(operand).length === 0;
+      // For booleans and numbers, they are NOT empty - they have a value
+      return false;
     case 'exists':
       // Fallback implementation for existence check
       return operand !== null && operand !== undefined;

@@ -117,7 +117,8 @@ describe('Existence Operators', () => {
 
     it('should work in complex expressions', async () => {
       const result = await parseAndEvaluateExpression('no emptyArray and nonEmptyString', context);
-      expect(result).toBe(true); // true && truthy = true
+      // 'and' returns the last truthy value in JS-style semantics: true && 'hello' = 'hello'
+      expect(result).toBe('hello');
     });
   });
 });

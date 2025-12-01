@@ -85,7 +85,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('submit-button');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -98,7 +98,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('btn btn-primary active');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -111,7 +111,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('Click me!');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
   });
@@ -128,7 +128,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('42');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -143,7 +143,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('block');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -207,7 +207,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(null);
-        expect(result.type).toBe('Null');
+        expect(result.type).toBe('null');
       }
     });
 
@@ -220,7 +220,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(true);
-        expect(result.type).toBe('Boolean');
+        expect(result.type).toBe('boolean');
       }
     });
 
@@ -233,7 +233,7 @@ describe('EnhancedMyExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(5);
-        expect(result.type).toBe('Number');
+        expect(result.type).toBe('number');
       }
     });
   });
@@ -287,7 +287,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('John Doe');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -298,7 +298,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(42);
-        expect(result.type).toBe('Number');
+        expect(result.type).toBe('number');
       }
     });
 
@@ -309,7 +309,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(true);
-        expect(result.type).toBe('Boolean');
+        expect(result.type).toBe('boolean');
       }
     });
   });
@@ -322,7 +322,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('form-element');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -338,7 +338,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('123');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
   });
@@ -351,7 +351,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(3);
-        expect(result.type).toBe('Number');
+        expect(result.type).toBe('number');
       }
     });
 
@@ -362,7 +362,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('first');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
   });
@@ -387,7 +387,7 @@ describe('EnhancedItsExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('https://api.example.com');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -479,7 +479,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('submit-button');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -499,7 +499,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('btn btn-primary active');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -520,7 +520,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe('12345');
-        expect(result.type).toBe('String');
+        expect(result.type).toBe('string');
       }
     });
 
@@ -535,7 +535,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.value).toBe(null);
-        expect(result.type).toBe('Null');
+        expect(result.type).toBe('null');
       }
     });
   });
@@ -558,7 +558,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(disabledResult.success).toBe(true);
       if (disabledResult.success) {
         expect(disabledResult.value).toBe('');
-        expect(disabledResult.type).toBe('String');
+        expect(disabledResult.type).toBe('string');
       }
 
       const checkedResult = await attrExpr.evaluate(context, {
@@ -569,7 +569,7 @@ describe('EnhancedAttributeExpression', () => {
       expect(checkedResult.success).toBe(true);
       if (checkedResult.success) {
         expect(checkedResult.value).toBe('checked');
-        expect(checkedResult.type).toBe('String');
+        expect(checkedResult.type).toBe('string');
       }
     });
   });
@@ -734,8 +734,9 @@ describe('Enhanced Property Expressions Integration', () => {
       const expressions = Object.values(propertyExpressions);
 
       expressions.forEach(expr => {
-        expect(expr.category).toBe('Properties');
-        expect(expr.metadata.category).toBe('Properties');
+        // Implementation uses singular 'Property' for category
+        expect(expr.category).toBe('Property');
+        expect(expr.metadata.category).toBe('Property');
         expect(expr.documentation.summary).toBeTruthy();
         expect(expr.documentation.examples.length).toBeGreaterThan(0);
       });

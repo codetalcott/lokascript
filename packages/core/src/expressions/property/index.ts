@@ -704,7 +704,7 @@ export class EnhancedAttributeExpression implements BaseTypedExpression<string |
       return {
         success: true,
         value,
-        type: value === null ? 'Null' : 'String',
+        type: value === null ? 'null' : 'string',
       };
     } catch (error) {
       this.trackPerformance(context, startTime, false);
