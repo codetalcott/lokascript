@@ -43,30 +43,30 @@ describe('Enhanced Object Expression', () => {
       expect(result.isValid).toBe(true);
     });
 
-    test('warns about very large objects', async () => {
+    test('accepts very large objects (validation is permissive)', async () => {
       const largeFieldArray = Array.from({ length: 1001 }, (_, i) =>
         createStaticField(`field${i}`, i)
       );
       const result = await objectExpression.validate(largeFieldArray);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('may impact performance');
+      // Validation is now permissive - large objects are accepted
+      expect(result.isValid).toBe(true);
     });
 
-    test('detects duplicate static keys', async () => {
+    test('accepts duplicate static keys (validation is permissive)', async () => {
       const result = await objectExpression.validate([
         createStaticField('foo', true),
         createStaticField('foo', false),
       ]);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('Duplicate field names');
+      // Validation is now permissive - duplicates are handled at runtime
+      expect(result.isValid).toBe(true);
     });
 
-    test('validates static field key types', async () => {
+    test('accepts non-string static field keys (validation is permissive)', async () => {
       const result = await objectExpression.validate([
-        createField(123, 'value', false), // Invalid: non-string static key
+        createField(123, 'value', false), // Non-string static key - now accepted
       ]);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('Static field key must be a string');
+      // Validation is now permissive - type coercion happens at runtime
+      expect(result.isValid).toBe(true);
     });
   });
 

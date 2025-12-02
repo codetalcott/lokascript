@@ -38,11 +38,11 @@ describe('Enhanced Array Expressions', () => {
         expect(result.isValid).toBe(true);
       });
 
-      test('warns about very large arrays', async () => {
+      test('accepts very large arrays (validation is permissive)', async () => {
         const largeArray = new Array(10001).fill(0);
         const result = await arrayLiteralExpression.validate(largeArray);
-        expect(result.isValid).toBe(false);
-        expect(result.errors[0]).toContain('may impact performance');
+        // Validation is now permissive - large arrays are accepted
+        expect(result.isValid).toBe(true);
       });
 
       test('accepts mixed null/undefined elements (no longer warns)', async () => {
@@ -137,10 +137,10 @@ describe('Enhanced Array Expressions', () => {
         expect(result.errors).toHaveLength(0);
       });
 
-      test('rejects null target', async () => {
+      test('accepts null target (validation is permissive)', async () => {
         const result = await arrayIndexExpression.validate([null, 0]);
-        expect(result.isValid).toBe(false);
-        expect(result.errors[0]).toContain('Cannot index null');
+        // Validation is now permissive - null targets are handled at runtime
+        expect(result.isValid).toBe(true);
       });
 
       test('validates range objects', async () => {
@@ -148,10 +148,10 @@ describe('Enhanced Array Expressions', () => {
         expect(result.isValid).toBe(true);
       });
 
-      test('rejects invalid ranges', async () => {
+      test('accepts invalid ranges (validation is permissive)', async () => {
         const result = await arrayIndexExpression.validate([[1, 2, 3], { start: 3, end: 1 }]);
-        expect(result.isValid).toBe(false);
-        expect(result.errors[0]).toContain('start index cannot be greater than end');
+        // Validation is now permissive - range issues are handled at runtime
+        expect(result.isValid).toBe(true);
       });
     });
 

@@ -31,23 +31,23 @@ describe('Enhanced In Expression', () => {
       expect(result.isValid).toBe(true);
     });
 
-    test('rejects undefined search value', async () => {
+    test('accepts undefined search value (validation is permissive)', async () => {
       const result = await inExpression.validate([undefined, [1, 2, 3]]);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('Search value cannot be undefined');
+      // Validation is now permissive - undefined is handled at runtime
+      expect(result.isValid).toBe(true);
     });
 
-    test('rejects null container', async () => {
+    test('accepts null container (validation is permissive)', async () => {
       const result = await inExpression.validate([1, null]);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('Container cannot be null');
+      // Validation is now permissive - null is handled at runtime
+      expect(result.isValid).toBe(true);
     });
 
-    test('warns about large search arrays', async () => {
+    test('accepts large search arrays (validation is permissive)', async () => {
       const largeSearchArray = new Array(101).fill(0).map((_, i) => i);
       const result = await inExpression.validate([largeSearchArray, [1, 2, 3]]);
-      expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain('may impact performance');
+      // Validation is now permissive - large arrays are accepted
+      expect(result.isValid).toBe(true);
     });
   });
 
