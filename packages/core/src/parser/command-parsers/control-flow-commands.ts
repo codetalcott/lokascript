@@ -14,6 +14,7 @@ import type { ASTNode, CommandNode, Token } from '../../types/core';
 import { CommandNodeBuilder } from '../command-node-builder';
 import { TokenType } from '../tokenizer';
 import { debug } from '../../utils/debug';
+import { KEYWORDS } from '../parser-constants';
 
 /**
  * Parse halt command
@@ -42,11 +43,11 @@ export function parseHaltCommand(
   const args: ASTNode[] = [];
 
   // Check if next tokens are "the event"
-  if (ctx.check('the')) {
+  if (ctx.check(KEYWORDS.THE)) {
     const theToken = ctx.advance();
     args.push({
       type: 'identifier',
-      name: 'the',
+      name: KEYWORDS.THE,
       start: theToken.start,
       end: theToken.end,
       line: theToken.line,
@@ -54,11 +55,11 @@ export function parseHaltCommand(
     } as IdentifierNode);
 
     // Check if followed by "event"
-    if (ctx.check('event')) {
+    if (ctx.check(KEYWORDS.EVENT)) {
       const eventToken = ctx.advance();
       args.push({
         type: 'identifier',
-        name: 'event',
+        name: KEYWORDS.EVENT,
         start: eventToken.start,
         end: eventToken.end,
         line: eventToken.line,
@@ -121,9 +122,9 @@ export function parseRepeatCommand(
   let times: ASTNode | null = null;
 
   // Parse repeat type
-  if (ctx.check('for')) {
+  if (ctx.check(KEYWORDS.FOR)) {
     ctx.advance(); // consume 'for'
-    loopType = 'for';
+    loopType = KEYWORDS.FOR;
 
     // Parse: for <identifier> in <expression>
     const identToken = ctx.peek();
@@ -132,25 +133,25 @@ export function parseRepeatCommand(
       ctx.advance();
     }
 
-    if (ctx.check('in')) {
+    if (ctx.check(KEYWORDS.IN)) {
       ctx.advance(); // consume 'in'
       collection = ctx.parseExpression();
     }
-  } else if (ctx.check('in')) {
+  } else if (ctx.check(KEYWORDS.IN)) {
     ctx.advance(); // consume 'in'
-    loopType = 'for';
+    loopType = KEYWORDS.FOR;
     variable = 'it';
     collection = ctx.parseExpression();
-  } else if (ctx.check('while')) {
+  } else if (ctx.check(KEYWORDS.WHILE)) {
     ctx.advance(); // consume 'while'
-    loopType = 'while';
+    loopType = KEYWORDS.WHILE;
     condition = ctx.parseExpression();
-  } else if (ctx.check('until')) {
+  } else if (ctx.check(KEYWORDS.UNTIL)) {
     ctx.advance(); // consume 'until'
-    loopType = 'until';
+    loopType = KEYWORDS.UNTIL;
 
     // Check for event-driven loop: until event <eventName> from <target>
-    if (ctx.check('event')) {
+    if (ctx.check(KEYWORDS.EVENT)) {
       ctx.advance(); // consume 'event'
       loopType = 'until-event';
 
@@ -170,13 +171,13 @@ export function parseRepeatCommand(
 
       // Parse optional 'from <target>'
       debug.parse('🔍 Checking for "from", current token:', ctx.peek().value);
-      if (ctx.check('from')) {
+      if (ctx.check(KEYWORDS.FROM)) {
         debug.parse('✅ Found "from", advancing...');
         ctx.advance(); // consume 'from'
         debug.parse('📍 After consuming "from", current token:', ctx.peek().value);
         // Parse the target - use parsePrimary to avoid consuming too much
         // This handles "from document" or "from the document" or "from #element"
-        if (ctx.check('the')) {
+        if (ctx.check(KEYWORDS.THE)) {
           debug.parse('✅ Found "the", advancing...');
           ctx.advance(); // consume 'the'
         }
@@ -196,39 +197,39 @@ export function parseRepeatCommand(
       // Regular until with condition
       condition = ctx.parseExpression();
     }
-  } else if (ctx.check('forever')) {
+  } else if (ctx.check(KEYWORDS.FOREVER)) {
     ctx.advance(); // consume 'forever'
-    loopType = 'forever';
+    loopType = KEYWORDS.FOREVER;
   } else {
     // Parse: repeat <n> times
     times = ctx.parseExpression();
-    if (ctx.check('times')) {
+    if (ctx.check(KEYWORDS.TIMES)) {
       ctx.advance(); // consume 'times'
-      loopType = 'times';
+      loopType = KEYWORDS.TIMES;
     }
   }
 
   // Parse optional index variable
   // Supports both "index" and "with index" syntax
   let indexVariable: string | null = null;
-  if (ctx.check('with')) {
+  if (ctx.check(KEYWORDS.WITH)) {
     // Peek ahead to verify this is "with index" pattern
     const nextToken =
       ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
-    if (nextToken && nextToken.value.toLowerCase() === 'index') {
+    if (nextToken && nextToken.value.toLowerCase() === KEYWORDS.INDEX) {
       ctx.advance(); // consume 'with'
       ctx.advance(); // consume 'index'
-      indexVariable = 'index'; // default variable name
+      indexVariable = KEYWORDS.INDEX; // default variable name
     }
     // Otherwise leave 'with' alone - might be for something else (like transition timing)
-  } else if (ctx.check('index')) {
+  } else if (ctx.check(KEYWORDS.INDEX)) {
     ctx.advance(); // consume 'index'
     const indexToken = ctx.peek();
     if (indexToken.type === TokenType.IDENTIFIER) {
       indexVariable = indexToken.value;
       ctx.advance();
     } else {
-      indexVariable = 'index'; // default if no variable name provided
+      indexVariable = KEYWORDS.INDEX; // default if no variable name provided
     }
   }
 
@@ -346,12 +347,12 @@ export function parseIfCommand(
   const maxThenLookahead = 500; // Increased to handle large conditional expressions
   for (let i = 0; i < maxThenLookahead && !ctx.isAtEnd(); i++) {
     const token = ctx.peek();
-    if (token.value === 'then') {
+    if (token.value === KEYWORDS.THEN) {
       hasThen = true;
       break;
     }
     // Stop at structural boundaries
-    if (token.value === 'end' || token.value === 'behavior' || token.value === 'def' || token.value === 'on') {
+    if (token.value === KEYWORDS.END || token.value === KEYWORDS.BEHAVIOR || token.value === KEYWORDS.DEF || token.value === KEYWORDS.ON) {
       break;
     }
     ctx.advance();
@@ -378,10 +379,10 @@ export function parseIfCommand(
 
       // Stop at structural boundaries
       if (
-        tokenValue === 'behavior' ||
-        tokenValue === 'def' ||
-        tokenValue === 'on' ||
-        tokenValue === 'end'
+        tokenValue === KEYWORDS.BEHAVIOR ||
+        tokenValue === KEYWORDS.DEF ||
+        tokenValue === KEYWORDS.ON ||
+        tokenValue === KEYWORDS.END
       ) {
         break;
       }
@@ -422,7 +423,7 @@ export function parseIfCommand(
       !ctx.isAtEnd() &&
       !ctx.checkTokenType(TokenType.COMMAND) &&
       !ctx.isCommand(ctx.peek().value) &&
-      !ctx.check('then') &&
+      !ctx.check(KEYWORDS.THEN) &&
       iterations < maxIterations
     ) {
       const beforePos = ctx.current;
@@ -466,7 +467,7 @@ export function parseIfCommand(
 
     // Parse command block until 'else' or 'end'
     const thenCommands: ASTNode[] = [];
-    while (!ctx.isAtEnd() && !ctx.check('else') && !ctx.check('end')) {
+    while (!ctx.isAtEnd() && !ctx.check(KEYWORDS.ELSE) && !ctx.check(KEYWORDS.END)) {
       if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
         ctx.advance(); // consume command token
         const cmd = ctx.parseCommand();
@@ -497,11 +498,11 @@ export function parseIfCommand(
     // Track if we consumed 'else if' (nested if handles its own 'end')
     let consumedElseIf = false;
 
-    if (ctx.check('else')) {
+    if (ctx.check(KEYWORDS.ELSE)) {
       ctx.advance(); // consume 'else'
 
       // Check for 'else if' continuation (if is a KEYWORD token)
-      if (ctx.check('if') || ctx.checkTokenType(TokenType.KEYWORD) && ctx.peek().value === 'if') {
+      if (ctx.check(KEYWORDS.IF) || ctx.checkTokenType(TokenType.KEYWORD) && ctx.peek().value === KEYWORDS.IF) {
         // This is 'else if' - recursively parse as a nested if command
         // The nested if will consume its own 'end', which serves as the end for the entire chain
         const ifToken = ctx.peek();
@@ -522,7 +523,7 @@ export function parseIfCommand(
       } else {
         // Regular else block
         const elseCommands: ASTNode[] = [];
-        while (!ctx.isAtEnd() && !ctx.check('end')) {
+        while (!ctx.isAtEnd() && !ctx.check(KEYWORDS.END)) {
           if (ctx.checkTokenType(TokenType.COMMAND) || ctx.isCommand(ctx.peek().value)) {
             ctx.advance(); // consume command token
             const cmd = ctx.parseCommand();
@@ -549,7 +550,7 @@ export function parseIfCommand(
     // Consume 'end' for multi-line form
     // Skip if we consumed 'else if' because the nested if already consumed 'end'
     if (!consumedElseIf) {
-      ctx.consume('end', "Expected 'end' after if block");
+      ctx.consume(KEYWORDS.END, "Expected 'end' after if block");
     }
   } else {
     // Single-line form: if condition command
@@ -611,7 +612,7 @@ export function parseForCommand(
   let collection: ASTNode | null = null;
 
   // Support optional 'each' keyword: "for each item in items"
-  if (ctx.check('each')) {
+  if (ctx.check(KEYWORDS.EACH)) {
     ctx.advance(); // consume 'each'
   }
 
@@ -625,7 +626,7 @@ export function parseForCommand(
   }
 
   // Expect 'in' keyword
-  if (!ctx.check('in')) {
+  if (!ctx.check(KEYWORDS.IN)) {
     throw new Error('Expected "in" after variable name in for loop');
   }
   ctx.advance(); // consume 'in'
@@ -638,22 +639,22 @@ export function parseForCommand(
 
   // Parse optional index variable (same as repeat)
   let indexVariable: string | null = null;
-  if (ctx.check('with')) {
+  if (ctx.check(KEYWORDS.WITH)) {
     const nextToken =
       ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
-    if (nextToken && nextToken.value.toLowerCase() === 'index') {
+    if (nextToken && nextToken.value.toLowerCase() === KEYWORDS.INDEX) {
       ctx.advance(); // consume 'with'
       ctx.advance(); // consume 'index'
-      indexVariable = 'index';
+      indexVariable = KEYWORDS.INDEX;
     }
-  } else if (ctx.check('index')) {
+  } else if (ctx.check(KEYWORDS.INDEX)) {
     ctx.advance(); // consume 'index'
     const indexToken = ctx.peek();
     if (indexToken.type === TokenType.IDENTIFIER) {
       indexVariable = indexToken.value;
       ctx.advance();
     } else {
-      indexVariable = 'index';
+      indexVariable = KEYWORDS.INDEX;
     }
   }
 

@@ -12,6 +12,7 @@
 import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, ExpressionNode, Token } from '../../types/core';
 import { TokenType } from '../tokenizer';
+import { KEYWORDS } from '../parser-constants';
 
 /**
  * Parse set command
@@ -78,7 +79,7 @@ export function parseSetCommand(
       }
     }
     // Check for scope modifiers (global/local) first
-    else if (ctx.check('global') || ctx.check('local')) {
+    else if (ctx.check(KEYWORDS.GLOBAL) || ctx.check(KEYWORDS.LOCAL)) {
       const scopeToken = ctx.advance();
       const variableToken = ctx.advance();
 
@@ -89,7 +90,7 @@ export function parseSetCommand(
         start: scopeToken.start,
         end: variableToken.end,
       } as any;
-    } else if (ctx.check('the')) {
+    } else if (ctx.check(KEYWORDS.THE)) {
       const thePosition = ctx.current;
       ctx.advance();
 
@@ -97,10 +98,10 @@ export function parseSetCommand(
       const tokenAfterNext =
         ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
 
-      if (nextToken && tokenAfterNext && tokenAfterNext.value === 'of') {
+      if (nextToken && tokenAfterNext && tokenAfterNext.value === KEYWORDS.OF) {
         const propertyToken = ctx.advance();
 
-        if (ctx.check('of')) {
+        if (ctx.check(KEYWORDS.OF)) {
           ctx.advance();
 
           const targetToken = ctx.advance();
@@ -152,11 +153,11 @@ export function parseSetCommand(
     } else {
       while (
         !ctx.isAtEnd() &&
-        !ctx.check('to') &&
-        !ctx.check('then') &&
-        !ctx.check('and') &&
-        !ctx.check('else') &&
-        !ctx.check('end')
+        !ctx.check(KEYWORDS.TO) &&
+        !ctx.check(KEYWORDS.THEN) &&
+        !ctx.check(KEYWORDS.AND) &&
+        !ctx.check(KEYWORDS.ELSE) &&
+        !ctx.check(KEYWORDS.END)
       ) {
         const token = ctx.parsePrimary();
         targetTokens.push(token);
@@ -166,8 +167,8 @@ export function parseSetCommand(
     if (targetTokens.length > 0) {
       if (
         targetTokens.length >= 4 &&
-        (targetTokens[0] as any).value === 'the' &&
-        (targetTokens[2] as any).value === 'of'
+        (targetTokens[0] as any).value === KEYWORDS.THE &&
+        (targetTokens[2] as any).value === KEYWORDS.OF
       ) {
         targetExpression = {
           type: 'propertyOfExpression',
@@ -194,7 +195,7 @@ export function parseSetCommand(
     }
   }
 
-  if (!ctx.check('to')) {
+  if (!ctx.check(KEYWORDS.TO)) {
     const found = ctx.isAtEnd() ? 'end of input' : ctx.peek().value;
     throw new Error(`Expected 'to' in set command, found: ${found}`);
   }
@@ -221,7 +222,7 @@ export function parseSetCommand(
   }
 
   const pos = ctx.getPosition();
-  finalArgs.push(ctx.createIdentifier('to', pos));
+  finalArgs.push(ctx.createIdentifier(KEYWORDS.TO, pos));
 
   if (valueTokens.length > 0) {
     finalArgs.push(...valueTokens);
@@ -280,7 +281,7 @@ export function parseIncrementDecrementCommand(
 
   // Check for 'global' keyword first
   let hasGlobal = false;
-  if (ctx.check('global')) {
+  if (ctx.check(KEYWORDS.GLOBAL)) {
     hasGlobal = true;
     ctx.advance(); // consume 'global'
   }
@@ -292,7 +293,7 @@ export function parseIncrementDecrementCommand(
   }
 
   // Check for 'by' keyword followed by amount
-  if (ctx.check('by')) {
+  if (ctx.check(KEYWORDS.BY)) {
     ctx.advance(); // consume 'by'
     const amount = ctx.parseExpression();
     if (amount) {
@@ -304,7 +305,7 @@ export function parseIncrementDecrementCommand(
   if (hasGlobal) {
     args.push({
       type: 'literal',
-      value: 'global',
+      value: KEYWORDS.GLOBAL,
       dataType: 'string',
       start: commandToken.start,
       end: commandToken.end,

@@ -4,6 +4,7 @@
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
+import { validateArgCount, validateArgIsString } from '../validation-helpers';
 
 // ============================================================================
 // Conversion Registry
@@ -362,13 +363,10 @@ export const asExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'as expression requires exactly two arguments (value, type)';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'conversion type must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'as', 'value, type') ??
+      validateArgIsString(args, 1, 'as', 'conversion type')
+    );
   },
 };
 
@@ -429,13 +427,10 @@ export const isExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'is expression requires exactly two arguments (value, type)';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'type must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'is', 'value, type') ??
+      validateArgIsString(args, 1, 'is', 'type')
+    );
   },
 };
 
@@ -458,10 +453,7 @@ export const asyncExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'async requires exactly one argument (expression)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'async', 'expression');
   },
 };
 

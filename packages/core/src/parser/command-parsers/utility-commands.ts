@@ -14,6 +14,7 @@ import type { ASTNode, Token, ExpressionNode, CommandNode } from '../../types/co
 import { TokenType } from '../tokenizer';
 import { CommandNodeBuilder } from '../command-node-builder';
 import { isKeyword } from '../helpers/parsing-helpers';
+import { KEYWORDS } from '../parser-constants';
 
 // Import command parsers from other modules for compound command routing
 import * as eventCommands from './event-commands';
@@ -113,10 +114,10 @@ export function parseRegularCommand(
   // Parse command arguments (space-separated, not comma-separated)
   while (
     !ctx.isAtEnd() &&
-    !ctx.check('then') &&
-    !ctx.check('and') &&
-    !ctx.check('else') &&
-    !ctx.check('end') &&
+    !ctx.check(KEYWORDS.THEN) &&
+    !ctx.check(KEYWORDS.AND) &&
+    !ctx.check(KEYWORDS.ELSE) &&
+    !ctx.check(KEYWORDS.END) &&
     !ctx.check('catch') &&
     !ctx.check('finally') &&
     !ctx.checkTokenType(TokenType.COMMAND)
@@ -195,10 +196,10 @@ export function parseMultiWordCommand(
   while (
     !ctx.isAtEnd() &&
     !isKeyword(ctx.peek(), pattern.keywords) &&
-    !ctx.check('then') &&
-    !ctx.check('and') &&
-    !ctx.check('else') &&
-    !ctx.check('end') &&
+    !ctx.check(KEYWORDS.THEN) &&
+    !ctx.check(KEYWORDS.AND) &&
+    !ctx.check(KEYWORDS.ELSE) &&
+    !ctx.check(KEYWORDS.END) &&
     !ctx.check('catch') &&
     !ctx.check('finally') &&
     !ctx.checkTokenType(TokenType.COMMAND)
@@ -299,12 +300,12 @@ export function parseJsCommand(
 
   // Collect tokens until 'end' keyword and reconstruct code
   const codeTokens: string[] = [];
-  while (!ctx.check('end') && !ctx.isAtEnd()) {
+  while (!ctx.check(KEYWORDS.END) && !ctx.isAtEnd()) {
     const token = ctx.advance();
     // Token values already include quotes for strings, so use directly
     codeTokens.push(token.value);
   }
-  ctx.consume('end', 'Expected end after js code body');
+  ctx.consume(KEYWORDS.END, 'Expected end after js code body');
 
   const code = codeTokens.join(' ');
 

@@ -4,6 +4,7 @@
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
+import { validateMaxArgs, validateArgRange, validateArgIsNumber } from '../validation-helpers';
 
 // ============================================================================
 // Array/Collection Positional Expressions
@@ -52,10 +53,7 @@ export const firstExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length > 1) {
-      return 'first expression takes at most one argument (collection)';
-    }
-    return null;
+    return validateMaxArgs(args, 1, 'first', 'collection');
   },
 };
 
@@ -103,10 +101,7 @@ export const lastExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length > 1) {
-      return 'last expression takes at most one argument (collection)';
-    }
-    return null;
+    return validateMaxArgs(args, 1, 'last', 'collection');
   },
 };
 
@@ -165,13 +160,10 @@ export const atExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length < 1 || args.length > 2) {
-      return 'at expression requires 1-2 arguments (index, optional collection)';
-    }
-    if (typeof args[0] !== 'number') {
-      return 'index must be a number';
-    }
-    return null;
+    return (
+      validateArgRange(args, 1, 2, 'at', 'index, optional collection') ??
+      validateArgIsNumber(args, 0, 'at', 'index')
+    );
   },
 };
 
@@ -203,9 +195,8 @@ export const nextExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length > 2) {
-      return 'next expression takes at most 2 arguments (optional selector, optional fromElement)';
-    }
+    const maxError = validateMaxArgs(args, 2, 'next', 'optional selector, optional fromElement');
+    if (maxError) return maxError;
     if (args.length >= 1 && args[0] != null && typeof args[0] !== 'string') {
       return 'selector must be a string';
     }
@@ -240,9 +231,8 @@ export const previousExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length > 2) {
-      return 'previous expression takes at most 2 arguments (optional selector, optional fromElement)';
-    }
+    const maxError = validateMaxArgs(args, 2, 'previous', 'optional selector, optional fromElement');
+    if (maxError) return maxError;
     if (args.length >= 1 && args[0] != null && typeof args[0] !== 'string') {
       return 'selector must be a string';
     }
@@ -341,9 +331,8 @@ export const nextWithinExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length < 2 || args.length > 3) {
-      return 'nextWithin expression requires 2-3 arguments (selector, withinSelector, optional fromElement)';
-    }
+    const rangeError = validateArgRange(args, 2, 3, 'nextWithin', 'selector, withinSelector, optional fromElement');
+    if (rangeError) return rangeError;
     if (typeof args[0] !== 'string') {
       return 'selector must be a string';
     }
@@ -382,9 +371,8 @@ export const previousWithinExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length < 2 || args.length > 3) {
-      return 'previousWithin expression requires 2-3 arguments (selector, withinSelector, optional fromElement)';
-    }
+    const rangeError = validateArgRange(args, 2, 3, 'previousWithin', 'selector, withinSelector, optional fromElement');
+    if (rangeError) return rangeError;
     if (typeof args[0] !== 'string') {
       return 'selector must be a string';
     }

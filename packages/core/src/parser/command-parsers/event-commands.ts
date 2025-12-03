@@ -13,6 +13,7 @@ import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, CommandNode } from '../../types/core';
 import { TokenType } from '../tokenizer';
 import { CommandNodeBuilder } from '../command-node-builder';
+import { KEYWORDS } from '../parser-constants';
 
 /**
  * Parse trigger command
@@ -75,10 +76,10 @@ export function parseTriggerCommand(
   // Continue parsing remaining args (on, target, etc.)
   while (
     !ctx.isAtEnd() &&
-    !ctx.check('then') &&
-    !ctx.check('and') &&
-    !ctx.check('else') &&
-    !ctx.check('end') &&
+    !ctx.check(KEYWORDS.THEN) &&
+    !ctx.check(KEYWORDS.AND) &&
+    !ctx.check(KEYWORDS.ELSE) &&
+    !ctx.check(KEYWORDS.END) &&
     !ctx.checkTokenType(TokenType.COMMAND)
   ) {
     allArgs.push(ctx.parsePrimary());

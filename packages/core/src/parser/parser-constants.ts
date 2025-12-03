@@ -23,6 +23,10 @@ export const KEYWORDS = {
   FOR: 'for',
   WHILE: 'while',
   UNTIL: 'until',
+  FOREVER: 'forever',
+  TIMES: 'times',
+  EACH: 'each',
+  INDEX: 'index',
 
   // Prepositions
   IN: 'in',
@@ -46,11 +50,16 @@ export const KEYWORDS = {
   ON: 'on',
   WHEN: 'when',
   EVERY: 'every',
+  EVENT: 'event',
 
   // Definitions
   INIT: 'init',
   DEF: 'def',
   BEHAVIOR: 'behavior',
+
+  // Scope modifiers
+  GLOBAL: 'global',
+  LOCAL: 'local',
 
   // Articles and positionals
   THE: 'the',

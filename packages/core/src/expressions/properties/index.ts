@@ -5,6 +5,12 @@
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import { getElementProperty } from '../property-access-utils';
+import {
+  validateArgCount,
+  validateArgRange,
+  validateArgIsString,
+  validateSingleStringArg,
+} from '../validation-helpers';
 
 // Re-export for use in tests and external consumers
 export { getElementProperty };
@@ -44,13 +50,10 @@ export const possessiveExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 2) {
-      return 'possessive expression requires exactly two arguments (element, property)';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'property name must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'possessive', 'element, property') ??
+      validateArgIsString(args, 1, 'possessive', 'property name')
+    );
   },
 };
 
@@ -85,13 +88,7 @@ export const myExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 1) {
-      return 'my expression requires exactly one argument (property)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'property name must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'my', 'property');
   },
 };
 
@@ -128,13 +125,7 @@ export const itsExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 1) {
-      return 'its expression requires exactly one argument (property)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'property name must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'its', 'property');
   },
 };
 
@@ -169,13 +160,7 @@ export const yourExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 1) {
-      return 'your expression requires exactly one argument (property)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'property name must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'your', 'property');
   },
 };
 
@@ -214,13 +199,10 @@ export const ofExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 2) {
-      return 'of expression requires exactly two arguments (property, object)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'property name must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'of', 'property, object') ??
+      validateArgIsString(args, 0, 'of', 'property name')
+    );
   },
 };
 
@@ -249,16 +231,13 @@ export const attributeExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length < 1 || args.length > 2) {
-      return 'attribute expression requires 1-2 arguments (attributeName, optional element)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'attribute name must be a string';
-    }
-    if (args.length >= 2 && args[1] != null && !(args[1] instanceof Element)) {
-      return 'element must be an Element';
-    }
-    return null;
+    return (
+      validateArgRange(args, 1, 2, 'attribute', 'attributeName, optional element') ??
+      validateArgIsString(args, 0, 'attribute', 'attribute name') ??
+      (args.length >= 2 && args[1] != null && !(args[1] instanceof Element)
+        ? 'attribute element must be an Element'
+        : null)
+    );
   },
 };
 
@@ -288,19 +267,14 @@ export const attributeWithValueExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length < 2 || args.length > 3) {
-      return 'attributeWithValue expression requires 2-3 arguments (attributeName, expectedValue, optional element)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'attribute name must be a string';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'expected value must be a string';
-    }
-    if (args.length >= 3 && args[2] != null && !(args[2] instanceof Element)) {
-      return 'element must be an Element';
-    }
-    return null;
+    return (
+      validateArgRange(args, 2, 3, 'attributeWithValue', 'attributeName, expectedValue, optional element') ??
+      validateArgIsString(args, 0, 'attributeWithValue', 'attribute name') ??
+      validateArgIsString(args, 1, 'attributeWithValue', 'expected value') ??
+      (args.length >= 3 && args[2] != null && !(args[2] instanceof Element)
+        ? 'attributeWithValue element must be an Element'
+        : null)
+    );
   },
 };
 
@@ -329,13 +303,7 @@ export const classReferenceExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 1) {
-      return 'class reference expression requires exactly one argument (className)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'class name must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'classReference', 'className');
   },
 };
 
@@ -362,13 +330,7 @@ export const idReferenceExpression: ExpressionImplementation = {
   },
 
   validate(args: any[]): string | null {
-    if (args.length !== 1) {
-      return 'id reference expression requires exactly one argument (idValue)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'id value must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'idReference', 'idValue');
   },
 };
 

@@ -13,6 +13,7 @@ import type { ParserContext, IdentifierNode, LiteralNode } from '../parser-types
 import type { ASTNode, ExpressionNode, Token } from '../../types/core';
 import { TokenType } from '../tokenizer';
 import { CommandNodeBuilder } from '../command-node-builder';
+import { KEYWORDS } from '../parser-constants';
 
 /**
  * Parse wait command
@@ -119,11 +120,11 @@ export function parseWaitCommand(
 
     // Parse optional 'from <target>' clause
     let eventTarget: ASTNode | null = null;
-    if (ctx.check('from')) {
+    if (ctx.check(KEYWORDS.FROM)) {
       ctx.advance(); // consume 'from'
 
       // Optional 'the' before target
-      if (ctx.check('the')) {
+      if (ctx.check(KEYWORDS.THE)) {
         ctx.advance();
       }
 

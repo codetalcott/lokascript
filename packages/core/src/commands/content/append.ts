@@ -28,6 +28,7 @@ import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import { getVariableValue, setVariableValue } from '../helpers/variable-access';
 
 /**
  * Typed input for AppendCommand
@@ -181,10 +182,9 @@ export class AppendCommand {
       }
 
       // Handle variable operations
-      const variableExists = this.variableExists(target, context);
+      const currentValue = getVariableValue(target, context);
 
-      if (variableExists) {
-        const currentValue = this.getVariableValue(target, context);
+      if (currentValue !== undefined) {
 
         // Special handling for arrays
         if (Array.isArray(currentValue)) {
@@ -198,7 +198,7 @@ export class AppendCommand {
 
         // Handle strings and other types
         const newValue = (currentValue == null ? '' : String(currentValue)) + contentStr;
-        this.setVariableValue(target, newValue, context);
+        setVariableValue(target, newValue, context);
         return {
           result: newValue,
           targetType: 'variable',
@@ -206,7 +206,7 @@ export class AppendCommand {
         };
       } else {
         // Create new variable
-        this.setVariableValue(target, contentStr, context);
+        setVariableValue(target, contentStr, context);
         return {
           result: contentStr,
           targetType: 'variable',
@@ -280,81 +280,6 @@ export class AppendCommand {
       default:
         throw new Error(`Unknown context reference: ${ref}`);
     }
-  }
-
-  /**
-   * Check if variable exists in context
-   *
-   * @param name - Variable name
-   * @param context - Execution context
-   * @returns true if variable exists
-   */
-  private variableExists(name: string, context: TypedExecutionContext): boolean {
-    return (
-      !!(context.locals && context.locals.has(name)) ||
-      !!(context.globals && context.globals.has(name)) ||
-      !!(context.variables && context.variables.has(name))
-    );
-  }
-
-  /**
-   * Get variable value from context
-   *
-   * Searches in order: locals, globals, variables
-   *
-   * @param name - Variable name
-   * @param context - Execution context
-   * @returns Variable value or undefined
-   */
-  private getVariableValue(name: string, context: TypedExecutionContext): any {
-    // Check local variables first
-    if (context.locals && context.locals.has(name)) {
-      return context.locals.get(name);
-    }
-
-    // Check global variables
-    if (context.globals && context.globals.has(name)) {
-      return context.globals.get(name);
-    }
-
-    // Check general variables
-    if (context.variables && context.variables.has(name)) {
-      return context.variables.get(name);
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Set variable value in context
-   *
-   * Updates existing variable or creates new local variable
-   *
-   * @param name - Variable name
-   * @param value - Value to set
-   * @param context - Execution context
-   */
-  private setVariableValue(name: string, value: any, context: TypedExecutionContext): void {
-    // If variable exists in local scope, update it
-    if (context.locals && context.locals.has(name)) {
-      context.locals.set(name, value);
-      return;
-    }
-
-    // If variable exists in global scope, update it
-    if (context.globals && context.globals.has(name)) {
-      context.globals.set(name, value);
-      return;
-    }
-
-    // If variable exists in general variables, update it
-    if (context.variables && context.variables.has(name)) {
-      context.variables.set(name, value);
-      return;
-    }
-
-    // Create new local variable
-    context.locals.set(name, value);
   }
 }
 

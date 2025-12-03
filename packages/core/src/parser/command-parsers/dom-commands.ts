@@ -99,13 +99,13 @@ export function parseToggleCommand(
   // Support both 'from' (HyperFixi) and 'on' (official _hyperscript) for compatibility
 
   // Parse first argument (class) until 'from' or 'on'
-  if (!ctx.isAtEnd() && !ctx.check('from') && !ctx.check('on') && !ctx.check('end')) {
+  if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.FROM) && !ctx.check(KEYWORDS.ON) && !ctx.check(KEYWORDS.END)) {
     args.push(ctx.parsePrimary());
   }
 
   // Accept either 'from' or 'on' keyword for target specification
   // Note: We add the preposition as an argument for backwards compatibility
-  if (ctx.check('from') || ctx.check('on')) {
+  if (ctx.check(KEYWORDS.FROM) || ctx.check(KEYWORDS.ON)) {
     const preposition = ctx.peek().value; // 'from' or 'on'
     ctx.advance(); // consume the preposition
     args.push(ctx.createIdentifier(preposition, ctx.getPosition())); // Add preposition as an argument
@@ -113,10 +113,10 @@ export function parseToggleCommand(
     // Parse target
     if (
       !ctx.isAtEnd() &&
-      !ctx.check('then') &&
-      !ctx.check('and') &&
-      !ctx.check('else') &&
-      !ctx.check('end')
+      !ctx.check(KEYWORDS.THEN) &&
+      !ctx.check(KEYWORDS.AND) &&
+      !ctx.check(KEYWORDS.ELSE) &&
+      !ctx.check(KEYWORDS.END)
     ) {
       args.push(ctx.parsePrimary());
     }
@@ -161,17 +161,17 @@ export function parseAddCommand(
     // Parse CSS-style object literal for inline styles
     // Syntax: { left: ${x}px; top: ${y}px; }
     args.push(ctx.parseCSSObjectLiteral());
-  } else if (!ctx.isAtEnd() && !ctx.check('to')) {
+  } else if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.TO)) {
     // Parse regular class expression
     args.push(ctx.parsePrimary());
   }
 
   // Parse optional 'to <target>'
-  if (ctx.check('to')) {
+  if (ctx.check(KEYWORDS.TO)) {
     ctx.advance(); // consume 'to'
 
     // Parse target element
-    if (!ctx.isAtEnd() && !ctx.check('then') && !ctx.check('and')) {
+    if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.THEN) && !ctx.check(KEYWORDS.AND)) {
       args.push(ctx.parsePrimary());
     }
   }

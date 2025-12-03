@@ -13,6 +13,7 @@ import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, ExpressionNode, Token } from '../../types/core';
 import { TokenType } from '../tokenizer';
 import { CommandNodeBuilder } from '../command-node-builder';
+import { KEYWORDS } from '../parser-constants';
 
 /**
  * Parse measure command
@@ -209,7 +210,7 @@ export function parseTransitionCommand(
   args.push(property);
 
   // Parse 'to' keyword and value (required) - store in modifiers for V2 command
-  if (!ctx.check('to')) {
+  if (!ctx.check(KEYWORDS.TO)) {
     throw new Error('Expected "to" keyword after property in transition command');
   }
   ctx.advance(); // consume 'to'
@@ -226,7 +227,7 @@ export function parseTransitionCommand(
   }
 
   // Parse optional 'with <timing-function>' - store in modifiers
-  if (ctx.check('with')) {
+  if (ctx.check(KEYWORDS.WITH)) {
     ctx.advance(); // consume 'with'
     const timingFunction = ctx.parsePrimary();
     modifiers['with'] = timingFunction;

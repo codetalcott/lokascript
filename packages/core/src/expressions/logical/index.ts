@@ -9,6 +9,7 @@ import { v } from '../../validation/lightweight-validators';
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import type { ExpressionMetadata, LLMDocumentation } from '../../types/expression-types';
 import { matchesWithCache } from '../../performance/integration';
+import { validateArgCount, validateTwoArgs } from '../validation-helpers';
 
 // ============================================================================
 // Enhanced Expression Interface
@@ -104,10 +105,7 @@ export const equalsExpression: EnhancedExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'equals requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'equals');
   },
 
   inputSchema: ComparisonInputSchema,
@@ -199,10 +197,7 @@ export const strictEqualsExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'strictEquals requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'strictEquals');
   },
 };
 
@@ -219,10 +214,7 @@ export const notEqualsExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'notEquals requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'notEquals');
   },
 };
 
@@ -239,10 +231,7 @@ export const strictNotEqualsExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'strictNotEquals requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'strictNotEquals');
   },
 };
 
@@ -259,10 +248,7 @@ export const lessThanExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'lessThan requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'lessThan');
   },
 };
 
@@ -279,10 +265,7 @@ export const lessThanOrEqualExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'lessThanOrEqual requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'lessThanOrEqual');
   },
 };
 
@@ -299,10 +282,7 @@ export const greaterThanExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'greaterThan requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'greaterThan');
   },
 };
 
@@ -319,10 +299,7 @@ export const greaterThanOrEqualExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'greaterThanOrEqual requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'greaterThanOrEqual');
   },
 };
 
@@ -360,10 +337,7 @@ export const andExpression: EnhancedExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'and requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'and');
   },
 
   inputSchema: ComparisonInputSchema,
@@ -462,10 +436,7 @@ export const orExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'or requires exactly two arguments (left, right)';
-    }
-    return null;
+    return validateTwoArgs(args, 'or');
   },
 };
 
@@ -483,10 +454,7 @@ export const notExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'not requires exactly one argument (operand)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'not', 'operand');
   },
 };
 
@@ -512,10 +480,7 @@ export const isEmptyExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'isEmpty requires exactly one argument (value)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'isEmpty', 'value');
   },
 };
 
@@ -541,10 +506,7 @@ export const noExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'no requires exactly one argument (value)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'no', 'value');
   },
 };
 
@@ -559,10 +521,7 @@ export const isNotEmptyExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'isNotEmpty requires exactly one argument (value)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'isNotEmpty', 'value');
   },
 };
 
@@ -577,10 +536,7 @@ export const existsExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'exists requires exactly one argument (value)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'exists', 'value');
   },
 };
 
@@ -595,10 +551,7 @@ export const doesNotExistExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'doesNotExist requires exactly one argument (value)';
-    }
-    return null;
+    return validateArgCount(args, 1, 'doesNotExist', 'value');
   },
 };
 
@@ -667,10 +620,7 @@ export const containsExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'contains requires exactly two arguments (container, value)';
-    }
-    return null;
+    return validateArgCount(args, 2, 'contains', 'container, value');
   },
 };
 
@@ -685,10 +635,7 @@ export const doesNotContainExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'doesNotContain requires exactly two arguments (container, value)';
-    }
-    return null;
+    return validateArgCount(args, 2, 'doesNotContain', 'container, value');
   },
 };
 
@@ -706,10 +653,7 @@ export const startsWithExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'startsWith requires exactly two arguments (str, prefix)';
-    }
-    return null;
+    return validateArgCount(args, 2, 'startsWith', 'str, prefix');
   },
 };
 
@@ -727,10 +671,7 @@ export const endsWithExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'endsWith requires exactly two arguments (str, suffix)';
-    }
-    return null;
+    return validateArgCount(args, 2, 'endsWith', 'str, suffix');
   },
 };
 
@@ -796,10 +737,7 @@ export const matchesExpression: EnhancedExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'matches requires exactly two arguments (element, selector)';
-    }
-    return null;
+    return validateArgCount(args, 2, 'matches', 'element, selector');
   },
 
   inputSchema: PatternMatchingInputSchema,

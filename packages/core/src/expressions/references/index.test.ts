@@ -540,14 +540,14 @@ describe('Reference Expressions', () => {
           referenceExpressions.possessiveStyleRef.validate!(['its', 'computed-width'])
         ).toBeNull();
         expect(referenceExpressions.possessiveStyleRef.validate!([])).toContain(
-          'requires exactly 2 arguments'
+          'requires exactly two arguments'
         );
         expect(referenceExpressions.possessiveStyleRef.validate!(['my'])).toContain(
-          'requires exactly 2 arguments'
+          'requires exactly two arguments'
         );
         expect(
           referenceExpressions.possessiveStyleRef.validate!(['my', 'color', 'extra'])
-        ).toContain('requires exactly 2 arguments');
+        ).toContain('requires exactly two arguments');
         expect(referenceExpressions.possessiveStyleRef.validate!([123, 'color'])).toContain(
           'possessor must be a string'
         );
@@ -656,13 +656,13 @@ describe('Reference Expressions', () => {
         expect(referenceExpressions.ofStyleRef.validate!(['color', 'me'])).toBeNull();
         expect(referenceExpressions.ofStyleRef.validate!(['computed-width', 'it'])).toBeNull();
         expect(referenceExpressions.ofStyleRef.validate!([])).toContain(
-          'requires exactly 2 arguments'
+          'requires exactly two arguments'
         );
         expect(referenceExpressions.ofStyleRef.validate!(['color'])).toContain(
-          'requires exactly 2 arguments'
+          'requires exactly two arguments'
         );
         expect(referenceExpressions.ofStyleRef.validate!(['color', 'me', 'extra'])).toContain(
-          'requires exactly 2 arguments'
+          'requires exactly two arguments'
         );
         expect(referenceExpressions.ofStyleRef.validate!([123, 'me'])).toContain(
           'property must be a string'

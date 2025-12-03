@@ -4,6 +4,13 @@
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
+import {
+  validateNoArgs,
+  validateSingleStringArg,
+  validateArgCount,
+  validateArgRange,
+  validateArgIsString,
+} from '../validation-helpers';
 
 // ============================================================================
 // Core Reference Variables
@@ -18,9 +25,7 @@ export const meExpression: ExpressionImplementation = {
     return context.me instanceof HTMLElement ? context.me : null;
   },
 
-  validate() {
-    return null; // 'me' requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const youExpression: ExpressionImplementation = {
@@ -32,9 +37,7 @@ export const youExpression: ExpressionImplementation = {
     return context.you instanceof HTMLElement ? context.you : null;
   },
 
-  validate() {
-    return null; // 'you' requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const itExpression: ExpressionImplementation = {
@@ -46,9 +49,7 @@ export const itExpression: ExpressionImplementation = {
     return context.it;
   },
 
-  validate() {
-    return null; // 'it' requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const itsExpression: ExpressionImplementation = {
@@ -61,9 +62,7 @@ export const itsExpression: ExpressionImplementation = {
     return context.it;
   },
 
-  validate() {
-    return null; // 'its' requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const resultExpression: ExpressionImplementation = {
@@ -75,9 +74,7 @@ export const resultExpression: ExpressionImplementation = {
     return context.result;
   },
 
-  validate() {
-    return null; // 'result' requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 // ============================================================================
@@ -101,13 +98,7 @@ export const querySelectorExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'querySelector requires exactly one argument (selector)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'querySelector selector must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'querySelector', 'selector');
   },
 };
 
@@ -129,13 +120,7 @@ export const querySelectorAllExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'querySelectorAll requires exactly one argument (selector)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'querySelectorAll selector must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'querySelectorAll', 'selector');
   },
 };
 
@@ -158,13 +143,7 @@ export const idExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'getElementById requires exactly one argument (ID)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'getElementById ID must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'getElementById', 'ID');
   },
 };
 
@@ -186,13 +165,7 @@ export const classExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'getElementsByClassName requires exactly one argument (className)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'getElementsByClassName className must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'getElementsByClassName', 'className');
   },
 };
 
@@ -219,13 +192,7 @@ export const closestExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'closest requires exactly one argument (selector)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'closest selector must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'closest', 'selector');
   },
 };
 
@@ -242,9 +209,7 @@ export const parentExpression: ExpressionImplementation = {
     return context.me.parentElement;
   },
 
-  validate(): string | null {
-    return null; // parent requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 // ============================================================================
@@ -260,9 +225,7 @@ export const windowExpression: ExpressionImplementation = {
     return window;
   },
 
-  validate(): string | null {
-    return null; // window requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const documentExpression: ExpressionImplementation = {
@@ -274,9 +237,7 @@ export const documentExpression: ExpressionImplementation = {
     return document;
   },
 
-  validate(): string | null {
-    return null; // document requires no arguments
-  },
+  validate: validateNoArgs,
 };
 
 export const elementWithSelectorExpression: ExpressionImplementation = {
@@ -295,13 +256,7 @@ export const elementWithSelectorExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 1) {
-      return 'elementWithSelector requires exactly one argument (selector)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'selector must be a string';
-    }
-    return null;
+    return validateSingleStringArg(args, 'elementWithSelector', 'selector');
   },
 };
 
@@ -340,16 +295,13 @@ export const styleRefExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length === 0 || args.length > 2) {
-      return 'styleRef requires 1-2 arguments (property, optional element)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'styleRef property must be a string';
-    }
-    if (args.length === 2 && args[1] && typeof args[1] !== 'object') {
-      return 'styleRef element must be an HTMLElement';
-    }
-    return null;
+    return (
+      validateArgRange(args, 1, 2, 'styleRef', 'property, optional element') ??
+      validateArgIsString(args, 0, 'styleRef', 'property') ??
+      (args.length === 2 && args[1] && typeof args[1] !== 'object'
+        ? 'styleRef element must be an HTMLElement'
+        : null)
+    );
   },
 };
 
@@ -391,16 +343,11 @@ export const possessiveStyleRefExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'possessiveStyleRef requires exactly 2 arguments (possessor, property)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'possessiveStyleRef possessor must be a string';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'possessiveStyleRef property must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'possessiveStyleRef', 'possessor, property') ??
+      validateArgIsString(args, 0, 'possessiveStyleRef', 'possessor') ??
+      validateArgIsString(args, 1, 'possessiveStyleRef', 'property')
+    );
   },
 };
 
@@ -442,16 +389,11 @@ export const ofStyleRefExpression: ExpressionImplementation = {
   },
 
   validate(args: unknown[]): string | null {
-    if (args.length !== 2) {
-      return 'ofStyleRef requires exactly 2 arguments (property, reference)';
-    }
-    if (typeof args[0] !== 'string') {
-      return 'ofStyleRef property must be a string';
-    }
-    if (typeof args[1] !== 'string') {
-      return 'ofStyleRef reference must be a string';
-    }
-    return null;
+    return (
+      validateArgCount(args, 2, 'ofStyleRef', 'property, reference') ??
+      validateArgIsString(args, 0, 'ofStyleRef', 'property') ??
+      validateArgIsString(args, 1, 'ofStyleRef', 'reference')
+    );
   },
 };
 

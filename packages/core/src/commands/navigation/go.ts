@@ -13,6 +13,7 @@
 import type { ASTNode, ExecutionContext } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import { getVariableValue } from '../helpers/variable-access';
 
 /**
  * Raw input from RuntimeBase (before evaluation)
@@ -485,7 +486,7 @@ export class GoCommand {
     }
 
     // Handle variable references
-    const variable = this.getVariableValue(String(target), context);
+    const variable = getVariableValue(String(target), context);
     if (isHTMLElement(variable)) {
       return variable as HTMLElement;
     }
@@ -575,32 +576,6 @@ export class GoCommand {
     }
 
     return { x: Math.max(0, x), y: Math.max(0, y) };
-  }
-
-  /**
-   * Get variable value from execution context
-   *
-   * @param name - Variable name
-   * @param context - Execution context
-   * @returns Variable value or undefined
-   */
-  private getVariableValue(name: string, context: ExecutionContext): unknown {
-    // Check local variables first
-    if (context.locals && context.locals.has(name)) {
-      return context.locals.get(name);
-    }
-
-    // Check global variables
-    if (context.globals && context.globals.has(name)) {
-      return context.globals.get(name);
-    }
-
-    // Check general variables
-    if (context.variables && context.variables.has(name)) {
-      return context.variables.get(name);
-    }
-
-    return undefined;
   }
 
   // ============================================================================
