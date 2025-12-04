@@ -455,6 +455,13 @@ export class ExpressionEvaluator {
 
     // If explicit scope is specified, ONLY check that scope
     if (scope === 'local') {
+      // Debug: log what we're looking for
+      console.log(`[DEBUG] Looking for local var '${name}' in context.locals:`, {
+        hasLocals: !!context.locals,
+        localsKeys: context.locals ? Array.from(context.locals.keys()) : [],
+        hasVariable: context.locals?.has(name),
+        value: context.locals?.get(name)
+      });
       // Only check locals (for :variable syntax)
       if (context.locals?.has(name)) {
         return context.locals.get(name);
@@ -643,6 +650,29 @@ export class ExpressionEvaluator {
         // The property is the class name (without the dot)
         if (left.property?.type === 'identifier' && left.property.name) {
           selector = '.' + left.property.name;
+        }
+      }
+      // Case 3: left is callExpression where callee is 'first' or 'last'
+      // e.g., { type: 'callExpression', callee: { type: 'identifier', name: 'first' }, arguments: [selectorNode] }
+      else if (
+        left.type === 'callExpression' &&
+        left.callee?.type === 'identifier' &&
+        (left.callee.name === 'first' || left.callee.name === 'last')
+      ) {
+        positionalOp = left.callee.name;
+        const selectorArg = left.arguments?.[0];
+
+        if (selectorArg?.type === 'selector') {
+          selector = selectorArg.value;
+        } else if (selectorArg?.type === 'cssSelector') {
+          selector = selectorArg.selector;
+        } else if (selectorArg?.type === 'classSelector') {
+          selector = '.' + selectorArg.className;
+        } else if (selectorArg?.type === 'idSelector') {
+          selector = '#' + selectorArg.id;
+        } else if (selectorArg) {
+          // Fallback: evaluate the selector argument
+          selector = String(await this.evaluate(selectorArg, context));
         }
       }
 
