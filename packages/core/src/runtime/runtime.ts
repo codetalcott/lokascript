@@ -282,15 +282,6 @@ export class Runtime extends RuntimeBase {
   getRegistry(): CommandRegistryV2 {
     return this.registry as unknown as CommandRegistryV2;
   }
-
-  /**
-   * Alias for getRegistry() - backward compatible with tests
-   *
-   * @returns The command registry instance
-   */
-  getRegistry(): CommandRegistryV2 {
-    return this.getRegistry();
-  }
 }
 
 /**

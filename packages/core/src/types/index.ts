@@ -120,6 +120,48 @@ export type AsyncValidationFunction<T> = (input: unknown) => Promise<ValidationR
 export { default as CoreTypes } from './unified-types';
 
 // ============================================================================
+// Result Pattern (napi-rs inspired - Rust Result<T, E>)
+// ============================================================================
+
+export type {
+  Result,
+  Ok,
+  Err,
+  ExecutionSignal,
+  HaltSignal,
+  ExitSignal,
+  BreakSignal,
+  ContinueSignal,
+  ReturnSignal,
+  ExecutionResult,
+  OperationResult,
+  ExecutionError,
+} from './result';
+
+export {
+  ok,
+  err,
+  halt,
+  exit,
+  breakLoop,
+  continueLoop,
+  returnValue,
+  isOk,
+  isErr,
+  isSignal,
+  isSignalResult,
+  unwrap,
+  unwrapOr,
+  unwrapOrElse,
+  map,
+  mapErr,
+  andThen,
+  fromPromise,
+  fromThrowable,
+  fromAsyncThrowable,
+} from './result';
+
+// ============================================================================
 // Command Metadata System (napi-rs inspired patterns)
 // ============================================================================
 
