@@ -10,11 +10,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { WaitCommand } from '../wait';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/ast';
+import type { ASTNode } from '../../../types/base-types';
 
 // ========== Test Utilities ==========
 
-function createMockContext(): ExecutionContext & TypedExecutionContext {
+/** Test context with guaranteed non-null me */
+interface TestContext extends ExecutionContext, TypedExecutionContext {
+  me: HTMLElement;
+}
+
+function createMockContext(): TestContext {
   const meElement = document.createElement('div');
   meElement.id = 'test-element';
 
@@ -27,7 +32,7 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
     globals: new Map(),
     target: meElement,
     detail: undefined,
-  } as any;
+  } as unknown as TestContext;
 }
 
 function createMockEvaluator() {

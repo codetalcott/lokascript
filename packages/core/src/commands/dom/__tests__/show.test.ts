@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ShowCommand } from '../show';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/ast';
+import type { ASTNode } from '../../../types/base-types';
 
 // ========== Test Utilities ==========
 
