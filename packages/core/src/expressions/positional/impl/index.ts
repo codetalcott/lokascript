@@ -3,6 +3,7 @@
  * Provides deep TypeScript integration for positional navigation expressions
  *
  * Refactored to use BaseExpressionImpl for reduced bundle size (~4 KB savings)
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v } from '../../../validation/lightweight-validators';
@@ -19,6 +20,7 @@ import type {
   ExpressionCategory,
 } from '../../../types/expression-types';
 import { BaseExpressionImpl } from '../../base-expression';
+import { isString, isNumber, isBoolean } from '../../type-helpers';
 
 // ============================================================================
 // Input Schemas
@@ -139,9 +141,9 @@ export class FirstExpression
   private inferResultTypeLocal(value: unknown): EvaluationType {
     if (value === undefined) return 'Undefined';
     if (value === null) return 'Null';
-    if (typeof value === 'string') return 'String';
-    if (typeof value === 'number') return 'Number';
-    if (typeof value === 'boolean') return 'Boolean';
+    if (isString(value)) return 'String';
+    if (isNumber(value)) return 'Number';
+    if (isBoolean(value)) return 'Boolean';
     if (Array.isArray(value)) return 'Array';
     if (value instanceof HTMLElement) return 'Element';
     return 'Object';
@@ -240,9 +242,9 @@ export class LastExpression
   private inferResultTypeLocal(value: unknown): EvaluationType {
     if (value === undefined) return 'Undefined';
     if (value === null) return 'Null';
-    if (typeof value === 'string') return 'String';
-    if (typeof value === 'number') return 'Number';
-    if (typeof value === 'boolean') return 'Boolean';
+    if (isString(value)) return 'String';
+    if (isNumber(value)) return 'Number';
+    if (isBoolean(value)) return 'Boolean';
     if (Array.isArray(value)) return 'Array';
     if (value instanceof HTMLElement) return 'Element';
     return 'Object';
@@ -348,9 +350,9 @@ export class AtExpression
   private inferResultTypeLocal(value: unknown): EvaluationType {
     if (value === undefined) return 'Undefined';
     if (value === null) return 'Null';
-    if (typeof value === 'string') return 'String';
-    if (typeof value === 'number') return 'Number';
-    if (typeof value === 'boolean') return 'Boolean';
+    if (isString(value)) return 'String';
+    if (isNumber(value)) return 'Number';
+    if (isBoolean(value)) return 'Boolean';
     if (Array.isArray(value)) return 'Array';
     if (value instanceof HTMLElement) return 'Element';
     return 'Object';
@@ -473,9 +475,9 @@ export class RandomExpression
   private inferResultTypeLocal(value: unknown): EvaluationType {
     if (value === undefined) return 'Undefined';
     if (value === null) return 'Null';
-    if (typeof value === 'string') return 'String';
-    if (typeof value === 'number') return 'Number';
-    if (typeof value === 'boolean') return 'Boolean';
+    if (isString(value)) return 'String';
+    if (isNumber(value)) return 'Number';
+    if (isBoolean(value)) return 'Boolean';
     if (Array.isArray(value)) return 'Array';
     if (value instanceof HTMLElement) return 'Element';
     return 'Object';

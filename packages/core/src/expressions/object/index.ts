@@ -2,6 +2,8 @@
  * Object Expression - Object Literal Operations
  * Implements comprehensive object literal creation with TypeScript integration
  * Handles object creation, dynamic field names, and type safety
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
@@ -13,6 +15,7 @@ import type {
 } from '../../types/command-types';
 import type { ValidationError, TypedExpressionContext } from '../../types/base-types';
 import type { TypedExpressionImplementation } from '../../types/expression-types';
+import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schemas
@@ -289,7 +292,7 @@ export class ObjectLiteralExpression
   ): Promise<EvaluationResult<HyperScriptValue>> {
     try {
       // Handle promise values
-      if (value && typeof value === 'object' && 'then' in value) {
+      if (value && isObject(value) && 'then' in (value as object)) {
         const resolvedValue = await value;
         return {
           success: true,
@@ -299,7 +302,7 @@ export class ObjectLiteralExpression
       }
 
       // Handle function calls for dynamic evaluation
-      if (typeof value === 'function') {
+      if (isFunction(value)) {
         try {
           const result = await value(context);
           return {
@@ -351,13 +354,13 @@ export class ObjectLiteralExpression
   private inferType(value: unknown): HyperScriptValueType {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
-    if (typeof value === 'string') return 'string';
-    if (typeof value === 'number') return 'number';
-    if (typeof value === 'boolean') return 'boolean';
+    if (isString(value)) return 'string';
+    if (isNumber(value)) return 'number';
+    if (isBoolean(value)) return 'boolean';
     if (value instanceof HTMLElement) return 'element';
     if (Array.isArray(value)) return 'array';
-    if (typeof value === 'object') return 'object';
-    if (typeof value === 'function') return 'function';
+    if (isObject(value)) return 'object';
+    if (isFunction(value)) return 'function';
     return 'unknown';
   }
 

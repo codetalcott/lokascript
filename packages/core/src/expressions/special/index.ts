@@ -1,6 +1,8 @@
 /**
  * Special Expressions for HyperScript
  * Provides deep TypeScript integration for literals and mathematical operations
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v } from '../../validation/lightweight-validators';
@@ -13,6 +15,7 @@ import type {
   EvaluationResult,
 } from '../../types/base-types';
 import type { ExpressionCategory } from '../../types/expression-types';
+import { isString, isNumber, isBoolean } from '../type-helpers';
 
 // ============================================================================
 // Input Schemas
@@ -608,23 +611,23 @@ export class AdditionExpression implements BaseTypedExpression<number> {
   }
 
   private ensureNumber(value: unknown, context: string): number {
-    if (typeof value === 'number') {
-      if (!isFinite(value)) {
+    if (isNumber(value)) {
+      if (!isFinite(value as number)) {
         throw new Error(`${context} must be a finite number`);
       }
-      return value;
+      return value as number;
     }
 
-    if (typeof value === 'string') {
-      const num = parseFloat(value);
+    if (isString(value)) {
+      const num = parseFloat(value as string);
       if (isNaN(num)) {
         throw new Error(`${context} cannot be converted to number: "${value}"`);
       }
       return num;
     }
 
-    if (typeof value === 'boolean') {
-      return value ? 1 : 0;
+    if (isBoolean(value)) {
+      return (value as boolean) ? 1 : 0;
     }
 
     if (value === null || value === undefined) {
@@ -750,9 +753,9 @@ export class StringConcatenationExpression implements BaseTypedExpression<string
   private convertToString(value: unknown): string {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'number') return value.toString();
-    if (typeof value === 'boolean') return value.toString();
+    if (isString(value)) return value as string;
+    if (isNumber(value)) return (value as number).toString();
+    if (isBoolean(value)) return (value as boolean).toString();
     if (value instanceof Date) return value.toString();
 
     try {
@@ -888,23 +891,23 @@ export class MultiplicationExpression implements BaseTypedExpression<number> {
   }
 
   private ensureNumber(value: unknown, context: string): number {
-    if (typeof value === 'number') {
-      if (!isFinite(value)) {
+    if (isNumber(value)) {
+      if (!isFinite(value as number)) {
         throw new Error(`${context} must be a finite number`);
       }
-      return value;
+      return value as number;
     }
 
-    if (typeof value === 'string') {
-      const num = parseFloat(value);
+    if (isString(value)) {
+      const num = parseFloat(value as string);
       if (isNaN(num)) {
         throw new Error(`${context} cannot be converted to number: "${value}"`);
       }
       return num;
     }
 
-    if (typeof value === 'boolean') {
-      return value ? 1 : 0;
+    if (isBoolean(value)) {
+      return (value as boolean) ? 1 : 0;
     }
 
     if (value === null || value === undefined) {

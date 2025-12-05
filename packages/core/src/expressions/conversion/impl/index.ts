@@ -3,6 +3,7 @@
  * Provides deep TypeScript integration for type conversion expressions with comprehensive validation
  *
  * Refactored to use BaseExpressionImpl for reduced bundle size (~2 KB savings)
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v } from '../../../validation/lightweight-validators';
@@ -16,6 +17,7 @@ import type {
 } from '../../../types/base-types';
 import type { ExpressionCategory, LLMDocumentation } from '../../../types/expression-types';
 import { BaseExpressionImpl } from '../../base-expression';
+import { isString, isNumber, isBoolean, isObject, isFunction } from '../../type-helpers';
 
 // ============================================================================
 // Enhanced Type Conversion Registry
@@ -84,10 +86,10 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
       if (value == null) {
         return { success: true, value: '', type: 'string' };
       }
-      if (typeof value === 'string') {
-        return { success: true, value, type: 'string' };
+      if (isString(value)) {
+        return { success: true, value: value as string, type: 'string' };
       }
-      if (typeof value === 'object') {
+      if (isObject(value)) {
         const result = JSON.stringify(value);
         return { success: true, value: result, type: 'string' };
       }
@@ -108,21 +110,22 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
 
   Boolean: (value: unknown, _context: TypedExpressionContext): EvaluationResult<boolean> => {
     try {
-      if (typeof value === 'boolean') {
-        return { success: true, value, type: 'boolean' };
+      if (isBoolean(value)) {
+        return { success: true, value: value as boolean, type: 'boolean' };
       }
       if (value == null) {
         return { success: true, value: false, type: 'boolean' };
       }
-      if (typeof value === 'string') {
-        const lowerValue = value.toLowerCase().trim();
+      if (isString(value)) {
+        const lowerValue = (value as string).toLowerCase().trim();
         if (lowerValue === 'false' || lowerValue === '0' || lowerValue === '') {
           return { success: true, value: false, type: 'boolean' };
         }
         return { success: true, value: true, type: 'boolean' };
       }
-      if (typeof value === 'number') {
-        return { success: true, value: value !== 0 && !isNaN(value), type: 'boolean' };
+      if (isNumber(value)) {
+        const num = value as number;
+        return { success: true, value: num !== 0 && !isNaN(num), type: 'boolean' };
       }
       return { success: true, value: Boolean(value), type: 'boolean' };
     } catch (error) {
@@ -141,8 +144,8 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
 
   Number: (value: unknown, _context: TypedExpressionContext): EvaluationResult<number> => {
     try {
-      if (typeof value === 'number') {
-        return { success: true, value, type: 'number' };
+      if (isNumber(value)) {
+        return { success: true, value: value as number, type: 'number' };
       }
       if (value == null) {
         return { success: true, value: 0, type: 'number' };
@@ -208,8 +211,8 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
       }
 
       // Handle YYYY-MM-DD format specially to avoid timezone issues
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        const [year, month, day] = value.split('-').map(Number);
+      if (isString(value) && /^\d{4}-\d{2}-\d{2}$/.test(value as string)) {
+        const [year, month, day] = (value as string).split('-').map(Number);
         const date = new Date(year, month - 1, day);
         return { success: true, value: date, type: 'object' };
       }
@@ -273,12 +276,12 @@ export const enhancedConverters: Record<string, EnhancedTypeConverter> = {
     _context: TypedExpressionContext
   ): EvaluationResult<Record<string, unknown>> => {
     try {
-      if (typeof value === 'object' && value !== null) {
+      if (isObject(value)) {
         return { success: true, value: value as Record<string, unknown>, type: 'object' };
       }
-      if (typeof value === 'string') {
+      if (isString(value)) {
         try {
-          const parsed = JSON.parse(value);
+          const parsed = JSON.parse(value as string);
           return { success: true, value: parsed, type: 'object' };
         } catch (parseError) {
           return {
@@ -771,22 +774,22 @@ export class IsExpression
           isMatch = value === undefined;
           break;
         case 'string':
-          isMatch = typeof value === 'string';
+          isMatch = isString(value);
           break;
         case 'number':
-          isMatch = typeof value === 'number' && !isNaN(value);
+          isMatch = isNumber(value) && !isNaN(value as number);
           break;
         case 'boolean':
-          isMatch = typeof value === 'boolean';
+          isMatch = isBoolean(value);
           break;
         case 'object':
-          isMatch = typeof value === 'object' && value !== null;
+          isMatch = isObject(value);
           break;
         case 'array':
           isMatch = Array.isArray(value);
           break;
         case 'function':
-          isMatch = typeof value === 'function';
+          isMatch = isFunction(value);
           break;
         case 'date':
           isMatch = value instanceof Date;
@@ -805,7 +808,7 @@ export class IsExpression
             value == null ||
             value === '' ||
             (Array.isArray(value) && value.length === 0) ||
-            (typeof value === 'object' && Object.keys(value).length === 0);
+            (isObject(value) && Object.keys(value as object).length === 0);
           break;
         default:
           // Check constructor name for custom types
