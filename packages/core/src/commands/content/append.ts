@@ -82,7 +82,14 @@ export class AppendCommand {
     ],
     category: 'content',
     sideEffects: ['data-mutation', 'dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return AppendCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

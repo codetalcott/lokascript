@@ -352,7 +352,7 @@ export class MakeCommand {
   // METADATA
   // ============================================================================
 
-  static metadata = {
+  static readonly metadata = {
     description:
       'The make command can be used to create class instances or DOM elements. In the first form: make a URL from "/path/", "https://origin.example.com" is equal to the JavaScript new URL("/path/", "https://origin.example.com"). In the second form: make an <a.navlink/> will create an <a> element and add the class "navlink" to it.',
     syntax: 'make (a|an) <expression> [from <arg-list>] [called <identifier>]',
@@ -364,7 +364,14 @@ export class MakeCommand {
       'make a Map called myMap',
     ],
     category: 'dom',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return MakeCommand.metadata;
+  }
 }
 
 /**

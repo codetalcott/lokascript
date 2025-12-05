@@ -47,7 +47,14 @@ export class SettleCommand {
     syntax: 'settle [<target>] [for <timeout>]',
     examples: ['settle', 'settle #animated-element', 'settle for 3000'],
     category: 'animation',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return SettleCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

@@ -80,7 +80,14 @@ export class BeepCommand {
     ],
     category: 'utility',
     sideEffects: ['console-output', 'debugging'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return BeepCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

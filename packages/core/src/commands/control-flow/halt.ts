@@ -81,7 +81,14 @@ export class HaltCommand {
     ],
     category: 'control-flow',
     sideEffects: ['control-flow', 'event-prevention'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return HaltCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

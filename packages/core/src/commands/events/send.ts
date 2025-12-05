@@ -86,9 +86,16 @@ export class SendCommand {
       'send event to #target with bubbles',
       'trigger loaded on document',
     ],
-    category: 'events',
+    category: 'event',
     sideEffects: ['event-dispatch'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return SendCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

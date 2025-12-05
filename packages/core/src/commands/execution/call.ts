@@ -84,7 +84,14 @@ export class CallCommand {
     ],
     category: 'execution',
     sideEffects: ['function-execution', 'context-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return CallCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

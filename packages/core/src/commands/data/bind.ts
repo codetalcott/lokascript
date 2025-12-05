@@ -107,7 +107,14 @@ export class BindCommand {
     ],
     category: 'data',
     sideEffects: ['data-binding', 'event-listeners', 'dom-observation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return BindCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

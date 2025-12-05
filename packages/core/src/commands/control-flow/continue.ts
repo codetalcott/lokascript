@@ -69,7 +69,14 @@ export class ContinueCommand {
     ],
     category: 'control-flow',
     sideEffects: ['control-flow'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return ContinueCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

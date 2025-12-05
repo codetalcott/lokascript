@@ -89,7 +89,14 @@ export class InstallCommand {
     ],
     category: 'behaviors',
     sideEffects: ['behavior-installation', 'element-modification'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return InstallCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

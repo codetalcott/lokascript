@@ -85,7 +85,14 @@ export class IfCommand {
     ],
     category: 'control-flow',
     sideEffects: ['conditional-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return IfCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

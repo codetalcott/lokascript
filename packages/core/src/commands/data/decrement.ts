@@ -139,12 +139,19 @@ export class DecrementCommand {
     return newValue;
   }
 
-  static metadata = {
+  static readonly metadata = {
     description: 'Decrement a variable or property by a specified amount (default: 1)',
     syntax: 'decrement <target> [by <number>]',
     examples: ['decrement counter', 'decrement counter by 5', 'decrement me.scrollTop by 100'],
     category: 'data',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return DecrementCommand.metadata;
+  }
 }
 
 /**

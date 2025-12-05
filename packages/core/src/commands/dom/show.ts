@@ -53,7 +53,7 @@ export class ShowCommand {
   /**
    * Command metadata for documentation and tooling
    */
-  readonly metadata = {
+  static readonly metadata = {
     description: 'Show elements by restoring display property',
     syntax: 'show [<target>]',
     examples: [
@@ -62,9 +62,16 @@ export class ShowCommand {
       'show .hidden',
       'show <button/>',
     ],
-    category: 'DOM',
+    category: 'dom',
     sideEffects: ['dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return ShowCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

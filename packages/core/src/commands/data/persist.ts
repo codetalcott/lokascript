@@ -109,7 +109,14 @@ export class PersistCommand {
     ],
     category: 'data',
     sideEffects: ['storage', 'data-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return PersistCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

@@ -83,7 +83,14 @@ export class TakeCommand {
     ],
     category: 'animation',
     sideEffects: ['dom-mutation', 'property-transfer'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return TakeCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

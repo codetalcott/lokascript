@@ -77,7 +77,14 @@ export class ReturnCommand {
     ],
     category: 'control-flow',
     sideEffects: ['control-flow', 'context-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return ReturnCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

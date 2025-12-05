@@ -76,7 +76,14 @@ export class JsCommand {
     ],
     category: 'advanced',
     sideEffects: ['code-execution', 'data-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return JsCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

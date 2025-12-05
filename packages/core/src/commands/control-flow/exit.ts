@@ -70,7 +70,14 @@ export class ExitCommand {
     ],
     category: 'control-flow',
     sideEffects: ['control-flow'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return ExitCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

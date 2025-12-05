@@ -67,7 +67,14 @@ export class ThrowCommand {
     ],
     category: 'control-flow',
     sideEffects: ['error-throwing', 'execution-termination'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return ThrowCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

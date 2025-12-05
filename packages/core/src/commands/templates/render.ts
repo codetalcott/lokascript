@@ -81,7 +81,14 @@ export class RenderCommand {
     ],
     category: 'templates',
     sideEffects: ['dom-creation', 'template-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return RenderCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

@@ -56,7 +56,14 @@ export class TransitionCommand {
       'transition background-color to red over 1s with ease-in-out',
     ],
     category: 'animation',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return TransitionCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

@@ -139,12 +139,19 @@ export class IncrementCommand {
     return newValue;
   }
 
-  static metadata = {
+  static readonly metadata = {
     description: 'Increment a variable or property by a specified amount (default: 1)',
     syntax: 'increment <target> [by <number>]',
     examples: ['increment counter', 'increment counter by 5', 'increment me.scrollTop by 100'],
     category: 'data',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return IncrementCommand.metadata;
+  }
 }
 
 /**

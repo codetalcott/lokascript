@@ -97,7 +97,14 @@ export class FetchCommand {
     ],
     category: 'async',
     sideEffects: ['network', 'event-dispatching'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return FetchCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

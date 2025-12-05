@@ -60,7 +60,7 @@ export class LogCommand {
   /**
    * Command metadata for documentation and tooling
    */
-  readonly metadata = {
+  static readonly metadata = {
     description: 'Log values to the console',
     syntax: 'log [<values...>]',
     examples: [
@@ -71,7 +71,14 @@ export class LogCommand {
     ],
     category: 'utility',
     sideEffects: ['console-output'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return LogCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

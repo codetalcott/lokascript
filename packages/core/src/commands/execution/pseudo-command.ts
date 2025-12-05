@@ -80,7 +80,14 @@ export class PseudoCommand {
     ],
     category: 'execution',
     sideEffects: ['method-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return PseudoCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

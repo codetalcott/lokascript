@@ -89,9 +89,16 @@ export class TriggerCommand {
       'trigger event on #target with bubbles',
       'trigger docEvent on document',
     ],
-    category: 'events',
+    category: 'event',
     sideEffects: ['event-dispatch'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return TriggerCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

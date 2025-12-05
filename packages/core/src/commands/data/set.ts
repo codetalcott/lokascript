@@ -107,7 +107,7 @@ export class SetCommand {
   /**
    * Command metadata for documentation and tooling
    */
-  readonly metadata = {
+  static readonly metadata = {
     description: 'Set values to variables, attributes, or properties',
     syntax: 'set <target> to <value>',
     examples: [
@@ -118,7 +118,14 @@ export class SetCommand {
     ],
     category: 'data',
     sideEffects: ['state-mutation', 'dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return SetCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

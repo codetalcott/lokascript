@@ -54,7 +54,7 @@ export class GetCommand {
   /**
    * Command metadata for documentation and tooling
    */
-  readonly metadata = {
+  static readonly metadata = {
     description: 'Evaluate an expression and store the result in it',
     syntax: 'get <expression>',
     examples: [
@@ -65,7 +65,14 @@ export class GetCommand {
     ],
     category: 'data',
     sideEffects: ['context-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return GetCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

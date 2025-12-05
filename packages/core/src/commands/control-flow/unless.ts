@@ -77,7 +77,14 @@ export class UnlessCommand {
     ],
     category: 'control-flow',
     sideEffects: ['conditional-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return UnlessCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

@@ -78,7 +78,14 @@ export class CopyCommand {
     ],
     category: 'utility',
     sideEffects: ['clipboard-write', 'custom-events'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return CopyCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

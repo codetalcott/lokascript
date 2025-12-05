@@ -78,7 +78,14 @@ export class DefaultCommand {
     ],
     category: 'data',
     sideEffects: ['data-mutation', 'dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return DefaultCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

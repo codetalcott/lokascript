@@ -649,7 +649,7 @@ export class GoCommand {
   // METADATA
   // ============================================================================
 
-  static metadata = {
+  static readonly metadata = {
     description:
       'Provides navigation functionality including URL navigation, element scrolling, and browser history management',
     syntax:
@@ -663,7 +663,14 @@ export class GoCommand {
       'go to bottom of <#footer/> +100px smoothly',
     ],
     category: 'navigation',
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return GoCommand.metadata;
+  }
 }
 
 /**

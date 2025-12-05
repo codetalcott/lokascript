@@ -73,7 +73,14 @@ export class AsyncCommand {
     ],
     category: 'advanced',
     sideEffects: ['async-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return AsyncCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

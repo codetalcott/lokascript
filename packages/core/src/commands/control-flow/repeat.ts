@@ -116,7 +116,14 @@ export class RepeatCommand {
     ],
     category: 'control-flow',
     sideEffects: ['iteration', 'conditional-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return RepeatCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

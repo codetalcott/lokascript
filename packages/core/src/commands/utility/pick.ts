@@ -75,7 +75,14 @@ export class PickCommand {
     ],
     category: 'utility',
     sideEffects: ['random-selection'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return PickCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

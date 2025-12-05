@@ -29,7 +29,10 @@ export type CommandCategory =
   | 'utility'
   | 'advanced'
   | 'event'
-  | 'storage';
+  | 'storage'
+  | 'execution'
+  | 'templates'
+  | 'behaviors';
 
 /**
  * All valid category values as an array (for validation)
@@ -46,6 +49,9 @@ export const COMMAND_CATEGORIES: CommandCategory[] = [
   'advanced',
   'event',
   'storage',
+  'execution',
+  'templates',
+  'behaviors',
 ];
 
 // ============================================================================

@@ -89,7 +89,14 @@ export class PutCommand {
     ],
     category: 'dom',
     sideEffects: ['dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return PutCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

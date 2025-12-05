@@ -72,7 +72,7 @@ export class RemoveCommand {
   /**
    * Command metadata for documentation and tooling
    */
-  readonly metadata = {
+  static readonly metadata = {
     description: 'Remove CSS classes from elements',
     syntax: 'remove <classes> [from <target>]',
     examples: [
@@ -80,9 +80,16 @@ export class RemoveCommand {
       'remove "active selected" from <button/>',
       'remove .highlighted from #modal',
     ],
-    category: 'DOM',
+    category: 'dom',
     sideEffects: ['dom-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return RemoveCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

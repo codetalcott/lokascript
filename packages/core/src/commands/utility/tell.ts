@@ -77,7 +77,14 @@ export class TellCommand {
     ],
     category: 'utility',
     sideEffects: ['context-switching', 'command-execution'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return TellCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input

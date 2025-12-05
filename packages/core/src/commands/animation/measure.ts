@@ -97,7 +97,14 @@ export class MeasureCommand {
     ],
     category: 'animation',
     sideEffects: ['data-mutation'],
-  };
+  } as const;
+
+  /**
+   * Instance accessor for metadata (backward compatibility)
+   */
+  get metadata() {
+    return MeasureCommand.metadata;
+  }
 
   /**
    * Parse raw AST nodes into typed command input
