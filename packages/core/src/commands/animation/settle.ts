@@ -90,7 +90,10 @@ export class SettleCommand {
       timeout = await evaluator.evaluate(raw.modifiers.for, context);
     }
 
-    return { target, timeout };
+    const result: SettleCommandInput = {};
+    if (target !== undefined) result.target = target;
+    if (timeout !== undefined) result.timeout = timeout;
+    return result;
   }
 
   /**

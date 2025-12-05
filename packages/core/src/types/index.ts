@@ -48,23 +48,14 @@ export {
 // Migration adapters removed as they were unused (0 imports)
 
 // ============================================================================
-// Legacy Compatibility (temporary)
+// Legacy Compatibility (base-types not in unified-types)
 // ============================================================================
 
-// Export base types for runtime usage
+// Export additional base types not already exported from unified-types
 export type {
   ExpressionNode,
   CommandNode,
-  ValidationResult,
-  ValidationError,
   EvaluationResult,
-  ExecutionContext,
-  TypedExecutionContext,
-  HyperScriptValueType,
-  EvaluationType,
-  ASTNode,
-  ParseError,
-  LLMDocumentation,
   EventHandlerNode,
   BehaviorNode,
   DefNode,

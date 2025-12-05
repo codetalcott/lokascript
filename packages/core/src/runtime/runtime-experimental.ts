@@ -13,7 +13,6 @@
 
 import { RuntimeBase } from './runtime-base';
 import { CommandRegistryV2 } from './command-adapter';
-import type { CommandRegistry } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { LazyExpressionEvaluator } from '../core/lazy-expression-evaluator';
 
@@ -225,10 +224,8 @@ export class RuntimeExperimental extends RuntimeBase {
       : new ExpressionEvaluator();
 
     // Initialize RuntimeBase with registry and evaluator
-    // Note: Cast registry to CommandRegistry for type compatibility
-    // CommandRegistryV2 implements the same interface
     const baseOptions: any = {
-      registry: registry as unknown as CommandRegistry,
+      registry: registry as unknown as CommandRegistryV2,
       expressionEvaluator,
     };
 

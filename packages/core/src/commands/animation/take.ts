@@ -27,7 +27,6 @@
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import { isHTMLElement } from '../../utils/element-check';
 import { resolveElement } from '../helpers/element-resolution';
 
 /**

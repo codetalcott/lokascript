@@ -19,8 +19,8 @@
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
-import type { ASTNode, ExpressionNode } from '../../types/ast';
-import type { ExpressionEvaluator } from '../../runtime/expression-evaluator';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 /**
  * Typed input for LogCommand

@@ -2,7 +2,7 @@
  * Test helper functions for AddCommand discriminated union types
  */
 
-import type { AddCommandInput } from '../add-standalone';
+import type { AddCommandInput } from '../add';
 
 /**
  * Type guard to check if input is classes type

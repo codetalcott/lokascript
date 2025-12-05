@@ -3,7 +3,6 @@
  */
 
 import type { ExecutionContext } from '../types/base-types';
-import type { ExecutionContext } from '../types/unified-types';
 
 /**
  * Create a minimal ExecutionContext for testing

@@ -72,13 +72,7 @@ function getDefaultRuntime(): Runtime {
       (globalThis as any)._hyperscript = (globalThis as any)._hyperscript || {};
       (globalThis as any)._hyperscript.runtime = _defaultRuntime;
       // Create a behaviors object with both Map-like has() and install() methods
-      (globalThis as any)._hyperscript.behaviors = {
-        has: (name: string) => _defaultRuntime!.behaviorRegistry.has(name),
-        get: (name: string) => _defaultRuntime!.behaviorRegistry.get(name),
-        install: async (name: string, element: HTMLElement, params: Record<string, any>) => {
-          return await (_defaultRuntime as any).installBehaviorOnElement(name, element, params);
-        },
-      };
+      (globalThis as any)._hyperscript.behaviors = _defaultRuntime!.behaviorAPI;
     }
   }
   return _defaultRuntime;

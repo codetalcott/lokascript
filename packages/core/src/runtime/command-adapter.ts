@@ -36,11 +36,11 @@ export interface RuntimeCommand {
 export interface CommandWithParseInput {
   name: string;
   parseInput?(
-    raw: { args: ASTNode[]; modifiers: Record<string, ASTNode> },
+    raw: { args: ASTNode[]; modifiers: Record<string, any> },
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
-  ): Promise<any[]>;
-  execute(input: unknown, context: TypedExecutionContext): Promise<unknown>;
+  ): Promise<any>;
+  execute(input: any, context: TypedExecutionContext): Promise<unknown>;
   validate?(input: unknown): ValidationResult<unknown>;
   metadata?: any;
 }
@@ -219,8 +219,9 @@ export class CommandRegistryV2 {
 
   /**
    * Register a command (V1 or V2 format)
+   * Uses 'any' to accept all command implementations with compatible structure
    */
-  register(impl: CommandWithParseInput): void {
+  register(impl: any): void {
     const name = (impl.name || impl.metadata?.name).toLowerCase();
 
     debug.runtime(`CommandRegistryV2: Registering command '${name}'`);

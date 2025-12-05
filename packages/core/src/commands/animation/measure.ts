@@ -55,6 +55,8 @@ export interface MeasureCommandInput {
  * Output from Measure command execution
  */
 export interface MeasureCommandOutput {
+  result: number;
+  wasAsync: boolean;
   element: HTMLElement;
   property: string;
   value: number;
@@ -185,11 +187,11 @@ export class MeasureCommand {
       variable = String(await evaluator.evaluate(raw.modifiers.set, context));
     }
 
-    return {
-      target,
-      property,
-      variable,
-    };
+    const result: MeasureCommandInput = {};
+    if (target !== undefined) result.target = target;
+    if (property !== undefined) result.property = property;
+    if (variable !== undefined) result.variable = variable;
+    return result;
   }
 
   /**

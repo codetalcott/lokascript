@@ -24,7 +24,6 @@
 
 import { RuntimeBase } from './runtime-base';
 import { CommandRegistryV2 } from './command-adapter';
-import type { CommandRegistry } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 // LazyExpressionEvaluator is dynamically imported only when lazyLoad=true
 // This allows tree-shaking to eliminate it in browser builds where lazyLoad=false
@@ -257,7 +256,7 @@ export class Runtime extends RuntimeBase {
 
     // Initialize RuntimeBase with registry and evaluator
     const baseOptions: any = {
-      registry: registry as unknown as CommandRegistry,
+      registry: registry as unknown as CommandRegistryV2,
       expressionEvaluator,
     };
 

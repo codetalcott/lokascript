@@ -92,8 +92,8 @@ export class AsyncCommand {
    */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
-    evaluator: ExpressionEvaluator,
-    context: ExecutionContext
+    _evaluator: ExpressionEvaluator,
+    _context: ExecutionContext
   ): Promise<AsyncCommandInput> {
     if (raw.args.length < 1) {
       throw new Error('async command requires at least one command to execute');

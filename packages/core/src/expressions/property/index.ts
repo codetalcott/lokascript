@@ -27,7 +27,7 @@ interface BaseTypedExpression<T> {
   readonly outputType: EvaluationType;
   readonly inputSchema: any;
   readonly metadata: ExpressionMetadata;
-  readonly documentation: LLMDocumentation;
+  readonly documentation?: LLMDocumentation;
   evaluate(context: TypedExpressionContext, input: unknown): Promise<TypedResult<T>>;
   validate(input: unknown): ValidationResult;
 }

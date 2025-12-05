@@ -132,10 +132,11 @@ export class JsCommand {
         .filter((p) => p && p.length > 0);
     }
 
-    return {
-      code,
-      parameters,
-    };
+    const result: JsCommandInput = { code };
+    if (parameters && parameters.length > 0) {
+      result.parameters = parameters;
+    }
+    return result;
   }
 
   /**

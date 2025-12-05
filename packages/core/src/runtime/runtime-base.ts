@@ -58,7 +58,7 @@ export class RuntimeBase {
   protected registry: CommandRegistry;
   protected expressionEvaluator: ExpressionEvaluator | LazyExpressionEvaluator;
   protected behaviorRegistry: Map<string, any>;
-  protected behaviorAPI: any;
+  public behaviorAPI: any;
   protected globalVariables: Map<string, any>;
 
   constructor(options: RuntimeBaseOptions) {

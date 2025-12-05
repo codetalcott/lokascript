@@ -121,13 +121,14 @@ export class TransitionCommand {
       timingFunction = String(await evaluator.evaluate(raw.modifiers.with, context));
     }
 
-    return {
-      target,
+    const result: TransitionCommandInput = {
       property,
       value: value as string | number,
-      duration,
-      timingFunction,
     };
+    if (target !== undefined) result.target = target;
+    if (duration !== undefined) result.duration = duration;
+    if (timingFunction !== undefined) result.timingFunction = timingFunction;
+    return result;
   }
 
   /**

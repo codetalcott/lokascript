@@ -70,8 +70,8 @@ export { GoCommand } from './commands/navigation/go';
 // Commands - Control Flow
 // ============================================================================
 
-export { IfCommand } from './commands/control-flow/index';
-export { RepeatCommand } from './commands/control-flow/index';
+export { IfCommand } from './commands/control-flow/if';
+export { RepeatCommand } from './commands/control-flow/repeat';
 
 // ============================================================================
 // Expressions - All Categories
