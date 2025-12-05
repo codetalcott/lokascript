@@ -6,7 +6,11 @@
  * matching the standard ExpressionImplementation.validate() return type.
  *
  * Estimated savings: ~200 lines across expression implementations
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
+
+import { isObject } from './type-helpers';
 
 // Number-to-word mapping for small numbers (matches existing error message style)
 const NUMBER_WORDS: Record<number, string> = {
@@ -111,8 +115,8 @@ export function validateArgIsElement(
   argName?: string
 ): string | null {
   const arg = args[index];
-  const isElement = arg != null && typeof arg === 'object' && (arg as any).nodeType === 1;
-  if (!isElement) {
+  const isElementCheck = arg != null && isObject(arg) && (arg as any).nodeType === 1;
+  if (!isElementCheck) {
     const name = argName || `argument ${index + 1}`;
     return `${expressionName} ${name} must be a DOM Element`;
   }
@@ -132,7 +136,7 @@ export function validateArgIsArrayLike(
   const isArrayLike =
     Array.isArray(arg) ||
     arg instanceof NodeList ||
-    (arg != null && typeof arg === 'object' && 'length' in arg);
+    (arg != null && isObject(arg) && 'length' in (arg as object));
   if (!isArrayLike) {
     const name = argName || `argument ${index + 1}`;
     return `${expressionName} ${name} must be an array or array-like`;

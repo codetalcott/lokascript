@@ -90,9 +90,9 @@ export const defaultConversions: Record<string, ConversionFunction> = {
 
     // Try to parse various date formats
     // Handle the common case where date strings are interpreted as UTC but we want local time
-    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    if (isString(value) && /^\d{4}-\d{2}-\d{2}$/.test(value as string)) {
       // For YYYY-MM-DD format, create local date to avoid timezone issues
-      const [year, month, day] = value.split('-').map(Number);
+      const [year, month, day] = (value as string).split('-').map(Number);
       return new Date(year, month - 1, day); // Month is 0-indexed
     }
 

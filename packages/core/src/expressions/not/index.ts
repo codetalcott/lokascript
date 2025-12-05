@@ -2,9 +2,12 @@
  * Not Expression - Logical Negation
  * Implements comprehensive 'not' expression functionality with TypeScript integration
  * Handles boolean negation, truthiness evaluation, and type coercion
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v } from '../../validation/lightweight-validators';
+import { isNumber, isObject } from '../type-helpers';
 import type {
   HyperScriptValue,
   EvaluationResult,
@@ -142,7 +145,7 @@ export class NotExpression implements TypedExpressionImplementation<boolean> {
     if (value === '') return false;
     if (value === null) return false;
     if (value === undefined) return false;
-    if (typeof value === 'number' && isNaN(value)) return false;
+    if (isNumber(value) && isNaN(value as number)) return false;
 
     // Special cases for objects
     if (Array.isArray(value)) {
@@ -150,7 +153,7 @@ export class NotExpression implements TypedExpressionImplementation<boolean> {
       return true;
     }
 
-    if (typeof value === 'object' && value !== null) {
+    if (isObject(value)) {
       // Objects are always truthy in JavaScript, even empty ones
       return true;
     }

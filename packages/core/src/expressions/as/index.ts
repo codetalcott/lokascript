@@ -22,6 +22,7 @@ import {
   isBoolean as sharedIsBoolean,
   isArray as sharedIsArray,
   isElement as sharedIsElement,
+  isFunction as sharedIsFunction,
 } from '../type-helpers';
 
 // ============================================================================
@@ -639,7 +640,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
     if (value === null || value === undefined) return 'null';
     if (value instanceof DocumentFragment) return 'fragment';
     if (value instanceof Date) return 'object';
-    if (typeof value === 'function') return 'function';
+    if (sharedIsFunction(value)) return 'function';
     return 'object';
   }
 

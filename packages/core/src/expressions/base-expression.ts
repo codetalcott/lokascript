@@ -19,7 +19,7 @@ import type {
   EvaluationType,
 } from '../types/base-types';
 import type { ExpressionCategory } from '../types/expression-types';
-import { isString, isNumber, isBoolean, isObject } from './type-helpers';
+import { isString, isNumber, isBoolean, isObject, isFunction } from './type-helpers';
 
 /**
  * Abstract base class for expression implementations
@@ -247,8 +247,8 @@ export abstract class BaseExpressionImpl<TInput = unknown, TOutput = unknown> {
 export function isBaseExpression(expr: unknown): expr is BaseExpressionImpl {
   return (
     expr != null &&
-    typeof expr === 'object' &&
-    'trackPerformance' in expr &&
-    typeof (expr as any).trackPerformance === 'function'
+    isObject(expr) &&
+    'trackPerformance' in (expr as object) &&
+    isFunction((expr as any).trackPerformance)
   );
 }

@@ -1,6 +1,8 @@
 /**
  * Bridge between Positional Expressions and Existing Expression Evaluator
  * Enables gradual migration from legacy to enhanced expressions while maintaining compatibility
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import type {
@@ -9,6 +11,7 @@ import type {
   ExpressionEvaluationOptions,
 } from '../../../types/base-types';
 import { positionalExpressions } from './index';
+import { isString, isNumber, isObject } from '../../type-helpers';
 
 /**
  * Convert ExecutionContext to TypedExpressionContext for enhanced expressions
@@ -529,20 +532,21 @@ export class PositionalUtilities {
       };
     }
 
-    if (typeof collection === 'string') {
+    if (isString(collection)) {
+      const strCollection = collection as string;
       return {
         type: 'string',
-        length: collection.length,
+        length: strCollection.length,
         isIndexable: true,
         supportsNegativeIndexing: true,
-        metadata: { encoding: 'UTF-16', isEmpty: collection.length === 0 },
+        metadata: { encoding: 'UTF-16', isEmpty: strCollection.length === 0 },
       };
     }
 
     if (
-      typeof collection === 'object' &&
-      'length' in collection &&
-      typeof (collection as { length: number }).length === 'number'
+      isObject(collection) &&
+      'length' in (collection as object) &&
+      isNumber((collection as { length: number }).length)
     ) {
       return {
         type: 'array-like',

@@ -2,6 +2,8 @@
  * Time Expressions - Deep TypeScript Integration
  * Comprehensive time and duration handling with full type safety and validation
  * Enhanced for LLM code agents with maximum type safety
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import type {
@@ -10,6 +12,7 @@ import type {
   HyperScriptValue,
   EvaluationResult,
 } from '../../types/command-types';
+import { isNumber } from '../type-helpers';
 
 // ============================================================================
 // Enhanced Time Parsing Expression
@@ -316,26 +319,26 @@ export class TimeArithmeticExpression implements TypedExpressionImplementation<n
 
       // Parse first time value
       let ms1: number;
-      if (typeof time1 === 'number') {
-        ms1 = time1;
+      if (isNumber(time1)) {
+        ms1 = time1 as number;
       } else {
         const result1 = await parser.evaluate(context, String(time1));
-        if (!result1.success || typeof result1.value !== 'number') {
+        if (!result1.success || !isNumber(result1.value)) {
           return result1;
         }
-        ms1 = result1.value;
+        ms1 = result1.value as number;
       }
 
       // Parse second time value
       let ms2: number;
-      if (typeof time2 === 'number') {
-        ms2 = time2;
+      if (isNumber(time2)) {
+        ms2 = time2 as number;
       } else {
         const result2 = await parser.evaluate(context, String(time2));
-        if (!result2.success || typeof result2.value !== 'number') {
+        if (!result2.success || !isNumber(result2.value)) {
           return result2;
         }
-        ms2 = result2.value;
+        ms2 = result2.value as number;
       }
 
       // Perform arithmetic operation

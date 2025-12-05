@@ -7,7 +7,11 @@
  *
  * This eliminates duplication and ensures consistent behavior across
  * all property access mechanisms.
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
+
+import { isFunction, isObject } from './type-helpers';
 
 // ============================================================================
 // Type Guards
@@ -171,8 +175,8 @@ export function getElementProperty(element: Element, property: string): any {
   // Bind functions to element for proper 'this' context
   // This is critical for DOM methods like closest(), querySelector(), etc.
   // Without binding, these methods lose their 'this' reference and fail
-  if (typeof value === 'function') {
-    return value.bind(element);
+  if (isFunction(value)) {
+    return (value as Function).bind(element);
   }
 
   return value;
@@ -186,7 +190,7 @@ export function getElementProperty(element: Element, property: string): any {
  * @returns Property value or null
  */
 export function accessObjectProperty(object: unknown, property: string): any {
-  if (typeof object !== 'object' || object === null) {
+  if (!isObject(object)) {
     return null;
   }
 

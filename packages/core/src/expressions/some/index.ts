@@ -177,7 +177,7 @@ export class SomeExpression implements TypedExpressionImplementation<boolean> {
    */
   private isArrayLike(value: unknown): boolean {
     if (Array.isArray(value)) return true;
-    if (value && typeof value === 'object' && 'length' in value) return true;
+    if (value && isObject(value) && 'length' in (value as object)) return true;
     return false;
   }
 

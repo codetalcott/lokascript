@@ -1,6 +1,8 @@
 /**
  * Enhanced Pattern Matching Expressions - TypeScript Integration
  * Implements pattern matching (matches, contains, in) with type safety
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import { v } from '../../../validation/lightweight-validators';
@@ -13,6 +15,7 @@ import type {
   ValidationResult,
 } from '../../../types/expression-types';
 import type { EvaluationResult, LLMDocumentation } from '../../../types/command-types';
+import { isString } from '../../type-helpers';
 
 // ============================================================================
 // Input Schemas
@@ -141,9 +144,9 @@ export class MatchesExpression
       // Additional validation for pattern
       const { pattern } = parsed.data as { value: unknown; pattern: string | RegExp };
 
-      if (typeof pattern === 'string') {
+      if (isString(pattern)) {
         // Validate CSS selector syntax if it looks like a selector
-        if (this.isCSSSelector(pattern) && !this.isValidCSSSelector(pattern)) {
+        if (this.isCSSSelector(pattern as string) && !this.isValidCSSSelector(pattern as string)) {
           return {
             isValid: false,
             error: {

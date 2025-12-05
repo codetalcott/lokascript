@@ -364,7 +364,7 @@ export class FunctionCallExpression
             targetObj = (resolutionContext.obj as Record<string, unknown>)[objectName];
           }
 
-          if (targetObj && typeof targetObj === 'object') {
+          if (targetObj && isObject(targetObj)) {
             // Try to resolve the method on this object
             const methodResult = this.resolveFromContext(pathParts.slice(1), targetObj);
             if (methodResult) {
@@ -427,14 +427,14 @@ export class FunctionCallExpression
       if (contextObj instanceof Map) {
         if (pathParts.length === 1) {
           const func = contextObj.get(pathParts[0]);
-          if (typeof func === 'function') {
-            return { func, thisBinding: null };
+          if (isFunction(func)) {
+            return { func: func as Function, thisBinding: null };
           }
         }
         // For nested paths in Maps, try to get the root object and continue
         if (pathParts.length > 1) {
           const rootObj = contextObj.get(pathParts[0]);
-          if (rootObj && typeof rootObj === 'object') {
+          if (rootObj && isObject(rootObj)) {
             return this.resolveFromContext(pathParts.slice(1), rootObj);
           }
         }
@@ -442,7 +442,7 @@ export class FunctionCallExpression
       }
 
       // Handle regular objects
-      if (typeof contextObj !== 'object') {
+      if (!isObject(contextObj)) {
         return null;
       }
 
@@ -461,14 +461,14 @@ export class FunctionCallExpression
         currentObj = currentObj[part];
 
         // If we've reached the end and found a function
-        if (i === pathParts.length - 1 && typeof currentObj === 'function') {
+        if (i === pathParts.length - 1 && isFunction(currentObj)) {
           // Determine proper 'this' binding
           const thisBinding = pathParts.length > 1 ? parentObj : null;
-          return { func: currentObj, thisBinding };
+          return { func: currentObj as Function, thisBinding };
         }
 
         // If intermediate value is not an object, path resolution fails
-        if (typeof currentObj !== 'object' || currentObj === null) {
+        if (!isObject(currentObj)) {
           return null;
         }
       }
@@ -501,7 +501,7 @@ export class FunctionCallExpression
       }
 
       // Handle promise results
-      if (result && typeof result === 'object' && 'then' in result) {
+      if (result && isObject(result) && 'then' in (result as object)) {
         result = await result;
       }
 
@@ -551,7 +551,7 @@ export class FunctionCallExpression
 
       // Handle promise results
       let finalResult = result;
-      if (result && typeof result === 'object' && 'then' in result) {
+      if (result && isObject(result) && 'then' in (result as object)) {
         finalResult = await result;
       }
 
@@ -621,10 +621,10 @@ export class FunctionCallExpression
           constructor = (resolutionContext.obj as Record<string, unknown>)[constructorName];
         }
 
-        if (typeof constructor === 'function') {
+        if (isFunction(constructor)) {
           return {
             success: true,
-            value: constructor,
+            value: constructor as Function,
             type: 'function',
           };
         }
@@ -664,7 +664,7 @@ export class FunctionCallExpression
    */
   private async resolveArgument(arg: unknown, _context: TypedExpressionContext): Promise<unknown> {
     // If argument is a promise, await it
-    if (arg && typeof arg === 'object' && 'then' in arg) {
+    if (arg && isObject(arg) && 'then' in (arg as object)) {
       return await arg;
     }
 

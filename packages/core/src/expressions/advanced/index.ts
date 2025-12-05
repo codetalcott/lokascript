@@ -2,6 +2,8 @@
  * Advanced Expressions - Deep TypeScript Integration
  * Lambda expressions, async expressions, error handling expressions with full type safety
  * Enhanced for LLM code agents with maximum type safety
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 // Advanced expressions implementation
@@ -15,6 +17,7 @@ import type {
   ExpressionMetadata as ExpressionMetadata,
   ExpressionCategory as ExpressionCategory,
 } from '../../types/index';
+import { isNumber, isObject } from '../type-helpers';
 
 // Define BaseTypedExpression locally for now
 interface BaseTypedExpression<T> {
@@ -162,8 +165,8 @@ export class LambdaExpression implements BaseTypedExpression<Function> {
       const leftVal = context.locals.get(left) ?? left;
       const rightVal = context.locals.get(right) ?? right;
 
-      if (typeof leftVal === 'number' && typeof rightVal === 'number') {
-        return leftVal + rightVal;
+      if (isNumber(leftVal) && isNumber(rightVal)) {
+        return (leftVal as number) + (rightVal as number);
       }
     }
 
@@ -171,7 +174,7 @@ export class LambdaExpression implements BaseTypedExpression<Function> {
     if (body.includes('.') && body.split('.').length === 2) {
       const [obj, prop] = body.split('.').map(s => s.trim());
       const objVal = context.locals.get(obj);
-      if (objVal && typeof objVal === 'object' && objVal !== null) {
+      if (objVal && isObject(objVal)) {
         return (objVal as any)[prop];
       }
     }

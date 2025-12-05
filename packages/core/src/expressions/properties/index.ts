@@ -1,6 +1,8 @@
 /**
  * Property expressions for hyperscript
  * Handles possessive syntax, attribute access, and property references
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
@@ -11,6 +13,7 @@ import {
   validateArgIsString,
   validateSingleStringArg,
 } from '../validation-helpers';
+import { isObject } from '../type-helpers';
 
 // Re-export for use in tests and external consumers
 export { getElementProperty };
@@ -41,7 +44,7 @@ export const possessiveExpression: ExpressionImplementation = {
     }
 
     // Handle regular object property access
-    if (typeof element === 'object') {
+    if (isObject(element)) {
       return (element as Record<string, unknown>)[property];
     }
 
@@ -79,7 +82,7 @@ export const myExpression: ExpressionImplementation = {
     }
 
     // Handle plain objects
-    if (typeof context.me === 'object' && context.me !== null) {
+    if (isObject(context.me)) {
       return (context.me as any)[property];
     }
 
@@ -116,7 +119,7 @@ export const itsExpression: ExpressionImplementation = {
     }
 
     // Handle regular object property access
-    if (typeof target === 'object') {
+    if (isObject(target)) {
       return (target as Record<string, unknown>)[property];
     }
 
@@ -151,7 +154,7 @@ export const yourExpression: ExpressionImplementation = {
     }
 
     // Handle plain objects
-    if (typeof context.you === 'object' && context.you !== null) {
+    if (isObject(context.you)) {
       return (context.you as any)[property];
     }
 
@@ -190,7 +193,7 @@ export const ofExpression: ExpressionImplementation = {
     }
 
     // Handle regular object property access
-    if (typeof object === 'object') {
+    if (isObject(object)) {
       return (object as Record<string, unknown>)[property];
     }
 

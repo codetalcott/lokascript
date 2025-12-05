@@ -1,10 +1,13 @@
 /**
  * Positional expressions for hyperscript
  * Handles first, last, next, previous, and numeric position expressions
+ *
+ * Uses centralized type-helpers for consistent type checking.
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import { validateMaxArgs, validateArgRange, validateArgIsNumber } from '../validation-helpers';
+import { isString, isNumber, isObject } from '../type-helpers';
 
 // ============================================================================
 // Array/Collection Positional Expressions
@@ -40,13 +43,15 @@ export const firstExpression: ExpressionImplementation = {
     }
 
     // Handle string
-    if (typeof target === 'string') {
-      return target.length > 0 ? target[0] : null;
+    if (isString(target)) {
+      const strTarget = target as string;
+      return strTarget.length > 0 ? strTarget[0] : null;
     }
 
     // Handle object with length property
-    if (typeof target === 'object' && 'length' in target && typeof target.length === 'number') {
-      return target.length > 0 ? target[0] : null;
+    if (isObject(target) && 'length' in (target as object) && isNumber((target as any).length)) {
+      const objTarget = target as { length: number; [key: number]: unknown };
+      return objTarget.length > 0 ? objTarget[0] : null;
     }
 
     return null;
@@ -88,13 +93,15 @@ export const lastExpression: ExpressionImplementation = {
     }
 
     // Handle string
-    if (typeof target === 'string') {
-      return target.length > 0 ? target[target.length - 1] : null;
+    if (isString(target)) {
+      const strTarget = target as string;
+      return strTarget.length > 0 ? strTarget[strTarget.length - 1] : null;
     }
 
     // Handle object with length property
-    if (typeof target === 'object' && 'length' in target && typeof target.length === 'number') {
-      return target.length > 0 ? target[target.length - 1] : null;
+    if (isObject(target) && 'length' in (target as object) && isNumber((target as any).length)) {
+      const objTarget = target as { length: number; [key: number]: unknown };
+      return objTarget.length > 0 ? objTarget[objTarget.length - 1] : null;
     }
 
     return null;
@@ -113,9 +120,10 @@ export const atExpression: ExpressionImplementation = {
 
   async evaluate(context: ExecutionContext, ...args: unknown[]): Promise<any> {
     const [index, collection] = args;
-    if (typeof index !== 'number') {
+    if (!isNumber(index)) {
       throw new Error('Index must be a number');
     }
+    const numIndex = index as number;
 
     // If no collection provided, use context.it
     const target = collection !== undefined ? collection : context.it;
@@ -127,33 +135,35 @@ export const atExpression: ExpressionImplementation = {
     // Handle arrays
     if (Array.isArray(target)) {
       // Support negative indexing
-      const actualIndex = index < 0 ? target.length + index : index;
+      const actualIndex = numIndex < 0 ? target.length + numIndex : numIndex;
       return actualIndex >= 0 && actualIndex < target.length ? target[actualIndex] : null;
     }
 
     // Handle NodeList or HTMLCollection
     if (target instanceof NodeList || target instanceof HTMLCollection) {
-      const actualIndex = index < 0 ? target.length + index : index;
+      const actualIndex = numIndex < 0 ? target.length + numIndex : numIndex;
       return actualIndex >= 0 && actualIndex < target.length ? target[actualIndex] : null;
     }
 
     // Handle DOM element - get nth child element
     if (target instanceof Element) {
       const children = target.children;
-      const actualIndex = index < 0 ? children.length + index : index;
+      const actualIndex = numIndex < 0 ? children.length + numIndex : numIndex;
       return actualIndex >= 0 && actualIndex < children.length ? children[actualIndex] : null;
     }
 
     // Handle string
-    if (typeof target === 'string') {
-      const actualIndex = index < 0 ? target.length + index : index;
-      return actualIndex >= 0 && actualIndex < target.length ? target[actualIndex] : null;
+    if (isString(target)) {
+      const strTarget = target as string;
+      const actualIndex = numIndex < 0 ? strTarget.length + numIndex : numIndex;
+      return actualIndex >= 0 && actualIndex < strTarget.length ? strTarget[actualIndex] : null;
     }
 
     // Handle object with length property and numeric indexing
-    if (typeof target === 'object' && 'length' in target && typeof target.length === 'number') {
-      const actualIndex = index < 0 ? target.length + index : index;
-      return actualIndex >= 0 && actualIndex < target.length ? (target as any)[actualIndex] : null;
+    if (isObject(target) && 'length' in (target as object) && isNumber((target as any).length)) {
+      const objTarget = target as { length: number; [key: number]: unknown };
+      const actualIndex = numIndex < 0 ? objTarget.length + numIndex : numIndex;
+      return actualIndex >= 0 && actualIndex < objTarget.length ? objTarget[actualIndex] : null;
     }
 
     return null;
