@@ -88,7 +88,6 @@ export type {
   TypedContextImplementation,
   ContextMetadata,
   EvaluationResult,
-  EnhancedContextBase,
 } from './types/context-types';
 
 export type { ValidationResult, EvaluationType } from './types/base-types';

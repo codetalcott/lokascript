@@ -152,6 +152,11 @@ export class PositionalAdapter {
 }
 
 /**
+ * Alias for backward compatibility - renamed from PositionalAdapter
+ */
+export const EnhancedPositionalAdapter = PositionalAdapter;
+
+/**
  * Legacy compatibility wrapper that provides enhanced features while maintaining the old interface
  */
 export class LegacyCompatibilityLayer {

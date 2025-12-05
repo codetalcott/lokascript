@@ -20,9 +20,9 @@
  *   repeat for item in items { if item.skip then continue; process item }
  */
 
-import type { TypedExecutionContext } from '../../types/core';
+import type { TypedExecutionContext, ExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
-import type { ExpressionEvaluator, ExecutionContext } from '../../core/expression-evaluator';
+import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 /**
  * Typed input for ContinueCommand (no arguments)

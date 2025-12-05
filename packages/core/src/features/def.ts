@@ -895,7 +895,7 @@ export class TypedDefFeatureImplementation {
     if (!func.catchBlock) return undefined;
 
     // Execute catch block with error parameter
-    // @ts-expect-error - Reserved for future catch block execution
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Reserved for future catch block execution
     const _catchContext = {
       ...func.context,
       variables: {

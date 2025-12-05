@@ -323,7 +323,7 @@ export class TypedWebWorkerFeatureImplementation {
         return {
           success: false,
           errors: validation.errors,
-          suggestions: validation.suggestions,
+          suggestions: validation.suggestions ? [...validation.suggestions] : undefined,
         };
       }
 

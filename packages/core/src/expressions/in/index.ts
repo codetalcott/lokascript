@@ -438,7 +438,7 @@ export class InExpression implements TypedExpressionImplementation<HyperScriptVa
   /**
    * Infer the type of a search result
    */
-  // @ts-expect-error - Reserved for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Reserved for future use
   private _inferType(value: unknown): HyperScriptValueType {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';

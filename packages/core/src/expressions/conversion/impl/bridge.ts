@@ -127,6 +127,11 @@ export class ConversionAdapter {
 }
 
 /**
+ * Alias for backward compatibility - renamed from ConversionAdapter
+ */
+export const EnhancedConversionAdapter = ConversionAdapter;
+
+/**
  * Legacy compatibility wrapper that provides enhanced features while maintaining the old interface
  */
 export class LegacyCompatibilityLayer {

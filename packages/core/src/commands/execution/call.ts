@@ -63,7 +63,7 @@ export class CallCommand {
   /**
    * Command name as registered in runtime
    */
-  readonly name = 'call';
+  readonly name: string = 'call';
 
   /**
    * Command metadata for documentation and tooling

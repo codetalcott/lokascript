@@ -286,7 +286,8 @@ export interface ResolveTargetsOptions {
  */
 export async function resolveTargetsFromArgs(
   args: unknown[],
-  evaluator: { evaluate: (arg: unknown, context: unknown) => Promise<unknown> },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  evaluator: { evaluate: (arg: any, context: any) => Promise<any> },
   context: ExecutionContext | TypedExecutionContext,
   commandName: string,
   options: ResolveTargetsOptions = {}

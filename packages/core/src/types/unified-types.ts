@@ -253,10 +253,11 @@ export interface ASTNode {
  * Unified parse error interface
  */
 export interface ParseError {
-  readonly name: string;
+  readonly name?: string;
   readonly message: string;
   readonly line: number;
   readonly column: number;
+  readonly position?: number;
   readonly source?: string;
 }
 

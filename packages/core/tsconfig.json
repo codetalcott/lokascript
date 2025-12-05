@@ -57,7 +57,10 @@
     "dist",
     "src/legacy/**/*",
     "src/deno-mod.ts",
-    "src/examples/deno-*.ts"
+    "src/examples/deno-*.ts",
+    "src/context/**/*",
+    "src/performance/benchmarks.ts",
+    "src/test-helpers/**/*"
   ],
   
   "ts-node": {

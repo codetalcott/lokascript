@@ -103,7 +103,7 @@ export type { DecrementCommandInput } from './data/decrement';
 export type { LogCommandInput } from './utility/log';
 export type { TriggerCommandInput } from './events/trigger';
 export type { SendCommandInput } from './events/send';
-export type { GoCommandInput } from './navigation/go';
+export type { GoCommandRawInput as GoCommandInput } from './navigation/go';
 export type { IfCommandInput } from './control-flow/if';
 export type { RepeatCommandInput } from './control-flow/repeat';
 export type { BreakCommandInput } from './control-flow/break';

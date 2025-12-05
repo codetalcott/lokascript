@@ -193,7 +193,7 @@ static readonly metadata = {
 
       case 'event': {
         // If input.target is explicitly set (even to null), use it; otherwise default to context.me
-        const targetToUse = input.target !== undefined ? input.target : context.me;
+        const targetToUse = input.target ?? context.me ?? document;
         const event = await this.waitForEvent(input.eventName, targetToUse);
         const duration = Date.now() - startTime;
 
@@ -376,7 +376,7 @@ static readonly metadata = {
       }
       target = evaluatedTarget as EventTarget;
     } else {
-      target = context.me;
+      target = context.me ?? undefined;
     }
 
     return {
@@ -443,7 +443,7 @@ static readonly metadata = {
       }
     }
     if (!target) {
-      target = context.me;
+      target = context.me ?? undefined;
     }
 
     // Single event
@@ -521,14 +521,14 @@ static readonly metadata = {
             conditions.push({
               type: 'event',
               eventName: destructureMatch[1],
-              target: context.me,
+              target: context.me ?? undefined,
               destructure: destructureMatch[2].split(',').map(s => s.trim()),
             });
           } else {
             conditions.push({
               type: 'event',
               eventName: value,
-              target: context.me,
+              target: context.me ?? undefined,
             });
           }
         }
@@ -607,7 +607,7 @@ static readonly metadata = {
         }));
       } else {
         // Event condition
-        const targetToUse = condition.target !== undefined ? condition.target : context.me;
+        const targetToUse = condition.target ?? context.me ?? document;
         return this.waitForEvent(condition.eventName, targetToUse).then(event => ({
           result: event as Event,
           winningCondition: condition,

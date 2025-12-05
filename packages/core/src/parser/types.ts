@@ -174,6 +174,7 @@ export interface ParseResult {
 }
 
 export interface ParseError {
+  name?: string;
   message: string;
   position: number;
   line: number;

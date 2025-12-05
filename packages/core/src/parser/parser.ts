@@ -11,12 +11,12 @@ import type {
   CommandNode,
   ExpressionNode,
   ParseResult as CoreParseResult,
-  ParseError as CoreParseError,
   ParseWarning,
   EventHandlerNode,
   BehaviorNode,
   DefNode,
 } from '../types/core';
+import type { ParseError as LocalParseError } from './types';
 import { debug } from '../utils/debug';
 
 // Phase 1 Refactoring: Import new helper modules
@@ -59,7 +59,8 @@ import * as variableCommands from './command-parsers/variable-commands';
 
 // Use core types for consistency
 export type ParseResult = CoreParseResult;
-export type ParseError = CoreParseError;
+// Re-export ParseError from ./types
+export type { ParseError } from './types';
 
 // AST node types are now imported from parser-types.ts (Phase 9-2)
 // Multi-word patterns are now imported from parsing-helpers.ts (Phase 9-2 Day 6)
@@ -67,7 +68,7 @@ export type ParseError = CoreParseError;
 export class Parser {
   private tokens: Token[];
   private current: number = 0;
-  private error: ParseError | undefined;
+  private error: LocalParseError | undefined;
   private warnings: ParseWarning[] = [];
 
   // Postfix unary operators that do NOT take a right operand
@@ -908,7 +909,7 @@ export class Parser {
    * Phase 9-3b: Delegated to extracted command parser
    */
   private parseWaitCommand(commandToken: Token): CommandNode {
-    return asyncCommands.parseWaitCommand(this.getContext(), commandToken);
+    return asyncCommands.parseWaitCommand(this.getContext(), commandToken) as CommandNode;
   }
 
   /**
@@ -2273,27 +2274,15 @@ export class Parser {
       events: eventNames, // Store all event names for runtime
       commands,
       ...(eventParams.length > 0 && { params: eventParams }), // Add event parameters
+      ...(condition && { condition }), // Add condition if present
+      ...(target && { target }), // Add target if present
+      ...(attributeName && { attributeName }), // Add attributeName if present
+      ...(watchTarget && { watchTarget }), // Add watchTarget if present
       start: pos.start,
       end: pos.end,
       line: pos.line,
       column: pos.column,
     };
-
-    if (condition) {
-      node.condition = condition;
-    }
-
-    if (target) {
-      node.target = target;
-    }
-
-    if (attributeName) {
-      node.attributeName = attributeName;
-    }
-
-    if (watchTarget) {
-      node.watchTarget = watchTarget;
-    }
 
     debug.parse(`🔧 parseEventHandler: Created node with events: ${eventNames.join(', ')}, attributeName: ${attributeName || 'none'}, watchTarget: ${watchTarget ? 'yes' : 'none'}`);
     return node;
@@ -3070,7 +3059,7 @@ export class Parser {
     let position = token.start || 0;
     let line = token.line || 1;
     let column = token.column || 1;
-    // @ts-expect-error - Tracked for future error enhancement
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Tracked for future error enhancement
     let errorToken = token;
 
     // For property access errors after '.', position should be after the dot
@@ -3126,7 +3115,6 @@ export class Parser {
     }
 
     this.error = {
-      name: 'ParseError',
       message,
       line: Math.max(1, line),
       column: Math.max(1, column),

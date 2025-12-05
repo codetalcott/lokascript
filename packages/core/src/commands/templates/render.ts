@@ -199,26 +199,28 @@ export class RenderCommand {
 
     // Handle string template
     if (typeof template === 'string') {
+      let templateStr: string = template;
+
       // If it's a variable name, try to resolve from context
-      if (!template.includes('<') && !template.includes('$')) {
-        const resolved = this.resolveVariable(template, context);
+      if (!templateStr.includes('<') && !templateStr.includes('$')) {
+        const resolved = this.resolveVariable(templateStr, context);
         if (resolved instanceof HTMLTemplateElement) {
           return resolved.innerHTML;
         }
         if (typeof resolved === 'string') {
-          template = resolved;
+          templateStr = resolved;
         }
       }
 
       // Extract content from <template> tags if present
-      const templateMatch = template.match(
+      const templateMatch = templateStr.match(
         /<template[^>]*>([\s\S]*?)<\/template>/i
       );
       if (templateMatch) {
         return templateMatch[1];
       }
 
-      return template;
+      return templateStr;
     }
 
     // Handle object with innerHTML

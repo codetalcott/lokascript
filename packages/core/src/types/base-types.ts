@@ -221,10 +221,11 @@ export interface TypedExecutionContext extends ExecutionContext {
  * Parse error for hyperscript compilation
  */
 export interface ParseError {
-  readonly name: string;
+  readonly name?: string;
   readonly message: string;
   readonly line: number;
   readonly column: number;
+  readonly position?: number;
   readonly source?: string;
 }
 
