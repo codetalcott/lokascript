@@ -3,7 +3,7 @@
  * Handles comparison operators, boolean logic, and conditional expressions
  * Enhanced with TypeScript patterns, comprehensive validation, and LLM documentation
  *
- * Uses Expression Type Registry for consistent type checking.
+ * Uses centralized type-helpers module for consistent type checking.
  */
 
 import type { RuntimeValidator } from '../../validation/lightweight-validators';
@@ -12,27 +12,7 @@ import type { ExecutionContext, ExpressionImplementation } from '../../types/cor
 import type { ExpressionMetadata, LLMDocumentation } from '../../types/expression-types';
 import { matchesWithCache } from '../../performance/integration';
 import { validateArgCount, validateTwoArgs } from '../validation-helpers';
-import { expressionTypeRegistry } from '../type-registry';
-
-// ============================================================================
-// Type Registry Helper Functions
-// ============================================================================
-
-/**
- * Check if value is a string using the type registry
- */
-function isString(value: unknown): boolean {
-  const stringType = expressionTypeRegistry.get('String');
-  return stringType ? stringType.isType(value) : typeof value === 'string';
-}
-
-/**
- * Check if value is an object using the type registry
- */
-function isObject(value: unknown): boolean {
-  const objectType = expressionTypeRegistry.get('Object');
-  return objectType ? objectType.isType(value) : typeof value === 'object' && value !== null;
-}
+import { isString, isObject } from '../type-helpers';
 
 // ============================================================================
 // Enhanced Expression Interface

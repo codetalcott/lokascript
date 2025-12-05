@@ -2,56 +2,12 @@
  * Conversion expressions for hyperscript
  * Handles type conversions using the 'as' keyword and built-in conversion types
  *
- * Uses Expression Type Registry for consistent type checking.
+ * Uses centralized type-helpers module for consistent type checking.
  */
 
 import type { ExecutionContext, ExpressionImplementation } from '../../types/core';
 import { validateArgCount, validateArgIsString } from '../validation-helpers';
-import { expressionTypeRegistry } from '../type-registry';
-
-// ============================================================================
-// Type Registry Helper Functions
-// ============================================================================
-
-/**
- * Check if value is a string using the type registry
- */
-function isString(value: unknown): boolean {
-  const stringType = expressionTypeRegistry.get('String');
-  return stringType ? stringType.isType(value) : typeof value === 'string';
-}
-
-/**
- * Check if value is a number using the type registry
- */
-function isNumber(value: unknown): boolean {
-  const numberType = expressionTypeRegistry.get('Number');
-  return numberType ? numberType.isType(value) : typeof value === 'number';
-}
-
-/**
- * Check if value is a boolean using the type registry
- */
-function isBoolean(value: unknown): boolean {
-  const boolType = expressionTypeRegistry.get('Boolean');
-  return boolType ? boolType.isType(value) : typeof value === 'boolean';
-}
-
-/**
- * Check if value is an object using the type registry
- */
-function isObject(value: unknown): boolean {
-  const objectType = expressionTypeRegistry.get('Object');
-  return objectType ? objectType.isType(value) : typeof value === 'object' && value !== null;
-}
-
-/**
- * Check if value is a function using the type registry
- */
-function isFunction(value: unknown): boolean {
-  const funcType = expressionTypeRegistry.get('Function');
-  return funcType ? funcType.isType(value) : typeof value === 'function';
-}
+import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
 
 // ============================================================================
 // Conversion Registry

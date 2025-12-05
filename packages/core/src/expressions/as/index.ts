@@ -3,7 +3,7 @@
  * Implements comprehensive 'as' expression functionality with TypeScript integration
  * Handles type conversions like 'value as String', 'data as JSON', 'form as Values'
  *
- * Uses Expression Type Registry for consistent type checking and coercion.
+ * Uses centralized type-helpers module for consistent type checking.
  */
 
 import { v } from '../../validation/lightweight-validators';
@@ -16,6 +16,13 @@ import type {
 } from '../../types/command-types';
 import type { ValidationResult, ValidationError } from '../../types/base-types';
 import { expressionTypeRegistry } from '../type-registry';
+import {
+  isString as sharedIsString,
+  isNumber as sharedIsNumber,
+  isBoolean as sharedIsBoolean,
+  isArray as sharedIsArray,
+  isElement as sharedIsElement,
+} from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schemas
@@ -583,48 +590,38 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
   }
 
   /**
-   * Check if value is an element
-   * Uses Expression Type Registry for consistent type checking
+   * Check if value is an element - delegates to shared type-helpers
    */
   private isElement(value: unknown): boolean {
-    const elementType = expressionTypeRegistry.get('Element');
-    return elementType ? elementType.isType(value) : value instanceof Element;
+    return sharedIsElement(value);
   }
 
   /**
-   * Check if value is an array
-   * Uses Expression Type Registry for consistent type checking
+   * Check if value is an array - delegates to shared type-helpers
    */
   private isArray(value: unknown): boolean {
-    const arrayType = expressionTypeRegistry.get('Array');
-    return arrayType ? arrayType.isType(value) : Array.isArray(value);
+    return sharedIsArray(value);
   }
 
   /**
-   * Check if value is a string
-   * Uses Expression Type Registry for consistent type checking
+   * Check if value is a string - delegates to shared type-helpers
    */
   private isString(value: unknown): boolean {
-    const stringType = expressionTypeRegistry.get('String');
-    return stringType ? stringType.isType(value) : typeof value === 'string';
+    return sharedIsString(value);
   }
 
   /**
-   * Check if value is a number
-   * Uses Expression Type Registry for consistent type checking
+   * Check if value is a number - delegates to shared type-helpers
    */
   private isNumber(value: unknown): boolean {
-    const numberType = expressionTypeRegistry.get('Number');
-    return numberType ? numberType.isType(value) : typeof value === 'number';
+    return sharedIsNumber(value);
   }
 
   /**
-   * Check if value is a boolean
-   * Uses Expression Type Registry for consistent type checking
+   * Check if value is a boolean - delegates to shared type-helpers
    */
   private isBoolean(value: unknown): boolean {
-    const boolType = expressionTypeRegistry.get('Boolean');
-    return boolType ? boolType.isType(value) : typeof value === 'boolean';
+    return sharedIsBoolean(value);
   }
 
   /**
