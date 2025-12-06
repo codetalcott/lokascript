@@ -26,6 +26,7 @@
 import { defineCommand, type RawCommandArgs } from '../command-builder';
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import { validateUrl } from '../helpers/url-validation';
 
 // ============================================================================
 // Types
@@ -132,22 +133,15 @@ export const replaceUrlCommand = defineCommand('replace')
       }
     }
 
-    // Validate URL
-    if (!url || typeof url !== 'string') {
-      throw new Error(`replace url command: URL must be a string (got ${typeof url}: ${url}). Debug: ${debugInfo}`);
-    }
+    // Validate URL using shared helper
+    const validatedUrl = validateUrl(url, 'replace url', debugInfo);
 
-    // Additional validation: if URL is 'undefined' as a string, that's a bug
-    if (url === 'undefined') {
-      throw new Error(`replace url command: URL evaluated to string 'undefined'. Debug: ${debugInfo}`);
-    }
-
-    return { url, title };
+    return { url: validatedUrl, title };
   })
 
   .execute(async (
     input: ReplaceUrlCommandInput,
-    context: TypedExecutionContext
+    _context: TypedExecutionContext
   ): Promise<void> => {
     const { url, title, state } = input;
 

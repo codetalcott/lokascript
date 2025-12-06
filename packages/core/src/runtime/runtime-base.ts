@@ -795,6 +795,10 @@ export class RuntimeBase {
                         else if ('value' in valObj && Object.keys(valObj).length === 1) {
                             val = valObj.value;
                         }
+                        // SetCommand returns { target, value, targetType }
+                        else if ('value' in valObj && 'target' in valObj && 'targetType' in valObj) {
+                            val = valObj.value;
+                        }
                     }
                     if (Array.isArray(val) && val.length > 0) val = val[0];
 

@@ -393,7 +393,7 @@
             <form id="search-form"
                 _="on submit
                    halt the event
-                   set query to #search-input.value
+                   set query to document.getElementById('search-input').value
                    if query is ''
                      set errorHtml to '<p style=color:#f44336>Please enter a search term</p>'
                      swap innerHTML of #search-results with errorHtml

@@ -26,6 +26,7 @@
 import { defineCommand, type RawCommandArgs } from '../command-builder';
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import { validateUrl } from '../helpers/url-validation';
 
 // ============================================================================
 // Types
@@ -132,26 +133,17 @@ export const pushUrlCommand = defineCommand('push')
       }
     }
 
-    // Validate URL
-    if (!url || typeof url !== 'string') {
-      throw new Error(`push url command: URL must be a string (got ${typeof url}: ${url}). Debug: ${debugInfo}`);
-    }
+    // Validate URL using shared helper
+    const validatedUrl = validateUrl(url, 'push url', debugInfo);
 
-    // Additional validation: if URL is 'undefined' as a string, that's a bug
-    if (url === 'undefined') {
-      throw new Error(`push url command: URL evaluated to string 'undefined'. Debug: ${debugInfo}`);
-    }
-
-    return { url, title };
+    return { url: validatedUrl, title };
   })
 
   .execute(async (
     input: PushUrlCommandInput,
-    context: TypedExecutionContext
+    _context: TypedExecutionContext
   ): Promise<void> => {
     const { url, title, state } = input;
-
-    console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 
     // Push to history
     window.history.pushState(state || null, '', url);

@@ -102,18 +102,6 @@ export interface BoostedInstance {
 // ============================================================================
 
 /**
- * Check if a URL is external (different origin)
- */
-function isExternalUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url, window.location.origin);
-    return parsed.origin !== window.location.origin;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Check if link should be boosted (not external, no target, no download, etc.)
  */
 function shouldBoostLink(link: HTMLAnchorElement): boolean {
@@ -160,36 +148,6 @@ function shouldHandleClick(event: MouseEvent): boolean {
   }
 
   return true;
-}
-
-/**
- * Execute swap strategy on target element
- */
-function executeSwap(
-  target: HTMLElement,
-  content: string,
-  strategy: SwapStrategy
-): void {
-  switch (strategy) {
-    case 'morph':
-      morphAdapter.morphInner(target, content);
-      break;
-
-    case 'morphOuter':
-      morphAdapter.morph(target, content);
-      break;
-
-    case 'innerHTML':
-      target.innerHTML = content;
-      break;
-
-    case 'outerHTML':
-      target.outerHTML = content;
-      break;
-
-    default:
-      morphAdapter.morphInner(target, content);
-  }
 }
 
 // ============================================================================
@@ -282,8 +240,8 @@ export function createBoosted(config: BoostedConfig): BoostedInstance {
         executeSwap(targetElement, html, strategy);
       };
 
-      if (useViewTransition && 'startViewTransition' in document) {
-        await (document as any).startViewTransition(performSwap).finished;
+      if (useViewTransition && isViewTransitionsSupported()) {
+        await withViewTransition(performSwap);
       } else {
         performSwap();
       }

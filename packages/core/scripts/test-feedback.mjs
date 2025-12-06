@@ -15,8 +15,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '..');
 
 // Configuration
+// Note: Server may run from project root or packages/core
+// We try both paths to support either setup
 const CONFIG = {
-  testUrl: 'http://127.0.0.1:3000/test-dashboard.html',
+  testUrls: [
+    'http://127.0.0.1:3000/test-dashboard.html',           // Server from packages/core
+    'http://127.0.0.1:3000/packages/core/test-dashboard.html'  // Server from project root
+  ],
   timeout: 30000,
   outputDir: join(rootDir, 'test-results'),
   formats: {
@@ -62,9 +67,23 @@ async function runTests() {
       }
     });
 
-    // Navigate to test page
+    // Navigate to test page - try multiple URLs to support different server setups
     console.log('📄 Loading test dashboard...');
-    await page.goto(CONFIG.testUrl, { waitUntil: 'networkidle' });
+    let testUrl = null;
+    for (const url of CONFIG.testUrls) {
+      try {
+        const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 5000 });
+        if (response && response.status() === 200) {
+          testUrl = url;
+          break;
+        }
+      } catch (e) {
+        // Try next URL
+      }
+    }
+    if (!testUrl) {
+      throw new Error(`Could not load test dashboard from any of: ${CONFIG.testUrls.join(', ')}`);
+    }
 
     // Wait for tests to complete
     console.log('⏳ Running tests...\n');

@@ -176,3 +176,51 @@ export {
   CommandMetadataRegistry,
   commandMetadataRegistry,
 } from './command-metadata';
+
+// ============================================================================
+// htmx-like Feature Types
+// ============================================================================
+
+// Swap Executor types
+export type {
+  SwapStrategy,
+  SwapExecutionOptions,
+} from '../lib/swap-executor';
+
+// Morph Adapter types
+export type {
+  MorphOptions,
+  MorphEngine,
+} from '../lib/morph-adapter';
+
+// View Transitions types
+export type {
+  TransitionCallback,
+  ViewTransitionOptions,
+  ViewTransitionsConfig,
+} from '../lib/view-transitions';
+
+// Behavior types
+export type {
+  HistorySwapConfig,
+  HistorySwapInstance,
+} from '../behaviors/history-swap';
+
+export type {
+  BoostedConfig,
+  BoostedInstance,
+} from '../behaviors/boosted';
+
+// Swap Command types
+export type {
+  SwapCommandInput,
+} from '../commands/dom/swap';
+
+// URL Command types
+export type {
+  PushUrlCommandInput,
+} from '../commands/navigation/push-url';
+
+export type {
+  ReplaceUrlCommandInput,
+} from '../commands/navigation/replace-url';

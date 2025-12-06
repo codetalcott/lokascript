@@ -1312,6 +1312,11 @@ export class Parser {
         return this.parseContextPropertyAccess('you');
       }
 
+      // Handle "the X of Y" pattern: the value of #element
+      if (token.value === 'the') {
+        return this.parseTheXofY();
+      }
+
       return this.createIdentifier(token.value);
     }
 
@@ -2843,6 +2848,63 @@ export class Parser {
     }
 
     return this.createCallExpression(this.createIdentifier(funcName), args);
+  }
+
+  /**
+   * Parse "the X of Y" pattern: the value of #element
+   * Also handles "the first/last/etc <selector>" by delegating to navigation parsing
+   * Returns a propertyOfExpression node or the parsed positional expression
+   */
+  private parseTheXofY(): ASTNode {
+    // We've already consumed "the" token
+    // Pattern: the <property> of <target>
+
+    // Positional keywords that should be parsed as navigation functions
+    // These are used in patterns like "the first <...>", "the last item"
+    const positionalKeywords = ['first', 'last', 'next', 'previous', 'random', 'closest'];
+
+    // Next should be the property name (e.g., "value", "innerHTML", etc.)
+    if (!this.checkTokenType(TokenType.IDENTIFIER)) {
+      // Not a "the X of Y" pattern - return "the" as identifier
+      return this.createIdentifier('the');
+    }
+
+    // Peek at the property name without consuming
+    const nextToken = this.peek();
+    const propertyName = nextToken.value;
+
+    // If it's a positional keyword, parse it as a navigation function
+    // "the" is just syntactic sugar before these keywords
+    if (positionalKeywords.includes(propertyName)) {
+      this.advance(); // consume the positional keyword
+      // Parse the rest as a navigation function (like "first <#test-input/>")
+      return this.parseNavigationFunction(propertyName);
+    }
+
+    // Lookahead: check if we have "property of" pattern
+    // We need to peek TWO tokens ahead to see if there's an "of"
+    const savedPosition = this.current;
+    this.advance(); // consume property name
+
+    if (!this.check('of')) {
+      // Not the "the X of Y" pattern - backtrack
+      this.current = savedPosition;
+      return this.createIdentifier('the');
+    }
+
+    this.advance(); // consume "of"
+
+    // Parse the target expression (e.g., #test-input)
+    const target = this.parsePrimary();
+
+    // Return a propertyOfExpression node
+    return {
+      type: 'propertyOfExpression',
+      property: { type: 'identifier', name: propertyName },
+      target: target,
+      line: nextToken.line,
+      column: nextToken.column,
+    } as ASTNode;
   }
 
   private parseContextPropertyAccess(contextVar: 'me' | 'it' | 'you'): MemberExpressionNode {

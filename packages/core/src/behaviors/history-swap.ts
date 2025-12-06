@@ -76,60 +76,6 @@ export interface HistorySwapInstance {
 // ============================================================================
 
 /**
- * Execute swap strategy on target element
- */
-function executeSwap(
-  target: HTMLElement,
-  content: string,
-  strategy: SwapStrategy
-): void {
-  switch (strategy) {
-    case 'morph':
-      morphAdapter.morphInner(target, content);
-      break;
-
-    case 'morphOuter':
-      morphAdapter.morph(target, content);
-      break;
-
-    case 'innerHTML':
-      target.innerHTML = content;
-      break;
-
-    case 'outerHTML':
-      target.outerHTML = content;
-      break;
-
-    case 'beforeBegin':
-      target.insertAdjacentHTML('beforebegin', content);
-      break;
-
-    case 'afterBegin':
-      target.insertAdjacentHTML('afterbegin', content);
-      break;
-
-    case 'beforeEnd':
-      target.insertAdjacentHTML('beforeend', content);
-      break;
-
-    case 'afterEnd':
-      target.insertAdjacentHTML('afterend', content);
-      break;
-
-    case 'delete':
-      target.remove();
-      break;
-
-    case 'none':
-      // No DOM changes
-      break;
-
-    default:
-      target.innerHTML = content;
-  }
-}
-
-/**
  * Create a HistorySwap behavior instance
  *
  * This function creates an event listener for the popstate event
@@ -205,8 +151,8 @@ export function createHistorySwap(config: HistorySwapConfig): HistorySwapInstanc
         executeSwap(targetElement, html, strategy);
       };
 
-      if (useViewTransition && 'startViewTransition' in document) {
-        await (document as any).startViewTransition(performSwap).finished;
+      if (useViewTransition && isViewTransitionsSupported()) {
+        await withViewTransition(performSwap);
       } else {
         performSwap();
       }

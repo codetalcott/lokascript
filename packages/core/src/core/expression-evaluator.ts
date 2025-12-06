@@ -65,6 +65,24 @@ export class ExpressionEvaluator {
   }
 
   /**
+   * Unwrap selector results to a single element.
+   * CSS selectors return arrays via querySelectorAll or NodeList,
+   * but property access and method calls typically expect a single element.
+   *
+   * @param value - Value to unwrap (may be array or NodeList from selector evaluation)
+   * @returns First element if array/NodeList with items, otherwise the original value
+   */
+  private unwrapSelectorResult<T>(value: T | T[] | NodeList): T {
+    if (Array.isArray(value) && value.length > 0) {
+      return value[0];
+    }
+    if (value instanceof NodeList && value.length > 0) {
+      return value[0] as T;
+    }
+    return value as T;
+  }
+
+  /**
    * Evaluate an AST node using the appropriate expression implementation
    */
   async evaluate(node: ASTNode, context: ExecutionContext): Promise<any> {
@@ -123,6 +141,15 @@ export class ExpressionEvaluator {
 
       case 'conditionalExpression':
         return this.evaluateConditionalExpression(node as any, context);
+
+      case 'cssSelector':
+        return this.evaluateCSSSelector(node as any, context);
+
+      case 'propertyAccess':
+        return this.evaluatePropertyAccess(node as any, context);
+
+      case 'propertyOfExpression':
+        return this.evaluatePropertyOfExpression(node as any, context);
 
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
@@ -500,13 +527,6 @@ export class ExpressionEvaluator {
 
     // If explicit scope is specified, ONLY check that scope
     if (scope === 'local') {
-      // Debug: log what we're looking for
-      console.log(`[DEBUG] Looking for local var '${name}' in context.locals:`, {
-        hasLocals: !!context.locals,
-        localsKeys: context.locals ? Array.from(context.locals.keys()) : [],
-        hasVariable: context.locals?.has(name),
-        value: context.locals?.get(name)
-      });
       // Only check locals (for :variable syntax)
       if (context.locals?.has(name)) {
         return context.locals.get(name);
@@ -591,7 +611,10 @@ export class ExpressionEvaluator {
     }
 
     // Evaluate the object first for normal member expressions
-    const objectValue = await this.evaluate(object, context);
+    let objectValue = await this.evaluate(object, context);
+
+    // Unwrap selector results to single element for property access
+    objectValue = this.unwrapSelectorResult(objectValue);
 
     if (computed) {
       // For computed access like obj[key]
@@ -723,15 +746,8 @@ export class ExpressionEvaluator {
 
       // If we detected a positional pattern, handle it
       if (positionalOp && selector) {
-        // Evaluate the scope element (right side)
-        let scopeElement = await this.evaluate(right, context);
-
-        // Unwrap arrays/NodeLists to single element (selectors return arrays)
-        if (Array.isArray(scopeElement) && scopeElement.length > 0) {
-          scopeElement = scopeElement[0];
-        } else if (scopeElement instanceof NodeList && scopeElement.length > 0) {
-          scopeElement = scopeElement[0];
-        }
+        // Evaluate the scope element (right side) and unwrap selector results
+        const scopeElement = this.unwrapSelectorResult(await this.evaluate(right, context));
 
         // Verify we have a valid DOM element as scope
         if (!scopeElement || typeof scopeElement.querySelectorAll !== 'function') {
@@ -1134,14 +1150,9 @@ export class ExpressionEvaluator {
 
     // Handle member expression calls (like obj.method())
     if (callee.type === 'memberExpression') {
-      // Evaluate the object to use as 'this' context
-      let thisContext = await this.evaluate(callee.object, context);
-
-      // If thisContext is an array (from selector evaluation), extract the first element
+      // Evaluate the object to use as 'this' context and unwrap selector results
       // This handles cases like: call showModal() where #dialog evaluates to [HTMLDialogElement]
-      if (Array.isArray(thisContext) && thisContext.length > 0) {
-        thisContext = thisContext[0];
-      }
+      const thisContext = this.unwrapSelectorResult(await this.evaluate(callee.object, context));
 
       // Get property name
       const propertyName = callee.property?.name || callee.property;
@@ -1168,17 +1179,25 @@ export class ExpressionEvaluator {
     // Check if it's a registered expression function
     const expression = this.expressionRegistry.get(functionName);
     if (expression) {
-      // Navigation functions (closest, first, last, previous, next) expect selector strings
-      // not evaluated DOM elements, so pass selector node values directly
-      const navigationFunctions = ['closest', 'first', 'last', 'previous', 'next'];
-      const isNavigationFunction = navigationFunctions.includes(functionName);
+      // Navigation functions that need DOM traversal with selector strings (not evaluated elements)
+      const selectorStringFunctions = ['closest', 'previous', 'next'];
+      // Navigation functions that need collections (evaluated DOM elements, not strings)
+      const collectionFunctions = ['first', 'last', 'random', 'at'];
 
-      // Evaluate arguments, but for navigation functions pass selector strings
+      const needsSelectorString = selectorStringFunctions.includes(functionName);
+      const needsCollection = collectionFunctions.includes(functionName);
+
+      // Evaluate arguments based on function type
       const evaluatedArgs = await Promise.all(
-        args.map((arg: any) => {
-          // For navigation functions, if arg is a selector node, pass the string value
-          if (isNavigationFunction && arg && arg.type === 'selector' && typeof arg.value === 'string') {
+        args.map(async (arg: any) => {
+          // For selector-string functions, pass the selector string directly
+          if (needsSelectorString && arg && arg.type === 'selector' && typeof arg.value === 'string') {
             return arg.value;
+          }
+          // For collection functions, evaluate selector to get DOM elements array
+          if (needsCollection && arg && arg.type === 'selector' && typeof arg.value === 'string') {
+            // Evaluate selector to get DOM elements
+            return this.evaluateSelector(arg, context);
           }
           return this.evaluate(arg, context);
         })
@@ -1276,14 +1295,9 @@ export class ExpressionEvaluator {
   private async evaluatePossessiveExpression(node: any, context: ExecutionContext): Promise<any> {
     const { object, property } = node;
 
-    // Evaluate the object first
-    let objectValue = await this.evaluate(object, context);
-
-    // If objectValue is an array (from selector evaluation), extract the first element
+    // Evaluate the object and unwrap selector results
     // This handles cases like: #count's textContent where #count evaluates to [HTMLDivElement]
-    if (Array.isArray(objectValue) && objectValue.length > 0) {
-      objectValue = objectValue[0];
-    }
+    const objectValue = this.unwrapSelectorResult(await this.evaluate(object, context));
 
     if (!objectValue) {
       return undefined;
@@ -1331,5 +1345,110 @@ export class ExpressionEvaluator {
    */
   hasExpression(name: string): boolean {
     return this.expressionRegistry.has(name);
+  }
+
+  /**
+   * Evaluate CSS selector nodes created by expression-parser
+   * Handles both ID selectors (#id) and class selectors (.class)
+   */
+  private async evaluateCSSSelector(
+    node: { selectorType: string; selector: string },
+    _context: ExecutionContext
+  ): Promise<HTMLElement | HTMLElement[] | null> {
+    const selector = node.selector;
+
+    if (node.selectorType === 'id') {
+      // ID selector returns single element or null
+      // Remove the '#' prefix since getElementById expects just the ID
+      const id = selector.startsWith('#') ? selector.slice(1) : selector;
+      return document.getElementById(id);
+    } else if (node.selectorType === 'class') {
+      // Class selector returns array of elements
+      const escapedSelector = selector.replace(/:/g, '\\:');
+      const elements = document.querySelectorAll(escapedSelector);
+      return Array.from(elements).filter(
+        (el): el is HTMLElement => el instanceof HTMLElement
+      );
+    }
+
+    // Generic selector - use querySelectorAll
+    const elements = document.querySelectorAll(selector);
+    return Array.from(elements).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement
+    );
+  }
+
+  /**
+   * Evaluate dot notation property access (obj.property)
+   */
+  private async evaluatePropertyAccess(
+    node: { object: ASTNode; property: { name?: string; value?: string } },
+    context: ExecutionContext
+  ): Promise<any> {
+    const object = await this.evaluate(node.object, context);
+    const propertyNode = node.property;
+
+    // Handle null/undefined objects gracefully
+    if (object === null || object === undefined) {
+      throw new Error(`Cannot access property "${propertyNode.name || propertyNode.value}" of ${object}`);
+    }
+
+    // Extract property name
+    const propertyName = propertyNode.name || propertyNode.value;
+    if (!propertyName) {
+      throw new Error('Property name must be an identifier');
+    }
+
+    // Use standard JavaScript property access
+    try {
+      const value = object[propertyName];
+
+      // Handle method calls - if it's a function, bind it to the object
+      if (typeof value === 'function') {
+        return value.bind(object);
+      }
+
+      return value;
+    } catch (error) {
+      throw new Error(`Error accessing property "${propertyName}": ${error}`);
+    }
+  }
+
+  /**
+   * Evaluate "the X of Y" property access pattern
+   */
+  private async evaluatePropertyOfExpression(
+    node: { property: { name?: string; value?: string }; target: ASTNode },
+    context: ExecutionContext
+  ): Promise<any> {
+    // Extract property name
+    const propertyNode = node.property;
+    const propertyName = propertyNode.name || propertyNode.value;
+
+    if (!propertyName) {
+      throw new Error('Property name must be an identifier in "the X of Y" pattern');
+    }
+
+    // Evaluate target element and unwrap selector results
+    const target = this.unwrapSelectorResult(await this.evaluate(node.target, context));
+
+    // Handle null/undefined targets gracefully
+    if (target === null || target === undefined) {
+      throw new Error(`Cannot access property "${propertyName}" of ${target}`);
+    }
+
+    // Use standard JavaScript property access
+    try {
+      const value = target[propertyName];
+
+      // Handle method calls - if it's a function, bind it to the target
+      if (typeof value === 'function') {
+        return value.bind(target);
+      }
+
+      return value;
+    } catch (error) {
+      throw new Error(`Failed to access property "${propertyName}" on target: ${error}`);
+    }
   }
 }
