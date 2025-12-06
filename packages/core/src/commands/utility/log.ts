@@ -122,13 +122,17 @@ export class LogCommand {
     input: LogCommandInput,
     context: TypedExecutionContext
   ): Promise<LogCommandOutput> {
+    // Use window.console to prevent Terser's drop_console from stripping this
+    // The log command is an intentional user-facing feature, not a debug statement
+    const logger = typeof window !== 'undefined' ? window.console : console;
+
     // Log values to console
     if (input.values.length === 0) {
       // No values - log empty line
-      console.log();
+      logger.log();
     } else {
       // Log all values
-      console.log(...input.values);
+      logger.log(...input.values);
     }
 
     // Return structured output

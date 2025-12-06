@@ -10,7 +10,26 @@ test.describe('HyperFixi Command Compatibility Tests', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await page.goto('http://localhost:3000/compatibility-test.html');
+    // Try multiple paths to support different server setups
+    const urls = [
+      'http://localhost:3000/compatibility-test.html',           // Server from packages/core
+      'http://localhost:3000/packages/core/compatibility-test.html'  // Server from project root
+    ];
+    let loaded = false;
+    for (const url of urls) {
+      try {
+        const response = await page.goto(url, { timeout: 5000 });
+        if (response && response.status() === 200) {
+          loaded = true;
+          break;
+        }
+      } catch (e) {
+        // Try next URL
+      }
+    }
+    if (!loaded) {
+      throw new Error('Could not load compatibility-test.html from any known path');
+    }
     await page.waitForTimeout(2000);
 
     // Inject our command test adapter
@@ -305,6 +324,9 @@ test.describe('HyperFixi Command Compatibility Tests', () => {
             success: verified,
             error: result.error,
             actualLog: logCalls[0],
+            commandSuccess: result.success,
+            logCallsLength: logCalls.length,
+            commandResult: result.result,
           });
         } catch (error) {
           results.push({
@@ -333,8 +355,12 @@ test.describe('HyperFixi Command Compatibility Tests', () => {
         console.log(
           `  ❌ ${result.description}: ${result.command} - ${result.error || 'verification failed'}`
         );
-        if (result.actualLog) {
+        console.log(`    commandSuccess: ${result.commandSuccess}, logCallsLength: ${result.logCallsLength}`);
+        if (result.actualLog !== undefined) {
           console.log(`    Actual log: ${JSON.stringify(result.actualLog)}`);
+        }
+        if (result.commandResult !== undefined) {
+          console.log(`    Command result: ${JSON.stringify(result.commandResult)}`);
         }
       }
     });

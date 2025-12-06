@@ -9,11 +9,11 @@
 <body>
     <div id="work-area"></div>
     
-    <!-- Original _hyperscript library -->
-    <script src="/dist/_hyperscript.js"></script>
-    
-    <!-- Our hyperfixi implementation -->
-    <script src="/dist/hyperfixi-browser.js"></script>
+    <!-- Original _hyperscript library (optional - gracefully handles missing) -->
+    <script src="dist/_hyperscript.js" onerror="console.log('_hyperscript not available')"></script>
+
+    <!-- Our hyperfixi implementation (relative path works from any server root) -->
+    <script src="dist/hyperfixi-browser.js"></script>
     
     <script>
         // Setup compatibility helpers
