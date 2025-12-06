@@ -77,3 +77,13 @@ export {
   evaluateCondition,
   isTruthy,
 } from './condition-helpers';
+
+// URL validation helpers
+export {
+  validateUrl,
+  isExternalUrl,
+  isSafeUrl,
+  normalizeUrl,
+  extractSearchParams,
+  buildUrlWithParams,
+} from './url-validation';

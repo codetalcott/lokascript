@@ -45,7 +45,9 @@
  *   </div>
  */
 
-import { morphAdapter } from '../lib/morph-adapter';
+import { executeSwap } from '../lib/swap-executor';
+import { withViewTransition, isViewTransitionsSupported } from '../lib/view-transitions';
+import { isExternalUrl } from '../commands/helpers/url-validation';
 import { isHTMLElement } from '../utils/element-check';
 import type { SwapStrategy } from '../commands/dom/swap';
 

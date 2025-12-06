@@ -53,28 +53,23 @@
 import { defineCommand, type RawCommandArgs } from '../command-builder';
 import type { ExecutionContext, TypedExecutionContext, ASTNode } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import { morphAdapter, type MorphOptions } from '../../lib/morph-adapter';
-import { withViewTransition, isViewTransitionsSupported } from '../../lib/view-transitions';
+import { resolveElements } from '../helpers/element-resolution';
+import {
+  executeSwap,
+  executeSwapWithTransition,
+  extractContent,
+  STRATEGY_KEYWORDS,
+  type SwapStrategy,
+} from '../../lib/swap-executor';
+import type { MorphOptions } from '../../lib/morph-adapter';
 import { isHTMLElement } from '../../utils/element-check';
+
+// Re-export types from swap-executor for consumers
+export type { SwapStrategy } from '../../lib/swap-executor';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-/**
- * All supported swap strategies
- */
-export type SwapStrategy =
-  | 'morph'        // Inner morph (default) - intelligent diffing, preserves state
-  | 'morphOuter'   // Outer morph - replace element with morph
-  | 'innerHTML'    // Replace inner content
-  | 'outerHTML'    // Replace entire element
-  | 'beforeBegin'  // Insert before element
-  | 'afterBegin'   // Insert at start (prepend)
-  | 'beforeEnd'    // Insert at end (append)
-  | 'afterEnd'     // Insert after element
-  | 'delete'       // Remove element
-  | 'none';        // No DOM changes
 
 /**
  * Parsed and validated input for swap command
@@ -93,203 +88,25 @@ export interface SwapCommandInput {
 }
 
 // ============================================================================
-// Strategy Mapping
-// ============================================================================
-
-/**
- * Map natural language keywords to swap strategies
- */
-const STRATEGY_KEYWORDS: Record<string, SwapStrategy> = {
-  // Natural language (Option A from plan)
-  'into': 'innerHTML',
-  'over': 'outerHTML',
-
-  // Explicit htmx-style strategies
-  'innerhtml': 'innerHTML',
-  'outerhtml': 'outerHTML',
-  'beforebegin': 'beforeBegin',
-  'afterbegin': 'afterBegin',
-  'beforeend': 'beforeEnd',
-  'afterend': 'afterEnd',
-  'delete': 'delete',
-  'none': 'none',
-
-  // Morph strategies
-  'morph': 'morph',
-  'innermorph': 'morph',
-  'outermorph': 'morphOuter',
-};
-
-/**
- * Detect strategy from parsed arguments
- */
-function detectStrategy(args: string[]): SwapStrategy {
-  // Normalize args to lowercase for matching
-  const normalized = args.map(a => a.toLowerCase());
-
-  for (const arg of normalized) {
-    if (STRATEGY_KEYWORDS[arg]) {
-      return STRATEGY_KEYWORDS[arg];
-    }
-  }
-
-  // Default to morph for best UX (preserves form state, focus, etc.)
-  return 'morph';
-}
-
-// ============================================================================
 // Helper Functions
 // ============================================================================
 
 /**
  * Resolve target elements from selector or context
+ * Uses shared element-resolution helper
  */
 async function resolveTargets(
   selector: string | null,
   context: ExecutionContext
 ): Promise<HTMLElement[]> {
-  // Default to context.me if no selector
-  if (!selector || selector === 'me') {
-    if (!context.me || !isHTMLElement(context.me)) {
-      throw new Error('swap command: no target specified and context.me is not an HTMLElement');
-    }
-    return [context.me as HTMLElement];
-  }
-
-  // Resolve from CSS selector
-  const selected = document.querySelectorAll(selector);
-  const elements = Array.from(selected).filter(
-    (el): el is HTMLElement => isHTMLElement(el)
-  );
+  const elements = resolveElements(selector || undefined, context);
 
   if (elements.length === 0) {
-    throw new Error(`swap command: no elements found matching "${selector}"`);
+    const selectorInfo = selector ? ` matching "${selector}"` : '';
+    throw new Error(`[HyperFixi] swap: no elements found${selectorInfo}`);
   }
 
   return elements;
-}
-
-/**
- * Extract content string from various value types
- */
-function extractContent(value: unknown): string | HTMLElement | null {
-  if (value === null || value === undefined) {
-    return null;
-  }
-  if (isHTMLElement(value)) {
-    return value as HTMLElement;
-  }
-  return String(value);
-}
-
-/**
- * Execute a swap strategy on a target element
- */
-function executeSwapStrategy(
-  target: HTMLElement,
-  content: string | HTMLElement | null,
-  strategy: SwapStrategy,
-  morphOptions?: MorphOptions
-): void {
-  const contentStr = content !== null && !isHTMLElement(content) ? content : '';
-  const contentEl = isHTMLElement(content) ? content : null;
-
-  switch (strategy) {
-    case 'morph':
-      // Inner morph - morph children only
-      if (content !== null) {
-        try {
-          morphAdapter.morphInner(target, contentEl || contentStr, morphOptions);
-        } catch (error) {
-          // Fallback to innerHTML if morph fails (e.g., mismatched elements)
-          console.warn('[HyperFixi] Morph failed, falling back to innerHTML:', error);
-          if (contentEl) {
-            target.innerHTML = '';
-            target.appendChild(contentEl);
-          } else {
-            target.innerHTML = contentStr;
-          }
-        }
-      }
-      break;
-
-    case 'morphOuter':
-      // Outer morph - morph the entire element
-      if (content !== null) {
-        try {
-          morphAdapter.morph(target, contentEl || contentStr, morphOptions);
-        } catch (error) {
-          // Fallback to outerHTML if morph fails
-          console.warn('[HyperFixi] Morph failed, falling back to outerHTML:', error);
-          if (contentEl) {
-            target.replaceWith(contentEl);
-          } else {
-            target.outerHTML = contentStr;
-          }
-        }
-      }
-      break;
-
-    case 'innerHTML':
-      if (contentEl) {
-        target.innerHTML = '';
-        target.appendChild(contentEl);
-      } else {
-        target.innerHTML = contentStr;
-      }
-      break;
-
-    case 'outerHTML':
-      if (contentEl) {
-        target.replaceWith(contentEl);
-      } else {
-        target.outerHTML = contentStr;
-      }
-      break;
-
-    case 'beforeBegin':
-      if (contentEl) {
-        target.parentElement?.insertBefore(contentEl, target);
-      } else {
-        target.insertAdjacentHTML('beforebegin', contentStr);
-      }
-      break;
-
-    case 'afterBegin':
-      if (contentEl) {
-        target.insertBefore(contentEl, target.firstChild);
-      } else {
-        target.insertAdjacentHTML('afterbegin', contentStr);
-      }
-      break;
-
-    case 'beforeEnd':
-      if (contentEl) {
-        target.appendChild(contentEl);
-      } else {
-        target.insertAdjacentHTML('beforeend', contentStr);
-      }
-      break;
-
-    case 'afterEnd':
-      if (contentEl) {
-        target.parentElement?.insertBefore(contentEl, target.nextSibling);
-      } else {
-        target.insertAdjacentHTML('afterend', contentStr);
-      }
-      break;
-
-    case 'delete':
-      target.remove();
-      break;
-
-    case 'none':
-      // No DOM changes
-      break;
-
-    default:
-      throw new Error(`swap command: unknown strategy "${strategy}"`);
-  }
 }
 
 // ============================================================================
@@ -326,14 +143,11 @@ export const swapCommand = defineCommand('swap')
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
   ): Promise<SwapCommandInput> => {
-    console.log('[SWAP DEBUG] parseInput called with raw:', JSON.stringify(raw, null, 2));
     const args = raw.args;
 
     if (!args || args.length === 0) {
-      console.log('[SWAP DEBUG] No args provided!');
-      throw new Error('swap command requires arguments');
+      throw new Error('[HyperFixi] swap: command requires arguments');
     }
-    console.log('[SWAP DEBUG] args.length:', args.length);
 
     // Parse arguments to extract: strategy, target, content
     // Syntax patterns:
@@ -344,7 +158,6 @@ export const swapCommand = defineCommand('swap')
     //   swap delete <target>                   → strategy=delete
 
     // Helper to extract keyword name from AST node without evaluation
-    // This follows the pattern used by put command
     const getNodeKeyword = (node: unknown): string | null => {
       if (!node || typeof node !== 'object') return null;
       const nodeObj = node as Record<string, unknown>;
@@ -412,7 +225,6 @@ export const swapCommand = defineCommand('swap')
         const firstKeyword = argKeywords[0];
         if (firstKeyword && STRATEGY_KEYWORDS[firstKeyword]) {
           strategy = STRATEGY_KEYWORDS[firstKeyword];
-          // In this case, target is after the strategy keyword
           targetNode = args[1] || args[withIndex - 1];
         } else {
           targetNode = args[withIndex - 1];
@@ -429,16 +241,13 @@ export const swapCommand = defineCommand('swap')
         targetNode = args[args.length - 2];
         contentNode = args[args.length - 1];
       } else {
-        throw new Error('swap command: could not parse arguments. Expected "swap <target> with <content>"');
+        throw new Error('[HyperFixi] swap: could not parse arguments. Expected "swap <target> with <content>"');
       }
     }
 
     // Now evaluate the target and content nodes
     let targetArg: unknown = null;
     let contentArg: unknown = null;
-
-    console.log('[SWAP DEBUG] targetNode:', JSON.stringify(targetNode, null, 2));
-    console.log('[SWAP DEBUG] contentNode:', JSON.stringify(contentNode, null, 2));
 
     if (targetNode) {
       // Check if targetNode is a selector - if so, extract the selector string
@@ -448,7 +257,6 @@ export const swapCommand = defineCommand('swap')
       if (nodeType === 'selector' && typeof nodeValue === 'string') {
         // Don't evaluate selector nodes - use the selector string directly
         targetArg = nodeValue;
-        console.log('[SWAP DEBUG] Using selector value directly:', targetArg);
       } else if (nodeType === 'binaryExpression' && (targetNode as Record<string, unknown>).operator === 'of') {
         // Handle "beforeEnd of #target" style - extract strategy from left, target from right
         const left = (targetNode as Record<string, unknown>).left as Record<string, unknown>;
@@ -459,36 +267,29 @@ export const swapCommand = defineCommand('swap')
           const strategyName = left.name.toLowerCase();
           if (STRATEGY_KEYWORDS[strategyName]) {
             strategy = STRATEGY_KEYWORDS[strategyName];
-            console.log('[SWAP DEBUG] Extracted strategy from binary "of":', strategy);
           }
         }
 
         // Extract target from right side (selector or expression)
         if (right && right.type === 'selector' && typeof right.value === 'string') {
           targetArg = right.value;
-          console.log('[SWAP DEBUG] Extracted selector from binary "of":', targetArg);
         } else if (right) {
           targetArg = await evaluator.evaluate(right, context);
-          console.log('[SWAP DEBUG] Evaluated right side of binary "of":', typeof targetArg);
         }
       } else {
         targetArg = await evaluator.evaluate(targetNode, context);
-        console.log('[SWAP DEBUG] Evaluated targetArg:', typeof targetArg, isHTMLElement(targetArg) ? 'HTMLElement' : targetArg);
       }
     }
     if (contentNode) {
       contentArg = await evaluator.evaluate(contentNode, context);
-      console.log('[SWAP DEBUG] Evaluated contentArg:', typeof contentArg, String(contentArg).substring(0, 50));
     }
 
     // Resolve target selector
     let targetSelector: string | null = null;
     if (typeof targetArg === 'string') {
       targetSelector = targetArg;
-      console.log('[SWAP DEBUG] Using string selector:', targetSelector);
     } else if (isHTMLElement(targetArg)) {
       // Direct element reference
-      console.log('[SWAP DEBUG] Using direct element:', (targetArg as HTMLElement).id || (targetArg as HTMLElement).tagName);
       return {
         targets: [targetArg as HTMLElement],
         content: extractContent(contentArg),
@@ -496,11 +297,8 @@ export const swapCommand = defineCommand('swap')
         morphOptions: { preserveChanges: true },
         useViewTransition,
       };
-    } else {
-      console.log('[SWAP DEBUG] targetArg is neither string nor HTMLElement:', typeof targetArg, targetArg);
     }
 
-    console.log('[SWAP DEBUG] Calling resolveTargets with selector:', targetSelector);
     const targets = await resolveTargets(targetSelector, context);
     const content = extractContent(contentArg);
 
@@ -515,24 +313,15 @@ export const swapCommand = defineCommand('swap')
 
   .execute(async (
     input: SwapCommandInput,
-    context: TypedExecutionContext
+    _context: TypedExecutionContext
   ): Promise<void> => {
-    console.log('[SWAP DEBUG] execute called with input:', JSON.stringify(input, null, 2));
     const { targets, content, strategy, morphOptions, useViewTransition } = input;
-    console.log('[SWAP DEBUG] targets:', targets?.length, 'content:', content, 'strategy:', strategy);
 
-    const performSwap = () => {
-      for (const target of targets) {
-        executeSwapStrategy(target, content, strategy, morphOptions);
-      }
-    };
-
-    // Use View Transitions API if requested and supported
-    if (useViewTransition && isViewTransitionsSupported()) {
-      await withViewTransition(performSwap);
-    } else {
-      performSwap();
-    }
+    // Use shared executeSwapWithTransition for consistent behavior
+    await executeSwapWithTransition(targets, content, strategy, {
+      morphOptions,
+      useViewTransition,
+    });
   })
 
   .build();
@@ -570,7 +359,7 @@ export const morphCommand = defineCommand('morph')
     const args = raw.args;
 
     if (!args || args.length === 0) {
-      throw new Error('morph command requires arguments');
+      throw new Error('[HyperFixi] morph: command requires arguments');
     }
 
     let strategy: SwapStrategy = 'morph';
@@ -606,17 +395,17 @@ export const morphCommand = defineCommand('morph')
     }
 
     if (!targetArg) {
-      throw new Error('morph command: could not determine target');
+      throw new Error('[HyperFixi] morph: could not determine target');
     }
 
-    // Resolve target
+    // Resolve target using shared helper
     let targets: HTMLElement[];
     if (typeof targetArg === 'string') {
       targets = await resolveTargets(targetArg, context);
     } else if (isHTMLElement(targetArg)) {
       targets = [targetArg as HTMLElement];
     } else {
-      throw new Error('morph command: target must be a selector or element');
+      throw new Error('[HyperFixi] morph: target must be a selector or element');
     }
 
     return {
@@ -629,12 +418,13 @@ export const morphCommand = defineCommand('morph')
 
   .execute(async (
     input: SwapCommandInput,
-    context: TypedExecutionContext
+    _context: TypedExecutionContext
   ): Promise<void> => {
     const { targets, content, strategy, morphOptions } = input;
 
+    // Use shared executeSwap for consistent behavior
     for (const target of targets) {
-      executeSwapStrategy(target, content, strategy, morphOptions);
+      executeSwap(target, content, strategy, morphOptions);
     }
   })
 

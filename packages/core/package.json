@@ -122,6 +122,7 @@
   "dependencies": {
     "esbuild": "0.25.11",
     "jsdom": "^26.1.0",
+    "morphlex": "^1.0.5",
     "vite": "^7.1.12"
   },
   "directories": {
