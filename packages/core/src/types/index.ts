@@ -14,6 +14,18 @@ import type {
 } from './base-types';
 
 // ============================================================================
+// Core Context Types (Tree-shakeable foundation)
+// ============================================================================
+
+export type { CoreExecutionContext } from './core-context';
+export {
+  createCoreContext,
+  isCoreExecutionContext,
+  assertHTMLElement,
+  asHTMLElement,
+} from './core-context';
+
+// ============================================================================
 // Core Unified Types
 // ============================================================================
 
@@ -25,7 +37,7 @@ export type {
   HyperScriptValue,
   ExecutionContext,
   TypedExecutionContext,
-  Result,
+  // Note: Result is exported from './result' below (napi-rs inspired pattern)
   TypedResult,
   CommandCategory,
   SideEffect,

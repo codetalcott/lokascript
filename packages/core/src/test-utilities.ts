@@ -1,36 +1,49 @@
 /**
  * Shared Test Utilities
  * Common utilities for testing enhanced implementations
+ *
+ * Uses the unified type hierarchy:
+ *   CoreExecutionContext → ExecutionContext → TypedExecutionContext
  */
 
-import type { TypedExecutionContext } from './types/command-types';
+import type {
+  CoreExecutionContext,
+  ExecutionContext,
+  TypedExecutionContext,
+} from './types/base-types';
 
-// Define TypedExpressionContext for expression testing
-export interface TypedExpressionContext {
-  // Core context data
-  [key: string]: unknown;
+// Re-export types for test file convenience
+export type { CoreExecutionContext, ExecutionContext, TypedExecutionContext };
 
-  // Standard hyperscript context
-  me: HTMLElement;
-  you: HTMLElement | null;
-  it: unknown;
+/**
+ * Mutable version of context properties for testing.
+ * Removes readonly modifiers so tests can mutate context.me, context.you, etc.
+ */
+export type MutableContext<T> = {
+  -readonly [P in keyof T]: T[P];
+};
 
-  // Variable storage
-  locals: Map<string, unknown>;
-  globals: Map<string, unknown>;
-  variables: Map<string, unknown>;
+/**
+ * Extended context for expression testing with additional test-specific properties.
+ * All properties are MUTABLE to allow test setup/modification.
+ */
+export type TestExpressionContext = MutableContext<TypedExecutionContext> & {
+  // Meta context for template variables (test-specific)
+  meta?: Map<string, unknown> | Record<string, unknown>;
 
-  // Meta context for template variables
-  meta: Map<string, unknown>;
-
-  // Performance tracking
-  evaluationHistory: unknown[];
-  performanceMetrics: {
+  // Performance tracking (test-specific)
+  performanceMetrics?: {
     totalEvaluations: number;
     averageExecutionTime: number;
     lastEvaluationTime: number;
   };
-}
+
+  // Allow arbitrary properties for test data
+  [key: string]: unknown;
+};
+
+// Alias for backward compatibility
+export type TypedExpressionContext = TestExpressionContext;
 
 /**
  * Create a mock HTMLElement for testing
@@ -188,80 +201,144 @@ export function createMockElement(
 }
 
 /**
+ * Options for creating a test execution context
+ */
+export interface TestContextOptions {
+  me?: Element | null;
+  you?: Element | null;
+  it?: unknown;
+  event?: Event | null;
+  locals?: Map<string, unknown>;
+  globals?: Map<string, unknown>;
+  variables?: Map<string, unknown>;
+  result?: unknown;
+  // Optional enhanced properties
+  expressionStack?: string[];
+  evaluationDepth?: number;
+  validationMode?: 'strict' | 'permissive';
+  evaluationHistory?: Array<{
+    expressionName: string;
+    category: string;
+    input: unknown;
+    output: unknown;
+    timestamp: number;
+    duration: number;
+    success: boolean;
+  }>;
+  // Legacy/meta properties
+  meta?: Record<string, unknown>;
+}
+
+/**
+ * Create a minimal CoreExecutionContext for testing
+ * Use this for tree-shaking tests or minimal context needs
+ */
+export function createCoreTestContext(
+  options: Partial<CoreExecutionContext> = {}
+): CoreExecutionContext {
+  return {
+    me: options.me ?? null,
+    you: options.you ?? null,
+    it: options.it ?? null,
+    event: options.event ?? null,
+    locals: options.locals ?? new Map(),
+    globals: options.globals ?? new Map(),
+  };
+}
+
+/**
+ * Create a full ExecutionContext for testing
+ * Includes result and legacy compatibility properties
+ */
+export function createTestContext(
+  options: TestContextOptions = {}
+): ExecutionContext {
+  return {
+    // Core properties
+    me: options.me ?? null,
+    you: options.you ?? null,
+    it: options.it ?? null,
+    event: options.event ?? null,
+    locals: options.locals ?? new Map(),
+    globals: options.globals ?? new Map(),
+    // ExecutionContext additions
+    result: options.result ?? null,
+    variables: options.variables,
+    meta: options.meta,
+  };
+}
+
+/**
  * Create a mock typed execution context for command testing
+ * Includes all optional enhanced properties
  */
 export function createTypedExecutionContext(
-  options: {
-    me?: HTMLElement | null;
-    you?: HTMLElement | null;
-    it?: any;
-    locals?: Map<string, any>;
-    globals?: Map<string, any>;
-    variables?: Map<string, any>;
-  } = {}
+  options: TestContextOptions = {}
 ): TypedExecutionContext {
   return {
-    me: options.me || null,
-    you: options.you || null,
-    it: options.it || null,
-    locals: options.locals || new Map(),
-    globals: options.globals || new Map(),
-    variables: options.variables || new Map(),
-
-    // Result handling
-    result: null,
-
-    // TypedExecutionContext properties
-    expressionStack: [],
-    evaluationDepth: 0,
-    validationMode: 'strict',
-    evaluationHistory: [],
-
-    // Execution metadata
-    meta: {
-      startTime: Date.now(),
-      commandStack: [],
-      debugMode: false,
-    },
+    // Core properties
+    me: options.me ?? null,
+    you: options.you ?? null,
+    it: options.it ?? null,
+    event: options.event ?? null,
+    locals: options.locals ?? new Map(),
+    globals: options.globals ?? new Map(),
+    // ExecutionContext additions
+    result: options.result ?? null,
+    variables: options.variables,
+    meta: options.meta,
+    // TypedExecutionContext optional properties
+    expressionStack: options.expressionStack,
+    evaluationDepth: options.evaluationDepth,
+    validationMode: options.validationMode,
+    evaluationHistory: options.evaluationHistory,
   };
 }
 
 /**
  * Create a mock typed expression context for expression testing
+ * Extends TypedExecutionContext with test-specific properties
  */
 export function createTypedExpressionContext(
-  data: Record<string, any> = {}
-): TypedExpressionContext {
-  const context = {
-    // Core context data
-    ...data,
+  data: Record<string, unknown> = {}
+): TestExpressionContext {
+  // Extract known properties
+  const {
+    me,
+    you,
+    it,
+    event,
+    locals,
+    globals,
+    variables,
+    result,
+    meta,
+    ...rest
+  } = data;
 
-    // Standard hyperscript context
-    me: data.me || createMockElement(),
-    you: data.you || null,
-    it: data.it || null,
-
-    // Variable storage
-    locals: new Map(Object.entries(data.locals || {})),
-    globals: new Map(Object.entries(data.globals || {})),
-    variables: new Map(Object.entries(data.variables || {})),
-
-    // Meta context for template variables
-    meta: new Map(),
-
-    // Performance tracking
-    evaluationHistory: [],
+  const context: TestExpressionContext = {
+    // Core properties
+    me: (me as Element) ?? createMockElement(),
+    you: (you as Element) ?? null,
+    it: it ?? null,
+    event: (event as Event) ?? null,
+    locals: locals instanceof Map ? locals : new Map(Object.entries(locals || {})),
+    globals: globals instanceof Map ? globals : new Map(Object.entries(globals || {})),
+    // ExecutionContext additions
+    result: result ?? null,
+    variables: variables instanceof Map ? variables : new Map(Object.entries(variables || {})),
+    meta: meta instanceof Map ? meta : new Map(Object.entries((meta as Record<string, unknown>) || {})),
+    // Performance tracking (test-specific)
     performanceMetrics: {
       totalEvaluations: 0,
       averageExecutionTime: 0,
       lastEvaluationTime: 0,
     },
+    // Spread remaining properties for flexible test data
+    ...rest,
   };
 
-  // Add data properties directly to context for property access
-  Object.assign(context, data);
-
-  return context as TypedExpressionContext;
+  return context;
 }
 
 /**

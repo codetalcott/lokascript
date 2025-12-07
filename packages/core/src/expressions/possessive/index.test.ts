@@ -8,8 +8,8 @@ import {
   PossessiveExpression,
   createPossessiveExpression,
   evaluatePossessive,
-} from './index.ts';
-import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities.ts';
+} from './index';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities';
 
 describe('Enhanced Possessive Expression', () => {
   let possessiveExpression: PossessiveExpression;

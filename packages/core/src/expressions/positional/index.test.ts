@@ -4,20 +4,19 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
+import { createTypedExpressionContext, type TestExpressionContext } from '../../test-utilities';
 import {
   positionalExpressions,
   findNextElementInDOM,
   findPreviousElementInDOM,
   getElementPosition,
 } from './index';
-import type { ExecutionContext } from '../../types/core';
 
 describe('Positional Expressions', () => {
-  let context: ExecutionContext;
+  let context: TestExpressionContext;
 
   beforeEach(() => {
-    context = createMockHyperscriptContext();
+    context = createTypedExpressionContext();
   });
 
   describe('Array/Collection Positional Expressions', () => {

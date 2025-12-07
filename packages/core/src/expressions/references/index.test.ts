@@ -4,12 +4,11 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../../test-setup';
+import { createTypedExpressionContext, type TestExpressionContext } from '../../test-utilities';
 import { referencesExpressions as referenceExpressions } from './index';
-import type { ExecutionContext } from '../../types/core';
 
 describe('Reference Expressions', () => {
-  let context: ExecutionContext;
+  let context: TestExpressionContext;
   let testElement: HTMLElement;
   let targetElement: HTMLElement;
 
@@ -28,7 +27,7 @@ describe('Reference Expressions', () => {
     targetElement = document.getElementById('target')!;
 
     // Create execution context
-    context = createMockHyperscriptContext();
+    context = createTypedExpressionContext();
     context.me = testElement;
     context.you = targetElement;
     context.it = 'test-value';

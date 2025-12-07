@@ -441,7 +441,12 @@ export function mergeCommandMetadata(
  * Get syntax as array (normalizes single string to array)
  */
 export function getSyntaxArray(metadata: CommandMetadata): readonly string[] {
-  return Array.isArray(metadata.syntax) ? metadata.syntax : [metadata.syntax];
+  const syntax = metadata.syntax;
+  if (Array.isArray(syntax)) {
+    return syntax;
+  }
+  // Type assertion needed because TypeScript doesn't narrow readonly string[]
+  return [syntax as string];
 }
 
 /**

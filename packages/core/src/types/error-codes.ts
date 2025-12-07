@@ -335,7 +335,6 @@ export function createError(
   }
 
   return {
-    name: 'ValidationError',
     type,
     message,
     code: errorCode,

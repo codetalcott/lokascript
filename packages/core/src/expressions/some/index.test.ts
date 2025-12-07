@@ -4,8 +4,8 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { SomeExpression, createSomeExpression, evaluateSome } from './index.ts';
-import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities.ts';
+import { SomeExpression, createSomeExpression, evaluateSome } from './index';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities';
 
 describe('Enhanced Some Expression', () => {
   let someExpression: SomeExpression;

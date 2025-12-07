@@ -11,8 +11,8 @@ import {
   createArrayIndexExpression,
   createArray,
   indexArray,
-} from './index.ts';
-import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities.ts';
+} from './index';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities';
 
 describe('Enhanced Array Expressions', () => {
   let arrayLiteralExpression: ArrayLiteralExpression;

@@ -4,8 +4,8 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { InExpression, createInExpression, searchIn } from './index.ts';
-import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities.ts';
+import { InExpression, createInExpression, searchIn } from './index';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities';
 
 describe('Enhanced In Expression', () => {
   let inExpression: InExpression;

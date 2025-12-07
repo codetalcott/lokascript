@@ -5,6 +5,11 @@
  */
 
 import type { RuntimeValidator } from '../validation/lightweight-validators';
+import type { CoreExecutionContext } from './core-context';
+
+// Re-export core context types for convenience
+export type { CoreExecutionContext } from './core-context';
+export { createCoreContext, isCoreExecutionContext, assertHTMLElement, asHTMLElement } from './core-context';
 
 // ============================================================================
 // Core Validation Types (Single Source of Truth)
@@ -157,17 +162,21 @@ export type ExpressionCategory =
 // ============================================================================
 
 /**
- * Core execution context used throughout the legacy system
- * This is the foundation that all other contexts build upon
+ * Full execution context extending CoreExecutionContext with runtime features.
+ * Includes legacy compatibility properties for backward compatibility.
+ *
+ * Type Hierarchy:
+ *   CoreExecutionContext (core-context.ts) - Minimal for tree-shaking
+ *        ↓
+ *   ExecutionContext (this interface) - Full runtime with legacy support
+ *        ↓
+ *   TypedExecutionContext - Type registry + validation cache
  */
-export interface ExecutionContext {
-  readonly me: Element | null;
-  you: Element | null;
-  readonly it: unknown;
+export interface ExecutionContext extends CoreExecutionContext {
+  /** Result of last operation */
   readonly result: unknown;
-  readonly locals: Map<string, unknown>;
-  readonly globals: Map<string, unknown>;
-  readonly event?: Event | null | undefined;
+
+  // Control flow flags
   readonly halted?: boolean;
   readonly returned?: boolean;
   readonly broke?: boolean;
@@ -189,14 +198,23 @@ export interface ExecutionContext {
 }
 
 /**
- * Enhanced execution context for typed expressions and features
- * Extends ExecutionContext with additional type safety and tracking
+ * Enhanced execution context for typed expressions and features.
+ * Extends ExecutionContext with additional type safety and tracking.
+ *
+ * All enhanced properties are optional to support:
+ * - Tree-shakeable minimal bundles (don't need tracking)
+ * - Test code (can provide only what's needed)
+ * - Gradual adoption (add tracking as needed)
  */
 export interface TypedExecutionContext extends ExecutionContext {
-  readonly expressionStack: string[];
-  readonly evaluationDepth: number;
-  readonly validationMode: 'strict' | 'permissive';
-  readonly evaluationHistory: Array<{
+  /** Stack of expression names for debugging nested evaluations */
+  readonly expressionStack?: string[];
+  /** Current nesting depth of expression evaluation */
+  readonly evaluationDepth?: number;
+  /** Validation strictness mode */
+  readonly validationMode?: 'strict' | 'permissive';
+  /** History of expression evaluations for debugging/performance */
+  readonly evaluationHistory?: Array<{
     expressionName: string;
     category: string;
     input: unknown;
@@ -205,6 +223,10 @@ export interface TypedExecutionContext extends ExecutionContext {
     duration: number;
     success: boolean;
   }>;
+  /** Type registry for runtime type checking (optional for tree-shaking) */
+  readonly typeRegistry?: Map<string, unknown>;
+  /** Validation cache for performance (optional for tree-shaking) */
+  readonly validationCache?: Map<string, unknown>;
 }
 
 // NOTE: TypedExpressionImplementation is intentionally NOT defined here to avoid conflicts

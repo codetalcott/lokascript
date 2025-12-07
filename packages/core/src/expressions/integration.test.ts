@@ -4,8 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestElement, createMockHyperscriptContext } from '../test-setup';
-import type { ExecutionContext } from '../types/core';
+import { createTypedExpressionContext, createMockElement, type TestExpressionContext } from '../test-utilities';
 
 // Import all expression categories
 import { referencesExpressions } from './references/index';
@@ -16,11 +15,11 @@ import { propertiesExpressions } from './properties/index';
 import { specialExpressions } from './special/index';
 
 describe('Expression Integration Tests', () => {
-  let context: ExecutionContext;
+  let context: TestExpressionContext;
   let testElement: HTMLElement;
 
   beforeEach(() => {
-    context = createMockHyperscriptContext();
+    context = createTypedExpressionContext();
 
     // Create comprehensive test DOM structure with proper nesting
     document.body.innerHTML = `

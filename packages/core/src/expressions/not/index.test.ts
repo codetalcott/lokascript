@@ -4,8 +4,8 @@
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
-import { NotExpression, createNotExpression, evaluateNot } from './index.ts';
-import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities.ts';
+import { NotExpression, createNotExpression, evaluateNot } from './index';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../test-utilities';
 
 describe('Enhanced Not Expression', () => {
   let notExpression: NotExpression;

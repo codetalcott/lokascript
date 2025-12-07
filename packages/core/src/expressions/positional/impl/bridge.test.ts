@@ -6,14 +6,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
-  createTypedExpressionContext,
+  createTypedExpressionContext as createBridgeContext,
   updateExecutionContext,
   EnhancedPositionalAdapter,
   LegacyCompatibilityLayer,
   ExpressionMigrationUtility,
   PositionalUtilities,
-} from './bridge.ts';
-import type { ExecutionContext } from '../../../types/core.ts';
+} from './bridge';
+import type { ExecutionContext } from '../../../types/core';
+import { createTypedExpressionContext, type TypedExpressionContext } from '../../../test-utilities';
 
 // Mock DOM environment
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');

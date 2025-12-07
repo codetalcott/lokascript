@@ -4,13 +4,19 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.ts';
+import {
+  createTypedExpressionContext,
+  type TestExpressionContext,
+} from '../../test-utilities';
 import {
   MyExpression,
   ItsExpression,
   AttributeExpression,
   propertyExpressions,
-} from './index.ts';
+} from './index';
+
+// Type alias for backward compatibility
+type TypedExpressionContext = TestExpressionContext;
 
 // ============================================================================
 // Test Helpers
@@ -19,47 +25,26 @@ import {
 function createTestContext(
   overrides: Partial<TypedExpressionContext> = {}
 ): TypedExpressionContext {
-  return {
-    me: undefined,
-    it: undefined,
-    you: undefined,
-    result: undefined,
-    locals: new Map(),
-    globals: new Map(),
-    event: undefined,
-
-    // Enhanced expression context properties
-    expressionStack: [],
-    evaluationDepth: 0,
-    validationMode: 'strict',
-    evaluationHistory: [],
-
-    ...overrides,
-  };
+  return createTypedExpressionContext(overrides as Record<string, unknown>);
 }
 
 function createMockElement(
-  properties: Record<string, any> = {},
+  properties: Record<string, unknown> = {},
   attributes: Record<string, string> = {}
-): any {
+): HTMLElement {
   const element = {
-    nodeType: 1, // Element node
+    nodeType: 1,
     id: properties.id || 'test-element',
     className: properties.className || 'test-class',
     textContent: properties.textContent || 'Test Content',
     dataset: properties.dataset || { value: '42', userId: '123' },
     style: properties.style || { display: 'block', color: 'red' },
     ...properties,
-
-    // Mock getAttribute functionality
     getAttribute: (name: string) => (attributes[name] !== undefined ? attributes[name] : null),
-    setAttribute: (name: string, value: string) => {
-      attributes[name] = value;
-    },
+    setAttribute: (name: string, value: string) => { attributes[name] = value; },
     hasAttribute: (name: string) => name in attributes,
   };
-
-  return element;
+  return element as unknown as HTMLElement;
 }
 
 // ============================================================================

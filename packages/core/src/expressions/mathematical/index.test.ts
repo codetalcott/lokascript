@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { TypedExpressionContext } from '../../types/enhanced-expressions.ts';
+import {
+  createTypedExpressionContext,
+  type TestExpressionContext,
+} from '../../test-utilities';
 import {
   AdditionExpression,
   SubtractionExpression,
@@ -12,7 +15,10 @@ import {
   DivisionExpression,
   ModuloExpression,
   mathematicalExpressions,
-} from './index.ts';
+} from './index';
+
+// Type alias for backward compatibility
+type TypedExpressionContext = TestExpressionContext;
 
 // ============================================================================
 // Test Helpers
@@ -21,23 +27,7 @@ import {
 function createTestContext(
   overrides: Partial<TypedExpressionContext> = {}
 ): TypedExpressionContext {
-  return {
-    me: undefined,
-    it: undefined,
-    you: undefined,
-    result: undefined,
-    locals: new Map(),
-    globals: new Map(),
-    event: undefined,
-
-    // Enhanced expression context properties
-    expressionStack: [],
-    evaluationDepth: 0,
-    validationMode: 'strict',
-    evaluationHistory: [],
-
-    ...overrides,
-  };
+  return createTypedExpressionContext(overrides as Record<string, unknown>);
 }
 
 // ============================================================================

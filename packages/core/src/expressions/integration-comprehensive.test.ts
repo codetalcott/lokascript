@@ -5,13 +5,20 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { TypedExpressionContext } from '../types/enhanced-expressions.ts';
+import {
+  createTypedExpressionContext,
+  createMockElement,
+  type TestExpressionContext,
+} from '../test-utilities';
 
 // Import all enhanced expression systems
-import { mathematicalExpressions } from './mathematical/index.ts';
-import { comparisonExpressions } from './comparison/index.ts';
-import { logicalExpressions } from './logical/index.ts';
-import { propertyExpressions } from './property/index.ts';
+import { mathematicalExpressions } from './mathematical';
+import { comparisonExpressions } from './comparison';
+import { logicalExpressions } from './logical';
+import { propertyExpressions } from './property';
+
+// Type alias for backward compatibility
+type TypedExpressionContext = TestExpressionContext;
 
 // ============================================================================
 // Test Helpers
@@ -20,46 +27,10 @@ import { propertyExpressions } from './property/index.ts';
 function createTestContext(
   overrides: Partial<TypedExpressionContext> = {}
 ): TypedExpressionContext {
-  return {
-    me: undefined,
-    it: undefined,
-    you: undefined,
-    result: undefined,
-    locals: new Map(),
-    globals: new Map(),
-    event: undefined,
-
-    // Enhanced expression context properties
-    expressionStack: [],
-    evaluationDepth: 0,
-    validationMode: 'strict',
-    evaluationHistory: [],
-
-    ...overrides,
-  };
+  return createTypedExpressionContext(overrides as Record<string, unknown>);
 }
 
-function createMockElement(
-  properties: Record<string, any> = {},
-  attributes: Record<string, string> = {}
-): any {
-  return {
-    nodeType: 1, // Element node
-    id: properties.id || 'test-element',
-    className: properties.className || '',
-    textContent: properties.textContent || '',
-    value: properties.value || '',
-    dataset: properties.dataset || {},
-    style: properties.style || {},
-    ...properties,
-
-    getAttribute: (name: string) => (attributes[name] !== undefined ? attributes[name] : null),
-    setAttribute: (name: string, value: string) => {
-      attributes[name] = value;
-    },
-    hasAttribute: (name: string) => name in attributes,
-  };
-}
+// Note: createMockElement is imported from test-utilities
 
 // ============================================================================
 // Form Validation Integration Tests

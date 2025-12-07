@@ -244,7 +244,11 @@ export type BaseContextOutput = any; // z.infer<typeof BaseContextOutputSchema>;
 // Enhanced TypedExpressionContext Extension
 // ============================================================================
 
-export interface TypedExpressionContext extends TypedExpressionContext {
+/**
+ * Extended expression context with additional features for environment-aware behavior
+ * Extends the base TypedExpressionContext from expression-types
+ */
+export interface ExtendedTypedExpressionContext extends TypedExpressionContext {
   /** Context category for environment-aware behavior */
   contextCategory?: ContextCategory;
   /** Framework-specific data */

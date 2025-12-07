@@ -518,7 +518,7 @@ export class ExpressionTypeRegistry {
       name: 'Unknown',
       hyperscriptType: 'unknown',
       tsType: 'unknown',
-      isType: (): v is unknown => true,
+      isType: (_v: unknown): _v is unknown => true,
       defaultValue: null,
       description: 'Unknown/any value type',
     });

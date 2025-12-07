@@ -3,9 +3,21 @@
  *
  * This file consolidates all core type definitions to resolve architectural
  * conflicts and establish consistent types across the HyperFixi codebase.
+ *
+ * Type Hierarchy:
+ *   CoreExecutionContext (core-context.ts) - Minimal for tree-shaking
+ *        ↓
+ *   ExecutionContext (this file) - Full runtime with evaluationHistory
+ *        ↓
+ *   TypedExecutionContext - Type registry + validation cache
  */
 
 import type { RuntimeValidator } from '../validation/lightweight-validators';
+import type { CoreExecutionContext } from './core-context';
+
+// Re-export core context types
+export type { CoreExecutionContext } from './core-context';
+export { createCoreContext, isCoreExecutionContext, assertHTMLElement, asHTMLElement } from './core-context';
 
 // ============================================================================
 // Core Validation Types
@@ -97,38 +109,15 @@ export type HyperScriptValue =
   | Event;
 
 // ============================================================================
-// Core Context Types
+// Core Context Types - Re-exported from base-types for single source of truth
 // ============================================================================
 
-/**
- * Unified execution context - consolidates all context definitions
- */
-export interface ExecutionContext {
-  readonly me: HTMLElement | null;
-  it: unknown;
-  readonly you: HTMLElement | null;
-  readonly event: Event | null;
-  readonly locals: Map<string, unknown>;
-  readonly globals: Map<string, unknown>;
-  readonly variables: Map<string, unknown>;
-  readonly evaluationHistory: Array<{
-    readonly expressionName: string;
-    readonly category: string;
-    readonly input: string;
-    readonly output: unknown;
-    readonly timestamp: number;
-    readonly duration: number;
-    readonly success: boolean;
-  }>;
-}
-
-/**
- * Enhanced execution context with additional typing information
- */
-export interface TypedExecutionContext extends ExecutionContext {
-  readonly typeRegistry: Map<string, RuntimeValidator>;
-  readonly validationCache: Map<string, ValidationResult>;
-}
+// Re-export ExecutionContext and TypedExecutionContext from base-types
+// This ensures there's only ONE definition used throughout the codebase
+export type {
+  ExecutionContext,
+  TypedExecutionContext,
+} from './base-types';
 
 // ============================================================================
 // Core Result Types

@@ -332,7 +332,7 @@ export interface HyperScriptProgram {
   readonly metadata: ProgramMetadata;
 
   /** Source location information for debugging */
-  readonly sourceInfo?: SourceLocation;
+  readonly sourceInfo?: ProgramSourceInfo;
 
   /** Program execution state */
   readonly state: ProgramState;
@@ -653,9 +653,10 @@ export interface ArgumentAnalysis {
 }
 
 /**
- * Source location information for debugging
+ * Program source information for debugging
+ * Different from SourceLocation which tracks line/column/source
  */
-export interface SourceLocation {
+export interface ProgramSourceInfo {
   /** Source element where program is defined */
   readonly element?: HTMLElement;
 
