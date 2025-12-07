@@ -304,4 +304,30 @@ export const CommandClassification = {
   isPutOperation(keyword: string): boolean {
     return PUT_OPERATION_KEYWORDS.includes(keyword as any);
   },
+
+  /**
+   * Check if a function name is a CSS color/value function
+   * These should be quoted in hyperscript for clean parsing
+   */
+  isCSSFunction(name: string): boolean {
+    return CSS_FUNCTIONS.has(name.toLowerCase());
+  },
 };
+
+/**
+ * CSS functions that use space-separated arguments
+ * When used unquoted, they cause parsing issues
+ * Recommend: transition *color to 'hsl(265 60% 65%)'
+ */
+export const CSS_FUNCTIONS = new Set([
+  // Color functions (CSS Color Level 4)
+  'hsl', 'hsla', 'rgb', 'rgba', 'hwb',
+  'lab', 'lch', 'oklch', 'oklab',
+  'color', 'color-mix',
+  // Math functions
+  'calc', 'min', 'max', 'clamp',
+  // Other CSS functions
+  'var', 'url', 'linear-gradient', 'radial-gradient',
+  'conic-gradient', 'repeating-linear-gradient',
+  'repeating-radial-gradient', 'repeating-conic-gradient',
+]);

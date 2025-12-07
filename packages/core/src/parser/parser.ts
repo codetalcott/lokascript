@@ -2979,6 +2979,18 @@ export class Parser {
       } while (this.match(','));
     }
 
+    // Check for CSS function with space-separated values (common mistake)
+    // e.g., hsl(265 60% 65%) should be quoted: 'hsl(265 60% 65%)'
+    if (!this.check(')') && callee.type === 'identifier') {
+      const funcName = (callee as IdentifierNode).name;
+      if (CommandClassification.isCSSFunction(funcName)) {
+        debug.parse(
+          `💡 Tip: CSS functions like ${funcName}() should be quoted for clean parsing. ` +
+          `Use '${funcName}(...)' or \`${funcName}(...)\` instead.`
+        );
+      }
+    }
+
     this.consume(')', "Expected ')' after arguments");
     return this.createCallExpression(callee, args);
   }

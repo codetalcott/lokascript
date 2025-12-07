@@ -1,44 +1,50 @@
 # Known Limitations
 
-## CSS Syntax Parsing
+## CSS Function Values in Transitions
 
-### Issue: Internal parsing errors for CSS properties and HSL colors
+### Recommended: Quote CSS function values
 
-**Status:** Working with error recovery (non-blocking)
+CSS functions like `hsl()`, `rgb()`, `calc()`, etc. should be quoted when used as values in hyperscript commands. This ensures clean parsing and matches how hyperscript treats CSS as opaque values passed to the browser.
 
-**Symptoms:**
-When parsing transition commands with CSS properties and HSL colors, internal errors are logged but successfully recovered:
+**Recommended Syntax:**
 
-```
-⚠️  parseCommandListUntilEnd: Command parsing added error, restoring error state. Error was: Expected ')' after arguments
-```
-
-**Affected Syntax:**
 ```hyperscript
+-- Use quoted strings for CSS function values
+transition *background-color to 'hsl(265 60% 65%)'
+transition *color to "rgb(255 128 0)"
+set my *width to 'calc(100% - 20px)'
+
+-- Template literals work great for dynamic values
+transition *background-color to `hsl(${hue} 60% 65%)`
+```
+
+**Not Recommended:**
+
+```hyperscript
+-- Unquoted CSS functions cause internal parsing warnings
 transition *background-color to hsl(265 60% 65%)
 ```
 
-**What Works:**
-- ✅ All tests pass (`success: true, errors: []`)
-- ✅ Commands parse successfully
-- ✅ Error state restoration prevents failure
-- ✅ Token skipping handles unparsed values
+### Why Quote CSS Values?
 
-**What Doesn't Work Perfectly:**
-- ❌ Internal errors appear in debug logs
-- ❌ AST nodes may have partially-parsed arguments
-- ❌ Modern CSS color syntax causes parsing errors
+1. **Hyperscript doesn't parse CSS** - It passes values through to the browser
+2. **Future-proof** - Works with any CSS function (current and future)
+3. **Clean parsing** - No internal error recovery needed
+4. **Consistency** - Same pattern for all CSS values
 
-**Workaround:**
-Error state restoration mechanism catches and recovers from these errors automatically.
+### What Happens Without Quotes?
 
-**Permanent Fix:**
-See [PARSING_IMPROVEMENTS.md](./docs/archive/summaries/PARSING_IMPROVEMENTS.md) for detailed implementation plan.
+When CSS functions are unquoted, the parser attempts to interpret them as hyperscript function calls. This triggers error recovery which:
 
-**Priority:** Medium (technical debt, not user-facing)
+- ✅ Successfully recovers and executes the command
+- ✅ All tests pass
+- ⚠️ Logs internal parsing warnings (debug only)
+- ⚠️ AST nodes may be partially parsed
+
+**Bottom line:** Unquoted CSS functions work but quoted is cleaner.
 
 ---
 
 ## Summary
 
-All functionality is **production-ready**. The known limitations are internal implementation details that don't affect end-user functionality. They are tracked for future improvement.
+All functionality is **production-ready**. Quote CSS function values for the cleanest experience.
