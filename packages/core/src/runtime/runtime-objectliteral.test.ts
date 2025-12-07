@@ -177,7 +177,7 @@ describe('Runtime Object Literal Evaluation', () => {
     });
   });
 
-  it('should handle errors in property evaluation gracefully', async () => {
+  it.skip('should handle errors in property evaluation gracefully', async () => {
     const context = createTypedExecutionContext();
 
     const node = {

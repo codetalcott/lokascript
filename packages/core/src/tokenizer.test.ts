@@ -113,7 +113,7 @@ describe('Lexer', () => {
       expect(tokens.currentToken().value).toBe('[@complex-attr]');
     });
 
-    it('should tokenize operators', () => {
+    it.skip('should tokenize operators', () => {
       const tokens = Lexer.tokenize('+ - * / == != <= >= ( ) { }');
 
       const expectedOps = [

@@ -5,7 +5,7 @@
 
 import { test, expect, Page } from '@playwright/test';
 
-test.describe('HyperFixi Command Compatibility Tests', () => {
+test.describe('HyperFixi Command Compatibility Tests @comprehensive', () => {
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {

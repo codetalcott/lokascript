@@ -4,7 +4,7 @@
  */
 import { test, expect } from '@playwright/test';
 
-test.describe('CSS Selector Property Access', () => {
+test.describe('CSS Selector Property Access @comprehensive', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://127.0.0.1:3000/examples/htmx-like/test-property-access.html');
     await page.waitForLoadState('domcontentloaded');

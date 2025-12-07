@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'http://127.0.0.1:3000';
 
-test.describe('Gallery Example Regression Tests', () => {
+test.describe('Gallery Example Regression Tests @comprehensive', () => {
 
   test.describe('Counter Example (05-counter.html)', () => {
     test('reset button should replace content, not append', async ({ page }) => {

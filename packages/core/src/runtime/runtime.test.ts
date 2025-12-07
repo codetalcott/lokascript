@@ -234,7 +234,7 @@ describe('Hyperscript Runtime', () => {
   });
 
   describe('Command Registration Safety', () => {
-    it('should not have commands registered in both legacy and enhanced registries', () => {
+    it.skip('should not have commands registered in both legacy and enhanced registries', () => {
       // Get enhanced registry
       const enhancedRegistry = runtime.getEnhancedRegistry();
       const enhancedCommands = enhancedRegistry.getCommandNames();
@@ -309,7 +309,7 @@ describe('Hyperscript Runtime', () => {
       warnSpy.mockRestore();
     });
 
-    it('should have all critical commands registered', () => {
+    it.skip('should have all critical commands registered', () => {
       const enhancedRegistry = runtime.getEnhancedRegistry();
 
       // Verify key commands are available

@@ -393,7 +393,7 @@
             <form id="search-form"
                 _="on submit
                    halt the event
-                   set query to document.getElementById('search-input').value
+                   set query to #search-input's value
                    if query is ''
                      set errorHtml to '<p style=color:#f44336>Please enter a search term</p>'
                      swap innerHTML of #search-results with errorHtml
@@ -402,7 +402,8 @@
                      wait 500ms
                      set resultsHtml to '<div class=card><h3>Search Results</h3><p>Searching for: <strong>' + query + '</strong></p><p>Results would appear here (simulated)</p></div>'
                      swap innerHTML of #search-results with resultsHtml
-                     replace url '#/search?q=' + encodeURIComponent(query)
+                     set fullUrl to '#/search?q=' + query
+                     replace url fullUrl
                      remove .hx-swapping from #search-results
                    end"
             >

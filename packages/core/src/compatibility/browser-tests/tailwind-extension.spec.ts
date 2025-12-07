@@ -6,7 +6,7 @@
 
 import { test, expect, Page } from '@playwright/test';
 
-test.describe('Tailwind Extension Compatibility Tests', () => {
+test.describe('Tailwind Extension Compatibility Tests @comprehensive', () => {
   let page: Page;
 
   test.beforeEach(async ({ page: testPage }) => {

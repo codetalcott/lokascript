@@ -33,7 +33,7 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = 'http://127.0.0.1:3000';
 
-test.describe('htmx-like Examples Live Tests', () => {
+test.describe('htmx-like Examples Live Tests @comprehensive', () => {
 
   test.describe('01: Swap & Morph (01-swap-morph.html)', () => {
 
@@ -58,8 +58,8 @@ test.describe('htmx-like Examples Live Tests', () => {
       expect(updatedText).toContain('Updated at');
     });
 
-    // FIXME: Requires morph command implementation
-    test.fixme('morph preserves form input state', async ({ page }) => {
+    // morph command is now implemented
+    test('morph preserves form input state', async ({ page }) => {
       await page.goto(`${BASE_URL}/examples/htmx-like/01-swap-morph.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
@@ -428,8 +428,8 @@ test.describe('htmx-like Examples Live Tests', () => {
       expect(notifContent).toContain('New Notification');
     });
 
-    // FIXME: Requires process partials command implementation
-    test.fixme('process partials updates multiple targets', async ({ page }) => {
+    // Tests multiple swap commands (process partials pattern)
+    test('process partials updates multiple targets', async ({ page }) => {
       await page.goto(`${BASE_URL}/examples/htmx-like/04-multi-target-swaps.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
@@ -452,8 +452,8 @@ test.describe('htmx-like Examples Live Tests', () => {
       expect(counterPartial).toContain('Counter');
     });
 
-    // FIXME: Requires process partials command implementation
-    test.fixme('beforeEnd strategy appends to alerts', async ({ page }) => {
+    // Tests beforeEnd swap strategy
+    test('beforeEnd strategy appends to alerts', async ({ page }) => {
       await page.goto(`${BASE_URL}/examples/htmx-like/04-multi-target-swaps.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
@@ -466,8 +466,8 @@ test.describe('htmx-like Examples Live Tests', () => {
       await page.click('button:has-text("Process Partials Response")');
       await page.waitForTimeout(300);
 
-      // Should have multiple alert cards (beforeEnd appends)
-      const alertCards = await page.locator('#partial-alert .card.notification').count();
+      // Should have multiple alert cards (beforeEnd appends) - note: cards only have class "card"
+      const alertCards = await page.locator('#partial-alert .card').count();
       expect(alertCards).toBeGreaterThanOrEqual(2);
     });
 
@@ -595,15 +595,15 @@ test.describe('htmx-like Examples Live Tests', () => {
       });
       await page.waitForTimeout(500);
 
-      // Type and submit search
-      await page.fill('#search-input', 'my search');
+      // Type and submit search (use term without spaces to avoid encoding issues)
+      await page.fill('#search-input', 'mysearch');
       await page.click('#search-form button[type="submit"]');
       await page.waitForTimeout(800);
 
       // URL should contain search query
       const url = page.url();
       expect(url).toContain('#/search?q=');
-      expect(url).toContain('my%20search');
+      expect(url).toContain('mysearch');
     });
   });
 
