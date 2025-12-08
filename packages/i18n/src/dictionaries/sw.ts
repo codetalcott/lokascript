@@ -45,6 +45,42 @@ export const sw: Dictionary = {
     catch: 'shika',
     measure: 'pima',
     transition: 'mpito',
+
+    // Data Commands
+    increment: 'ongeza',
+    decrement: 'punguza',
+    bind: 'funga',
+    default: 'msingi',
+    persist: 'hifadhi',
+
+    // Navigation Commands
+    go: 'nenda',
+    pushUrl: 'sukumaUrl',
+    replaceUrl: 'badilishaUrl',
+
+    // Utility Commands
+    copy: 'nakili',
+    pick: 'chagua',
+    beep: 'lia',
+
+    // Advanced Commands
+    js: 'js',
+    async: 'sainkroni',
+    render: 'chora',
+
+    // Animation Commands
+    swap: 'badilishana',
+    morph: 'badilishaUmbo',
+    settle: 'tulia',
+
+    // Content Commands
+    append: 'ongezaMwisho',
+
+    // Control Flow
+    exit: 'toka',
+
+    // Behaviors
+    install: 'sakinisha',
   },
   
   modifiers: {

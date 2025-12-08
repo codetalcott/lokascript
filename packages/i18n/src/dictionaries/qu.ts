@@ -45,6 +45,42 @@ export const qu: Dictionary = {
     catch: 'hapsiy',
     measure: 'tupuy',
     transition: 'tikray',
+
+    // Data Commands
+    increment: 'yapay',
+    decrement: 'pisiyachiy',
+    bind: 'watay',
+    default: 'ñawpaq_kaq',
+    persist: 'waqaychay',
+
+    // Navigation Commands
+    go: 'riy',
+    pushUrl: 'url_tanqay',
+    replaceUrl: 'url_tikray',
+
+    // Utility Commands
+    copy: 'qillqay',
+    pick: 'akllay',
+    beep: 'waqay',
+
+    // Advanced Commands
+    js: 'js',
+    async: 'mana_suyaspa',
+    render: 'rikuchiy',
+
+    // Animation Commands
+    swap: 'rantin_tikray',
+    morph: 'tikrachiy',
+    settle: 'tiyay',
+
+    // Content Commands
+    append: 'qhipaman_yapay',
+
+    // Control Flow
+    exit: 'lluqsiy',
+
+    // Behaviors
+    install: 'churay',
   },
   
   modifiers: {

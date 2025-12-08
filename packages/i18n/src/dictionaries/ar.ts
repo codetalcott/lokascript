@@ -45,6 +45,42 @@ export const ar: Dictionary = {
     catch: 'التقط',
     measure: 'قس',
     transition: 'انتقال',
+
+    // Data Commands
+    increment: 'زِد',
+    decrement: 'أنقص',
+    bind: 'اربط',
+    default: 'افتراضي',
+    persist: 'احفظ',
+
+    // Navigation Commands
+    go: 'اذهب',
+    pushUrl: 'ادفع رابط',
+    replaceUrl: 'استبدل رابط',
+
+    // Utility Commands
+    copy: 'انسخ',
+    pick: 'اختر',
+    beep: 'صفّر',
+
+    // Advanced Commands
+    js: 'جافاسكربت',
+    async: 'متزامن',
+    render: 'ارسم',
+
+    // Animation Commands
+    swap: 'بدّل',
+    morph: 'حوّل',
+    settle: 'استقر',
+
+    // Content Commands
+    append: 'ألحق',
+
+    // Control Flow
+    exit: 'اخرج',
+
+    // Behaviors
+    install: 'ثبّت',
   },
   
   modifiers: {

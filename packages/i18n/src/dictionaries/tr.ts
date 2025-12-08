@@ -45,6 +45,42 @@ export const tr: Dictionary = {
     catch: 'yakala',
     measure: 'ölç',
     transition: 'geçiş',
+
+    // Data Commands
+    increment: 'artır',
+    decrement: 'azalt',
+    bind: 'bağla',
+    default: 'varsayılan',
+    persist: 'kalıcı',
+
+    // Navigation Commands
+    go: 'git',
+    pushUrl: 'urlEkle',
+    replaceUrl: 'urlDeğiştir',
+
+    // Utility Commands
+    copy: 'kopyala',
+    pick: 'seç',
+    beep: 'bip',
+
+    // Advanced Commands
+    js: 'js',
+    async: 'asenkron',
+    render: 'render',
+
+    // Animation Commands
+    swap: 'takas',
+    morph: 'dönüştür',
+    settle: 'sabitlen',
+
+    // Content Commands
+    append: 'ekle',
+
+    // Control Flow
+    exit: 'çık',
+
+    // Behaviors
+    install: 'kur',
   },
   
   modifiers: {

@@ -1,6 +1,7 @@
 // packages/i18n/src/dictionaries/index.ts
 
 import { Dictionary } from '../types';
+import { en } from './en';
 import { es } from './es';
 import { ko } from './ko';
 import { zh } from './zh';
@@ -14,6 +15,7 @@ import { qu } from './qu';
 import { sw } from './sw';
 
 export const dictionaries: Record<string, Dictionary> = {
+  en,
   es,
   ko,
   zh,
@@ -28,6 +30,7 @@ export const dictionaries: Record<string, Dictionary> = {
 };
 
 // Export individual dictionaries for direct import
+export { en } from './en';
 export { es } from './es';
 export { ko } from './ko';
 export { zh } from './zh';

@@ -54,3 +54,28 @@ export { ar } from './dictionaries/ar';
 export { ko } from './dictionaries/ko';
 export { zh } from './dictionaries/zh';
 export { tr } from './dictionaries/tr';
+
+// Grammar-aware transformation system (Phase 2)
+export {
+  // Profiles
+  profiles,
+  getProfile,
+  getSupportedLocales,
+  englishProfile,
+  japaneseProfile,
+  koreanProfile,
+  chineseProfile,
+  arabicProfile,
+  turkishProfile,
+  spanishProfile,
+  indonesianProfile,
+  quechuaProfile,
+  swahiliProfile,
+  // Transformer
+  GrammarTransformer,
+  parseStatement,
+  toLocale,
+  toEnglish,
+  translate,
+  examples as grammarExamples,
+} from './grammar';

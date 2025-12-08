@@ -439,6 +439,56 @@
             </div>
         </div>
 
+        <!-- Grammar Transformation Demo -->
+        <div class="example-card" id="grammar-demo">
+            <h3>🧠 Grammar Transformation (Phase 2)</h3>
+            <p style="color: #666; margin-bottom: 20px;">
+                Beyond word-by-word translation, HyperFixi adapts code to natural grammar patterns.
+                SOV languages (Japanese, Korean) reorder elements; VSO languages (Arabic) place verbs first.
+            </p>
+
+            <div class="code-comparison" style="grid-template-columns: 1fr;">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="flag">🔄</span> Grammar Transformation Examples
+                    </div>
+                    <div class="code-content" style="white-space: pre-wrap;">
+<span style="color: #888;">English (SVO):</span>
+<span class="keyword">on</span> <span class="event">click</span> <span class="command">increment</span> <span class="selector">#count</span>
+
+<span style="color: #888;">Japanese (SOV - patient before verb):</span>
+<span class="selector">#count</span> <span style="color: #ffd700;">を</span> <span class="event">クリック</span> <span style="color: #ffd700;">で</span> <span class="command">増加</span>
+
+<span style="color: #888;">Chinese (Topic-prominent with 当...时 circumfix):</span>
+<span style="color: #ffd700;">当</span> <span class="event">点击</span> <span style="color: #ffd700;">时</span> <span class="command">增加</span> <span class="selector">#count</span>
+
+<span style="color: #888;">Arabic (VSO - verb first, RTL):</span>
+<span class="command">زِد</span> <span class="selector">#count</span> <span style="color: #ffd700;">عند</span> <span class="event">النقر</span></div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <strong style="color: #667eea;">SVO (Subject-Verb-Object)</strong>
+                    <p style="margin: 5px 0 0; color: #555; font-size: 13px;">English, Chinese, Spanish, Indonesian, Swahili</p>
+                </div>
+                <div style="background: #fff0f5; padding: 15px; border-radius: 8px; border-left: 4px solid #e91e63;">
+                    <strong style="color: #e91e63;">SOV (Subject-Object-Verb)</strong>
+                    <p style="margin: 5px 0 0; color: #555; font-size: 13px;">Japanese, Korean, Turkish, Quechua</p>
+                </div>
+                <div style="background: #f0fff4; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <strong style="color: #28a745;">VSO (Verb-Subject-Object)</strong>
+                    <p style="margin: 5px 0 0; color: #555; font-size: 13px;">Arabic (also RTL text direction)</p>
+                </div>
+            </div>
+
+            <div class="info-note" style="margin-top: 20px;">
+                <strong>Semantic Roles:</strong> The grammar system identifies universal semantic roles
+                (action, patient, event, destination) and reorders them according to each language's
+                natural word order. Grammatical markers (particles, prepositions) are inserted appropriately.
+            </div>
+        </div>
+
         <div class="info-note">
             <strong>How it works:</strong> HyperFixi's i18n module translates keywords like <code>on</code>, <code>click</code>, and <code>toggle</code> to their equivalents in your chosen language. The underlying functionality remains the same - only the syntax changes to be more readable in your native tongue.
         </div>
@@ -488,8 +538,8 @@
                 template: (k) => `<span class="keyword">${k[0]}</span> <span class="event">${k[1]}</span> <span class="command">${k[2]}</span> <span class="selector">.active</span>`
             },
             mirror: {
-                keywords: ['on', 'input', 'put', 'into'],
-                template: (k) => `<span class="keyword">${k[0]}</span> <span class="event">${k[1]}</span> <span class="command">${k[2]}</span> <span class="selector">my value</span> <span class="keyword">${k[3]}</span> <span class="selector">#output</span>`
+                keywords: ['on', 'input', 'put', 'my', 'value', 'into'],
+                template: (k) => `<span class="keyword">${k[0]}</span> <span class="event">${k[1]}</span> <span class="command">${k[2]}</span> <span class="selector">${k[3]} ${k[4]}</span> <span class="keyword">${k[5]}</span> <span class="selector">#output</span>`
             }
         };
 

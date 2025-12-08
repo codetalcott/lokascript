@@ -45,6 +45,42 @@ export const ja: Dictionary = {
     catch: '捕まえる',
     measure: '測定',
     transition: '遷移',
+
+    // Data Commands
+    increment: '増加',
+    decrement: '減少',
+    bind: '結合',
+    default: '既定',
+    persist: '永続化',
+
+    // Navigation Commands
+    go: '移動',
+    pushUrl: 'URLプッシュ',
+    replaceUrl: 'URL置換',
+
+    // Utility Commands
+    copy: 'コピー',
+    pick: '選択',
+    beep: 'ビープ',
+
+    // Advanced Commands
+    js: 'JS実行',
+    async: '非同期',
+    render: '描画',
+
+    // Animation Commands
+    swap: '交換',
+    morph: '変形',
+    settle: '安定',
+
+    // Content Commands
+    append: '末尾追加',
+
+    // Control Flow
+    exit: '終了',
+
+    // Behaviors
+    install: 'インストール',
   },
   
   modifiers: {

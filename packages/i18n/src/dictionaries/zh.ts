@@ -45,6 +45,42 @@ export const zh: Dictionary = {
     catch: '捕获',
     measure: '测量',
     transition: '过渡',
+
+    // Data Commands
+    increment: '增加',
+    decrement: '减少',
+    bind: '绑定',
+    default: '默认',
+    persist: '持久化',
+
+    // Navigation Commands
+    go: '前往',
+    pushUrl: '推送网址',
+    replaceUrl: '替换网址',
+
+    // Utility Commands
+    copy: '复制',
+    pick: '选取',
+    beep: '蜂鸣',
+
+    // Advanced Commands
+    js: 'JS执行',
+    async: '异步',
+    render: '渲染',
+
+    // Animation Commands
+    swap: '交换',
+    morph: '变形',
+    settle: '稳定',
+
+    // Content Commands
+    append: '追加',
+
+    // Control Flow
+    exit: '退出',
+
+    // Behaviors
+    install: '安装',
   },
   
   modifiers: {

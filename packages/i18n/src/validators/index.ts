@@ -165,5 +165,3 @@ function validateLocaleSpecific(
     }
   }
 }
-
-export { validate };

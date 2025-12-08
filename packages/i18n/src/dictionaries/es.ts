@@ -45,6 +45,42 @@ export const es: Dictionary = {
     catch: 'atrapar',
     measure: 'medir',
     transition: 'transición',
+
+    // Data Commands
+    increment: 'incrementar',
+    decrement: 'decrementar',
+    bind: 'vincular',
+    default: 'predeterminar',
+    persist: 'persistir',
+
+    // Navigation Commands
+    go: 'ir',
+    pushUrl: 'pushUrl',
+    replaceUrl: 'reemplazarUrl',
+
+    // Utility Commands
+    copy: 'copiar',
+    pick: 'escoger',
+    beep: 'pitido',
+
+    // Advanced Commands
+    js: 'js',
+    async: 'asíncrono',
+    render: 'renderizar',
+
+    // Animation Commands
+    swap: 'intercambiar',
+    morph: 'transformar',
+    settle: 'estabilizar',
+
+    // Content Commands
+    append: 'añadir',
+
+    // Control Flow
+    exit: 'salir',
+
+    // Behaviors
+    install: 'instalar',
   },
   
   modifiers: {

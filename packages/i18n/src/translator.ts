@@ -16,6 +16,7 @@ export class HyperscriptTranslator {
       locale: 'en',
       fallbackLocale: 'en',
       preserveOriginalAttribute: 'data-i18n-original',
+      detectLocale: true, // Enable language detection by default
       ...config
     };
 
@@ -121,25 +122,27 @@ export class HyperscriptTranslator {
   }
 
   private findTranslation(
-    word: string, 
-    dict: Dictionary, 
-    reverseDict: Map<string, string>, 
+    word: string,
+    dict: Dictionary,
+    reverseDict: Map<string, string>,
     targetLocale: string
   ): string | null {
     const lowerWord = word.toLowerCase();
 
-    // Check each category
-    for (const [category, translations] of Object.entries(dict)) {
-      if (typeof translations === 'object') {
-        // Check if translating FROM this locale
-        if (reverseDict.size > 0) {
-          const english = reverseDict.get(lowerWord);
-          if (english) return english;
-        }
-        
-        // Check if translating TO this locale
+    // Check if translating FROM this locale using reverse dictionary
+    if (reverseDict.size > 0) {
+      const english = reverseDict.get(lowerWord);
+      if (english) return english;
+    }
+
+    // Check categories in priority order (events before commands to handle 'click' etc.)
+    const categoryOrder = ['events', 'commands', 'modifiers', 'logical', 'temporal', 'values', 'attributes'];
+
+    for (const category of categoryOrder) {
+      const translations = dict[category as keyof Dictionary];
+      if (translations && typeof translations === 'object') {
         for (const [key, value] of Object.entries(translations)) {
-          if (key === lowerWord) return value;
+          if (key.toLowerCase() === lowerWord) return value;
         }
       }
     }
@@ -149,7 +152,7 @@ export class HyperscriptTranslator {
 
   private isTranslatableToken(token: Token): boolean {
     const translatableTypes: TokenType[] = [
-      'command', 'modifier', 'event', 'logical', 'temporal', 'value'
+      'command', 'modifier', 'event', 'logical', 'temporal', 'value', 'attribute'
     ];
     return translatableTypes.includes(token.type);
   }
@@ -219,17 +222,23 @@ export class HyperscriptTranslator {
     if (!dict) return [];
 
     const completions: string[] = [];
-    
+
     // Get the partial word at cursor
     const beforeCursor = context.text.substring(0, context.position);
     const partial = beforeCursor.match(/\b(\w+)$/)?.[1] || '';
+    const lowerPartial = partial.toLowerCase();
 
     // Search all categories for matches
+    // For non-English locales, search translated values; for English, search keys
     Object.values(dict).forEach(category => {
       if (typeof category === 'object') {
-        Object.keys(category).forEach(keyword => {
-          if (keyword.startsWith(partial.toLowerCase())) {
-            completions.push(keyword);
+        Object.entries(category).forEach(([key, value]) => {
+          // Search keys (English terms) and values (translated terms)
+          if (key.toLowerCase().startsWith(lowerPartial)) {
+            completions.push(key);
+          }
+          if (value.toLowerCase().startsWith(lowerPartial) && !completions.includes(value)) {
+            completions.push(value);
           }
         });
       }

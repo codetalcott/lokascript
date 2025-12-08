@@ -45,6 +45,42 @@ export const id: Dictionary = {
     catch: 'tangkap',
     measure: 'ukur',
     transition: 'transisi',
+
+    // Data Commands
+    increment: 'tambahkan',
+    decrement: 'kurangi',
+    bind: 'ikat',
+    default: 'bawaan',
+    persist: 'simpan',
+
+    // Navigation Commands
+    go: 'pergi',
+    pushUrl: 'tambahUrl',
+    replaceUrl: 'gantiUrl',
+
+    // Utility Commands
+    copy: 'salin',
+    pick: 'pilih',
+    beep: 'bunyi',
+
+    // Advanced Commands
+    js: 'js',
+    async: 'asinkron',
+    render: 'tampilkan',
+
+    // Animation Commands
+    swap: 'tukar',
+    morph: 'ubah_bentuk',
+    settle: 'stabil',
+
+    // Content Commands
+    append: 'tambah_akhir',
+
+    // Control Flow
+    exit: 'keluar',
+
+    // Behaviors
+    install: 'pasang',
   },
   
   modifiers: {

@@ -1,6 +1,7 @@
 // packages/i18n/src/utils/tokenizer.ts
 
 import { Token, TokenType, Dictionary } from '../types';
+import { dictionaries } from '../dictionaries';
 
 export function tokenize(text: string, locale: string): Token[] {
   const tokens: Token[] = [];
@@ -192,20 +193,41 @@ function consumeOperator(text: string, start: number): string {
 }
 
 function categorizeWord(word: string, locale: string): TokenType {
-  // This would be enhanced with dictionary lookups
   const lowerWord = word.toLowerCase();
-  
-  // Common keywords across languages
-  const commands = ['on', 'en', '당', 'tell', 'decir', 'trigger', 'send', 'wait', 'esperar', '대기'];
-  const modifiers = ['to', 'a', 'from', 'de', 'into', 'en', 'with', 'con'];
-  const logical = ['if', 'si', '만약', 'then', 'entonces', 'else', 'sino', 'and', 'y', 'or', 'o'];
-  const values = ['true', 'verdadero', '참', 'false', 'falso', '거짓', 'null', 'nulo', 'me', 'yo', '나'];
-  
-  if (commands.some(cmd => lowerWord === cmd)) return 'command';
-  if (modifiers.some(mod => lowerWord === mod)) return 'modifier';
-  if (logical.some(log => lowerWord === log)) return 'logical';
-  if (values.some(val => lowerWord === val)) return 'value';
-  
+
+  // Map dictionary categories to token types (events first to handle 'click' etc.)
+  // Order matters: events before commands since many events (click, focus) also appear in commands
+  const categoryToType: Array<[string, TokenType]> = [
+    ['events', 'event'],
+    ['commands', 'command'],
+    ['modifiers', 'modifier'],
+    ['logical', 'logical'],
+    ['temporal', 'temporal'],
+    ['values', 'value'],
+    ['attributes', 'attribute'],
+  ];
+
+  // Check all supported dictionaries (source locale + English)
+  const localesToCheck = locale === 'en' ? ['en'] : [locale, 'en'];
+
+  for (const loc of localesToCheck) {
+    const dict = dictionaries[loc];
+    if (!dict) continue;
+
+    // Check categories in priority order (events before commands)
+    for (const [category, tokenType] of categoryToType) {
+      const translations = dict[category as keyof typeof dict];
+      if (!translations || typeof translations !== 'object') continue;
+
+      // Check if word matches a key (English) or value (translated)
+      for (const [key, value] of Object.entries(translations)) {
+        if (key.toLowerCase() === lowerWord || value.toLowerCase() === lowerWord) {
+          return tokenType;
+        }
+      }
+    }
+  }
+
   // Default to identifier
   return 'identifier';
 }

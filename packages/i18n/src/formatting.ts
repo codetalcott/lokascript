@@ -43,9 +43,18 @@ export class NumberFormatter {
 
   format(value: number, options: NumberFormatOptions = {}): string {
     const mergedOptions = { ...this.defaultOptions, ...options };
-    
+
     try {
-      return new Intl.NumberFormat(this.locale, mergedOptions).format(value);
+      const result = new Intl.NumberFormat(this.locale, mergedOptions).format(value);
+      // Validate result - if style is currency but no currency symbol, use fallback
+      if (mergedOptions.style === 'currency' && !/[$€£¥₹₩₽฿₪₴₱₫₵₦]/.test(result)) {
+        return this.fallbackFormat(value, mergedOptions);
+      }
+      // Validate result - if style is percent but no % symbol, use fallback
+      if (mergedOptions.style === 'percent' && !result.includes('%')) {
+        return this.fallbackFormat(value, mergedOptions);
+      }
+      return result;
     } catch (error) {
       // Fallback for unsupported locales
       return this.fallbackFormat(value, mergedOptions);
@@ -61,30 +70,49 @@ export class NumberFormatter {
   }
 
   formatPercent(value: number, options: Omit<NumberFormatOptions, 'style'> = {}): string {
-    return this.format(value / 100, {
+    // Note: Intl.NumberFormat with style: 'percent' multiplies by 100
+    // So 0.25 becomes "25%"
+    return this.format(value, {
       ...options,
       style: 'percent',
     });
   }
 
   private fallbackFormat(value: number, options: NumberFormatOptions): string {
-    const { style, currency, minimumFractionDigits = 0, maximumFractionDigits = 3 } = options;
-    
+    const { style, currency } = options;
+    // Default fraction digits based on style
+    const defaultMin = style === 'currency' ? 2 : 0;
+    const defaultMax = style === 'currency' ? 2 : 3;
+    const minimumFractionDigits = options.minimumFractionDigits ?? defaultMin;
+    const maximumFractionDigits = options.maximumFractionDigits ?? defaultMax;
+
     let formatted = value.toFixed(Math.min(maximumFractionDigits, Math.max(minimumFractionDigits, 0)));
-    
-    // Remove trailing zeros if not required
-    if (minimumFractionDigits === 0) {
+
+    // Remove trailing zeros after decimal point if not required
+    if (minimumFractionDigits === 0 && formatted.includes('.')) {
       formatted = formatted.replace(/\.?0+$/, '');
     }
-    
+
     if (style === 'currency' && currency) {
-      return `${currency} ${formatted}`;
+      // Map currency codes to symbols
+      const currencySymbols: Record<string, string> = {
+        USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
+        KRW: '₩', RUB: '₽', INR: '₹', THB: '฿', ILS: '₪',
+        UAH: '₴', PHP: '₱', VND: '₫', GHS: '₵', NGN: '₦',
+      };
+      const symbol = currencySymbols[currency] || currency;
+      return `${symbol}${formatted}`;
     }
-    
+
     if (style === 'percent') {
-      return `${formatted}%`;
+      // Multiply by 100 for percent display (matching Intl behavior)
+      const percentValue = (value * 100).toFixed(Math.min(maximumFractionDigits, Math.max(minimumFractionDigits, 0)));
+      const cleanPercent = (minimumFractionDigits === 0 && percentValue.includes('.'))
+        ? percentValue.replace(/\.?0+$/, '')
+        : percentValue;
+      return `${cleanPercent}%`;
     }
-    
+
     return formatted;
   }
 }
@@ -104,9 +132,14 @@ export class DateFormatter {
   format(date: Date | string | number, options: DateFormatOptions = {}): string {
     const dateObj = new Date(date);
     const mergedOptions = { ...this.defaultOptions, ...options };
-    
+
     try {
-      return new Intl.DateTimeFormat(this.locale, mergedOptions).format(dateObj);
+      const result = new Intl.DateTimeFormat(this.locale, mergedOptions).format(dateObj);
+      // Validate: if timeStyle was requested but no time in result, use fallback
+      if (mergedOptions.timeStyle && !/\d{1,2}:\d{2}/.test(result)) {
+        return this.fallbackFormat(dateObj, mergedOptions);
+      }
+      return result;
     } catch (error) {
       return this.fallbackFormat(dateObj, mergedOptions);
     }
@@ -148,15 +181,19 @@ export class DateFormatter {
     const day = String(date.getDate()).padStart(2, '0');
     const hour = String(date.getHours()).padStart(2, '0');
     const minute = String(date.getMinutes()).padStart(2, '0');
-    
-    if (options.dateStyle === 'short' || (!options.dateStyle && !options.timeStyle)) {
-      return `${month}/${day}/${year}`;
-    }
-    
+
+    const dateStr = `${month}/${day}/${year}`;
+    const timeStr = `${hour}:${minute}`;
+
+    // Include time if timeStyle is set
     if (options.timeStyle) {
-      return `${month}/${day}/${year} ${hour}:${minute}`;
+      return options.dateStyle ? `${dateStr} ${timeStr}` : timeStr;
     }
-    
+
+    if (options.dateStyle || (!options.dateStyle && !options.timeStyle)) {
+      return dateStr;
+    }
+
     return date.toString();
   }
 

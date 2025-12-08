@@ -340,16 +340,20 @@ export class PluralAwareTranslator {
    */
   static translateHyperscriptTime(text: string, locale: string): string {
     // Match patterns like "wait 5 seconds", "in 1 minute", etc.
+    // Note: Longer alternatives must come first (milliseconds before millisecond, etc.)
     return text.replace(
-      /(\d+)\s+(second|seconds|minute|minutes|hour|hours|day|days|ms|millisecond|milliseconds)/gi,
+      /(\d+)\s+(milliseconds|millisecond|seconds|second|minutes|minute|hours|hour|days|day|ms)/gi,
       (match, value, unit) => {
         const numValue = parseInt(value);
-        const normalizedUnit = unit.replace(/s$/, '').toLowerCase();
-        
-        if (normalizedUnit === 'ms' || normalizedUnit === 'millisecond') {
+        const lowerUnit = unit.toLowerCase();
+
+        // Handle milliseconds/ms specially before normalizing
+        if (lowerUnit === 'ms' || lowerUnit === 'millisecond' || lowerUnit === 'milliseconds') {
           return this.translateTimeExpression(numValue, 'millisecond', locale);
         }
-        
+
+        // Normalize by removing trailing 's' for other units
+        const normalizedUnit = lowerUnit.replace(/s$/, '');
         return this.translateTimeExpression(numValue, normalizedUnit, locale);
       }
     );

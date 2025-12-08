@@ -45,6 +45,42 @@ export const ko: Dictionary = {
     catch: '잡다',
     measure: '측정',
     transition: '전환',
+
+    // Data Commands
+    increment: '증가',
+    decrement: '감소',
+    bind: '바인드',
+    default: '기본값',
+    persist: '유지',
+
+    // Navigation Commands
+    go: '이동',
+    pushUrl: 'URL푸시',
+    replaceUrl: 'URL교체',
+
+    // Utility Commands
+    copy: '복사',
+    pick: '선택',
+    beep: '비프',
+
+    // Advanced Commands
+    js: 'JS실행',
+    async: '비동기',
+    render: '렌더링',
+
+    // Animation Commands
+    swap: '교환',
+    morph: '변형',
+    settle: '안정',
+
+    // Content Commands
+    append: '추가',
+
+    // Control Flow
+    exit: '종료',
+
+    // Behaviors
+    install: '설치',
   },
   
   modifiers: {

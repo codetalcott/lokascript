@@ -74,3 +74,45 @@ export {
   EnhancedI18nOutputSchema
 } from './enhanced-i18n';
 export type { EnhancedI18nInput, EnhancedI18nOutput } from './enhanced-i18n';
+
+// Grammar-aware transformation system (Phase 2)
+export {
+  // Types
+  type SemanticRole,
+  type WordOrder,
+  type AdpositionType,
+  type MorphologyType,
+  type GrammaticalMarker,
+  type LanguageProfile,
+  type GrammarRule,
+  type PatternMatcher,
+  type PatternTransform,
+  type ParsedStatement,
+  type ParsedElement,
+  UNIVERSAL_PATTERNS,
+  LANGUAGE_FAMILY_DEFAULTS,
+  reorderRoles,
+  insertMarkers,
+  transformStatement,
+  // Profiles
+  profiles,
+  getProfile,
+  getSupportedLocales,
+  englishProfile,
+  japaneseProfile,
+  koreanProfile,
+  chineseProfile,
+  arabicProfile,
+  turkishProfile,
+  spanishProfile,
+  indonesianProfile,
+  quechuaProfile,
+  swahiliProfile,
+  // Transformer
+  GrammarTransformer,
+  parseStatement,
+  toLocale,
+  toEnglish,
+  translate,
+  examples as grammarExamples,
+} from './grammar';
