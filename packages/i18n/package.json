@@ -11,6 +11,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./browser": {
+      "import": "./dist/browser.mjs",
+      "require": "./dist/browser.js",
+      "types": "./dist/browser.d.ts"
+    },
     "./dictionaries": {
       "import": "./dist/dictionaries/index.mjs",
       "require": "./dist/dictionaries/index.js",

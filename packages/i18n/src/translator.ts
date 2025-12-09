@@ -1,6 +1,15 @@
 // packages/i18n/src/translator.ts
 
-import { Dictionary, I18nConfig, TranslationOptions, TranslationResult, Token, TokenType, ValidationResult } from './types';
+import {
+  Dictionary,
+  DICTIONARY_CATEGORIES,
+  I18nConfig,
+  TranslationOptions,
+  TranslationResult,
+  Token,
+  TokenType,
+  ValidationResult,
+} from './types';
 import { dictionaries } from './dictionaries';
 import { detectLocale } from './utils/locale';
 import { tokenize } from './utils/tokenizer';
@@ -174,18 +183,17 @@ export class HyperscriptTranslator {
 
   addDictionary(locale: string, dictionary: Dictionary): void {
     this.dictionaries.set(locale, dictionary);
-    
-    // Build reverse dictionary for this locale
+
+    // Build reverse dictionary for this locale using type-safe iteration
     const reverseDict = new Map<string, string>();
-    
-    Object.entries(dictionary).forEach(([_category, translations]) => {
-      if (typeof translations === 'object') {
-        Object.entries(translations).forEach(([english, translated]) => {
-          reverseDict.set(translated.toLowerCase(), english);
-        });
+
+    for (const category of DICTIONARY_CATEGORIES) {
+      const translations = dictionary[category];
+      for (const [english, translated] of Object.entries(translations)) {
+        reverseDict.set(translated.toLowerCase(), english);
       }
-    });
-    
+    }
+
     this.reverseDictionaries.set(locale, reverseDict);
   }
 
@@ -231,21 +239,20 @@ export class HyperscriptTranslator {
     const partial = beforeCursor.match(/\b(\w+)$/)?.[1] || '';
     const lowerPartial = partial.toLowerCase();
 
-    // Search all categories for matches
+    // Search all categories for matches using type-safe iteration
     // For non-English locales, search translated values; for English, search keys
-    Object.values(dict).forEach(category => {
-      if (typeof category === 'object') {
-        Object.entries(category).forEach(([key, value]) => {
-          // Search keys (English terms) and values (translated terms)
-          if (key.toLowerCase().startsWith(lowerPartial)) {
-            completions.push(key);
-          }
-          if (value.toLowerCase().startsWith(lowerPartial) && !completions.includes(value)) {
-            completions.push(value);
-          }
-        });
+    for (const category of DICTIONARY_CATEGORIES) {
+      const translations = dict[category];
+      for (const [key, value] of Object.entries(translations)) {
+        // Search keys (English terms) and values (translated terms)
+        if (key.toLowerCase().startsWith(lowerPartial)) {
+          completions.push(key);
+        }
+        if (value.toLowerCase().startsWith(lowerPartial) && !completions.includes(value)) {
+          completions.push(value);
+        }
       }
-    });
+    }
 
     return completions;
   }

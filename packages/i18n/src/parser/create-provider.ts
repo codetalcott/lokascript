@@ -2,63 +2,14 @@
 
 import type { Dictionary } from '../types';
 import type { KeywordProvider, KeywordProviderOptions } from './types';
-
-/**
- * English keywords that should always be recognized, even in non-English locales.
- * These are HTML/DOM standard terms that developers worldwide use.
- */
-const UNIVERSAL_ENGLISH_KEYWORDS = new Set([
-  // DOM events (HTML spec)
-  'click', 'dblclick', 'mousedown', 'mouseup', 'mouseenter', 'mouseleave',
-  'mouseover', 'mouseout', 'mousemove', 'keydown', 'keyup', 'keypress',
-  'focus', 'blur', 'change', 'input', 'submit', 'reset', 'load', 'unload',
-  'resize', 'scroll', 'touchstart', 'touchend', 'touchmove', 'touchcancel',
-  'dragstart', 'dragend', 'dragenter', 'dragleave', 'dragover', 'drop',
-  'contextmenu', 'wheel', 'pointerdown', 'pointerup', 'pointermove',
-  // Common abbreviations
-  'ms', 's',
-]);
-
-/**
- * English commands - the canonical set that the runtime understands.
- */
-const ENGLISH_COMMANDS = new Set([
-  'add', 'append', 'async', 'beep', 'break', 'call', 'continue',
-  'decrement', 'default', 'exit', 'fetch', 'for', 'get', 'go',
-  'halt', 'hide', 'if', 'increment', 'install', 'js', 'log',
-  'make', 'measure', 'morph', 'pick', 'process', 'push', 'put',
-  'remove', 'render', 'repeat', 'replace', 'return', 'send', 'set',
-  'settle', 'show', 'swap', 'take', 'tell', 'throw', 'toggle',
-  'transition', 'trigger', 'unless', 'wait',
-]);
-
-/**
- * English keywords (non-commands).
- */
-const ENGLISH_KEYWORDS = new Set([
-  // Flow control
-  'then', 'else', 'end', 'and', 'or', 'not',
-  // Conditionals
-  'if', 'unless',
-  // Loops
-  'for', 'while', 'until', 'forever', 'times', 'each', 'index',
-  // Prepositions
-  'in', 'to', 'from', 'into', 'with', 'without', 'of', 'at', 'by',
-  // Conversion
-  'as',
-  // Comparison
-  'matches', 'contains', 'is', 'exists',
-  // Events
-  'on', 'when', 'every', 'event',
-  // Definitions
-  'init', 'def', 'behavior',
-  // Scope
-  'global', 'local',
-  // Articles
-  'the', 'a', 'an', 'first', 'last',
-  // Position
-  'start', 'before', 'after',
-]);
+import {
+  ENGLISH_COMMANDS,
+  ENGLISH_KEYWORDS,
+  ENGLISH_MODIFIERS,
+  ENGLISH_LOGICAL_KEYWORDS,
+  ENGLISH_VALUE_KEYWORDS,
+  UNIVERSAL_ENGLISH_KEYWORDS,
+} from '../constants';
 
 /**
  * Creates a KeywordProvider from a dictionary.
@@ -235,19 +186,19 @@ export function createKeywordProvider(
     isModifier(token: string): boolean {
       const normalized = token.toLowerCase();
       return reverseModifiers.has(normalized) ||
-        (allowEnglishFallback && ['to', 'from', 'into', 'with', 'at', 'in', 'of', 'as', 'by', 'before', 'after', 'without'].includes(normalized));
+        (allowEnglishFallback && ENGLISH_MODIFIERS.has(normalized));
     },
 
     isLogical(token: string): boolean {
       const normalized = token.toLowerCase();
       return reverseLogical.has(normalized) ||
-        (allowEnglishFallback && ['and', 'or', 'not', 'is', 'exists', 'matches', 'contains', 'then', 'else'].includes(normalized));
+        (allowEnglishFallback && ENGLISH_LOGICAL_KEYWORDS.has(normalized));
     },
 
     isValue(token: string): boolean {
       const normalized = token.toLowerCase();
       return reverseValues.has(normalized) ||
-        (allowEnglishFallback && ['true', 'false', 'null', 'undefined', 'it', 'me', 'my', 'result'].includes(normalized));
+        (allowEnglishFallback && ENGLISH_VALUE_KEYWORDS.has(normalized));
     },
 
     getCommands(): string[] {
@@ -289,20 +240,19 @@ export function createEnglishProvider(): KeywordProvider {
     },
 
     isEvent(token: string): boolean {
-      return UNIVERSAL_ENGLISH_KEYWORDS.has(token.toLowerCase()) ||
-        ['click', 'focus', 'blur', 'change', 'input', 'submit', 'load', 'scroll'].includes(token.toLowerCase());
+      return UNIVERSAL_ENGLISH_KEYWORDS.has(token.toLowerCase());
     },
 
     isModifier(token: string): boolean {
-      return ['to', 'from', 'into', 'with', 'at', 'in', 'of', 'as', 'by', 'before', 'after', 'without'].includes(token.toLowerCase());
+      return ENGLISH_MODIFIERS.has(token.toLowerCase());
     },
 
     isLogical(token: string): boolean {
-      return ['and', 'or', 'not', 'is', 'exists', 'matches', 'contains', 'then', 'else'].includes(token.toLowerCase());
+      return ENGLISH_LOGICAL_KEYWORDS.has(token.toLowerCase());
     },
 
     isValue(token: string): boolean {
-      return ['true', 'false', 'null', 'undefined', 'it', 'me', 'my', 'result'].includes(token.toLowerCase());
+      return ENGLISH_VALUE_KEYWORDS.has(token.toLowerCase());
     },
 
     getCommands(): string[] {
@@ -320,5 +270,12 @@ export function createEnglishProvider(): KeywordProvider {
   };
 }
 
-// Export the English keyword sets for use in core
-export { ENGLISH_COMMANDS, ENGLISH_KEYWORDS, UNIVERSAL_ENGLISH_KEYWORDS };
+// Re-export the English keyword sets from constants for use in core
+export {
+  ENGLISH_COMMANDS,
+  ENGLISH_KEYWORDS,
+  ENGLISH_MODIFIERS,
+  ENGLISH_LOGICAL_KEYWORDS,
+  ENGLISH_VALUE_KEYWORDS,
+  UNIVERSAL_ENGLISH_KEYWORDS,
+} from '../constants';

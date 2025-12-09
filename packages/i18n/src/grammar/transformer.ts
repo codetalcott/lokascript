@@ -14,8 +14,51 @@ import type {
   GrammarRule,
 } from './types';
 import { reorderRoles, insertMarkers } from './types';
-import { getProfile } from './profiles';
+import { getProfile, profiles } from './profiles';
 import { dictionaries } from '../dictionaries';
+import { findInDictionary, translateFromEnglish } from '../types';
+import {
+  ENGLISH_MODIFIER_ROLES,
+  CONDITIONAL_KEYWORDS,
+  THEN_KEYWORDS,
+} from '../constants';
+
+// =============================================================================
+// Derived Constants from Profiles
+// =============================================================================
+
+/**
+ * Derive event keywords from all language profiles.
+ * This replaces the hardcoded eventKeywords array.
+ */
+function deriveEventKeywordsFromProfiles(): Set<string> {
+  const keywords = new Set<string>();
+
+  // Add 'on' as the English default
+  keywords.add('on');
+
+  // Extract event markers from all profiles
+  for (const profile of Object.values(profiles)) {
+    for (const marker of profile.markers) {
+      if (marker.role === 'event') {
+        // Strip hyphen notation and add
+        const form = marker.form.replace(/^-|-$/g, '').toLowerCase();
+        if (form) keywords.add(form);
+
+        // Add alternatives
+        marker.alternatives?.forEach(alt => {
+          const altForm = alt.replace(/^-|-$/g, '').toLowerCase();
+          if (altForm) keywords.add(altForm);
+        });
+      }
+    }
+  }
+
+  return keywords;
+}
+
+/** Event keywords derived from language profiles */
+const EVENT_KEYWORDS = deriveEventKeywordsFromProfiles();
 
 // =============================================================================
 // Helper: Dynamic Modifier Map
@@ -46,19 +89,8 @@ function generateModifierMap(profile: LanguageProfile): Record<string, SemanticR
     });
   });
 
-  // Always include English modifiers as fallback
-  const englishFallback: Record<string, SemanticRole> = {
-    'to': 'destination',
-    'into': 'destination',
-    'from': 'source',
-    'with': 'instrument',
-    'by': 'quantity',
-    'as': 'manner',
-    'on': 'event',
-  };
-
-  // Add English fallback (don't override profile-specific markers)
-  for (const [key, role] of Object.entries(englishFallback)) {
+  // Add English modifiers as fallback (don't override profile-specific markers)
+  for (const [key, role] of Object.entries(ENGLISH_MODIFIER_ROLES)) {
     if (!(key in map)) {
       map[key] = role;
     }
@@ -237,13 +269,13 @@ function identifyStatementType(
     return 'event-handler';
   }
 
-  // English 'on' keyword
-  if (firstToken === 'on' || firstToken === 'で' || firstToken === '당' || firstToken === '当') {
+  // Check if first token is a known event keyword (derived from profiles)
+  if (EVENT_KEYWORDS.has(firstToken)) {
     return 'event-handler';
   }
 
-  // Check for conditional
-  if (['if', 'unless', 'もし', '如果', 'إذا', 'si', 'wenn', 'eğer'].includes(firstToken)) {
+  // Check for conditional using shared constants
+  if (CONDITIONAL_KEYWORDS.has(firstToken)) {
     return 'conditional';
   }
 
@@ -257,9 +289,8 @@ function identifyStatementType(
 function parseEventHandler(tokens: string[], _profile: LanguageProfile): ParsedStatement {
   const roles = new Map<SemanticRole, ParsedElement>();
 
-  // Remove the 'on' keyword
-  const eventKeywords = ['on', 'で', 'に', '当', '에', 'على', 'en', 'sur', 'bei', 'üzerinde', 'pada', 'kaqpi', 'kwenye'];
-  let startIndex = eventKeywords.includes(tokens[0]?.toLowerCase()) ? 1 : 0;
+  // Skip the event keyword (e.g., 'on', 'で', '当', etc.) - derived from profiles
+  let startIndex = EVENT_KEYWORDS.has(tokens[0]?.toLowerCase()) ? 1 : 0;
 
   // Next token is the event
   if (tokens[startIndex]) {
@@ -370,10 +401,8 @@ function parseConditional(tokens: string[], _profile: LanguageProfile): ParsedSt
     value: tokens[0],
   });
 
-  // Find 'then' to split condition from body
-  const thenIndex = tokens.findIndex(t =>
-    ['then', 'それから', '那么', 'ثم', 'entonces', 'alors', 'dann', 'sonra', 'lalu', 'chayqa', 'kisha'].includes(t.toLowerCase())
-  );
+  // Find 'then' to split condition from body - using shared constants
+  const thenIndex = tokens.findIndex(t => THEN_KEYWORDS.has(t.toLowerCase()));
 
   if (thenIndex > 1) {
     const conditionValue = tokens.slice(1, thenIndex).join(' ');
@@ -395,13 +424,12 @@ function parseConditional(tokens: string[], _profile: LanguageProfile): ParsedSt
 // =============================================================================
 
 /**
- * Translate words using dictionary
+ * Translate words using dictionary with type-safe access.
  */
 function translateWord(
   word: string,
   sourceLocale: string,
-  targetLocale: string,
-  _category: string = 'commands'
+  targetLocale: string
 ): string {
   // Don't translate CSS selectors
   if (/^[#.<@]/.test(word)) {
@@ -418,34 +446,18 @@ function translateWord(
 
   if (!targetDict) return word;
 
-  // If source is not English, first map to English
+  // If source is not English, first map to English using type-safe lookup
   let englishWord = word;
   if (sourceDict) {
-    // Find the English key for this localized word
-    for (const [_cat, entries] of Object.entries(sourceDict)) {
-      if (typeof entries === 'object') {
-        for (const [eng, loc] of Object.entries(entries)) {
-          if (loc === word) {
-            englishWord = eng;
-            break;
-          }
-        }
-      }
+    const found = findInDictionary(sourceDict, word);
+    if (found) {
+      englishWord = found.englishKey;
     }
   }
 
-  // Now map English to target locale
-  // Check all categories
-  for (const [_cat, entries] of Object.entries(targetDict)) {
-    if (typeof entries === 'object') {
-      const translated = (entries as Record<string, string>)[englishWord.toLowerCase()];
-      if (translated) {
-        return translated;
-      }
-    }
-  }
-
-  return word;
+  // Now map English to target locale using type-safe lookup
+  const translated = translateFromEnglish(targetDict, englishWord);
+  return translated ?? word;
 }
 
 /**

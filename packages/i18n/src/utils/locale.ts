@@ -1,6 +1,7 @@
 // packages/i18n/src/utils/locale.ts
 
 import { dictionaries } from '../dictionaries';
+import { DICTIONARY_CATEGORIES } from '../types';
 
 export interface LocaleInfo {
   code: string;
@@ -44,25 +45,24 @@ export function detectLocale(text: string, supportedLocales: string[]): string {
   // Initialize scores
   supportedLocales.forEach(locale => scores.set(locale, 0));
 
-  // Count keyword matches for each locale
+  // Count keyword matches for each locale using type-safe iteration
   for (const [locale, dictionary] of Object.entries(dictionaries)) {
     if (!supportedLocales.includes(locale)) continue;
 
     let score = 0;
 
     // Check all categories
-    Object.values(dictionary).forEach(category => {
-      if (typeof category === 'object') {
-        Object.values(category).forEach(keyword => {
-          // Use word boundary matching for accuracy
-          const regex = new RegExp(`\\b${escapeRegex(keyword)}\\b`, 'gi');
-          const matches = text.match(regex);
-          if (matches) {
-            score += matches.length;
-          }
-        });
+    for (const category of DICTIONARY_CATEGORIES) {
+      const translations = dictionary[category];
+      for (const keyword of Object.values(translations)) {
+        // Use word boundary matching for accuracy
+        const regex = new RegExp(`\\b${escapeRegex(keyword)}\\b`, 'gi');
+        const matches = text.match(regex);
+        if (matches) {
+          score += matches.length;
+        }
       }
-    });
+    }
 
     scores.set(locale, score);
   }

@@ -1,6 +1,12 @@
 // packages/i18n/src/validators/index.ts
 
-import { Dictionary, ValidationResult, ValidationError, ValidationWarning } from '../types';
+import {
+  Dictionary,
+  DICTIONARY_CATEGORIES,
+  ValidationResult,
+  ValidationError,
+  ValidationWarning,
+} from '../types';
 import { RequiredCategories, RequiredKeys } from './schema';
 
 export function validate(dictionary: Dictionary, locale: string): ValidationResult {
@@ -51,12 +57,12 @@ export function validate(dictionary: Dictionary, locale: string): ValidationResu
     }
   }
 
-  // Check for duplicates
+  // Check for duplicates using type-safe category iteration
   const seen = new Map<string, string>();
-  
-  for (const [category, translations] of Object.entries(dictionary)) {
-    if (typeof translations !== 'object') continue;
-    
+
+  for (const category of DICTIONARY_CATEGORIES) {
+    const translations = dictionary[category];
+
     for (const [key, value] of Object.entries(translations)) {
       if (seen.has(value)) {
         warnings.push({
@@ -108,22 +114,21 @@ function validateLocaleSpecific(
     // Check for consistent honorific levels
     const formalEndings = ['습니다', '세요'];
     const informalEndings = ['다', '어', '아'];
-    
+
     let formalCount = 0;
     let informalCount = 0;
 
-    Object.values(dictionary).forEach(category => {
-      if (typeof category === 'object') {
-        Object.values(category).forEach(value => {
-          if (formalEndings.some(ending => value.endsWith(ending))) {
-            formalCount++;
-          }
-          if (informalEndings.some(ending => value.endsWith(ending))) {
-            informalCount++;
-          }
-        });
+    for (const category of DICTIONARY_CATEGORIES) {
+      const translations = dictionary[category];
+      for (const value of Object.values(translations)) {
+        if (formalEndings.some(ending => value.endsWith(ending))) {
+          formalCount++;
+        }
+        if (informalEndings.some(ending => value.endsWith(ending))) {
+          informalCount++;
+        }
       }
-    });
+    }
 
     if (formalCount > 0 && informalCount > 0) {
       warnings.push({
@@ -139,22 +144,21 @@ function validateLocaleSpecific(
     // Check for simplified vs traditional consistency
     const simplified = ['设', '获', '显', '发'];
     const traditional = ['設', '獲', '顯', '發'];
-    
+
     let hasSimplified = false;
     let hasTraditional = false;
 
-    Object.values(dictionary).forEach(category => {
-      if (typeof category === 'object') {
-        Object.values(category).forEach(value => {
-          if (simplified.some(char => value.includes(char))) {
-            hasSimplified = true;
-          }
-          if (traditional.some(char => value.includes(char))) {
-            hasTraditional = true;
-          }
-        });
+    for (const category of DICTIONARY_CATEGORIES) {
+      const translations = dictionary[category];
+      for (const value of Object.values(translations)) {
+        if (simplified.some(char => value.includes(char))) {
+          hasSimplified = true;
+        }
+        if (traditional.some(char => value.includes(char))) {
+          hasTraditional = true;
+        }
       }
-    });
+    }
 
     if (hasSimplified && hasTraditional) {
       warnings.push({

@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: './src/compatibility/browser-tests',
@@ -20,8 +24,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npx http-server . -p 3000 -c-1',
+    command: 'npx http-server ../.. -p 3000 -c-1',
     port: 3000,
     reuseExistingServer: !process.env.CI,
+    cwd: __dirname,
   },
 });

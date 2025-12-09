@@ -305,6 +305,30 @@ export class SetCommand {
       }
     }
 
+    // Check for element target: set #element to value (sets textContent)
+    // This handles CSS selector results like set #result to "clicked!"
+    if (isHTMLElement(firstValue)) {
+      const value = await this.extractValue(raw, evaluator, context);
+      return {
+        type: 'property',
+        element: firstValue,
+        property: 'textContent',
+        value,
+      };
+    }
+
+    // Handle array of elements: set multiple elements' textContent
+    if (Array.isArray(firstValue) && firstValue.length > 0 && isHTMLElement(firstValue[0])) {
+      const value = await this.extractValue(raw, evaluator, context);
+      // Set textContent on first element (common case for ID selectors)
+      return {
+        type: 'property',
+        element: firstValue[0],
+        property: 'textContent',
+        value,
+      };
+    }
+
     // Default: variable assignment
     if (typeof firstValue !== 'string') {
       throw new Error('set command target must be a string or object literal');
