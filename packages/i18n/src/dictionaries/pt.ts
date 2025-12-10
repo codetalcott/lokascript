@@ -4,10 +4,7 @@ import { Dictionary } from '../types';
 
 /**
  * Portuguese (Português) dictionary for hyperscript keywords.
- *
- * Portuguese is a Romance language with high mutual intelligibility
- * with Spanish. This enables direct translation between the two languages
- * without going through English as a pivot.
+ * Brazilian Portuguese variant.
  */
 export const pt: Dictionary = {
   commands: {
@@ -30,14 +27,14 @@ export const pt: Dictionary = {
 
     // Control flow
     if: 'se',
-    unless: 'a menos',
+    unless: 'a_menos', // REVIEW: native speaker - multi-word
     repeat: 'repetir',
     for: 'para',
     while: 'enquanto',
     until: 'até',
     continue: 'continuar',
     break: 'parar',
-    halt: 'parar',
+    halt: 'interromper',
 
     // Async
     wait: 'esperar',
@@ -85,6 +82,9 @@ export const pt: Dictionary = {
 
     // Control Flow
     exit: 'sair',
+
+    // Behaviors
+    install: 'instalar',
   },
 
   modifiers: {
@@ -92,44 +92,54 @@ export const pt: Dictionary = {
     from: 'de',
     into: 'em',
     with: 'com',
+    at: 'em',
+    in: 'dentro',
+    of: 'de',
     as: 'como',
     by: 'por',
-    at: 'em',
-    in: 'em',
+    before: 'antes',
+    after: 'depois',
     over: 'sobre',
-    within: 'dentro',
-    then: 'então',
-    else: 'senão',
-    end: 'fim',
+    under: 'sob',
+    between: 'entre',
+    through: 'através',
+    without: 'sem',
   },
 
   events: {
     click: 'clique',
-    change: 'mudança',
-    input: 'entrada',
-    submit: 'envio',
-    load: 'carregar',
-    focus: 'foco',
-    blur: 'desfoque',
-    keydown: 'teclaAbaixo',
-    keyup: 'teclaAcima',
-    keypress: 'teclaPressionada',
+    dblclick: 'duploClique',
+    mousedown: 'mouseBaixo',
+    mouseup: 'mouseCima',
     mouseenter: 'mouseEntrar',
     mouseleave: 'mouseSair',
     mouseover: 'mouseSobre',
     mouseout: 'mouseFora',
-    scroll: 'rolar',
+    mousemove: 'mouseMover',
+
+    keydown: 'teclaBaixo',
+    keyup: 'teclaCima',
+    keypress: 'teclaPressionar',
+
+    focus: 'foco',
+    blur: 'desfoque',
+    change: 'mudança',
+    input: 'entrada',
+    submit: 'envio',
+    reset: 'reiniciar',
+
+    load: 'carregar',
+    unload: 'descarregar',
     resize: 'redimensionar',
-    dblclick: 'duploClique',
-    contextmenu: 'menuContexto',
+    scroll: 'rolar',
+
     touchstart: 'toqueInício',
     touchend: 'toqueFim',
     touchmove: 'toqueMover',
+    touchcancel: 'toqueCancelar',
   },
 
   logical: {
-    true: 'verdadeiro',
-    false: 'falso',
     and: 'e',
     or: 'ou',
     not: 'não',
@@ -139,9 +149,10 @@ export const pt: Dictionary = {
     contains: 'contém',
     includes: 'inclui',
     equals: 'igual',
-    greater: 'maior',
-    less: 'menor',
-    than: 'que',
+    then: 'então',
+    else: 'senão',
+    otherwise: 'caso_contrário', // REVIEW: native speaker
+    end: 'fim',
   },
 
   temporal: {
@@ -149,64 +160,49 @@ export const pt: Dictionary = {
     second: 'segundo',
     milliseconds: 'milissegundos',
     millisecond: 'milissegundo',
-    ms: 'ms',
-    s: 's',
     minutes: 'minutos',
     minute: 'minuto',
     hours: 'horas',
     hour: 'hora',
-    days: 'dias',
-    day: 'dia',
-    after: 'depois',
-    before: 'antes',
-    every: 'cada',
+    ms: 'ms',
+    s: 's',
+    min: 'min',
+    h: 'h',
   },
 
   values: {
+    true: 'verdadeiro',
+    false: 'falso',
     null: 'nulo',
     undefined: 'indefinido',
-    empty: 'vazio',
-    nothing: 'nada',
-    none: 'nenhum',
-    first: 'primeiro',
-    last: 'último',
-    next: 'próximo',
-    previous: 'anterior',
-    random: 'aleatório',
-    result: 'resultado',
     it: 'isso',
     its: 'seu',
     me: 'eu',
     my: 'meu',
+    myself: 'eu mesmo', // REVIEW: native speaker
     you: 'você',
     your: 'seu',
+    yourself: 'você mesmo', // REVIEW: native speaker
+    element: 'elemento',
+    target: 'alvo',
+    detail: 'detalhe',
+    event: 'evento',
+    window: 'janela',
+    document: 'documento',
+    body: 'corpo',
+    result: 'resultado',
+    value: 'valor',
   },
 
   attributes: {
     class: 'classe',
+    classes: 'classes',
     style: 'estilo',
-    id: 'id',
-    value: 'valor',
-    text: 'texto',
-    html: 'html',
-    innerHTML: 'htmlInterno',
-    outerHTML: 'htmlExterno',
-    textContent: 'conteúdoTexto',
-    disabled: 'desabilitado',
-    hidden: 'oculto',
-    checked: 'marcado',
-    selected: 'selecionado',
-    readonly: 'somenteleitura',
-    required: 'obrigatório',
-    placeholder: 'marcador',
-    href: 'href',
-    src: 'src',
-    alt: 'alt',
-    title: 'título',
-    name: 'nome',
-    type: 'tipo',
-    width: 'largura',
-    height: 'altura',
+    styles: 'estilos',
+    attribute: 'atributo',
+    attributes: 'atributos',
+    property: 'propriedade',
+    properties: 'propriedades',
   },
 
   expressions: {
@@ -220,7 +216,7 @@ export const pt: Dictionary = {
     random: 'aleatório',
 
     // DOM Traversal
-    closest: 'mais próximo',
+    closest: 'mais_próximo', // REVIEW: native speaker - multi-word
     parent: 'pai',
     children: 'filhos',
     within: 'dentro',

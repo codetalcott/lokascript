@@ -182,6 +182,7 @@ export const en: Dictionary = {
     myself: 'myself',
     you: 'you',
     your: 'your',
+    yourself: 'yourself',
     element: 'element',
     target: 'target',
     detail: 'detail',

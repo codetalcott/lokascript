@@ -172,9 +172,13 @@ export const qu: Dictionary = {
     null: 'ch_usaq',
     undefined: 'mana_riqsisqa',
     it: 'chay',
+    its: 'chaypaq', // REVIEW: native speaker
     me: 'noqa',
     my: 'noqaq',
-    myself: 'noqa_killa',
+    myself: 'noqa killa',
+    you: 'qam', // REVIEW: native speaker
+    your: 'qampaq', // REVIEW: native speaker
+    yourself: 'qam killa', // REVIEW: native speaker
     element: 'raku',
     target: 'punta',
     detail: 'sut_iy',

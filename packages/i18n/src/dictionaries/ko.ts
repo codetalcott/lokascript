@@ -172,9 +172,13 @@ export const ko: Dictionary = {
     null: '널',
     undefined: '정의안됨',
     it: '그것',
+    its: '그것의', // REVIEW: native speaker
     me: '나',
     my: '내',
     myself: '나자신',
+    you: '너', // REVIEW: native speaker - formal/informal
+    your: '네', // REVIEW: native speaker - formal/informal
+    yourself: '너자신', // REVIEW: native speaker
     element: '요소',
     target: '대상',
     detail: '세부',

@@ -172,9 +172,13 @@ export const ar: Dictionary = {
     null: 'فارغ',
     undefined: 'غير معرف',
     it: 'هو',
+    its: 'له', // REVIEW: native speaker
     me: 'أنا',
     my: 'لي',
     myself: 'نفسي',
+    you: 'أنت', // REVIEW: native speaker
+    your: 'لك', // REVIEW: native speaker
+    yourself: 'نفسك', // REVIEW: native speaker
     element: 'عنصر',
     target: 'هدف',
     detail: 'تفاصيل',

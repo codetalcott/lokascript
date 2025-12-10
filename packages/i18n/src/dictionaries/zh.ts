@@ -172,9 +172,13 @@ export const zh: Dictionary = {
     null: '空',
     undefined: '未定义',
     it: '它',
+    its: '它的', // REVIEW: native speaker
     me: '我',
     my: '我的',
     myself: '我自己',
+    you: '你', // REVIEW: native speaker
+    your: '你的', // REVIEW: native speaker
+    yourself: '你自己', // REVIEW: native speaker
     element: '元素',
     target: '目标',
     detail: '详情',

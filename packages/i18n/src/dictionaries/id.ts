@@ -172,9 +172,13 @@ export const id: Dictionary = {
     null: 'kosong',
     undefined: 'tidak_terdefinisi',
     it: 'itu',
+    its: 'miliknya', // REVIEW: native speaker
     me: 'saya',
-    my: 'saya_punya',
-    myself: 'saya_sendiri',
+    my: 'saya punya',
+    myself: 'saya sendiri',
+    you: 'kamu', // REVIEW: native speaker - formal/informal
+    your: 'kamu punya', // REVIEW: native speaker
+    yourself: 'kamu sendiri', // REVIEW: native speaker
     element: 'elemen',
     target: 'target',
     detail: 'detail',

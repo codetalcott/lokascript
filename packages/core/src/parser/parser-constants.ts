@@ -96,6 +96,7 @@ export const COMMANDS = new Set([
   'break',
   'call',
   'continue',
+  'copy',
   'decrement',
   'default',
   'exit',

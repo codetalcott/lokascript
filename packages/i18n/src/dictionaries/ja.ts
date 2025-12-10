@@ -177,6 +177,7 @@ export const ja: Dictionary = {
     my: '私の',
     you: 'あなた',
     your: 'あなたの',
+    yourself: 'あなた自身',
     myself: '私自身',
     element: '要素',
     target: '対象',

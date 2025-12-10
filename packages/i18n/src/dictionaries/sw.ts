@@ -172,9 +172,13 @@ export const sw: Dictionary = {
     null: 'tupu',
     undefined: 'haijafafanuliwa',
     it: 'hiyo',
+    its: 'yake', // REVIEW: native speaker
     me: 'mimi',
     my: 'yangu',
-    myself: 'mimi_mwenyewe',
+    myself: 'mimi mwenyewe',
+    you: 'wewe', // REVIEW: native speaker
+    your: 'yako', // REVIEW: native speaker
+    yourself: 'wewe mwenyewe', // REVIEW: native speaker
     element: 'kipengele',
     target: 'lengo',
     detail: 'maelezo',

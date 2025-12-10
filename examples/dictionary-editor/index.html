@@ -263,6 +263,11 @@
     .status-badge.translated { background: #e8f5e9; color: #2e7d32; }
     .status-badge.modified { background: #fff3e0; color: #ef6c00; }
     .status-badge.missing { background: #ffebee; color: #c62828; }
+    .status-badge.flagged { background: #e3f2fd; color: #1565c0; }
+
+    .btn-flag { background: #e3f2fd; color: #1565c0; }
+    .btn-flag:hover { background: #bbdefb; }
+    .btn-flag.active { background: #1565c0; color: white; }
 
     .pending-panel {
       position: fixed;
@@ -416,6 +421,7 @@
       </div>
 
       <button class="btn btn-secondary" id="show-missing">Show Missing Only</button>
+      <button class="btn btn-secondary" id="show-flagged">Show Flagged Only</button>
       <button class="btn btn-secondary" id="show-coverage">Coverage Matrix</button>
     </div>
 
@@ -443,6 +449,10 @@
       <div class="stat">
         <div class="stat-value" id="pending-count">0</div>
         <div class="stat-label">Pending Changes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="flagged-count">0</div>
+        <div class="stat-label">Flagged for Review</div>
       </div>
     </div>
 
@@ -510,12 +520,14 @@
       currentLanguage: 'es',
       currentCategory: 'commands',
       pendingChanges: new Map(),
+      flaggedForReview: new Set(),
       showMissingOnly: false,
+      showFlaggedOnly: false,
       searchFilter: '',
     };
 
     // Categories
-    const CATEGORIES = ['commands', 'modifiers', 'events', 'logical', 'temporal', 'values', 'attributes'];
+    const CATEGORIES = ['commands', 'modifiers', 'events', 'logical', 'temporal', 'values', 'attributes', 'expressions'];
 
     // Languages
     const LANGUAGES = {
@@ -533,7 +545,7 @@
       qu: 'Runasimi',
     };
 
-    // Reference English dictionary (simplified)
+    // Reference English dictionary - matches packages/i18n/src/dictionaries/en.ts
     const ENGLISH_REFERENCE = {
       commands: {
         on: 'on', tell: 'tell', trigger: 'trigger', send: 'send',
@@ -542,39 +554,53 @@
         if: 'if', unless: 'unless', repeat: 'repeat', for: 'for',
         while: 'while', until: 'until', continue: 'continue', break: 'break', halt: 'halt',
         wait: 'wait', fetch: 'fetch', call: 'call', return: 'return',
-        make: 'make', log: 'log', throw: 'throw', catch: 'catch',
-        increment: 'increment', decrement: 'decrement', bind: 'bind',
-        go: 'go', copy: 'copy', swap: 'swap', morph: 'morph', append: 'append', exit: 'exit',
+        make: 'make', log: 'log', throw: 'throw', catch: 'catch', measure: 'measure', transition: 'transition',
+        increment: 'increment', decrement: 'decrement', bind: 'bind', default: 'default', persist: 'persist',
+        go: 'go', pushUrl: 'pushUrl', replaceUrl: 'replaceUrl',
+        copy: 'copy', pick: 'pick', beep: 'beep',
+        js: 'js', async: 'async', render: 'render',
+        swap: 'swap', morph: 'morph', settle: 'settle',
+        append: 'append', exit: 'exit', install: 'install',
       },
       modifiers: {
-        to: 'to', from: 'from', into: 'into', with: 'with', as: 'as', by: 'by',
-        at: 'at', in: 'in', over: 'over', within: 'within', then: 'then', else: 'else', end: 'end',
+        to: 'to', from: 'from', into: 'into', with: 'with', at: 'at', in: 'in', of: 'of',
+        as: 'as', by: 'by', before: 'before', after: 'after', over: 'over', under: 'under',
+        between: 'between', through: 'through', without: 'without',
       },
       events: {
-        click: 'click', change: 'change', input: 'input', submit: 'submit',
-        load: 'load', focus: 'focus', blur: 'blur',
-        keydown: 'keydown', keyup: 'keyup', mouseenter: 'mouseenter', mouseleave: 'mouseleave',
-        scroll: 'scroll', resize: 'resize', dblclick: 'dblclick',
+        click: 'click', dblclick: 'dblclick', mousedown: 'mousedown', mouseup: 'mouseup',
+        mouseenter: 'mouseenter', mouseleave: 'mouseleave', mouseover: 'mouseover', mouseout: 'mouseout', mousemove: 'mousemove',
+        keydown: 'keydown', keyup: 'keyup', keypress: 'keypress',
+        focus: 'focus', blur: 'blur', change: 'change', input: 'input', submit: 'submit', reset: 'reset',
+        load: 'load', unload: 'unload', resize: 'resize', scroll: 'scroll',
+        touchstart: 'touchstart', touchend: 'touchend', touchmove: 'touchmove', touchcancel: 'touchcancel',
       },
       logical: {
-        true: 'true', false: 'false', and: 'and', or: 'or', not: 'not',
-        is: 'is', exists: 'exists', matches: 'matches', contains: 'contains',
-        equals: 'equals', greater: 'greater', less: 'less', than: 'than',
+        and: 'and', or: 'or', not: 'not', is: 'is', exists: 'exists', matches: 'matches',
+        contains: 'contains', includes: 'includes', equals: 'equals',
+        then: 'then', else: 'else', otherwise: 'otherwise', end: 'end',
       },
       temporal: {
-        seconds: 'seconds', second: 'second', milliseconds: 'milliseconds', ms: 'ms',
+        seconds: 'seconds', second: 'second', milliseconds: 'milliseconds', millisecond: 'millisecond',
         minutes: 'minutes', minute: 'minute', hours: 'hours', hour: 'hour',
-        after: 'after', before: 'before', every: 'every',
+        ms: 'ms', s: 's', min: 'min', h: 'h',
       },
       values: {
-        null: 'null', undefined: 'undefined', empty: 'empty', nothing: 'nothing',
-        first: 'first', last: 'last', next: 'next', previous: 'previous',
-        random: 'random', result: 'result', it: 'it', me: 'me', you: 'you',
+        true: 'true', false: 'false', null: 'null', undefined: 'undefined',
+        it: 'it', its: 'its', me: 'me', my: 'my', myself: 'myself',
+        you: 'you', your: 'your', yourself: 'yourself', element: 'element', target: 'target',
+        detail: 'detail', event: 'event', window: 'window', document: 'document',
+        body: 'body', result: 'result', value: 'value',
       },
       attributes: {
-        class: 'class', style: 'style', id: 'id', value: 'value', text: 'text',
-        html: 'html', disabled: 'disabled', hidden: 'hidden', checked: 'checked',
-        selected: 'selected', href: 'href', src: 'src', title: 'title', name: 'name', type: 'type',
+        class: 'class', classes: 'classes', style: 'style', styles: 'styles',
+        attribute: 'attribute', attributes: 'attributes', property: 'property', properties: 'properties',
+      },
+      expressions: {
+        first: 'first', last: 'last', next: 'next', previous: 'previous', prev: 'prev',
+        at: 'at', random: 'random', closest: 'closest', parent: 'parent', children: 'children',
+        within: 'within', no: 'no', empty: 'empty', some: 'some',
+        'starts with': 'starts with', 'ends with': 'ends with',
       },
     };
 
@@ -652,12 +678,16 @@
         const translation = target[key] || '';
         const changeKey = `${state.currentLanguage}:${state.currentCategory}:${key}`;
         const pending = state.pendingChanges.get(changeKey);
+        const isFlagged = state.flaggedForReview.has(changeKey);
         const displayValue = pending !== undefined ? pending : translation;
 
         let status = 'translated';
         let inputClass = '';
 
-        if (pending !== undefined) {
+        if (isFlagged) {
+          status = 'flagged';
+          inputClass = 'flagged';
+        } else if (pending !== undefined) {
           status = 'modified';
           inputClass = 'modified';
         } else if (!translation || translation === key) {
@@ -665,8 +695,23 @@
           inputClass = 'missing';
         }
 
-        // Skip if showing missing only and it's translated
-        if (state.showMissingOnly && status === 'translated' && pending === undefined) continue;
+        // Skip if showing missing only
+        if (state.showMissingOnly && status === 'translated') continue;
+        // Skip if showing flagged only
+        if (state.showFlaggedOnly && !isFlagged) continue;
+
+        // Build action buttons
+        let actions = [];
+        if (pending !== undefined) {
+          actions.push(`<button class="btn btn-secondary" data-action="revert" data-key="${escapeHtml(key)}" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Revert</button>`);
+        }
+        if (!translation) {
+          actions.push(`<button class="btn btn-primary" data-action="suggest" data-key="${escapeHtml(key)}" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Suggest</button>`);
+        }
+        // Always show flag button
+        const flagBtnClass = isFlagged ? 'btn btn-flag active' : 'btn btn-flag';
+        const flagBtnText = isFlagged ? '⚑ Flagged' : '⚐ Flag';
+        actions.push(`<button class="${flagBtnClass}" data-action="flag" data-key="${escapeHtml(key)}" style="font-size:0.75rem;padding:0.25rem 0.5rem;">${flagBtnText}</button>`);
 
         html += `
           <tr>
@@ -675,15 +720,12 @@
               <input type="text"
                      class="${inputClass}"
                      value="${escapeHtml(displayValue)}"
-                     data-key="${key}"
+                     data-key="${escapeHtml(key)}"
                      data-original="${escapeHtml(translation)}"
                      placeholder="Enter translation...">
             </td>
             <td><span class="status-badge ${status}">${status}</span></td>
-            <td>
-              ${pending !== undefined ? `<button class="btn btn-secondary" onclick="revertChange('${key}')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Revert</button>` : ''}
-              ${!translation ? `<button class="btn btn-primary" onclick="suggestTranslation('${key}')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Suggest</button>` : ''}
-            </td>
+            <td>${actions.join(' ')}</td>
           </tr>
         `;
       }
@@ -693,6 +735,17 @@
       // Add input handlers
       dictionaryBody.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', (e) => handleEdit(e.target.dataset.key, e.target.value, e.target.dataset.original));
+      });
+
+      // Add button handlers
+      dictionaryBody.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const action = e.target.dataset.action;
+          const key = e.target.dataset.key;
+          if (action === 'revert') revertChange(key);
+          else if (action === 'suggest') suggestTranslation(key);
+          else if (action === 'flag') toggleFlag(key);
+        });
       });
     }
 
@@ -726,6 +779,19 @@
       alert(`Suggestion feature: You could use AI to suggest a translation for "${key}"`);
     };
 
+    // Toggle review flag
+    function toggleFlag(key) {
+      const changeKey = `${state.currentLanguage}:${state.currentCategory}:${key}`;
+      if (state.flaggedForReview.has(changeKey)) {
+        state.flaggedForReview.delete(changeKey);
+      } else {
+        state.flaggedForReview.add(changeKey);
+      }
+      saveToLocalStorage();
+      renderTable();
+      updateStats();
+    }
+
     // Update stats
     function updateStats() {
       let totalTranslated = 0;
@@ -747,6 +813,7 @@
       document.getElementById('coverage-percent').textContent = coveragePercent + '%';
       document.getElementById('coverage-bar').style.width = coveragePercent + '%';
       document.getElementById('pending-count').textContent = state.pendingChanges.size;
+      document.getElementById('flagged-count').textContent = state.flaggedForReview.size;
     }
 
     // Update pending panel
@@ -761,6 +828,9 @@
       localStorage.setItem('hyperfixi-dict-pending',
         JSON.stringify(Array.from(state.pendingChanges.entries()))
       );
+      localStorage.setItem('hyperfixi-dict-flagged',
+        JSON.stringify(Array.from(state.flaggedForReview))
+      );
     }
 
     function loadFromLocalStorage() {
@@ -772,11 +842,20 @@
           console.error('Failed to load pending changes:', e);
         }
       }
+      const flagged = localStorage.getItem('hyperfixi-dict-flagged');
+      if (flagged) {
+        try {
+          state.flaggedForReview = new Set(JSON.parse(flagged));
+        } catch (e) {
+          console.error('Failed to load flagged items:', e);
+        }
+      }
     }
 
     // Export as PR
     function exportAsPR() {
       const changesByLang = new Map();
+      const flaggedByLang = new Map();
 
       for (const [key, value] of state.pendingChanges) {
         const [lang, category, english] = key.split(':');
@@ -785,10 +864,20 @@
         changesByLang.get(lang)[category][english] = value;
       }
 
+      // Collect flagged items
+      for (const key of state.flaggedForReview) {
+        const [lang, category, english] = key.split(':');
+        if (!flaggedByLang.has(lang)) flaggedByLang.set(lang, {});
+        if (!flaggedByLang.get(lang)[category]) flaggedByLang.get(lang)[category] = [];
+        const target = getDictionary(lang)[category] || {};
+        flaggedByLang.get(lang)[category].push({ english, translation: target[english] || '' });
+      }
+
       let output = `# HyperFixi Dictionary Contribution\n\n`;
       output += `Generated: ${new Date().toISOString()}\n\n`;
       output += `## Changes Summary\n\n`;
       output += `- Total changes: ${state.pendingChanges.size}\n`;
+      output += `- Flagged for review: ${state.flaggedForReview.size}\n`;
       output += `- Languages affected: ${changesByLang.size}\n\n`;
 
       for (const [lang, categories] of changesByLang) {
@@ -799,6 +888,21 @@
             output += `  ${english}: '${translation}',\n`;
           }
           output += `\`\`\`\n\n`;
+        }
+      }
+
+      // Include flagged items section
+      if (state.flaggedForReview.size > 0) {
+        output += `## Items Flagged for Native Speaker Review\n\n`;
+        for (const [lang, categories] of flaggedByLang) {
+          output += `### ${LANGUAGES[lang] || lang} (${lang}.ts)\n\n`;
+          for (const [category, items] of Object.entries(categories)) {
+            output += `**${category}**\n`;
+            for (const { english, translation } of items) {
+              output += `- \`${english}\`: "${translation}" - NEEDS REVIEW\n`;
+            }
+            output += `\n`;
+          }
         }
       }
 
@@ -877,7 +981,17 @@
 
     document.getElementById('show-missing').addEventListener('click', (e) => {
       state.showMissingOnly = !state.showMissingOnly;
+      state.showFlaggedOnly = false;  // Turn off other filter
       e.target.textContent = state.showMissingOnly ? 'Show All' : 'Show Missing Only';
+      document.getElementById('show-flagged').textContent = 'Show Flagged Only';
+      renderTable();
+    });
+
+    document.getElementById('show-flagged').addEventListener('click', (e) => {
+      state.showFlaggedOnly = !state.showFlaggedOnly;
+      state.showMissingOnly = false;  // Turn off other filter
+      e.target.textContent = state.showFlaggedOnly ? 'Show All' : 'Show Flagged Only';
+      document.getElementById('show-missing').textContent = 'Show Missing Only';
       renderTable();
     });
 

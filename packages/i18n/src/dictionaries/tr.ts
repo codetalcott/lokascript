@@ -172,9 +172,13 @@ export const tr: Dictionary = {
     null: 'boş',
     undefined: 'tanımsız',
     it: 'o',
+    its: 'onun', // REVIEW: native speaker
     me: 'ben',
     my: 'benim',
     myself: 'kendim',
+    you: 'sen', // REVIEW: native speaker - formal/informal
+    your: 'senin', // REVIEW: native speaker - formal/informal
+    yourself: 'kendin', // REVIEW: native speaker
     element: 'öğe',
     target: 'hedef',
     detail: 'detay',

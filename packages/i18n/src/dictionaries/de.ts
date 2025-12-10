@@ -177,7 +177,8 @@ export const de: Dictionary = {
     my: 'mein',
     you: 'du',
     your: 'dein',
-    myself: 'ichselbst',
+    yourself: 'dich selbst', // REVIEW: native speaker
+    myself: 'ich selbst',
     element: 'element',
     target: 'ziel',
     detail: 'detail',

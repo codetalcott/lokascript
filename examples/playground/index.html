@@ -407,13 +407,7 @@
     <div class="header-actions">
       <!-- Hybrid: hyperfixi handles UI feedback, JS builds the URL -->
       <button class="btn" id="share-btn" title="Copy shareable link"
-              _="on click
-                   call buildShareUrl() then set shareUrl to it
-                   copy shareUrl
-                   set my textContent to 'Copied!'
-                   call logToConsole('Shareable link copied to clipboard!', 'success')
-                   wait 2s
-                   set my textContent to 'Share'">Share</button>
+              _="on click call buildShareUrl() then copy it then call logToConsole('Copied to clipboard!', 'success') then set my textContent to 'Copied!' then wait 2s then set my textContent to 'Share'">Share</button>
     </div>
   </header>
 
@@ -511,7 +505,7 @@ Examples:
         <h2>Console</h2>
         <!-- Pure hyperfixi: clear console with simple put command -->
         <button class="btn" id="clear-console" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
-                _="on click put '<span class=\"info\">[info]</span> Console cleared' into #console-output">Clear</button>
+                _='on click put "<span class=info>[info]</span> Console cleared" into #console-output'>Clear</button>
       </div>
       <div class="console-output" id="console-output">
 <span class="info">[info]</span> HyperFixi Playground loaded
@@ -763,6 +757,8 @@ Examples:
     // Demo elements references
     const demoBtn = document.getElementById('demo-btn');
     const countOutput = document.getElementById('count');
+    const demoOutput = document.getElementById('output');
+    const demoInput = document.getElementById('demo-input');
 
     // Expose for debugging and for hyperscript to find after reset
     window.demoBtn = demoBtn;
