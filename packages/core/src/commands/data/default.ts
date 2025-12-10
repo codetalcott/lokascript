@@ -1,32 +1,18 @@
 /**
- * DefaultCommand - Standalone V2 Implementation
+ * DefaultCommand - Decorated Implementation
  *
- * Sets values only if they don't already exist
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * Features:
- * - Set variable defaults
- * - Set attribute defaults (@data-attr)
- * - Set property defaults (my innerHTML, its value)
- * - Skip setting if value already exists
- * - Context-aware element resolution
+ * Sets values only if they don't already exist.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
  *   default <expression> to <expression>
- *
- * @example
- *   default myVar to "fallback"
- *   default @data-theme to "light"
- *   default my innerHTML to "No content"
- *   default count to 0
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Typed input for DefaultCommand
@@ -50,51 +36,19 @@ export interface DefaultCommandOutput {
 }
 
 /**
- * DefaultCommand - Standalone V2 Implementation
+ * DefaultCommand - Set values if not already defined
  *
- * Self-contained implementation with no V1 dependencies.
- * Achieves tree-shaking by inlining all required utilities.
- *
- * V1 Size: 382 lines
- * V2 Target: ~380 lines (inline asHTMLElement, standalone)
+ * Before: 472 lines
+ * After: ~400 lines (15% reduction)
  */
+@meta({
+  description: 'Set a value only if it doesn\'t already exist',
+  syntax: ['default <expression> to <expression>'],
+  examples: ['default myVar to "fallback"', 'default @data-theme to "light"', 'default my innerHTML to "No content"'],
+  sideEffects: ['data-mutation', 'dom-mutation'],
+})
+@command({ name: 'default', category: 'data' })
 export class DefaultCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'default';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Set a value only if it doesn\'t already exist',
-    syntax: ['default <expression> to <expression>'],
-    examples: [
-      'default myVar to "fallback"',
-      'default @data-theme to "light"',
-      'default my innerHTML to "No content"',
-      'default count to 0',
-    ],
-    category: 'data',
-    sideEffects: ['data-mutation', 'dom-mutation'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return DefaultCommand.metadata;
-  }
-
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -463,9 +417,5 @@ export class DefaultCommand {
   }
 }
 
-/**
- * Factory function to create DefaultCommand instance
- */
-export function createDefaultCommand(): DefaultCommand {
-  return new DefaultCommand();
-}
+export const createDefaultCommand = createFactory(DefaultCommand);
+export default DefaultCommand;

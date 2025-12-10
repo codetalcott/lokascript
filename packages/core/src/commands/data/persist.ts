@@ -1,40 +1,20 @@
 /**
- * PersistCommand - Standalone V2 Implementation
+ * PersistCommand - Decorated Implementation
  *
- * Saves and restores values from localStorage or sessionStorage
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * Features:
- * - Save values to localStorage or sessionStorage
- * - Restore values with automatic expiration checking
- * - Remove values from storage
- * - TTL (time-to-live) support for automatic expiration
- * - JSON serialization with metadata
- * - Custom events for operations
- * - Type-safe storage handling
+ * Saves and restores values from localStorage or sessionStorage.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
  *   persist <value> to local as <key>
  *   persist <value> to session as <key>
- *   persist <value> to local as <key> with ttl <milliseconds>
  *   restore <key> from local
- *   restore <key> from session
- *   remove <key> from local
- *
- * @example
- *   persist myValue to local as 'username'
- *   persist formData to session as 'draft'
- *   persist data to local as 'cache' with ttl 3600000
- *   restore 'username' from local
- *   remove 'cache' from local
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Typed input for PersistCommand
@@ -75,57 +55,19 @@ interface StoredValue {
 }
 
 /**
- * PersistCommand - Standalone V2 Implementation
+ * PersistCommand - Browser storage operations
  *
- * Self-contained implementation with no V1 dependencies.
- * Achieves tree-shaking by inlining all required utilities.
- *
- * V1 Size: 390 lines (with validation dependencies)
- * V2 Target: ~370 lines (inline validation, standalone)
+ * Before: 464 lines
+ * After: ~400 lines (14% reduction)
  */
+@meta({
+  description: 'Save and restore values from browser storage with TTL support',
+  syntax: ['persist <value> to <storage> as <key>', 'restore <key> from <storage>', 'remove <key> from <storage>'],
+  examples: ['persist myValue to local as "username"', 'persist formData to session as "draft"', 'restore "username" from local'],
+  sideEffects: ['storage', 'data-mutation'],
+})
+@command({ name: 'persist', category: 'data' })
 export class PersistCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'persist';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Save and restore values from browser storage with TTL support',
-    syntax: [
-      'persist <value> to <storage> as <key>',
-      'persist <value> to <storage> as <key> with ttl <ms>',
-      'restore <key> from <storage>',
-      'remove <key> from <storage>',
-    ],
-    examples: [
-      'persist myValue to local as "username"',
-      'persist formData to session as "draft"',
-      'persist data to local as "cache" with ttl 3600000',
-      'restore "username" from local',
-      'remove "cache" from local',
-    ],
-    category: 'data',
-    sideEffects: ['storage', 'data-mutation'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return PersistCommand.metadata;
-  }
-
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -455,9 +397,5 @@ export class PersistCommand {
   }
 }
 
-/**
- * Factory function to create PersistCommand instance
- */
-export function createPersistCommand(): PersistCommand {
-  return new PersistCommand();
-}
+export const createPersistCommand = createFactory(PersistCommand);
+export default PersistCommand;

@@ -1,29 +1,13 @@
 /**
- * SetCommand - Standalone V2 Implementation
+ * SetCommand - Decorated Implementation
  *
- * Sets values to variables, element attributes, or properties
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * **Scope**: Core assignment patterns (most common use cases)
- * - Variables: set x to value
- * - Attributes: set @attribute to value
- * - Properties: set my property to value
- *
- * **Not included**: Complex validation, object literals, CSS shorthand, "the X of Y" syntax
- * (can be added in future if needed)
+ * Sets values to variables, element attributes, or properties.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
- *   set myVar to "value"              # Variable assignment
- *   set @data-theme to "dark"         # Attribute assignment
- *   set my innerHTML to "content"     # Property assignment (me)
- *   set its textContent to "text"     # Property assignment (it)
- *
- * @example
- *   set count to 10
- *   set @aria-label to "Button"
- *   set my textContent to "Click me"
+ *   set myVar to "value"
+ *   set @data-theme to "dark"
+ *   set my innerHTML to "content"
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
@@ -35,6 +19,7 @@ import {
   resolveElements as resolveElementsHelper,
   resolvePossessive,
 } from '../helpers/element-resolution';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Typed input for SetCommand (Discriminated Union)
@@ -89,15 +74,6 @@ export interface SetCommandOutput {
   targetType: 'variable' | 'attribute' | 'property';
 }
 
-/**
- * SetCommand - Standalone V2 Implementation
- *
- * Self-contained implementation with no V1 dependencies.
- * Focuses on core assignment patterns without complex validation.
- *
- * V1 Size: 748 lines (with Zod validation, complex syntax, CSS properties, object literals)
- * V2 Size: ~350 lines (core patterns only, 53% reduction)
- */
 /** Property setter lookup table for common DOM properties */
 const PROPERTY_SETTERS: Record<string, (el: HTMLElement, val: unknown) => void> = {
   textContent: (el, val) => { el.textContent = String(val); },
@@ -108,35 +84,20 @@ const PROPERTY_SETTERS: Record<string, (el: HTMLElement, val: unknown) => void> 
   value: (el, val) => { if ('value' in el) (el as HTMLInputElement).value = String(val); },
 };
 
+/**
+ * SetCommand - Core assignment command
+ *
+ * Before: 682 lines
+ * After: ~600 lines (12% reduction)
+ */
+@meta({
+  description: 'Set values to variables, attributes, or properties',
+  syntax: ['set <target> to <value>'],
+  examples: ['set myVar to "value"', 'set @data-theme to "dark"', 'set my innerHTML to "content"'],
+  sideEffects: ['state-mutation', 'dom-mutation'],
+})
+@command({ name: 'set', category: 'data' })
 export class SetCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'set';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Set values to variables, attributes, or properties',
-    syntax: 'set <target> to <value>',
-    examples: [
-      'set myVar to "value"',
-      'set @data-theme to "dark"',
-      'set my innerHTML to "content"',
-      'set its textContent to "text"',
-    ],
-    category: 'data',
-    sideEffects: ['state-mutation', 'dom-mutation'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return SetCommand.metadata;
-  }
-
   /**
    * Parse raw AST nodes into typed command input
    *
@@ -651,31 +612,5 @@ export class SetCommand {
   }
 }
 
-// ========== Factory Function ==========
-
-/**
- * Factory function for creating SetCommand instances
- * Maintains compatibility with existing command registration patterns
- *
- * @returns New SetCommand instance
- */
-export function createSetCommand(): SetCommand {
-  return new SetCommand();
-}
-
-// Default export for convenience
+export const createSetCommand = createFactory(SetCommand);
 export default SetCommand;
-
-// ========== Usage Example ==========
-//
-// import { SetCommand } from './commands-v2/data/set-standalone';
-// import { RuntimeBase } from './runtime/runtime-base';
-//
-// const runtime = new RuntimeBase({
-//   registry: {
-//     set: new SetCommand(),
-//   },
-// });
-//
-// // Now only SetCommand is bundled, not all V1 dependencies!
-// // Bundle size: ~4-5 KB (vs ~230 KB with V1 inheritance)

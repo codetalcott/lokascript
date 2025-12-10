@@ -1,27 +1,13 @@
 /**
- * BindCommand - Standalone V2 Implementation
+ * BindCommand - Decorated Implementation
  *
- * Two-way data binding between variables and DOM elements
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * Features:
- * - Three binding directions: to, from, bidirectional
- * - Event-based synchronization (no signals library)
- * - MutationObserver for DOM change detection
- * - Property access: value, checked, textContent, attributes, nested properties
- * - Cleanup system for memory management
+ * Two-way data binding between variables and DOM elements.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
  *   bind :variable to <element>.<property>
  *   bind :variable from <element>.<property>
  *   bind :variable to <element>.<property> bidirectional
- *
- * @example
- *   bind :username to my.value
- *   bind :count from #display.textContent
- *   bind :message to #input.value bidirectional
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
@@ -29,6 +15,7 @@ import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { resolvePossessive } from '../helpers/element-resolution';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Typed input for BindCommand
@@ -74,61 +61,19 @@ interface ActiveBinding {
 const activeBindings: Map<string, ActiveBinding> = new Map();
 
 /**
- * BindCommand - Standalone V2 Implementation
+ * BindCommand - Two-way data binding
  *
- * Self-contained implementation with no V1 dependencies.
- * Achieves tree-shaking by inlining all required utilities.
- *
- * V1 Size: 496 lines (with validation, event system, MutationObserver)
- * V2 Target: ~480 lines (3% reduction, all features preserved)
+ * Before: 602 lines
+ * After: ~530 lines (12% reduction)
  */
+@meta({
+  description: 'Create two-way data binding between variables and DOM elements',
+  syntax: ['bind :variable to <element>.<property>', 'bind :variable from <element>.<property>', 'bind :variable to <element>.<property> bidirectional'],
+  examples: ['bind :username to my.value', 'bind :count from #display.textContent', 'bind :message to #input.value bidirectional'],
+  sideEffects: ['data-binding', 'event-listeners', 'dom-observation'],
+})
+@command({ name: 'bind', category: 'data' })
 export class BindCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'bind';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Create two-way data binding between variables and DOM elements',
-    syntax: [
-      'bind :variable to <element>.<property>',
-      'bind :variable from <element>.<property>',
-      'bind :variable to <element>.<property> bidirectional',
-    ],
-    examples: [
-      'bind :username to my.value',
-      'bind :count from #display.textContent',
-      'bind :message to #input.value bidirectional',
-      'bind :checked to #checkbox.checked',
-      'bind :theme from @data-theme',
-    ],
-    category: 'data',
-    sideEffects: ['data-binding', 'event-listeners', 'dom-observation'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return BindCommand.metadata;
-  }
-
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * Expected patterns:
-   * - bind :variable to <target>.<property>
-   * - bind :variable from <target>.<property>
-   * - bind :variable to <target>.<property> bidirectional
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -548,12 +493,8 @@ export class BindCommand {
   }
 }
 
-/**
- * Factory function to create BindCommand instance
- */
-export function createBindCommand(): BindCommand {
-  return new BindCommand();
-}
+export const createBindCommand = createFactory(BindCommand);
+export default BindCommand;
 
 // ========== Utility Functions ==========
 

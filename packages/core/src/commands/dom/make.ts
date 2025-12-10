@@ -1,19 +1,18 @@
 /**
- * MakeCommand V2 - Standalone Implementation (Zero V1 Dependencies)
+ * MakeCommand - Decorated Implementation
  *
- * Creates DOM elements or class instances with full support for:
- * - DOM elements: make a <tag#id.class1.class2/>
- * - Class instances: make a URL from "/path/", "origin"
- * - Variable assignment: called <identifier>
- * - Constructor args: from <arg-list>
+ * Creates DOM elements or class instances.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
- * Part of Phase 5: Hybrid Tree-Shaking Architecture
- * Week 4 Migration - Complete standalone rewrite with zero V1 dependencies
+ * Syntax:
+ *   make a <tag#id.class1.class2/>
+ *   make a URL from "/path/", "origin"
  */
 
 import type { ASTNode, ExecutionContext } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Raw input from RuntimeBase (before evaluation)
@@ -34,16 +33,19 @@ export interface MakeCommandInput {
 }
 
 /**
- * Standalone MakeCommand V2 - Zero V1 dependencies
+ * MakeCommand - Create DOM elements or class instances
  *
- * This implementation completely rewrites make command logic with:
- * - Inlined utilities (zero external dependencies)
- * - parseInput() for AST parsing
- * - execute() for command execution
- * - Type-only imports for tree-shaking
+ * Before: 384 lines
+ * After: ~350 lines (9% reduction)
  */
+@meta({
+  description: 'Create DOM elements or class instances',
+  syntax: ['make a <tag#id.class1.class2/>', 'make a <ClassName> from <args> called <identifier>'],
+  examples: ['make an <a.navlink/> called linkElement', 'make a URL from "/path/", "https://origin.example.com"'],
+  sideEffects: ['dom-creation', 'data-mutation'],
+})
+@command({ name: 'make', category: 'dom' })
 export class MakeCommand {
-  readonly name = 'make';
 
   // ============================================================================
   // INLINED UTILITIES (Zero External Dependencies)
@@ -348,36 +350,7 @@ export class MakeCommand {
     return result;
   }
 
-  // ============================================================================
-  // METADATA
-  // ============================================================================
-
-  static readonly metadata = {
-    description:
-      'The make command can be used to create class instances or DOM elements. In the first form: make a URL from "/path/", "https://origin.example.com" is equal to the JavaScript new URL("/path/", "https://origin.example.com"). In the second form: make an <a.navlink/> will create an <a> element and add the class "navlink" to it.',
-    syntax: 'make (a|an) <expression> [from <arg-list>] [called <identifier>]',
-    examples: [
-      'make a URL from "/path/", "https://origin.example.com"',
-      'make an <a.navlink/> called linkElement',
-      'make a Date from "2023-01-01"',
-      'make an <div#content.container/>',
-      'make a Map called myMap',
-    ],
-    category: 'dom',
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return MakeCommand.metadata;
-  }
 }
 
-/**
- * Factory function for creating MakeCommand instances
- * Maintains compatibility with existing command registration
- */
-export function createMakeCommand(): MakeCommand {
-  return new MakeCommand();
-}
+export const createMakeCommand = createFactory(MakeCommand);
+export default MakeCommand;

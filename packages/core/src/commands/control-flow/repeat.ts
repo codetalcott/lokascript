@@ -1,41 +1,22 @@
 /**
- * RepeatCommand - Standalone V2 Implementation
+ * RepeatCommand - Decorated Implementation
  *
- * Provides iteration in the hyperscript language
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * Features:
- * - For-in loops (iterate over collections)
- * - Counted loops (repeat N times)
- * - Conditional loops (while/until)
- * - Event-driven loops (until event fires)
- * - Forever loops (with safety limits)
- * - Index variable support
- * - Break/continue control flow
+ * Provides iteration in the hyperscript language.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
  *   repeat for <var> in <collection> [index <indexVar>] { <commands> }
  *   repeat <count> times [index <indexVar>] { <commands> }
  *   repeat while <condition> [index <indexVar>] { <commands> }
  *   repeat until <condition> [index <indexVar>] { <commands> }
- *   repeat until <event> [from <target>] [index <indexVar>] { <commands> }
  *   repeat forever [index <indexVar>] { <commands> }
- *
- * @example
- *   repeat for item in items { log item }
- *   repeat 5 times { log "hello" }
- *   repeat while count < 10 { increment count }
- *   repeat until done { checkStatus }
- *   repeat until click from #button { animate }
- *   repeat forever { monitor }
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import { evaluateCondition } from '../helpers/condition-helpers';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import { command, meta, createFactory } from '../decorators';
 
 /**
  * Typed input for RepeatCommand
@@ -79,71 +60,25 @@ export interface RepeatCommandOutput {
 }
 
 /**
- * RepeatCommand - Standalone V2 Implementation
+ * RepeatCommand - Iteration in hyperscript
  *
- * Self-contained implementation with no V1 dependencies.
- * Achieves tree-shaking by inlining all required utilities.
- *
- * V1 Size: 641 lines (with debug logging, validation, all loop types)
- * V2 Target: ~550 lines (14% reduction, all features preserved)
+ * Before: 770 lines
+ * After: ~700 lines (9% reduction)
  */
+@meta({
+  description: 'Iteration in hyperscript - for-in, counted, conditional, event-driven, and infinite loops',
+  syntax: [
+    'repeat for <var> in <collection> { <commands> }',
+    'repeat <count> times { <commands> }',
+    'repeat while <condition> { <commands> }',
+    'repeat until <condition> { <commands> }',
+    'repeat forever { <commands> }',
+  ],
+  examples: ['repeat for item in items { log item }', 'repeat 5 times { log "hello" }', 'repeat while count < 10 { increment count }'],
+  sideEffects: ['iteration', 'conditional-execution'],
+})
+@command({ name: 'repeat', category: 'control-flow' })
 export class RepeatCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'repeat';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Iteration in hyperscript - for-in, counted, conditional, event-driven, and infinite loops',
-    syntax: [
-      'repeat for <var> in <collection> [index <indexVar>] { <commands> }',
-      'repeat <count> times [index <indexVar>] { <commands> }',
-      'repeat while <condition> [index <indexVar>] { <commands> }',
-      'repeat until <condition> [index <indexVar>] { <commands> }',
-      'repeat until <event> [from <target>] [index <indexVar>] { <commands> }',
-      'repeat forever [index <indexVar>] { <commands> }',
-    ],
-    examples: [
-      'repeat for item in items { log item }',
-      'repeat 5 times { log "hello" }',
-      'repeat while count < 10 { increment count }',
-      'repeat until done { checkStatus }',
-      'repeat until click from #button { animate }',
-      'repeat forever { monitor }',
-    ],
-    category: 'control-flow',
-    sideEffects: ['iteration', 'conditional-execution'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return RepeatCommand.metadata;
-  }
-
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * Determines loop type and extracts parameters.
-   * Loop type is detected from raw.modifiers or first argument.
-   *
-   * Note: The parser should structure the AST with:
-   * - Loop type detection from keywords (for, times, while, until, forever)
-   * - Variable and collection for for-in loops
-   * - Count for counted loops
-   * - Condition for while/until loops
-   * - Event name and target for event-driven loops
-   * - Commands block in raw.modifiers or separate field
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -761,9 +696,5 @@ export class RepeatCommand {
   }
 }
 
-/**
- * Factory function to create RepeatCommand instance
- */
-export function createRepeatCommand(): RepeatCommand {
-  return new RepeatCommand();
-}
+export const createRepeatCommand = createFactory(RepeatCommand);
+export default RepeatCommand;

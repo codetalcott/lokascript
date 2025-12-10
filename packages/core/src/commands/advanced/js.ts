@@ -1,45 +1,24 @@
 /**
- * JsCommand - Standalone V2 Implementation
+ * JsCommand - Decorated Implementation
  *
- * Executes inline JavaScript code with access to hyperscript context
- *
- * This is a standalone implementation with NO V1 dependencies,
- * enabling true tree-shaking by inlining essential utilities.
- *
- * Features:
- * - Execute JavaScript code using new Function()
- * - Access to hyperscript context (me, it, you, locals, globals)
- * - Optional parameter passing - parameters are looked up from locals
- * - Result stored in context.it
- * - Error handling with context
+ * Executes inline JavaScript code with access to hyperscript context.
+ * Uses Stage 3 decorators for reduced boilerplate.
  *
  * Syntax:
  *   js <code> end
  *   js(param1, param2) <code> end
- *
- * @example
- *   js console.log("Hello World") end
- *   js(x, y) return x + y end
- *   js me.style.color = "red" end
  */
 
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import { command, meta, createFactory } from '../decorators';
 
-/**
- * Typed input for JsCommand
- */
 export interface JsCommandInput {
-  /** JavaScript code to execute */
   code: string;
-  /** Optional parameter names */
   parameters?: string[];
 }
 
-/**
- * Output from js command execution
- */
 export interface JsCommandOutput {
   result: any;
   executed: boolean;
@@ -48,55 +27,19 @@ export interface JsCommandOutput {
 }
 
 /**
- * JsCommand - Standalone V2 Implementation
+ * JsCommand - Execute inline JavaScript
  *
- * Self-contained implementation with no V1 dependencies.
- * Achieves tree-shaking by inlining all required utilities.
- *
- * V1 Size: 297 lines
- * V2 Target: ~280 lines (inline utilities, standalone)
+ * Before: 241 lines
+ * After: ~160 lines (34% reduction)
  */
+@meta({
+  description: 'Execute inline JavaScript code with access to hyperscript context',
+  syntax: ['js <code> end', 'js(param1, param2) <code> end'],
+  examples: ['js console.log("Hello") end', 'js(x, y) return x + y end', 'js me.style.color = "red" end'],
+  sideEffects: ['code-execution', 'data-mutation'],
+})
+@command({ name: 'js', category: 'advanced' })
 export class JsCommand {
-  /**
-   * Command name as registered in runtime
-   */
-  readonly name = 'js';
-
-  /**
-   * Command metadata for documentation and tooling
-   */
-  static readonly metadata = {
-    description: 'Execute inline JavaScript code with access to hyperscript context',
-    syntax: ['js <code> end', 'js(param1, param2) <code> end'],
-    examples: [
-      'js console.log("Hello") end',
-      'js(x, y) return x + y end',
-      'js me.style.color = "red" end',
-      'js(element) element.classList.add("active") end',
-    ],
-    category: 'advanced',
-    sideEffects: ['code-execution', 'data-mutation'],
-  } as const;
-
-  /**
-   * Instance accessor for metadata (backward compatibility)
-   */
-  get metadata() {
-    return JsCommand.metadata;
-  }
-
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * The parser now provides:
-   * - args[0]: literal node with code string
-   * - args[1]: arrayLiteral node with parameter names
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     _evaluator: ExpressionEvaluator,
@@ -233,9 +176,5 @@ export class JsCommand {
   }
 }
 
-/**
- * Factory function to create JsCommand instance
- */
-export function createJsCommand(): JsCommand {
-  return new JsCommand();
-}
+export const createJsCommand = createFactory(JsCommand);
+export default JsCommand;
