@@ -117,6 +117,7 @@ export const koreanProfile: LanguageProfile = {
     { form: '에서', role: 'source', position: 'postposition', required: true },
     { form: '로', role: 'instrument', position: 'postposition', required: false, alternatives: ['으로'] },
     { form: '와', role: 'instrument', position: 'postposition', required: false, alternatives: ['과'] },
+    { form: '로', role: 'manner', position: 'postposition', required: false, alternatives: ['으로'] }, // "as" - same as instrument
   ],
 
   rules: [
@@ -277,6 +278,7 @@ export const turkishProfile: LanguageProfile = {
     { form: '-den', role: 'source', position: 'postposition', required: true, alternatives: ['-dan'] },
     { form: '-de', role: 'event', position: 'postposition', required: true, alternatives: ['-da'] },
     { form: 'ile', role: 'instrument', position: 'postposition', required: false },
+    { form: 'olarak', role: 'manner', position: 'postposition', required: false },
   ],
 
   rules: [
@@ -320,6 +322,7 @@ export const spanishProfile: LanguageProfile = {
     { form: 'de', role: 'source', position: 'preposition', required: false },
     { form: 'con', role: 'instrument', position: 'preposition', required: false },
     { form: 'por', role: 'quantity', position: 'preposition', required: false },
+    { form: 'como', role: 'manner', position: 'preposition', required: false },
   ],
 };
 
@@ -422,6 +425,7 @@ export const indonesianProfile: LanguageProfile = {
     { form: 'ke', role: 'destination', position: 'preposition', required: false },
     { form: 'dari', role: 'source', position: 'preposition', required: false },
     { form: 'dengan', role: 'instrument', position: 'preposition', required: false },
+    { form: 'sebagai', role: 'manner', position: 'preposition', required: false },
   ],
 };
 
@@ -446,6 +450,7 @@ export const quechuaProfile: LanguageProfile = {
     { form: '-manta', role: 'source', position: 'postposition', required: true },
     { form: '-pi', role: 'event', position: 'postposition', required: true },
     { form: '-wan', role: 'instrument', position: 'postposition', required: false },
+    { form: 'hina', role: 'manner', position: 'postposition', required: false }, // "as/like"
   ],
 };
 
@@ -469,6 +474,7 @@ export const swahiliProfile: LanguageProfile = {
     { form: 'kwa', role: 'destination', position: 'preposition', required: false },
     { form: 'kutoka', role: 'source', position: 'preposition', required: false },
     { form: 'na', role: 'instrument', position: 'preposition', required: false },
+    { form: 'kama', role: 'manner', position: 'preposition', required: false }, // "as/like"
   ],
 };
 
