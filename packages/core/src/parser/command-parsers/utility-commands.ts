@@ -13,7 +13,7 @@ import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, Token, ExpressionNode, CommandNode } from '../../types/core';
 import { TokenType } from '../tokenizer';
 import { CommandNodeBuilder } from '../command-node-builder';
-import { isKeyword } from '../helpers/parsing-helpers';
+import { isKeyword, isCommandBoundary } from '../helpers/parsing-helpers';
 import { KEYWORDS } from '../parser-constants';
 
 // Import command parsers from other modules for compound command routing
@@ -116,16 +116,7 @@ export function parseRegularCommand(
   const args: ASTNode[] = [];
 
   // Parse command arguments (space-separated, not comma-separated)
-  while (
-    !ctx.isAtEnd() &&
-    !ctx.check(KEYWORDS.THEN) &&
-    !ctx.check(KEYWORDS.AND) &&
-    !ctx.check(KEYWORDS.ELSE) &&
-    !ctx.check(KEYWORDS.END) &&
-    !ctx.check('catch') &&
-    !ctx.check('finally') &&
-    !ctx.checkTokenType(TokenType.COMMAND)
-  ) {
+  while (!isCommandBoundary(ctx, ['catch', 'finally'])) {
     // Include EVENT tokens to allow DOM event names as arguments (e.g., 'send reset to #element')
     if (
       ctx.checkTokenType(TokenType.CONTEXT_VAR) ||
@@ -198,15 +189,8 @@ export function parseMultiWordCommand(
   // IMPORTANT: Use parsePrimary() instead of parseExpression() to avoid consuming modifiers
   // For example, "fetch URL as json" should NOT parse "URL as json" as one expression
   while (
-    !ctx.isAtEnd() &&
-    !isKeyword(ctx.peek(), pattern.keywords) &&
-    !ctx.check(KEYWORDS.THEN) &&
-    !ctx.check(KEYWORDS.AND) &&
-    !ctx.check(KEYWORDS.ELSE) &&
-    !ctx.check(KEYWORDS.END) &&
-    !ctx.check('catch') &&
-    !ctx.check('finally') &&
-    !ctx.checkTokenType(TokenType.COMMAND)
+    !isCommandBoundary(ctx, ['catch', 'finally', ...pattern.keywords]) &&
+    !isKeyword(ctx.peek(), pattern.keywords)
   ) {
     // Use parsePrimary() to parse just the value, not full expressions
     // This prevents "URL as json" from being parsed as one expression

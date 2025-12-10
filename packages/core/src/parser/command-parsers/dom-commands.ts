@@ -13,6 +13,12 @@ import type { ParserContext, IdentifierNode } from '../parser-types';
 import type { ASTNode, Token } from '../../types/core';
 import { CommandNodeBuilder } from '../command-node-builder';
 import { KEYWORDS, PUT_OPERATIONS, PUT_OPERATION_KEYWORDS } from '../parser-constants';
+import {
+  isCommandBoundary,
+  parseOneArgument,
+  consumeKeywordToArgs,
+  consumeOneOfKeywordsToArgs,
+} from '../helpers/parsing-helpers';
 
 /**
  * Parse remove command
@@ -38,33 +44,24 @@ export function parseRemoveCommand(
   ctx: ParserContext,
   identifierNode: IdentifierNode
 ) {
-  // Phase 1 Refactoring: Use constants and CommandNodeBuilder
   const args: ASTNode[] = [];
 
   // Parse: remove <class> from <target>
-  // First argument: class
-  if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.FROM) && !ctx.check(KEYWORDS.END)) {
-    args.push(ctx.parsePrimary());
+  // First argument: class (stops at 'from' boundary)
+  const classArg = parseOneArgument(ctx, [KEYWORDS.FROM]);
+  if (classArg) {
+    args.push(classArg);
   }
 
-  // Expect 'from' keyword
-  if (ctx.check(KEYWORDS.FROM)) {
-    ctx.advance(); // consume 'from'
-    args.push(ctx.createIdentifier(KEYWORDS.FROM)); // Add 'from' as an argument
+  // Consume 'from' keyword and add to args
+  consumeKeywordToArgs(ctx, KEYWORDS.FROM, args);
+
+  // Parse target argument
+  const targetArg = parseOneArgument(ctx);
+  if (targetArg) {
+    args.push(targetArg);
   }
 
-  // Third argument: target
-  if (
-    !ctx.isAtEnd() &&
-    !ctx.check(KEYWORDS.THEN) &&
-    !ctx.check(KEYWORDS.AND) &&
-    !ctx.check(KEYWORDS.ELSE) &&
-    !ctx.check(KEYWORDS.END)
-  ) {
-    args.push(ctx.parsePrimary());
-  }
-
-  // Phase 1: Use CommandNodeBuilder
   return CommandNodeBuilder.fromIdentifier(identifierNode)
     .withArgs(...args)
     .endingAt(ctx.getPosition())
@@ -99,30 +96,21 @@ export function parseToggleCommand(
   // Support both 'from' (HyperFixi) and 'on' (official _hyperscript) for compatibility
 
   // Parse first argument (class) until 'from' or 'on'
-  if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.FROM) && !ctx.check(KEYWORDS.ON) && !ctx.check(KEYWORDS.END)) {
-    args.push(ctx.parsePrimary());
+  const classArg = parseOneArgument(ctx, [KEYWORDS.FROM, KEYWORDS.ON]);
+  if (classArg) {
+    args.push(classArg);
   }
 
   // Accept either 'from' or 'on' keyword for target specification
-  // Note: We add the preposition as an argument for backwards compatibility
-  if (ctx.check(KEYWORDS.FROM) || ctx.check(KEYWORDS.ON)) {
-    const preposition = ctx.peek().value; // 'from' or 'on'
-    ctx.advance(); // consume the preposition
-    args.push(ctx.createIdentifier(preposition)); // Add preposition as an argument
-
+  const preposition = consumeOneOfKeywordsToArgs(ctx, [KEYWORDS.FROM, KEYWORDS.ON], args);
+  if (preposition) {
     // Parse target
-    if (
-      !ctx.isAtEnd() &&
-      !ctx.check(KEYWORDS.THEN) &&
-      !ctx.check(KEYWORDS.AND) &&
-      !ctx.check(KEYWORDS.ELSE) &&
-      !ctx.check(KEYWORDS.END)
-    ) {
-      args.push(ctx.parsePrimary());
+    const targetArg = parseOneArgument(ctx);
+    if (targetArg) {
+      args.push(targetArg);
     }
   }
 
-  // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
   return CommandNodeBuilder.fromIdentifier(identifierNode)
     .withArgs(...args)
     .endingAt(ctx.getPosition())
@@ -161,9 +149,12 @@ export function parseAddCommand(
     // Parse CSS-style object literal for inline styles
     // Syntax: { left: ${x}px; top: ${y}px; }
     args.push(ctx.parseCSSObjectLiteral());
-  } else if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.TO)) {
-    // Parse regular class expression
-    args.push(ctx.parsePrimary());
+  } else {
+    // Parse regular class expression (stops at 'to' boundary)
+    const classArg = parseOneArgument(ctx, [KEYWORDS.TO]);
+    if (classArg) {
+      args.push(classArg);
+    }
   }
 
   // Parse optional 'to <target>'
@@ -171,12 +162,12 @@ export function parseAddCommand(
     ctx.advance(); // consume 'to'
 
     // Parse target element
-    if (!ctx.isAtEnd() && !ctx.check(KEYWORDS.THEN) && !ctx.check(KEYWORDS.AND)) {
-      args.push(ctx.parsePrimary());
+    const targetArg = parseOneArgument(ctx);
+    if (targetArg) {
+      args.push(targetArg);
     }
   }
 
-  // Phase 2 Refactoring: Use CommandNodeBuilder for consistent node construction
   return CommandNodeBuilder.from(commandToken)
     .withArgs(...args)
     .endingAt(ctx.getPosition())
