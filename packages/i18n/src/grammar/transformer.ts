@@ -677,6 +677,37 @@ function translateWord(
 }
 
 /**
+ * Translate a multi-word value, translating each word individually.
+ * Handles possessives like "my value" → "mi valor" in Spanish.
+ */
+function translateMultiWordValue(
+  value: string,
+  sourceLocale: string,
+  targetLocale: string
+): string {
+  // If it's a single word, just translate it directly
+  if (!value.includes(' ')) {
+    return translateWord(value, sourceLocale, targetLocale);
+  }
+
+  // Split into words and translate each
+  const words = value.split(/\s+/);
+  const translated = words.map(word => {
+    // Skip CSS selectors and numbers
+    if (/^[#.<@]/.test(word) || /^\d+/.test(word)) {
+      return word;
+    }
+    // Skip quoted strings
+    if (/^["'].*["']$/.test(word)) {
+      return word;
+    }
+    return translateWord(word, sourceLocale, targetLocale);
+  });
+
+  return translated.join(' ');
+}
+
+/**
  * Translate all elements in a parsed statement
  */
 function translateElements(
@@ -686,7 +717,7 @@ function translateElements(
 ): void {
   for (const [_role, element] of parsed.roles) {
     if (!element.isSelector && !element.isLiteral) {
-      element.translated = translateWord(element.value, sourceLocale, targetLocale);
+      element.translated = translateMultiWordValue(element.value, sourceLocale, targetLocale);
     } else {
       element.translated = element.value;
     }
