@@ -121,8 +121,8 @@ export const englishProfile: LanguageProfile = {
     destination: { primary: 'on', alternatives: ['to', 'from'], position: 'before' },
     source: { primary: 'from', position: 'before' },
     patient: { primary: '', position: 'before' }, // No marker, just position
-    instrument: { primary: 'with', alternatives: ['by', 'using'], position: 'before' },
-    manner: { primary: 'as', position: 'before' },
+    style: { primary: 'with', alternatives: ['by', 'using'], position: 'before' },
+    method: { primary: 'as', position: 'before' },
   },
   keywords: {
     toggle: { primary: 'toggle' },
@@ -168,7 +168,7 @@ export const japaneseProfile: LanguageProfile = {
     patient: { primary: 'を', position: 'after' },
     destination: { primary: 'に', alternatives: ['へ', 'で'], position: 'after' },
     source: { primary: 'から', position: 'after' },
-    instrument: { primary: 'で', position: 'after' },
+    style: { primary: 'で', position: 'after' },
     // Possession marker for "X's Y" patterns
     // Note: の is used between target and patient: #button の .active
   },
@@ -256,7 +256,7 @@ export const arabicProfile: LanguageProfile = {
     destination: { primary: 'على', alternatives: ['في', 'إلى', 'ب'], position: 'before' },
     source: { primary: 'من', position: 'before' },
     patient: { primary: '', position: 'before' },
-    instrument: { primary: 'بـ', alternatives: ['باستخدام'], position: 'before' },
+    style: { primary: 'بـ', alternatives: ['باستخدام'], position: 'before' },
   },
   keywords: {
     // Class/Attribute operations
@@ -341,7 +341,7 @@ export const spanishProfile: LanguageProfile = {
     destination: { primary: 'en', alternatives: ['sobre', 'a'], position: 'before' },
     source: { primary: 'de', alternatives: ['desde'], position: 'before' },
     patient: { primary: '', position: 'before' },
-    instrument: { primary: 'con', position: 'before' },
+    style: { primary: 'con', position: 'before' },
   },
   keywords: {
     // Class/Attribute operations
@@ -424,7 +424,7 @@ export const koreanProfile: LanguageProfile = {
     patient: { primary: '을', alternatives: ['를'], position: 'after' },
     destination: { primary: '에', alternatives: ['으로', '로', '에서'], position: 'after' },
     source: { primary: '에서', alternatives: ['부터'], position: 'after' },
-    instrument: { primary: '로', alternatives: ['으로'], position: 'after' },
+    style: { primary: '로', alternatives: ['으로'], position: 'after' },
   },
   keywords: {
     toggle: { primary: '전환', alternatives: ['토글'], normalized: 'toggle' },
@@ -468,7 +468,7 @@ export const chineseProfile: LanguageProfile = {
     destination: { primary: '在', alternatives: ['到', '于'], position: 'before' },
     source: { primary: '从', alternatives: ['由'], position: 'before' },
     patient: { primary: '把', position: 'before' }, // BA construction
-    instrument: { primary: '用', alternatives: ['以'], position: 'before' },
+    style: { primary: '用', alternatives: ['以'], position: 'before' },
   },
   keywords: {
     toggle: { primary: '切换', normalized: 'toggle' },
@@ -512,7 +512,7 @@ export const turkishProfile: LanguageProfile = {
     patient: { primary: 'i', alternatives: ['ı', 'u', 'ü'], position: 'after' }, // Accusative
     destination: { primary: 'e', alternatives: ['a', 'de', 'da', 'te', 'ta'], position: 'after' }, // Dative/Locative
     source: { primary: 'den', alternatives: ['dan', 'ten', 'tan'], position: 'after' }, // Ablative
-    instrument: { primary: 'le', alternatives: ['la', 'yle', 'yla'], position: 'after' }, // Instrumental
+    style: { primary: 'le', alternatives: ['la', 'yle', 'yla'], position: 'after' }, // Instrumental
   },
   keywords: {
     toggle: { primary: 'değiştir', alternatives: ['aç/kapat'], normalized: 'toggle' },

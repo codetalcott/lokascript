@@ -203,6 +203,17 @@ export function shouldUseSemanticResult(
  * Convert semantic roles to the format expected by core parser commands.
  * This maps semantic roles to the positional/modifier structure used by
  * the core command implementations.
+ *
+ * Role to preposition mapping:
+ * - patient → first positional arg
+ * - event → first positional arg
+ * - destination → 'into' (put) or 'on' (others)
+ * - source → 'from'
+ * - quantity → 'by'
+ * - duration → 'over' or 'for'
+ * - method → 'as'
+ * - style → 'with'
+ * - condition → 'if'
  */
 export function rolesToCommandArgs(
   roles: ReadonlyMap<SemanticRole, SemanticValue>,
@@ -216,12 +227,13 @@ export function rolesToCommandArgs(
 
   for (const [role, value] of roles) {
     switch (role) {
-      // Primary arguments
+      // Primary arguments (positional)
       case 'patient':
+      case 'event':
         args.push(value);
         break;
 
-      // Modifiers with preposition keys
+      // Destination: context-dependent preposition
       case 'destination':
         if (command === 'put') {
           modifiers['into'] = value;
@@ -230,29 +242,41 @@ export function rolesToCommandArgs(
         }
         break;
 
+      // Source: always 'from'
       case 'source':
         modifiers['from'] = value;
         break;
 
-      case 'instrument':
+      // Quantitative roles
       case 'quantity':
         modifiers['by'] = value;
         break;
 
-      case 'manner':
+      case 'duration':
+        modifiers['over'] = value;
+        break;
+
+      // Adverbial roles
+      case 'method':
         modifiers['as'] = value;
         break;
 
+      case 'style':
+        modifiers['with'] = value;
+        break;
+
+      // Conditional
       case 'condition':
         modifiers['if'] = value;
         break;
 
-      case 'event':
-        args.push(value);
+      // Agent (for future multi-actor systems)
+      case 'agent':
+        modifiers['agent'] = value;
         break;
 
       default:
-        // Unknown roles become modifiers
+        // Unknown roles become modifiers using role name as key
         modifiers[role] = value;
     }
   }

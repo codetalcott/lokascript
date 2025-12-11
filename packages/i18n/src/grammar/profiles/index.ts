@@ -21,16 +21,18 @@ export const englishProfile: LanguageProfile = {
   morphology: 'fusional',
   direction: 'ltr',
 
-  canonicalOrder: ['event', 'action', 'patient', 'source', 'destination', 'instrument', 'quantity'],
+  canonicalOrder: ['event', 'action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
 
   markers: [
     { form: 'on', role: 'event', position: 'preposition', required: true },
     { form: 'to', role: 'destination', position: 'preposition', required: false },
     { form: 'into', role: 'destination', position: 'preposition', required: false },
     { form: 'from', role: 'source', position: 'preposition', required: false },
-    { form: 'with', role: 'instrument', position: 'preposition', required: false },
+    { form: 'with', role: 'style', position: 'preposition', required: false },
     { form: 'by', role: 'quantity', position: 'preposition', required: false },
-    { form: 'as', role: 'manner', position: 'preposition', required: false },
+    { form: 'as', role: 'method', position: 'preposition', required: false },
+    { form: 'over', role: 'duration', position: 'preposition', required: false },
+    { form: 'for', role: 'duration', position: 'preposition', required: false },
   ],
 };
 
@@ -57,8 +59,8 @@ export const japaneseProfile: LanguageProfile = {
     { form: 'に', role: 'destination', position: 'postposition', required: true },
     { form: 'から', role: 'source', position: 'postposition', required: true },
     { form: 'で', role: 'event', position: 'postposition', required: true },
-    { form: 'で', role: 'instrument', position: 'postposition', required: false },
-    { form: 'と', role: 'instrument', position: 'postposition', required: false },
+    { form: 'で', role: 'style', position: 'postposition', required: false },
+    { form: 'と', role: 'style', position: 'postposition', required: false },
     { form: 'へ', role: 'destination', position: 'postposition', required: false },
   ],
 
@@ -115,9 +117,9 @@ export const koreanProfile: LanguageProfile = {
     { form: '를', role: 'patient', position: 'postposition', required: true, alternatives: ['을'] },
     { form: '에', role: 'destination', position: 'postposition', required: true },
     { form: '에서', role: 'source', position: 'postposition', required: true },
-    { form: '로', role: 'instrument', position: 'postposition', required: false, alternatives: ['으로'] },
-    { form: '와', role: 'instrument', position: 'postposition', required: false, alternatives: ['과'] },
-    { form: '로', role: 'manner', position: 'postposition', required: false, alternatives: ['으로'] }, // "as" - same as instrument
+    { form: '로', role: 'style', position: 'postposition', required: false, alternatives: ['으로'] },
+    { form: '와', role: 'style', position: 'postposition', required: false, alternatives: ['과'] },
+    { form: '로', role: 'method', position: 'postposition', required: false, alternatives: ['으로'] }, // "as" - same as instrument
   ],
 
   rules: [
@@ -160,8 +162,8 @@ export const chineseProfile: LanguageProfile = {
     { form: '把', role: 'patient', position: 'preposition', required: false },  // BA construction
     { form: '到', role: 'destination', position: 'preposition', required: false },
     { form: '从', role: 'source', position: 'preposition', required: false },
-    { form: '用', role: 'instrument', position: 'preposition', required: false },
-    { form: '的', role: 'manner', position: 'postposition', required: false },
+    { form: '用', role: 'style', position: 'preposition', required: false },
+    { form: '的', role: 'method', position: 'postposition', required: false },
   ],
 
   rules: [
@@ -232,10 +234,10 @@ export const arabicProfile: LanguageProfile = {
     { form: 'في', role: 'destination', position: 'preposition', required: false },
     { form: 'من', role: 'source', position: 'preposition', required: false },
     // بـ- notation: trailing hyphen indicates prefix that attaches without space
-    { form: 'بـ-', role: 'instrument', position: 'preposition', required: false },
-    { form: 'مع', role: 'instrument', position: 'preposition', required: false },
+    { form: 'بـ-', role: 'style', position: 'preposition', required: false },
+    { form: 'مع', role: 'style', position: 'preposition', required: false },
     // كـ- notation: "as/like" prefix for manner
-    { form: 'كـ-', role: 'manner', position: 'preposition', required: false },
+    { form: 'كـ-', role: 'method', position: 'preposition', required: false },
   ],
 
   rules: [
@@ -277,8 +279,8 @@ export const turkishProfile: LanguageProfile = {
     { form: '-e', role: 'destination', position: 'postposition', required: true, alternatives: ['-a'] },
     { form: '-den', role: 'source', position: 'postposition', required: true, alternatives: ['-dan'] },
     { form: '-de', role: 'event', position: 'postposition', required: true, alternatives: ['-da'] },
-    { form: 'ile', role: 'instrument', position: 'postposition', required: false },
-    { form: 'olarak', role: 'manner', position: 'postposition', required: false },
+    { form: 'ile', role: 'style', position: 'postposition', required: false },
+    { form: 'olarak', role: 'method', position: 'postposition', required: false },
   ],
 
   rules: [
@@ -320,9 +322,9 @@ export const spanishProfile: LanguageProfile = {
     { form: 'a', role: 'destination', position: 'preposition', required: false },
     { form: 'hacia', role: 'destination', position: 'preposition', required: false }, // "Towards"
     { form: 'de', role: 'source', position: 'preposition', required: false },
-    { form: 'con', role: 'instrument', position: 'preposition', required: false },
+    { form: 'con', role: 'style', position: 'preposition', required: false },
     { form: 'por', role: 'quantity', position: 'preposition', required: false },
-    { form: 'como', role: 'manner', position: 'preposition', required: false },
+    { form: 'como', role: 'method', position: 'preposition', required: false },
   ],
 };
 
@@ -347,9 +349,9 @@ export const germanProfile: LanguageProfile = {
     { form: 'in', role: 'destination', position: 'preposition', required: false },
     { form: 'von', role: 'source', position: 'preposition', required: false },
     { form: 'aus', role: 'source', position: 'preposition', required: false },
-    { form: 'mit', role: 'instrument', position: 'preposition', required: false },
+    { form: 'mit', role: 'style', position: 'preposition', required: false },
     { form: 'um', role: 'quantity', position: 'preposition', required: false },
-    { form: 'als', role: 'manner', position: 'preposition', required: false },
+    { form: 'als', role: 'method', position: 'preposition', required: false },
   ],
 };
 
@@ -373,9 +375,9 @@ export const frenchProfile: LanguageProfile = {
     { form: 'à', role: 'destination', position: 'preposition', required: false },
     { form: 'dans', role: 'destination', position: 'preposition', required: false },
     { form: 'de', role: 'source', position: 'preposition', required: false },
-    { form: 'avec', role: 'instrument', position: 'preposition', required: false },
+    { form: 'avec', role: 'style', position: 'preposition', required: false },
     { form: 'par', role: 'quantity', position: 'preposition', required: false },
-    { form: 'comme', role: 'manner', position: 'preposition', required: false },
+    { form: 'comme', role: 'method', position: 'preposition', required: false },
   ],
 };
 
@@ -399,9 +401,9 @@ export const portugueseProfile: LanguageProfile = {
     { form: 'para', role: 'destination', position: 'preposition', required: false },
     { form: 'em', role: 'destination', position: 'preposition', required: false },
     { form: 'de', role: 'source', position: 'preposition', required: false },
-    { form: 'com', role: 'instrument', position: 'preposition', required: false },
+    { form: 'com', role: 'style', position: 'preposition', required: false },
     { form: 'por', role: 'quantity', position: 'preposition', required: false },
-    { form: 'como', role: 'manner', position: 'preposition', required: false },
+    { form: 'como', role: 'method', position: 'preposition', required: false },
   ],
 };
 
@@ -424,8 +426,8 @@ export const indonesianProfile: LanguageProfile = {
     { form: 'pada', role: 'event', position: 'preposition', required: true },
     { form: 'ke', role: 'destination', position: 'preposition', required: false },
     { form: 'dari', role: 'source', position: 'preposition', required: false },
-    { form: 'dengan', role: 'instrument', position: 'preposition', required: false },
-    { form: 'sebagai', role: 'manner', position: 'preposition', required: false },
+    { form: 'dengan', role: 'style', position: 'preposition', required: false },
+    { form: 'sebagai', role: 'method', position: 'preposition', required: false },
   ],
 };
 
@@ -449,8 +451,8 @@ export const quechuaProfile: LanguageProfile = {
     { form: '-man', role: 'destination', position: 'postposition', required: true },
     { form: '-manta', role: 'source', position: 'postposition', required: true },
     { form: '-pi', role: 'event', position: 'postposition', required: true },
-    { form: '-wan', role: 'instrument', position: 'postposition', required: false },
-    { form: 'hina', role: 'manner', position: 'postposition', required: false }, // "as/like"
+    { form: '-wan', role: 'style', position: 'postposition', required: false },
+    { form: 'hina', role: 'method', position: 'postposition', required: false }, // "as/like"
   ],
 };
 
@@ -473,8 +475,8 @@ export const swahiliProfile: LanguageProfile = {
     { form: 'kwenye', role: 'event', position: 'preposition', required: true },
     { form: 'kwa', role: 'destination', position: 'preposition', required: false },
     { form: 'kutoka', role: 'source', position: 'preposition', required: false },
-    { form: 'na', role: 'instrument', position: 'preposition', required: false },
-    { form: 'kama', role: 'manner', position: 'preposition', required: false }, // "as/like"
+    { form: 'na', role: 'style', position: 'preposition', required: false },
+    { form: 'kama', role: 'method', position: 'preposition', required: false }, // "as/like"
   ],
 };
 

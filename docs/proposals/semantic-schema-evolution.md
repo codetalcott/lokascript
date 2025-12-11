@@ -13,22 +13,40 @@ The semantic-first architecture positions hyperfixi as a **universal intent lang
 
 ## Part 1: Role Schema Evolution
 
-### Current State
+### Current State (Updated)
 
-The semantic schema defines 10 thematic roles:
+The semantic schema now defines **11 thematic roles**, organized into three categories:
 
-| Role | Status | Current Usage |
-|------|--------|---------------|
-| action | Active | Command verb (implicit) |
-| patient | Active | Primary object of action |
-| destination | Active | Target location |
-| source | Active | Origin of data/content |
-| event | Active | Trigger for handlers |
-| condition | Active | Boolean expressions |
-| quantity | Active | Numeric amounts |
-| manner | Active | How action is performed |
-| instrument | Partial | Rarely used |
-| agent | Dormant | Always implicit (runtime) |
+**Core Thematic Roles** (from linguistic theory):
+
+| Role | Status | Description | Example |
+|------|--------|-------------|---------|
+| action | Active | Command verb (implicit) | toggle, put, fetch |
+| agent | Reserved | Who performs action | server, claude, me |
+| patient | Active | Primary object of action | .active, #counter |
+| source | Active | Origin of data/content | from #input, from URL |
+| destination | Active | Target location | into #output, on #button |
+| event | Active | Trigger for handlers | click, input, keydown |
+| condition | Active | Boolean expressions | if x > 5 |
+
+**Quantitative Roles** (answer "how much/long"):
+
+| Role | Status | Description | Example |
+|------|--------|-------------|---------|
+| quantity | Active | Numeric amount | by 5, 3 times |
+| duration | **NEW** | Time span | for 5 seconds, over 500ms |
+
+**Adverbial Roles** (answer "how/by what means"):
+
+| Role | Status | Description | Example |
+|------|--------|-------------|---------|
+| method | **NEW** | Protocol/technique | as GET, via websocket |
+| style | **RENAMED** | Visual/behavioral manner | with fade, smoothly |
+
+**Removed Roles**:
+
+- `instrument` - Never used, overlapped with method/quantity
+- `manner` - Split into more specific roles (duration, method, style)
 
 ### Proposed Evolution
 

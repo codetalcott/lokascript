@@ -18,18 +18,33 @@
 /**
  * Semantic roles in hyperscript commands
  * These are universal across all languages - only the surface form changes
+ *
+ * Core thematic roles (from linguistic theory):
+ * - action, agent, patient, source, destination, event, condition
+ *
+ * Quantitative roles (answer "how much/long"):
+ * - quantity: numeric amounts (by 5, 3 times)
+ * - duration: time spans (for 5 seconds, over 500ms)
+ *
+ * Adverbial roles (answer "how/by what means"):
+ * - method: protocol/technique (as GET, via websocket)
+ * - style: visual/behavioral manner (with fade, smoothly)
  */
 export type SemanticRole =
+  // Core thematic roles
   | 'action'       // The command/verb (increment, put, toggle)
-  | 'agent'        // Who/what performs action (me, the button)
+  | 'agent'        // Who/what performs action (me, the button, server)
   | 'patient'      // What is acted upon (the counter, .active)
-  | 'source'       // Origin (from #input)
+  | 'source'       // Origin (from #input, from URL)
   | 'destination'  // Target location (into #output, to .class)
-  | 'instrument'   // How (with animation, by 5)
   | 'event'        // Trigger (click, input, keydown)
-  | 'condition'    // Boolean expression
-  | 'quantity'     // Amount (by 5, 2 seconds)
-  | 'manner'       // How something is done (quickly, over 500ms);
+  | 'condition'    // Boolean expression (if x > 5)
+  // Quantitative roles
+  | 'quantity'     // Numeric amount (by 5, 3 times)
+  | 'duration'     // Time span (for 5 seconds, over 500ms)
+  // Adverbial roles
+  | 'method'       // Protocol/technique (as GET, via websocket)
+  | 'style';       // Visual/behavioral manner (with fade, smoothly)
 
 /**
  * Word order patterns
@@ -218,8 +233,22 @@ export const UNIVERSAL_PATTERNS = {
   // fetch URL as type
   fetchAs: {
     name: 'fetch-as',
-    roles: ['action', 'source', 'manner'] as SemanticRole[],
-    english: '{action} {source} as {manner}',
+    roles: ['action', 'source', 'method'] as SemanticRole[],
+    english: '{action} {source} as {method}',
+  },
+
+  // show element with animation
+  showWith: {
+    name: 'show-with',
+    roles: ['action', 'patient', 'style'] as SemanticRole[],
+    english: '{action} {patient} with {style}',
+  },
+
+  // transition property over duration
+  transitionOver: {
+    name: 'transition-over',
+    roles: ['action', 'patient', 'duration'] as SemanticRole[],
+    english: '{action} {patient} over {duration}',
   },
 } as const;
 
@@ -238,7 +267,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'fusional',
     direction: 'ltr',
-    canonicalOrder: ['action', 'patient', 'source', 'destination', 'instrument'],
+    canonicalOrder: ['action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
   },
 
   // Romance (Spanish, French, Italian, Portuguese)
@@ -247,7 +276,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'fusional',
     direction: 'ltr',
-    canonicalOrder: ['action', 'patient', 'source', 'destination', 'instrument'],
+    canonicalOrder: ['action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
   },
 
   // Japonic (Japanese)
@@ -256,7 +285,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'postposition',
     morphology: 'agglutinative',
     direction: 'ltr',
-    canonicalOrder: ['patient', 'source', 'destination', 'instrument', 'action'],
+    canonicalOrder: ['patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style', 'action'],
   },
 
   // Koreanic (Korean)
@@ -265,7 +294,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'postposition',
     morphology: 'agglutinative',
     direction: 'ltr',
-    canonicalOrder: ['patient', 'source', 'destination', 'instrument', 'action'],
+    canonicalOrder: ['patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style', 'action'],
   },
 
   // Turkic (Turkish, Azerbaijani)
@@ -274,7 +303,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'postposition',
     morphology: 'agglutinative',
     direction: 'ltr',
-    canonicalOrder: ['patient', 'source', 'destination', 'instrument', 'action'],
+    canonicalOrder: ['patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style', 'action'],
   },
 
   // Sinitic (Chinese, Cantonese)
@@ -283,7 +312,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'isolating',
     direction: 'ltr',
-    canonicalOrder: ['action', 'patient', 'source', 'destination', 'instrument'],
+    canonicalOrder: ['action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
   },
 
   // Semitic (Arabic, Hebrew)
@@ -292,7 +321,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'fusional',  // Root-pattern system
     direction: 'rtl',
-    canonicalOrder: ['action', 'agent', 'patient', 'destination', 'source'],
+    canonicalOrder: ['action', 'agent', 'patient', 'destination', 'source', 'quantity', 'duration', 'method', 'style'],
   },
 
   // Austronesian (Indonesian, Tagalog)
@@ -301,7 +330,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'agglutinative',
     direction: 'ltr',
-    canonicalOrder: ['action', 'patient', 'source', 'destination', 'instrument'],
+    canonicalOrder: ['action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
   },
 
   // Quechuan (Quechua)
@@ -310,7 +339,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'postposition',
     morphology: 'agglutinative',  // Actually polysynthetic but simplified
     direction: 'ltr',
-    canonicalOrder: ['patient', 'source', 'destination', 'instrument', 'action'],
+    canonicalOrder: ['patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style', 'action'],
   },
 
   // Bantu (Swahili)
@@ -319,7 +348,7 @@ export const LANGUAGE_FAMILY_DEFAULTS: Record<string, Partial<LanguageProfile>> 
     adpositionType: 'preposition',
     morphology: 'agglutinative',
     direction: 'ltr',
-    canonicalOrder: ['action', 'patient', 'source', 'destination', 'instrument'],
+    canonicalOrder: ['action', 'patient', 'source', 'destination', 'quantity', 'duration', 'method', 'style'],
   },
 };
 

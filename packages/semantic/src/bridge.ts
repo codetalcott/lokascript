@@ -87,12 +87,12 @@ export function toCommandNode(semantic: SemanticNode): CommandNode {
         modifiers['from'] = expr;
         break;
 
-      case 'instrument':
+      case 'style':
       case 'quantity':
         modifiers['by'] = expr;
         break;
 
-      case 'manner':
+      case 'method':
         modifiers['as'] = expr;
         break;
 

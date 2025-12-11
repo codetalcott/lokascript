@@ -240,8 +240,8 @@ export const showSchema: CommandSchema = {
       sovPosition: 1,
     },
     {
-      role: 'manner',
-      description: 'How to show (transition)',
+      role: 'style',
+      description: 'Animation style (fade, slide, etc.)',
       required: false,
       expectedTypes: ['literal'],
       svoPosition: 2,
@@ -269,8 +269,8 @@ export const hideSchema: CommandSchema = {
       sovPosition: 1,
     },
     {
-      role: 'manner',
-      description: 'How to hide (transition)',
+      role: 'style',
+      description: 'Animation style (fade, slide, etc.)',
       required: false,
       expectedTypes: ['literal'],
       svoPosition: 2,
@@ -376,12 +376,20 @@ export const fetchSchema: CommandSchema = {
       sovPosition: 1,
     },
     {
-      role: 'manner',
-      description: 'HTTP method and options',
+      role: 'method',
+      description: 'HTTP method (GET, POST, etc.)',
       required: false,
       expectedTypes: ['literal'],
       svoPosition: 2,
       sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'Where to store the result',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 3,
+      sovPosition: 3,
     },
   ],
 };
@@ -837,7 +845,7 @@ export const transitionSchema: CommandSchema = {
   roles: [
     {
       role: 'patient',
-      description: 'The property to transition',
+      description: 'The property to transition (opacity, transform, etc.)',
       required: true,
       expectedTypes: ['literal', 'selector'],
       svoPosition: 1,
@@ -853,12 +861,20 @@ export const transitionSchema: CommandSchema = {
       sovPosition: 1,
     },
     {
-      role: 'manner',
-      description: 'Transition duration/timing',
+      role: 'duration',
+      description: 'Transition duration (over 500ms, for 2 seconds)',
       required: false,
       expectedTypes: ['literal'],
       svoPosition: 3,
       sovPosition: 3,
+    },
+    {
+      role: 'style',
+      description: 'Easing function (ease-in, linear, etc.)',
+      required: false,
+      expectedTypes: ['literal'],
+      svoPosition: 4,
+      sovPosition: 4,
     },
   ],
 };

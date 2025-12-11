@@ -21,10 +21,12 @@ export const ENGLISH_MODIFIER_ROLES: Readonly<Record<string, SemanticRole>> = {
   to: 'destination',
   into: 'destination',
   from: 'source',
-  with: 'instrument',
+  with: 'style',
   by: 'quantity',
-  as: 'manner',
+  as: 'method',
   on: 'event',
+  over: 'duration',
+  for: 'duration',
 } as const;
 
 /**
