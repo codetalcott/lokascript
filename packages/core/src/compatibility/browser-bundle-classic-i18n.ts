@@ -3,7 +3,7 @@
  *
  * Combines the classic _hyperscript runtime (37 commands) with full
  * internationalization support including:
- * - 8 language keyword providers (es, ja, fr, de, ar, ko, zh, tr)
+ * - 12 language keyword providers (es, ja, fr, de, ar, ko, zh, tr, id, pt, qu, sw)
  * - Automatic browser locale detection
  * - Runtime locale switching
  * - Grammar transformation for native word order display
@@ -20,7 +20,7 @@
  * </script>
  * ```
  *
- * Size: ~374 KB uncompressed (~100 KB gzipped)
+ * Size: ~400 KB uncompressed (~105 KB gzipped)
  */
 
 import { parse } from '../parser/parser';
@@ -136,6 +136,10 @@ import {
   koKeywords,
   zhKeywords,
   trKeywords,
+  idKeywords,
+  ptKeywords,
+  quKeywords,
+  swKeywords,
   createKeywordProvider,
   createEnglishProvider,
   LocaleManager,
@@ -157,13 +161,17 @@ import {
   ko as koDictionary,
   zh as zhDictionary,
   tr as trDictionary,
+  id as idDictionary,
+  pt as ptDictionary,
+  qu as quDictionary,
+  sw as swDictionary,
 } from '@hyperfixi/i18n/browser';
 
 // ============================================================================
 // i18n Setup - Register all locale providers
 // ============================================================================
 
-// Register all built-in locale providers
+// Register all built-in locale providers (12 languages + English)
 LocaleManager.register('en', createEnglishProvider());
 LocaleManager.register('es', esKeywords);
 LocaleManager.register('ja', jaKeywords);
@@ -173,6 +181,10 @@ LocaleManager.register('ar', arKeywords);
 LocaleManager.register('ko', koKeywords);
 LocaleManager.register('zh', zhKeywords);
 LocaleManager.register('tr', trKeywords);
+LocaleManager.register('id', idKeywords);
+LocaleManager.register('pt', ptKeywords);
+LocaleManager.register('qu', quKeywords);
+LocaleManager.register('sw', swKeywords);
 
 // Track current locale
 let currentLocale = 'en';
@@ -427,6 +439,10 @@ const i18nApi = {
     ko: koDictionary,
     zh: zhDictionary,
     tr: trDictionary,
+    id: idDictionary,
+    pt: ptDictionary,
+    qu: quDictionary,
+    sw: swDictionary,
   },
 
   /**
@@ -441,8 +457,99 @@ const i18nApi = {
 
 const api = {
   runtime: runtimeAdapter,
+
+  /**
+   * Parse hyperscript code into AST (low-level)
+   */
   parse: (code: string) => parseWithLocale(code),
-  execute: async (code: string, context?: any) => runtimeAdapter.execute(code, context),
+
+  /**
+   * Compile hyperscript code - returns { success, ast, errors }
+   * Compatible with official _hyperscript compile() API
+   */
+  compile: (code: string) => {
+    const startTime = performance.now();
+    try {
+      const result = parseWithLocale(code);
+      return {
+        success: result.success,
+        ast: result.node,
+        errors: result.error ? [result.error] : [],
+        tokens: result.tokens || [],
+        compilationTime: performance.now() - startTime,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        ast: undefined,
+        errors: [{ message: error instanceof Error ? error.message : String(error), line: 1, column: 1 }],
+        tokens: [],
+        compilationTime: performance.now() - startTime,
+      };
+    }
+  },
+
+  /**
+   * Execute hyperscript - accepts either code string OR compiled AST
+   * This provides full compatibility with both usage patterns:
+   * - execute(code, context) - simple one-step execution
+   * - execute(ast, context) - execute pre-compiled AST
+   */
+  execute: async (codeOrAst: string | any, context?: any) => {
+    const ctx = context || createContext();
+
+    // If it's a string, parse and execute
+    if (typeof codeOrAst === 'string') {
+      const parseResult = parseWithLocale(codeOrAst);
+      if (!parseResult.success || !parseResult.node) {
+        throw new Error(parseResult.error?.message || 'Parse failed');
+      }
+      return await runtimeExperimental.execute(parseResult.node, ctx);
+    }
+
+    // If it's an AST node, execute directly
+    if (codeOrAst && typeof codeOrAst === 'object') {
+      return await runtimeExperimental.execute(codeOrAst, ctx);
+    }
+
+    throw new Error('execute() requires a code string or compiled AST');
+  },
+
+  /**
+   * Run/evaluate hyperscript code (alias for execute with string)
+   */
+  run: async (code: string, context?: any) => {
+    const ctx = context || createContext();
+    const parseResult = parseWithLocale(code);
+    if (!parseResult.success || !parseResult.node) {
+      throw new Error(parseResult.error?.message || 'Parse failed');
+    }
+    return await runtimeExperimental.execute(parseResult.node, ctx);
+  },
+
+  /**
+   * Alias for run() - matches official _hyperscript API
+   */
+  evaluate: async (code: string, context?: any) => {
+    return api.run(code, context);
+  },
+
+  /**
+   * Process a DOM node for _="" attributes (manual trigger)
+   */
+  processNode: (element: Element | Document) => {
+    if (element === document) {
+      attributeProcessor.scanAndProcessAll();
+    } else if (element instanceof HTMLElement) {
+      attributeProcessor.processElement(element);
+    }
+  },
+
+  /**
+   * Alias for processNode
+   */
+  process: (element: Element | Document) => api.processNode(element),
+
   createContext,
   attributeProcessor,
   version: '1.1.0-classic-i18n',
@@ -474,8 +581,8 @@ const api = {
     'install', 'append', 'render', 'pseudo-command'
   ],
 
-  // Supported locales
-  locales: ['en', 'es', 'ja', 'fr', 'de', 'ar', 'ko', 'zh', 'tr'],
+  // Supported locales (13 total)
+  locales: ['en', 'es', 'ja', 'fr', 'de', 'ar', 'ko', 'zh', 'tr', 'id', 'pt', 'qu', 'sw'],
 
   /**
    * Evaluate hyperscript code (convenience method)

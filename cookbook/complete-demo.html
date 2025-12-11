@@ -142,8 +142,8 @@
       color: white;
     }
 
-    /* Toggle States */
-    .toggle-demo .active {
+    /* Toggle States - .active class on the button itself */
+    .toggle-demo.active {
       background: #28a745 !important;
       color: white !important;
       transform: scale(1.05);
@@ -370,14 +370,14 @@
           </button>
         </div>
         
-        <div class="example-box">
+        <div class="example-box" id="api-fade-container">
           <h4>HyperFixi API</h4>
           <button class="btn btn-warning fade-btn api-fade">
             API Fade & Remove
           </button>
         </div>
       </div>
-      
+
       <button class="reset-btn" onclick="regenerateFadeButtons()">
         🔄 Regenerate Fade Buttons
       </button>
@@ -398,16 +398,13 @@
     window.__HYPERFIXI_DEBUG__ = true;
   </script>
 
-  <!-- Load optimized browser bundle (450K instead of 1.4M) -->
-  <script src="../packages/core/dist/hyperfixi-browser.js"></script>
+  <!-- Load all-in-one browser bundle with classic API + i18n support -->
+  <script src="../packages/core/dist/hyperfixi-browser-classic-i18n.js"></script>
 
   <script>
-    // Use global hyperfixi object from browser bundle
-    const hyperscript = hyperfixi;
-
     // Console logging system
     const consoleOutput = document.getElementById('console-output');
-    
+
     function log(message, color = '#00ff00') {
       const timestamp = new Date().toLocaleTimeString();
       consoleOutput.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span><br>`;
@@ -421,23 +418,16 @@
 
     log('🚀 Starting HyperFixi Demo Setup...');
 
-    // Setup Traditional HyperScript
-    async function setupTraditional() {
-      try {
-        hyperscript.processNode(document.body);
-        log('✅ Traditional hyperscript attributes processed');
-      } catch (error) {
-        log(`❌ Traditional setup error: ${error.message}`, '#ff0000');
-      }
-    }
+    // Note: The classic-i18n bundle auto-initializes and processes all _="" attributes
+    // on DOMContentLoaded, so traditional hyperscript already works!
 
-    // Setup Example 1: String Concatenation
+    // Setup Example 1: String Concatenation (API-based)
     async function setupStringConcat() {
       try {
         const button = document.getElementById('concat-api');
         button.addEventListener('click', async () => {
           try {
-            const result = await hyperscript.evaluate('#first-api.innerText + " " + #second-api.innerText');
+            const result = await hyperfixi.execute('#first-api.innerText + " " + #second-api.innerText');
             button.innerText = result;
             log(`🔤 String concatenation result: "${result}"`);
           } catch (error) {
@@ -450,102 +440,69 @@
       }
     }
 
-    // Setup Example 2: Indeterminate Checkbox
+    // Setup Example 2: Indeterminate Checkbox (API-based)
     async function setupIndeterminate() {
       try {
         const checkbox = document.getElementById('api-checkbox');
-        const context = hyperscript.createContext(checkbox);
-        
+        const context = hyperfixi.createContext(checkbox);
+
         // Set initial indeterminate state
-        await hyperscript.evaluate('set my.indeterminate to true', context);
-        
+        await hyperfixi.execute('set my.indeterminate to true', context);
+
         // Setup reset button
         const resetBtn = document.getElementById('api-reset');
         resetBtn.addEventListener('click', async () => {
           try {
-            await hyperscript.evaluate('set my.indeterminate to true', context);
+            const ctx = hyperfixi.createContext(checkbox);
+            await hyperfixi.execute('set my.indeterminate to true', ctx);
             log('☑️ Checkbox reset to indeterminate state');
           } catch (error) {
             log(`❌ Reset error: ${error.message}`, '#ff0000');
           }
         });
-        
+
         log('✅ Indeterminate checkbox API setup complete');
       } catch (error) {
         log(`❌ Indeterminate setup error: ${error.message}`, '#ff0000');
       }
     }
 
-    // Setup Example 3: TARGET EXAMPLE!
+    // Setup Example 3: TARGET EXAMPLE - Uses _="" attribute (auto-processed)
     async function setupTargetExample() {
       try {
         const targetButton = document.getElementById('target-example');
 
-        // Check debug flags
-        console.log('🔍 Debug flags:', {
-          commands: hyperscript.debug.DEBUG?.commands,
-          events: hyperscript.debug.DEBUG?.events,
-          runtime: hyperscript.debug.DEBUG?.runtime,
+        // The target button uses programmatic API setup
+        // Add click handler that toggles .active class using hyperfixi
+        targetButton.addEventListener('click', async () => {
+          try {
+            const context = hyperfixi.createContext(targetButton);
+            await hyperfixi.execute('toggle .active on me', context);
+            log('🎯 Toggled .active class on target button');
+          } catch (error) {
+            log(`❌ Toggle error: ${error.message}`, '#ff0000');
+          }
         });
-
-        // Create context with the button as 'me'
-        const context = hyperscript.createContext(targetButton);
-        console.log('🔍 Context created:', {
-          me: context.me,
-          meIsButton: context.me === targetButton,
-          meTag: context.me?.tagName,
-          meId: context.me?.id
-        });
-
-        // Compile the hyperscript code
-        const code = 'on click toggle .active on me';
-        const result = hyperscript.compile(code);
-
-        if (!result.success) {
-          throw new Error(`Compilation failed: ${result.errors?.[0]?.message}`);
-        }
-
-        console.log('🔍 Compiled AST:', JSON.stringify(result.ast, null, 2));
-
-        // Execute the compiled AST to register the event handler
-        const execResult = await hyperscript.execute(result.ast, context);
-        console.log('🔍 Execute result:', execResult);
-
-        // Add a manual event listener to verify the button is clickable
-        targetButton.addEventListener('click', () => {
-          console.log('🔍 Manual listener: Button was clicked!');
-        });
-
-        // Verify the event listener was added
-        // Try clicking programmatically to test
-        setTimeout(() => {
-          console.log('🔍 Testing click...');
-          console.log('🔍 classList before click:', Array.from(targetButton.classList));
-          targetButton.click();
-          console.log('🔍 classList after click:', Array.from(targetButton.classList));
-          console.log('🔍 Has .active after click?', targetButton.classList.contains('active'));
-        }, 100);
 
         log('🎯 TARGET EXAMPLE SETUP COMPLETE!', '#ffff00');
-        log('✅ Click the button below to test "toggle .active on me"', '#00ff00');
-        log('   (Event handler should be registered)', '#aaaaaa');
+        log('✅ Click the button to test "toggle .active on me"', '#00ff00');
       } catch (error) {
         log(`❌ Target example error: ${error.message}`, '#ff0000');
         console.error('Target example setup error:', error);
       }
     }
 
-    // Setup Example 4: Fade and Remove
+    // Setup Example 4: Fade and Remove (API-based)
     async function setupFadeRemove() {
       try {
         const fadeButtons = document.querySelectorAll('.api-fade');
         for (const btn of fadeButtons) {
-          const context = hyperscript.createContext(btn);
           btn.addEventListener('click', async () => {
             try {
-              await hyperscript.evaluate('add .fade-out to me', context);
+              const context = hyperfixi.createContext(btn);
+              await hyperfixi.execute('add .fade-out to me', context);
               setTimeout(async () => {
-                await hyperscript.evaluate('remove me', context);
+                await hyperfixi.execute('remove me', context);
                 log('🎭 Element faded and removed');
               }, 300);
             } catch (error) {
@@ -561,40 +518,50 @@
 
     // Global function for regenerating fade buttons
     window.regenerateFadeButtons = function() {
-      const fadeContainer = document.querySelector('.example-box:has(.api-fade)');
-      fadeContainer.innerHTML = `
-        <h4>HyperFixi API</h4>
-        <button class="btn btn-warning fade-btn api-fade">
-          API Fade & Remove
-        </button>
-      `;
-      setupFadeRemove();
-      log('🔄 Fade buttons regenerated');
+      const fadeContainer = document.getElementById('api-fade-container');
+      if (fadeContainer) {
+        fadeContainer.innerHTML = `
+          <h4>HyperFixi API</h4>
+          <button class="btn btn-warning fade-btn api-fade">
+            API Fade & Remove
+          </button>
+        `;
+        setupFadeRemove();
+        log('🔄 Fade buttons regenerated');
+      } else {
+        log('❌ Could not find fade container', '#ff0000');
+      }
     };
 
-    // Initialize everything
+    // Initialize API-based examples
     async function initializeDemo() {
       try {
-        await setupTraditional();
+        // Traditional _="" attributes are auto-processed by the bundle
+        log('✅ Traditional hyperscript attributes auto-processed by bundle');
+
         await setupStringConcat();
         await setupIndeterminate();
         await setupTargetExample();
         await setupFadeRemove();
-        
+
         log('🎉 ALL EXAMPLES SETUP COMPLETE!', '#00ffff');
-        log('🎯 Your target code is working flawlessly!', '#00ff00');
-        log('📊 HyperFixi implementation: 100% functional', '#00ff00');
-        
+        log('🎯 HyperFixi classic-i18n bundle loaded!', '#00ff00');
+        log(`📊 Version: ${hyperfixi.version}`, '#00ff00');
+        log(`🌍 Available locales: ${hyperfixi.locales.join(', ')}`, '#00ff00');
+
       } catch (error) {
         log(`❌ Demo initialization error: ${error.message}`, '#ff0000');
       }
     }
 
-    // Start when DOM is ready
+    // Start when DOM is ready (after bundle auto-init)
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeDemo);
+      document.addEventListener('DOMContentLoaded', () => {
+        // Small delay to ensure bundle has initialized
+        setTimeout(initializeDemo, 50);
+      });
     } else {
-      initializeDemo();
+      setTimeout(initializeDemo, 50);
     }
   </script>
 </body>

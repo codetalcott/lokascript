@@ -3,9 +3,9 @@
  *
  * This bundle includes:
  * - Classic _hyperscript runtime (37 commands)
- * - Full i18n support (8 locales + grammar transformation)
+ * - Full i18n support (12 locales + grammar transformation)
  *
- * Output: hyperfixi-browser-classic-i18n.js (~374 KB, ~100 KB gzipped)
+ * Output: hyperfixi-browser-classic-i18n.js (~400 KB, ~105 KB gzipped)
  */
 
 import typescript from '@rollup/plugin-typescript';
@@ -31,8 +31,8 @@ export default {
     // Alias @hyperfixi/i18n to the built dist files
     alias({
       entries: [
-        { find: '@hyperfixi/i18n/browser', replacement: path.resolve(__dirname, '../i18n/dist/browser.mjs') },
-        { find: '@hyperfixi/i18n', replacement: path.resolve(__dirname, '../i18n/dist/index.mjs') }
+        { find: '@hyperfixi/i18n/browser', replacement: path.resolve(__dirname, '../i18n/dist/hyperfixi-i18n.mjs') },
+        { find: '@hyperfixi/i18n', replacement: path.resolve(__dirname, '../i18n/dist/hyperfixi-i18n.mjs') }
       ]
     }),
     nodeResolve({

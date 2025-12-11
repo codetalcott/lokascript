@@ -76,16 +76,30 @@ export class MinimalAttributeProcessor {
   }
 
   /**
+   * Scan entire document for _="" attributes (public alias)
+   */
+  scanAndProcessAll(): void {
+    this.scanDocument();
+  }
+
+  /**
    * Scan entire document for _="" attributes
    */
   private scanDocument(): void {
-    this.scanElement(document.body);
+    if (document.body) {
+      this.scanElement(document.body);
+    }
   }
 
   /**
    * Scan element and its descendants for _="" attributes
    */
-  private scanElement(root: Element): void {
+  scanElement(root: Element): void {
+    // Process root element if it has _="" attribute
+    if (root.hasAttribute('_')) {
+      this.processElement(root);
+    }
+    // Process all descendants
     const elements = root.querySelectorAll('[_]');
     elements.forEach(el => this.processElement(el));
   }
@@ -93,7 +107,7 @@ export class MinimalAttributeProcessor {
   /**
    * Process a single element with _="" attribute
    */
-  private processElement(element: Element): void {
+  processElement(element: Element): void {
     const code = element.getAttribute('_');
     if (!code) return;
 
