@@ -76,7 +76,14 @@ export class TransitionCommand {
     if (!property) throw new Error('transition requires a CSS property');
     if (!raw.modifiers?.to) throw new Error('transition requires "to <value>"');
 
-    const value = await evaluator.evaluate(raw.modifiers.to, context);
+    let value = await evaluator.evaluate(raw.modifiers.to, context);
+
+    // Handle CSS keywords like 'initial', 'inherit', 'unset' that evaluate to undefined
+    // because they're not defined as variables - use the raw identifier name instead
+    if (value === undefined && raw.modifiers.to.type === 'identifier') {
+      value = (raw.modifiers.to as any).name;
+    }
+
     const result: TransitionCommandInput = { property, value: value as string | number };
     if (target !== undefined) result.target = target;
     if (raw.modifiers?.over) result.duration = await evaluator.evaluate(raw.modifiers.over, context);
