@@ -34,16 +34,31 @@ export interface SemanticValue {
 
 /**
  * Semantic roles for command arguments.
+ *
+ * Core thematic roles:
+ * - patient, destination, source, event, condition
+ *
+ * Quantitative roles (answer "how much/long"):
+ * - quantity: numeric amounts (by 5, 3 times)
+ * - duration: time spans (for 5 seconds, over 500ms)
+ *
+ * Adverbial roles (answer "how/by what means"):
+ * - method: protocol/technique (as GET, via websocket)
+ * - style: visual/behavioral manner (with fade, smoothly)
  */
 export type SemanticRole =
+  // Core thematic roles
   | 'patient' // What is being acted upon
   | 'destination' // Where something goes
   | 'source' // Where something comes from
-  | 'instrument' // How/with what
-  | 'manner' // In what way
-  | 'quantity' // How much/many
+  | 'event' // What event
   | 'condition' // Under what condition
-  | 'event'; // What event
+  // Quantitative roles
+  | 'quantity' // How much/many (by 5, 3 times)
+  | 'duration' // How long (for 5 seconds, over 500ms)
+  // Adverbial roles
+  | 'method' // By what means (as GET, via websocket)
+  | 'style'; // In what way (with fade, smoothly)
 
 /**
  * Result of semantic analysis.
@@ -271,15 +286,22 @@ export class SemanticIntegrationAdapter {
           modifiers['from'] = exprNode;
           break;
 
-        // Instrument/quantity role
-        case 'instrument':
+        // Quantitative roles
         case 'quantity':
           modifiers['by'] = exprNode;
           break;
 
-        // Manner role
-        case 'manner':
+        case 'duration':
+          modifiers['over'] = exprNode;
+          break;
+
+        // Adverbial roles
+        case 'method':
           modifiers['as'] = exprNode;
+          break;
+
+        case 'style':
+          modifiers['with'] = exprNode;
           break;
 
         // Condition role
