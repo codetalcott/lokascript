@@ -177,6 +177,25 @@ export function getSupportedLanguages(): string[] {
 export const VERSION = '0.1.0';
 
 // =============================================================================
+// Core Parser Bridge
+// =============================================================================
+
+export {
+  // Types
+  type SemanticAnalysisResult,
+  type SemanticAnalyzer,
+  // Implementation
+  SemanticAnalyzerImpl,
+  createSemanticAnalyzer,
+  // Thresholds
+  DEFAULT_CONFIDENCE_THRESHOLD,
+  HIGH_CONFIDENCE_THRESHOLD,
+  // Helpers
+  shouldUseSemanticResult,
+  rolesToCommandArgs,
+} from './core-bridge';
+
+// =============================================================================
 // Pattern Generators (for creating patterns programmatically)
 // =============================================================================
 

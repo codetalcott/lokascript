@@ -443,7 +443,7 @@ describe('Pattern Generator', () => {
       const firstToken = pattern.template.tokens[0];
 
       expect(firstToken.type).toBe('literal');
-      expect((firstToken as any).value).toBe('بدّل');
+      expect((firstToken as any).value).toBe('بدل'); // primary form without shadda
     });
   });
 });

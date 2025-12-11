@@ -173,22 +173,62 @@ export const japaneseProfile: LanguageProfile = {
     // Note: の is used between target and patient: #button の .active
   },
   keywords: {
+    // Class/Attribute operations
     toggle: { primary: '切り替え', alternatives: ['切り替える', 'トグル', 'トグルする'], normalized: 'toggle' },
     add: { primary: '追加', alternatives: ['追加する', '加える'], normalized: 'add' },
     remove: { primary: '削除', alternatives: ['削除する', '取り除く'], normalized: 'remove' },
+    // Content operations
     put: { primary: '置く', alternatives: ['入れる', 'セット'], normalized: 'put' },
+    append: { primary: '末尾追加', alternatives: ['末尾に追加', 'アペンド'], normalized: 'append' },
+    prepend: { primary: '先頭追加', alternatives: ['先頭に追加', 'プリペンド'], normalized: 'prepend' },
+    take: { primary: '取る', alternatives: ['取得'], normalized: 'take' },
+    make: { primary: '作る', alternatives: ['作成'], normalized: 'make' },
+    clone: { primary: '複製', alternatives: ['クローン'], normalized: 'clone' },
+    // Variable operations
     set: { primary: '設定', alternatives: ['設定する', 'セット'], normalized: 'set' },
     get: { primary: '取得', alternatives: ['取得する', 'ゲット'], normalized: 'get' },
-    show: { primary: '表示', alternatives: ['表示する', '見せる'], normalized: 'show' },
-    hide: { primary: '非表示', alternatives: ['非表示にする', '隠す'], normalized: 'hide' },
-    on: { primary: 'で', alternatives: ['時', 'とき'], normalized: 'on' },
-    trigger: { primary: '発火', alternatives: ['トリガー'], normalized: 'trigger' },
-    wait: { primary: '待つ', alternatives: ['待機'], normalized: 'wait' },
-    fetch: { primary: '取得', alternatives: ['フェッチ'], normalized: 'fetch' },
     increment: { primary: '増加', alternatives: ['増やす', 'インクリメント'], normalized: 'increment' },
     decrement: { primary: '減少', alternatives: ['減らす', 'デクリメント'], normalized: 'decrement' },
-    append: { primary: '末尾に追加', alternatives: ['アペンド'], normalized: 'append' },
-    prepend: { primary: '先頭に追加', alternatives: ['プリペンド'], normalized: 'prepend' },
+    log: { primary: '記録', alternatives: ['ログ', '出力'], normalized: 'log' },
+    // Visibility
+    show: { primary: '表示', alternatives: ['表示する', '見せる'], normalized: 'show' },
+    hide: { primary: '隠す', alternatives: ['非表示', '非表示にする'], normalized: 'hide' },
+    transition: { primary: '遷移', alternatives: ['トランジション', 'アニメーション'], normalized: 'transition' },
+    // Events
+    on: { primary: 'で', alternatives: ['時', 'とき'], normalized: 'on' },
+    trigger: { primary: '引き金', alternatives: ['発火', 'トリガー'], normalized: 'trigger' },
+    send: { primary: '送る', alternatives: ['送信'], normalized: 'send' },
+    // DOM focus
+    focus: { primary: 'フォーカス', alternatives: ['集中'], normalized: 'focus' },
+    blur: { primary: 'ぼかし', alternatives: ['フォーカス解除'], normalized: 'blur' },
+    // Navigation
+    go: { primary: '移動', alternatives: ['行く', 'ナビゲート'], normalized: 'go' },
+    // Async
+    wait: { primary: '待つ', alternatives: ['待機'], normalized: 'wait' },
+    fetch: { primary: '取得', alternatives: ['フェッチ'], normalized: 'fetch' },
+    settle: { primary: '安定', alternatives: ['落ち着く'], normalized: 'settle' },
+    // Control flow
+    if: { primary: 'もし', alternatives: ['条件'], normalized: 'if' },
+    else: { primary: 'そうでなければ', alternatives: ['それ以外'], normalized: 'else' },
+    repeat: { primary: '繰り返し', alternatives: ['繰り返す', 'リピート'], normalized: 'repeat' },
+    for: { primary: 'ために', alternatives: ['各'], normalized: 'for' },
+    while: { primary: 'の間', alternatives: ['間'], normalized: 'while' },
+    continue: { primary: '続ける', alternatives: ['継続'], normalized: 'continue' },
+    halt: { primary: '停止', alternatives: ['止める', 'ハルト'], normalized: 'halt' },
+    throw: { primary: '投げる', alternatives: ['スロー'], normalized: 'throw' },
+    call: { primary: '呼び出し', alternatives: ['コール', '呼ぶ'], normalized: 'call' },
+    return: { primary: '戻る', alternatives: ['返す', 'リターン'], normalized: 'return' },
+    // Advanced
+    js: { primary: 'JS実行', alternatives: ['js'], normalized: 'js' },
+    async: { primary: '非同期', alternatives: ['アシンク'], normalized: 'async' },
+    tell: { primary: '伝える', alternatives: ['テル'], normalized: 'tell' },
+    default: { primary: '既定', alternatives: ['デフォルト'], normalized: 'default' },
+    init: { primary: '初期化', alternatives: ['イニット'], normalized: 'init' },
+    behavior: { primary: '振る舞い', alternatives: ['ビヘイビア'], normalized: 'behavior' },
+    // Modifiers
+    into: { primary: 'へ', alternatives: ['に'], normalized: 'into' },
+    before: { primary: '前に', alternatives: ['前'], normalized: 'before' },
+    after: { primary: '後に', alternatives: ['後'], normalized: 'after' },
   },
   tokenization: {
     particles: ['を', 'に', 'で', 'から', 'の', 'が', 'は', 'も', 'へ', 'と'],
@@ -219,23 +259,62 @@ export const arabicProfile: LanguageProfile = {
     instrument: { primary: 'بـ', alternatives: ['باستخدام'], position: 'before' },
   },
   keywords: {
-    toggle: { primary: 'بدّل', alternatives: ['بدل', 'غيّر', 'غير'], normalized: 'toggle' },
+    // Class/Attribute operations
+    toggle: { primary: 'بدل', alternatives: ['بدّل', 'غيّر', 'غير'], normalized: 'toggle' },
     add: { primary: 'أضف', alternatives: ['اضف', 'زِد'], normalized: 'add' },
-    remove: { primary: 'أزل', alternatives: ['احذف', 'امسح'], normalized: 'remove' },
+    remove: { primary: 'احذف', alternatives: ['أزل', 'امسح'], normalized: 'remove' },
+    // Content operations
     put: { primary: 'ضع', alternatives: ['اجعل'], normalized: 'put' },
-    set: { primary: 'عيّن', alternatives: ['اضبط', 'حدد'], normalized: 'set' },
-    get: { primary: 'احصل', alternatives: ['خذ'], normalized: 'get' },
-    show: { primary: 'أظهر', alternatives: ['اعرض'], normalized: 'show' },
-    hide: { primary: 'أخفِ', alternatives: ['اخفي'], normalized: 'hide' },
-    on: { primary: 'عند', alternatives: ['لدى', 'حين'], normalized: 'on' },
-    trigger: { primary: 'أطلق', alternatives: ['فعّل'], normalized: 'trigger' },
-    wait: { primary: 'انتظر', normalized: 'wait' },
-    fetch: { primary: 'احضر', alternatives: ['جلب'], normalized: 'fetch' },
-    increment: { primary: 'زِد', alternatives: ['ارفع'], normalized: 'increment' },
-    decrement: { primary: 'انقص', alternatives: ['قلل'], normalized: 'decrement' },
     append: { primary: 'ألحق', normalized: 'append' },
     prepend: { primary: 'سبق', normalized: 'prepend' },
+    take: { primary: 'خذ', normalized: 'take' },
+    make: { primary: 'اصنع', alternatives: ['أنشئ'], normalized: 'make' },
+    clone: { primary: 'استنسخ', alternatives: ['انسخ'], normalized: 'clone' },
+    // Variable operations
+    set: { primary: 'اضبط', alternatives: ['عيّن', 'حدد'], normalized: 'set' },
+    get: { primary: 'احصل', alternatives: ['خذ'], normalized: 'get' },
+    increment: { primary: 'زِد', alternatives: ['ارفع'], normalized: 'increment' },
+    decrement: { primary: 'أنقص', alternatives: ['قلل'], normalized: 'decrement' },
+    log: { primary: 'سجل', normalized: 'log' },
+    // Visibility
+    show: { primary: 'اظهر', alternatives: ['أظهر', 'اعرض'], normalized: 'show' },
+    hide: { primary: 'اخف', alternatives: ['أخفِ', 'اخفي'], normalized: 'hide' },
+    transition: { primary: 'انتقال', alternatives: ['انتقل'], normalized: 'transition' },
+    // Events
+    on: { primary: 'على', alternatives: ['عند', 'لدى', 'حين'], normalized: 'on' },
+    trigger: { primary: 'تشغيل', alternatives: ['أطلق', 'فعّل'], normalized: 'trigger' },
+    send: { primary: 'أرسل', normalized: 'send' },
+    // DOM focus
+    focus: { primary: 'تركيز', alternatives: ['ركز'], normalized: 'focus' },
+    blur: { primary: 'ضبابية', alternatives: ['شوش'], normalized: 'blur' },
+    // Navigation
+    go: { primary: 'اذهب', alternatives: ['انتقل'], normalized: 'go' },
+    // Async
+    wait: { primary: 'انتظر', normalized: 'wait' },
+    fetch: { primary: 'احضر', alternatives: ['جلب'], normalized: 'fetch' },
+    settle: { primary: 'استقر', normalized: 'settle' },
+    // Control flow
+    if: { primary: 'إذا', normalized: 'if' },
+    else: { primary: 'وإلا', alternatives: ['خلاف ذلك'], normalized: 'else' },
+    repeat: { primary: 'كرر', normalized: 'repeat' },
+    for: { primary: 'لكل', normalized: 'for' },
+    while: { primary: 'بينما', normalized: 'while' },
+    continue: { primary: 'واصل', normalized: 'continue' },
+    halt: { primary: 'أوقف', alternatives: ['توقف'], normalized: 'halt' },
+    throw: { primary: 'ارم', alternatives: ['ارمِ'], normalized: 'throw' },
+    call: { primary: 'استدع', alternatives: ['نادِ'], normalized: 'call' },
+    return: { primary: 'ارجع', alternatives: ['عُد'], normalized: 'return' },
+    // Advanced
+    js: { primary: 'جافاسكربت', alternatives: ['js'], normalized: 'js' },
+    async: { primary: 'متزامن', normalized: 'async' },
+    tell: { primary: 'أخبر', normalized: 'tell' },
+    default: { primary: 'افتراضي', normalized: 'default' },
+    init: { primary: 'تهيئة', alternatives: ['بدء'], normalized: 'init' },
+    behavior: { primary: 'سلوك', normalized: 'behavior' },
+    // Modifiers
     into: { primary: 'في', alternatives: ['إلى'], normalized: 'into' },
+    before: { primary: 'قبل', normalized: 'before' },
+    after: { primary: 'بعد', normalized: 'after' },
   },
   tokenization: {
     prefixes: ['ال', 'و', 'ف', 'ب', 'ك', 'ل'],
@@ -265,23 +344,62 @@ export const spanishProfile: LanguageProfile = {
     instrument: { primary: 'con', position: 'before' },
   },
   keywords: {
+    // Class/Attribute operations
     toggle: { primary: 'alternar', alternatives: ['cambiar', 'conmutar'], normalized: 'toggle' },
     add: { primary: 'agregar', alternatives: ['añadir'], normalized: 'add' },
     remove: { primary: 'quitar', alternatives: ['eliminar', 'remover'], normalized: 'remove' },
+    // Content operations
     put: { primary: 'poner', alternatives: ['colocar'], normalized: 'put' },
+    append: { primary: 'añadir', normalized: 'append' },
+    prepend: { primary: 'anteponer', normalized: 'prepend' },
+    take: { primary: 'tomar', normalized: 'take' },
+    make: { primary: 'hacer', alternatives: ['crear'], normalized: 'make' },
+    clone: { primary: 'clonar', alternatives: ['copiar'], normalized: 'clone' },
+    // Variable operations
     set: { primary: 'establecer', alternatives: ['fijar', 'definir'], normalized: 'set' },
     get: { primary: 'obtener', alternatives: ['conseguir'], normalized: 'get' },
-    show: { primary: 'mostrar', alternatives: ['enseñar'], normalized: 'show' },
-    hide: { primary: 'ocultar', alternatives: ['esconder'], normalized: 'hide' },
-    on: { primary: 'en', alternatives: ['cuando', 'al'], normalized: 'on' },
-    trigger: { primary: 'disparar', alternatives: ['activar'], normalized: 'trigger' },
-    wait: { primary: 'esperar', normalized: 'wait' },
-    fetch: { primary: 'obtener', alternatives: ['buscar'], normalized: 'fetch' },
     increment: { primary: 'incrementar', alternatives: ['aumentar'], normalized: 'increment' },
     decrement: { primary: 'decrementar', alternatives: ['disminuir'], normalized: 'decrement' },
-    append: { primary: 'añadir al final', normalized: 'append' },
-    prepend: { primary: 'añadir al inicio', normalized: 'prepend' },
+    log: { primary: 'registrar', alternatives: ['imprimir'], normalized: 'log' },
+    // Visibility
+    show: { primary: 'mostrar', alternatives: ['enseñar'], normalized: 'show' },
+    hide: { primary: 'ocultar', alternatives: ['esconder'], normalized: 'hide' },
+    transition: { primary: 'transición', alternatives: ['animar'], normalized: 'transition' },
+    // Events
+    on: { primary: 'en', alternatives: ['cuando', 'al'], normalized: 'on' },
+    trigger: { primary: 'disparar', alternatives: ['activar'], normalized: 'trigger' },
+    send: { primary: 'enviar', normalized: 'send' },
+    // DOM focus
+    focus: { primary: 'enfocar', normalized: 'focus' },
+    blur: { primary: 'desenfocar', normalized: 'blur' },
+    // Navigation
+    go: { primary: 'ir', alternatives: ['navegar'], normalized: 'go' },
+    // Async
+    wait: { primary: 'esperar', normalized: 'wait' },
+    fetch: { primary: 'buscar', alternatives: ['obtener'], normalized: 'fetch' },
+    settle: { primary: 'estabilizar', normalized: 'settle' },
+    // Control flow
+    if: { primary: 'si', normalized: 'if' },
+    else: { primary: 'sino', alternatives: ['de lo contrario'], normalized: 'else' },
+    repeat: { primary: 'repetir', normalized: 'repeat' },
+    for: { primary: 'para', normalized: 'for' },
+    while: { primary: 'mientras', normalized: 'while' },
+    continue: { primary: 'continuar', normalized: 'continue' },
+    halt: { primary: 'detener', alternatives: ['parar'], normalized: 'halt' },
+    throw: { primary: 'lanzar', alternatives: ['arrojar'], normalized: 'throw' },
+    call: { primary: 'llamar', normalized: 'call' },
+    return: { primary: 'retornar', alternatives: ['devolver'], normalized: 'return' },
+    // Advanced
+    js: { primary: 'js', normalized: 'js' },
+    async: { primary: 'asíncrono', normalized: 'async' },
+    tell: { primary: 'decir', normalized: 'tell' },
+    default: { primary: 'predeterminar', alternatives: ['por defecto'], normalized: 'default' },
+    init: { primary: 'iniciar', alternatives: ['inicializar'], normalized: 'init' },
+    behavior: { primary: 'comportamiento', normalized: 'behavior' },
+    // Modifiers
     into: { primary: 'en', alternatives: ['dentro de'], normalized: 'into' },
+    before: { primary: 'antes', normalized: 'before' },
+    after: { primary: 'después', normalized: 'after' },
   },
 };
 

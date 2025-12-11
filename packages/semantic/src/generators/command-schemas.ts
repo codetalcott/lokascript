@@ -501,6 +501,598 @@ export const prependSchema: CommandSchema = {
 };
 
 // =============================================================================
+// Batch 1 - Simple Commands
+// =============================================================================
+
+/**
+ * Log command: logs a value to console.
+ */
+export const logSchema: CommandSchema = {
+  action: 'log',
+  description: 'Log a value to the console',
+  category: 'variable',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The value to log',
+      required: true,
+      expectedTypes: ['literal', 'selector', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Get command: retrieves a value.
+ */
+export const getCommandSchema: CommandSchema = {
+  action: 'get',
+  description: 'Get a value from a source',
+  category: 'variable',
+  primaryRole: 'source',
+  roles: [
+    {
+      role: 'source',
+      description: 'The source to get from',
+      required: true,
+      expectedTypes: ['selector', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'Where to store the result (optional)',
+      required: false,
+      expectedTypes: ['reference'],
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Take command: takes/removes content from a source.
+ */
+export const takeSchema: CommandSchema = {
+  action: 'take',
+  description: 'Take content from a source element',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The class or element to take',
+      required: true,
+      expectedTypes: ['selector'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'source',
+      description: 'The element to take from (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Make command: creates a new element.
+ */
+export const makeSchema: CommandSchema = {
+  action: 'make',
+  description: 'Create a new element',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The element type or selector to create',
+      required: true,
+      expectedTypes: ['literal', 'selector'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Halt command: stops execution.
+ */
+export const haltSchema: CommandSchema = {
+  action: 'halt',
+  description: 'Halt/stop execution',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [], // No roles - just halts
+};
+
+/**
+ * Settle command: waits for animations to complete.
+ */
+export const settleSchema: CommandSchema = {
+  action: 'settle',
+  description: 'Wait for animations/transitions to settle',
+  category: 'async',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The element to settle (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Throw command: throws an error/exception.
+ */
+export const throwSchema: CommandSchema = {
+  action: 'throw',
+  description: 'Throw an error',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The error message or object to throw',
+      required: true,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Send command: sends/dispatches an event.
+ */
+export const sendSchema: CommandSchema = {
+  action: 'send',
+  description: 'Send an event to an element',
+  category: 'event',
+  primaryRole: 'event',
+  roles: [
+    {
+      role: 'event',
+      description: 'The event to send',
+      required: true,
+      expectedTypes: ['literal'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'The target element (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+// =============================================================================
+// Batch 2 - Control Flow Commands
+// =============================================================================
+
+/**
+ * If command: conditional execution.
+ */
+export const ifSchema: CommandSchema = {
+  action: 'if',
+  description: 'Conditional execution',
+  category: 'control-flow',
+  primaryRole: 'condition',
+  hasBody: true,
+  roles: [
+    {
+      role: 'condition',
+      description: 'The condition to evaluate',
+      required: true,
+      expectedTypes: ['expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Else command: alternative branch.
+ */
+export const elseSchema: CommandSchema = {
+  action: 'else',
+  description: 'Else branch of conditional',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [], // No roles - follows an if
+};
+
+/**
+ * Repeat command: loop execution.
+ */
+export const repeatSchema: CommandSchema = {
+  action: 'repeat',
+  description: 'Repeat a block of commands',
+  category: 'control-flow',
+  primaryRole: 'quantity',
+  hasBody: true,
+  roles: [
+    {
+      role: 'quantity',
+      description: 'Number of times to repeat',
+      required: false,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+  notes: 'Can also use "repeat forever" or "repeat until condition"',
+};
+
+/**
+ * For command: iteration over collection.
+ */
+export const forSchema: CommandSchema = {
+  action: 'for',
+  description: 'Iterate over a collection',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [
+    {
+      role: 'patient',
+      description: 'The iteration variable',
+      required: true,
+      expectedTypes: ['reference'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'source',
+      description: 'The collection to iterate over',
+      required: true,
+      expectedTypes: ['selector', 'reference', 'expression'],
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * While command: conditional loop.
+ */
+export const whileSchema: CommandSchema = {
+  action: 'while',
+  description: 'Loop while condition is true',
+  category: 'control-flow',
+  primaryRole: 'condition',
+  hasBody: true,
+  roles: [
+    {
+      role: 'condition',
+      description: 'The condition to check',
+      required: true,
+      expectedTypes: ['expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Continue command: skip to next iteration.
+ */
+export const continueSchema: CommandSchema = {
+  action: 'continue',
+  description: 'Continue to next loop iteration',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [], // No roles
+};
+
+// =============================================================================
+// Batch 3 - DOM & Navigation Commands
+// =============================================================================
+
+/**
+ * Go command: navigates to a URL.
+ */
+export const goSchema: CommandSchema = {
+  action: 'go',
+  description: 'Navigate to a URL',
+  category: 'navigation',
+  primaryRole: 'destination',
+  roles: [
+    {
+      role: 'destination',
+      description: 'The URL to navigate to',
+      required: true,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Transition command: animates element changes.
+ */
+export const transitionSchema: CommandSchema = {
+  action: 'transition',
+  description: 'Transition an element with animation',
+  category: 'dom-visibility',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The property to transition',
+      required: true,
+      expectedTypes: ['literal', 'selector'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'The target element (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+    {
+      role: 'manner',
+      description: 'Transition duration/timing',
+      required: false,
+      expectedTypes: ['literal'],
+      svoPosition: 3,
+      sovPosition: 3,
+    },
+  ],
+};
+
+/**
+ * Clone command: clones an element.
+ */
+export const cloneSchema: CommandSchema = {
+  action: 'clone',
+  description: 'Clone an element',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The element to clone',
+      required: true,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'Where to put the clone',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Focus command: focuses an element.
+ */
+export const focusSchema: CommandSchema = {
+  action: 'focus',
+  description: 'Focus an element',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The element to focus (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Blur command: removes focus from an element.
+ */
+export const blurSchema: CommandSchema = {
+  action: 'blur',
+  description: 'Remove focus from an element',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The element to blur (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+// =============================================================================
+// Batch 4 - Advanced Commands
+// =============================================================================
+
+/**
+ * Call command: calls a function.
+ */
+export const callSchema: CommandSchema = {
+  action: 'call',
+  description: 'Call a function',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The function to call',
+      required: true,
+      expectedTypes: ['expression', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Return command: returns a value.
+ */
+export const returnSchema: CommandSchema = {
+  action: 'return',
+  description: 'Return a value from a function',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The value to return',
+      required: false,
+      expectedTypes: ['literal', 'expression', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * JS command: executes raw JavaScript.
+ */
+export const jsSchema: CommandSchema = {
+  action: 'js',
+  description: 'Execute raw JavaScript code',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [
+    {
+      role: 'patient',
+      description: 'The JavaScript code to execute',
+      required: false,
+      expectedTypes: ['expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Async command: runs commands asynchronously.
+ */
+export const asyncSchema: CommandSchema = {
+  action: 'async',
+  description: 'Execute commands asynchronously',
+  category: 'async',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [],
+};
+
+/**
+ * Tell command: sends commands to another element.
+ */
+export const tellSchema: CommandSchema = {
+  action: 'tell',
+  description: 'Execute commands in context of another element',
+  category: 'control-flow',
+  primaryRole: 'destination',
+  hasBody: true,
+  roles: [
+    {
+      role: 'destination',
+      description: 'The element to tell',
+      required: true,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Default command: sets default values.
+ */
+export const defaultSchema: CommandSchema = {
+  action: 'default',
+  description: 'Set a default value for a variable',
+  category: 'variable',
+  primaryRole: 'destination',
+  roles: [
+    {
+      role: 'destination',
+      description: 'The variable to set default for',
+      required: true,
+      expectedTypes: ['reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+    {
+      role: 'patient',
+      description: 'The default value',
+      required: true,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 2,
+      sovPosition: 2,
+    },
+  ],
+};
+
+/**
+ * Init command: initialization block.
+ */
+export const initSchema: CommandSchema = {
+  action: 'init',
+  description: 'Initialization block that runs once',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [],
+};
+
+/**
+ * Behavior command: defines reusable behavior.
+ */
+export const behaviorSchema: CommandSchema = {
+  action: 'behavior',
+  description: 'Define a reusable behavior',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  hasBody: true,
+  roles: [
+    {
+      role: 'patient',
+      description: 'The behavior name',
+      required: true,
+      expectedTypes: ['literal', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+// =============================================================================
 // Schema Registry
 // =============================================================================
 
@@ -508,6 +1100,7 @@ export const prependSchema: CommandSchema = {
  * All available command schemas.
  */
 export const commandSchemas: Record<ActionType, CommandSchema> = {
+  // Original schemas
   toggle: toggleSchema,
   add: addSchema,
   remove: removeSchema,
@@ -523,16 +1116,37 @@ export const commandSchemas: Record<ActionType, CommandSchema> = {
   decrement: decrementSchema,
   append: appendSchema,
   prepend: prependSchema,
-  // Placeholders for commands not yet defined
-  get: { action: 'get', description: 'Get a value', category: 'variable', primaryRole: 'patient', roles: [] },
-  take: { action: 'take', description: 'Take a value', category: 'dom-content', primaryRole: 'patient', roles: [] },
-  send: { action: 'send', description: 'Send an event', category: 'event', primaryRole: 'event', roles: [] },
-  go: { action: 'go', description: 'Navigate to URL', category: 'navigation', primaryRole: 'destination', roles: [] },
-  if: { action: 'if', description: 'Conditional', category: 'control-flow', primaryRole: 'condition', roles: [] },
-  repeat: { action: 'repeat', description: 'Loop', category: 'control-flow', primaryRole: 'quantity', roles: [] },
-  call: { action: 'call', description: 'Call a function', category: 'control-flow', primaryRole: 'patient', roles: [] },
-  return: { action: 'return', description: 'Return a value', category: 'control-flow', primaryRole: 'patient', roles: [] },
-  log: { action: 'log', description: 'Log to console', category: 'variable', primaryRole: 'patient', roles: [] },
+  // Batch 1 - Simple Commands
+  log: logSchema,
+  get: getCommandSchema,
+  take: takeSchema,
+  make: makeSchema,
+  halt: haltSchema,
+  settle: settleSchema,
+  throw: throwSchema,
+  send: sendSchema,
+  // Batch 2 - Control Flow
+  if: ifSchema,
+  else: elseSchema,
+  repeat: repeatSchema,
+  for: forSchema,
+  while: whileSchema,
+  continue: continueSchema,
+  // Batch 3 - DOM & Navigation
+  go: goSchema,
+  transition: transitionSchema,
+  clone: cloneSchema,
+  focus: focusSchema,
+  blur: blurSchema,
+  // Batch 4 - Advanced
+  call: callSchema,
+  return: returnSchema,
+  js: jsSchema,
+  async: asyncSchema,
+  tell: tellSchema,
+  default: defaultSchema,
+  init: initSchema,
+  behavior: behaviorSchema,
 };
 
 /**

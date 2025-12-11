@@ -36,29 +36,49 @@ export type ActionType =
   | 'append'
   | 'prepend'
   | 'take'
+  | 'make'
+  | 'clone'
   // Variable operations
   | 'set'
   | 'get'
   | 'increment'
   | 'decrement'
+  | 'log'
   // Visibility
   | 'show'
   | 'hide'
+  | 'transition'
   // Events
   | 'on'
   | 'trigger'
   | 'send'
+  // DOM focus
+  | 'focus'
+  | 'blur'
   // Navigation
   | 'go'
   // Async
   | 'wait'
   | 'fetch'
+  | 'settle'
   // Control flow
   | 'if'
+  | 'else'
   | 'repeat'
+  | 'for'
+  | 'while'
+  | 'continue'
+  | 'halt'
+  | 'throw'
   | 'call'
   | 'return'
-  | 'log';
+  // Advanced
+  | 'js'
+  | 'async'
+  | 'tell'
+  | 'default'
+  | 'init'
+  | 'behavior';
 
 // =============================================================================
 // Semantic Values
