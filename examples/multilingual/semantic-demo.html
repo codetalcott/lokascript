@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic-First Multilingual Parsing - HyperFixi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .card {
+            background: #1e1e2e;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #2d2d3d;
+        }
+
+        .card h2 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: #888;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Language input section */
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px 15px;
+            border: 2px solid #3d3d4d;
+            border-radius: 8px;
+            background: #2d2d3d;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group select {
+            cursor: pointer;
+        }
+
+        /* Results grid */
+        .results-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .result-card {
+            background: #252535;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #3d3d4d;
+        }
+
+        .result-header {
+            background: #2d2d3d;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #3d3d4d;
+        }
+
+        .result-header .flag {
+            font-size: 1.2rem;
+        }
+
+        .result-header .lang-name {
+            color: #fff;
+        }
+
+        .result-header .badge {
+            margin-left: auto;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-svo { background: #667eea; color: white; }
+        .badge-sov { background: #e91e63; color: white; }
+        .badge-vso { background: #28a745; color: white; }
+        .badge-explicit { background: #ff9800; color: black; }
+
+        .result-content {
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            color: #d4d4d4;
+            line-height: 1.6;
+        }
+
+        .result-content.rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* Semantic AST display */
+        .semantic-display {
+            background: #1a1a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .semantic-display .key { color: #569cd6; }
+        .semantic-display .value { color: #ce9178; }
+        .semantic-display .role { color: #4ec9b0; }
+
+        /* Quick examples */
+        .examples-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .example-btn {
+            padding: 8px 14px;
+            border: 1px solid #3d3d4d;
+            border-radius: 6px;
+            background: #2d2d3d;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .example-btn:hover {
+            background: #3d3d4d;
+            color: #fff;
+            border-color: #667eea;
+        }
+
+        /* Architecture diagram */
+        .architecture {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+
+        .arch-box {
+            background: #2d2d3d;
+            padding: 20px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .arch-box.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .arch-arrow {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #3d3d4d;
+        }
+
+        .comparison-table th {
+            background: #2d2d3d;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            color: #aaa;
+        }
+
+        .comparison-table tr:hover td {
+            background: #252535;
+        }
+
+        /* Info box */
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+            .architecture {
+                flex-direction: column;
+            }
+            .arch-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Multilingual Demo</a>
+            <h1>Semantic-First Parser</h1>
+            <p class="tagline">Native-feeling syntax in every language, not translated English</p>
+        </header>
+
+        <!-- Architecture Overview -->
+        <div class="card">
+            <h2>How It Works</h2>
+            <p>
+                Unlike keyword translation, the semantic parser understands the <strong>meaning</strong> of your code.
+                Each language has idiomatic patterns that feel natural to native speakers.
+            </p>
+            <div class="architecture">
+                <div class="arch-box">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🇯🇵 🇸🇦 🇪🇸</div>
+                    <div>Native Input</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🔤</div>
+                    <div>Tokenizer</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
+                    <div>Pattern Match</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box highlight">
+                    <div style="font-size: 24px; margin-bottom: 8px;">💎</div>
+                    <div>Semantic AST</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
+                    <div>Runtime</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Parser Demo -->
+        <div class="card">
+            <h2>🔄 Bidirectional Parser Demo</h2>
+            <p>
+                Enter hyperscript in <strong>any supported language</strong>. The parser extracts semantic meaning
+                and can render to any other language. Try typing in Japanese, Arabic, or Spanish!
+            </p>
+
+            <div class="examples-row">
+                <button class="example-btn" onclick="setExample('toggle .active on #button', 'en')">🇺🇸 toggle .active on #button</button>
+                <button class="example-btn" onclick="setExample('#button の .active を 切り替え', 'ja')">🇯🇵 #button の .active を 切り替え</button>
+                <button class="example-btn" onclick="setExample('بدّل .active على #button', 'ar')">🇸🇦 بدّل .active على #button</button>
+                <button class="example-btn" onclick="setExample('alternar .active en #button', 'es')">🇪🇸 alternar .active en #button</button>
+                <button class="example-btn" onclick="setExample('put \"hello\" into #output', 'en')">🇺🇸 put "hello" into #output</button>
+                <button class="example-btn" onclick="setExample('.active を 切り替え', 'ja')">🇯🇵 .active を 切り替え</button>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label>Input (any supported language)</label>
+                    <input type="text" id="parser-input" value="toggle .active on #button" placeholder="Enter hyperscript...">
+                </div>
+                <div class="input-group">
+                    <label>Source Language</label>
+                    <select id="source-lang">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="ja">🇯🇵 Japanese</option>
+                        <option value="ar">🇸🇦 Arabic</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Semantic AST -->
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">Semantic Representation (Language-Neutral)</h3>
+            <div class="semantic-display" id="semantic-output">
+                <!-- Filled by JS -->
+            </div>
+
+            <!-- Translations -->
+            <h3 style="color: #fff; margin: 20px 0 10px; font-size: 1rem;">Rendered in All Languages</h3>
+            <div class="results-grid" id="translations-output">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Explicit Mode -->
+        <div class="card">
+            <h2>🔍 Explicit Mode</h2>
+            <p>
+                A universal syntax that makes semantic roles visible. Perfect for learning, debugging,
+                and documentation. Same in all languages!
+            </p>
+
+            <div class="examples-row">
+                <button class="example-btn" onclick="showExplicit('[toggle patient:.active destination:#button]')">[toggle patient:.active destination:#button]</button>
+                <button class="example-btn" onclick="showExplicit('[put patient:\"hello\" destination:#output]')">[put patient:"hello" destination:#output]</button>
+                <button class="example-btn" onclick="showExplicit('[on event:click body:[toggle patient:.active]]')">[on event:click ...]</button>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label>Explicit Syntax</label>
+                <input type="text" id="explicit-input" value="[toggle patient:.active destination:#button]" placeholder="[command role:value ...]">
+            </div>
+
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">Converts To Natural Language</h3>
+            <div class="results-grid" id="explicit-output">
+                <!-- Filled by JS -->
+            </div>
+
+            <div class="info-box">
+                <strong>Semantic Roles:</strong> The explicit syntax shows the underlying meaning.
+                <code>patient</code> is what's being acted on, <code>destination</code> is where,
+                <code>source</code> is from where, <code>event</code> is what triggers it.
+            </div>
+        </div>
+
+        <!-- Pattern Examples -->
+        <div class="card">
+            <h2>📝 Native Patterns by Language</h2>
+            <p>
+                Each language has patterns that feel natural to native speakers, not just translated keywords.
+            </p>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Language</th>
+                        <th>Word Order</th>
+                        <th>Toggle Pattern</th>
+                        <th>Natural Feel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🇺🇸 English</td>
+                        <td><span class="badge badge-svo">SVO</span></td>
+                        <td><code>toggle .active on #button</code></td>
+                        <td>Verb first, optional target</td>
+                    </tr>
+                    <tr>
+                        <td>🇯🇵 Japanese</td>
+                        <td><span class="badge badge-sov">SOV</span></td>
+                        <td><code>#button の .active を 切り替え</code></td>
+                        <td>"button's active, toggle" - object before verb</td>
+                    </tr>
+                    <tr>
+                        <td>🇸🇦 Arabic</td>
+                        <td><span class="badge badge-vso">VSO</span></td>
+                        <td><code>بدّل .active على #button</code></td>
+                        <td>Verb first, RTL text</td>
+                    </tr>
+                    <tr>
+                        <td>🇪🇸 Spanish</td>
+                        <td><span class="badge badge-svo">SVO</span></td>
+                        <td><code>alternar .active en #button</code></td>
+                        <td>Similar to English structure</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box" style="margin-top: 20px;">
+                <strong>Key Insight:</strong> Japanese uses particles (を, の, に) to mark grammatical roles,
+                so word order is flexible. Arabic is RTL but CSS selectors remain LTR "islands".
+                The semantic parser understands these linguistic features natively.
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the semantic package -->
+    <script type="module">
+        // Import from the built semantic package
+        // Note: In production, you'd use: import { parse, render, ... } from '@hyperfixi/semantic';
+
+        // For demo purposes, we'll simulate the API
+        // The actual implementation would load from packages/semantic/dist/
+
+        const languages = {
+            en: { name: 'English', flag: '🇺🇸', wordOrder: 'SVO', rtl: false },
+            ja: { name: '日本語', flag: '🇯🇵', wordOrder: 'SOV', rtl: false },
+            ar: { name: 'العربية', flag: '🇸🇦', wordOrder: 'VSO', rtl: true },
+            es: { name: 'Español', flag: '🇪🇸', wordOrder: 'SVO', rtl: false },
+        };
+
+        // Simulated semantic representations (in production, this comes from the parser)
+        const semanticExamples = {
+            'toggle .active on #button': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: '#button' },
+                translations: {
+                    en: 'toggle .active on #button',
+                    ja: '#button の .active を 切り替え',
+                    ar: 'بدّل .active على #button',
+                    es: 'alternar .active en #button',
+                },
+                explicit: '[toggle patient:.active destination:#button]'
+            },
+            'toggle .active': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: 'me' },
+                translations: {
+                    en: 'toggle .active',
+                    ja: '.active を 切り替え',
+                    ar: 'بدّل .active',
+                    es: 'alternar .active',
+                },
+                explicit: '[toggle patient:.active destination:me]'
+            },
+            '#button の .active を 切り替え': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: '#button' },
+                translations: {
+                    en: 'toggle .active on #button',
+                    ja: '#button の .active を 切り替え',
+                    ar: 'بدّل .active على #button',
+                    es: 'alternar .active en #button',
+                },
+                explicit: '[toggle patient:.active destination:#button]'
+            },
+            '.active を 切り替え': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: 'me' },
+                translations: {
+                    en: 'toggle .active',
+                    ja: '.active を 切り替え',
+                    ar: 'بدّل .active',
+                    es: 'alternar .active',
+                },
+                explicit: '[toggle patient:.active destination:me]'
+            },
+            'بدّل .active على #button': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: '#button' },
+                translations: {
+                    en: 'toggle .active on #button',
+                    ja: '#button の .active を 切り替え',
+                    ar: 'بدّل .active على #button',
+                    es: 'alternar .active en #button',
+                },
+                explicit: '[toggle patient:.active destination:#button]'
+            },
+            'alternar .active en #button': {
+                action: 'toggle',
+                roles: { patient: '.active', destination: '#button' },
+                translations: {
+                    en: 'toggle .active on #button',
+                    ja: '#button の .active を 切り替え',
+                    ar: 'بدّل .active على #button',
+                    es: 'alternar .active en #button',
+                },
+                explicit: '[toggle patient:.active destination:#button]'
+            },
+            'put "hello" into #output': {
+                action: 'put',
+                roles: { patient: '"hello"', destination: '#output' },
+                translations: {
+                    en: 'put "hello" into #output',
+                    ja: '#output に "hello" を 置く',
+                    ar: 'ضع "hello" في #output',
+                    es: 'poner "hello" en #output',
+                },
+                explicit: '[put patient:"hello" destination:#output]'
+            },
+        };
+
+        // Explicit mode examples
+        const explicitExamples = {
+            '[toggle patient:.active destination:#button]': {
+                en: 'toggle .active on #button',
+                ja: '#button の .active を 切り替え',
+                ar: 'بدّل .active على #button',
+                es: 'alternar .active en #button',
+            },
+            '[put patient:"hello" destination:#output]': {
+                en: 'put "hello" into #output',
+                ja: '#output に "hello" を 置く',
+                ar: 'ضع "hello" في #output',
+                es: 'poner "hello" en #output',
+            },
+            '[on event:click body:[toggle patient:.active]]': {
+                en: 'on click toggle .active',
+                ja: 'クリック で .active を 切り替え',
+                ar: 'عند النقر بدّل .active',
+                es: 'en click alternar .active',
+            },
+        };
+
+        function updateParserDemo() {
+            const input = document.getElementById('parser-input').value.trim();
+            const semanticOutput = document.getElementById('semantic-output');
+            const translationsOutput = document.getElementById('translations-output');
+
+            // Find matching semantic example
+            const semantic = semanticExamples[input];
+
+            if (!semantic) {
+                semanticOutput.innerHTML = `<span style="color: #888;">Enter a supported pattern to see semantic analysis</span>`;
+                translationsOutput.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">No matching pattern found. Try one of the example buttons above.</div>`;
+                return;
+            }
+
+            // Display semantic representation
+            let rolesHtml = Object.entries(semantic.roles)
+                .map(([role, value]) => `  <span class="role">${role}</span>: <span class="value">"${value}"</span>`)
+                .join(',\n');
+
+            semanticOutput.innerHTML = `{
+  <span class="key">action</span>: <span class="value">"${semantic.action}"</span>,
+  <span class="key">roles</span>: {
+${rolesHtml}
+  },
+  <span class="key">explicit</span>: <span class="value">"${semantic.explicit}"</span>
+}`;
+
+            // Display translations
+            let translationsHtml = '';
+            for (const [code, lang] of Object.entries(languages)) {
+                const translation = semantic.translations[code] || input;
+                const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+
+                translationsHtml += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="flag">${lang.flag}</span>
+                            <span class="lang-name">${lang.name}</span>
+                            <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                        </div>
+                        <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
+                    </div>
+                `;
+            }
+
+            // Add explicit mode
+            translationsHtml += `
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="flag">🔧</span>
+                        <span class="lang-name">Explicit Mode</span>
+                        <span class="badge badge-explicit">Universal</span>
+                    </div>
+                    <div class="result-content">${escapeHtml(semantic.explicit)}</div>
+                </div>
+            `;
+
+            translationsOutput.innerHTML = translationsHtml;
+        }
+
+        function updateExplicitDemo() {
+            const input = document.getElementById('explicit-input').value.trim();
+            const output = document.getElementById('explicit-output');
+
+            const translations = explicitExamples[input];
+
+            if (!translations) {
+                output.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">Enter a valid explicit syntax pattern. Try one of the example buttons above.</div>`;
+                return;
+            }
+
+            let html = '';
+            for (const [code, lang] of Object.entries(languages)) {
+                const translation = translations[code] || '';
+                const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="flag">${lang.flag}</span>
+                            <span class="lang-name">${lang.name}</span>
+                            <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                        </div>
+                        <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
+                    </div>
+                `;
+            }
+
+            output.innerHTML = html;
+        }
+
+        // Helper functions
+        function setExample(text, lang) {
+            document.getElementById('parser-input').value = text;
+            document.getElementById('source-lang').value = lang;
+            updateParserDemo();
+        }
+
+        function showExplicit(text) {
+            document.getElementById('explicit-input').value = text;
+            updateExplicitDemo();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up event listeners
+            document.getElementById('parser-input').addEventListener('input', updateParserDemo);
+            document.getElementById('source-lang').addEventListener('change', updateParserDemo);
+            document.getElementById('explicit-input').addEventListener('input', updateExplicitDemo);
+
+            // Initial render
+            updateParserDemo();
+            updateExplicitDemo();
+        });
+
+        // Expose functions globally for onclick handlers
+        window.setExample = setExample;
+        window.showExplicit = showExplicit;
+    </script>
+</body>
+</html>
