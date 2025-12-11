@@ -467,13 +467,20 @@
         </div>
     </div>
 
-    <!-- Load the semantic package -->
-    <script type="module">
-        // Import from the built semantic package
-        // Note: In production, you'd use: import { parse, render, ... } from '@hyperfixi/semantic';
+    <!-- Load the semantic package (IIFE bundle) -->
+    <script src="../../packages/semantic/dist/browser.global.js"></script>
+    <script>
+        // Using the real HyperFixiSemantic bundle!
+        const Semantic = window.HyperFixiSemantic;
 
-        // For demo purposes, we'll simulate the API
-        // The actual implementation would load from packages/semantic/dist/
+        // Check if bundle loaded
+        if (!Semantic) {
+            console.error('HyperFixiSemantic bundle not loaded!');
+            document.body.innerHTML = '<h1 style="color: red; text-align: center; margin-top: 100px;">Error: Semantic bundle not loaded. Run "npm run build:browser" in packages/semantic/</h1>';
+        } else {
+            console.log('HyperFixiSemantic loaded:', Semantic.VERSION || 'unknown version');
+            console.log('Supported languages:', Semantic.getSupportedLanguages ? Semantic.getSupportedLanguages() : 'API not available');
+        }
 
         const languages = {
             en: { name: 'English', flag: '🇺🇸', wordOrder: 'SVO', rtl: false },
@@ -482,198 +489,182 @@
             es: { name: 'Español', flag: '🇪🇸', wordOrder: 'SVO', rtl: false },
         };
 
-        // Simulated semantic representations (in production, this comes from the parser)
-        const semanticExamples = {
-            'toggle .active on #button': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: '#button' },
-                translations: {
-                    en: 'toggle .active on #button',
-                    ja: '#button の .active を 切り替え',
-                    ar: 'بدّل .active على #button',
-                    es: 'alternar .active en #button',
-                },
-                explicit: '[toggle patient:.active destination:#button]'
-            },
-            'toggle .active': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: 'me' },
-                translations: {
-                    en: 'toggle .active',
-                    ja: '.active を 切り替え',
-                    ar: 'بدّل .active',
-                    es: 'alternar .active',
-                },
-                explicit: '[toggle patient:.active destination:me]'
-            },
-            '#button の .active を 切り替え': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: '#button' },
-                translations: {
-                    en: 'toggle .active on #button',
-                    ja: '#button の .active を 切り替え',
-                    ar: 'بدّل .active على #button',
-                    es: 'alternar .active en #button',
-                },
-                explicit: '[toggle patient:.active destination:#button]'
-            },
-            '.active を 切り替え': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: 'me' },
-                translations: {
-                    en: 'toggle .active',
-                    ja: '.active を 切り替え',
-                    ar: 'بدّل .active',
-                    es: 'alternar .active',
-                },
-                explicit: '[toggle patient:.active destination:me]'
-            },
-            'بدّل .active على #button': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: '#button' },
-                translations: {
-                    en: 'toggle .active on #button',
-                    ja: '#button の .active を 切り替え',
-                    ar: 'بدّل .active على #button',
-                    es: 'alternar .active en #button',
-                },
-                explicit: '[toggle patient:.active destination:#button]'
-            },
-            'alternar .active en #button': {
-                action: 'toggle',
-                roles: { patient: '.active', destination: '#button' },
-                translations: {
-                    en: 'toggle .active on #button',
-                    ja: '#button の .active を 切り替え',
-                    ar: 'بدّل .active على #button',
-                    es: 'alternar .active en #button',
-                },
-                explicit: '[toggle patient:.active destination:#button]'
-            },
-            'put "hello" into #output': {
-                action: 'put',
-                roles: { patient: '"hello"', destination: '#output' },
-                translations: {
-                    en: 'put "hello" into #output',
-                    ja: '#output に "hello" を 置く',
-                    ar: 'ضع "hello" في #output',
-                    es: 'poner "hello" en #output',
-                },
-                explicit: '[put patient:"hello" destination:#output]'
-            },
-        };
-
-        // Explicit mode examples
-        const explicitExamples = {
-            '[toggle patient:.active destination:#button]': {
-                en: 'toggle .active on #button',
-                ja: '#button の .active を 切り替え',
-                ar: 'بدّل .active على #button',
-                es: 'alternar .active en #button',
-            },
-            '[put patient:"hello" destination:#output]': {
-                en: 'put "hello" into #output',
-                ja: '#output に "hello" を 置く',
-                ar: 'ضع "hello" في #output',
-                es: 'poner "hello" en #output',
-            },
-            '[on event:click body:[toggle patient:.active]]': {
-                en: 'on click toggle .active',
-                ja: 'クリック で .active を 切り替え',
-                ar: 'عند النقر بدّل .active',
-                es: 'en click alternar .active',
-            },
-        };
-
         function updateParserDemo() {
             const input = document.getElementById('parser-input').value.trim();
+            const sourceLang = document.getElementById('source-lang').value;
             const semanticOutput = document.getElementById('semantic-output');
             const translationsOutput = document.getElementById('translations-output');
 
-            // Find matching semantic example
-            const semantic = semanticExamples[input];
-
-            if (!semantic) {
-                semanticOutput.innerHTML = `<span style="color: #888;">Enter a supported pattern to see semantic analysis</span>`;
-                translationsOutput.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">No matching pattern found. Try one of the example buttons above.</div>`;
+            if (!input) {
+                semanticOutput.innerHTML = `<span style="color: #888;">Enter a command to see semantic analysis</span>`;
+                translationsOutput.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">Enter a command above to see translations.</div>`;
                 return;
             }
 
-            // Display semantic representation
-            let rolesHtml = Object.entries(semantic.roles)
-                .map(([role, value]) => `  <span class="role">${role}</span>: <span class="value">"${value}"</span>`)
-                .join(',\n');
+            try {
+                // Parse using the real semantic parser
+                const parseResult = Semantic.parse(input, sourceLang);
 
-            semanticOutput.innerHTML = `{
-  <span class="key">action</span>: <span class="value">"${semantic.action}"</span>,
+                if (!parseResult || parseResult.confidence === 0) {
+                    semanticOutput.innerHTML = `<span style="color: #f44;">Parse failed or low confidence</span>
+<span style="color: #888;">Input: "${escapeHtml(input)}"</span>
+<span style="color: #888;">Language: ${sourceLang}</span>`;
+                    translationsOutput.innerHTML = `<div style="color: #f44; padding: 20px; text-align: center;">Could not parse input. Try a different pattern or check the syntax.</div>`;
+                    return;
+                }
+
+                // Display semantic representation
+                const semantic = parseResult.semantic || parseResult;
+                const rolesObj = semantic.roles || {};
+                let rolesHtml = '';
+
+                if (rolesObj instanceof Map) {
+                    for (const [role, value] of rolesObj) {
+                        const valueStr = formatSemanticValue(value);
+                        rolesHtml += `    <span class="role">${role}</span>: <span class="value">${valueStr}</span>,\n`;
+                    }
+                } else if (typeof rolesObj === 'object') {
+                    for (const [role, value] of Object.entries(rolesObj)) {
+                        const valueStr = formatSemanticValue(value);
+                        rolesHtml += `    <span class="role">${role}</span>: <span class="value">${valueStr}</span>,\n`;
+                    }
+                }
+
+                // Get explicit syntax
+                let explicitStr = '';
+                try {
+                    // toExplicit takes (input, language), not the parseResult
+                    explicitStr = Semantic.toExplicit ? Semantic.toExplicit(input, sourceLang) : '[explicit not available]';
+                } catch (e) {
+                    console.error('toExplicit error:', e);
+                    explicitStr = '[error generating explicit]';
+                }
+
+                semanticOutput.innerHTML = `{
+  <span class="key">action</span>: <span class="value">"${semantic.action || semantic.type || 'unknown'}"</span>,
+  <span class="key">confidence</span>: <span class="value">${(parseResult.confidence || 0).toFixed(2)}</span>,
   <span class="key">roles</span>: {
-${rolesHtml}
-  },
-  <span class="key">explicit</span>: <span class="value">"${semantic.explicit}"</span>
+${rolesHtml}  },
+  <span class="key">explicit</span>: <span class="value">"${escapeHtml(explicitStr)}"</span>
 }`;
 
-            // Display translations
-            let translationsHtml = '';
-            for (const [code, lang] of Object.entries(languages)) {
-                const translation = semantic.translations[code] || input;
-                const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+                // Generate translations to all languages
+                let translationsHtml = '';
 
+                for (const [code, lang] of Object.entries(languages)) {
+                    let translation = input; // Default to input
+                    try {
+                        if (Semantic.render) {
+                            translation = Semantic.render(parseResult, code);
+                        } else if (Semantic.translate && code !== sourceLang) {
+                            translation = Semantic.translate(input, sourceLang, code);
+                        }
+                    } catch (e) {
+                        console.warn(`Translation to ${code} failed:`, e);
+                        translation = `[error: ${e.message}]`;
+                    }
+
+                    const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+                    const isSource = code === sourceLang;
+
+                    translationsHtml += `
+                        <div class="result-card" ${isSource ? 'style="border-color: #667eea;"' : ''}>
+                            <div class="result-header">
+                                <span class="flag">${lang.flag}</span>
+                                <span class="lang-name">${lang.name}</span>
+                                ${isSource ? '<span class="badge" style="background: #667eea; color: white;">SOURCE</span>' : ''}
+                                <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                            </div>
+                            <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
+                        </div>
+                    `;
+                }
+
+                // Add explicit mode
                 translationsHtml += `
                     <div class="result-card">
                         <div class="result-header">
-                            <span class="flag">${lang.flag}</span>
-                            <span class="lang-name">${lang.name}</span>
-                            <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                            <span class="flag">🔧</span>
+                            <span class="lang-name">Explicit Mode</span>
+                            <span class="badge badge-explicit">Universal</span>
                         </div>
-                        <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
+                        <div class="result-content">${escapeHtml(explicitStr)}</div>
                     </div>
                 `;
+
+                translationsOutput.innerHTML = translationsHtml;
+
+            } catch (error) {
+                console.error('Parse error:', error);
+                semanticOutput.innerHTML = `<span style="color: #f44;">Error: ${escapeHtml(error.message)}</span>`;
+                translationsOutput.innerHTML = `<div style="color: #f44; padding: 20px; text-align: center;">Parse error occurred. Check console for details.</div>`;
             }
+        }
 
-            // Add explicit mode
-            translationsHtml += `
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="flag">🔧</span>
-                        <span class="lang-name">Explicit Mode</span>
-                        <span class="badge badge-explicit">Universal</span>
-                    </div>
-                    <div class="result-content">${escapeHtml(semantic.explicit)}</div>
-                </div>
-            `;
-
-            translationsOutput.innerHTML = translationsHtml;
+        function formatSemanticValue(value) {
+            if (value === null || value === undefined) return 'null';
+            if (typeof value === 'string') return `"${escapeHtml(value)}"`;
+            if (typeof value === 'object') {
+                if (value.type === 'selector') return `selector("${value.value}")`;
+                if (value.type === 'literal') return `literal(${JSON.stringify(value.value)})`;
+                if (value.type === 'reference') return `ref(${value.name})`;
+                return JSON.stringify(value);
+            }
+            return String(value);
         }
 
         function updateExplicitDemo() {
             const input = document.getElementById('explicit-input').value.trim();
             const output = document.getElementById('explicit-output');
 
-            const translations = explicitExamples[input];
-
-            if (!translations) {
-                output.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">Enter a valid explicit syntax pattern. Try one of the example buttons above.</div>`;
+            if (!input) {
+                output.innerHTML = `<div style="color: #888; padding: 20px; text-align: center;">Enter explicit syntax to see renderings.</div>`;
                 return;
             }
 
-            let html = '';
-            for (const [code, lang] of Object.entries(languages)) {
-                const translation = translations[code] || '';
-                const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+            try {
+                // Try to parse explicit syntax
+                if (!Semantic.parseExplicit) {
+                    output.innerHTML = `<div style="color: #f44; padding: 20px; text-align: center;">parseExplicit not available in bundle</div>`;
+                    return;
+                }
 
-                html += `
-                    <div class="result-card">
-                        <div class="result-header">
-                            <span class="flag">${lang.flag}</span>
-                            <span class="lang-name">${lang.name}</span>
-                            <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                const parsed = Semantic.parseExplicit(input);
+
+                if (!parsed) {
+                    output.innerHTML = `<div style="color: #f44; padding: 20px; text-align: center;">Could not parse explicit syntax</div>`;
+                    return;
+                }
+
+                let html = '';
+                for (const [code, lang] of Object.entries(languages)) {
+                    let translation = '';
+                    try {
+                        translation = Semantic.render ? Semantic.render(parsed, code) : '[render not available]';
+                    } catch (e) {
+                        translation = `[error: ${e.message}]`;
+                    }
+
+                    const badgeClass = lang.wordOrder === 'SVO' ? 'badge-svo' : lang.wordOrder === 'SOV' ? 'badge-sov' : 'badge-vso';
+
+                    html += `
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="flag">${lang.flag}</span>
+                                <span class="lang-name">${lang.name}</span>
+                                <span class="badge ${badgeClass}">${lang.wordOrder}</span>
+                            </div>
+                            <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
                         </div>
-                        <div class="result-content ${lang.rtl ? 'rtl' : ''}">${escapeHtml(translation)}</div>
-                    </div>
-                `;
-            }
+                    `;
+                }
 
-            output.innerHTML = html;
+                output.innerHTML = html;
+
+            } catch (error) {
+                console.error('Explicit parse error:', error);
+                output.innerHTML = `<div style="color: #f44; padding: 20px; text-align: center;">Error: ${escapeHtml(error.message)}</div>`;
+            }
         }
 
         // Helper functions
@@ -689,6 +680,7 @@ ${rolesHtml}
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;

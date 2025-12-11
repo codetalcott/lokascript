@@ -8,6 +8,26 @@ import { Parser } from '../parser/parser';
 import { Runtime } from '../runtime/runtime';
 import { tokenize } from '../parser/tokenizer';
 import type { ExecutionContext } from '../types/core';
+import type { SemanticAnalyzerInterface } from '../parser/types';
+import {
+  createSemanticAnalyzer,
+  DEFAULT_CONFIDENCE_THRESHOLD,
+  type SemanticAnalyzer,
+} from '@hyperfixi/semantic';
+
+// Singleton semantic analyzer instance (lazy-initialized)
+let semanticAnalyzerInstance: SemanticAnalyzer | null = null;
+
+/**
+ * Get or create the singleton semantic analyzer instance.
+ * Lazy initialization to avoid overhead if not used.
+ */
+function getSemanticAnalyzer(): SemanticAnalyzerInterface {
+  if (!semanticAnalyzerInstance) {
+    semanticAnalyzerInstance = createSemanticAnalyzer();
+  }
+  return semanticAnalyzerInstance as unknown as SemanticAnalyzerInterface;
+}
 
 /**
  * Context interface matching _hyperscript's expected format
@@ -25,6 +45,8 @@ export interface HyperScriptContext {
   you?: any;
   /** Global variables scope */
   globals?: Record<string, any>;
+  /** ISO 639-1 language code for semantic parsing. Default: 'en' */
+  language?: string;
 }
 
 /**
@@ -82,7 +104,7 @@ function convertContext(
 
   // Handle plain object format - treat unknown properties as locals
   // This supports calling evalHyperScript('expr', { var1: 'value1', var2: 'value2' })
-  const knownProperties = new Set(['me', 'you', 'it', 'result', 'locals', 'globals']);
+  const knownProperties = new Set(['me', 'you', 'it', 'result', 'locals', 'globals', 'language']);
   for (const [key, value] of Object.entries(hyperScriptContext)) {
     if (!knownProperties.has(key) && typeof value !== 'undefined') {
       context.locals.set(key, value);
@@ -124,10 +146,13 @@ export async function evalHyperScript(
     // Convert context
     const executionContext = convertContext(context);
 
+    // Extract language from context (default to 'en' for English)
+    const language = (context as HyperScriptContext)?.language || 'en';
+
     // Determine if this is a command or expression
     if (isCommand(script)) {
-      // Use the new runtime system for commands (not the old command executor)
-      return await executeAsCommand(script, executionContext);
+      // Use the new runtime system for commands with semantic parsing
+      return await executeAsCommand(script, executionContext, language);
     } else {
       // Use expression parser for expressions
       const result = await parseAndEvaluateExpression(script, executionContext);
@@ -182,14 +207,22 @@ function isCommand(script: string): boolean {
 }
 
 /**
- * Execute script as a command using full parser + runtime
+ * Execute script as a command using full parser + runtime with semantic analysis
  */
-async function executeAsCommand(script: string, context: ExecutionContext): Promise<any> {
+async function executeAsCommand(
+  script: string,
+  context: ExecutionContext,
+  language: string = 'en'
+): Promise<any> {
   // Tokenize
   const tokens = tokenize(script);
 
-  // Parse with full parser
-  const parser = new Parser(tokens);
+  // Parse with full parser, using semantic analyzer for multilingual support
+  const parser = new Parser(tokens, {
+    semanticAnalyzer: getSemanticAnalyzer(),
+    language,
+    semanticConfidenceThreshold: DEFAULT_CONFIDENCE_THRESHOLD,
+  });
   const parseResult = parser.parse();
 
   if (!parseResult.success || !parseResult.node) {

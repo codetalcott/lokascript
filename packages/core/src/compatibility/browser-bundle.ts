@@ -27,6 +27,16 @@ import { tokenize } from '../parser/tokenizer';
 import { debug } from '../utils/debug';
 import { styleBatcher, ObjectPool } from '../utils/performance';
 
+// Semantic parsing API for multilingual support
+import {
+  createSemanticAnalyzer,
+  parse as semanticParse,
+  translate,
+  render,
+  toExplicit,
+  fromExplicit,
+} from '@hyperfixi/semantic';
+
 // Export to global scope for browser testing
 declare global {
   interface Window {
@@ -49,6 +59,16 @@ declare global {
       debug: typeof debug;
       styleBatcher: typeof styleBatcher;
       ObjectPool: typeof ObjectPool;
+      // Semantic parsing API for multilingual support
+      semantic: {
+        createAnalyzer: typeof createSemanticAnalyzer;
+        parse: typeof semanticParse;
+        translate: typeof translate;
+        render: typeof render;
+        toExplicit: typeof toExplicit;
+        fromExplicit: typeof fromExplicit;
+        supportedLanguages: string[];
+      };
     };
     // Also expose as direct globals for test compatibility
     evalHyperScript: typeof evalHyperScript;
@@ -115,6 +135,17 @@ const hyperfixi = {
 
   // Debug utilities
   debug,
+
+  // Semantic parsing API for multilingual support
+  semantic: {
+    createAnalyzer: createSemanticAnalyzer,
+    parse: semanticParse,
+    translate,
+    render,
+    toExplicit,
+    fromExplicit,
+    supportedLanguages: ['en', 'es', 'ja', 'ar'],
+  },
 
   // Version info
   version: '1.0.0-full',

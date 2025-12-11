@@ -313,3 +313,60 @@ test.describe('Semantic Multilingual Parser', () => {
     });
   });
 });
+
+// Demo Page tests - separate describe to avoid the beforeEach hook
+test.describe('Semantic Demo Page', () => {
+  test('semantic-demo.html loads the bundle', async ({ page }) => {
+    await page.goto('http://localhost:3000/examples/multilingual/semantic-demo.html');
+
+    // Wait for bundle to load
+    await page.waitForFunction(
+      () => typeof (window as any).HyperFixiSemantic !== 'undefined',
+      { timeout: 5000 }
+    );
+
+    // Verify the bundle is loaded
+    const hasGlobal = await page.evaluate(
+      () => typeof (window as any).HyperFixiSemantic !== 'undefined'
+    );
+    expect(hasGlobal).toBe(true);
+  });
+
+  test('semantic-demo.html has parse function', async ({ page }) => {
+    await page.goto('http://localhost:3000/examples/multilingual/semantic-demo.html');
+
+    await page.waitForFunction(
+      () => typeof (window as any).HyperFixiSemantic !== 'undefined',
+      { timeout: 5000 }
+    );
+
+    const hasParse = await page.evaluate(
+      () => typeof (window as any).HyperFixiSemantic.parse === 'function'
+    );
+    expect(hasParse).toBe(true);
+  });
+
+  test('semantic-demo.html can parse input', async ({ page }) => {
+    await page.goto('http://localhost:3000/examples/multilingual/semantic-demo.html');
+
+    await page.waitForFunction(
+      () => typeof (window as any).HyperFixiSemantic !== 'undefined',
+      { timeout: 5000 }
+    );
+
+    // Use canParse for simple boolean check
+    const canParse = await page.evaluate(() => {
+      const S = (window as any).HyperFixiSemantic;
+      return S.canParse('toggle .active on #button', 'en');
+    });
+    expect(canParse).toBe(true);
+
+    // Check toExplicit works
+    const explicit = await page.evaluate(() => {
+      const S = (window as any).HyperFixiSemantic;
+      return S.toExplicit('toggle .active on #button', 'en');
+    });
+    expect(explicit).toMatch(/\[toggle/);
+    expect(explicit).toContain('patient:');
+  });
+});
