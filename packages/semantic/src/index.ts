@@ -175,3 +175,64 @@ export function getSupportedLanguages(): string[] {
  * Version of the semantic package.
  */
 export const VERSION = '0.1.0';
+
+// =============================================================================
+// Pattern Generators (for creating patterns programmatically)
+// =============================================================================
+
+export {
+  // Language profiles
+  type LanguageProfile,
+  type WordOrder,
+  type MarkingStrategy,
+  type RoleMarker,
+  type VerbConfig,
+  type KeywordTranslation,
+  type TokenizationConfig,
+  englishProfile,
+  japaneseProfile,
+  arabicProfile,
+  spanishProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  languageProfiles,
+  getProfile,
+  getSupportedLanguages as getGeneratorLanguages,
+  isLanguageSupported as isGeneratorLanguageSupported,
+
+  // Command schemas
+  type CommandSchema,
+  type RoleSpec,
+  type CommandCategory,
+  toggleSchema,
+  addSchema,
+  removeSchema,
+  putSchema,
+  setSchema,
+  showSchema,
+  hideSchema,
+  onSchema,
+  triggerSchema,
+  waitSchema,
+  fetchSchema,
+  incrementSchema,
+  decrementSchema,
+  appendSchema,
+  prependSchema,
+  commandSchemas,
+  getSchema,
+  getSchemasByCategory,
+  getDefinedSchemas,
+
+  // Pattern generator
+  type GeneratorConfig,
+  generatePattern,
+  generateSimplePattern,
+  generatePatternVariants,
+  generatePatternsForLanguage,
+  generatePatternsForCommand,
+  generateAllPatterns,
+  getGeneratorSummary,
+  validateLanguageKeywords,
+} from './generators';

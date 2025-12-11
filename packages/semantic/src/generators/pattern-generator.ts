@@ -1,0 +1,479 @@
+/**
+ * Pattern Generator
+ *
+ * Generates LanguagePattern objects from CommandSchema + LanguageProfile.
+ * This solves the pattern explosion problem by deriving patterns from
+ * high-level definitions rather than hand-writing each one.
+ */
+
+import type { LanguagePattern, PatternToken, ExtractionRule } from '../types';
+import type { LanguageProfile } from './language-profiles';
+import type { CommandSchema, RoleSpec } from './command-schemas';
+import { languageProfiles } from './language-profiles';
+import { getDefinedSchemas } from './command-schemas';
+
+// =============================================================================
+// Pattern Generator
+// =============================================================================
+
+/**
+ * Configuration for pattern generation.
+ */
+export interface GeneratorConfig {
+  /** Base priority for generated patterns (higher = checked first) */
+  basePriority?: number;
+  /** Whether to generate simple patterns (without optional roles) */
+  generateSimpleVariants?: boolean;
+  /** Whether to generate alternative keyword patterns */
+  generateAlternatives?: boolean;
+}
+
+const defaultConfig: GeneratorConfig = {
+  basePriority: 100,
+  generateSimpleVariants: true,
+  generateAlternatives: true,
+};
+
+/**
+ * Generate a pattern for a command in a specific language.
+ */
+export function generatePattern(
+  schema: CommandSchema,
+  profile: LanguageProfile,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern {
+  const id = `${schema.action}-${profile.code}-generated`;
+  const priority = config.basePriority ?? 100;
+
+  // Get keyword translation
+  const keyword = profile.keywords[schema.action];
+  if (!keyword) {
+    throw new Error(`No keyword translation for '${schema.action}' in ${profile.code}`);
+  }
+
+  // Build tokens based on word order
+  const tokens = buildTokens(schema, profile, keyword);
+
+  // Build extraction rules
+  const extraction = buildExtractionRules(schema, profile);
+
+  // Build template format string (for documentation)
+  const format = buildFormatString(schema, profile, keyword);
+
+  return {
+    id,
+    language: profile.code,
+    command: schema.action,
+    priority,
+    template: {
+      format,
+      tokens,
+    },
+    extraction,
+  };
+}
+
+/**
+ * Generate a simple variant pattern (without optional roles).
+ */
+export function generateSimplePattern(
+  schema: CommandSchema,
+  profile: LanguageProfile,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern | null {
+  // Only generate simple variant if there are optional roles
+  const optionalRoles = schema.roles.filter(r => !r.required);
+  if (optionalRoles.length === 0) {
+    return null;
+  }
+
+  const requiredRoles = schema.roles.filter(r => r.required);
+  const simpleSchema: CommandSchema = {
+    ...schema,
+    roles: requiredRoles,
+  };
+
+  const pattern = generatePattern(simpleSchema, profile, config);
+
+  // Adjust for simple variant
+  return {
+    ...pattern,
+    id: `${schema.action}-${profile.code}-simple`,
+    priority: (config.basePriority ?? 100) - 10, // Lower priority than full pattern
+    extraction: buildExtractionRulesWithDefaults(schema, profile),
+  };
+}
+
+/**
+ * Generate all pattern variants for a command in a language.
+ */
+export function generatePatternVariants(
+  schema: CommandSchema,
+  profile: LanguageProfile,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern[] {
+  const patterns: LanguagePattern[] = [];
+
+  // Main pattern
+  patterns.push(generatePattern(schema, profile, config));
+
+  // Simple variant (without optional roles)
+  if (config.generateSimpleVariants) {
+    const simple = generateSimplePattern(schema, profile, config);
+    if (simple) {
+      patterns.push(simple);
+    }
+  }
+
+  return patterns;
+}
+
+/**
+ * Generate patterns for all commands in a specific language.
+ */
+export function generatePatternsForLanguage(
+  profile: LanguageProfile,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern[] {
+  const patterns: LanguagePattern[] = [];
+  const schemas = getDefinedSchemas();
+
+  for (const schema of schemas) {
+    // Skip if no keyword translation exists
+    if (!profile.keywords[schema.action]) {
+      continue;
+    }
+
+    const variants = generatePatternVariants(schema, profile, config);
+    patterns.push(...variants);
+  }
+
+  return patterns;
+}
+
+/**
+ * Generate patterns for a command across all supported languages.
+ */
+export function generatePatternsForCommand(
+  schema: CommandSchema,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern[] {
+  const patterns: LanguagePattern[] = [];
+
+  for (const profile of Object.values(languageProfiles)) {
+    // Skip if no keyword translation exists
+    if (!profile.keywords[schema.action]) {
+      continue;
+    }
+
+    const variants = generatePatternVariants(schema, profile, config);
+    patterns.push(...variants);
+  }
+
+  return patterns;
+}
+
+/**
+ * Generate all patterns for all commands in all languages.
+ */
+export function generateAllPatterns(
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern[] {
+  const patterns: LanguagePattern[] = [];
+
+  for (const profile of Object.values(languageProfiles)) {
+    const langPatterns = generatePatternsForLanguage(profile, config);
+    patterns.push(...langPatterns);
+  }
+
+  return patterns;
+}
+
+// =============================================================================
+// Token Building
+// =============================================================================
+
+/**
+ * Build pattern tokens based on word order.
+ */
+function buildTokens(
+  schema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: { primary: string; alternatives?: string[] }
+): PatternToken[] {
+  const tokens: PatternToken[] = [];
+
+  // Get verb token
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+
+  // Get role tokens sorted by position
+  const roleTokens = buildRoleTokens(schema, profile);
+
+  // Arrange based on word order
+  switch (profile.wordOrder) {
+    case 'SVO':
+      // Verb first, then roles in order
+      tokens.push(verbToken);
+      tokens.push(...roleTokens);
+      break;
+
+    case 'SOV':
+      // Roles first (reversed for SOV), then verb
+      tokens.push(...roleTokens);
+      tokens.push(verbToken);
+      break;
+
+    case 'VSO':
+      // Verb first, then subject, then object
+      tokens.push(verbToken);
+      tokens.push(...roleTokens);
+      break;
+
+    default:
+      // Default to SVO
+      tokens.push(verbToken);
+      tokens.push(...roleTokens);
+  }
+
+  return tokens;
+}
+
+/**
+ * Build tokens for roles.
+ */
+function buildRoleTokens(
+  schema: CommandSchema,
+  profile: LanguageProfile
+): PatternToken[] {
+  const tokens: PatternToken[] = [];
+
+  // Sort roles by position (depends on word order)
+  const sortKey = profile.wordOrder === 'SOV' ? 'sovPosition' : 'svoPosition';
+  const sortedRoles = [...schema.roles].sort((a, b) => {
+    const aPos = a[sortKey] ?? 99;
+    const bPos = b[sortKey] ?? 99;
+    return aPos - bPos;
+  });
+
+  for (const roleSpec of sortedRoles) {
+    const roleToken = buildRoleToken(roleSpec, profile);
+
+    if (!roleSpec.required) {
+      // Wrap optional roles in a group
+      tokens.push({
+        type: 'group',
+        optional: true,
+        tokens: roleToken,
+      });
+    } else {
+      tokens.push(...roleToken);
+    }
+  }
+
+  return tokens;
+}
+
+/**
+ * Build token(s) for a single role.
+ */
+function buildRoleToken(
+  roleSpec: RoleSpec,
+  profile: LanguageProfile
+): PatternToken[] {
+  const tokens: PatternToken[] = [];
+  const marker = profile.roleMarkers[roleSpec.role];
+
+  // Role value token
+  const roleValueToken: PatternToken = {
+    type: 'role',
+    role: roleSpec.role,
+    optional: !roleSpec.required,
+    expectedTypes: roleSpec.expectedTypes as any,
+  };
+
+  if (marker) {
+    if (marker.position === 'before') {
+      // Preposition: "on #button"
+      if (marker.primary) {
+        const markerToken: PatternToken = marker.alternatives
+          ? { type: 'literal', value: marker.primary, alternatives: marker.alternatives }
+          : { type: 'literal', value: marker.primary };
+        tokens.push(markerToken);
+      }
+      tokens.push(roleValueToken);
+    } else {
+      // Postposition/particle: "#button に"
+      tokens.push(roleValueToken);
+      const markerToken: PatternToken = marker.alternatives
+        ? { type: 'literal', value: marker.primary, alternatives: marker.alternatives }
+        : { type: 'literal', value: marker.primary };
+      tokens.push(markerToken);
+    }
+  } else {
+    // No marker, just the role value
+    tokens.push(roleValueToken);
+  }
+
+  return tokens;
+}
+
+// =============================================================================
+// Extraction Rules Building
+// =============================================================================
+
+/**
+ * Build extraction rules for a pattern.
+ */
+function buildExtractionRules(
+  schema: CommandSchema,
+  profile: LanguageProfile
+): Record<string, ExtractionRule> {
+  const rules: Record<string, ExtractionRule> = {};
+
+  for (const roleSpec of schema.roles) {
+    const marker = profile.roleMarkers[roleSpec.role];
+
+    if (marker && marker.primary) {
+      rules[roleSpec.role] = marker.alternatives
+        ? { marker: marker.primary, markerAlternatives: marker.alternatives }
+        : { marker: marker.primary };
+    } else {
+      rules[roleSpec.role] = {};
+    }
+  }
+
+  return rules;
+}
+
+/**
+ * Build extraction rules with defaults for optional roles.
+ */
+function buildExtractionRulesWithDefaults(
+  schema: CommandSchema,
+  profile: LanguageProfile
+): Record<string, ExtractionRule> {
+  const baseRules = buildExtractionRules(schema, profile);
+  const rules: Record<string, ExtractionRule> = {};
+
+  // Copy base rules and add defaults for optional roles
+  for (const roleSpec of schema.roles) {
+    const baseRule = baseRules[roleSpec.role] || {};
+
+    if (!roleSpec.required && roleSpec.default) {
+      rules[roleSpec.role] = { ...baseRule, default: roleSpec.default };
+    } else {
+      rules[roleSpec.role] = baseRule;
+    }
+  }
+
+  return rules;
+}
+
+// =============================================================================
+// Format String Building
+// =============================================================================
+
+/**
+ * Build a human-readable format string for documentation.
+ */
+function buildFormatString(
+  schema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: { primary: string }
+): string {
+  const parts: string[] = [];
+
+  // Sort roles by position
+  const sortKey = profile.wordOrder === 'SOV' ? 'sovPosition' : 'svoPosition';
+  const sortedRoles = [...schema.roles].sort((a, b) => {
+    const aPos = a[sortKey] ?? 99;
+    const bPos = b[sortKey] ?? 99;
+    return aPos - bPos;
+  });
+
+  // Build role parts
+  const roleParts = sortedRoles.map(roleSpec => {
+    const marker = profile.roleMarkers[roleSpec.role];
+    let part = '';
+
+    if (marker) {
+      if (marker.position === 'before' && marker.primary) {
+        part = `${marker.primary} {${roleSpec.role}}`;
+      } else if (marker.position === 'after') {
+        part = `{${roleSpec.role}} ${marker.primary}`;
+      } else {
+        part = `{${roleSpec.role}}`;
+      }
+    } else {
+      part = `{${roleSpec.role}}`;
+    }
+
+    return roleSpec.required ? part : `[${part}]`;
+  });
+
+  // Arrange based on word order
+  switch (profile.wordOrder) {
+    case 'SVO':
+    case 'VSO':
+      parts.push(keyword.primary, ...roleParts);
+      break;
+    case 'SOV':
+      parts.push(...roleParts, keyword.primary);
+      break;
+    default:
+      parts.push(keyword.primary, ...roleParts);
+  }
+
+  return parts.join(' ');
+}
+
+// =============================================================================
+// Utility Functions
+// =============================================================================
+
+/**
+ * Get a summary of what patterns can be generated.
+ */
+export function getGeneratorSummary(): {
+  languages: string[];
+  commands: string[];
+  totalPatterns: number;
+} {
+  const languages = Object.keys(languageProfiles);
+  const commands = getDefinedSchemas().map(s => s.action);
+
+  // Estimate total patterns (2 variants per command per language)
+  let totalPatterns = 0;
+  for (const profile of Object.values(languageProfiles)) {
+    for (const schema of getDefinedSchemas()) {
+      if (profile.keywords[schema.action]) {
+        totalPatterns += 2; // Full + simple variant
+      }
+    }
+  }
+
+  return { languages, commands, totalPatterns };
+}
+
+/**
+ * Validate that all required keywords exist for a language.
+ */
+export function validateLanguageKeywords(
+  profile: LanguageProfile,
+  schemas: CommandSchema[] = getDefinedSchemas()
+): { missing: string[]; available: string[] } {
+  const missing: string[] = [];
+  const available: string[] = [];
+
+  for (const schema of schemas) {
+    if (profile.keywords[schema.action]) {
+      available.push(schema.action);
+    } else {
+      missing.push(schema.action);
+    }
+  }
+
+  return { missing, available };
+}
