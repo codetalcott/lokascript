@@ -1,0 +1,177 @@
+/**
+ * Semantic-First Multilingual Hyperscript
+ *
+ * This package provides a semantic-first approach to multilingual hyperscript,
+ * enabling true native-language syntax that feels natural to speakers of any language.
+ *
+ * Key Features:
+ * - Parse hyperscript from any supported language (en, ja, ar, es)
+ * - Translate between languages while preserving semantic meaning
+ * - Explicit mode syntax for learning and debugging
+ * - Bidirectional conversion: natural ↔ explicit ↔ natural
+ *
+ * @example
+ * // Parse Japanese to semantic
+ * const node = parse('#button の .active を 切り替え', 'ja');
+ *
+ * // Render in English
+ * const english = render(node, 'en');
+ * // → 'toggle .active on #button'
+ *
+ * // Render in explicit mode
+ * const explicit = renderExplicit(node);
+ * // → '[toggle patient:.active destination:#button]'
+ *
+ * // Translate directly
+ * const arabic = translate('toggle .active on #button', 'en', 'ar');
+ * // → 'بدّل .active على #button'
+ */
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+export type {
+  // Semantic types
+  ActionType,
+  SemanticRole,
+  SemanticValue,
+  LiteralValue,
+  SelectorValue,
+  ReferenceValue,
+  PropertyPathValue,
+  ExpressionValue,
+  SemanticNode,
+  CommandSemanticNode,
+  EventHandlerSemanticNode,
+  ConditionalSemanticNode,
+  CompoundSemanticNode,
+  SemanticMetadata,
+  SourcePosition,
+  EventModifiers,
+
+  // Pattern types
+  LanguagePattern,
+  PatternTemplate,
+  PatternToken,
+  LiteralPatternToken,
+  RolePatternToken,
+  GroupPatternToken,
+  ExtractionRules,
+  ExtractionRule,
+  PatternConstraints,
+  PatternMatchResult,
+  PatternMatchError,
+
+  // Token types
+  LanguageToken,
+  TokenKind,
+  TokenStream,
+  StreamMark,
+  LanguageTokenizer,
+
+  // Parser/Renderer interfaces
+  SemanticParser,
+  SemanticRenderer,
+} from './types';
+
+// =============================================================================
+// Type Helpers
+// =============================================================================
+
+export {
+  createSelector,
+  createLiteral,
+  createReference,
+  createPropertyPath,
+  createCommandNode,
+  createEventHandler,
+} from './types';
+
+// =============================================================================
+// Patterns
+// =============================================================================
+
+export {
+  allPatterns,
+  getPatternsForLanguage,
+  getPatternsForLanguageAndCommand,
+  getSupportedLanguages as getSupportedPatternLanguages,
+  getSupportedCommands,
+  getPatternById,
+  getPatternStats,
+  togglePatterns,
+  putPatterns,
+  eventHandlerPatterns,
+  eventNameTranslations,
+  normalizeEventName,
+} from './patterns';
+
+// =============================================================================
+// Tokenizers
+// =============================================================================
+
+export {
+  getTokenizer,
+  tokenize,
+  getSupportedLanguages as getSupportedTokenizerLanguages,
+  isLanguageSupported,
+  registerTokenizer,
+  englishTokenizer,
+  japaneseTokenizer,
+  arabicTokenizer,
+  spanishTokenizer,
+  TokenStreamImpl,
+} from './tokenizers';
+
+// =============================================================================
+// Parser
+// =============================================================================
+
+export {
+  SemanticParserImpl,
+  semanticParser,
+  parse,
+  canParse,
+  getCommandType,
+  PatternMatcher,
+  patternMatcher,
+  matchPattern,
+  matchBest,
+} from './parser';
+
+// =============================================================================
+// Explicit Mode
+// =============================================================================
+
+export {
+  parseExplicit,
+  isExplicitSyntax,
+  SemanticRendererImpl,
+  semanticRenderer,
+  render,
+  renderExplicit,
+  toExplicit,
+  fromExplicit,
+  translate,
+  parseAny,
+  roundTrip,
+  getAllTranslations,
+  validateTranslation,
+} from './explicit';
+
+// =============================================================================
+// Convenience: Main API
+// =============================================================================
+
+/**
+ * Get all supported languages for parsing.
+ */
+export function getSupportedLanguages(): string[] {
+  return ['en', 'ja', 'ar', 'es'];
+}
+
+/**
+ * Version of the semantic package.
+ */
+export const VERSION = '0.1.0';

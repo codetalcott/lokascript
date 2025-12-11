@@ -1,0 +1,393 @@
+/**
+ * Arabic Tokenizer
+ *
+ * Tokenizes Arabic hyperscript input.
+ * Arabic is challenging because:
+ * - Right-to-left (RTL) text direction
+ * - Prefix prepositions that attach to words (بـ, لـ, كـ)
+ * - Root-pattern morphology
+ * - CSS selectors are LTR islands within RTL text
+ */
+
+import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import {
+  BaseTokenizer,
+  TokenStreamImpl,
+  createToken,
+  createPosition,
+  isWhitespace,
+  isSelectorStart,
+  isQuote,
+  isDigit,
+  isAsciiIdentifierChar,
+} from './base';
+
+// =============================================================================
+// Arabic Character Classification
+// =============================================================================
+
+/**
+ * Check if character is Arabic.
+ */
+function isArabic(char: string): boolean {
+  const code = char.charCodeAt(0);
+  return (code >= 0x0600 && code <= 0x06FF) ||  // Arabic
+         (code >= 0x0750 && code <= 0x077F) ||  // Arabic Supplement
+         (code >= 0x08A0 && code <= 0x08FF) ||  // Arabic Extended-A
+         (code >= 0xFB50 && code <= 0xFDFF) ||  // Arabic Presentation Forms-A
+         (code >= 0xFE70 && code <= 0xFEFF);    // Arabic Presentation Forms-B
+}
+
+// =============================================================================
+// Arabic Prefixes and Prepositions
+// =============================================================================
+
+/**
+ * Arabic prefix prepositions that attach to the following word.
+ * These are marked with trailing hyphen in patterns to indicate attachment.
+ */
+const ATTACHED_PREFIXES = new Set([
+  'بـ',  // bi- (with, by)
+  'لـ',  // li- (to, for)
+  'كـ',  // ka- (like, as)
+  'وـ',  // wa- (and)
+]);
+
+/**
+ * Arabic standalone prepositions.
+ */
+const PREPOSITIONS = new Set([
+  'في',     // fī (in)
+  'على',    // ʿalā (on)
+  'من',     // min (from)
+  'إلى',    // ilā (to)
+  'الى',    // ilā (alternative spelling)
+  'عند',    // ʿinda (at, when)
+  'مع',     // maʿa (with)
+  'عن',     // ʿan (about, from)
+  'قبل',    // qabl (before)
+  'بعد',    // baʿd (after)
+  'بين',    // bayn (between)
+]);
+
+// =============================================================================
+// Arabic Keywords
+// =============================================================================
+
+/**
+ * Arabic command keywords mapped to their English equivalents.
+ */
+const ARABIC_KEYWORDS: Map<string, string> = new Map([
+  // Commands
+  ['بدّل', 'toggle'],
+  ['بدل', 'toggle'],
+  ['غيّر', 'toggle'],
+  ['غير', 'toggle'],
+  ['أضف', 'add'],
+  ['اضف', 'add'],
+  ['أزل', 'remove'],
+  ['ازل', 'remove'],
+  ['احذف', 'remove'],
+  ['ضع', 'put'],
+  ['اضع', 'put'],
+  ['يضع', 'put'],
+  ['عيّن', 'set'],
+  ['عين', 'set'],
+  ['احصل', 'get'],
+  ['أظهر', 'show'],
+  ['اظهر', 'show'],
+  ['أخفِ', 'hide'],
+  ['اخفِ', 'hide'],
+  ['اخف', 'hide'],
+  ['زِد', 'increment'],
+  ['زد', 'increment'],
+  ['أنقص', 'decrement'],
+  ['انقص', 'decrement'],
+  ['انتظر', 'wait'],
+  ['أرسل', 'send'],
+  ['ارسل', 'send'],
+  ['شغّل', 'trigger'],
+  ['شغل', 'trigger'],
+  ['اتصل', 'call'],
+  ['ارجع', 'return'],
+  ['سجّل', 'log'],
+  ['سجل', 'log'],
+  // Control flow
+  ['إذا', 'if'],
+  ['اذا', 'if'],
+  ['لو', 'if'],
+  ['إذن', 'then'],
+  ['فإن', 'then'],
+  ['وإلا', 'else'],
+  ['والا', 'else'],
+  ['نهاية', 'end'],
+  ['كرر', 'repeat'],
+  ['بينما', 'while'],
+  ['حتى', 'until'],
+  // Events
+  ['النقر', 'click'],
+  ['نقر', 'click'],
+  ['الإدخال', 'input'],
+  ['إدخال', 'input'],
+  ['التغيير', 'change'],
+  ['تغيير', 'change'],
+  ['الإرسال', 'submit'],
+  ['إرسال', 'submit'],
+  ['ضغط', 'keydown'],
+  ['تحميل', 'load'],
+  ['تمرير', 'scroll'],
+  // References
+  ['أنا', 'me'],
+  ['هو', 'it'],
+  ['هي', 'it'],
+  ['النتيجة', 'result'],
+  ['الحدث', 'event'],
+  ['الهدف', 'target'],
+  // Positional
+  ['الأول', 'first'],
+  ['الأخير', 'last'],
+  ['التالي', 'next'],
+  ['السابق', 'previous'],
+  // Time units
+  ['ثانية', 's'],
+  ['ثواني', 's'],
+  ['ملي ثانية', 'ms'],
+  ['دقيقة', 'm'],
+  ['دقائق', 'm'],
+  ['ساعة', 'h'],
+  ['ساعات', 'h'],
+  // Boolean
+  ['صحيح', 'true'],
+  ['خطأ', 'false'],
+]);
+
+// =============================================================================
+// Arabic Tokenizer Implementation
+// =============================================================================
+
+export class ArabicTokenizer extends BaseTokenizer {
+  readonly language = 'ar';
+  readonly direction = 'rtl' as const;
+
+  tokenize(input: string): TokenStream {
+    const tokens: LanguageToken[] = [];
+    let pos = 0;
+
+    while (pos < input.length) {
+      // Skip whitespace
+      if (isWhitespace(input[pos])) {
+        pos++;
+        continue;
+      }
+
+      // Try CSS selector first (LTR island in RTL text)
+      if (isSelectorStart(input[pos])) {
+        const selectorToken = this.trySelector(input, pos);
+        if (selectorToken) {
+          tokens.push(selectorToken);
+          pos = selectorToken.position.end;
+          continue;
+        }
+      }
+
+      // Try string literal
+      if (isQuote(input[pos])) {
+        const stringToken = this.tryString(input, pos);
+        if (stringToken) {
+          tokens.push(stringToken);
+          pos = stringToken.position.end;
+          continue;
+        }
+      }
+
+      // Try number
+      if (isDigit(input[pos])) {
+        const numberToken = this.extractArabicNumber(input, pos);
+        if (numberToken) {
+          tokens.push(numberToken);
+          pos = numberToken.position.end;
+          continue;
+        }
+      }
+
+      // Try Arabic preposition (multi-word first)
+      const prepToken = this.tryPreposition(input, pos);
+      if (prepToken) {
+        tokens.push(prepToken);
+        pos = prepToken.position.end;
+        continue;
+      }
+
+      // Try Arabic word
+      if (isArabic(input[pos])) {
+        const wordToken = this.extractArabicWord(input, pos);
+        if (wordToken) {
+          tokens.push(wordToken);
+          pos = wordToken.position.end;
+          continue;
+        }
+      }
+
+      // Try ASCII word (for mixed content)
+      if (isAsciiIdentifierChar(input[pos])) {
+        const asciiToken = this.extractAsciiWord(input, pos);
+        if (asciiToken) {
+          tokens.push(asciiToken);
+          pos = asciiToken.position.end;
+          continue;
+        }
+      }
+
+      // Skip unknown character
+      pos++;
+    }
+
+    return new TokenStreamImpl(tokens, 'ar');
+  }
+
+  classifyToken(token: string): TokenKind {
+    if (PREPOSITIONS.has(token)) return 'particle';
+    if (ARABIC_KEYWORDS.has(token)) return 'keyword';
+    if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
+    if (token.startsWith('"') || token.startsWith("'")) return 'literal';
+    if (/^\d/.test(token)) return 'literal';
+
+    return 'identifier';
+  }
+
+  /**
+   * Try to match an Arabic preposition.
+   */
+  private tryPreposition(input: string, pos: number): LanguageToken | null {
+    // Check prepositions from longest to shortest
+    const sortedPreps = Array.from(PREPOSITIONS).sort((a, b) => b.length - a.length);
+
+    for (const prep of sortedPreps) {
+      if (input.slice(pos, pos + prep.length) === prep) {
+        // Check that it's a standalone word (followed by space or non-Arabic)
+        const nextPos = pos + prep.length;
+        if (nextPos >= input.length || isWhitespace(input[nextPos]) || !isArabic(input[nextPos])) {
+          return createToken(
+            prep,
+            'particle',
+            createPosition(pos, nextPos)
+          );
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Extract an Arabic word.
+   */
+  private extractArabicWord(input: string, startPos: number): LanguageToken | null {
+    let pos = startPos;
+    let word = '';
+
+    // Check for attached prefix
+    for (const prefix of ATTACHED_PREFIXES) {
+      const basePrefix = prefix.replace('ـ', '');
+      if (input.slice(pos, pos + basePrefix.length) === basePrefix) {
+        // This is a prefix - extract it separately
+        // For now, include it in the word
+      }
+    }
+
+    // Extract Arabic characters
+    while (pos < input.length && (isArabic(input[pos]) || input[pos] === 'ـ')) {
+      word += input[pos++];
+    }
+
+    if (!word) return null;
+
+    // Check if this is a known keyword
+    const normalized = ARABIC_KEYWORDS.get(word);
+
+    // Check if it's a preposition
+    const isPreposition = PREPOSITIONS.has(word);
+
+    return createToken(
+      word,
+      normalized ? 'keyword' : (isPreposition ? 'particle' : 'identifier'),
+      createPosition(startPos, pos),
+      normalized
+    );
+  }
+
+  /**
+   * Extract an ASCII word.
+   */
+  private extractAsciiWord(input: string, startPos: number): LanguageToken | null {
+    let pos = startPos;
+    let word = '';
+
+    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
+      word += input[pos++];
+    }
+
+    if (!word) return null;
+
+    return createToken(
+      word,
+      'identifier',
+      createPosition(startPos, pos)
+    );
+  }
+
+  /**
+   * Extract a number, including Arabic time unit suffixes.
+   */
+  private extractArabicNumber(input: string, startPos: number): LanguageToken | null {
+    let pos = startPos;
+    let number = '';
+
+    // Integer part
+    while (pos < input.length && isDigit(input[pos])) {
+      number += input[pos++];
+    }
+
+    // Optional decimal
+    if (pos < input.length && input[pos] === '.') {
+      number += input[pos++];
+      while (pos < input.length && isDigit(input[pos])) {
+        number += input[pos++];
+      }
+    }
+
+    // Skip any whitespace before time unit
+    let unitPos = pos;
+    while (unitPos < input.length && isWhitespace(input[unitPos])) {
+      unitPos++;
+    }
+
+    // Check for Arabic time units
+    const remaining = input.slice(unitPos);
+    if (remaining.startsWith('ملي ثانية') || remaining.startsWith('ملي_ثانية')) {
+      number += 'ms';
+      pos = unitPos + (remaining.startsWith('ملي ثانية') ? 9 : 8);
+    } else if (remaining.startsWith('ثانية') || remaining.startsWith('ثواني')) {
+      number += 's';
+      pos = unitPos + (remaining.startsWith('ثانية') ? 5 : 5);
+    } else if (remaining.startsWith('دقيقة') || remaining.startsWith('دقائق')) {
+      number += 'm';
+      pos = unitPos + 5;
+    } else if (remaining.startsWith('ساعة') || remaining.startsWith('ساعات')) {
+      number += 'h';
+      pos = unitPos + (remaining.startsWith('ساعة') ? 4 : 5);
+    }
+
+    if (!number) return null;
+
+    return createToken(
+      number,
+      'literal',
+      createPosition(startPos, pos)
+    );
+  }
+}
+
+/**
+ * Singleton instance.
+ */
+export const arabicTokenizer = new ArabicTokenizer();

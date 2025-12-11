@@ -1,0 +1,51 @@
+{
+  "name": "@hyperfixi/semantic",
+  "version": "0.1.0",
+  "description": "Semantic-first multilingual parsing for Hyperscript",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./explicit": {
+      "types": "./dist/explicit/index.d.ts",
+      "import": "./dist/explicit/index.mjs",
+      "require": "./dist/explicit/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "hyperscript",
+    "semantic",
+    "multilingual",
+    "i18n",
+    "parser",
+    "natural-language"
+  ],
+  "author": "Hyperfixi Team",
+  "license": "MIT",
+  "dependencies": {
+    "@hyperfixi/i18n": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}
