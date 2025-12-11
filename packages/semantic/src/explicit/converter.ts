@@ -106,23 +106,34 @@ export function parseAny(input: string, language: string): SemanticNode {
 /**
  * Round-trip validation: parse and re-render to verify consistency.
  *
+ * When called with 2 arguments, returns an object with validation info.
+ * When called with 3 arguments, returns the rendered string directly.
+ *
  * @param input Original input
- * @param language Language code
- * @returns Object with original, semantic, re-rendered, and match status
+ * @param sourceLanguage Source language code
+ * @param targetLanguage Target language code (optional, if provided returns string only)
+ * @returns Object with original, semantic, re-rendered, and match status (or just string if targetLanguage provided)
  */
 export function roundTrip(
   input: string,
-  language: string
-): {
+  sourceLanguage: string,
+  targetLanguage?: string
+): string | {
   original: string;
   semantic: SemanticNode;
   rendered: string;
   matches: boolean;
 } {
-  const semantic = parseAny(input, language);
+  const semantic = parseAny(input, sourceLanguage);
+  const outputLanguage = targetLanguage ?? sourceLanguage;
   const rendered = isExplicitSyntax(input)
     ? renderExplicit(semantic)
-    : render(semantic, language);
+    : render(semantic, outputLanguage);
+
+  // If target language is explicitly provided, return just the rendered string
+  if (targetLanguage !== undefined) {
+    return rendered;
+  }
 
   // Normalize for comparison (trim whitespace, lowercase)
   const normalizedOriginal = input.trim().toLowerCase();
@@ -145,13 +156,13 @@ export function roundTrip(
  *
  * @param input Hyperscript input
  * @param sourceLanguage Source language (or 'explicit')
- * @param targetLanguages List of target language codes
+ * @param targetLanguages List of target language codes (defaults to all supported: en, ja, ar, es)
  * @returns Object mapping language codes to translations
  */
 export function getAllTranslations(
   input: string,
   sourceLanguage: string,
-  targetLanguages: string[]
+  targetLanguages: string[] = ['en', 'ja', 'ar', 'es']
 ): Record<string, string> {
   const result: Record<string, string> = {};
 

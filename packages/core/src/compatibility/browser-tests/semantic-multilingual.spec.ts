@@ -1,0 +1,315 @@
+/**
+ * Semantic Multilingual Browser Tests
+ *
+ * Tests the semantic parser browser bundle functionality across
+ * multiple languages (English, Spanish, Japanese, Arabic).
+ */
+
+import { test, expect } from '@playwright/test';
+
+test.describe('Semantic Multilingual Parser', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    // Navigate to the semantic package test page
+    // The Playwright config serves from project root on port 3000
+    await page.goto(`${baseURL}/packages/semantic/test-browser.html`);
+
+    // Wait for the semantic bundle to load
+    await page.waitForFunction(() => typeof (window as any).HyperFixiSemantic !== 'undefined', {
+      timeout: 5000,
+    });
+  });
+
+  test('bundle loads and exposes HyperFixiSemantic global', async ({ page }) => {
+    const hasGlobal = await page.evaluate(() => {
+      return typeof (window as any).HyperFixiSemantic !== 'undefined';
+    });
+    expect(hasGlobal).toBe(true);
+  });
+
+  test('exposes parse function', async ({ page }) => {
+    const hasParseFunction = await page.evaluate(() => {
+      return typeof (window as any).HyperFixiSemantic.parse === 'function';
+    });
+    expect(hasParseFunction).toBe(true);
+  });
+
+  test('exposes translate function', async ({ page }) => {
+    const hasTranslateFunction = await page.evaluate(() => {
+      return typeof (window as any).HyperFixiSemantic.translate === 'function';
+    });
+    expect(hasTranslateFunction).toBe(true);
+  });
+
+  test('exposes createSemanticAnalyzer function', async ({ page }) => {
+    const hasAnalyzerFunction = await page.evaluate(() => {
+      return typeof (window as any).HyperFixiSemantic.createSemanticAnalyzer === 'function';
+    });
+    expect(hasAnalyzerFunction).toBe(true);
+  });
+
+  test('reports supported languages', async ({ page }) => {
+    const languages = await page.evaluate(() => {
+      return (window as any).HyperFixiSemantic.getSupportedLanguages();
+    });
+    expect(languages).toContain('en');
+    expect(languages).toContain('es');
+    expect(languages).toContain('ja');
+    expect(languages).toContain('ar');
+  });
+
+  test.describe('English Parsing', () => {
+    test('parses "toggle .active on #button"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('toggle .active on #button', 'en');
+      });
+      expect(result).toBe(true);
+    });
+
+    test('parses "toggle .active" with implicit target', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('toggle .active', 'en');
+      });
+      expect(result).toBe(true);
+    });
+  });
+
+  test.describe('Japanese Parsing (SOV)', () => {
+    test('parses ".active を 切り替え"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('.active を 切り替え', 'ja');
+      });
+      expect(result).toBe(true);
+    });
+
+    test('parses "#button の .active を 切り替え"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('#button の .active を 切り替え', 'ja');
+      });
+      expect(result).toBe(true);
+    });
+  });
+
+  test.describe('Arabic Parsing (VSO)', () => {
+    test('parses "بدّل .active"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('بدّل .active', 'ar');
+      });
+      expect(result).toBe(true);
+    });
+
+    test('parses "بدّل .active على #button"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('بدّل .active على #button', 'ar');
+      });
+      expect(result).toBe(true);
+    });
+  });
+
+  test.describe('Spanish Parsing (SVO)', () => {
+    test('parses "alternar .active"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('alternar .active', 'es');
+      });
+      expect(result).toBe(true);
+    });
+
+    test('parses "alternar .active en #button"', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.canParse('alternar .active en #button', 'es');
+      });
+      expect(result).toBe(true);
+    });
+  });
+
+  test.describe('Translation', () => {
+    test('translates English to Japanese', async ({ page }) => {
+      const translation = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.translate('toggle .active on #button', 'en', 'ja');
+      });
+      // Japanese should have particles and different word order
+      expect(translation).toContain('.active');
+      expect(translation).toContain('#button');
+      expect(translation).toContain('切り替え');
+    });
+
+    test('translates English to Arabic', async ({ page }) => {
+      const translation = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.translate('toggle .active on #button', 'en', 'ar');
+      });
+      expect(translation).toContain('.active');
+      expect(translation).toContain('#button');
+      // Arabic should have the verb
+      expect(translation).toMatch(/بدل|بدّل/);
+    });
+
+    test('translates English to Spanish', async ({ page }) => {
+      const translation = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.translate('toggle .active on #button', 'en', 'es');
+      });
+      expect(translation).toContain('alternar');
+      expect(translation).toContain('.active');
+      expect(translation).toContain('#button');
+    });
+
+    test('translates Japanese to English', async ({ page }) => {
+      const translation = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.translate('#button の .active を 切り替え', 'ja', 'en');
+      });
+      expect(translation).toContain('toggle');
+      expect(translation).toContain('.active');
+    });
+
+    test('getAllTranslations returns all languages', async ({ page }) => {
+      const translations = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.getAllTranslations('toggle .active on #button', 'en');
+      });
+      expect(translations).toHaveProperty('en');
+      expect(translations).toHaveProperty('ja');
+      expect(translations).toHaveProperty('ar');
+      expect(translations).toHaveProperty('es');
+    });
+  });
+
+  test.describe('Explicit Mode', () => {
+    test('converts to explicit syntax', async ({ page }) => {
+      const explicit = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.toExplicit('toggle .active on #button', 'en');
+      });
+      // Explicit syntax should have brackets and role labels
+      expect(explicit).toMatch(/\[toggle/);
+      expect(explicit).toContain('patient:');
+    });
+
+    test('parses explicit syntax', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.isExplicitSyntax('[toggle patient:.active destination:#button]');
+      });
+      expect(result).toBe(true);
+    });
+
+    test('converts explicit back to natural', async ({ page }) => {
+      const natural = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.fromExplicit('[toggle patient:.active destination:#button]', 'en');
+      });
+      expect(natural).toContain('toggle');
+      expect(natural).toContain('.active');
+    });
+  });
+
+  test.describe('SemanticAnalyzer', () => {
+    test('creates analyzer instance', async ({ page }) => {
+      const hasAnalyzer = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const analyzer = S.createSemanticAnalyzer();
+        return analyzer && typeof analyzer.analyze === 'function';
+      });
+      expect(hasAnalyzer).toBe(true);
+    });
+
+    test('analyzer supports expected languages', async ({ page }) => {
+      const supportedLangs = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const analyzer = S.createSemanticAnalyzer();
+        return analyzer.supportedLanguages();
+      });
+      expect(supportedLangs).toContain('en');
+      expect(supportedLangs).toContain('ja');
+      expect(supportedLangs).toContain('ar');
+      expect(supportedLangs).toContain('es');
+    });
+
+    test('analyzer returns confidence score', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const analyzer = S.createSemanticAnalyzer();
+        return analyzer.analyze('toggle .active on #button', 'en');
+      });
+      expect(result.confidence).toBeGreaterThan(0);
+      expect(result.command).toBeDefined();
+      expect(result.command?.name).toBe('toggle');
+    });
+
+    test('analyzer returns low confidence for unknown input', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const analyzer = S.createSemanticAnalyzer();
+        return analyzer.analyze('unknown gibberish command', 'en');
+      });
+      expect(result.confidence).toBe(0);
+    });
+  });
+
+  test.describe('Round-Trip Verification', () => {
+    test('English round-trip preserves meaning', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const original = 'toggle .active on #button';
+        // Parse to semantic, render back to English
+        const roundTripped = S.roundTrip(original, 'en', 'en');
+        return { original, roundTripped };
+      });
+      // The round-tripped version should be semantically equivalent
+      expect(result.roundTripped).toContain('toggle');
+      expect(result.roundTripped).toContain('.active');
+    });
+
+    test('cross-language round-trip preserves meaning', async ({ page }) => {
+      const result = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const original = 'toggle .active on #button';
+        // English -> Japanese -> English
+        const japanese = S.translate(original, 'en', 'ja');
+        const backToEnglish = S.translate(japanese, 'ja', 'en');
+        return { original, japanese, backToEnglish };
+      });
+      // Both should contain the key elements
+      expect(result.backToEnglish).toContain('toggle');
+      expect(result.backToEnglish).toContain('.active');
+    });
+  });
+
+  test.describe('Tokenizers', () => {
+    test('tokenize returns token stream', async ({ page }) => {
+      const tokens = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        return S.tokenize('toggle .active on #button', 'en');
+      });
+      expect(Array.isArray(tokens)).toBe(true);
+      expect(tokens.length).toBeGreaterThan(0);
+    });
+
+    test('English tokenizer handles selectors', async ({ page }) => {
+      const hasSelector = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const tokens = S.tokenize('toggle .active', 'en');
+        return tokens.some((t: any) => t.kind === 'selector' || t.value === '.active');
+      });
+      expect(hasSelector).toBe(true);
+    });
+
+    test('Japanese tokenizer handles particles', async ({ page }) => {
+      const hasParticle = await page.evaluate(() => {
+        const S = (window as any).HyperFixiSemantic;
+        const tokens = S.tokenize('.active を 切り替え', 'ja');
+        return tokens.some((t: any) => t.kind === 'particle' || t.value === 'を');
+      });
+      expect(hasParticle).toBe(true);
+    });
+  });
+});

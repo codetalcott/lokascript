@@ -33,13 +33,11 @@ export {
 // Parsing
 // =============================================================================
 
-export {
-  parse,
-  parseAny,
-  parseExplicit,
-  canParse,
-  isExplicitSyntax,
-} from './explicit';
+// Core parsing functions from the parser module
+export { parse, canParse } from './parser';
+
+// Explicit mode parsing and utilities
+export { parseAny, parseExplicit, isExplicitSyntax } from './explicit';
 
 // =============================================================================
 // Translation
@@ -81,8 +79,9 @@ export type { SemanticAnalyzer, SemanticAnalysisResult } from './core-bridge';
 // Tokenizers (for advanced usage)
 // =============================================================================
 
-export {
-  tokenize,
+// Import from tokenizers module
+import {
+  tokenize as tokenizeInternal,
   getTokenizer,
   isLanguageSupported,
   englishTokenizer,
@@ -90,6 +89,30 @@ export {
   arabicTokenizer,
   spanishTokenizer,
 } from './tokenizers';
+
+import type { LanguageToken } from './types';
+
+/**
+ * Tokenize input and return array of tokens (browser-friendly wrapper).
+ *
+ * @param input The input string to tokenize
+ * @param language The language code
+ * @returns Array of language tokens
+ */
+export function tokenize(input: string, language: string): LanguageToken[] {
+  const stream = tokenizeInternal(input, language);
+  return [...stream.tokens];
+}
+
+// Re-export other tokenizer utilities
+export {
+  getTokenizer,
+  isLanguageSupported,
+  englishTokenizer,
+  japaneseTokenizer,
+  arabicTokenizer,
+  spanishTokenizer,
+};
 
 // =============================================================================
 // Type Helpers (for constructing semantic nodes)
