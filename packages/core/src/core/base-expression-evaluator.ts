@@ -223,25 +223,48 @@ export class BaseExpressionEvaluator {
   }
 
   /**
-   * Evaluate template literal - parse ${} expressions and substitute values
+   * Evaluate template literal - parse $variable and ${expression} patterns
+   * Supports both _hyperscript-style $var and JavaScript-style ${expr}
    */
   protected async evaluateTemplateLiteral(node: any, context: ExecutionContext): Promise<string> {
-    const template = node.value || '';
+    let template = node.value || '';
 
     debug.expressions('TEMPLATE LITERAL: Evaluating', { template, node });
 
-    let result = '';
-    let i = 0;
+    // First pass: Replace $variable patterns (without curly braces)
+    // Matches: $varName, $obj.prop (but NOT ${...})
+    const varPattern = /\$([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)/g;
 
-    while (i < template.length) {
-      const exprStart = template.indexOf('${', i);
+    // Collect all matches first to avoid index shifting during replacement
+    const matches: Array<{ match: string; varName: string; index: number }> = [];
+    let m;
+    while ((m = varPattern.exec(template)) !== null) {
+      // Skip if this is part of ${...} pattern (next char is '{')
+      if (template[m.index + 1] === '{') continue;
+      matches.push({ match: m[0], varName: m[1], index: m.index });
+    }
+
+    // Replace from end to preserve indices
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const { match, varName, index } = matches[i];
+      const value = await this.resolveTemplateVariable(varName, context);
+      debug.expressions(`TEMPLATE: $${varName} resolved to`, value);
+      template = template.slice(0, index) + String(value ?? '') + template.slice(index + match.length);
+    }
+
+    // Second pass: Handle ${expression} patterns
+    let result = '';
+    let j = 0;
+
+    while (j < template.length) {
+      const exprStart = template.indexOf('${', j);
 
       if (exprStart === -1) {
-        result += template.slice(i);
+        result += template.slice(j);
         break;
       }
 
-      result += template.slice(i, exprStart);
+      result += template.slice(j, exprStart);
 
       const exprEnd = template.indexOf('}', exprStart);
       if (exprEnd === -1) {
@@ -270,10 +293,41 @@ export class BaseExpressionEvaluator {
       }
 
       result += String(value);
-      i = exprEnd + 1;
+      j = exprEnd + 1;
     }
 
     return result;
+  }
+
+  /**
+   * Resolve a variable name (with optional property access) from context
+   * Used for $variable template interpolation
+   */
+  private async resolveTemplateVariable(varName: string, context: ExecutionContext): Promise<any> {
+    // Handle property access like obj.prop.nested
+    if (varName.includes('.')) {
+      const parts = varName.split('.');
+      let value = this.lookupTemplateVariable(parts[0], context);
+      for (let i = 1; i < parts.length && value != null; i++) {
+        value = value[parts[i]];
+      }
+      return value;
+    }
+    return this.lookupTemplateVariable(varName, context);
+  }
+
+  /**
+   * Look up a simple variable name in the context scope chain
+   */
+  private lookupTemplateVariable(name: string, context: ExecutionContext): any {
+    if (context.locals?.has(name)) return context.locals.get(name);
+    if (context.variables?.has(name)) return context.variables.get(name);
+    if (context.globals?.has(name)) return context.globals.get(name);
+    // Check context properties
+    if (name === 'me') return context.me;
+    if (name === 'it') return context.it;
+    if (name === 'result') return context.result;
+    return undefined;
   }
 
   /**
