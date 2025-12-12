@@ -36,3 +36,8 @@ export {
   ArabicMorphologicalNormalizer,
   arabicMorphologicalNormalizer,
 } from './arabic-normalizer';
+
+export {
+  TurkishMorphologicalNormalizer,
+  turkishMorphologicalNormalizer,
+} from './turkish-normalizer';

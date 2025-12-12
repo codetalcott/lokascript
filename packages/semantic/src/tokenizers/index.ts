@@ -11,6 +11,7 @@ import { japaneseTokenizer } from './japanese';
 import { koreanTokenizer } from './korean';
 import { arabicTokenizer } from './arabic';
 import { spanishTokenizer } from './spanish';
+import { turkishTokenizer } from './turkish';
 
 // =============================================================================
 // Tokenizer Registry
@@ -25,6 +26,7 @@ tokenizers.set('ja', japaneseTokenizer);
 tokenizers.set('ko', koreanTokenizer);
 tokenizers.set('ar', arabicTokenizer);
 tokenizers.set('es', spanishTokenizer);
+tokenizers.set('tr', turkishTokenizer);
 
 /**
  * Get a tokenizer for the specified language.
@@ -74,6 +76,7 @@ export { japaneseTokenizer } from './japanese';
 export { koreanTokenizer } from './korean';
 export { arabicTokenizer } from './arabic';
 export { spanishTokenizer } from './spanish';
+export { turkishTokenizer } from './turkish';
 
 export {
   BaseTokenizer,
