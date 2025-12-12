@@ -232,6 +232,14 @@ export class JapaneseTokenizer extends BaseTokenizer {
         }
       }
 
+      // Try variable reference (:varname)
+      const varToken = this.tryVariableRef(input, pos);
+      if (varToken) {
+        tokens.push(varToken);
+        pos = varToken.position.end;
+        continue;
+      }
+
       // Try multi-character particle (before single-character)
       const multiParticle = this.tryMultiCharParticle(input, pos);
       if (multiParticle) {

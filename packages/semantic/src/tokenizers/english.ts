@@ -113,13 +113,11 @@ export class EnglishTokenizer extends BaseTokenizer {
       }
 
       // Try variable reference (:varname)
-      if (input[pos] === ':' && pos + 1 < input.length && isAsciiIdentifierChar(input[pos + 1])) {
-        const varToken = this.extractVariableRef(input, pos);
-        if (varToken) {
-          tokens.push(varToken);
-          pos = varToken.position.end;
-          continue;
-        }
+      const varToken = this.tryVariableRef(input, pos);
+      if (varToken) {
+        tokens.push(varToken);
+        pos = varToken.position.end;
+        continue;
       }
 
       // Try word (identifier or keyword)
@@ -177,30 +175,6 @@ export class EnglishTokenizer extends BaseTokenizer {
     return createToken(
       word,
       kind,
-      createPosition(startPos, pos)
-    );
-  }
-
-  /**
-   * Extract a variable reference (:varname) from the input.
-   * In hyperscript, :x refers to a local variable named x.
-   */
-  private extractVariableRef(input: string, startPos: number): LanguageToken | null {
-    if (input[startPos] !== ':') return null;
-
-    let pos = startPos + 1; // Skip the colon
-    let varName = '';
-
-    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-      varName += input[pos++];
-    }
-
-    if (!varName) return null;
-
-    // Return the full :varname as a single token
-    return createToken(
-      ':' + varName,
-      'identifier', // Variable references are identifiers
       createPosition(startPos, pos)
     );
   }

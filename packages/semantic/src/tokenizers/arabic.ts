@@ -215,6 +215,14 @@ export class ArabicTokenizer extends BaseTokenizer {
         }
       }
 
+      // Try variable reference (:varname)
+      const varToken = this.tryVariableRef(input, pos);
+      if (varToken) {
+        tokens.push(varToken);
+        pos = varToken.position.end;
+        continue;
+      }
+
       // Try Arabic preposition (multi-word first)
       const prepToken = this.tryPreposition(input, pos);
       if (prepToken) {

@@ -233,6 +233,14 @@ export class KoreanTokenizer extends BaseTokenizer {
         }
       }
 
+      // Try variable reference (:varname)
+      const varToken = this.tryVariableRef(input, pos);
+      if (varToken) {
+        tokens.push(varToken);
+        pos = varToken.position.end;
+        continue;
+      }
+
       // Try Korean word FIRST (before particles)
       // This ensures keywords like 로그 aren't split on particle characters
       if (isKorean(input[pos])) {

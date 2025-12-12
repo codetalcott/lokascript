@@ -450,4 +450,26 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
     }
     return null;
   }
+
+  /**
+   * Try to extract a variable reference (:varname) at the current position.
+   * In hyperscript, :x refers to a local variable named x.
+   */
+  protected tryVariableRef(input: string, pos: number): LanguageToken | null {
+    if (input[pos] !== ':') return null;
+    if (pos + 1 >= input.length) return null;
+    if (!isAsciiIdentifierChar(input[pos + 1])) return null;
+
+    let endPos = pos + 1;
+    while (endPos < input.length && isAsciiIdentifierChar(input[endPos])) {
+      endPos++;
+    }
+
+    const varRef = input.slice(pos, endPos);
+    return createToken(
+      varRef,
+      'identifier',
+      createPosition(pos, endPos)
+    );
+  }
 }
