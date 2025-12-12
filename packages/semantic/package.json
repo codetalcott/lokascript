@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "browser": "dist/hyperfixi-semantic.browser.global.js",
+  "browser": "dist/index.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
