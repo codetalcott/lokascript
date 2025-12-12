@@ -309,6 +309,49 @@ describe('Multilingual Equivalents of Official Examples', () => {
     });
   });
 
+  describe('Decrement Command', () => {
+    it('Japanese: :x を 減少', () => {
+      expect(canParse(':x を 減少', 'ja')).toBe(true);
+
+      const node = parse(':x を 減少', 'ja');
+      expect(node.action).toBe('decrement');
+      expect(node.roles.get('patient')?.value).toBe(':x');
+    });
+
+    it('Korean: :x 를 감소', () => {
+      expect(canParse(':x 를 감소', 'ko')).toBe(true);
+
+      const node = parse(':x 를 감소', 'ko');
+      expect(node.action).toBe('decrement');
+      expect(node.roles.get('patient')?.value).toBe(':x');
+    });
+
+    it('Arabic: أنقص :x', () => {
+      expect(canParse('أنقص :x', 'ar')).toBe(true);
+
+      const node = parse('أنقص :x', 'ar');
+      expect(node.action).toBe('decrement');
+      expect(node.roles.get('patient')?.value).toBe(':x');
+    });
+
+    it('Spanish: decrementar :x', () => {
+      expect(canParse('decrementar :x', 'es')).toBe(true);
+
+      const node = parse('decrementar :x', 'es');
+      expect(node.action).toBe('decrement');
+      expect(node.roles.get('patient')?.value).toBe(':x');
+    });
+
+    it('Turkish: :x i azalt', () => {
+      // Turkish requires accusative case particle 'i' for objects
+      expect(canParse(':x i azalt', 'tr')).toBe(true);
+
+      const node = parse(':x i azalt', 'tr');
+      expect(node.action).toBe('decrement');
+      expect(node.roles.get('patient')?.value).toBe(':x');
+    });
+  });
+
   describe('Wait Command', () => {
     it('Japanese: 1s 待つ', () => {
       // Note: May need to adjust syntax based on actual Japanese patterns
