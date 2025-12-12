@@ -8,7 +8,38 @@ import { tokenize } from '../parser/tokenizer';
 import { Runtime, type RuntimeOptions } from '../runtime/runtime';
 import { createContext, createChildContext } from '../core/context';
 import type { ASTNode, ExecutionContext, ParseError } from '../types/base-types';
+import type { SemanticAnalyzerInterface } from '../parser/types';
 import { debug } from '../utils/debug';
+import {
+  createSemanticAnalyzer,
+  DEFAULT_CONFIDENCE_THRESHOLD,
+  type SemanticAnalyzer,
+} from '@hyperfixi/semantic';
+
+// Singleton semantic analyzer instance (lazy-initialized)
+let semanticAnalyzerInstance: SemanticAnalyzer | null = null;
+
+/**
+ * Get or create the singleton semantic analyzer instance.
+ * Lazy initialization to avoid overhead if not used.
+ */
+function getSemanticAnalyzer(): SemanticAnalyzerInterface {
+  if (!semanticAnalyzerInstance) {
+    semanticAnalyzerInstance = createSemanticAnalyzer();
+  }
+  return semanticAnalyzerInstance as unknown as SemanticAnalyzerInterface;
+}
+
+/**
+ * Default parser options with semantic analysis enabled
+ */
+function getDefaultParserOptions() {
+  return {
+    semanticAnalyzer: getSemanticAnalyzer(),
+    language: 'en' as const,
+    semanticConfidenceThreshold: DEFAULT_CONFIDENCE_THRESHOLD,
+  };
+}
 
 // ============================================================================
 // API Types
@@ -142,14 +173,16 @@ function wrapAsProgramNode(node: ASTNode, source: string): ASTNode {
  * Parse hyperscript code and return AST directly
  * Compatible with official _hyperscript.parse() API
  * Throws an error if parsing fails
+ *
+ * Uses semantic-first parsing with confidence-based fallback by default.
  */
 function parse(code: string): ASTNode {
   if (typeof code !== 'string') {
     throw new TypeError('Code must be a string');
   }
 
-  // Use main parser and wrap result in program-style format
-  const result = parseToResult(code);
+  // Use main parser with semantic analysis enabled and wrap result in program-style format
+  const result = parseToResult(code, getDefaultParserOptions());
 
   if (result.success && result.node) {
     return wrapAsProgramNode(result.node, code);
@@ -167,6 +200,8 @@ function parse(code: string): ASTNode {
 
 /**
  * Compile hyperscript code into an Abstract Syntax Tree (AST)
+ *
+ * Uses semantic-first parsing with confidence-based fallback by default.
  */
 function compile(code: string): CompilationResult {
   debug.runtime('COMPILE: hyperscript-api compile() called', {
@@ -183,8 +218,8 @@ function compile(code: string): CompilationResult {
   const startTime = performance.now();
 
   try {
-    debug.runtime('COMPILE: about to call parse()');
-    const parseResult = parseToResult(code);
+    debug.runtime('COMPILE: about to call parse() with semantic options');
+    const parseResult = parseToResult(code, getDefaultParserOptions());
     debug.runtime('COMPILE: parse() returned', {
       success: parseResult.success,
       hasNode: !!parseResult.node,
@@ -511,7 +546,7 @@ function processHyperscriptAttribute(element: Element, hyperscriptCode: string):
       // Also try to parse manually to get more details
       try {
         console.error(`🔧 Attempting manual parse for debugging...`);
-        const parseResult = parseToResult(hyperscriptCode);
+        const parseResult = parseToResult(hyperscriptCode, getDefaultParserOptions());
         console.error(`🔧 Manual parse result:`, {
           success: parseResult.success,
           errorCount: parseResult.error ? 1 : 0,
