@@ -483,6 +483,92 @@ describe('Tokenizers', () => {
       expect(tokens.tokens.some(t => t.value === 'en')).toBe(true);
     });
   });
+
+  describe('URL Tokenization', () => {
+    it('should tokenize absolute paths', () => {
+      const tokens = tokenize('go to /home', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/home');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should tokenize relative paths', () => {
+      const tokens = tokenize('go to ./page', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === './page');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should tokenize parent-relative paths', () => {
+      const tokens = tokenize('go to ../parent', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '../parent');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should tokenize full URLs', () => {
+      const tokens = tokenize('fetch from https://api.example.com/v1/users', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === 'https://api.example.com/v1/users');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should tokenize URLs with query strings', () => {
+      const tokens = tokenize('fetch from /api/users?page=1&limit=10', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/api/users?page=1&limit=10');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should tokenize URLs with fragments', () => {
+      const tokens = tokenize('go to /page#section', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/page#section');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should keep CSS selectors separate from URLs', () => {
+      const tokens = tokenize('go to /page #button', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/page');
+      const selectorToken = tokens.tokens.find(t => t.value === '#button');
+
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+      expect(selectorToken).toBeDefined();
+      expect(selectorToken?.kind).toBe('selector');
+    });
+
+    it('should tokenize protocol-relative URLs', () => {
+      const tokens = tokenize('fetch from //cdn.example.com/script.js', 'en');
+
+      const urlToken = tokens.tokens.find(t => t.value === '//cdn.example.com/script.js');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should work in Japanese', () => {
+      const tokens = tokenize('/home に 移動', 'ja');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/home');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+
+    it('should work in Arabic', () => {
+      const tokens = tokenize('اذهب إلى /home', 'ar');
+
+      const urlToken = tokens.tokens.find(t => t.value === '/home');
+      expect(urlToken).toBeDefined();
+      expect(urlToken?.kind).toBe('url');
+    });
+  });
 });
 
 // =============================================================================

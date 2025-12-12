@@ -337,6 +337,98 @@ export function extractStringLiteral(input: string, startPos: number): string | 
 }
 
 // =============================================================================
+// URL Tokenization
+// =============================================================================
+
+/**
+ * Check if the input at position starts a URL.
+ * Detects: /path, ./path, ../path, //domain.com, http://, https://
+ */
+export function isUrlStart(input: string, pos: number): boolean {
+  if (pos >= input.length) return false;
+
+  const char = input[pos];
+  const next = input[pos + 1] || '';
+  const third = input[pos + 2] || '';
+
+  // Absolute path: /something (but not just /)
+  // Must be followed by alphanumeric or path char, not another / (that's protocol-relative)
+  if (char === '/' && next !== '/' && /[a-zA-Z0-9._-]/.test(next)) {
+    return true;
+  }
+
+  // Protocol-relative: //domain.com
+  if (char === '/' && next === '/' && /[a-zA-Z]/.test(third)) {
+    return true;
+  }
+
+  // Relative path: ./ or ../
+  if (char === '.' && (next === '/' || (next === '.' && third === '/'))) {
+    return true;
+  }
+
+  // Full URL: http:// or https://
+  const slice = input.slice(pos, pos + 8).toLowerCase();
+  if (slice.startsWith('http://') || slice.startsWith('https://')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Extract a URL from the input starting at pos.
+ * Handles paths, query strings, and fragments.
+ *
+ * Fragment (#) handling:
+ * - /page#section → includes fragment as part of URL
+ * - #id alone → not a URL (CSS selector)
+ */
+export function extractUrl(input: string, startPos: number): string | null {
+  if (!isUrlStart(input, startPos)) return null;
+
+  let pos = startPos;
+  let url = '';
+
+  // Core URL characters (RFC 3986 unreserved + sub-delims + path/query chars)
+  // Includes: letters, digits, and - . _ ~ : / ? # [ ] @ ! $ & ' ( ) * + , ; = %
+  const urlChars = /[a-zA-Z0-9/:._\-?&=%@+~!$'()*,;[\]]/;
+
+  while (pos < input.length) {
+    const char = input[pos];
+
+    // Special handling for #
+    if (char === '#') {
+      // Only include # if we have path content before it (it's a fragment)
+      // If # appears at URL start or after certain chars, stop (might be CSS selector)
+      if (url.length > 0 && /[a-zA-Z0-9/.]$/.test(url)) {
+        // Include fragment
+        url += char;
+        pos++;
+        // Consume fragment identifier (letters, digits, underscore, hyphen)
+        while (pos < input.length && /[a-zA-Z0-9_-]/.test(input[pos])) {
+          url += input[pos++];
+        }
+      }
+      // Stop either way - fragment consumed or # is separate token
+      break;
+    }
+
+    if (urlChars.test(char)) {
+      url += char;
+      pos++;
+    } else {
+      break;
+    }
+  }
+
+  // Minimum length validation
+  if (url.length < 2) return null;
+
+  return url;
+}
+
+// =============================================================================
 // Number Tokenization
 // =============================================================================
 
@@ -476,6 +568,22 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
         number,
         'literal',
         createPosition(pos, pos + number.length)
+      );
+    }
+    return null;
+  }
+
+  /**
+   * Try to extract a URL at the current position.
+   * Handles /path, ./path, ../path, //domain.com, http://, https://
+   */
+  protected tryUrl(input: string, pos: number): LanguageToken | null {
+    const url = extractUrl(input, pos);
+    if (url) {
+      return createToken(
+        url,
+        'url',
+        createPosition(pos, pos + url.length)
       );
     }
     return null;

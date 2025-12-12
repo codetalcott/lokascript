@@ -341,7 +341,8 @@ export type TokenKind =
   | 'particle' // Grammatical particle (を, に, من)
   | 'identifier' // Variable or property name
   | 'operator' // Comparison or logical operator
-  | 'punctuation'; // Brackets, quotes, etc.
+  | 'punctuation' // Brackets, quotes, etc.
+  | 'url'; // URL/path (/path, https://...)
 
 /**
  * A stream of tokens with navigation capabilities.

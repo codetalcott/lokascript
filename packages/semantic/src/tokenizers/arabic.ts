@@ -20,6 +20,7 @@ import {
   isQuote,
   isDigit,
   isAsciiIdentifierChar,
+  isUrlStart,
   type CreateTokenOptions,
 } from './base';
 import { ArabicMorphologicalNormalizer } from './morphology/arabic-normalizer';
@@ -201,6 +202,16 @@ export class ArabicTokenizer extends BaseTokenizer {
         if (stringToken) {
           tokens.push(stringToken);
           pos = stringToken.position.end;
+          continue;
+        }
+      }
+
+      // Try URL (/path, ./path, http://, etc.)
+      if (isUrlStart(input, pos)) {
+        const urlToken = this.tryUrl(input, pos);
+        if (urlToken) {
+          tokens.push(urlToken);
+          pos = urlToken.position.end;
           continue;
         }
       }

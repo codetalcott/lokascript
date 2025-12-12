@@ -20,6 +20,7 @@ import {
   isSelectorStart,
   isQuote,
   isDigit,
+  isUrlStart,
   type CreateTokenOptions,
 } from './base';
 import { TurkishMorphologicalNormalizer } from './morphology/turkish-normalizer';
@@ -228,6 +229,16 @@ export class TurkishTokenizer extends BaseTokenizer {
         if (stringToken) {
           tokens.push(stringToken);
           pos = stringToken.position.end;
+          continue;
+        }
+      }
+
+      // Try URL (/path, ./path, http://, etc.)
+      if (isUrlStart(input, pos)) {
+        const urlToken = this.tryUrl(input, pos);
+        if (urlToken) {
+          tokens.push(urlToken);
+          pos = urlToken.position.end;
           continue;
         }
       }

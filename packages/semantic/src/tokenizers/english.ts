@@ -16,6 +16,7 @@ import {
   isSelectorStart,
   isQuote,
   isDigit,
+  isUrlStart,
 } from './base';
 
 // =============================================================================
@@ -102,6 +103,16 @@ export class EnglishTokenizer extends BaseTokenizer {
         }
       }
 
+      // Try URL (/path, ./path, http://, etc.)
+      if (isUrlStart(input, pos)) {
+        const urlToken = this.tryUrl(input, pos);
+        if (urlToken) {
+          tokens.push(urlToken);
+          pos = urlToken.position.end;
+          continue;
+        }
+      }
+
       // Try number
       if (isDigit(input[pos]) || (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))) {
         const numberToken = this.tryNumber(input, pos);
@@ -154,6 +165,7 @@ export class EnglishTokenizer extends BaseTokenizer {
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
     if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
+    if (token.startsWith('/') || token.startsWith('./') || token.startsWith('http')) return 'url';
 
     return 'identifier';
   }

@@ -89,4 +89,6 @@ export {
   extractCssSelector,
   extractStringLiteral,
   extractNumber,
+  isUrlStart,
+  extractUrl,
 } from './base';

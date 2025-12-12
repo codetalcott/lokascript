@@ -22,6 +22,7 @@ import {
   isQuote,
   isDigit,
   isAsciiIdentifierChar,
+  isUrlStart,
 } from './base';
 
 // =============================================================================
@@ -222,6 +223,16 @@ export class ChineseTokenizer extends BaseTokenizer {
         if (stringToken) {
           tokens.push(stringToken);
           pos = stringToken.position.end;
+          continue;
+        }
+      }
+
+      // Try URL (/path, ./path, http://, etc.)
+      if (isUrlStart(input, pos)) {
+        const urlToken = this.tryUrl(input, pos);
+        if (urlToken) {
+          tokens.push(urlToken);
+          pos = urlToken.position.end;
           continue;
         }
       }
