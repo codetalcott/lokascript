@@ -254,6 +254,161 @@ const toggleSpanishSimple: LanguagePattern = {
 };
 
 // =============================================================================
+// Korean Patterns (SOV)
+// =============================================================================
+
+/**
+ * Korean: "#button 에서 .active 를 토글"
+ * Word order: TARGET 에서 PATIENT 를 VERB
+ * Particles: 에서 (location), 를/을 (object marker)
+ *
+ * Natural reading: "at button, active, toggle"
+ */
+const toggleKoreanFull: LanguagePattern = {
+  id: 'toggle-ko-full',
+  language: 'ko',
+  command: 'toggle',
+  priority: 100,
+  template: {
+    format: '{target} 에서 {patient} 를 토글',
+    tokens: [
+      { type: 'role', role: 'destination' },
+      { type: 'literal', value: '에서', alternatives: ['에'] },
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: '를', alternatives: ['을'] },
+      { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+    ],
+  },
+  extraction: {
+    destination: { position: 0 },
+    patient: { marker: '를', markerAlternatives: ['을'] },
+  },
+};
+
+/**
+ * Korean: ".active 를 토글" (implicit target: me)
+ * Word order: PATIENT 를 VERB
+ */
+const toggleKoreanSimple: LanguagePattern = {
+  id: 'toggle-ko-simple',
+  language: 'ko',
+  command: 'toggle',
+  priority: 90,
+  template: {
+    format: '{patient} 를 토글',
+    tokens: [
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: '를', alternatives: ['을'] },
+      { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+    ],
+  },
+  extraction: {
+    patient: { position: 0 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Korean alternative: "#button 의 .active 를 토글"
+ * Using 의 (possession) similar to Japanese の
+ */
+const toggleKoreanPossessive: LanguagePattern = {
+  id: 'toggle-ko-possessive',
+  language: 'ko',
+  command: 'toggle',
+  priority: 95,
+  template: {
+    format: '{target} 의 {patient} 를 토글',
+    tokens: [
+      { type: 'role', role: 'destination' },
+      { type: 'literal', value: '의' },
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: '를', alternatives: ['을'] },
+      { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+    ],
+  },
+  extraction: {
+    destination: { position: 0 },
+    patient: { marker: '를', markerAlternatives: ['을'] },
+  },
+};
+
+// =============================================================================
+// Turkish Patterns (SOV)
+// =============================================================================
+
+/**
+ * Turkish: "#button üzerinde .active değiştir"
+ * Word order: TARGET POSTPOSITION PATIENT VERB
+ * Postpositions: üzerinde (on), için (for)
+ *
+ * Natural reading: "on button, active, toggle"
+ */
+const toggleTurkishFull: LanguagePattern = {
+  id: 'toggle-tr-full',
+  language: 'tr',
+  command: 'toggle',
+  priority: 100,
+  template: {
+    format: '{target} üzerinde {patient} değiştir',
+    tokens: [
+      { type: 'role', role: 'destination' },
+      { type: 'literal', value: 'üzerinde', alternatives: ['üstünde', 'de', 'da'] },
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: 'değiştir', alternatives: ['değistir'] },
+    ],
+  },
+  extraction: {
+    destination: { position: 0 },
+    patient: { position: 2 },
+  },
+};
+
+/**
+ * Turkish: ".active değiştir" (implicit target: me)
+ * Word order: PATIENT VERB (simple SOV)
+ */
+const toggleTurkishSimple: LanguagePattern = {
+  id: 'toggle-tr-simple',
+  language: 'tr',
+  command: 'toggle',
+  priority: 90,
+  template: {
+    format: '{patient} değiştir',
+    tokens: [
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: 'değiştir', alternatives: ['değistir'] },
+    ],
+  },
+  extraction: {
+    patient: { position: 0 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Turkish alternative: "değiştir .active" (verb-first, imperative style)
+ * Some Turkish speakers prefer imperative-first for commands.
+ */
+const toggleTurkishImperative: LanguagePattern = {
+  id: 'toggle-tr-imperative',
+  language: 'tr',
+  command: 'toggle',
+  priority: 85,
+  template: {
+    format: 'değiştir {patient}',
+    tokens: [
+      { type: 'literal', value: 'değiştir', alternatives: ['değistir'] },
+      { type: 'role', role: 'patient' },
+    ],
+  },
+  extraction: {
+    patient: { position: 1 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+// =============================================================================
 // Export All Toggle Patterns
 // =============================================================================
 
@@ -271,6 +426,14 @@ export const togglePatterns: LanguagePattern[] = [
   // Spanish
   toggleSpanishFull,
   toggleSpanishSimple,
+  // Korean
+  toggleKoreanFull,
+  toggleKoreanSimple,
+  toggleKoreanPossessive,
+  // Turkish
+  toggleTurkishFull,
+  toggleTurkishSimple,
+  toggleTurkishImperative,
 ];
 
 /**

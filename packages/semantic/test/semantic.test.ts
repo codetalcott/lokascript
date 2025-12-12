@@ -154,9 +154,7 @@ describe('Conjugated Verb Parsing', () => {
     });
   });
 
-  // Korean patterns not yet created - tokenizer and morphology ready
-  // TODO: Create Korean semantic patterns (SOV word order with particles)
-  describe.skip('Korean conjugations (patterns pending)', () => {
+  describe('Korean conjugations', () => {
     it('should parse dictionary form: ".active 를 토글하다"', () => {
       const node = parse('.active 를 토글하다', 'ko');
 
@@ -223,9 +221,7 @@ describe('Conjugated Verb Parsing', () => {
     });
   });
 
-  // Turkish patterns not yet created - tokenizer and morphology ready
-  // TODO: Create Turkish semantic patterns (SOV word order with postpositions)
-  describe.skip('Turkish conjugations (patterns pending)', () => {
+  describe('Turkish conjugations', () => {
     it('should parse infinitive: "değiştirmek .active"', () => {
       const node = parse('değiştirmek .active', 'tr');
 
