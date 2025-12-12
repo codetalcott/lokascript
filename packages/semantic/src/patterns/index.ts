@@ -3,6 +3,10 @@
  *
  * Central registry for all language patterns.
  * Provides lookup by language and command type.
+ *
+ * Migration Strategy:
+ * - Hand-crafted patterns: toggle, put, event-handler (validated, keep)
+ * - Generated patterns: add, remove, show, hide, wait, log, etc. (new)
  */
 
 import type { LanguagePattern, ActionType } from '../types';
@@ -10,17 +14,55 @@ import { togglePatterns, getTogglePatternsForLanguage } from './toggle';
 import { putPatterns, getPutPatternsForLanguage } from './put';
 import { eventHandlerPatterns, getEventHandlerPatternsForLanguage, eventNameTranslations, normalizeEventName } from './event-handler';
 
+// Import generator for new commands
+import {
+  generatePatternsForCommand,
+  addSchema,
+  removeSchema,
+  showSchema,
+  hideSchema,
+  waitSchema,
+  logSchema,
+  incrementSchema,
+  decrementSchema,
+  sendSchema,
+} from '../generators';
+
+// =============================================================================
+// Generated Patterns (New Commands)
+// =============================================================================
+
+/**
+ * Commands using generated patterns.
+ * These don't have hand-crafted patterns, so we generate them.
+ */
+const generatedPatterns: LanguagePattern[] = [
+  ...generatePatternsForCommand(addSchema),
+  ...generatePatternsForCommand(removeSchema),
+  ...generatePatternsForCommand(showSchema),
+  ...generatePatternsForCommand(hideSchema),
+  ...generatePatternsForCommand(waitSchema),
+  ...generatePatternsForCommand(logSchema),
+  ...generatePatternsForCommand(incrementSchema),
+  ...generatePatternsForCommand(decrementSchema),
+  ...generatePatternsForCommand(sendSchema),
+];
+
 // =============================================================================
 // All Patterns
 // =============================================================================
 
 /**
  * All registered patterns across all languages.
+ * Combines hand-crafted (validated) with generated (new).
  */
 export const allPatterns: LanguagePattern[] = [
+  // Hand-crafted patterns (validated, higher priority)
   ...togglePatterns,
   ...putPatterns,
   ...eventHandlerPatterns,
+  // Generated patterns (new commands)
+  ...generatedPatterns,
 ];
 
 // =============================================================================

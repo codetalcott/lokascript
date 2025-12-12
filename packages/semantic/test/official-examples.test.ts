@@ -48,19 +48,17 @@ describe('Official Examples - Tier 1 (Core)', () => {
   });
 
   describe('Add/Remove Classes', () => {
-    // TODO: Add patterns not yet implemented in semantic parser
     it.skip('add .foo to .bar', () => {
-      // Note: This tests if we can parse the structure
-      // The actual implementation may vary
-      const result = canParse('add .foo', 'en');
-      expect(result).toBe(true);
+      // Complex: needs 'to' connector support in generator
+      expect(canParse('add .foo to .bar', 'en')).toBe(true);
     });
 
-    it.skip('add .highlight', () => {
+    it('add .highlight', () => {
       expect(canParse('add .highlight', 'en')).toBe(true);
 
       const node = parse('add .highlight', 'en');
       expect(node.action).toBe('add');
+      expect(node.roles.get('patient')?.value).toBe('.highlight');
     });
   });
 
@@ -76,52 +74,54 @@ describe('Official Examples - Tier 1 (Core)', () => {
   });
 
   describe('Show/Hide Commands', () => {
-    // TODO: Show/hide patterns not yet implemented in semantic parser
-    it.skip('hide me', () => {
+    it('hide me', () => {
       expect(canParse('hide me', 'en')).toBe(true);
 
       const node = parse('hide me', 'en');
       expect(node.action).toBe('hide');
+      expect(node.roles.get('patient')?.value).toBe('me');
     });
 
-    it.skip('show me', () => {
+    it('show me', () => {
       expect(canParse('show me', 'en')).toBe(true);
 
       const node = parse('show me', 'en');
       expect(node.action).toBe('show');
+      expect(node.roles.get('patient')?.value).toBe('me');
     });
   });
 
   describe('Wait Command', () => {
-    // TODO: Wait patterns not yet implemented in semantic parser
-    it.skip('wait 1s', () => {
+    it('wait 1s', () => {
       expect(canParse('wait 1s', 'en')).toBe(true);
 
       const node = parse('wait 1s', 'en');
       expect(node.action).toBe('wait');
+      expect(node.roles.get('patient')?.value).toBe('1s');
     });
 
-    it.skip('wait 2s', () => {
+    it('wait 2s', () => {
       expect(canParse('wait 2s', 'en')).toBe(true);
     });
 
-    it.skip('wait 5s', () => {
+    it('wait 5s', () => {
       expect(canParse('wait 5s', 'en')).toBe(true);
     });
   });
 
   describe('Send Command', () => {
     it.skip('send hello to <form />', () => {
-      // Complex selector syntax - may need enhancement
+      // Complex JSX-style selector syntax - not supported
       expect(canParse('send hello to <form />', 'en')).toBe(true);
     });
 
-    // TODO: Send patterns not yet implemented in semantic parser
-    it.skip('send foo to #target', () => {
+    it('send foo to #target', () => {
       expect(canParse('send foo to #target', 'en')).toBe(true);
 
       const node = parse('send foo to #target', 'en');
       expect(node.action).toBe('send');
+      expect(node.roles.get('event')?.value).toBe('foo');
+      expect(node.roles.get('destination')?.value).toBe('#target');
     });
   });
 });
@@ -132,25 +132,35 @@ describe('Official Examples - Tier 1 (Core)', () => {
 
 describe('Official Examples - Tier 2 (Important)', () => {
   describe('Increment Command', () => {
-    // TODO: Increment patterns not yet implemented in semantic parser
     it.skip('increment :x', () => {
+      // Needs tokenizer enhancement to recognize :var as single token
       expect(canParse('increment :x', 'en')).toBe(true);
 
       const node = parse('increment :x', 'en');
       expect(node.action).toBe('increment');
     });
+
+    it('increment #counter', () => {
+      // Works with selector syntax
+      expect(canParse('increment #counter', 'en')).toBe(true);
+
+      const node = parse('increment #counter', 'en');
+      expect(node.action).toBe('increment');
+      expect(node.roles.get('patient')?.value).toBe('#counter');
+    });
   });
 
   describe('Log Command', () => {
-    // TODO: Log patterns not yet implemented in semantic parser
-    it.skip('log "Hello Console!"', () => {
+    it('log "Hello Console!"', () => {
       expect(canParse('log "Hello Console!"', 'en')).toBe(true);
 
       const node = parse('log "Hello Console!"', 'en');
       expect(node.action).toBe('log');
+      expect(node.roles.get('patient')?.value).toBe('Hello Console!');
     });
 
     it.skip('log x', () => {
+      // Identifier 'x' not recognized as valid patient
       expect(canParse('log x', 'en')).toBe(true);
     });
   });

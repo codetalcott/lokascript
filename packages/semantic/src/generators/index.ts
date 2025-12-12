@@ -47,6 +47,8 @@ export {
   decrementSchema,
   appendSchema,
   prependSchema,
+  logSchema,
+  sendSchema,
   commandSchemas,
   getSchema,
   getSchemasByCategory,
