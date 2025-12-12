@@ -312,6 +312,10 @@ export class PatternMatcher {
         }
         return createLiteral(token.value);
 
+      case 'url':
+        // URLs are treated as string literals (paths/URLs for navigation/fetch)
+        return createLiteral(token.value, 'string');
+
       default:
         return null;
     }

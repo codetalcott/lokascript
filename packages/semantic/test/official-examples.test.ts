@@ -186,6 +186,30 @@ describe('Official Examples - Tier 2 (Important)', () => {
       expect(node.roles.get('destination')?.value).toBe('/home');
     });
 
+    it('go to /home (bare path)', () => {
+      expect(canParse('go to /home', 'en')).toBe(true);
+
+      const node = parse('go to /home', 'en');
+      expect(node.action).toBe('go');
+      expect(node.roles.get('destination')?.value).toBe('/home');
+    });
+
+    it('go to /page#section (path with fragment)', () => {
+      expect(canParse('go to /page#section', 'en')).toBe(true);
+
+      const node = parse('go to /page#section', 'en');
+      expect(node.action).toBe('go');
+      expect(node.roles.get('destination')?.value).toBe('/page#section');
+    });
+
+    it('go to https://example.com (full URL)', () => {
+      expect(canParse('go to https://example.com', 'en')).toBe(true);
+
+      const node = parse('go to https://example.com', 'en');
+      expect(node.action).toBe('go');
+      expect(node.roles.get('destination')?.value).toBe('https://example.com');
+    });
+
     it.skip('go to the top of the body smoothly', () => {
       // Complex syntax with positional reference ("top of body") - needs enhancement
       expect(canParse('go to the top of the body smoothly', 'en')).toBe(true);
@@ -199,6 +223,30 @@ describe('Official Examples - Tier 2 (Important)', () => {
       const node = parse('fetch from "/api/data"', 'en');
       expect(node.action).toBe('fetch');
       expect(node.roles.get('source')?.value).toBe('/api/data');
+    });
+
+    it('fetch from /api/users (bare path)', () => {
+      expect(canParse('fetch from /api/users', 'en')).toBe(true);
+
+      const node = parse('fetch from /api/users', 'en');
+      expect(node.action).toBe('fetch');
+      expect(node.roles.get('source')?.value).toBe('/api/users');
+    });
+
+    it('fetch from /api?page=1&limit=10 (path with query string)', () => {
+      expect(canParse('fetch from /api?page=1&limit=10', 'en')).toBe(true);
+
+      const node = parse('fetch from /api?page=1&limit=10', 'en');
+      expect(node.action).toBe('fetch');
+      expect(node.roles.get('source')?.value).toBe('/api?page=1&limit=10');
+    });
+
+    it('fetch from https://api.example.com/v1 (full URL)', () => {
+      expect(canParse('fetch from https://api.example.com/v1', 'en')).toBe(true);
+
+      const node = parse('fetch from https://api.example.com/v1', 'en');
+      expect(node.action).toBe('fetch');
+      expect(node.roles.get('source')?.value).toBe('https://api.example.com/v1');
     });
 
     it.skip('fetch /clickedMessage', () => {
