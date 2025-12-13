@@ -428,6 +428,18 @@ export class SemanticIntegrationAdapter {
         } as unknown as ExpressionNode;
 
       case 'literal':
+        // Check if this is a template literal with ${...} interpolation syntax
+        // Template literals need special handling to preserve interpolation
+        if (value.value.includes('${') && value.value.includes('}')) {
+          return {
+            type: 'templateLiteral',
+            value: value.value,
+            start: 0,
+            end: 0,
+            line: 1,
+            column: 0,
+          } as unknown as ExpressionNode;
+        }
         return {
           type: 'literal',
           value: value.value,
