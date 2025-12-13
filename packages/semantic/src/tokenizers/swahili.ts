@@ -85,6 +85,8 @@ const SWAHILI_KEYWORDS: Map<string, string> = new Map([
   ['unda', 'make'],
   ['nakili', 'clone'],
   ['rudufu', 'clone'],
+  ['geuza', 'morph'],
+  ['badilisha', 'swap'],
   // Commands - Variable operations
   ['weka', 'set'],
   ['seti', 'set'],
@@ -157,7 +159,11 @@ const SWAHILI_KEYWORDS: Map<string, string> = new Map([
   // Control flow helpers
   ['basi', 'then'],
   ['kisha', 'then'],
+  ['halafu', 'then'],
+  ['baadaye', 'then'],
   ['mwisho', 'end'],
+  ['maliza', 'end'],
+  ['tamati', 'end'],
   ['hadi', 'until'],
   ['mpaka', 'until'],
   // Events

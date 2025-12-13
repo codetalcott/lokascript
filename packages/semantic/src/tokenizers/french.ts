@@ -88,6 +88,8 @@ const FRENCH_KEYWORDS: Map<string, string> = new Map([
   ['creer', 'make'],
   ['cloner', 'clone'],
   ['copier', 'clone'],
+  ['transformer', 'morph'],
+  ['transmuter', 'morph'],
   // Commands - Variable operations
   ['définir', 'set'],
   ['definir', 'set'],
@@ -162,7 +164,11 @@ const FRENCH_KEYWORDS: Map<string, string> = new Map([
   ['apres', 'after'],
   // Control flow helpers
   ['alors', 'then'],
+  ['puis', 'then'],
+  ['ensuite', 'then'],
   ['fin', 'end'],
+  ['terminer', 'end'],
+  ['finir', 'end'],
   // Events
   ['clic', 'click'],
   ['click', 'click'],

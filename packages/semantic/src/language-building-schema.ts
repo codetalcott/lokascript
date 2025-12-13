@@ -311,6 +311,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'toggle', 'add', 'remove',
       // Commands - Content operations
       'put', 'append', 'prepend', 'take', 'make', 'clone',
+      'swap', 'morph', // swap/morph
       // Commands - Variable operations
       'set', 'get', 'increment', 'decrement', 'log',
       // Commands - Visibility
@@ -327,6 +328,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'if', 'else', 'repeat', 'for', 'while', 'continue', 'halt', 'throw', 'call', 'return',
       // Commands - Advanced
       'js', 'async', 'tell', 'default', 'init', 'behavior',
+      // Control flow helpers
+      'then', // then
+      'end', // end
       // Modifiers
       'into', 'before', 'after',
     ],
@@ -377,6 +381,8 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Content operations
       '置く', '入れる', '末尾追加', 'アペンド', '先頭追加', 'プリペンド',
       '取る', '作る', '作成', '複製', 'クローン',
+      '交換', 'スワップ', // swap
+      '変形', 'モーフ', // morph
       // Commands - Variable operations
       'セット', 'セットする', '設定', '設定する',
       '取得', '取得する', 'ゲット',
@@ -402,6 +408,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Advanced
       'JS実行', 'js', '非同期', 'アシンク', '伝える', 'テル',
       '既定', 'デフォルト', '初期化', 'イニット', '振る舞い', 'ビヘイビア',
+      // Control flow helpers
+      'それから', 'そして', '次に', // then
+      '終わり', '終了', // end
       // Modifiers
       'へ', '前に', '後に', '後',
     ],
@@ -457,6 +466,8 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Content operations
       '놓다', '넣다', '두다', '뒤에추가', '앞에추가',
       '가져가다', '취하다', '만들다', '생성', '복사', '클론',
+      '교환', '스왑', // swap
+      '변형', '모프', // morph
       // Commands - Variable operations
       '세트', '설정', '설정하다', '정하다',
       '가져오다', '얻다', '취득',
@@ -482,6 +493,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'js', 'JS실행', '비동기', '어싱크',
       '말하다', '알리다', '기본값', '디폴트',
       '초기화', '시작', '동작', '행동',
+      // Control flow helpers
+      '그다음', '그리고', '그런다음', // then
+      '끝', '종료', // end
       // Modifiers
       '으로', '로', '전에', '이전', '후에', '이후',
     ],
@@ -556,6 +570,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Advanced
       'جافاسكربت', 'js', 'متزامن',
       'أخبر', 'افتراضي', 'تهيئة', 'بدء', 'سلوك',
+      // Control flow helpers
+      'ثم', 'بعدها', // then
+      'نهاية', 'انتهى', // end
       // Modifiers
       'في', 'إلى', 'قبل', 'بعد',
     ],
@@ -606,6 +623,8 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Content operations
       'poner', 'pon', 'colocar', 'anteponer',
       'tomar', 'hacer', 'crear', 'clonar', 'copiar',
+      'intercambiar', // swap
+      'transformar', 'mutar', // morph
       // Commands - Variable operations
       'establecer', 'fijar', 'obtener',
       'incrementar', 'aumentar', 'decrementar', 'disminuir',
@@ -628,6 +647,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Advanced
       'js', 'asíncrono', 'asincrono',
       'decir', 'predeterminar', 'iniciar', 'inicializar', 'comportamiento',
+      // Control flow helpers
+      'entonces', 'luego', // then
+      'fin', 'terminar', // end
       // Modifiers
       'dentro de', 'antes', 'después', 'despues',
     ],
@@ -679,6 +701,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'koy', 'yerleştir', 'yerlestir', 'sonunaekle', 'sona_ekle',
       'basaekle', 'başa_ekle', 'basa_ekle',
       'al', 'yap', 'oluştur', 'olustur', 'kopyala', 'klonla',
+      'dönüştür', 'donustur', // morph
       // Commands - Variable operations
       'ayarla', 'belirle', 'getir', 'elde_et',
       'artır', 'artir', 'azalt', 'kaydet', 'yazdır', 'yazdir',
@@ -704,8 +727,11 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'js', 'javascript', 'asenkron', 'eşzamansız', 'eszamansiz',
       'söyle', 'soyle', 'varsayılan', 'varsayilan',
       'başlat', 'baslat', 'başla', 'basla', 'davranış', 'davranis',
+      // Control flow helpers
+      'sonra', 'ardından', 'ardindan', // then
+      'son', 'bitti', // end
       // Modifiers
-      'içine', 'icine', 'önce', 'once', 'sonra',
+      'içine', 'icine', 'önce', 'once',
     ],
     missingFromTokenizer: [], // Now synced
     potentialConflicts: [],
@@ -746,6 +772,8 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Content operations
       '放置', '放', '放入', '追加', '附加', '前置', '预置',
       '拿取', '取', '制作', '创建', '复制', '克隆',
+      '交换', '互换', // swap
+      '变形', '变换', // morph
       // Commands - Variable operations
       '设置', '设定', '获取', '取得', '获得',
       '增加', '减少', '日志', '记录', '打印',
@@ -767,6 +795,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       // Commands - Advanced
       'js', 'javascript', '脚本', '异步',
       '告诉', '通知', '默认', '缺省', '初始化', '初始', '行为', '动作',
+      // Control flow helpers
+      '然后', '接着', // then
+      '结束', '完成', // end
       // Modifiers
       '到里面', '进入', '里', '之前', '前', '之后', '后',
     ],
@@ -805,6 +836,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'alternar', 'trocar', 'adicionar', 'acrescentar', 'remover', 'eliminar', 'apagar',
       // Commands - Content operations
       'colocar', 'pôr', 'por', 'anexar', 'preceder', 'pegar', 'fazer', 'criar', 'clonar', 'copiar',
+      'transformar', 'mutar', // morph
       // Commands - Variable operations
       'definir', 'configurar', 'obter', 'incrementar', 'aumentar', 'decrementar', 'diminuir',
       'registrar', 'imprimir',
@@ -823,8 +855,11 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'lançar', 'lancar', 'chamar', 'retornar', 'devolver',
       // Commands - Advanced
       'js', 'assíncrono', 'assincrono', 'dizer', 'padrão', 'padrao', 'iniciar', 'inicializar', 'comportamento',
+      // Control flow helpers
+      'então', 'entao', 'depois', // then
+      'fim', 'terminar', // end
       // Modifiers
-      'dentro de', 'antes', 'depois',
+      'dentro de', 'antes',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -861,6 +896,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'basculer', 'permuter', 'alterner', 'ajouter', 'supprimer', 'enlever', 'retirer',
       // Commands - Content operations
       'mettre', 'placer', 'annexer', 'préfixer', 'prefixer', 'prendre', 'faire', 'créer', 'creer', 'cloner', 'copier',
+      'transformer', 'transmuter', // morph
       // Commands - Variable operations
       'définir', 'definir', 'établir', 'etablir', 'obtenir', 'incrémenter', 'incrementer', 'décrémenter', 'decrementer',
       'enregistrer', 'journaliser', 'afficher',
@@ -879,6 +915,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'arrêter', 'arreter', 'stopper', 'lancer', 'appeler', 'retourner', 'renvoyer',
       // Commands - Advanced
       'js', 'asynchrone', 'dire', 'défaut', 'defaut', 'initialiser', 'comportement',
+      // Control flow helpers
+      'alors', 'puis', 'ensuite', // then
+      'fin', 'terminer', 'finir', // end
       // Modifiers
       'dans', 'avant', 'après', 'apres',
     ],
@@ -917,6 +956,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'umschalten', 'wechseln', 'hinzufügen', 'hinzufugen', 'hinzufgen', 'entfernen', 'löschen', 'loschen',
       // Commands - Content operations
       'setzen', 'stellen', 'platzieren', 'anhängen', 'anhangen', 'voranstellen', 'nehmen', 'machen', 'erstellen', 'erzeugen', 'klonen', 'kopieren',
+      'verwandeln', 'transformieren', // morph
       // Commands - Variable operations
       'festlegen', 'definieren', 'holen', 'bekommen', 'erhöhen', 'erhohen', 'verringern', 'vermindern',
       'protokollieren', 'ausgeben',
@@ -935,6 +975,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'fortfahren', 'weiter', 'anhalten', 'stoppen', 'werfen', 'aufrufen', 'zurückgeben', 'zuruckgeben',
       // Commands - Advanced
       'js', 'javascript', 'asynchron', 'sagen', 'standard', 'initialisieren', 'verhalten',
+      // Control flow helpers
+      'dann', 'danach', 'anschließend', 'anschliessend', // then
+      'ende', 'beenden', 'fertig', // end
       // Modifiers
       'hinein', 'vor', 'nach',
     ],
@@ -973,6 +1016,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'alihkan', 'ganti', 'tukar', 'tambah', 'tambahkan', 'hapus', 'buang', 'hilangkan',
       // Commands - Content operations
       'taruh', 'letakkan', 'masukkan', 'sisipkan', 'awali', 'ambil', 'buat', 'bikin', 'ciptakan', 'klon', 'salin', 'tiru',
+      'ubah', 'transformasi', // morph
       // Commands - Variable operations
       'atur', 'tetapkan', 'dapatkan', 'peroleh', 'tingkatkan', 'naikkan', 'turunkan', 'kurangi',
       'catat', 'rekam', 'cetak',
@@ -991,6 +1035,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'lanjutkan', 'terus', 'hentikan', 'berhenti', 'lempar', 'panggil', 'kembalikan', 'kembali',
       // Commands - Advanced
       'js', 'javascript', 'asinkron', 'katakan', 'beritahu', 'bawaan', 'inisialisasi', 'mulai', 'perilaku',
+      // Control flow helpers
+      'maka', 'lalu', 'kemudian', // then
+      'akhir', 'selesai', 'tamat', // end
       // Modifiers
       'ke dalam', 'sebelum', 'sesudah', 'setelah',
     ],
@@ -1029,6 +1076,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       "t'ikray", 'tikray', 'kutichiy', 'yapay', 'yapaykuy', 'qichuy', 'hurquy', 'anchuchiy',
       // Commands - Content operations
       'churay', 'tiyachiy', 'qatichiy', 'ñawpachiy', 'nawpachiy', 'hapiy', 'ruray', 'kamay', 'kikinchay', 'qillqay',
+      "t'inkuy", 'tinkuy', // swap
       // Commands - Variable operations
       'kamaykuy', 'taripay', 'yapachiy', 'pisiyachiy', 'qillqakuy', 'willakuy',
       // Commands - Visibility
@@ -1046,6 +1094,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'qatipay', 'sayay', 'tukuy', 'chanqay', 'waqyay', 'kutimuy',
       // Commands - Advanced
       'js', 'mana waqtalla', 'niy', 'qallariy', 'ruwana',
+      // Control flow helpers
+      'chayqa', 'chaymanta', 'chaymantataq', 'hinaspa', // then
+      'tukukuy', 'puchukay', // end
       // Modifiers
       'ukuman', 'ñawpaq', 'nawpaq', 'qhipa',
     ],
@@ -1101,6 +1152,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'endelea', 'simama', 'acha', 'tupa', 'ita', 'piga simu', 'rudisha', 'rejea',
       // Commands - Advanced
       'js', 'javascript', 'isiyo sawia', 'sema', 'ambia', 'chaguo-msingi', 'anza', 'tabia',
+      // Control flow helpers
+      'basi', 'kisha', 'halafu', 'baadaye', // then
+      'mwisho', 'maliza', 'tamati', // end
       // Modifiers
       'ndani', 'kabla', 'baada',
     ],

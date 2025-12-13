@@ -77,6 +77,9 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
   ['kamay', 'make'],
   ['kikinchay', 'clone'],
   ['qillqay', 'clone'],
+  ["t'inkuy", 'swap'],
+  ['tinkuy', 'swap'],
+  ['tikray', 'morph'],
   // Commands - Variable operations
   ['churay', 'set'],
   ['kamaykuy', 'set'],
@@ -140,7 +143,11 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
   // Control flow helpers
   ['chayqa', 'then'],
   ['chaymanta', 'then'],
+  ['chaymantataq', 'then'],
+  ['hinaspa', 'then'],
   ['tukuy', 'end'],
+  ['tukukuy', 'end'],
+  ['puchukay', 'end'],
   ['kaykama', 'until'],
   // Events
   ['llikllay', 'click'],

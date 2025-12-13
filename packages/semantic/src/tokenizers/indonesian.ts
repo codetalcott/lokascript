@@ -92,6 +92,8 @@ const INDONESIAN_KEYWORDS: Map<string, string> = new Map([
   ['klon', 'clone'],
   ['salin', 'clone'],
   ['tiru', 'clone'],
+  ['ubah', 'morph'],
+  ['transformasi', 'morph'],
   // Commands - Variable operations
   ['atur', 'set'],
   ['tetapkan', 'set'],
@@ -168,8 +170,10 @@ const INDONESIAN_KEYWORDS: Map<string, string> = new Map([
   // Control flow helpers
   ['maka', 'then'],
   ['lalu', 'then'],
+  ['kemudian', 'then'],
   ['akhir', 'end'],
   ['selesai', 'end'],
+  ['tamat', 'end'],
   ['sampai', 'until'],
   // Events
   ['klik', 'click'],

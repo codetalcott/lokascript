@@ -101,6 +101,8 @@ const GERMAN_KEYWORDS: Map<string, string> = new Map([
   ['erzeugen', 'make'],
   ['klonen', 'clone'],
   ['kopieren', 'clone'],
+  ['verwandeln', 'morph'],
+  ['transformieren', 'morph'],
   // Commands - Variable operations
   ['festlegen', 'set'],
   ['definieren', 'set'],
@@ -171,7 +173,12 @@ const GERMAN_KEYWORDS: Map<string, string> = new Map([
   ['nach', 'after'],
   // Control flow helpers
   ['dann', 'then'],
+  ['danach', 'then'],
+  ['anschließend', 'then'],
+  ['anschliessend', 'then'],
   ['ende', 'end'],
+  ['beenden', 'end'],
+  ['fertig', 'end'],
   ['bis', 'until'],
   // Events
   ['klick', 'click'],
