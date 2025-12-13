@@ -12,8 +12,9 @@ import type {
   SemanticParser as ISemanticParser,
   SemanticValue,
   ActionType,
+  LanguagePattern,
 } from '../types';
-import { createCommandNode, createEventHandler } from '../types';
+import { createCommandNode, createEventHandler, createCompoundNode } from '../types';
 import { tokenize, getSupportedLanguages as getTokenizerLanguages } from '../tokenizers';
 import { getPatternsForLanguage } from '../patterns';
 import { patternMatcher } from './pattern-matcher';
@@ -122,27 +123,13 @@ export class SemanticParserImpl implements ISemanticParser {
       throw new Error('Event handler pattern matched but no event captured');
     }
 
-    // The remaining tokens after the event pattern are the body
-    // For now, we'll try to parse them as a single command
-    const body: SemanticNode[] = [];
+    // Get command patterns for this language
+    const commandPatterns = getPatternsForLanguage(language)
+      .filter(p => p.command !== 'on')
+      .sort((a, b) => b.priority - a.priority);
 
-    if (!tokens.isAtEnd()) {
-      // Get command patterns for this language
-      const commandPatterns = getPatternsForLanguage(language)
-        .filter(p => p.command !== 'on')
-        .sort((a, b) => b.priority - a.priority);
-
-      // Try to match remaining tokens as commands
-      while (!tokens.isAtEnd()) {
-        const commandMatch = patternMatcher.matchBest(tokens, commandPatterns);
-        if (commandMatch) {
-          body.push(this.buildCommand(commandMatch, language));
-        } else {
-          // Skip unrecognized token
-          tokens.advance();
-        }
-      }
-    }
+    // Parse the body with support for 'then' chains
+    const body = this.parseBody(tokens, commandPatterns, language);
 
     return createEventHandler(
       eventValue,
@@ -153,6 +140,98 @@ export class SemanticParserImpl implements ISemanticParser {
         patternId: match.pattern.id,
       }
     );
+  }
+
+  /**
+   * Parse body commands with support for 'then' chains.
+   * Returns a list of semantic nodes (possibly wrapped in CompoundSemanticNode).
+   */
+  private parseBody(
+    tokens: ReturnType<typeof tokenize>,
+    commandPatterns: LanguagePattern[],
+    language: string
+  ): SemanticNode[] {
+    const commands: SemanticNode[] = [];
+    let hasThenChain = false;
+
+    while (!tokens.isAtEnd()) {
+      const current = tokens.peek();
+
+      // Check for 'then' keyword - indicates command chaining
+      if (current && this.isThenKeyword(current.value, language)) {
+        tokens.advance();
+        hasThenChain = true;
+        continue;
+      }
+
+      // Check for 'end' keyword - terminates block
+      if (current && this.isEndKeyword(current.value, language)) {
+        tokens.advance();
+        break;
+      }
+
+      // Try to match as a command
+      const commandMatch = patternMatcher.matchBest(tokens, commandPatterns);
+      if (commandMatch) {
+        commands.push(this.buildCommand(commandMatch, language));
+      } else {
+        // Skip unrecognized token
+        tokens.advance();
+      }
+    }
+
+    // If we saw 'then' chains and have multiple commands, wrap in CompoundSemanticNode
+    if (hasThenChain && commands.length > 1) {
+      return [createCompoundNode(commands, 'then', { sourceLanguage: language })];
+    }
+
+    return commands;
+  }
+
+  /**
+   * Check if a token is a 'then' keyword in the given language.
+   */
+  private isThenKeyword(value: string, language: string): boolean {
+    const thenKeywords: Record<string, Set<string>> = {
+      en: new Set(['then']),
+      ja: new Set(['それから', '次に', 'そして']),
+      ar: new Set(['ثم', 'بعدها', 'ثمّ']),
+      es: new Set(['entonces', 'luego', 'después']),
+      ko: new Set(['그다음', '그리고', '그런후']),
+      zh: new Set(['然后', '接着', '之后']),
+      tr: new Set(['sonra', 'ardından', 'daha sonra']),
+      pt: new Set(['então', 'depois', 'logo']),
+      fr: new Set(['puis', 'ensuite', 'alors']),
+      de: new Set(['dann', 'danach', 'anschließend']),
+      id: new Set(['lalu', 'kemudian', 'setelah itu']),
+      qu: new Set(['chaymantataq', 'hinaspa', 'chaymanta']),
+      sw: new Set(['kisha', 'halafu', 'baadaye']),
+    };
+    const keywords = thenKeywords[language] || thenKeywords.en;
+    return keywords.has(value.toLowerCase());
+  }
+
+  /**
+   * Check if a token is an 'end' keyword in the given language.
+   */
+  private isEndKeyword(value: string, language: string): boolean {
+    const endKeywords: Record<string, Set<string>> = {
+      en: new Set(['end']),
+      ja: new Set(['終わり', '終了', 'おわり']),
+      ar: new Set(['نهاية', 'انتهى', 'آخر']),
+      es: new Set(['fin', 'final', 'terminar']),
+      ko: new Set(['끝', '종료', '마침']),
+      zh: new Set(['结束', '终止', '完']),
+      tr: new Set(['son', 'bitiş', 'bitti']),
+      pt: new Set(['fim', 'final', 'término']),
+      fr: new Set(['fin', 'terminer', 'finir']),
+      de: new Set(['ende', 'beenden', 'fertig']),
+      id: new Set(['selesai', 'akhir', 'tamat']),
+      qu: new Set(['tukukuy', 'tukuy', 'puchukay']),
+      sw: new Set(['mwisho', 'maliza', 'tamati']),
+    };
+    const keywords = endKeywords[language] || endKeywords.en;
+    return keywords.has(value.toLowerCase());
   }
 }
 

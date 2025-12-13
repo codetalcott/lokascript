@@ -60,6 +60,9 @@ export {
   returnSchema,
   focusSchema,
   blurSchema,
+  // Tier 4: DOM Content Manipulation
+  swapSchema,
+  morphSchema,
   // Registry functions
   commandSchemas,
   getSchema,

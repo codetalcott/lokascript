@@ -38,6 +38,8 @@ export type ActionType =
   | 'take'
   | 'make'
   | 'clone'
+  | 'swap'
+  | 'morph'
   // Variable operations
   | 'set'
   | 'get'
@@ -78,7 +80,9 @@ export type ActionType =
   | 'tell'
   | 'default'
   | 'init'
-  | 'behavior';
+  | 'behavior'
+  // Meta (for compound nodes)
+  | 'compound';
 
 // =============================================================================
 // Semantic Values
@@ -556,4 +560,77 @@ export function createEventHandler(
   }
 
   return node;
+}
+
+/**
+ * Create a compound semantic node (for chained statements).
+ */
+export function createCompoundNode(
+  statements: SemanticNode[],
+  chainType: 'then' | 'and' | 'async' = 'then',
+  metadata?: SemanticMetadata
+): CompoundSemanticNode {
+  const node: CompoundSemanticNode = {
+    kind: 'compound',
+    action: 'compound' as ActionType, // Compound doesn't have a specific action
+    roles: new Map(),
+    statements,
+    chainType,
+  };
+  if (metadata !== undefined) {
+    (node as { metadata?: SemanticMetadata }).metadata = metadata;
+  }
+  return node;
+}
+
+/**
+ * Create a conditional semantic node (if/else).
+ */
+export function createConditionalNode(
+  condition: SemanticValue,
+  thenBranch: SemanticNode[],
+  elseBranch?: SemanticNode[],
+  metadata?: SemanticMetadata
+): ConditionalSemanticNode {
+  const roles = new Map<SemanticRole, SemanticValue>();
+  roles.set('condition' as SemanticRole, condition);
+
+  const node: ConditionalSemanticNode = {
+    kind: 'conditional',
+    action: 'if',
+    roles,
+    thenBranch,
+  };
+  if (elseBranch !== undefined) {
+    (node as { elseBranch?: SemanticNode[] }).elseBranch = elseBranch;
+  }
+  if (metadata !== undefined) {
+    (node as { metadata?: SemanticMetadata }).metadata = metadata;
+  }
+  return node;
+}
+
+// =============================================================================
+// Semantic Parse Result (for validation)
+// =============================================================================
+
+/**
+ * Argument with semantic role attached.
+ */
+export type SemanticArgument = SemanticValue & {
+  role?: SemanticRole;
+};
+
+/**
+ * Result of semantic parsing (used by command validator).
+ */
+export interface SemanticParseResult {
+  /** The action/command type */
+  readonly action: ActionType;
+  /** Confidence score (0-1) */
+  readonly confidence: number;
+  /** Source language code */
+  readonly language: string;
+  /** Parsed arguments with roles */
+  readonly arguments: SemanticArgument[];
 }

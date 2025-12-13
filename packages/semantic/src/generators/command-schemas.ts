@@ -1135,6 +1135,83 @@ export const behaviorSchema: CommandSchema = {
 };
 
 // =============================================================================
+// Batch 5 - DOM Content Manipulation
+// =============================================================================
+
+/**
+ * Swap command: swaps DOM content using various strategies.
+ *
+ * Patterns:
+ * - EN: swap innerHTML of #target
+ * - EN: swap delete #target
+ * - EN: swap beforebegin #target with <html>
+ */
+export const swapSchema: CommandSchema = {
+  action: 'swap',
+  description: 'Swap DOM content using various strategies (innerHTML, outerHTML, delete, etc.)',
+  category: 'dom-content',
+  primaryRole: 'destination',
+  roles: [
+    {
+      role: 'method',
+      description: 'The swap strategy (innerHTML, outerHTML, beforebegin, afterend, delete)',
+      required: false,
+      expectedTypes: ['literal'],
+      svoPosition: 1,
+      sovPosition: 3,
+    },
+    {
+      role: 'destination',
+      description: 'The element to swap content in/for',
+      required: true,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+    {
+      role: 'patient',
+      description: 'The content to swap in (optional for delete)',
+      required: false,
+      expectedTypes: ['literal', 'expression', 'selector'],
+      svoPosition: 3,
+      sovPosition: 2,
+    },
+  ],
+};
+
+/**
+ * Morph command: morphs one element into another using DOM diffing.
+ *
+ * Patterns:
+ * - EN: morph #target to <html>
+ * - EN: morph me into #template
+ */
+export const morphSchema: CommandSchema = {
+  action: 'morph',
+  description: 'Morph an element into another using DOM diffing',
+  category: 'dom-content',
+  primaryRole: 'destination',
+  roles: [
+    {
+      role: 'destination',
+      description: 'The element to morph',
+      required: true,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+    {
+      role: 'patient',
+      description: 'The target content/element to morph into',
+      required: true,
+      expectedTypes: ['literal', 'expression', 'selector'],
+      svoPosition: 2,
+      sovPosition: 2,
+    },
+  ],
+};
+
+// =============================================================================
 // Schema Registry
 // =============================================================================
 
@@ -1189,6 +1266,18 @@ export const commandSchemas: Record<ActionType, CommandSchema> = {
   default: defaultSchema,
   init: initSchema,
   behavior: behaviorSchema,
+  // Batch 5 - DOM Content Manipulation
+  swap: swapSchema,
+  morph: morphSchema,
+  // Meta commands (for compound structures)
+  compound: {
+    action: 'compound',
+    description: 'A compound node representing chained statements',
+    primaryRole: 'patient', // Compound nodes don't have a traditional primary role
+    category: 'control-flow',
+    hasBody: true,
+    roles: [],
+  },
 };
 
 /**

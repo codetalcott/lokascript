@@ -14,7 +14,7 @@ import type {
   TokenStream,
   LanguageToken,
 } from '../types';
-import { createSelector, createLiteral, createReference } from '../types';
+import { createSelector, createLiteral, createReference, createPropertyPath } from '../types';
 
 // =============================================================================
 // Pattern Matcher
@@ -185,7 +185,27 @@ export class PatternMatcher {
   }
 
   /**
+   * Possessive keywords that indicate property access on an implicit object.
+   * Maps possessive keyword to the reference it represents.
+   */
+  private static readonly POSSESSIVE_KEYWORDS: Record<string, string> = {
+    'my': 'me',
+    'your': 'you',
+    'its': 'it',
+    // Japanese possessive particles (の)
+    '私の': 'me',
+    // Spanish
+    'mi': 'me',
+    'tu': 'you',
+    'su': 'it',
+  };
+
+  /**
    * Match a role pattern token (captures a semantic value).
+   * Handles multi-token expressions like:
+   * - 'my value' (possessive keyword + property)
+   * - '#dialog.showModal()' (method call)
+   * - "#element's *opacity" (possessive selector + property)
    */
   private matchRoleToken(
     tokens: TokenStream,
@@ -195,6 +215,46 @@ export class PatternMatcher {
     const token = tokens.peek();
     if (!token) {
       return patternToken.optional || false;
+    }
+
+    // Check for possessive expression (e.g., 'my value', 'its innerHTML')
+    const possessiveValue = this.tryMatchPossessiveExpression(tokens);
+    if (possessiveValue) {
+      // Validate expected types if specified
+      if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
+        if (!patternToken.expectedTypes.includes(possessiveValue.type) &&
+            !patternToken.expectedTypes.includes('expression')) {
+          return patternToken.optional || false;
+        }
+      }
+      captured.set(patternToken.role, possessiveValue);
+      return true;
+    }
+
+    // Check for method call expression (e.g., '#dialog.showModal()')
+    const methodCallValue = this.tryMatchMethodCallExpression(tokens);
+    if (methodCallValue) {
+      if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
+        if (!patternToken.expectedTypes.includes(methodCallValue.type) &&
+            !patternToken.expectedTypes.includes('expression')) {
+          return patternToken.optional || false;
+        }
+      }
+      captured.set(patternToken.role, methodCallValue);
+      return true;
+    }
+
+    // Check for possessive selector expression (e.g., "#element's *opacity")
+    const possessiveSelectorValue = this.tryMatchPossessiveSelectorExpression(tokens);
+    if (possessiveSelectorValue) {
+      if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
+        // property-path is compatible with selector, reference, and expression
+        if (!this.isTypeCompatible(possessiveSelectorValue.type, patternToken.expectedTypes)) {
+          return patternToken.optional || false;
+        }
+      }
+      captured.set(patternToken.role, possessiveSelectorValue);
+      return true;
     }
 
     // Try to extract a semantic value from the token
@@ -213,6 +273,194 @@ export class PatternMatcher {
     captured.set(patternToken.role, value);
     tokens.advance();
     return true;
+  }
+
+  /**
+   * Try to match a possessive expression like 'my value' or 'its innerHTML'.
+   * Returns the PropertyPathValue if matched, or null if not.
+   */
+  private tryMatchPossessiveExpression(tokens: TokenStream): SemanticValue | null {
+    const token = tokens.peek();
+    if (!token) return null;
+
+    const tokenLower = (token.normalized || token.value).toLowerCase();
+    const baseRef = PatternMatcher.POSSESSIVE_KEYWORDS[tokenLower];
+
+    if (!baseRef) return null;
+
+    // We have a possessive keyword, look ahead for property name
+    const mark = tokens.mark();
+    tokens.advance();
+
+    const propertyToken = tokens.peek();
+    if (!propertyToken) {
+      // Just the possessive keyword, no property - revert
+      tokens.reset(mark);
+      return null;
+    }
+
+    // Property should be an identifier or keyword (not a structural keyword like 'into')
+    if (propertyToken.kind === 'identifier' ||
+        (propertyToken.kind === 'keyword' && !this.isStructuralKeyword(propertyToken.value))) {
+      tokens.advance();
+
+      // Create property-path: my value -> { object: me, property: 'value' }
+      return createPropertyPath(
+        createReference(baseRef as any),
+        propertyToken.value
+      );
+    }
+
+    // Not a valid property, revert
+    tokens.reset(mark);
+    return null;
+  }
+
+  /**
+   * Check if a value type is compatible with expected types.
+   * property-path is compatible with selector, reference, and expression.
+   * expression is compatible with any type.
+   */
+  private isTypeCompatible(
+    actualType: string,
+    expectedTypes: string[]
+  ): boolean {
+    // Direct match
+    if (expectedTypes.includes(actualType)) return true;
+
+    // expression is always compatible
+    if (expectedTypes.includes('expression')) return true;
+
+    // property-path is compatible with selector, reference, and expression
+    if (actualType === 'property-path') {
+      return expectedTypes.some(t => ['selector', 'reference', 'expression'].includes(t));
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a keyword is a structural keyword (preposition, control flow, etc.)
+   * that shouldn't be consumed as a property name.
+   */
+  private isStructuralKeyword(value: string): boolean {
+    const structural = new Set([
+      // Prepositions
+      'into', 'in', 'to', 'from', 'at', 'by', 'with', 'without',
+      'before', 'after', 'of', 'as', 'on',
+      // Control flow
+      'then', 'end', 'else', 'if', 'repeat', 'while', 'for',
+      // Commands (shouldn't be property names)
+      'toggle', 'add', 'remove', 'put', 'set', 'show', 'hide',
+      'increment', 'decrement', 'send', 'trigger', 'call',
+    ]);
+    return structural.has(value.toLowerCase());
+  }
+
+  /**
+   * Try to match a method call expression like '#dialog.showModal()'.
+   * Pattern: selector + '.' + identifier + '(' + [args] + ')'
+   * Returns an expression value if matched, or null if not.
+   */
+  private tryMatchMethodCallExpression(tokens: TokenStream): SemanticValue | null {
+    const token = tokens.peek();
+    if (!token || token.kind !== 'selector') return null;
+
+    // Look ahead for: . identifier (
+    const mark = tokens.mark();
+    tokens.advance(); // consume selector
+
+    const dotToken = tokens.peek();
+    if (!dotToken || dotToken.kind !== 'operator' || dotToken.value !== '.') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume .
+
+    const methodToken = tokens.peek();
+    if (!methodToken || methodToken.kind !== 'identifier') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume method name
+
+    const openParen = tokens.peek();
+    if (!openParen || openParen.kind !== 'punctuation' || openParen.value !== '(') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume (
+
+    // Consume arguments until we find )
+    // For now, we just consume until closing paren (simple case)
+    const args: string[] = [];
+    while (!tokens.isAtEnd()) {
+      const argToken = tokens.peek();
+      if (!argToken) break;
+      if (argToken.kind === 'punctuation' && argToken.value === ')') {
+        tokens.advance(); // consume )
+        break;
+      }
+      // Skip commas
+      if (argToken.kind === 'punctuation' && argToken.value === ',') {
+        tokens.advance();
+        continue;
+      }
+      // Collect arg value
+      args.push(argToken.value);
+      tokens.advance();
+    }
+
+    // Create expression value: #dialog.showModal()
+    const methodCall = `${token.value}.${methodToken.value}(${args.join(', ')})`;
+    return {
+      type: 'expression',
+      value: methodCall,
+      expressionType: 'method-call',
+      object: createSelector(token.value),
+      method: methodToken.value,
+      args,
+    } as SemanticValue;
+  }
+
+  /**
+   * Try to match a possessive selector expression like "#element's *opacity".
+   * Pattern: selector + "'s" + (selector | identifier)
+   * Returns a property-path value if matched, or null if not.
+   */
+  private tryMatchPossessiveSelectorExpression(tokens: TokenStream): SemanticValue | null {
+    const token = tokens.peek();
+    if (!token || token.kind !== 'selector') return null;
+
+    // Look ahead for: 's (possessive marker)
+    const mark = tokens.mark();
+    tokens.advance(); // consume selector
+
+    const possessiveToken = tokens.peek();
+    if (!possessiveToken || possessiveToken.kind !== 'punctuation' || possessiveToken.value !== "'s") {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume 's
+
+    const propertyToken = tokens.peek();
+    if (!propertyToken) {
+      tokens.reset(mark);
+      return null;
+    }
+
+    // Property can be a selector (*opacity) or identifier
+    if (propertyToken.kind !== 'selector' && propertyToken.kind !== 'identifier') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume property
+
+    // Create property-path: #element's *opacity
+    return createPropertyPath(
+      createSelector(token.value),
+      propertyToken.value
+    );
   }
 
   /**

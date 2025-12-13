@@ -209,6 +209,10 @@ export function isAsciiIdentifierChar(char: string): boolean {
  * - @attribute (shorthand)
  * - *property (CSS property shorthand)
  * - Complex selectors with combinators (limited)
+ *
+ * Method call handling:
+ * - #dialog.showModal() → stops after #dialog (method call, not compound selector)
+ * - #box.active → compound selector (no parens)
  */
 export function extractCssSelector(input: string, startPos: number): string | null {
   if (startPos >= input.length) return null;
@@ -228,6 +232,21 @@ export function extractCssSelector(input: string, startPos: number): string | nu
     }
     // Must have at least one character after prefix
     if (selector.length <= 1) return null;
+
+    // Check for method call pattern: #id.method() or .class.method()
+    // If we see .identifier followed by (, don't consume it - it's a method call
+    if (pos < input.length && input[pos] === '.' && char === '#') {
+      // Look ahead to see if this is a method call
+      const methodStart = pos + 1;
+      let methodEnd = methodStart;
+      while (methodEnd < input.length && isAsciiIdentifierChar(input[methodEnd])) {
+        methodEnd++;
+      }
+      // If followed by (, it's a method call - stop here
+      if (methodEnd < input.length && input[methodEnd] === '(') {
+        return selector;
+      }
+    }
   } else if (char === '[') {
     // Attribute selector: [attr] or [attr=value]
     let depth = 1;
@@ -293,14 +312,44 @@ export function extractCssSelector(input: string, startPos: number): string | nu
 // =============================================================================
 
 /**
+ * Check if a single quote at pos is a possessive marker ('s).
+ * Returns true if this looks like possessive, not a string start.
+ *
+ * Examples:
+ * - #element's *opacity → possessive (returns true)
+ * - 'hello' → string (returns false)
+ * - it's value → possessive (returns true)
+ */
+export function isPossessiveMarker(input: string, pos: number): boolean {
+  if (pos >= input.length || input[pos] !== "'") return false;
+
+  // Check if followed by 's' or 'S'
+  if (pos + 1 >= input.length) return false;
+  const nextChar = input[pos + 1].toLowerCase();
+  if (nextChar !== 's') return false;
+
+  // After 's, should be end, whitespace, or special char (not alphanumeric)
+  if (pos + 2 >= input.length) return true; // end of input
+  const afterS = input[pos + 2];
+  return isWhitespace(afterS) || afterS === '*' || !isAsciiIdentifierChar(afterS);
+}
+
+/**
  * Extract a string literal from the input starting at pos.
  * Handles both ASCII quotes and Unicode quotes.
+ *
+ * Note: Single quotes that look like possessive markers ('s) are skipped.
  */
 export function extractStringLiteral(input: string, startPos: number): string | null {
   if (startPos >= input.length) return null;
 
   const openQuote = input[startPos];
   if (!isQuote(openQuote)) return null;
+
+  // Check for possessive marker - don't treat as string
+  if (openQuote === "'" && isPossessiveMarker(input, startPos)) {
+    return null;
+  }
 
   // Map opening quotes to closing quotes
   const closeQuoteMap: Record<string, string> = {

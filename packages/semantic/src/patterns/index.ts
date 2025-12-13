@@ -42,6 +42,9 @@ import {
   returnSchema,
   focusSchema,
   blurSchema,
+  // Tier 4: DOM Content Manipulation
+  swapSchema,
+  morphSchema,
 } from '../generators';
 
 // =============================================================================
@@ -67,6 +70,36 @@ const fetchSimpleEnglish: LanguagePattern = {
   },
   extraction: {
     source: { position: 1 },
+  },
+};
+
+// =============================================================================
+// Hand-crafted Swap Pattern (English only)
+// =============================================================================
+
+/**
+ * English: "swap <strategy> <target>" without prepositions.
+ * Examples:
+ * - swap delete #item
+ * - swap innerHTML #target
+ * - swap outerHTML me
+ */
+const swapSimpleEnglish: LanguagePattern = {
+  id: 'swap-en-handcrafted',
+  language: 'en',
+  command: 'swap',
+  priority: 110, // Higher than generated patterns
+  template: {
+    format: 'swap {method} {destination}',
+    tokens: [
+      { type: 'literal', value: 'swap' },
+      { type: 'role', role: 'method' },
+      { type: 'role', role: 'destination' },
+    ],
+  },
+  extraction: {
+    method: { position: 1 },
+    destination: { position: 2 },
   },
 };
 
@@ -105,6 +138,9 @@ const generatedPatterns: LanguagePattern[] = [
   ...generatePatternsForCommand(returnSchema),
   ...generatePatternsForCommand(focusSchema),
   ...generatePatternsForCommand(blurSchema),
+  // Tier 4: DOM Content Manipulation
+  ...generatePatternsForCommand(swapSchema),
+  ...generatePatternsForCommand(morphSchema),
 ];
 
 // =============================================================================
@@ -121,6 +157,7 @@ export const allPatterns: LanguagePattern[] = [
   ...putPatterns,
   ...eventHandlerPatterns,
   fetchSimpleEnglish, // fetch /url without "from"
+  swapSimpleEnglish,  // swap <strategy> <target>
   // Generated patterns (new commands)
   ...generatedPatterns,
 ];

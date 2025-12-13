@@ -17,6 +17,7 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  isPossessiveMarker,
 } from './base';
 
 // =============================================================================
@@ -30,7 +31,9 @@ const ENGLISH_KEYWORDS = new Set([
   // Commands - Class/Attribute operations
   'toggle', 'add', 'remove',
   // Commands - Content operations
-  'put', 'append', 'prepend', 'take', 'make', 'clone',
+  'put', 'append', 'prepend', 'take', 'make', 'clone', 'swap', 'morph',
+  // Swap strategies
+  'delete', 'innerHTML', 'outerHTML', 'beforebegin', 'afterend', 'beforeend', 'afterbegin',
   // Commands - Variable operations
   'set', 'get', 'increment', 'decrement', 'log',
   // Commands - Visibility
@@ -98,7 +101,24 @@ export class EnglishTokenizer extends BaseTokenizer {
       }
 
       // Try CSS selector first (highest priority)
+      // But check if this is a method call (.method()) first
       if (isSelectorStart(input[pos])) {
+        // Check for method call pattern: .identifier(
+        if (input[pos] === '.') {
+          const methodStart = pos + 1;
+          let methodEnd = methodStart;
+          while (methodEnd < input.length && isAsciiIdentifierChar(input[methodEnd])) {
+            methodEnd++;
+          }
+          // If followed by (, this is a method call, not a class selector
+          if (methodEnd < input.length && input[methodEnd] === '(') {
+            // Tokenize . as property accessor
+            tokens.push(createToken('.', 'operator', createPosition(pos, pos + 1)));
+            pos++;
+            continue;
+          }
+        }
+
         const selectorToken = this.trySelector(input, pos);
         if (selectorToken) {
           tokens.push(selectorToken);
@@ -107,8 +127,15 @@ export class EnglishTokenizer extends BaseTokenizer {
         }
       }
 
-      // Try string literal
+      // Try string literal (but not possessive markers)
       if (isQuote(input[pos])) {
+        // Check for possessive 's marker first
+        if (input[pos] === "'" && isPossessiveMarker(input, pos)) {
+          // Tokenize 's as a possessive marker
+          tokens.push(createToken("'s", 'punctuation', createPosition(pos, pos + 2)));
+          pos += 2;
+          continue;
+        }
         const stringToken = this.tryString(input, pos);
         if (stringToken) {
           tokens.push(stringToken);

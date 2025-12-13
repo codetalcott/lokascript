@@ -17,7 +17,7 @@
  */
 
 import type { SemanticParseResult, SemanticValue, SemanticRole, ActionType } from '../types';
-import type { CommandSchema, RoleSpec } from '../generators/command-schemas';
+import type { CommandSchema } from '../generators/command-schemas';
 import {
   toggleSchema,
   addSchema,
@@ -116,6 +116,23 @@ export function registerSchema(action: ActionType, schema: CommandSchema): void 
 // =============================================================================
 
 /**
+ * Helper to get the string value from a semantic value (if it has one).
+ */
+function getStringValue(value: SemanticValue): string | undefined {
+  if (value.type === 'literal' && typeof value.value === 'string') {
+    return value.value;
+  }
+  if (value.type === 'selector') {
+    return value.value;
+  }
+  if (value.type === 'reference') {
+    return value.value;
+  }
+  // PropertyPathValue and ExpressionValue don't have a direct string value
+  return undefined;
+}
+
+/**
  * Check if a semantic value matches expected types.
  */
 function valueMatchesType(
@@ -132,38 +149,39 @@ function valueMatchesType(
     switch (expectedType) {
       case 'selector':
         // Selectors are strings starting with ., #, or [
-        if (
-          value.type === 'selector' ||
-          (typeof value.value === 'string' &&
-            (value.value.startsWith('.') ||
-              value.value.startsWith('#') ||
-              value.value.startsWith('[')))
-        ) {
+        if (value.type === 'selector') {
+          return true;
+        }
+        // Check if literal/reference looks like a selector
+        const selectorStr = getStringValue(value);
+        if (selectorStr && (selectorStr.startsWith('.') || selectorStr.startsWith('#') || selectorStr.startsWith('['))) {
           return true;
         }
         break;
 
       case 'literal':
         // Literals include strings, numbers, booleans
-        if (
-          value.type === 'literal' ||
-          typeof value.value === 'string' ||
-          typeof value.value === 'number' ||
-          typeof value.value === 'boolean'
-        ) {
+        if (value.type === 'literal') {
+          return true;
+        }
+        // PropertyPathValue is also a valid value (e.g., "my value")
+        if (value.type === 'property-path') {
           return true;
         }
         break;
 
       case 'reference':
         // References are special keywords (me, you, it, etc.)
-        if (
-          value.type === 'reference' ||
-          (typeof value.value === 'string' &&
-            ['me', 'you', 'it', 'my', 'its', 'result', 'event', 'target'].includes(
-              value.value.toLowerCase()
-            ))
-        ) {
+        if (value.type === 'reference') {
+          return true;
+        }
+        // PropertyPathValue represents a reference with property access
+        if (value.type === 'property-path') {
+          return true;
+        }
+        // Check if it looks like a reference
+        const refStr = getStringValue(value);
+        if (refStr && ['me', 'you', 'it', 'my', 'its', 'result', 'event', 'target'].includes(refStr.toLowerCase())) {
           return true;
         }
         break;
@@ -171,6 +189,10 @@ function valueMatchesType(
       case 'expression':
         // Expressions are complex computed values
         if (value.type === 'expression') {
+          return true;
+        }
+        // PropertyPathValue is essentially an expression
+        if (value.type === 'property-path') {
           return true;
         }
         break;
@@ -258,7 +280,7 @@ export function validateSemanticResult(result: SemanticParseResult): ValidationR
     if (assignedValue && !valueMatchesType(assignedValue, roleSpec.expectedTypes)) {
       warnings.push({
         code: 'INVALID_TYPE',
-        message: `Role '${roleSpec.role}' expected ${roleSpec.expectedTypes.join(' or ')}, got ${assignedValue.type || typeof assignedValue.value}.`,
+        message: `Role '${roleSpec.role}' expected ${roleSpec.expectedTypes.join(' or ')}, got ${assignedValue.type}.`,
         role: roleSpec.role,
         expected: roleSpec.expectedTypes,
         actual: assignedValue,
