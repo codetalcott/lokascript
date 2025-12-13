@@ -801,12 +801,30 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'fazer', 'clonar', 'pegar', 'obter', 'focar', 'desfocar',
     ],
     tokenizerKeywords: [
+      // Commands - Class/Attribute operations
       'alternar', 'trocar', 'adicionar', 'acrescentar', 'remover', 'eliminar', 'apagar',
+      // Commands - Content operations
       'colocar', 'pôr', 'por', 'anexar', 'preceder', 'pegar', 'fazer', 'criar', 'clonar', 'copiar',
+      // Commands - Variable operations
       'definir', 'configurar', 'obter', 'incrementar', 'aumentar', 'decrementar', 'diminuir',
-      'registrar', 'imprimir', 'mostrar', 'exibir', 'ocultar', 'esconder',
-      'em', 'quando', 'ao', 'disparar', 'ativar', 'enviar', 'focar', 'desfocar',
-      'ir', 'navegar', 'esperar', 'aguardar', 'buscar', 'estabilizar',
+      'registrar', 'imprimir',
+      // Commands - Visibility
+      'mostrar', 'exibir', 'ocultar', 'esconder', 'transição', 'transicao', 'animar',
+      // Commands - Events
+      'em', 'quando', 'ao', 'disparar', 'ativar', 'enviar',
+      // Commands - DOM focus
+      'focar', 'foco', 'desfocar',
+      // Commands - Navigation
+      'ir', 'navegar',
+      // Commands - Async
+      'esperar', 'aguardar', 'buscar', 'estabilizar',
+      // Commands - Control flow
+      'se', 'senão', 'senao', 'repetir', 'para', 'enquanto', 'continuar', 'parar',
+      'lançar', 'lancar', 'chamar', 'retornar', 'devolver',
+      // Commands - Advanced
+      'js', 'assíncrono', 'assincrono', 'dizer', 'padrão', 'padrao', 'iniciar', 'inicializar', 'comportamento',
+      // Modifiers
+      'dentro de', 'antes', 'depois',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -839,12 +857,30 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'faire', 'cloner', 'prendre', 'obtenir', 'focaliser', 'défocaliser',
     ],
     tokenizerKeywords: [
+      // Commands - Class/Attribute operations
       'basculer', 'permuter', 'alterner', 'ajouter', 'supprimer', 'enlever', 'retirer',
+      // Commands - Content operations
       'mettre', 'placer', 'annexer', 'préfixer', 'prefixer', 'prendre', 'faire', 'créer', 'creer', 'cloner', 'copier',
+      // Commands - Variable operations
       'définir', 'definir', 'établir', 'etablir', 'obtenir', 'incrémenter', 'incrementer', 'décrémenter', 'decrementer',
-      'enregistrer', 'afficher', 'montrer', 'cacher', 'masquer',
-      'sur', 'quand', 'lors', 'déclencher', 'declencher', 'envoyer', 'focaliser', 'défocaliser', 'defocaliser',
-      'aller', 'naviguer', 'attendre', 'chercher', 'récupérer', 'recuperer', 'stabiliser',
+      'enregistrer', 'journaliser', 'afficher',
+      // Commands - Visibility
+      'montrer', 'cacher', 'masquer', 'transition', 'animer',
+      // Commands - Events
+      'sur', 'quand', 'lors', 'déclencher', 'declencher', 'envoyer',
+      // Commands - DOM focus
+      'focaliser', 'concentrer', 'défocaliser', 'defocaliser',
+      // Commands - Navigation
+      'aller', 'naviguer',
+      // Commands - Async
+      'attendre', 'chercher', 'récupérer', 'recuperer', 'stabiliser',
+      // Commands - Control flow
+      'si', 'sinon', 'répéter', 'repeter', 'pour', 'tant que', 'pendant', 'continuer',
+      'arrêter', 'arreter', 'stopper', 'lancer', 'appeler', 'retourner', 'renvoyer',
+      // Commands - Advanced
+      'js', 'asynchrone', 'dire', 'défaut', 'defaut', 'initialiser', 'comportement',
+      // Modifiers
+      'dans', 'avant', 'après', 'apres',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -877,12 +913,30 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'machen', 'klonen', 'nehmen', 'holen', 'fokussieren', 'defokussieren',
     ],
     tokenizerKeywords: [
-      'umschalten', 'wechseln', 'hinzufügen', 'hinzufugen', 'entfernen', 'löschen', 'loschen',
-      'setzen', 'stellen', 'platzieren', 'anhängen', 'anhangen', 'voranstellen', 'nehmen', 'machen', 'erstellen', 'klonen', 'kopieren',
+      // Commands - Class/Attribute operations
+      'umschalten', 'wechseln', 'hinzufügen', 'hinzufugen', 'hinzufgen', 'entfernen', 'löschen', 'loschen',
+      // Commands - Content operations
+      'setzen', 'stellen', 'platzieren', 'anhängen', 'anhangen', 'voranstellen', 'nehmen', 'machen', 'erstellen', 'erzeugen', 'klonen', 'kopieren',
+      // Commands - Variable operations
       'festlegen', 'definieren', 'holen', 'bekommen', 'erhöhen', 'erhohen', 'verringern', 'vermindern',
-      'protokollieren', 'ausgeben', 'zeigen', 'anzeigen', 'verbergen', 'verstecken',
-      'bei', 'wenn', 'auf', 'auslösen', 'auslosen', 'senden', 'schicken', 'fokussieren', 'defokussieren',
-      'gehen', 'navigieren', 'warten', 'abrufen', 'laden', 'stabilisieren',
+      'protokollieren', 'ausgeben',
+      // Commands - Visibility
+      'zeigen', 'anzeigen', 'verbergen', 'verstecken', 'übergang', 'ubergang', 'animieren',
+      // Commands - Events
+      'bei', 'wenn', 'auf', 'auslösen', 'auslosen', 'senden', 'schicken',
+      // Commands - DOM focus
+      'fokussieren', 'defokussieren', 'entfokussieren',
+      // Commands - Navigation
+      'gehen', 'navigieren',
+      // Commands - Async
+      'warten', 'abrufen', 'laden', 'stabilisieren',
+      // Commands - Control flow
+      'falls', 'sonst', 'ansonsten', 'wiederholen', 'für', 'solange', 'während',
+      'fortfahren', 'weiter', 'anhalten', 'stoppen', 'werfen', 'aufrufen', 'zurückgeben', 'zuruckgeben',
+      // Commands - Advanced
+      'js', 'javascript', 'asynchron', 'sagen', 'standard', 'initialisieren', 'verhalten',
+      // Modifiers
+      'hinein', 'vor', 'nach',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -915,12 +969,30 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'buat', 'klon', 'ambil', 'dapatkan', 'fokus', 'blur',
     ],
     tokenizerKeywords: [
+      // Commands - Class/Attribute operations
       'alihkan', 'ganti', 'tukar', 'tambah', 'tambahkan', 'hapus', 'buang', 'hilangkan',
+      // Commands - Content operations
       'taruh', 'letakkan', 'masukkan', 'sisipkan', 'awali', 'ambil', 'buat', 'bikin', 'ciptakan', 'klon', 'salin', 'tiru',
+      // Commands - Variable operations
       'atur', 'tetapkan', 'dapatkan', 'peroleh', 'tingkatkan', 'naikkan', 'turunkan', 'kurangi',
-      'catat', 'rekam', 'cetak', 'tampilkan', 'perlihatkan', 'sembunyikan', 'tutup',
-      'pada', 'saat', 'ketika', 'picu', 'jalankan', 'kirim', 'kirimkan', 'fokus', 'fokuskan', 'blur',
-      'pergi', 'pindah', 'navigasi', 'tunggu', 'muat', 'stabilkan',
+      'catat', 'rekam', 'cetak',
+      // Commands - Visibility
+      'tampilkan', 'perlihatkan', 'sembunyikan', 'tutup', 'transisi', 'animasikan',
+      // Commands - Events
+      'pada', 'saat', 'ketika', 'picu', 'jalankan', 'kirim', 'kirimkan',
+      // Commands - DOM focus
+      'fokus', 'fokuskan', 'hilangkan fokus', 'blur',
+      // Commands - Navigation
+      'pergi', 'pindah', 'navigasi',
+      // Commands - Async
+      'tunggu', 'muat', 'stabilkan',
+      // Commands - Control flow
+      'jika', 'kalau', 'bila', 'selainnya', 'jika tidak', 'ulangi', 'untuk', 'selama',
+      'lanjutkan', 'terus', 'hentikan', 'berhenti', 'lempar', 'panggil', 'kembalikan', 'kembali',
+      // Commands - Advanced
+      'js', 'javascript', 'asinkron', 'katakan', 'beritahu', 'bawaan', 'inisialisasi', 'mulai', 'perilaku',
+      // Modifiers
+      'ke dalam', 'sebelum', 'sesudah', 'setelah',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -953,12 +1025,29 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'ruray', 'kikinchay', 'hapiy', 'taripay', 'qhawachiy',
     ],
     tokenizerKeywords: [
+      // Commands - Class/Attribute operations
       "t'ikray", 'tikray', 'kutichiy', 'yapay', 'yapaykuy', 'qichuy', 'hurquy', 'anchuchiy',
+      // Commands - Content operations
       'churay', 'tiyachiy', 'qatichiy', 'ñawpachiy', 'nawpachiy', 'hapiy', 'ruray', 'kamay', 'kikinchay', 'qillqay',
-      'kamaykuy', 'taripay', 'yapachiy', 'pisiyachiy',
-      'qillqakuy', 'willakuy', 'rikuchiy', 'qawachiy', 'pakay', 'pakakuy',
-      'chaypim', 'kaypi', 'qallarichiy', 'kachay', 'apachiy', 'qhawachiy',
-      'riy', 'puriy', 'suyay', 'apamuy', 'taripakaramuy', 'tiyakuy',
+      // Commands - Variable operations
+      'kamaykuy', 'taripay', 'yapachiy', 'pisiyachiy', 'qillqakuy', 'willakuy',
+      // Commands - Visibility
+      'rikuchiy', 'qawachiy', 'pakay', 'pakakuy', 'kuyuchiy',
+      // Commands - Events
+      'chaypim', 'kaypi', 'qallarichiy', 'kachay', 'apachiy',
+      // Commands - DOM focus
+      'qhawachiy', 'mana qhawachiy',
+      // Commands - Navigation
+      'riy', 'puriy',
+      // Commands - Async
+      'suyay', 'apamuy', 'taripakaramuy', 'tiyakuy',
+      // Commands - Control flow
+      'sichus', 'manachus', 'hukniraq', 'kutipay', 'muyu', 'sapankaq', 'kaykamaqa',
+      'qatipay', 'sayay', 'tukuy', 'chanqay', 'waqyay', 'kutimuy',
+      // Commands - Advanced
+      'js', 'mana waqtalla', 'niy', 'qallariy', 'ruwana',
+      // Modifiers
+      'ukuman', 'ñawpaq', 'nawpaq', 'qhipa',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
@@ -991,12 +1080,29 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
       'tengeneza', 'nakili', 'chukua', 'pata', 'lenga', 'blur',
     ],
     tokenizerKeywords: [
+      // Commands - Class/Attribute operations
       'badilisha', 'geuza', 'ongeza', 'weka', 'ondoa', 'futa', 'toa',
+      // Commands - Content operations
       'tia', 'ambatanisha', 'tanguliza', 'chukua', 'tengeneza', 'unda', 'nakili', 'rudufu',
-      'seti', 'pata', 'pokea', 'punguza',
-      'andika', 'rekodi', 'onyesha', 'ficha', 'mficho',
-      'wakati', 'kwenye', 'unapo', 'chochea', 'anzisha', 'tuma', 'peleka', 'lenga', 'angazia',
-      'nenda', 'enda', 'elekea', 'subiri', 'ngoja', 'leta', 'pakia', 'tulia', 'imarika',
+      // Commands - Variable operations
+      'seti', 'pata', 'pokea', 'punguza', 'andika', 'rekodi',
+      // Commands - Visibility
+      'onyesha', 'ficha', 'mficho', 'hamisha', 'animisha',
+      // Commands - Events
+      'wakati', 'kwenye', 'unapo', 'chochea', 'anzisha', 'tuma', 'peleka',
+      // Commands - DOM focus
+      'lenga', 'angazia', 'ondoa lenga', 'blur',
+      // Commands - Navigation
+      'nenda', 'enda', 'elekea',
+      // Commands - Async
+      'subiri', 'ngoja', 'leta', 'pakia', 'tulia', 'imarika',
+      // Commands - Control flow
+      'kama', 'ikiwa', 'vinginevyo', 'sivyo', 'rudia', 'kwa',
+      'endelea', 'simama', 'acha', 'tupa', 'ita', 'piga simu', 'rudisha', 'rejea',
+      // Commands - Advanced
+      'js', 'javascript', 'isiyo sawia', 'sema', 'ambia', 'chaguo-msingi', 'anza', 'tabia',
+      // Modifiers
+      'ndani', 'kabla', 'baada',
     ],
     missingFromTokenizer: [],
     potentialConflicts: [],
