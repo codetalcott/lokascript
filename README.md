@@ -37,10 +37,23 @@ A complete, modern hyperscript implementation with **full feature compatibility*
 
 **13 Languages**: English, Spanish, French, German, Portuguese, Arabic, Chinese, Japanese, Korean, Turkish, Indonesian, Quechua, Swahili
 
-Two approaches available:
+Unified multilingual API via `MultilingualHyperscript`:
 
-- **i18n package**: Grammar transformation (translate English hyperscript to native word order)
-- **semantic package**: Parse hyperscript directly from any of 13 languages with confidence scoring
+```typescript
+import { MultilingualHyperscript } from '@hyperfixi/core';
+
+const ml = new MultilingualHyperscript();
+await ml.initialize();
+
+// Parse from any language
+const node = await ml.parse('#button の .active を 切り替え', 'ja');
+
+// Translate between any languages
+const arabic = await ml.translate('toggle .active on #button', 'en', 'ar');
+
+// Get all translations at once
+const all = await ml.getAllTranslations('toggle .active', 'en');
+```
 
 ## Quick Start
 

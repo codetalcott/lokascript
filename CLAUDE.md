@@ -135,19 +135,29 @@ Key files:
 - `packages/i18n/src/grammar/profiles/` - Language profiles with word order rules
 - `packages/i18n/src/grammar/types.ts` - Semantic roles, joinTokens for agglutinative suffixes
 
-### Semantic-First Parsing (semantic)
+### Unified Multilingual API
 
-The semantic package parses hyperscript directly from 13 languages without English translation:
+The `MultilingualHyperscript` class provides a unified API that integrates semantic parsing with grammar transformation:
 
-- **Language-specific tokenizers** with morphological normalization
-- **Confidence scoring** for fallback to traditional parser
-- **Explicit syntax** as language-agnostic intermediate representation
+```typescript
+import { MultilingualHyperscript } from '@hyperfixi/core';
+
+const ml = new MultilingualHyperscript();
+await ml.initialize();
+
+// Parse from any of 13 languages
+const node = await ml.parse('#button の .active を 切り替え', 'ja');
+
+// Translate between any languages
+const arabic = await ml.translate('toggle .active', 'en', 'ar');
+```
 
 Key files:
 
+- `packages/core/src/multilingual/index.ts` - `MultilingualHyperscript` unified API
+- `packages/core/src/multilingual/bridge.ts` - `SemanticGrammarBridge` integration layer
 - `packages/semantic/src/tokenizers/` - 13 language tokenizers
 - `packages/semantic/src/parser/semantic-parser.ts` - Main semantic parser
-- `packages/semantic/src/generators/language-profiles.ts` - Keyword definitions
 - `packages/semantic/CLAUDE.md` - Package-specific documentation
 
 ### Expression System
