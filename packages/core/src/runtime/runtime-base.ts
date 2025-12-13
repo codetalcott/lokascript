@@ -959,7 +959,12 @@ export class RuntimeBase {
 
   protected queryElements(selector: string, context: ExecutionContext): HTMLElement[] {
     if (!context.me || typeof document === 'undefined') return [];
-    return Array.from(document.querySelectorAll(selector));
+    // Handle hyperscript queryReference syntax <tag/>
+    let cleanSelector = selector;
+    if (cleanSelector.startsWith('<') && cleanSelector.endsWith('/>')) {
+      cleanSelector = cleanSelector.slice(1, -2); // Remove '<' and '/>'
+    }
+    return Array.from(document.querySelectorAll(cleanSelector));
   }
 
   protected isElement(obj: unknown): obj is HTMLElement {

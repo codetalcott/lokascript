@@ -142,7 +142,12 @@ export function resolveElements(
 
     // Query DOM for selector
     if (typeof document !== 'undefined') {
-      const elements = document.querySelectorAll(trimmed);
+      // Handle hyperscript queryReference syntax <tag/>
+      let selector = trimmed;
+      if (selector.startsWith('<') && selector.endsWith('/>')) {
+        selector = selector.slice(1, -2); // Remove '<' and '/>'
+      }
+      const elements = document.querySelectorAll(selector);
       return Array.from(elements).filter(isHTMLElement) as HTMLElement[];
     }
   }
@@ -347,7 +352,12 @@ export async function resolveTargetsFromArgs(
       targets.push(...elements);
     } else if (typeof evaluated === 'string') {
       try {
-        const selected = document.querySelectorAll(evaluated);
+        // Handle hyperscript queryReference syntax <tag/>
+        let selector = evaluated;
+        if (selector.startsWith('<') && selector.endsWith('/>')) {
+          selector = selector.slice(1, -2); // Remove '<' and '/>'
+        }
+        const selected = document.querySelectorAll(selector);
         const elements = Array.from(selected).filter(isHTMLElement) as HTMLElement[];
         targets.push(...elements);
       } catch (error) {

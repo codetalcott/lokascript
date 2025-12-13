@@ -63,19 +63,20 @@ export class AttributeProcessor {
    * Scan and process all elements with hyperscript attributes in the document
    */
   scanAndProcessAll(): void {
-    // Process elements with _ attributes
-    const elements = document.querySelectorAll(`[${this.options.attributeName}]`);
-    elements.forEach((element, index) => {
-      if (element instanceof HTMLElement) {
-        this.processElement(element);
-      }
-    });
-
-    // Process <script type="text/hyperscript"> tags
+    // Process <script type="text/hyperscript"> tags FIRST
+    // This ensures behaviors are defined before elements try to install them
     const scriptTags = document.querySelectorAll('script[type="text/hyperscript"]');
     scriptTags.forEach(script => {
       if (script instanceof HTMLScriptElement) {
         this.processHyperscriptTag(script);
+      }
+    });
+
+    // Process elements with _ attributes AFTER behaviors are defined
+    const elements = document.querySelectorAll(`[${this.options.attributeName}]`);
+    elements.forEach((element, index) => {
+      if (element instanceof HTMLElement) {
+        this.processElement(element);
       }
     });
   }

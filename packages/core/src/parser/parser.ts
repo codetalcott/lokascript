@@ -2753,6 +2753,30 @@ export class Parser {
     return this.originalInput;
   }
 
+  /**
+   * Skip tokens until a command boundary is reached.
+   * Used after semantic parsing to sync token position with parsed content.
+   * A command boundary is: then, and, else, end, or end of input.
+   */
+  private skipToCommandBoundary(): void {
+    const boundaryKeywords = ['then', 'and', 'else', 'end'];
+    while (!this.isAtEnd()) {
+      const token = this.peek();
+      const value = token.value.toLowerCase();
+      // Stop at command boundary keywords
+      if (boundaryKeywords.includes(value)) {
+        break;
+      }
+      // Stop at command tokens (next command starting)
+      if (token.type === TokenType.COMMAND) {
+        break;
+      }
+      // Stop at newline boundaries that might indicate command separation
+      // (Handled implicitly by reaching end of relevant tokens)
+      this.advance();
+    }
+  }
+
   private parseCommand(): CommandNode {
     // Try semantic-first parsing if available
     // Semantic parsing uses modifiers format ({args: [patient], modifiers: {into: dest}})
@@ -2761,7 +2785,11 @@ export class Parser {
       const remainingInput = this.getRemainingInput();
       const semanticResult = this.trySemanticParse(remainingInput);
       if (semanticResult) {
-        // Successfully parsed with semantic analyzer - use the result
+        // Successfully parsed with semantic analyzer - advance token position
+        // Skip all tokens until we reach a command boundary
+        // This is necessary because semantic parsing operates on raw strings,
+        // not the token stream, so we need to sync the token position
+        this.skipToCommandBoundary();
         return semanticResult;
       }
       // Fall through to traditional parsing

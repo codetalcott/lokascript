@@ -628,7 +628,30 @@ export class BaseExpressionEvaluator {
 
     // Special handling for 'in' operator with selectors
     if (operator === 'in' && left.type === 'selector') {
-      const selector = left.value;
+      // Convert hyperscript selector <tag/> to CSS selector (tag)
+      let selector = left.value;
+      if (selector.startsWith('<') && selector.endsWith('/>')) {
+        selector = selector.slice(1, -2); // Remove '<' and '/>'
+      }
+      const contextElement = await this.evaluate(right, context);
+
+      if (!contextElement || typeof contextElement.querySelector !== 'function') {
+        throw new Error(
+          `'in' operator requires a DOM element as the right operand (got: ${typeof contextElement})`
+        );
+      }
+
+      const nodeList = contextElement.querySelectorAll(selector);
+      return Array.from(nodeList);
+    }
+
+    // Special handling for 'in' operator with queryReference (e.g., <button/> in closest nav)
+    if (operator === 'in' && left.type === 'queryReference') {
+      // Convert hyperscript selector <tag/> to CSS selector (tag)
+      let selector = left.selector;
+      if (selector.startsWith('<') && selector.endsWith('/>')) {
+        selector = selector.slice(1, -2); // Remove '<' and '/>'
+      }
       const contextElement = await this.evaluate(right, context);
 
       if (!contextElement || typeof contextElement.querySelector !== 'function') {
@@ -1105,7 +1128,12 @@ export class BaseExpressionEvaluator {
     node: { value: string },
     _context: ExecutionContext
   ): Promise<HTMLElement[]> {
-    const elements = document.querySelectorAll(node.value);
+    // Convert hyperscript selector <tag/> to CSS selector (tag)
+    let selector = node.value;
+    if (selector.startsWith('<') && selector.endsWith('/>')) {
+      selector = selector.slice(1, -2); // Remove '<' and '/>'
+    }
+    const elements = document.querySelectorAll(selector);
     return Array.from(elements).filter(
       (el): el is HTMLElement => el instanceof HTMLElement
     );
@@ -1214,7 +1242,11 @@ export class BaseExpressionEvaluator {
     node: { selectorType: string; selector: string },
     _context: ExecutionContext
   ): Promise<HTMLElement | HTMLElement[] | null> {
-    const selector = node.selector;
+    // Convert hyperscript selector <tag/> to CSS selector (tag)
+    let selector = node.selector;
+    if (selector.startsWith('<') && selector.endsWith('/>')) {
+      selector = selector.slice(1, -2); // Remove '<' and '/>'
+    }
 
     if (node.selectorType === 'id') {
       const id = selector.startsWith('#') ? selector.slice(1) : selector;

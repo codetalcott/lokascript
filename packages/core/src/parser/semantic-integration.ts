@@ -200,6 +200,23 @@ export class SemanticIntegrationAdapter {
   }
 
   /**
+   * Commands that should skip semantic parsing because their syntax
+   * doesn't fit the semantic role model well (keyword-heavy syntax).
+   */
+  private static readonly SKIP_SEMANTIC_COMMANDS = new Set([
+    'swap',   // swap innerHTML of #target with content - keyword-based
+    'morph',  // morph #target to content - similar to swap
+  ]);
+
+  /**
+   * Check if input starts with a command that should skip semantic parsing.
+   */
+  private shouldSkipSemantic(input: string): boolean {
+    const firstWord = input.trim().split(/\s+/)[0]?.toLowerCase();
+    return SemanticIntegrationAdapter.SKIP_SEMANTIC_COMMANDS.has(firstWord);
+  }
+
+  /**
    * Attempt to parse input using semantic analysis.
    *
    * @param input The input string to parse
@@ -207,6 +224,15 @@ export class SemanticIntegrationAdapter {
    */
   trySemanticParse(input: string): SemanticParseAttempt {
     const startTime = performance.now();
+
+    // Skip semantic parsing for commands with keyword-heavy syntax
+    if (this.shouldSkipSemantic(input)) {
+      return {
+        success: false,
+        confidence: 0,
+        errors: ['Command skipped for semantic parsing - using traditional parser'],
+      };
+    }
 
     if (!this.isAvailable()) {
       return {
@@ -312,17 +338,26 @@ export class SemanticIntegrationAdapter {
           break;
 
         // Destination role maps to position-based modifiers
+        // Each command uses different prepositions for the target:
         case 'destination':
           if (command.name === 'put') {
             modifiers['into'] = exprNode;
+          } else if (command.name === 'add' || command.name === 'append' || command.name === 'prepend') {
+            modifiers['to'] = exprNode;
           } else {
+            // toggle, set, send, etc use 'on'
             modifiers['on'] = exprNode;
           }
           break;
 
-        // Source role
+        // Source role - for fetch command, the source (URL) goes into args
+        // For other commands, it becomes a 'from' modifier
         case 'source':
-          modifiers['from'] = exprNode;
+          if (command.name === 'fetch') {
+            args.push(exprNode);
+          } else {
+            modifiers['from'] = exprNode;
+          }
           break;
 
         // Quantitative roles
@@ -403,29 +438,44 @@ export class SemanticIntegrationAdapter {
           column: 0,
         } as unknown as ExpressionNode;
 
-      case 'property-path':
-        // Property paths become member expressions
-        // For now, return as identifier; can be enhanced later
+      case 'property-path': {
+        // Property paths become memberExpression nodes
+        // e.g., "my value" -> { object: me, property: { type: 'identifier', name: 'value' } }
+        // The evaluator expects node.object and node.property.name
+        const pathValue = value as { type: 'property-path'; object: SemanticValue; property: string };
+        const objectNode = this.semanticValueToExpression(pathValue.object);
         return {
-          type: 'identifier',
-          name: value.value,
+          type: 'memberExpression',
+          object: objectNode,
+          property: {
+            type: 'identifier',
+            name: pathValue.property,
+            start: 0,
+            end: 0,
+            line: 1,
+            column: 0,
+          },
+          computed: false,
           start: 0,
           end: 0,
           line: 1,
           column: 0,
         } as unknown as ExpressionNode;
+      }
 
       case 'expression':
-      default:
-        // Generic expressions - treat as identifier for now
+      default: {
+        // Generic expressions - use raw string as identifier name
+        const exprValue = value as { type: 'expression'; raw: string };
         return {
           type: 'identifier',
-          name: value.value,
+          name: exprValue.raw || '',
           start: 0,
           end: 0,
           line: 1,
           column: 0,
         } as unknown as ExpressionNode;
+      }
     }
   }
 

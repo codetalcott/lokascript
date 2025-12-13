@@ -1439,10 +1439,29 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
  * Evaluate binary expressions using our expression implementations
  */
 async function evaluateBinaryExpression(node: any, context: ExecutionContext): Promise<any> {
+  const operator = node.operator;
+
+  // Special handling for 'in' operator with queryReference (e.g., <button/> in closest nav)
+  // Don't evaluate the left side first - use it as a selector within the context element
+  if (operator === 'in' && node.left?.type === 'queryReference') {
+    // Convert hyperscript selector <tag/> to CSS selector (tag)
+    let selector = node.left.selector;
+    if (selector.startsWith('<') && selector.endsWith('/>')) {
+      selector = selector.slice(1, -2); // Remove '<' and '/>'
+    }
+    const contextElement = await evaluateASTNode(node.right, context);
+
+    if (!contextElement || typeof contextElement.querySelectorAll !== 'function') {
+      throw new ExpressionParseError(
+        `'in' operator requires a DOM element as the right operand (got: ${typeof contextElement})`
+      );
+    }
+
+    return Array.from(contextElement.querySelectorAll(selector));
+  }
+
   const left = await evaluateASTNode(node.left, context);
   const right = await evaluateASTNode(node.right, context);
-
-  const operator = node.operator;
 
   // Map operators to our expression implementations
   switch (operator) {
