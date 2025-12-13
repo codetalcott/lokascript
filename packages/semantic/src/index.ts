@@ -285,3 +285,21 @@ export {
   type SemanticCacheConfig,
   type CacheStats,
 } from './cache';
+
+// =============================================================================
+// Unified Language Profile (Package Integration)
+// =============================================================================
+
+export {
+  // Types (using aliases to avoid conflicts with existing exports)
+  type UnifiedLanguageProfile,
+  type UnifiedRoleMarker,
+  type GrammarRule as UnifiedGrammarRule,
+  type PatternMatcher as UnifiedPatternMatcher,
+  type PatternTransform as UnifiedPatternTransform,
+  // Utilities
+  markingStrategyToAdpositionType,
+  toGrammaticalMarker,
+  toI18nProfile,
+  isUnifiedProfile,
+} from './types/unified-profile';
