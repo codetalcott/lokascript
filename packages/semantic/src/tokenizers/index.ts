@@ -13,6 +13,12 @@ import { arabicTokenizer } from './arabic';
 import { spanishTokenizer } from './spanish';
 import { turkishTokenizer } from './turkish';
 import { chineseTokenizer } from './chinese';
+import { portugueseTokenizer } from './portuguese';
+import { frenchTokenizer } from './french';
+import { germanTokenizer } from './german';
+import { indonesianTokenizer } from './indonesian';
+import { quechuaTokenizer } from './quechua';
+import { swahiliTokenizer } from './swahili';
 
 // =============================================================================
 // Tokenizer Registry
@@ -29,6 +35,12 @@ tokenizers.set('ar', arabicTokenizer);
 tokenizers.set('es', spanishTokenizer);
 tokenizers.set('tr', turkishTokenizer);
 tokenizers.set('zh', chineseTokenizer);
+tokenizers.set('pt', portugueseTokenizer);
+tokenizers.set('fr', frenchTokenizer);
+tokenizers.set('de', germanTokenizer);
+tokenizers.set('id', indonesianTokenizer);
+tokenizers.set('qu', quechuaTokenizer);
+tokenizers.set('sw', swahiliTokenizer);
 
 /**
  * Get a tokenizer for the specified language.
@@ -80,6 +92,12 @@ export { arabicTokenizer } from './arabic';
 export { spanishTokenizer } from './spanish';
 export { turkishTokenizer } from './turkish';
 export { chineseTokenizer } from './chinese';
+export { portugueseTokenizer } from './portuguese';
+export { frenchTokenizer } from './french';
+export { germanTokenizer } from './german';
+export { indonesianTokenizer } from './indonesian';
+export { quechuaTokenizer } from './quechua';
+export { swahiliTokenizer } from './swahili';
 
 export {
   BaseTokenizer,

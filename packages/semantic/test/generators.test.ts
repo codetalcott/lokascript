@@ -121,7 +121,7 @@ describe('Language Profiles', () => {
 
     it('should return false for unsupported languages', () => {
       expect(isLanguageSupported('invalid')).toBe(false);
-      expect(isLanguageSupported('fr')).toBe(false);
+      expect(isLanguageSupported('xx')).toBe(false);
     });
   });
 

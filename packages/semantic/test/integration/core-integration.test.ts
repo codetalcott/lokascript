@@ -57,9 +57,8 @@ describe('Core Integration', () => {
     });
 
     it('should return false for unsupported languages', () => {
-      expect(analyzer.supportsLanguage('fr')).toBe(false);
-      expect(analyzer.supportsLanguage('de')).toBe(false);
-      expect(analyzer.supportsLanguage('pt')).toBe(false);
+      expect(analyzer.supportsLanguage('xx')).toBe(false);
+      expect(analyzer.supportsLanguage('invalid')).toBe(false);
     });
   });
 
