@@ -10,7 +10,8 @@ A complete, modern hyperscript implementation with **full feature compatibility*
 | ------------------------------------ | --------------------------------- | ----------- | ----------------- |
 | [`@hyperfixi/core`](./packages/core) | Full hyperscript implementation | ~12KB       | ✅ 440+ Tests, 9/9 Features + Extensions |
 | [`@hyperfixi/server-integration`](./packages/server-integration) | Server-side compilation API | ~8KB | ✅ Production Ready |
-| [`@hyperfixi/i18n`](./packages/i18n) | 12-language internationalization | ~6KB | ✅ Complete |
+| [`@hyperfixi/i18n`](./packages/i18n) | 13-language internationalization | ~6KB | ✅ Complete |
+| [`@hyperfixi/semantic`](./packages/semantic) | Semantic-first multilingual parsing | ~60KB | ✅ 730+ Tests, 13 Languages |
 
 ## Advanced Packages
 
@@ -34,7 +35,12 @@ A complete, modern hyperscript implementation with **full feature compatibility*
 
 ## Internationalization Support
 
-**12 Languages**: English, Spanish, French, German, Arabic, Chinese, Japanese, Korean, Turkish, Indonesian, Quechua, Swahili
+**13 Languages**: English, Spanish, French, German, Portuguese, Arabic, Chinese, Japanese, Korean, Turkish, Indonesian, Quechua, Swahili
+
+Two approaches available:
+
+- **i18n package**: Grammar transformation (translate English hyperscript to native word order)
+- **semantic package**: Parse hyperscript directly from any of 13 languages with confidence scoring
 
 ## Quick Start
 
@@ -358,7 +364,8 @@ MIT - see [LICENSE](./LICENSE) file for details.
 - [x] Smart bundling with AI-driven optimization
 - [x] Developer tools (CLI, visual builder, analyzer)
 - [x] Testing framework with cross-platform support
-- [x] Internationalization (12 languages)
+- [x] Internationalization (13 languages)
+- [x] Semantic-first multilingual parsing (13 languages, 730+ tests)
 - [x] Multi-tenant support with tenant-specific customization
 - [x] Analytics system with behavior tracking
 - [x] SSR support with server-side rendering
