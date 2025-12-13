@@ -17,15 +17,27 @@ This enables:
 
 ```typescript
 interface SemanticNode {
-  kind: 'command' | 'event-handler' | 'conditional';
+  kind: 'command' | 'event-handler' | 'conditional' | 'compound' | 'loop';
   action: string;           // The verb: 'toggle', 'add', 'set', etc.
   roles: Map<SemanticRole, SemanticValue>;
   metadata?: {
     sourceText?: string;
     confidence?: number;
+    sourceLanguage?: string;
+    patternId?: string;
   };
 }
 ```
+
+### Node Types
+
+| Kind | Description | Example |
+|------|-------------|---------|
+| `command` | Single command | `toggle .active` |
+| `event-handler` | Event listener with body | `on click toggle .active` |
+| `conditional` | If/else block | `if condition show #x else hide #x end` |
+| `compound` | Then-chained commands | `toggle .a then put 'x' into #y` |
+| `loop` | Repeat/while/for blocks | `repeat 3 times toggle .active end` |
 
 ### SemanticValue Types
 
@@ -34,10 +46,40 @@ Each role's value can be one of several types:
 ```typescript
 type SemanticValue =
   | { type: 'selector'; value: string; selectorKind: 'id' | 'class' | 'tag' | 'complex' }
-  | { type: 'literal'; value: string | number | boolean }
-  | { type: 'reference'; value: 'me' | 'you' | 'it' | 'result' }
+  | { type: 'literal'; value: string | number | boolean; dataType?: string }
+  | { type: 'reference'; value: 'me' | 'you' | 'it' | 'result' | 'event' | 'target' | 'body' }
   | { type: 'property-path'; object: SemanticValue; property: string }
-  | { type: 'expression'; raw: string };
+  | { type: 'expression'; value: string; expressionType?: 'method-call'; object?: SemanticValue; method?: string; args?: string[] };
+```
+
+### Advanced Expression Types
+
+The parser now supports complex multi-token expressions:
+
+```typescript
+// Method call expression: #dialog.showModal()
+{
+  type: 'expression',
+  value: '#dialog.showModal()',
+  expressionType: 'method-call',
+  object: { type: 'selector', value: '#dialog' },
+  method: 'showModal',
+  args: []
+}
+
+// Possessive selector expression: #element's *opacity
+{
+  type: 'property-path',
+  object: { type: 'selector', value: '#element' },
+  property: '*opacity'
+}
+
+// Possessive keyword expression: my value
+{
+  type: 'property-path',
+  object: { type: 'reference', value: 'me' },
+  property: 'value'
+}
 ```
 
 ---
