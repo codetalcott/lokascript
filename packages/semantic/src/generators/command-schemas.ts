@@ -29,6 +29,12 @@ export interface RoleSpec {
   readonly svoPosition?: number;
   /** Position hint for SOV languages (higher = earlier) */
   readonly sovPosition?: number;
+  /**
+   * Override the default role marker for this command.
+   * Maps language code to the marker to use (e.g., { en: 'to', es: 'a' }).
+   * If not specified, uses the language profile's default roleMarker.
+   */
+  readonly markerOverride?: Record<string, string>;
 }
 
 /**
@@ -195,6 +201,16 @@ export const putSchema: CommandSchema = {
 
 /**
  * Set command: sets a property or variable.
+ *
+ * Patterns:
+ * - EN: set :count to 10
+ * - ES: establecer :count a 10
+ * - JA: :count を 10 に 設定
+ * - KO: :x 에 5 을 설정 (uses default markers)
+ * - TR: :x e 5 i ayarla (uses default markers)
+ *
+ * Note: Only override markers for SVO languages where patient has no default marker.
+ * SOV languages (Korean, Japanese, Turkish) already have correct object markers.
  */
 export const setSchema: CommandSchema = {
   action: 'set',
@@ -209,6 +225,11 @@ export const setSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 1,
       sovPosition: 1,
+      // Override destination marker for English (remove 'on', use no marker)
+      // Other languages keep their default destination markers
+      markerOverride: {
+        en: '',  // No marker before destination in English: "set :x to 5"
+      },
     },
     {
       role: 'patient',
@@ -217,6 +238,11 @@ export const setSchema: CommandSchema = {
       expectedTypes: ['literal', 'expression', 'reference'],
       svoPosition: 2,
       sovPosition: 2,
+      // Override patient marker for English (add 'to' before value)
+      // Other languages use their default markers
+      markerOverride: {
+        en: 'to',  // "set :x to 5"
+      },
     },
   ],
 };

@@ -707,11 +707,11 @@ describe('Newly Wired Commands', () => {
   });
 
   describe('Set Command', () => {
-    it('set on :x 5', () => {
-      // Generated pattern: set on {destination} {patient}
-      expect(canParse('set on :x 5', 'en')).toBe(true);
+    it('set :x to 5', () => {
+      // Generated pattern: set {destination} to {patient}
+      expect(canParse('set :x to 5', 'en')).toBe(true);
 
-      const node = parse('set on :x 5', 'en');
+      const node = parse('set :x to 5', 'en');
       expect(node.action).toBe('set');
       expect(node.roles.get('destination')?.value).toBe(':x');
       expect(node.roles.get('patient')?.value).toBe(5);
@@ -1008,7 +1008,7 @@ describe('Pattern Coverage Report', () => {
     { example: 'append "text" on #container', expected: 'append', tier: 3 },
     { example: 'prepend "text" on #container', expected: 'prepend', tier: 3 },
     { example: 'trigger click on #button', expected: 'trigger', tier: 3 },
-    { example: 'set on :x 5', expected: 'set', tier: 3 },
+    { example: 'set :x to 5', expected: 'set', tier: 3 },
   ];
 
   it('should report coverage of official examples', () => {

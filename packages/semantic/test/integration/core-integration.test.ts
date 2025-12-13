@@ -112,13 +112,13 @@ describe('Core Integration', () => {
     });
 
     describe('set command', () => {
-      // Note: set command pattern generator needs fixing (uses 'on' instead of 'to')
-      // This is a known issue to address in pattern generation
-      it.skip('parses "set :count to 10"', () => {
+      it('parses "set :count to 10"', () => {
         const result = analyzer.analyze('set :count to 10', 'en');
 
         expect(result.confidence).toBeGreaterThan(0);
         expect(result.command?.name).toBe('set');
+        expect(result.command?.roles.get('destination')?.value).toBe(':count');
+        expect(result.command?.roles.get('patient')?.value).toBe(10);
       });
     });
 
@@ -254,9 +254,34 @@ describe('Core Integration', () => {
   // ===========================================================================
 
   describe('Chinese Integration', () => {
+    describe('toggle command', () => {
+      it('parses "切换 .active" (simple SVO)', () => {
+        const result = analyzer.analyze('切换 .active', 'zh');
+
+        expect(result.confidence).toBeGreaterThan(0);
+        expect(result.command?.name).toBe('toggle');
+        expect(result.command?.roles.get('patient')?.value).toBe('.active');
+      });
+
+      it('parses "切换 .active 在 #button" (full SVO with destination)', () => {
+        const result = analyzer.analyze('切换 .active 在 #button', 'zh');
+
+        expect(result.confidence).toBeGreaterThan(0);
+        expect(result.command?.name).toBe('toggle');
+        expect(result.command?.roles.get('patient')?.value).toBe('.active');
+        expect(result.command?.roles.get('destination')?.value).toBe('#button');
+      });
+
+      it('parses "把 .active 切换" (BA construction)', () => {
+        const result = analyzer.analyze('把 .active 切换', 'zh');
+
+        expect(result.confidence).toBeGreaterThan(0);
+        expect(result.command?.name).toBe('toggle');
+        expect(result.command?.roles.get('patient')?.value).toBe('.active');
+      });
+    });
+
     describe('add command', () => {
-      // Note: Chinese toggle patterns need to be added to patterns/toggle.ts
-      // Chinese uses BA construction: 添加 把 {patient}
       it('parses "添加 把 .highlight" (add command with BA)', () => {
         const result = analyzer.analyze('添加 把 .highlight', 'zh');
 
@@ -449,7 +474,7 @@ describe('Integration Coverage Report', () => {
       es: { input: 'alternar .active', command: 'toggle' },
       ko: { input: '.active 를 토글', command: 'toggle' },
       tr: { input: '.active değiştir', command: 'toggle' }, // without accusative marker
-      zh: { input: '添加 把 .highlight', command: 'add' }, // Chinese uses BA construction
+      zh: { input: '切换 .active', command: 'toggle' }, // Chinese toggle
     };
 
     for (const [lang, { input, command }] of Object.entries(testCases)) {

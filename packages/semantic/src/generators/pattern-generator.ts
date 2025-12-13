@@ -283,7 +283,10 @@ function buildRoleToken(
   profile: LanguageProfile
 ): PatternToken[] {
   const tokens: PatternToken[] = [];
-  const marker = profile.roleMarkers[roleSpec.role];
+
+  // Check for command-specific marker override first
+  const overrideMarker = roleSpec.markerOverride?.[profile.code];
+  const defaultMarker = profile.roleMarkers[roleSpec.role];
 
   // Role value token
   const roleValueToken: PatternToken = {
@@ -293,22 +296,37 @@ function buildRoleToken(
     expectedTypes: roleSpec.expectedTypes as any,
   };
 
-  if (marker) {
-    if (marker.position === 'before') {
+  // Use override marker if available, otherwise use default
+  if (overrideMarker !== undefined) {
+    // Command-specific marker override
+    const position = defaultMarker?.position ?? 'before';
+    if (position === 'before') {
+      if (overrideMarker) {
+        tokens.push({ type: 'literal', value: overrideMarker });
+      }
+      tokens.push(roleValueToken);
+    } else {
+      tokens.push(roleValueToken);
+      if (overrideMarker) {
+        tokens.push({ type: 'literal', value: overrideMarker });
+      }
+    }
+  } else if (defaultMarker) {
+    if (defaultMarker.position === 'before') {
       // Preposition: "on #button"
-      if (marker.primary) {
-        const markerToken: PatternToken = marker.alternatives
-          ? { type: 'literal', value: marker.primary, alternatives: marker.alternatives }
-          : { type: 'literal', value: marker.primary };
+      if (defaultMarker.primary) {
+        const markerToken: PatternToken = defaultMarker.alternatives
+          ? { type: 'literal', value: defaultMarker.primary, alternatives: defaultMarker.alternatives }
+          : { type: 'literal', value: defaultMarker.primary };
         tokens.push(markerToken);
       }
       tokens.push(roleValueToken);
     } else {
       // Postposition/particle: "#button に"
       tokens.push(roleValueToken);
-      const markerToken: PatternToken = marker.alternatives
-        ? { type: 'literal', value: marker.primary, alternatives: marker.alternatives }
-        : { type: 'literal', value: marker.primary };
+      const markerToken: PatternToken = defaultMarker.alternatives
+        ? { type: 'literal', value: defaultMarker.primary, alternatives: defaultMarker.alternatives }
+        : { type: 'literal', value: defaultMarker.primary };
       tokens.push(markerToken);
     }
   } else {
@@ -333,12 +351,17 @@ function buildExtractionRules(
   const rules: Record<string, ExtractionRule> = {};
 
   for (const roleSpec of schema.roles) {
-    const marker = profile.roleMarkers[roleSpec.role];
+    // Check for command-specific marker override first
+    const overrideMarker = roleSpec.markerOverride?.[profile.code];
+    const defaultMarker = profile.roleMarkers[roleSpec.role];
 
-    if (marker && marker.primary) {
-      rules[roleSpec.role] = marker.alternatives
-        ? { marker: marker.primary, markerAlternatives: marker.alternatives }
-        : { marker: marker.primary };
+    if (overrideMarker !== undefined) {
+      // Use the override marker
+      rules[roleSpec.role] = overrideMarker ? { marker: overrideMarker } : {};
+    } else if (defaultMarker && defaultMarker.primary) {
+      rules[roleSpec.role] = defaultMarker.alternatives
+        ? { marker: defaultMarker.primary, markerAlternatives: defaultMarker.alternatives }
+        : { marker: defaultMarker.primary };
     } else {
       rules[roleSpec.role] = {};
     }
@@ -395,14 +418,26 @@ function buildFormatString(
 
   // Build role parts
   const roleParts = sortedRoles.map(roleSpec => {
-    const marker = profile.roleMarkers[roleSpec.role];
+    // Check for command-specific marker override first
+    const overrideMarker = roleSpec.markerOverride?.[profile.code];
+    const defaultMarker = profile.roleMarkers[roleSpec.role];
     let part = '';
 
-    if (marker) {
-      if (marker.position === 'before' && marker.primary) {
-        part = `${marker.primary} {${roleSpec.role}}`;
-      } else if (marker.position === 'after') {
-        part = `{${roleSpec.role}} ${marker.primary}`;
+    if (overrideMarker !== undefined) {
+      // Use override marker
+      const position = defaultMarker?.position ?? 'before';
+      if (position === 'before' && overrideMarker) {
+        part = `${overrideMarker} {${roleSpec.role}}`;
+      } else if (position === 'after' && overrideMarker) {
+        part = `{${roleSpec.role}} ${overrideMarker}`;
+      } else {
+        part = `{${roleSpec.role}}`;
+      }
+    } else if (defaultMarker) {
+      if (defaultMarker.position === 'before' && defaultMarker.primary) {
+        part = `${defaultMarker.primary} {${roleSpec.role}}`;
+      } else if (defaultMarker.position === 'after') {
+        part = `{${roleSpec.role}} ${defaultMarker.primary}`;
       } else {
         part = `{${roleSpec.role}}`;
       }

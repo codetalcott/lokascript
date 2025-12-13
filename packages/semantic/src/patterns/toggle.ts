@@ -334,6 +334,113 @@ const toggleKoreanPossessive: LanguagePattern = {
 };
 
 // =============================================================================
+// Chinese Patterns (SVO)
+// =============================================================================
+
+/**
+ * Chinese: "切换 .active 在 #button"
+ * Word order: VERB PATIENT [PREP TARGET]
+ * SVO like English but with Chinese keywords.
+ *
+ * 切换 (qiēhuàn) = toggle/switch
+ * 在 (zài) = at/on
+ */
+const toggleChineseFull: LanguagePattern = {
+  id: 'toggle-zh-full',
+  language: 'zh',
+  command: 'toggle',
+  priority: 100,
+  template: {
+    format: '切换 {patient} 在 {target}',
+    tokens: [
+      { type: 'literal', value: '切换' },
+      { type: 'role', role: 'patient' },
+      { type: 'group', optional: true, tokens: [
+        { type: 'literal', value: '在', alternatives: ['到', '于'] },
+        { type: 'role', role: 'destination' },
+      ]},
+    ],
+  },
+  extraction: {
+    patient: { position: 1 },
+    destination: { marker: '在', markerAlternatives: ['到', '于'], default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Chinese: "切换 .active" (implicit target: me)
+ */
+const toggleChineseSimple: LanguagePattern = {
+  id: 'toggle-zh-simple',
+  language: 'zh',
+  command: 'toggle',
+  priority: 90,
+  template: {
+    format: '切换 {patient}',
+    tokens: [
+      { type: 'literal', value: '切换' },
+      { type: 'role', role: 'patient' },
+    ],
+  },
+  extraction: {
+    patient: { position: 1 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Chinese: "把 .active 切换" (BA construction)
+ * Word order: 把 PATIENT VERB
+ * BA construction places object before verb.
+ *
+ * 把 (bǎ) = object marker (BA construction)
+ */
+const toggleChineseBA: LanguagePattern = {
+  id: 'toggle-zh-ba',
+  language: 'zh',
+  command: 'toggle',
+  priority: 95,
+  template: {
+    format: '把 {patient} 切换',
+    tokens: [
+      { type: 'literal', value: '把' },
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: '切换' },
+    ],
+  },
+  extraction: {
+    patient: { marker: '把' },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Chinese: "在 #button 把 .active 切换" (BA + location)
+ * Word order: PREP TARGET 把 PATIENT VERB
+ * Combines location and BA construction.
+ */
+const toggleChineseFullBA: LanguagePattern = {
+  id: 'toggle-zh-full-ba',
+  language: 'zh',
+  command: 'toggle',
+  priority: 98,
+  template: {
+    format: '在 {target} 把 {patient} 切换',
+    tokens: [
+      { type: 'literal', value: '在', alternatives: ['到', '于'] },
+      { type: 'role', role: 'destination' },
+      { type: 'literal', value: '把' },
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: '切换' },
+    ],
+  },
+  extraction: {
+    destination: { marker: '在', markerAlternatives: ['到', '于'] },
+    patient: { marker: '把' },
+  },
+};
+
+// =============================================================================
 // Turkish Patterns (SOV)
 // =============================================================================
 
@@ -430,6 +537,11 @@ export const togglePatterns: LanguagePattern[] = [
   toggleKoreanFull,
   toggleKoreanSimple,
   toggleKoreanPossessive,
+  // Chinese
+  toggleChineseFull,
+  toggleChineseSimple,
+  toggleChineseBA,
+  toggleChineseFullBA,
   // Turkish
   toggleTurkishFull,
   toggleTurkishSimple,
