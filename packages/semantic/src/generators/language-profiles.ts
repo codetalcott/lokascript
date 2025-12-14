@@ -188,6 +188,10 @@ export const englishProfile: LanguageProfile = {
     into: { primary: 'into' },
     before: { primary: 'before' },
     after: { primary: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'until' },
+    event: { primary: 'event' },
+    from: { primary: 'from' },
   },
 };
 
@@ -279,6 +283,10 @@ export const japaneseProfile: LanguageProfile = {
     into: { primary: 'へ', alternatives: ['に'], normalized: 'into' },
     before: { primary: '前に', alternatives: ['前'], normalized: 'before' },
     after: { primary: '後に', alternatives: ['後'], normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'まで', alternatives: ['迄'], normalized: 'until' },
+    event: { primary: 'イベント', alternatives: ['事象'], normalized: 'event' },
+    from: { primary: 'から', normalized: 'from' },
   },
   tokenization: {
     particles: ['を', 'に', 'で', 'から', 'の', 'が', 'は', 'も', 'へ', 'と'],
@@ -371,6 +379,10 @@ export const arabicProfile: LanguageProfile = {
     into: { primary: 'في', alternatives: ['إلى'], normalized: 'into' },
     before: { primary: 'قبل', normalized: 'before' },
     after: { primary: 'بعد', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'حتى', normalized: 'until' },
+    event: { primary: 'حدث', normalized: 'event' },
+    from: { primary: 'من', normalized: 'from' },
   },
   tokenization: {
     prefixes: ['ال', 'و', 'ف', 'ب', 'ك', 'ل'],
@@ -462,6 +474,10 @@ export const spanishProfile: LanguageProfile = {
     into: { primary: 'en', alternatives: ['dentro de'], normalized: 'into' },
     before: { primary: 'antes', normalized: 'before' },
     after: { primary: 'después', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'hasta', normalized: 'until' },
+    event: { primary: 'evento', normalized: 'event' },
+    from: { primary: 'de', alternatives: ['desde'], normalized: 'from' },
   },
 };
 
@@ -550,6 +566,10 @@ export const koreanProfile: LanguageProfile = {
     into: { primary: '으로', normalized: 'into' },
     before: { primary: '전에', normalized: 'before' },
     after: { primary: '후에', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: '까지', normalized: 'until' },
+    event: { primary: '이벤트', normalized: 'event' },
+    from: { primary: '에서', normalized: 'from' },
   },
   tokenization: {
     particles: ['을', '를', '이', '가', '은', '는', '에', '에서', '으로', '로', '와', '과', '도'],
@@ -642,6 +662,10 @@ export const chineseProfile: LanguageProfile = {
     into: { primary: '进入', normalized: 'into' },
     before: { primary: '之前', normalized: 'before' },
     after: { primary: '之后', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: '直到', normalized: 'until' },
+    event: { primary: '事件', normalized: 'event' },
+    from: { primary: '从', normalized: 'from' },
   },
   tokenization: {
     boundaryStrategy: 'character',
@@ -733,6 +757,10 @@ export const turkishProfile: LanguageProfile = {
     into: { primary: 'içine', normalized: 'into' },
     before: { primary: 'önce', normalized: 'before' },
     after: { primary: 'sonra', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'kadar', normalized: 'until' },
+    event: { primary: 'olay', normalized: 'event' },
+    from: { primary: '-den', alternatives: ['-dan'], normalized: 'from' },
   },
 };
 
@@ -810,6 +838,10 @@ export const portugueseProfile: LanguageProfile = {
     into: { primary: 'em', alternatives: ['dentro de'], normalized: 'into' },
     before: { primary: 'antes', normalized: 'before' },
     after: { primary: 'depois', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'até', normalized: 'until' },
+    event: { primary: 'evento', normalized: 'event' },
+    from: { primary: 'de', alternatives: ['desde'], normalized: 'from' },
   },
 };
 
@@ -887,6 +919,10 @@ export const frenchProfile: LanguageProfile = {
     into: { primary: 'dans', normalized: 'into' },
     before: { primary: 'avant', normalized: 'before' },
     after: { primary: 'après', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'jusqu\'à', alternatives: ['jusque'], normalized: 'until' },
+    event: { primary: 'événement', normalized: 'event' },
+    from: { primary: 'de', alternatives: ['depuis'], normalized: 'from' },
   },
 };
 
@@ -964,6 +1000,10 @@ export const germanProfile: LanguageProfile = {
     into: { primary: 'hinein', normalized: 'into' },
     before: { primary: 'vor', normalized: 'before' },
     after: { primary: 'nach', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'bis', normalized: 'until' },
+    event: { primary: 'Ereignis', alternatives: ['Event'], normalized: 'event' },
+    from: { primary: 'von', alternatives: ['aus'], normalized: 'from' },
   },
 };
 
@@ -1041,6 +1081,10 @@ export const indonesianProfile: LanguageProfile = {
     into: { primary: 'ke dalam', normalized: 'into' },
     before: { primary: 'sebelum', normalized: 'before' },
     after: { primary: 'sesudah', alternatives: ['setelah'], normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'sampai', normalized: 'until' },
+    event: { primary: 'peristiwa', alternatives: ['event'], normalized: 'event' },
+    from: { primary: 'dari', normalized: 'from' },
   },
 };
 
@@ -1118,6 +1162,10 @@ export const quechuaProfile: LanguageProfile = {
     into: { primary: 'ukuman', normalized: 'into' },
     before: { primary: 'ñawpaq', normalized: 'before' },
     after: { primary: 'qhipa', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: '-kama', alternatives: ['kama'], normalized: 'until' },
+    event: { primary: 'ruwakuq', alternatives: ['imayna'], normalized: 'event' },
+    from: { primary: '-manta', normalized: 'from' },
   },
 };
 
@@ -1195,6 +1243,10 @@ export const swahiliProfile: LanguageProfile = {
     into: { primary: 'ndani', normalized: 'into' },
     before: { primary: 'kabla', normalized: 'before' },
     after: { primary: 'baada', normalized: 'after' },
+    // Event modifiers (for repeat until event)
+    until: { primary: 'hadi', normalized: 'until' },
+    event: { primary: 'tukio', normalized: 'event' },
+    from: { primary: 'kutoka', normalized: 'from' },
   },
 };
 

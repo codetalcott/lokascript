@@ -806,8 +806,24 @@ export const repeatSchema: CommandSchema = {
       svoPosition: 1,
       sovPosition: 1,
     },
+    {
+      role: 'event',
+      description: 'Event to wait for (terminates loop)',
+      required: false,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 2,
+      sovPosition: 2,
+    },
+    {
+      role: 'source',
+      description: 'Element to listen for event on',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      svoPosition: 3,
+      sovPosition: 3,
+    },
   ],
-  notes: 'Can also use "repeat forever" or "repeat until condition"',
+  notes: 'Can also use "repeat forever", "repeat until condition", or "repeat until event X from Y"',
 };
 
 /**

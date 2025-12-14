@@ -134,6 +134,60 @@ const swapSimpleEnglish: LanguagePattern = {
 };
 
 // =============================================================================
+// Hand-crafted Repeat Until Event Patterns (English only)
+// =============================================================================
+
+/**
+ * English: "repeat until event pointerup from document"
+ * Full form with event source specification.
+ * Higher priority to capture the complete "until event X from Y" syntax.
+ */
+const repeatUntilEventFromEnglish: LanguagePattern = {
+  id: 'repeat-en-until-event-from',
+  language: 'en',
+  command: 'repeat',
+  priority: 120, // Highest priority - most specific pattern
+  template: {
+    format: 'repeat until event {event} from {source}',
+    tokens: [
+      { type: 'literal', value: 'repeat' },
+      { type: 'literal', value: 'until' },
+      { type: 'literal', value: 'event' },
+      { type: 'role', role: 'event', expectedTypes: ['literal', 'expression'] },
+      { type: 'literal', value: 'from' },
+      { type: 'role', role: 'source', expectedTypes: ['selector', 'reference', 'expression'] },
+    ],
+  },
+  extraction: {
+    event: { marker: 'event' },
+    source: { marker: 'from' },
+  },
+};
+
+/**
+ * English: "repeat until event pointerup"
+ * Simple event termination without source.
+ */
+const repeatUntilEventEnglish: LanguagePattern = {
+  id: 'repeat-en-until-event',
+  language: 'en',
+  command: 'repeat',
+  priority: 110, // Lower than "from" variant, but higher than quantity-based repeat
+  template: {
+    format: 'repeat until event {event}',
+    tokens: [
+      { type: 'literal', value: 'repeat' },
+      { type: 'literal', value: 'until' },
+      { type: 'literal', value: 'event' },
+      { type: 'role', role: 'event', expectedTypes: ['literal', 'expression'] },
+    ],
+  },
+  extraction: {
+    event: { marker: 'event' },
+  },
+};
+
+// =============================================================================
 // Generated Patterns (New Commands)
 // =============================================================================
 
@@ -194,6 +248,8 @@ export const allPatterns: LanguagePattern[] = [
   fetchWithResponseTypeEnglish, // fetch /url as json (higher priority)
   fetchSimpleEnglish, // fetch /url without "from" (lower priority)
   swapSimpleEnglish,  // swap <strategy> <target>
+  repeatUntilEventFromEnglish, // repeat until event X from Y (highest priority)
+  repeatUntilEventEnglish, // repeat until event X (lower priority)
   // Generated patterns (new commands)
   ...generatedPatterns,
 ];
