@@ -45,6 +45,11 @@ import {
   // Tier 4: DOM Content Manipulation
   swapSchema,
   morphSchema,
+  // Tier 5: Control flow & Behavior system
+  haltSchema,
+  behaviorSchema,
+  installSchema,
+  measureSchema,
 } from '../generators';
 
 // =============================================================================
@@ -52,15 +57,40 @@ import {
 // =============================================================================
 
 /**
+ * English: "fetch /url as json" with response type.
+ * This pattern has higher priority to capture the "as json" modifier.
+ */
+const fetchWithResponseTypeEnglish: LanguagePattern = {
+  id: 'fetch-en-with-response-type',
+  language: 'en',
+  command: 'fetch',
+  priority: 90, // Higher than simple pattern (80) to capture "as" modifier first
+  template: {
+    format: 'fetch {source} as {responseType}',
+    tokens: [
+      { type: 'literal', value: 'fetch' },
+      { type: 'role', role: 'source', expectedTypes: ['literal', 'expression'] },
+      { type: 'literal', value: 'as' },
+      // json/text/html are identifiers not keywords, so we need to accept 'expression' type
+      { type: 'role', role: 'responseType', expectedTypes: ['literal', 'expression'] },
+    ],
+  },
+  extraction: {
+    source: { position: 1 },
+    responseType: { marker: 'as' },
+  },
+};
+
+/**
  * English: "fetch /url" without "from" preposition.
  * Official hyperscript allows bare URL without "from".
- * Higher priority so it's tried first before the generated pattern.
+ * Lower priority so it's tried after the response type pattern.
  */
 const fetchSimpleEnglish: LanguagePattern = {
   id: 'fetch-en-simple',
   language: 'en',
   command: 'fetch',
-  priority: 80, // Lower than generated pattern (100) - fallback when "from" not present
+  priority: 80, // Lower than response type pattern (90) - fallback when "as" not present
   template: {
     format: 'fetch {source}',
     tokens: [
@@ -141,6 +171,11 @@ const generatedPatterns: LanguagePattern[] = [
   // Tier 4: DOM Content Manipulation
   ...generatePatternsForCommand(swapSchema),
   ...generatePatternsForCommand(morphSchema),
+  // Tier 5: Control flow & Behavior system
+  ...generatePatternsForCommand(haltSchema),
+  ...generatePatternsForCommand(behaviorSchema),
+  ...generatePatternsForCommand(installSchema),
+  ...generatePatternsForCommand(measureSchema),
 ];
 
 // =============================================================================
@@ -156,7 +191,8 @@ export const allPatterns: LanguagePattern[] = [
   ...togglePatterns,
   ...putPatterns,
   ...eventHandlerPatterns,
-  fetchSimpleEnglish, // fetch /url without "from"
+  fetchWithResponseTypeEnglish, // fetch /url as json (higher priority)
+  fetchSimpleEnglish, // fetch /url without "from" (lower priority)
   swapSimpleEnglish,  // swap <strategy> <target>
   // Generated patterns (new commands)
   ...generatedPatterns,

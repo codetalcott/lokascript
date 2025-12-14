@@ -104,10 +104,15 @@ export class EnglishTokenizer extends BaseTokenizer {
       // But check if this is a property access or method call first
       if (isSelectorStart(input[pos])) {
         // Check for property access pattern: identifier.identifier or identifier.method()
-        // When the previous token is an identifier or keyword, treat . as property accessor
+        // When the previous token is an identifier or keyword AND there's no whitespace,
+        // treat . as property accessor. With whitespace (e.g., "add .active"), it's a selector.
         if (input[pos] === '.') {
           const lastToken = tokens[tokens.length - 1];
+          // Property access requires NO whitespace between tokens (e.g., "obj.prop")
+          // CSS selectors have whitespace (e.g., "add .active")
+          const hasWhitespaceBefore = lastToken && lastToken.position.end < pos;
           const isPropertyAccess = lastToken &&
+            !hasWhitespaceBefore &&
             (lastToken.kind === 'identifier' || lastToken.kind === 'keyword' || lastToken.kind === 'selector');
 
           if (isPropertyAccess) {
@@ -226,6 +231,7 @@ export class EnglishTokenizer extends BaseTokenizer {
 
   /**
    * Extract a word (identifier or keyword) from the input.
+   * Handles namespaced event names like "draggable:start".
    */
   private extractWord(input: string, startPos: number): LanguageToken | null {
     let pos = startPos;
@@ -236,6 +242,24 @@ export class EnglishTokenizer extends BaseTokenizer {
     }
 
     if (!word) return null;
+
+    // Check for namespaced event name pattern: word:word (e.g., draggable:start)
+    // This is different from variable references (:varname) which start with colon
+    if (pos < input.length && input[pos] === ':') {
+      const colonPos = pos;
+      pos++; // consume colon
+      let namespace = '';
+      while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
+        namespace += input[pos++];
+      }
+      // Only treat as namespaced event if there's text after the colon
+      if (namespace) {
+        word = word + ':' + namespace;
+      } else {
+        // No text after colon, revert to just the word
+        pos = colonPos;
+      }
+    }
 
     const kind = this.classifyToken(word);
     return createToken(

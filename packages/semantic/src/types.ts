@@ -63,6 +63,10 @@ export type ActionType =
   | 'wait'
   | 'fetch'
   | 'settle'
+  // Animation/Measurement
+  | 'measure'
+  // Behavior system
+  | 'install'
   // Control flow
   | 'if'
   | 'else'

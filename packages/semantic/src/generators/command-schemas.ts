@@ -337,6 +337,7 @@ export const onSchema: CommandSchema = {
 
 /**
  * Trigger command: dispatches an event.
+ * Supports namespaced events like "draggable:start".
  */
 export const triggerSchema: CommandSchema = {
   action: 'trigger',
@@ -346,9 +347,9 @@ export const triggerSchema: CommandSchema = {
   roles: [
     {
       role: 'event',
-      description: 'The event to trigger',
+      description: 'The event to trigger (supports namespaced events like draggable:start)',
       required: true,
-      expectedTypes: ['literal'],
+      expectedTypes: ['literal', 'expression'], // expression for custom/namespaced event names
       svoPosition: 1,
       sovPosition: 2,
     },
@@ -405,7 +406,7 @@ export const fetchSchema: CommandSchema = {
       role: 'responseType',
       description: 'Response format (json, text, html, blob, etc.)',
       required: false,
-      expectedTypes: ['literal'],
+      expectedTypes: ['literal', 'expression'], // json/text/html are identifiers → expression type
       svoPosition: 2,
       sovPosition: 2,
     },
@@ -644,14 +645,24 @@ export const makeSchema: CommandSchema = {
 };
 
 /**
- * Halt command: stops execution.
+ * Halt command: stops execution or event propagation.
+ * Supports: halt, halt the event, halt default, halt the bubbling
  */
 export const haltSchema: CommandSchema = {
   action: 'halt',
-  description: 'Halt/stop execution',
+  description: 'Halt/stop execution or event propagation',
   category: 'control-flow',
   primaryRole: 'patient',
-  roles: [], // No roles - just halts
+  roles: [
+    {
+      role: 'patient',
+      description: 'What to halt (event, default, bubbling, etc.)',
+      required: false, // Plain "halt" is valid
+      expectedTypes: ['literal', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
 };
 
 /**
@@ -708,7 +719,7 @@ export const sendSchema: CommandSchema = {
       role: 'event',
       description: 'The event to send',
       required: true,
-      expectedTypes: ['literal'],
+      expectedTypes: ['literal', 'expression'], // identifiers tokenize as expression
       svoPosition: 1,
       sovPosition: 2,
     },
@@ -720,6 +731,22 @@ export const sendSchema: CommandSchema = {
       default: { type: 'reference', value: 'me' },
       svoPosition: 2,
       sovPosition: 1,
+      // send uses "to" not "on" for destination: send foo to #target
+      markerOverride: {
+        en: 'to',
+        ja: 'に',
+        ar: 'إلى',
+        es: 'a',
+        ko: '에게',
+        zh: '到',
+        tr: '-e',
+        pt: 'para',
+        fr: 'à',
+        de: 'an',
+        id: 'ke',
+        qu: '-man',
+        sw: 'kwa',
+      },
     },
   ],
 };
@@ -1123,6 +1150,9 @@ export const initSchema: CommandSchema = {
 
 /**
  * Behavior command: defines reusable behavior.
+ * Patterns:
+ * - EN: behavior Draggable
+ * - EN: behavior Draggable(dragHandle)
  */
 export const behaviorSchema: CommandSchema = {
   action: 'behavior',
@@ -1133,11 +1163,77 @@ export const behaviorSchema: CommandSchema = {
   roles: [
     {
       role: 'patient',
-      description: 'The behavior name',
+      description: 'The behavior name (PascalCase identifier)',
       required: true,
-      expectedTypes: ['literal', 'reference'],
+      expectedTypes: ['literal', 'reference', 'expression'], // expression for PascalCase identifiers
       svoPosition: 1,
       sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Install command: installs a behavior on an element.
+ * Patterns:
+ * - EN: install Draggable
+ * - EN: install Draggable(dragHandle: .titlebar)
+ * - EN: install Draggable on #element
+ */
+export const installSchema: CommandSchema = {
+  action: 'install',
+  description: 'Install a behavior on an element',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The behavior name to install',
+      required: true,
+      expectedTypes: ['literal', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'destination',
+      description: 'Element to install on (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 2,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Measure command: measures element dimensions or position.
+ * Patterns:
+ * - EN: measure x
+ * - EN: measure width
+ * - EN: measure width of #element
+ */
+export const measureSchema: CommandSchema = {
+  action: 'measure',
+  description: 'Measure element dimensions (x, y, width, height, etc.)',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'Property to measure (x, y, width, height, top, left, etc.)',
+      required: false, // Plain "measure" is valid, defaults to bounds
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+    {
+      role: 'source',
+      description: 'Element to measure (defaults to me)',
+      required: false,
+      expectedTypes: ['selector', 'reference'],
+      default: { type: 'reference', value: 'me' },
+      svoPosition: 2,
+      sovPosition: 2,
     },
   ],
 };
@@ -1274,6 +1370,8 @@ export const commandSchemas: Record<ActionType, CommandSchema> = {
   default: defaultSchema,
   init: initSchema,
   behavior: behaviorSchema,
+  install: installSchema,
+  measure: measureSchema,
   // Batch 5 - DOM Content Manipulation
   swap: swapSchema,
   morph: morphSchema,

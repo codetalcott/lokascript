@@ -119,7 +119,9 @@ describe('Official Examples - Tier 1 (Core)', () => {
 
       const node = parse('send hello to <form />', 'en');
       expect(node.action).toBe('send');
-      expect(node.roles.get('event')?.value).toBe('hello');
+      // Identifiers are stored as expression type with 'raw' property
+      const event = node.roles.get('event') as any;
+      expect(event?.raw || event?.value).toBe('hello');
       expect(node.roles.get('destination')?.value).toBe('<form />');
     });
 
@@ -128,7 +130,9 @@ describe('Official Examples - Tier 1 (Core)', () => {
 
       const node = parse('send foo to #target', 'en');
       expect(node.action).toBe('send');
-      expect(node.roles.get('event')?.value).toBe('foo');
+      // Identifiers are stored as expression type with 'raw' property
+      const event = node.roles.get('event') as any;
+      expect(event?.raw || event?.value).toBe('foo');
       expect(node.roles.get('destination')?.value).toBe('#target');
     });
   });
@@ -173,7 +177,9 @@ describe('Official Examples - Tier 2 (Important)', () => {
 
       const node = parse('log x', 'en');
       expect(node.action).toBe('log');
-      expect(node.roles.get('patient')?.value).toBe('x');
+      // Identifiers are stored as expression type with 'raw' property
+      const patient = node.roles.get('patient') as any;
+      expect(patient?.raw || patient?.value).toBe('x');
     });
   });
 

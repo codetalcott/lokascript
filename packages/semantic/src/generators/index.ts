@@ -63,6 +63,11 @@ export {
   // Tier 4: DOM Content Manipulation
   swapSchema,
   morphSchema,
+  // Tier 5: Control flow & Behavior system
+  haltSchema,
+  behaviorSchema,
+  installSchema,
+  measureSchema,
   // Registry functions
   commandSchemas,
   getSchema,
