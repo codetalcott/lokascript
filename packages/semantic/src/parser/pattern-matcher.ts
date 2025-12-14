@@ -257,6 +257,19 @@ export class PatternMatcher {
       return true;
     }
 
+    // Check for property access expression (e.g., 'userData.name', 'it.data')
+    const propertyAccessValue = this.tryMatchPropertyAccessExpression(tokens);
+    if (propertyAccessValue) {
+      if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
+        if (!patternToken.expectedTypes.includes(propertyAccessValue.type) &&
+            !patternToken.expectedTypes.includes('expression')) {
+          return patternToken.optional || false;
+        }
+      }
+      captured.set(patternToken.role, propertyAccessValue);
+      return true;
+    }
+
     // Try to extract a semantic value from the token
     const value = this.tokenToSemanticValue(token);
     if (!value) {
@@ -420,6 +433,64 @@ export class PatternMatcher {
   }
 
   /**
+   * Try to match a property access expression like 'userData.name' or 'it.data'.
+   * Pattern: (identifier | keyword) + '.' + identifier [+ '.' + identifier ...]
+   * Returns an expression value if matched, or null if not.
+   */
+  private tryMatchPropertyAccessExpression(tokens: TokenStream): SemanticValue | null {
+    const token = tokens.peek();
+    if (!token) return null;
+
+    // Must start with an identifier or keyword reference
+    if (token.kind !== 'identifier' && token.kind !== 'keyword') return null;
+
+    // Look ahead for: . identifier
+    const mark = tokens.mark();
+    tokens.advance(); // consume first token
+
+    const dotToken = tokens.peek();
+    if (!dotToken || dotToken.kind !== 'operator' || dotToken.value !== '.') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume .
+
+    const propertyToken = tokens.peek();
+    if (!propertyToken || propertyToken.kind !== 'identifier') {
+      tokens.reset(mark);
+      return null;
+    }
+    tokens.advance(); // consume property name
+
+    // Build the property chain
+    let chain = `${token.value}.${propertyToken.value}`;
+
+    // Continue for nested property access (e.g., userData.address.city)
+    while (!tokens.isAtEnd()) {
+      const nextDot = tokens.peek();
+      if (!nextDot || nextDot.kind !== 'operator' || nextDot.value !== '.') {
+        break;
+      }
+      tokens.advance(); // consume .
+
+      const nextProp = tokens.peek();
+      if (!nextProp || nextProp.kind !== 'identifier') {
+        // Dot without property - put the dot back and stop
+        // Can't easily put a single token back, so we'll include it
+        break;
+      }
+      tokens.advance(); // consume property
+      chain += `.${nextProp.value}`;
+    }
+
+    // Create expression value: userData.name
+    return {
+      type: 'expression',
+      raw: chain,
+    } as SemanticValue;
+  }
+
+  /**
    * Try to match a possessive selector expression like "#element's *opacity".
    * Pattern: selector + "'s" + (selector | identifier)
    * Returns a property-path value if matched, or null if not.
@@ -554,7 +625,9 @@ export class PatternMatcher {
         if (['me', 'you', 'it', 'result', 'event', 'target', 'body'].includes(identLower)) {
           return createReference(identLower as any);
         }
-        return createLiteral(token.value);
+        // Regular identifiers are variable references - use 'expression' type
+        // which gets converted to 'identifier' AST nodes by semantic-integration.ts
+        return { type: 'expression', raw: token.value } as const;
 
       case 'url':
         // URLs are treated as string literals (paths/URLs for navigation/fetch)

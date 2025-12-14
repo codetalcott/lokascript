@@ -260,6 +260,21 @@ describe('Command Validator', () => {
       expect(validation.valid).toBe(true);
     });
 
+    it('should validate fetch command with responseType', () => {
+      const result: SemanticParseResult = {
+        action: 'fetch',
+        confidence: 0.8,
+        language: 'en',
+        arguments: [
+          { type: 'literal', value: '/api/data', role: 'source' },
+          { type: 'literal', value: 'json', role: 'responseType' },
+        ],
+      };
+
+      const validation = validateSemanticResult(result);
+      expect(validation.valid).toBe(true);
+    });
+
     it('should validate on command with event role', () => {
       const result: SemanticParseResult = {
         action: 'on',

@@ -101,10 +101,23 @@ export class EnglishTokenizer extends BaseTokenizer {
       }
 
       // Try CSS selector first (highest priority)
-      // But check if this is a method call (.method()) first
+      // But check if this is a property access or method call first
       if (isSelectorStart(input[pos])) {
-        // Check for method call pattern: .identifier(
+        // Check for property access pattern: identifier.identifier or identifier.method()
+        // When the previous token is an identifier or keyword, treat . as property accessor
         if (input[pos] === '.') {
+          const lastToken = tokens[tokens.length - 1];
+          const isPropertyAccess = lastToken &&
+            (lastToken.kind === 'identifier' || lastToken.kind === 'keyword' || lastToken.kind === 'selector');
+
+          if (isPropertyAccess) {
+            // Tokenize . as property accessor
+            tokens.push(createToken('.', 'operator', createPosition(pos, pos + 1)));
+            pos++;
+            continue;
+          }
+
+          // Check for method call pattern at start: .identifier(
           const methodStart = pos + 1;
           let methodEnd = methodStart;
           while (methodEnd < input.length && isAsciiIdentifierChar(input[methodEnd])) {

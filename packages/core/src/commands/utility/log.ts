@@ -64,7 +64,7 @@ export class LogCommand implements DecoratedCommand {
   async execute(
     input: LogCommandInput,
     _context: TypedExecutionContext
-  ): Promise<LogCommandOutput> {
+  ): Promise<undefined> {
     // Use window.console to prevent Terser's drop_console from stripping this
     const logger = typeof window !== 'undefined' ? window.console : console;
 
@@ -74,7 +74,9 @@ export class LogCommand implements DecoratedCommand {
       logger.log(...input.values);
     }
 
-    return { values: input.values, loggedAt: new Date() };
+    // Return undefined so log doesn't overwrite 'it' in the execution context
+    // This is important for patterns like: fetch url; log it; put it.data into x
+    return undefined;
   }
 
   validate(input: unknown): input is LogCommandInput {

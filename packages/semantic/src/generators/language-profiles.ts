@@ -122,7 +122,8 @@ export const englishProfile: LanguageProfile = {
     source: { primary: 'from', position: 'before' },
     patient: { primary: '', position: 'before' }, // No marker, just position
     style: { primary: 'with', alternatives: ['by', 'using'], position: 'before' },
-    method: { primary: 'as', position: 'before' },
+    responseType: { primary: 'as', position: 'before' }, // For fetch response format (json, text, html)
+    method: { primary: 'via', alternatives: ['using'], position: 'before' }, // For HTTP method (GET, POST)
   },
   keywords: {
     // Class/Attribute operations

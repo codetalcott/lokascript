@@ -370,8 +370,12 @@ export class SemanticIntegrationAdapter {
           break;
 
         // Adverbial roles
+        case 'responseType':
+          modifiers['as'] = exprNode; // Response format (json, text, html)
+          break;
+
         case 'method':
-          modifiers['as'] = exprNode;
+          modifiers['method'] = exprNode; // HTTP method (GET, POST)
           break;
 
         case 'style':
@@ -430,7 +434,11 @@ export class SemanticIntegrationAdapter {
       case 'literal':
         // Check if this is a template literal with ${...} interpolation syntax
         // Template literals need special handling to preserve interpolation
-        if (value.value.includes('${') && value.value.includes('}')) {
+        if (
+          typeof value.value === 'string' &&
+          value.value.includes('${') &&
+          value.value.includes('}')
+        ) {
           return {
             type: 'templateLiteral',
             value: value.value,
@@ -477,11 +485,48 @@ export class SemanticIntegrationAdapter {
 
       case 'expression':
       default: {
-        // Generic expressions - use raw string as identifier name
+        // Generic expressions
         const exprValue = value as { type: 'expression'; raw: string };
+        const rawStr = exprValue.raw || '';
+
+        // Check if this is a property chain (e.g., "it.data", "userData.name")
+        if (rawStr.includes('.')) {
+          const parts = rawStr.split('.');
+          // Build nested memberExpression: a.b.c -> memberExpr(memberExpr(a, b), c)
+          let result: ExpressionNode = {
+            type: 'identifier',
+            name: parts[0],
+            start: 0,
+            end: 0,
+            line: 1,
+            column: 0,
+          } as unknown as ExpressionNode;
+
+          for (let i = 1; i < parts.length; i++) {
+            result = {
+              type: 'memberExpression',
+              object: result,
+              property: {
+                type: 'identifier',
+                name: parts[i],
+                start: 0,
+                end: 0,
+                line: 1,
+                column: 0,
+              },
+              start: 0,
+              end: 0,
+              line: 1,
+              column: 0,
+            } as unknown as ExpressionNode;
+          }
+          return result;
+        }
+
+        // Simple identifier
         return {
           type: 'identifier',
-          name: exprValue.raw || '',
+          name: rawStr,
           start: 0,
           end: 0,
           line: 1,

@@ -43,7 +43,8 @@ export type SemanticRole =
   | 'quantity'     // Numeric amount (by 5, 3 times)
   | 'duration'     // Time span (for 5 seconds, over 500ms)
   // Adverbial roles
-  | 'method'       // Protocol/technique (as GET, via websocket)
+  | 'responseType' // Response format (as json, as text, as html)
+  | 'method'       // HTTP method/technique (via POST, using GET)
   | 'style';       // Visual/behavioral manner (with fade, smoothly)
 
 /**
