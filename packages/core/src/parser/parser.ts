@@ -1914,9 +1914,7 @@ export class Parser {
         break;
       }
 
-      console.log('[Parser.parseEventHandler] token:', this.peek().value, 'type:', this.peek().type, 'isCOMMAND:', this.checkTokenType(TokenType.COMMAND));
       if (this.checkTokenType(TokenType.COMMAND)) {
-        console.log('[Parser.parseEventHandler] Recognized as COMMAND:', this.peek().value);
         // Check if this is actually a pseudo-command (command token used as function call)
         const nextIsOpenParen = this.tokens[this.current + 1]?.value === '(';
 
@@ -2783,7 +2781,20 @@ export class Parser {
     // Try semantic-first parsing if available
     // Semantic parsing uses modifiers format ({args: [patient], modifiers: {into: dest}})
     // Command handlers now accept both formats via fallback logic
-    if (this.semanticAdapter) {
+
+    // Commands with complex syntax that semantic parsing doesn't handle correctly yet
+    // These must use traditional parsing until semantic schemas support their full syntax
+    const commandToken = this.previous();
+    let commandName = commandToken.value;
+    const skipSemanticParsing = [
+      // 'repeat' now handled via loopType semantic role in buildRepeatCommandNode
+      'set',     // Complex possessive property syntax: set #el's *opacity to 0.5
+      'for',     // for X in Y syntax
+      'if',      // Conditional with then/else blocks
+      'unless',  // Conditional
+    ];
+
+    if (this.semanticAdapter && !skipSemanticParsing.includes(commandName.toLowerCase())) {
       const remainingInput = this.getRemainingInput();
       const semanticResult = this.trySemanticParse(remainingInput);
       if (semanticResult) {
@@ -2797,8 +2808,8 @@ export class Parser {
       // Fall through to traditional parsing
     }
 
-    const commandToken = this.previous();
-    let commandName = commandToken.value;
+    // Note: commandToken already defined above from this.previous()
+    // Re-read the command name (may have been modified above)
 
     // Handle special case for beep! command - check if beep is followed by !
     if (commandName === 'beep' && this.check('!')) {

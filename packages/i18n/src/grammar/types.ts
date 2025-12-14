@@ -45,7 +45,9 @@ export type SemanticRole =
   // Adverbial roles
   | 'responseType' // Response format (as json, as text, as html)
   | 'method'       // HTTP method/technique (via POST, using GET)
-  | 'style';       // Visual/behavioral manner (with fade, smoothly)
+  | 'style'        // Visual/behavioral manner (with fade, smoothly)
+  // Control flow roles
+  | 'loopType';    // Loop variant: forever, times, for, while, until, until-event
 
 /**
  * Word order patterns

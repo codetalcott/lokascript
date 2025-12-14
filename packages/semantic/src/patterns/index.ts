@@ -161,6 +161,7 @@ const repeatUntilEventFromEnglish: LanguagePattern = {
   extraction: {
     event: { marker: 'event' },
     source: { marker: 'from' },
+    loopType: { default: { type: 'literal', value: 'until-event' } },
   },
 };
 
@@ -184,6 +185,7 @@ const repeatUntilEventEnglish: LanguagePattern = {
   },
   extraction: {
     event: { marker: 'event' },
+    loopType: { default: { type: 'literal', value: 'until-event' } },
   },
 };
 

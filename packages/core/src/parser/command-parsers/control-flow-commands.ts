@@ -161,7 +161,9 @@ export function parseRepeatCommand(
         value: eventToken.value,
         type: eventToken.type,
       });
-      if (eventToken.type === TokenType.IDENTIFIER) {
+      // Accept both IDENTIFIER and EVENT token types for the event name
+      // (tokenizer marks known DOM events like 'mouseup', 'click' as EVENT type)
+      if (eventToken.type === TokenType.IDENTIFIER || eventToken.type === TokenType.EVENT) {
         eventName = eventToken.value;
         ctx.advance();
         debug.parse('✅ Got event name:', eventName, 'Next token:', ctx.peek().value);

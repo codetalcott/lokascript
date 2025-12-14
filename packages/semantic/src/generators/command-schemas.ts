@@ -795,9 +795,17 @@ export const repeatSchema: CommandSchema = {
   action: 'repeat',
   description: 'Repeat a block of commands',
   category: 'control-flow',
-  primaryRole: 'quantity',
+  primaryRole: 'loopType',
   hasBody: true,
   roles: [
+    {
+      role: 'loopType',
+      description: 'Loop variant: forever, times, for, while, until, until-event',
+      required: true,
+      expectedTypes: ['literal'],
+      svoPosition: 0,
+      sovPosition: 0,
+    },
     {
       role: 'quantity',
       description: 'Number of times to repeat',

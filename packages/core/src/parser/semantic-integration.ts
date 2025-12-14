@@ -64,7 +64,10 @@ export type SemanticRole =
   | 'duration' // How long (for 5 seconds, over 500ms)
   // Adverbial roles
   | 'method' // By what means (as GET, via websocket)
-  | 'style'; // In what way (with fade, smoothly)
+  | 'responseType' // Response format (as json, as text)
+  | 'style' // In what way (with fade, smoothly)
+  // Control flow roles
+  | 'loopType'; // Loop variant: forever, times, for, while, until, until-event
 
 /**
  * Result of semantic analysis.
@@ -323,6 +326,11 @@ export class SemanticIntegrationAdapter {
       throw new Error('Cannot build command node without command data');
     }
 
+    // Route repeat commands to specialized handler
+    if (command.name === 'repeat') {
+      return this.buildRepeatCommandNode(command);
+    }
+
     const args: ExpressionNode[] = [];
     const modifiers: Record<string, ExpressionNode> = {};
 
@@ -396,6 +404,75 @@ export class SemanticIntegrationAdapter {
     return {
       type: 'command',
       name: command.name,
+      args,
+      modifiers: Object.keys(modifiers).length > 0 ? modifiers : undefined,
+      isBlocking: false,
+      start: 0,
+      end: 0,
+      line: 1,
+      column: 0,
+    };
+  }
+
+  /**
+   * Build a CommandNode specifically for repeat commands.
+   * Repeat commands need special handling because they require a loop type
+   * discriminator as the first argument (until-event, times, forever, etc.).
+   */
+  private buildRepeatCommandNode(command: {
+    readonly name: string;
+    readonly roles: ReadonlyMap<SemanticRole, SemanticValue>;
+  }): CommandNode {
+    const args: ExpressionNode[] = [];
+    const modifiers: Record<string, ExpressionNode> = {};
+
+    // 1. loopType as first arg (identifier) - this is the loop variant discriminator
+    const loopType = command.roles.get('loopType' as SemanticRole);
+    if (loopType) {
+      args.push({
+        type: 'identifier',
+        name: String(loopType.value),
+        start: 0,
+        end: 0,
+        line: 1,
+        column: 0,
+      } as unknown as ExpressionNode);
+    }
+
+    // 2. event name as string (for until-event loops)
+    const event = command.roles.get('event');
+    if (event) {
+      args.push({
+        type: 'string',
+        value: String(event.value),
+        start: 0,
+        end: 0,
+        line: 1,
+        column: 0,
+      } as unknown as ExpressionNode);
+    }
+
+    // 3. source as expression (for 'from document' etc.)
+    const source = command.roles.get('source');
+    if (source) {
+      args.push(this.semanticValueToExpression(source));
+    }
+
+    // 4. quantity for 'times' loops (e.g., "repeat 5 times")
+    const quantity = command.roles.get('quantity');
+    if (quantity) {
+      args.push(this.semanticValueToExpression(quantity));
+    }
+
+    // 5. condition for 'while'/'until' loops
+    const condition = command.roles.get('condition');
+    if (condition) {
+      modifiers['condition'] = this.semanticValueToExpression(condition);
+    }
+
+    return {
+      type: 'command',
+      name: 'repeat',
       args,
       modifiers: Object.keys(modifiers).length > 0 ? modifiers : undefined,
       isBlocking: false,
