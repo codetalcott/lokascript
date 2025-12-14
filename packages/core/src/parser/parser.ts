@@ -2786,12 +2786,12 @@ export class Parser {
     // These must use traditional parsing until semantic schemas support their full syntax
     const commandToken = this.previous();
     let commandName = commandToken.value;
-    const skipSemanticParsing = [
-      // 'repeat' now handled via loopType semantic role in buildRepeatCommandNode
-      'set',     // Complex possessive property syntax: set #el's *opacity to 0.5
-      'for',     // for X in Y syntax
-      'if',      // Conditional with then/else blocks
-      'unless',  // Conditional
+    const skipSemanticParsing: string[] = [
+      // All control flow commands now handled via semantic parsing:
+      // - 'repeat' via loopType semantic role in buildRepeatCommandNode
+      // - 'set' via buildSetCommandNode with possessive expression support
+      // - 'for' via buildRepeatCommandNode with loopType='for'
+      // - 'if'/'unless' via buildIfCommandNode with condition role
     ];
 
     if (this.semanticAdapter && !skipSemanticParsing.includes(commandName.toLowerCase())) {

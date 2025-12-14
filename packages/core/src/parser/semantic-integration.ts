@@ -326,9 +326,22 @@ export class SemanticIntegrationAdapter {
       throw new Error('Cannot build command node without command data');
     }
 
-    // Route repeat commands to specialized handler
+    // Route commands to specialized handlers
     if (command.name === 'repeat') {
       return this.buildRepeatCommandNode(command);
+    }
+
+    if (command.name === 'for') {
+      // 'for' is internally a repeat variant with loopType='for'
+      return this.buildRepeatCommandNode(command);
+    }
+
+    if (command.name === 'set') {
+      return this.buildSetCommandNode(command);
+    }
+
+    if (command.name === 'if' || command.name === 'unless') {
+      return this.buildIfCommandNode(command);
     }
 
     const args: ExpressionNode[] = [];
@@ -439,7 +452,24 @@ export class SemanticIntegrationAdapter {
       } as unknown as ExpressionNode);
     }
 
-    // 2. event name as string (for until-event loops)
+    // 2. For 'for' loops: patient is the loop variable name
+    const patient = command.roles.get('patient' as SemanticRole);
+    const loopTypeValue = loopType ? String(loopType.value) : '';
+    if (loopTypeValue === 'for' && patient) {
+      // Loop variable name as identifier (e.g., "item" in "for item in items")
+      args.push({
+        type: 'identifier',
+        name: patient.type === 'expression'
+          ? (patient as unknown as { raw?: string }).raw || String(patient.value)
+          : String(patient.value),
+        start: 0,
+        end: 0,
+        line: 1,
+        column: 0,
+      } as unknown as ExpressionNode);
+    }
+
+    // 3. event name as string (for until-event loops)
     const event = command.roles.get('event');
     if (event) {
       args.push({
@@ -452,19 +482,19 @@ export class SemanticIntegrationAdapter {
       } as unknown as ExpressionNode);
     }
 
-    // 3. source as expression (for 'from document' etc.)
+    // 4. source as expression (for 'from document' etc. or collection in 'for' loops)
     const source = command.roles.get('source');
     if (source) {
       args.push(this.semanticValueToExpression(source));
     }
 
-    // 4. quantity for 'times' loops (e.g., "repeat 5 times")
+    // 5. quantity for 'times' loops (e.g., "repeat 5 times")
     const quantity = command.roles.get('quantity');
     if (quantity) {
       args.push(this.semanticValueToExpression(quantity));
     }
 
-    // 5. condition for 'while'/'until' loops
+    // 6. condition for 'while'/'until' loops
     const condition = command.roles.get('condition');
     if (condition) {
       modifiers['condition'] = this.semanticValueToExpression(condition);
@@ -475,6 +505,128 @@ export class SemanticIntegrationAdapter {
       name: 'repeat',
       args,
       modifiers: Object.keys(modifiers).length > 0 ? modifiers : undefined,
+      isBlocking: false,
+      start: 0,
+      end: 0,
+      line: 1,
+      column: 0,
+    };
+  }
+
+  /**
+   * Build a CommandNode specifically for set commands.
+   * Set commands need special handling because:
+   * - The destination can be a property-path (possessive expression)
+   * - The args must include a 'to' keyword marker
+   * - The SetCommand.parseInput() expects: [target, identifier('to'), value]
+   */
+  private buildSetCommandNode(command: {
+    readonly name: string;
+    readonly roles: ReadonlyMap<SemanticRole, SemanticValue>;
+  }): CommandNode {
+    const args: ExpressionNode[] = [];
+
+    // 1. Destination (target) - could be identifier, possessiveExpression, or memberExpression
+    const destination = command.roles.get('destination' as SemanticRole);
+    if (destination) {
+      if (destination.type === 'property-path') {
+        // Convert to possessiveExpression for #el's *opacity syntax
+        // The property-path has { object: SemanticValue, property: string }
+        const pathValue = destination as unknown as {
+          type: 'property-path';
+          object: SemanticValue;
+          property: string;
+        };
+        args.push({
+          type: 'possessiveExpression',
+          object: this.semanticValueToExpression(pathValue.object),
+          property: this.createPropertyNode(pathValue.property),
+          start: 0,
+          end: 0,
+          line: 1,
+          column: 0,
+        } as unknown as ExpressionNode);
+      } else {
+        args.push(this.semanticValueToExpression(destination));
+      }
+    }
+
+    // 2. 'to' keyword marker (required by SetCommand.parseInput)
+    args.push({
+      type: 'identifier',
+      name: 'to',
+      start: 0,
+      end: 0,
+      line: 1,
+      column: 0,
+    } as unknown as ExpressionNode);
+
+    // 3. Patient (value)
+    const patient = command.roles.get('patient' as SemanticRole);
+    if (patient) {
+      args.push(this.semanticValueToExpression(patient));
+    }
+
+    return {
+      type: 'command',
+      name: 'set',
+      args,
+      isBlocking: false,
+      start: 0,
+      end: 0,
+      line: 1,
+      column: 0,
+    };
+  }
+
+  /**
+   * Create a property node for set command targets.
+   * Handles CSS property syntax (*property) vs regular identifiers.
+   */
+  private createPropertyNode(property: string): ExpressionNode {
+    if (property.startsWith('*')) {
+      // CSS property: *opacity → { type: 'cssProperty', name: 'opacity' }
+      return {
+        type: 'cssProperty',
+        name: property.substring(1),
+        start: 0,
+        end: 0,
+        line: 1,
+        column: 0,
+      } as unknown as ExpressionNode;
+    }
+    // Regular property: innerHTML → { type: 'identifier', name: 'innerHTML' }
+    return {
+      type: 'identifier',
+      name: property,
+      start: 0,
+      end: 0,
+      line: 1,
+      column: 0,
+    } as unknown as ExpressionNode;
+  }
+
+  /**
+   * Build an if/unless command node from semantic analysis.
+   * The condition goes into args as the first argument.
+   * Body parsing is handled by the main parser.
+   */
+  private buildIfCommandNode(command: {
+    readonly name: string;
+    readonly roles: ReadonlyMap<SemanticRole, SemanticValue>;
+  }): CommandNode {
+    const args: ExpressionNode[] = [];
+
+    // 1. Condition as first arg
+    const condition = command.roles.get('condition' as SemanticRole);
+    if (condition) {
+      args.push(this.semanticValueToExpression(condition));
+    }
+
+    return {
+      type: 'command',
+      name: command.name, // 'if' or 'unless'
+      args,
       isBlocking: false,
       start: 0,
       end: 0,

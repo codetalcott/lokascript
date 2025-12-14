@@ -190,6 +190,131 @@ const repeatUntilEventEnglish: LanguagePattern = {
 };
 
 // =============================================================================
+// Hand-crafted Set Patterns (English)
+// =============================================================================
+
+/**
+ * English: "set {target} to {value}"
+ * Handles all set command variants including possessive syntax.
+ * Higher priority than generated setSchema to capture property-path types.
+ *
+ * Examples:
+ * - set x to 5 (simple variable)
+ * - set :localVar to 'hello' (local scope)
+ * - set #el's *opacity to 0.5 (possessive CSS property)
+ * - set my innerHTML to 'content' (possessive reference)
+ */
+const setPossessiveEnglish: LanguagePattern = {
+  id: 'set-en-possessive',
+  language: 'en',
+  command: 'set',
+  priority: 100, // Higher than generated setSchema (80)
+  template: {
+    format: 'set {destination} to {patient}',
+    tokens: [
+      { type: 'literal', value: 'set' },
+      // Role token with property-path support for possessive syntax
+      { type: 'role', role: 'destination', expectedTypes: ['property-path', 'selector', 'reference', 'expression'] },
+      { type: 'literal', value: 'to' },
+      { type: 'role', role: 'patient', expectedTypes: ['literal', 'expression', 'reference'] },
+    ],
+  },
+  extraction: {
+    destination: { position: 1 },
+    patient: { marker: 'to' },
+  },
+};
+
+// =============================================================================
+// Hand-crafted For Loop Patterns (English)
+// =============================================================================
+
+/**
+ * English: "for {variable} in {collection}"
+ * Basic for-each iteration pattern.
+ *
+ * Examples:
+ * - for item in items
+ * - for x in .elements
+ * - for user in users
+ */
+const forEnglish: LanguagePattern = {
+  id: 'for-en-basic',
+  language: 'en',
+  command: 'for',
+  priority: 100,
+  template: {
+    format: 'for {patient} in {source}',
+    tokens: [
+      { type: 'literal', value: 'for' },
+      { type: 'role', role: 'patient', expectedTypes: ['expression', 'reference'] }, // Loop variable
+      { type: 'literal', value: 'in' },
+      { type: 'role', role: 'source', expectedTypes: ['selector', 'expression', 'reference'] }, // Collection
+    ],
+  },
+  extraction: {
+    patient: { position: 1 },
+    source: { marker: 'in' },
+    loopType: { default: { type: 'literal', value: 'for' } },
+  },
+};
+
+// =============================================================================
+// Hand-crafted If/Unless Patterns (English)
+// =============================================================================
+
+/**
+ * English: "if {condition}"
+ * Basic conditional pattern. Body parsing handled by main parser.
+ *
+ * Examples:
+ * - if active toggle .class
+ * - if x > 5 then ... end
+ * - if myVar
+ */
+const ifEnglish: LanguagePattern = {
+  id: 'if-en-basic',
+  language: 'en',
+  command: 'if',
+  priority: 100,
+  template: {
+    format: 'if {condition}',
+    tokens: [
+      { type: 'literal', value: 'if' },
+      { type: 'role', role: 'condition', expectedTypes: ['expression', 'reference', 'selector'] },
+    ],
+  },
+  extraction: {
+    condition: { position: 1 },
+  },
+};
+
+/**
+ * English: "unless {condition}"
+ * Negated conditional pattern. Body parsing handled by main parser.
+ *
+ * Examples:
+ * - unless disabled submit
+ * - unless x == 0 then ... end
+ */
+const unlessEnglish: LanguagePattern = {
+  id: 'unless-en-basic',
+  language: 'en',
+  command: 'unless',
+  priority: 100,
+  template: {
+    format: 'unless {condition}',
+    tokens: [
+      { type: 'literal', value: 'unless' },
+      { type: 'role', role: 'condition', expectedTypes: ['expression', 'reference', 'selector'] },
+    ],
+  },
+  extraction: {
+    condition: { position: 1 },
+  },
+};
+
+// =============================================================================
 // Generated Patterns (New Commands)
 // =============================================================================
 
@@ -252,6 +377,10 @@ export const allPatterns: LanguagePattern[] = [
   swapSimpleEnglish,  // swap <strategy> <target>
   repeatUntilEventFromEnglish, // repeat until event X from Y (highest priority)
   repeatUntilEventEnglish, // repeat until event X (lower priority)
+  setPossessiveEnglish, // set X to Y with possessive support (higher priority)
+  forEnglish, // for X in Y iteration (higher priority)
+  ifEnglish, // if {condition} conditional (higher priority)
+  unlessEnglish, // unless {condition} negated conditional (higher priority)
   // Generated patterns (new commands)
   ...generatedPatterns,
 ];
