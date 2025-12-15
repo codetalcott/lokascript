@@ -292,12 +292,65 @@ export class EnglishTokenizer extends BaseTokenizer {
     const kind = this.classifyToken(word);
     const lower = word.toLowerCase();
     const normalized = ENGLISH_SYNONYMS[lower];
+
+    // Check for natural class syntax: "{identifier} class" → ".{identifier}"
+    // This allows "toggle the active class" to work like "toggle the .active"
+    if (kind === 'identifier') {
+      const classConversion = this.tryConvertToClassSelector(input, pos, word);
+      if (classConversion) {
+        return classConversion.token;
+      }
+    }
+
     return createToken(
       word,
       kind,
       createPosition(startPos, pos),
       normalized // Will be undefined if not a synonym, which is fine
     );
+  }
+
+  /**
+   * Try to convert an identifier followed by "class" to a class selector.
+   * E.g., "active class" → ".active"
+   *
+   * This enables natural English syntax like:
+   * - "toggle the active class" → "toggle .active"
+   * - "add the visible class" → "add .visible"
+   */
+  private tryConvertToClassSelector(
+    input: string,
+    pos: number,
+    word: string
+  ): { token: LanguageToken; endPos: number } | null {
+    let checkPos = pos;
+
+    // Skip whitespace
+    while (checkPos < input.length && /\s/.test(input[checkPos])) {
+      checkPos++;
+    }
+
+    // Check if next word is "class"
+    if (input.slice(checkPos, checkPos + 5).toLowerCase() === 'class') {
+      // Make sure "class" is a complete word (not "className" etc.)
+      const afterClass = checkPos + 5;
+      if (afterClass >= input.length || !isAsciiIdentifierChar(input[afterClass])) {
+        // Convert to class selector
+        const selectorValue = '.' + word;
+        // Note: we DON'T consume "class" here - let the noise word handling in
+        // pattern-matcher skip it. This keeps the token stream cleaner.
+        return {
+          token: createToken(
+            selectorValue,
+            'selector',
+            createPosition(pos - word.length, pos)
+          ),
+          endPos: pos,
+        };
+      }
+    }
+
+    return null;
   }
 
   /**

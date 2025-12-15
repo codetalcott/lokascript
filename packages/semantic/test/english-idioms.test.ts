@@ -355,6 +355,59 @@ describe('English Combined Idioms', () => {
 });
 
 // =============================================================================
+// Natural Class Syntax (without dot prefix)
+// =============================================================================
+
+describe('English Natural Class Syntax', () => {
+  describe('identifier + "class" → class selector', () => {
+    it('should tokenize "active class" as ".active" selector', () => {
+      const tokens = getTokens('toggle the active class');
+      const activeToken = tokens.find(t => t.value === '.active');
+      expect(activeToken).toBeDefined();
+      expect(activeToken?.kind).toBe('selector');
+    });
+
+    it('should tokenize "visible class" as ".visible" selector', () => {
+      const tokens = getTokens('add the visible class');
+      const visibleToken = tokens.find(t => t.value === '.visible');
+      expect(visibleToken).toBeDefined();
+      expect(visibleToken?.kind).toBe('selector');
+    });
+
+    it('should parse "toggle the active class" correctly', () => {
+      const result = parse('toggle the active class', 'en');
+      expect(result).not.toBeNull();
+      expect(result?.action).toBe('toggle');
+      const patient = result?.roles.get('patient');
+      expect(patient?.type).toBe('selector');
+      expect(patient?.value).toBe('.active');
+    });
+
+    it('should parse "add the visible class" correctly', () => {
+      const result = parse('add the visible class', 'en');
+      expect(result).not.toBeNull();
+      expect(result?.action).toBe('add');
+      const patient = result?.roles.get('patient');
+      expect(patient?.type).toBe('selector');
+      expect(patient?.value).toBe('.visible');
+    });
+
+    it('should parse "remove the hidden class" correctly', () => {
+      const result = parse('remove the hidden class', 'en');
+      expect(result).not.toBeNull();
+      expect(result?.action).toBe('remove');
+    });
+
+    it('should NOT convert "className" (no space before class)', () => {
+      const tokens = getTokens('set className to foo');
+      const classNameToken = tokens.find(t => t.value === 'className');
+      expect(classNameToken).toBeDefined();
+      expect(classNameToken?.kind).toBe('identifier');
+    });
+  });
+});
+
+// =============================================================================
 // Keyword Recognition
 // =============================================================================
 
