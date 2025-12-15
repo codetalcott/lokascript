@@ -811,6 +811,117 @@ const eventSpanishWhen: LanguagePattern = {
   },
 };
 
+/**
+ * Spanish: "al hacer clic {body...}"
+ * Native idiom using al + infinitive (upon/when doing)
+ *
+ * al = a + el (contraction) = upon, when
+ * This is the most idiomatic Spanish form for event handlers.
+ * "al hacer clic" = "upon clicking" / "when clicking"
+ *
+ * Research note: "al + infinitive" is more natural than "en clic" in Spanish.
+ * Similar to Portuguese "ao clicar".
+ */
+const eventSpanishNativeAl: LanguagePattern = {
+  id: 'event-es-native-al',
+  language: 'es',
+  command: 'on',
+  priority: 108, // Higher than standard (100) - prefer native idiom
+  template: {
+    format: 'al {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'al' },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Spanish: "al hacer clic en #button {body...}"
+ * Native idiom with source filter
+ *
+ * al = upon/when (contraction)
+ * en = on/in (preposition marking source)
+ * de = from (alternative)
+ */
+const eventSpanishNativeAlWithSource: LanguagePattern = {
+  id: 'event-es-native-al-source',
+  language: 'es',
+  command: 'on',
+  priority: 115, // Highest - most specific
+  template: {
+    format: 'al {event} en {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'al' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'en', alternatives: ['de'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'en', markerAlternatives: ['de'] },
+  },
+};
+
+/**
+ * Spanish: "si hace clic {body...}"
+ * Conditional form using si (if)
+ *
+ * si = if (conditional conjunction)
+ * Used for hypothetical event handling
+ */
+const eventSpanishConditionalSi: LanguagePattern = {
+  id: 'event-es-conditional-si',
+  language: 'es',
+  command: 'on',
+  priority: 85,
+  template: {
+    format: 'si {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'si' },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Spanish: "cuando haga clic en #button {body...}"
+ * Temporal form with source filter
+ *
+ * cuando = when
+ * en/de = on/from (source marker)
+ */
+const eventSpanishWhenWithSource: LanguagePattern = {
+  id: 'event-es-cuando-source',
+  language: 'es',
+  command: 'on',
+  priority: 112,
+  template: {
+    format: 'cuando {event} en {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'cuando' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'en', alternatives: ['de'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'en', markerAlternatives: ['de'] },
+  },
+};
+
 // =============================================================================
 // Portuguese Patterns (SVO)
 // =============================================================================
@@ -975,6 +1086,213 @@ const eventPortugueseQuandoWithSource: LanguagePattern = {
 };
 
 // =============================================================================
+// Chinese Patterns (SVO)
+// =============================================================================
+
+/**
+ * Chinese: "当 点击 {body...}"
+ * Standard temporal form using 当 (when)
+ *
+ * 当 (dāng) = when (temporal conjunction)
+ * Most common form for event handlers in Chinese
+ */
+const eventChineseStandard: LanguagePattern = {
+  id: 'event-zh-standard',
+  language: 'zh',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: '当 {event} {body}',
+    tokens: [
+      { type: 'literal', value: '当' },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Chinese: "点击 的时候 {body...}"
+ * Native temporal form using 的时候 (at the time of)
+ *
+ * 的时候 (de shíhou) = at the time of, when
+ * Very natural Chinese idiom for expressing "when X happens"
+ */
+const eventChineseTemporal: LanguagePattern = {
+  id: 'event-zh-temporal',
+  language: 'zh',
+  command: 'on',
+  priority: 105, // Higher than standard - native idiom
+  template: {
+    format: '{event} 的时候 {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '的时候', alternatives: ['时候', '时'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Chinese: "点击 了 {body...}"
+ * Completion aspect form using 了
+ *
+ * 了 (le) = completion/change-of-state aspect marker
+ * Indicates the event has completed before the action
+ */
+const eventChineseCompletion: LanguagePattern = {
+  id: 'event-zh-completion',
+  language: 'zh',
+  command: 'on',
+  priority: 95,
+  template: {
+    format: '{event} 了 {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '了' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Chinese: "一 点击 就 {body...}"
+ * Rapid succession form using 一...就 (as soon as)
+ *
+ * 一...就 (yī...jiù) = as soon as
+ * Expresses immediate reaction to an event
+ */
+const eventChineseImmediate: LanguagePattern = {
+  id: 'event-zh-immediate',
+  language: 'zh',
+  command: 'on',
+  priority: 108, // Higher - native idiom
+  template: {
+    format: '一 {event} 就 {body}',
+    tokens: [
+      { type: 'literal', value: '一' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '就' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Chinese: "每当 点击 {body...}"
+ * Frequency form using 每当 (whenever/each time)
+ *
+ * 每当 (měidāng) = whenever, each time
+ * Emphasizes repeated event handling
+ */
+const eventChineseWhenever: LanguagePattern = {
+  id: 'event-zh-whenever',
+  language: 'zh',
+  command: 'on',
+  priority: 103,
+  template: {
+    format: '每当 {event} {body}',
+    tokens: [
+      { type: 'literal', value: '每当', alternatives: ['每次'] },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Chinese: "如果 点击 {body...}"
+ * Conditional form using 如果 (if)
+ *
+ * 如果 (rúguǒ) = if (conditional conjunction)
+ * Used for hypothetical event handling
+ */
+const eventChineseConditional: LanguagePattern = {
+  id: 'event-zh-conditional',
+  language: 'zh',
+  command: 'on',
+  priority: 90,
+  template: {
+    format: '如果 {event} {body}',
+    tokens: [
+      { type: 'literal', value: '如果', alternatives: ['若', '假如'] },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Chinese: "当 点击 从 #button {body...}"
+ * Standard form with source filter
+ *
+ * 从 (cóng) = from (source marker)
+ */
+const eventChineseWithSource: LanguagePattern = {
+  id: 'event-zh-source',
+  language: 'zh',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: '当 {event} 从 {source} {body}',
+    tokens: [
+      { type: 'literal', value: '当' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '从', alternatives: ['在'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: '从', markerAlternatives: ['在'] },
+  },
+};
+
+/**
+ * Chinese: "点击 的时候 从 #button {body...}"
+ * Native temporal form with source filter
+ */
+const eventChineseTemporalWithSource: LanguagePattern = {
+  id: 'event-zh-temporal-source',
+  language: 'zh',
+  command: 'on',
+  priority: 115, // Highest - most specific
+  template: {
+    format: '{event} 的时候 从 {source} {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '的时候', alternatives: ['时候', '时'] },
+      { type: 'literal', value: '从', alternatives: ['在'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+    source: { marker: '从', markerAlternatives: ['在'] },
+  },
+};
+
+// =============================================================================
 // Event Name Translations
 // =============================================================================
 
@@ -1096,6 +1414,32 @@ export const eventNameTranslations: Record<string, Record<string, string>> = {
     'rolagem': 'scroll',
     'rolar': 'scroll',
   },
+  // Chinese event names → English
+  zh: {
+    '点击': 'click',
+    '单击': 'click',
+    '双击': 'dblclick',
+    '输入': 'input',
+    '改变': 'change',
+    '变化': 'change',
+    '变更': 'change',
+    '提交': 'submit',
+    '发送': 'submit',
+    '按键': 'keydown',
+    '键入': 'keydown',
+    '松键': 'keyup',
+    '鼠标进入': 'mouseover',
+    '鼠标移入': 'mouseover',
+    '鼠标离开': 'mouseout',
+    '鼠标移出': 'mouseout',
+    '焦点': 'focus',
+    '聚焦': 'focus',
+    '失焦': 'blur',
+    '模糊': 'blur',
+    '加载': 'load',
+    '载入': 'load',
+    '滚动': 'scroll',
+  },
 };
 
 /**
@@ -1146,10 +1490,14 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   eventTurkishSimultaneityKen,
   eventTurkishRepetitiveDikce,
   eventTurkishStandard,
-  // Spanish
+  // Spanish - native idiom patterns first (higher priority)
+  eventSpanishNativeAlWithSource,
+  eventSpanishWhenWithSource,
+  eventSpanishNativeAl,
   eventSpanishStandard,
   eventSpanishWithSource,
   eventSpanishWhen,
+  eventSpanishConditionalSi,
   // Portuguese - native idiom patterns first (higher priority)
   eventPortugueseAoWithSource,
   eventPortugueseQuandoWithSource,
@@ -1157,6 +1505,15 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   eventPortugueseQuando,
   eventPortugueseEm,
   eventPortugueseSe,
+  // Chinese - native idiom patterns first (higher priority)
+  eventChineseTemporalWithSource,
+  eventChineseWithSource,
+  eventChineseImmediate,
+  eventChineseTemporal,
+  eventChineseWhenever,
+  eventChineseStandard,
+  eventChineseCompletion,
+  eventChineseConditional,
 ];
 
 /**
