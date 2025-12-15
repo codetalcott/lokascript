@@ -564,7 +564,14 @@ const eventTurkishConditionalDiginda: LanguagePattern = {
     format: '{event}dığında {body}',
     tokens: [
       { type: 'role', role: 'event' },
-      { type: 'literal', value: 'dığında', alternatives: ['dıgında', 'duğunda', 'düğünde'] },
+      // Full 4-way vowel harmony + consonant softening (d→t after voiceless)
+      // Back unrounded: dığında/tığında, Front unrounded: diğinde/tiğinde
+      // Back rounded: duğunda/tuğunda, Front rounded: düğünde/tüğünde
+      { type: 'literal', value: 'dığında', alternatives: [
+        'diğinde', 'duğunda', 'düğünde',  // d- variants (after voiced)
+        'tığında', 'tiğinde', 'tuğunda', 'tüğünde',  // t- variants (after voiceless)
+        'dıgında', 'diginde', 'dugunda', 'dügünde',  // ASCII fallback (no soft g)
+      ]},
       // Body captured as remaining tokens
     ],
   },
@@ -589,7 +596,13 @@ const eventTurkishTemporalInca: LanguagePattern = {
     format: '{event}ınca {body}',
     tokens: [
       { type: 'role', role: 'event' },
-      { type: 'literal', value: 'ınca', alternatives: ['ince', 'unca', 'ünce', 'yınca', 'yince'] },
+      // Full 4-way vowel harmony + buffer -y after vowels
+      // Back unrounded: ınca/yınca, Front unrounded: ince/yince
+      // Back rounded: unca/yunca, Front rounded: ünce/yünce
+      { type: 'literal', value: 'ınca', alternatives: [
+        'ince', 'unca', 'ünce',  // base variants
+        'yınca', 'yince', 'yunca', 'yünce',  // buffer -y variants (after vowels)
+      ]},
       // Body captured as remaining tokens
     ],
   },
@@ -662,7 +675,12 @@ const eventTurkishConditionalWithSource: LanguagePattern = {
       { type: 'role', role: 'source' },
       { type: 'literal', value: 'den', alternatives: ['dan', 'ten', 'tan'] },
       { type: 'role', role: 'event' },
-      { type: 'literal', value: 'dığında', alternatives: ['dıgında', 'duğunda'] },
+      // Full 4-way vowel harmony + consonant softening (d→t after voiceless)
+      { type: 'literal', value: 'dığında', alternatives: [
+        'diğinde', 'duğunda', 'düğünde',  // d- variants
+        'tığında', 'tiğinde', 'tuğunda', 'tüğünde',  // t- variants (after voiceless)
+        'dıgında', 'diginde', 'dugunda', 'dügünde',  // ASCII fallback
+      ]},
       // Body captured as remaining tokens
     ],
   },

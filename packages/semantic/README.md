@@ -135,6 +135,173 @@ The parser handles Korean verb conjugations automatically:
 | Honorific (-하세요) | 토글하세요 | 토글 |
 | Past (-했어요) | 토글했어요 | 토글 |
 
+## Spanish Native Idioms
+
+HyperFixi accepts multiple natural Spanish forms.
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Native (al + infinitive) | `al hacer clic toggle .active` | **Most idiomatic** - "upon clicking" |
+| Conditional (si) | `si hace clic toggle .active` | "If clicks" |
+| Standard (en) | `en clic toggle .active` | Direct translation |
+| Temporal (cuando) | `cuando clic toggle .active` | "When" |
+
+### Event Handlers
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('al hacer clic aumentar', 'es')      // Native (al + infinitive)
+parse('si hace clic aumentar', 'es')       // Conditional
+parse('en clic aumentar', 'es')            // Standard
+
+// With source filter:
+parse('al hacer clic en #button aumentar', 'es')
+```
+
+### Toggle Commands
+
+```typescript
+// All parse to equivalent toggle nodes:
+parse('toggle .active', 'es')              // English loanword
+parse('cambiar .active', 'es')             // Native verb
+parse('alternar .active', 'es')            // Formal alternative
+```
+
+## Chinese Native Idioms
+
+HyperFixi accepts multiple natural Chinese forms using native temporal and aspect markers.
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Standard (当) | `当 点击 切换 .active` | "When" - formal |
+| Temporal (的时候) | `点击 的时候 切换 .active` | "At the time of" |
+| Immediate (一...就) | `一 点击 就 切换 .active` | "As soon as" |
+| Completion (了) | `点击 了 切换 .active` | Perfective aspect |
+| Whenever (每当) | `每当 点击 切换 .active` | "Whenever" |
+| Conditional (如果) | `如果 点击 切换 .active` | "If" |
+
+### Event Handlers
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('当 点击 切换 .active', 'zh')         // Standard (当)
+parse('点击 的时候 切换 .active', 'zh')     // Temporal (的时候)
+parse('一 点击 就 切换 .active', 'zh')      // Immediate (一...就)
+parse('每当 点击 切换 .active', 'zh')       // Whenever (每当)
+
+// With source filter:
+parse('当 从 #button 点击 切换 .active', 'zh')
+```
+
+### Toggle Commands
+
+```typescript
+// All parse to equivalent toggle nodes:
+parse('切换 .active', 'zh')                 // Native verb
+parse('把 .active 切换', 'zh')              // BA construction (把)
+```
+
+## Arabic Native Idioms
+
+HyperFixi accepts multiple natural Arabic forms, supporting VSO word order.
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Standard (عندما) | `عندما نقر بدّل .active` | "When" - formal |
+| Classical (حين) | `حين نقر بدّل .active` | Classical Arabic |
+| Conditional (إذا) | `إذا نقر بدّل .active` | "If" |
+| With source | `عندما نقر من #button بدّل .active` | "When click from #button" |
+
+### Event Handlers
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('عندما نقر زيادة', 'ar')              // Standard (عندما)
+parse('إذا نقر زيادة', 'ar')                // Conditional (إذا)
+parse('حين نقر زيادة', 'ar')                // Classical (حين)
+```
+
+### Morphological Normalization
+
+The parser handles Arabic verb patterns and prefix stripping:
+
+| Input | Normalized | Notes |
+|-------|------------|-------|
+| النقر | نقر | Article ال stripped |
+| بالنقر | نقر | Prefix بال stripped |
+| والنقر | نقر | Conjunction وال stripped |
+
+## Turkish Native Idioms
+
+HyperFixi accepts multiple natural Turkish forms with full vowel harmony support.
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Conditional (-dığında) | `tıklandığında toggle .active` | **Most natural** - "when clicked" |
+| Temporal (-ınca) | `tıklayınca toggle .active` | "When/upon" |
+| Hypothetical (-rsa) | `tıklarsa toggle .active` | "If" |
+| Simultaneous (-ken) | `tıklarken toggle .active` | "While" |
+| Repetitive (-dikçe) | `tıkladıkça toggle .active` | "Whenever" |
+
+### Vowel Harmony
+
+All Turkish suffixes support 4-way vowel harmony + consonant softening:
+
+| Base | Back Unrounded | Front Unrounded | Back Rounded | Front Rounded |
+|------|----------------|-----------------|--------------|---------------|
+| -dığında | -dığında | -diğinde | -duğunda | -düğünde |
+| -ınca | -ınca | -ince | -unca | -ünce |
+| -dikçe | -dıkça | -dikçe | -dukça | -dükçe |
+
+Consonant softening (d→t after voiceless consonants): `-tığında`, `-tikçe`, etc.
+
+### Event Handlers
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('tıklandığında artır', 'tr')          // Conditional
+parse('tıklayınca artır', 'tr')             // Temporal
+parse('tıklarsa artır', 'tr')               // Hypothetical
+
+// With source filter:
+parse('#button den tıklandığında artır', 'tr')
+```
+
+## Portuguese Native Idioms
+
+HyperFixi accepts multiple natural Portuguese forms.
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Native (ao + infinitive) | `ao clicar alternar .active` | **Most idiomatic** - "upon clicking" |
+| Standard (quando) | `quando clicar alternar .active` | "When" |
+| Conditional (se) | `se clicar alternar .active` | "If" |
+| With source | `ao clicar em #button alternar .active` | "Upon clicking on #button" |
+
+### Portuguese Event Handlers
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('ao clicar incrementar', 'pt')        // Native (ao + infinitive)
+parse('quando clicar incrementar', 'pt')    // Standard (quando)
+parse('se clicar incrementar', 'pt')        // Conditional (se)
+
+// With source filter:
+parse('ao clicar em #button incrementar', 'pt')
+```
+
+### Portuguese Morphological Normalization
+
+The parser handles Portuguese verb conjugations automatically:
+
+| Conjugation | Example | Normalized |
+|-------------|---------|------------|
+| Infinitive | clicar | clica |
+| Gerund | clicando | clica |
+| Present (3sg) | clica | clica |
+| Past | clicou | clica |
+| Subjunctive | clique | clica |
+
 ## API Reference
 
 ### Core Functions
