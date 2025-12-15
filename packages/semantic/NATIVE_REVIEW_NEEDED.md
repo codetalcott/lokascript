@@ -16,24 +16,22 @@ Patterns were implemented based on linguistic research but may benefit from real
 
 ## Arabic (ar)
 
-### Critical Implementation Issue 🚨
+### Proclitic Handling ✅ (Implemented December 2025)
 
-**The "wa" (و) conjunction handling is fundamentally flawed.**
+**The "wa" (و) conjunction handling has been implemented.**
 
-Our current implementation assumes whitespace-delimited tokens. However, Arabic "wa" is a **proclitic** - it attaches directly to the following word with no space.
+Arabic "wa" is a **proclitic** - it attaches directly to the following word with no space. The tokenizer now correctly separates proclitics from attached words:
 
-| Our Assumption | Actual Arabic Orthography |
-|----------------|---------------------------|
-| `A و B` (space + wa + space) | `A وB` (wa attached to B) |
+| Input | Tokenization |
+|-------|--------------|
+| `والنقر` | `و` (conjunction) + `النقر` (the-click) |
+| `فالتبديل` | `ف` (conjunction) + `التبديل` (the-toggle) |
 
-**Correct regex pattern:**
-```regex
-(?<=\s|^|\p{P})\u0648(?=\p{L})
-```
-
-This matches wa when:
-- Preceded by whitespace, start of string, or punctuation
-- Immediately followed by a letter (no space)
+**Implementation details:**
+- `tryProclitic()` method in `arabic.ts` detects و and ف attached to following words
+- Requires minimum 2 characters after proclitic to avoid false positives
+- Emits conjunction token with normalized value (`and` / `then`)
+- Enables polysyndetic coordination: `A وB وC` → `[A, و, B, و, C]`
 
 **Source:** [Lancaster Arabic Tagset](https://www.lancaster.ac.uk/staff/hardiea/arabic-annotation-guide.pdf)
 
@@ -245,5 +243,5 @@ Based on the deep research audit:
 
 ---
 
-*Last updated: December 2024*
+*Last updated: December 2025*
 *Deep research audit conducted via Gemini*

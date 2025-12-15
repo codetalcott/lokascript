@@ -57,6 +57,20 @@ const ATTACHED_PREFIXES = new Set([
 ]);
 
 /**
+ * Arabic proclitic conjunctions that attach directly to the following word.
+ * These are separated during tokenization for proper list/coordination handling.
+ *
+ * Unlike ATTACHED_PREFIXES which are kept with the word, proclitics are
+ * emitted as separate tokens to support polysyndetic coordination (A وB وC).
+ *
+ * @see NATIVE_REVIEW_NEEDED.md for implementation details
+ */
+const PROCLITICS = new Map<string, string>([
+  ['و', 'and'],   // wa - conjunction "and"
+  ['ف', 'then'],  // fa - conjunction "then/so"
+]);
+
+/**
  * Arabic standalone prepositions.
  */
 const PREPOSITIONS = new Set([
@@ -311,8 +325,17 @@ export class ArabicTokenizer extends BaseTokenizer {
         continue;
       }
 
-      // Try Arabic word
+      // Try Arabic word (with proclitic detection)
       if (isArabic(input[pos])) {
+        // Check for proclitic conjunction (و or ف) attached to following word
+        const procliticResult = this.tryProclitic(input, pos);
+        if (procliticResult) {
+          tokens.push(procliticResult.conjunction);
+          pos = procliticResult.conjunction.position.end;
+          // Continue to let the next iteration extract the remaining word
+          continue;
+        }
+
         const wordToken = this.extractArabicWord(input, pos);
         if (wordToken) {
           tokens.push(wordToken);
@@ -369,6 +392,58 @@ export class ArabicTokenizer extends BaseTokenizer {
       }
     }
     return null;
+  }
+
+  /**
+   * Try to extract a proclitic conjunction (و or ف) that's attached to the following word.
+   *
+   * Arabic proclitics attach directly to words without space:
+   * - والنقر → و + النقر (and + the-click)
+   * - فالتبديل → ف + التبديل (then + the-toggle)
+   *
+   * This enables polysyndetic coordination: A وB وC
+   *
+   * Returns null if:
+   * - Not a proclitic character
+   * - Proclitic is standalone (followed by space)
+   * - Remaining word is too short (< 2 chars, to avoid false positives)
+   *
+   * @see NATIVE_REVIEW_NEEDED.md for implementation rationale
+   */
+  private tryProclitic(input: string, pos: number): { conjunction: LanguageToken } | null {
+    const char = input[pos];
+    const normalized = PROCLITICS.get(char);
+
+    if (!normalized) return null;
+
+    // Check if there's a following Arabic character (proclitic must be attached)
+    const nextPos = pos + 1;
+    if (nextPos >= input.length || !isArabic(input[nextPos])) {
+      return null; // Standalone conjunction or end of input
+    }
+
+    // Count remaining Arabic characters to ensure meaningful word follows
+    let remainingLength = 0;
+    let checkPos = nextPos;
+    while (checkPos < input.length && isArabic(input[checkPos])) {
+      remainingLength++;
+      checkPos++;
+    }
+
+    // Require at least 2 characters after proclitic to avoid false positives
+    // (e.g., وو could be a typo, and short roots need protection)
+    if (remainingLength < 2) {
+      return null;
+    }
+
+    return {
+      conjunction: createToken(
+        char,
+        'conjunction',
+        createPosition(pos, nextPos),
+        normalized
+      ),
+    };
   }
 
   /**

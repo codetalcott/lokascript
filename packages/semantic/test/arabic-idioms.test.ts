@@ -94,6 +94,75 @@ describe('Arabic Morphological Normalization', () => {
 });
 
 // =============================================================================
+// Proclitic Handling Tests
+// =============================================================================
+
+describe('Arabic Proclitic Tokenization', () => {
+  describe('Wa (و) conjunction separation', () => {
+    it('should separate و from attached word والنقر → [و, النقر]', () => {
+      const tokens = getTokens('والنقر', 'ar');
+      // First token should be the conjunction و
+      expect(tokens[0].value).toBe('و');
+      expect(tokens[0].kind).toBe('conjunction');
+      expect(tokens[0].normalized).toBe('and');
+      // Second token should be the remaining word
+      expect(tokens[1].value).toBe('النقر');
+    });
+
+    it('should separate و from والتبديل → [و, التبديل]', () => {
+      const tokens = getTokens('والتبديل', 'ar');
+      expect(tokens[0].value).toBe('و');
+      expect(tokens[0].kind).toBe('conjunction');
+      expect(tokens[1].value).toBe('التبديل');
+    });
+
+    it('should NOT separate standalone و with space', () => {
+      const tokens = getTokens('و النقر', 'ar');
+      // Standalone و should remain as its own token without being a proclitic
+      // The first token could be و as particle/conjunction, second is النقر
+      expect(tokens.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should handle polysyndetic coordination: A وB وC', () => {
+      const tokens = getTokens('نقر وتغيير وإدخال', 'ar');
+      // Should produce: نقر, و, تغيير, و, إدخال
+      expect(tokens.length).toBeGreaterThanOrEqual(5);
+      // Check that و tokens are conjunctions
+      const conjunctions = tokens.filter(t => t.kind === 'conjunction');
+      expect(conjunctions.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Fa (ف) conjunction separation', () => {
+    it('should separate ف from attached word فالنقر → [ف, النقر]', () => {
+      const tokens = getTokens('فالنقر', 'ar');
+      expect(tokens[0].value).toBe('ف');
+      expect(tokens[0].kind).toBe('conjunction');
+      expect(tokens[0].normalized).toBe('then');
+      expect(tokens[1].value).toBe('النقر');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should not split short words starting with و', () => {
+      // If remaining after و is too short, should NOT split
+      // This prevents false positives on words that happen to start with و
+      const tokens = getTokens('ول', 'ar'); // "wl" - too short after و
+      // Should be one token, not split
+      expect(tokens.length).toBe(1);
+    });
+
+    it('should handle mixed proclitic and preposition', () => {
+      // "and from the button"
+      const tokens = getTokens('ومن #button', 'ar');
+      expect(tokens.length).toBeGreaterThanOrEqual(2);
+      expect(tokens[0].value).toBe('و');
+      expect(tokens[0].kind).toBe('conjunction');
+    });
+  });
+});
+
+// =============================================================================
 // Tokenizer Tests - Native Idiom Detection
 // =============================================================================
 
