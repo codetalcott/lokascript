@@ -144,6 +144,52 @@ const toggleJapaneseLocation: LanguagePattern = {
   },
 };
 
+/**
+ * Japanese compact: ".activeを切り替え" (no spaces, more natural)
+ * Accepts attached particles without whitespace, which is common in natural Japanese.
+ * Note: The を particle is attached to the verb, not separated.
+ */
+const toggleJapaneseCompact: LanguagePattern = {
+  id: 'toggle-ja-compact',
+  language: 'ja',
+  command: 'toggle',
+  priority: 93,
+  template: {
+    format: '{patient}を切り替え',
+    tokens: [
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: 'を切り替え', alternatives: ['を切り替える', 'をトグル'] },
+    ],
+  },
+  extraction: {
+    patient: { position: 0 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
+/**
+ * Japanese verb-ending: ".active 切り替える" (dictionary form verb ending)
+ * Common when the verb is at sentence end with explicit る ending.
+ */
+const toggleJapaneseVerbEnding: LanguagePattern = {
+  id: 'toggle-ja-verb-ending',
+  language: 'ja',
+  command: 'toggle',
+  priority: 88,
+  template: {
+    format: '{patient} を 切り替える',
+    tokens: [
+      { type: 'role', role: 'patient' },
+      { type: 'literal', value: 'を' },
+      { type: 'literal', value: '切り替える', alternatives: ['トグルする'] },
+    ],
+  },
+  extraction: {
+    patient: { position: 0 },
+    destination: { default: { type: 'reference', value: 'me' } },
+  },
+};
+
 // =============================================================================
 // Arabic Patterns (VSO)
 // =============================================================================
@@ -523,10 +569,12 @@ export const togglePatterns: LanguagePattern[] = [
   // English
   toggleEnglishFull,
   toggleEnglishSimple,
-  // Japanese
+  // Japanese - standard and native idiom patterns
   toggleJapaneseFull,
   toggleJapaneseSimple,
   toggleJapaneseLocation,
+  toggleJapaneseCompact,
+  toggleJapaneseVerbEnding,
   // Arabic
   toggleArabicFull,
   toggleArabicSimple,

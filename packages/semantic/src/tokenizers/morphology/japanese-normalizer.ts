@@ -28,6 +28,15 @@ import { noChange, normalized } from './types';
  * Ordered by length (longest first) to ensure greedy matching.
  */
 const JAPANESE_SUFFIX_RULES: readonly SuffixRule[] = [
+  // Conditional forms - very common for event handlers (longest first)
+  // したら/すると/すれば are する verb conditionals
+  { pattern: 'したら', confidence: 0.88, conjugationType: 'conditional-tara', minStemLength: 2 },
+  { pattern: 'すると', confidence: 0.88, conjugationType: 'conditional-to', minStemLength: 2 },
+  { pattern: 'すれば', confidence: 0.85, conjugationType: 'conditional-ba', minStemLength: 2 },
+  // たら/れば are regular verb conditionals
+  { pattern: 'たら', confidence: 0.85, conjugationType: 'conditional-tara', minStemLength: 2 },
+  { pattern: 'れば', confidence: 0.82, conjugationType: 'conditional-ba', minStemLength: 2 },
+
   // Compound forms (longest first)
   { pattern: 'ていました', confidence: 0.82, conjugationType: 'past', minStemLength: 2 },
   { pattern: 'ています', confidence: 0.85, conjugationType: 'progressive', minStemLength: 2 },
@@ -71,10 +80,17 @@ const JAPANESE_SUFFIX_RULES: readonly SuffixRule[] = [
 /**
  * Special する verb patterns.
  * する verbs are formed by noun + する, very common in Japanese.
+ * Order by length (longest first) for greedy matching.
  */
 const SURU_PATTERNS: readonly { pattern: string; confidence: number; conjugationType: ConjugationType }[] = [
+  // Conditional forms (most important for native idioms)
+  { pattern: 'したら', confidence: 0.88, conjugationType: 'conditional-tara' },
+  { pattern: 'すると', confidence: 0.88, conjugationType: 'conditional-to' },
+  { pattern: 'すれば', confidence: 0.85, conjugationType: 'conditional-ba' },
+  // Progressive forms
   { pattern: 'しています', confidence: 0.85, conjugationType: 'progressive' },
   { pattern: 'している', confidence: 0.85, conjugationType: 'progressive' },
+  // Other forms
   { pattern: 'しました', confidence: 0.85, conjugationType: 'past' },
   { pattern: 'します', confidence: 0.85, conjugationType: 'polite' },
   { pattern: 'しない', confidence: 0.82, conjugationType: 'negative' },

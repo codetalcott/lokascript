@@ -220,6 +220,23 @@ const JAPANESE_KEYWORDS: Map<string, string> = new Map([
   ['イニット', 'init'],
   ['振る舞い', 'behavior'],
   ['ビヘイビア', 'behavior'],
+  // Attached particle forms (native idioms - particle + verb without space)
+  ['を切り替え', 'toggle'],
+  ['を切り替える', 'toggle'],
+  ['をトグル', 'toggle'],
+  ['を増加', 'increment'],
+  ['を増やす', 'increment'],
+  ['を減少', 'decrement'],
+  ['を減らす', 'decrement'],
+  ['を追加', 'add'],
+  ['を削除', 'remove'],
+  ['を表示', 'show'],
+  ['を隠す', 'hide'],
+  ['を非表示', 'hide'],
+  // Conditional event forms (native idioms)
+  ['したら', 'on'], // conditional marker as event keyword
+  ['すると', 'on'],
+  ['時に', 'on'], // temporal suffix
   // Modifiers
   ['へ', 'into'],
   ['前に', 'before'],

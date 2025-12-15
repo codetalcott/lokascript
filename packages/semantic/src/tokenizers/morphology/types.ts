@@ -65,6 +65,10 @@ export type ConjugationType =
   | 'negative'
   | 'potential'
   | 'volitional'
+  // Japanese conditional forms
+  | 'conditional-tara' // たら/したら - if/when (completed action)
+  | 'conditional-to'   // と/すると - when (habitual/expected)
+  | 'conditional-ba'   // ば/すれば - if (hypothetical)
   // Korean-specific
   | 'connective' // 하고, 해서 etc.
   // Spanish-specific

@@ -148,6 +148,82 @@ const eventJapaneseWhen: LanguagePattern = {
   },
 };
 
+/**
+ * Japanese: "クリックしたら {body...}"
+ * Native conditional form using したら (if/when X happens)
+ * This is the most natural form for event handlers in Japanese.
+ *
+ * したら = conditional form of する (to do)
+ * クリックしたら = "if/when clicked"
+ */
+const eventJapaneseConditionalTara: LanguagePattern = {
+  id: 'event-ja-conditional-tara',
+  language: 'ja',
+  command: 'on',
+  priority: 105, // Higher than standard (100) - prefer native idiom
+  template: {
+    format: '{event}したら {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'したら', alternatives: ['すると', 'すれば'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Japanese: "クリック時に {body...}"
+ * Temporal suffix form using 時に (at the time of)
+ * Common in technical/formal writing.
+ *
+ * 時に (toki ni) = at the time of
+ */
+const eventJapaneseTemporalSuffix: LanguagePattern = {
+  id: 'event-ja-temporal-suffix',
+  language: 'ja',
+  command: 'on',
+  priority: 102, // Slightly higher than standard
+  template: {
+    format: '{event}時に {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '時に', alternatives: ['時'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Japanese: "#button から クリックしたら {body...}"
+ * Conditional form with source filter.
+ */
+const eventJapaneseConditionalWithSource: LanguagePattern = {
+  id: 'event-ja-conditional-source',
+  language: 'ja',
+  command: 'on',
+  priority: 115, // Highest - most specific
+  template: {
+    format: '{source} から {event}したら {body}',
+    tokens: [
+      { type: 'role', role: 'source' },
+      { type: 'literal', value: 'から', alternatives: ['の'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'したら', alternatives: ['すると'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    source: { position: 0 },
+    event: { marker: 'から', markerAlternatives: ['の'] },
+  },
+};
+
 // =============================================================================
 // Arabic Patterns (VSO)
 // =============================================================================
@@ -392,7 +468,10 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   // English
   eventEnglishStandard,
   eventEnglishWithSource,
-  // Japanese
+  // Japanese - native idiom patterns first (higher priority)
+  eventJapaneseConditionalWithSource,
+  eventJapaneseConditionalTara,
+  eventJapaneseTemporalSuffix,
   eventJapaneseStandard,
   eventJapaneseWithSource,
   eventJapaneseWhen,
