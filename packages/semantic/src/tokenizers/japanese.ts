@@ -220,6 +220,13 @@ const JAPANESE_KEYWORDS: Map<string, string> = new Map([
   ['イニット', 'init'],
   ['振る舞い', 'behavior'],
   ['ビヘイビア', 'behavior'],
+  ['インストール', 'install'],
+  ['インストールする', 'install'],
+  ['設置', 'install'],
+  ['測定', 'measure'],
+  ['測定する', 'measure'],
+  ['計測', 'measure'],
+  ['イベント', 'event'],
   // Attached particle forms (native idioms - particle + verb without space)
   ['を切り替え', 'toggle'],
   ['を切り替える', 'toggle'],

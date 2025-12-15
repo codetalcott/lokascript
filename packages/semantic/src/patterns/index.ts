@@ -17,6 +17,7 @@ import { eventHandlerPatterns, getEventHandlerPatternsForLanguage, eventNameTran
 // Import generator for new commands
 import {
   generatePatternsForCommand,
+  toggleSchema,
   addSchema,
   removeSchema,
   showSchema,
@@ -372,6 +373,10 @@ const unlessEnglish: LanguagePattern = {
  * These don't have hand-crafted patterns, so we generate them.
  */
 const generatedPatterns: LanguagePattern[] = [
+  // Tier 0: Toggle (generated for languages without hand-crafted patterns)
+  // Hand-crafted patterns exist for: en, ja, ar, es, ko, zh, tr
+  // Generated patterns fill gap for: pt, fr, de, id, qu, sw
+  ...generatePatternsForCommand(toggleSchema),
   // Tier 1: Core commands
   ...generatePatternsForCommand(addSchema),
   ...generatePatternsForCommand(removeSchema),

@@ -45,7 +45,7 @@ const ENGLISH_KEYWORDS = new Set([
   // Commands - Navigation
   'go',
   // Commands - Async
-  'wait', 'fetch', 'settle',
+  'wait', 'fetch', 'settle', 'install', 'measure',
   // Commands - Control flow
   'if', 'else', 'repeat', 'for', 'while', 'continue', 'halt', 'throw', 'call', 'return',
   // Commands - Advanced

@@ -35,6 +35,102 @@ if (result.canParse) {
 }
 ```
 
+## English Native Idioms
+
+HyperFixi accepts multiple beginner-friendly English forms to make hyperscript easier to learn and more readable.
+
+### Event Handler Alternatives
+
+| Form | Example | Notes |
+|------|---------|-------|
+| Standard | `on click toggle .active` | Original hyperscript |
+| When (temporal) | `when clicked toggle .active` | **Recommended** - most intuitive |
+| When (with source) | `when clicked from #button toggle .active` | With element filter |
+| Upon (formal) | `upon clicking toggle .active` | Formal/technical style |
+| If (conditional) | `if clicked toggle .active` | Conditional framing |
+
+```typescript
+// All parse to equivalent event handler nodes:
+parse('on click toggle .active', 'en')
+parse('when clicked toggle .active', 'en')      // Native idiom
+parse('upon clicking toggle .active', 'en')     // Formal alternative
+parse('if clicked toggle .active', 'en')        // Conditional style
+```
+
+### Command Synonyms
+
+Alternative verbs that map to standard hyperscript commands:
+
+| Synonym | Maps To | Example |
+|---------|---------|---------|
+| `flip` | `toggle` | `flip .active` |
+| `switch` | `toggle` | `switch .visible on #panel` |
+| `increase` | `increment` | `increase #counter` |
+| `decrease` | `decrement` | `decrease #counter` |
+| `display` | `show` | `display #tooltip` |
+| `reveal` | `show` | `reveal #modal` |
+| `conceal` | `hide` | `conceal #dropdown` |
+
+```typescript
+// These are equivalent:
+parse('toggle .active', 'en')
+parse('flip .active', 'en')
+parse('switch .active', 'en')
+```
+
+### Natural Articles
+
+Optional articles make code read more like natural English:
+
+| Natural Form | Equivalent To |
+|--------------|---------------|
+| `toggle the .active` | `toggle .active` |
+| `show the #tooltip` | `show #tooltip` |
+| `add the .visible class` | `add .visible` |
+| `toggle the active class` | `toggle .active` |
+
+```typescript
+// All equivalent:
+parse('toggle .active', 'en')
+parse('toggle the .active', 'en')
+parse('toggle the active class', 'en')
+```
+
+### Temporal Expressions
+
+Natural delay syntax as alternatives to `wait`:
+
+| Natural Form | Equivalent To |
+|--------------|---------------|
+| `in 2s` | `wait 2s` |
+| `in 500ms` | `wait 500ms` |
+| `after 2s` | `wait 2s` |
+
+```typescript
+// These parse as wait commands:
+parse('in 2s', 'en')        // action: 'wait', duration: '2s'
+parse('after 500ms', 'en')  // action: 'wait', duration: '500ms'
+```
+
+### British Spelling
+
+Common British spellings are automatically normalized:
+
+| British | American (normalized) |
+|---------|----------------------|
+| `colour` | `color` |
+| `grey` | `gray` |
+| `centre` | `center` |
+| `behaviour` | `behavior` |
+| `initialise` | `initialize` |
+| `favourite` | `favorite` |
+
+```typescript
+// Both work identically:
+parse('set colour to red', 'en')
+parse('set color to red', 'en')
+```
+
 ## Japanese Native Idioms
 
 HyperFixi accepts multiple natural Japanese forms, following Nadeshiko's approach of "accepting multiple orthodox native Japanese expressions."
@@ -340,7 +436,8 @@ The parser handles Portuguese verb conjugations automatically:
 - Multiple natural phrasings accepted (conditional, temporal, compact forms)
 - Native speaker reviewed patterns
 - Comprehensive morphological normalization
-- Dedicated idiom test suites (400+ tests per language)
+- Dedicated idiom test suites (50-400+ tests per language)
+- English: Event alternatives (`when`, `upon`, `if`), command synonyms, natural articles, British spelling
 
 ### Tier 2: Full Grammar Support (ar, tr, de, fr, pt)
 

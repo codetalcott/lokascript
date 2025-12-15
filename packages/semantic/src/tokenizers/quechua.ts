@@ -79,7 +79,8 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
   ['qillqay', 'clone'],
   ["t'inkuy", 'swap'],
   ['tinkuy', 'swap'],
-  ['tikray', 'morph'],
+  // Note: tikray maps to toggle (lines 61-62), use different words for morph
+  ['tukuchiy', 'morph'],  // "to transform completely"
   // Commands - Variable operations
   ['churay', 'set'],
   ['kamaykuy', 'set'],
@@ -93,7 +94,8 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
   ['qawachiy', 'show'],
   ['pakay', 'hide'],
   ['pakakuy', 'hide'],
-  ['tikray', 'transition'],
+  // Note: tikray maps to toggle (lines 61-62), use different words for transition
+  ['muyuy', 'transition'],  // "to move smoothly"
   ['kuyuchiy', 'transition'],
   // Commands - Events
   ['chaypim', 'on'],
@@ -135,6 +137,9 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
   ['qallariy', 'default'],
   ['qallarichiy', 'init'],
   ['ruwana', 'behavior'],
+  ['tupuy', 'measure'],
+  ['ruwakuq', 'event'],
+  ['-manta', 'from'],
   // Modifiers
   ['ukuman', 'into'],
   ['ñawpaq', 'before'],

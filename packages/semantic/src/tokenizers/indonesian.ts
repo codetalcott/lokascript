@@ -162,6 +162,11 @@ const INDONESIAN_KEYWORDS: Map<string, string> = new Map([
   ['inisialisasi', 'init'],
   ['mulai', 'init'],
   ['perilaku', 'behavior'],
+  ['pasang', 'install'],
+  ['ukur', 'measure'],
+  ['sampai', 'until'],
+  ['peristiwa', 'event'],
+  ['dari', 'from'],
   // Modifiers
   ['ke dalam', 'into'],
   ['sebelum', 'before'],

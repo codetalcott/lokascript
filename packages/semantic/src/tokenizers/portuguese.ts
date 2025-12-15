@@ -152,6 +152,11 @@ const PORTUGUESE_KEYWORDS: Map<string, string> = new Map([
   ['iniciar', 'init'],
   ['inicializar', 'init'],
   ['comportamento', 'behavior'],
+  ['instalar', 'install'],
+  ['medir', 'measure'],
+  ['até', 'until'],
+  ['ate', 'until'],
+  ['evento', 'event'],
   // Modifiers
   ['dentro de', 'into'],
   ['antes', 'before'],

@@ -156,13 +156,13 @@ export function roundTrip(
  *
  * @param input Hyperscript input
  * @param sourceLanguage Source language (or 'explicit')
- * @param targetLanguages List of target language codes (defaults to all supported: en, ja, ar, es)
+ * @param targetLanguages List of target language codes (defaults to all 13 supported languages)
  * @returns Object mapping language codes to translations
  */
 export function getAllTranslations(
   input: string,
   sourceLanguage: string,
-  targetLanguages: string[] = ['en', 'ja', 'ar', 'es']
+  targetLanguages: string[] = ['en', 'ja', 'ar', 'es', 'ko', 'zh', 'tr', 'pt', 'fr', 'de', 'id', 'qu', 'sw']
 ): Record<string, string> {
   const result: Record<string, string> = {};
 

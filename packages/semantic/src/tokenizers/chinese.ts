@@ -179,6 +179,11 @@ const CHINESE_KEYWORDS: Map<string, string> = new Map([
   ['初始', 'init'],
   ['行为', 'behavior'],
   ['动作', 'behavior'],
+  ['安装', 'install'],
+  ['测量', 'measure'],
+  ['直到', 'until'],
+  ['事件', 'event'],
+  ['从', 'from'],
   // Modifiers
   ['到里面', 'into'],
   ['进入', 'into'],   // profile primary

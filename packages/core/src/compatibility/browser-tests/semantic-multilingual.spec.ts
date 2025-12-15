@@ -145,18 +145,20 @@ test.describe('Semantic Multilingual Parser', () => {
   // =============================================================================
 
   test.describe('Korean Parsing (SOV)', () => {
-    test('parses "토글 .active"', async ({ page }) => {
+    // Note: Korean uses SOV word order with particles
+    // ".active 를 토글" = "toggle .active" (Object-marker Verb)
+    test('parses ".active 를 토글" (SOV with object marker)', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
-        return S.canParse('토글 .active', 'ko');
+        return S.canParse('.active 를 토글', 'ko');
       });
       expect(result).toBe(true);
     });
 
-    test('parses ".active 를 토글"', async ({ page }) => {
+    test('parses ".active 을 토글" (alternate object marker)', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
-        return S.canParse('.active 를 토글', 'ko');
+        return S.canParse('.active 을 토글', 'ko');
       });
       expect(result).toBe(true);
     });
@@ -271,18 +273,21 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Quechua Parsing (SOV)', () => {
-    test('parses "tikray .active"', async ({ page }) => {
+    // Note: Quechua uses SOV word order with case suffixes
+    // ".active -ta tikray" = "toggle .active" (Object-accusative Verb)
+    // -ta marks accusative (direct object)
+    test('parses ".active -ta tikray" (SOV with accusative suffix)', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
-        return S.canParse('tikray .active', 'qu');
+        return S.canParse('.active -ta tikray', 'qu');
       });
       expect(result).toBe(true);
     });
 
-    test('parses ".active tikray"', async ({ page }) => {
+    test('parses ".active -ta t\'ikray" (with glottal stop)', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
-        return S.canParse('.active tikray', 'qu');
+        return S.canParse(".active -ta t'ikray", 'qu');
       });
       expect(result).toBe(true);
     });

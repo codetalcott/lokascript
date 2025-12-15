@@ -204,6 +204,14 @@ const TURKISH_KEYWORDS: Map<string, string> = new Map([
   ['basla', 'init'],       // without diacritics
   ['davranış', 'behavior'],
   ['davranis', 'behavior'], // without diacritics
+  ['yükle', 'install'],
+  ['yukle', 'install'],    // without diacritics
+  ['ölç', 'measure'],
+  ['olc', 'measure'],      // without diacritics
+  ['kadar', 'until'],
+  ['olay', 'event'],
+  ['-den', 'from'],
+  ['-dan', 'from'],
   // Modifiers
   ['içine', 'into'],
   ['icine', 'into'],       // without diacritics

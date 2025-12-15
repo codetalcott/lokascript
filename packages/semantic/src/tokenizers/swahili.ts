@@ -152,6 +152,10 @@ const SWAHILI_KEYWORDS: Map<string, string> = new Map([
   ['anzisha', 'init'],
   ['anza', 'init'],
   ['tabia', 'behavior'],
+  ['pima', 'measure'],
+  ['hadi', 'until'],
+  ['tukio', 'event'],
+  ['kutoka', 'from'],
   // Modifiers
   ['ndani', 'into'],
   ['kabla', 'before'],

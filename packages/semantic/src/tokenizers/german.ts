@@ -167,6 +167,11 @@ const GERMAN_KEYWORDS: Map<string, string> = new Map([
   ['standard', 'default'],
   ['initialisieren', 'init'],
   ['verhalten', 'behavior'],
+  ['installieren', 'install'],
+  ['messen', 'measure'],
+  ['bis', 'until'],
+  ['Ereignis', 'event'],
+  ['ereignis', 'event'],
   // Modifiers
   ['hinein', 'into'],
   ['vor', 'before'],

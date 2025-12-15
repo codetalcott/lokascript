@@ -157,6 +157,12 @@ const FRENCH_KEYWORDS: Map<string, string> = new Map([
   ['defaut', 'default'],
   ['initialiser', 'init'],
   ['comportement', 'behavior'],
+  ['installer', 'install'],
+  ['mesurer', 'measure'],
+  ["jusqu'à", 'until'],
+  ['jusqua', 'until'],
+  ['événement', 'event'],
+  ['evenement', 'event'],
   // Modifiers
   ['dans', 'into'],
   ['avant', 'before'],

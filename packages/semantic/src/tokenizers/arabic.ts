@@ -200,6 +200,12 @@ const ARABIC_KEYWORDS: Map<string, string> = new Map([
   ['تهيئة', 'init'],
   ['بدء', 'init'],
   ['سلوك', 'behavior'],
+  ['تثبيت', 'install'],
+  ['ثبّت', 'install'],
+  ['قياس', 'measure'],
+  ['قس', 'measure'],
+  ['حتى', 'until'],
+  ['حدث', 'event'],
   // Modifiers
   ['في', 'into'],
   ['إلى', 'into'],

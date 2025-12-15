@@ -175,6 +175,12 @@ const KOREAN_KEYWORDS: Map<string, string> = new Map([
   ['기본값', 'default'],
   ['초기화', 'init'],
   ['동작', 'behavior'],
+  ['설치', 'install'],
+  ['설치하다', 'install'],
+  ['측정', 'measure'],
+  ['측정하다', 'measure'],
+  ['이벤트', 'event'],
+  ['에서', 'from'],
   // Modifiers
   ['으로', 'into'],
   ['전에', 'before'],
