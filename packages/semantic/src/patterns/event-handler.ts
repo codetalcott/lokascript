@@ -754,6 +754,169 @@ const eventSpanishWhen: LanguagePattern = {
 };
 
 // =============================================================================
+// Portuguese Patterns (SVO)
+// =============================================================================
+
+/**
+ * Portuguese: "quando clique {body...}"
+ * Standard temporal form using quando (when)
+ *
+ * quando = when (temporal conjunction)
+ * Most natural form in Portuguese for event handlers
+ */
+const eventPortugueseQuando: LanguagePattern = {
+  id: 'event-pt-quando',
+  language: 'pt',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: 'quando {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'quando' },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Portuguese: "ao clicar {body...}"
+ * Native idiom using ao + infinitive construction
+ *
+ * ao = a + o (contraction) = upon/when
+ * Very natural Portuguese form: "ao clicar" = "upon clicking" / "when clicking"
+ * This is more idiomatic than "quando clique" in many contexts
+ */
+const eventPortugueseAo: LanguagePattern = {
+  id: 'event-pt-ao',
+  language: 'pt',
+  command: 'on',
+  priority: 105, // Higher priority - native idiom
+  template: {
+    format: 'ao {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'ao', alternatives: ['à'] },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Portuguese: "em clique {body...}"
+ * Preposition-based form using em (on/in)
+ *
+ * em = on, in (preposition)
+ * no = em + o (contraction)
+ * Similar to English "on click"
+ */
+const eventPortugueseEm: LanguagePattern = {
+  id: 'event-pt-em',
+  language: 'pt',
+  command: 'on',
+  priority: 95,
+  template: {
+    format: 'em {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'em', alternatives: ['no', 'na'] },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Portuguese: "se clicar {body...}"
+ * Conditional form using se (if)
+ *
+ * se = if (conditional conjunction)
+ * Used for hypothetical event handling
+ */
+const eventPortugueseSe: LanguagePattern = {
+  id: 'event-pt-se',
+  language: 'pt',
+  command: 'on',
+  priority: 90,
+  template: {
+    format: 'se {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'se' },
+      { type: 'role', role: 'event' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Portuguese: "ao clicar em #button {body...}"
+ * Native idiom with source filter
+ *
+ * ao = upon/when (contraction)
+ * em = on/in (preposition marking source)
+ * de = from (alternative)
+ */
+const eventPortugueseAoWithSource: LanguagePattern = {
+  id: 'event-pt-ao-source',
+  language: 'pt',
+  command: 'on',
+  priority: 115, // Higher priority - more specific
+  template: {
+    format: 'ao {event} em {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'ao', alternatives: ['à'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'em', alternatives: ['de', 'no', 'na'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'em', markerAlternatives: ['de', 'no', 'na'] },
+  },
+};
+
+/**
+ * Portuguese: "quando clique de #button {body...}"
+ * Temporal form with source filter
+ *
+ * de = from
+ * vindo de = coming from (more formal)
+ */
+const eventPortugueseQuandoWithSource: LanguagePattern = {
+  id: 'event-pt-quando-source',
+  language: 'pt',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: 'quando {event} de {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'quando' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'de', alternatives: ['em', 'no', 'na'] },
+      { type: 'role', role: 'source' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'de', markerAlternatives: ['em', 'no', 'na'] },
+  },
+};
+
+// =============================================================================
 // Event Name Translations
 // =============================================================================
 
@@ -848,6 +1011,33 @@ export const eventNameTranslations: Record<string, Record<string, string>> = {
     'yükleme': 'load',
     'kaydırma': 'scroll',
   },
+  // Portuguese event names → English
+  pt: {
+    'clique': 'click',
+    'clicar': 'click',
+    'click': 'click',
+    'entrada': 'input',
+    'inserir': 'input',
+    'mudança': 'change',
+    'mudanca': 'change',
+    'alterar': 'change',
+    'envio': 'submit',
+    'enviar': 'submit',
+    'tecla baixo': 'keydown',
+    'tecla cima': 'keyup',
+    'pressionar tecla': 'keydown',
+    'soltar tecla': 'keyup',
+    'mouse sobre': 'mouseover',
+    'mouse fora': 'mouseout',
+    'foco': 'focus',
+    'focar': 'focus',
+    'desfoque': 'blur',
+    'desfocar': 'blur',
+    'carregar': 'load',
+    'carregamento': 'load',
+    'rolagem': 'scroll',
+    'rolar': 'scroll',
+  },
 };
 
 /**
@@ -900,6 +1090,13 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   eventSpanishStandard,
   eventSpanishWithSource,
   eventSpanishWhen,
+  // Portuguese - native idiom patterns first (higher priority)
+  eventPortugueseAoWithSource,
+  eventPortugueseQuandoWithSource,
+  eventPortugueseAo,
+  eventPortugueseQuando,
+  eventPortugueseEm,
+  eventPortugueseSe,
 ];
 
 /**

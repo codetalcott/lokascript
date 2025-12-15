@@ -41,3 +41,8 @@ export {
   TurkishMorphologicalNormalizer,
   turkishMorphologicalNormalizer,
 } from './turkish-normalizer';
+
+export {
+  PortugueseMorphologicalNormalizer,
+  portugueseMorphologicalNormalizer,
+} from './portuguese-normalizer';
