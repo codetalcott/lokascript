@@ -71,6 +71,9 @@ export type ConjugationType =
   | 'conditional-ba'   // ば/すれば - if (hypothetical)
   // Korean-specific
   | 'connective' // 하고, 해서 etc.
+  | 'conditional-myeon'  // -(으)면 - if/when (general conditional)
+  | 'temporal-ttae'      // -(으)ㄹ 때 - when (at the time of)
+  | 'causal-nikka'       // -(으)니까 - because/since
   // Spanish-specific
   | 'reflexive'
   | 'reflexive-imperative'

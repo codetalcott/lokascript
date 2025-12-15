@@ -225,6 +225,141 @@ const eventJapaneseConditionalWithSource: LanguagePattern = {
 };
 
 // =============================================================================
+// Korean Patterns (SOV)
+// =============================================================================
+
+/**
+ * Korean: "클릭하면 {body...}"
+ * Native conditional form using -하면 (if/when X happens)
+ * This is the most natural form for event handlers in Korean.
+ *
+ * -하면 = conditional form of 하다 (to do)
+ * 클릭하면 = "if/when clicked"
+ */
+const eventKoreanConditionalMyeon: LanguagePattern = {
+  id: 'event-ko-conditional-myeon',
+  language: 'ko',
+  command: 'on',
+  priority: 105, // Higher than standard - prefer native idiom
+  template: {
+    format: '{event}하면 {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '하면', alternatives: ['으면', '면'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Korean: "클릭할때 {body...}" or "클릭할 때 {body...}"
+ * Temporal form using -ㄹ 때 (when/at the time of)
+ * Common in both casual and formal Korean.
+ *
+ * -ㄹ 때 / -을 때 = "when (something happens)"
+ */
+const eventKoreanTemporalTtae: LanguagePattern = {
+  id: 'event-ko-temporal-ttae',
+  language: 'ko',
+  command: 'on',
+  priority: 102, // Slightly higher than standard
+  template: {
+    format: '{event}할때 {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '할때', alternatives: ['할 때', '을때', '을 때'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Korean: "클릭 에 {body...}"
+ *
+ * NOTE: This pattern is DISABLED because 에 (at/to) is too ambiguous.
+ * It conflicts with destination markers in commands like 'set', 'prepend', 'trigger'.
+ * Korean users should use native conditional forms instead:
+ * - 클릭하면 (if clicked) - most natural
+ * - 클릭할때 (when clicking) - temporal
+ *
+ * The pattern is kept here for documentation but not exported.
+ */
+// const eventKoreanStandard: LanguagePattern = {
+//   id: 'event-ko-standard',
+//   language: 'ko',
+//   command: 'on',
+//   priority: 90,
+//   template: {
+//     format: '{event} 에 {body}',
+//     tokens: [
+//       { type: 'role', role: 'event' },
+//       { type: 'literal', value: '에', alternatives: ['에서'] },
+//     ],
+//   },
+//   extraction: {
+//     event: { position: 0 },
+//   },
+// };
+
+/**
+ * Korean: "#button 에서 클릭하면 {body...}"
+ * Conditional form with source filter.
+ *
+ * 에서 (eseo) = from, at (source/location particle)
+ */
+const eventKoreanConditionalWithSource: LanguagePattern = {
+  id: 'event-ko-conditional-source',
+  language: 'ko',
+  command: 'on',
+  priority: 115, // Highest - most specific
+  template: {
+    format: '{source} 에서 {event}하면 {body}',
+    tokens: [
+      { type: 'role', role: 'source' },
+      { type: 'literal', value: '에서' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '하면', alternatives: ['으면'] },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    source: { position: 0 },
+    event: { marker: '에서' },
+  },
+};
+
+/**
+ * Korean: "#button 에서 클릭 에 {body...}"
+ * Standard event handler with source filter.
+ */
+const eventKoreanWithSource: LanguagePattern = {
+  id: 'event-ko-source',
+  language: 'ko',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: '{source} 에서 {event} 에 {body}',
+    tokens: [
+      { type: 'role', role: 'source' },
+      { type: 'literal', value: '에서' },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: '에' },
+      // Body captured as remaining tokens
+    ],
+  },
+  extraction: {
+    source: { position: 0 },
+    event: { marker: '에서' },
+  },
+};
+
+// =============================================================================
 // Arabic Patterns (VSO)
 // =============================================================================
 
@@ -397,6 +532,21 @@ const eventSpanishWhen: LanguagePattern = {
  * Used by tokenizers to normalize event names to English.
  */
 export const eventNameTranslations: Record<string, Record<string, string>> = {
+  // Korean event names → English
+  ko: {
+    '클릭': 'click',
+    '입력': 'input',
+    '변경': 'change',
+    '제출': 'submit',
+    '키다운': 'keydown',
+    '키업': 'keyup',
+    '마우스오버': 'mouseover',
+    '마우스아웃': 'mouseout',
+    '포커스': 'focus',
+    '블러': 'blur',
+    '로드': 'load',
+    '스크롤': 'scroll',
+  },
   // Japanese event names → English
   ja: {
     'クリック': 'click',
@@ -475,6 +625,12 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   eventJapaneseStandard,
   eventJapaneseWithSource,
   eventJapaneseWhen,
+  // Korean - native idiom patterns (conditional forms preferred over ambiguous 에)
+  eventKoreanConditionalWithSource,
+  eventKoreanConditionalMyeon,
+  eventKoreanTemporalTtae,
+  eventKoreanWithSource,
+  // Note: eventKoreanStandard disabled - 에 is ambiguous (event vs destination)
   // Arabic
   eventArabicStandard,
   eventArabicWithSource,

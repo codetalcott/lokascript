@@ -86,8 +86,17 @@ import {
   isLanguageSupported,
   englishTokenizer,
   japaneseTokenizer,
+  koreanTokenizer,
   arabicTokenizer,
   spanishTokenizer,
+  turkishTokenizer,
+  chineseTokenizer,
+  portugueseTokenizer,
+  frenchTokenizer,
+  germanTokenizer,
+  indonesianTokenizer,
+  quechuaTokenizer,
+  swahiliTokenizer,
 } from './tokenizers';
 
 import type { LanguageToken } from './types';
@@ -108,10 +117,20 @@ export function tokenize(input: string, language: string): LanguageToken[] {
 export {
   getTokenizer,
   isLanguageSupported,
+  // All 13 language tokenizers
   englishTokenizer,
   japaneseTokenizer,
+  koreanTokenizer,
   arabicTokenizer,
   spanishTokenizer,
+  turkishTokenizer,
+  chineseTokenizer,
+  portugueseTokenizer,
+  frenchTokenizer,
+  germanTokenizer,
+  indonesianTokenizer,
+  quechuaTokenizer,
+  swahiliTokenizer,
 };
 
 // =============================================================================

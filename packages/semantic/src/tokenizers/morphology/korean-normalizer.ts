@@ -49,6 +49,18 @@ function containsKorean(word: string): boolean {
  * Ordered by length (longest first) to ensure greedy matching.
  */
 const KOREAN_SUFFIX_RULES: readonly SuffixRule[] = [
+  // Conditional forms - most natural for event handlers (longest first)
+  // These are critical for native Korean idioms like "클릭하면 증가"
+  { pattern: '하니까', confidence: 0.85, conjugationType: 'causal-nikka', minStemLength: 1 },
+  { pattern: '할때', confidence: 0.88, conjugationType: 'temporal-ttae', minStemLength: 1 },
+  { pattern: '할 때', confidence: 0.88, conjugationType: 'temporal-ttae', minStemLength: 1 },
+  { pattern: '을때', confidence: 0.85, conjugationType: 'temporal-ttae', minStemLength: 2 },
+  { pattern: '을 때', confidence: 0.85, conjugationType: 'temporal-ttae', minStemLength: 2 },
+  { pattern: '하면', confidence: 0.88, conjugationType: 'conditional-myeon', minStemLength: 1 },
+  { pattern: '으면', confidence: 0.85, conjugationType: 'conditional-myeon', minStemLength: 2 },
+  { pattern: '니까', confidence: 0.82, conjugationType: 'causal-nikka', minStemLength: 2 },
+  { pattern: '면', confidence: 0.80, conjugationType: 'conditional-myeon', minStemLength: 2 },
+
   // Formal polite forms (longest first)
   { pattern: '하였습니다', confidence: 0.85, conjugationType: 'past', minStemLength: 1 },
   { pattern: '했습니다', confidence: 0.85, conjugationType: 'past', minStemLength: 1 },
@@ -104,6 +116,13 @@ const KOREAN_SUFFIX_RULES: readonly SuffixRule[] = [
  * e.g., 토글 + 하다 = 토글하다 (to toggle)
  */
 const HADA_PATTERNS: readonly { pattern: string; confidence: number; conjugationType: ConjugationType }[] = [
+  // Conditional forms - most natural for event handlers (highest priority)
+  // 클릭하면 → 클릭 (if clicked)
+  { pattern: '하니까', confidence: 0.88, conjugationType: 'causal-nikka' },
+  { pattern: '할때', confidence: 0.88, conjugationType: 'temporal-ttae' },
+  { pattern: '할 때', confidence: 0.88, conjugationType: 'temporal-ttae' },
+  { pattern: '하면', confidence: 0.88, conjugationType: 'conditional-myeon' },
+
   // Formal
   { pattern: '하였습니다', confidence: 0.85, conjugationType: 'past' },
   { pattern: '했습니다', confidence: 0.85, conjugationType: 'past' },

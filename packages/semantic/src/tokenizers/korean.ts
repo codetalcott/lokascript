@@ -132,10 +132,20 @@ const KOREAN_KEYWORDS: Map<string, string> = new Map([
   ['표시', 'show'],
   ['숨기다', 'hide'],
   ['전환', 'transition'],
-  // Commands - Events
+  // Commands - Events (standard markers)
   ['에', 'on'],
   ['시', 'on'],
   ['때', 'on'],
+  // Conditional event markers (native idioms - parallel to Japanese したら)
+  ['하면', 'on'],      // conditional marker (if/when)
+  ['으면', 'on'],      // conditional marker (vowel harmony variant)
+  ['면', 'on'],        // bare conditional suffix
+  ['할때', 'on'],      // temporal marker (when it happens)
+  ['할 때', 'on'],     // temporal marker with space
+  ['을때', 'on'],      // temporal marker (vowel harmony variant)
+  ['을 때', 'on'],     // temporal marker with space
+  ['하니까', 'on'],    // causal marker (because/since)
+  ['니까', 'on'],      // bare causal suffix
   ['트리거', 'trigger'],
   ['보내다', 'send'],
   // Commands - DOM focus
@@ -213,6 +223,30 @@ const KOREAN_KEYWORDS: Map<string, string> = new Map([
   // Values
   ['참', 'true'],
   ['거짓', 'false'],
+  // Attached particle forms (native idioms - particle + verb without space)
+  // These allow natural writing like ".active를토글" or "#count를증가"
+  // Object particle 를 (after vowel)
+  ['를토글', 'toggle'],
+  ['를전환', 'toggle'],
+  ['를추가', 'add'],
+  ['를제거', 'remove'],
+  ['를삭제', 'remove'],
+  ['를증가', 'increment'],
+  ['를감소', 'decrement'],
+  ['를표시', 'show'],
+  ['를숨기다', 'hide'],
+  ['를설정', 'set'],
+  // Object particle 을 (after consonant)
+  ['을토글', 'toggle'],
+  ['을전환', 'toggle'],
+  ['을추가', 'add'],
+  ['을제거', 'remove'],
+  ['을삭제', 'remove'],
+  ['을증가', 'increment'],
+  ['을감소', 'decrement'],
+  ['을표시', 'show'],
+  ['을숨기다', 'hide'],
+  ['을설정', 'set'],
 ]);
 
 // =============================================================================

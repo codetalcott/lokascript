@@ -10,7 +10,7 @@ npm install @hyperfixi/i18n
 
 ## Features
 
-- **🌍 Multi-language Support**: Built-in dictionaries for 8 languages (English, Spanish, French, German, Japanese, Korean, Chinese, Arabic)
+- **🌍 Multi-language Support**: Built-in dictionaries for 13 languages (English, Spanish, French, German, Japanese, Korean, Chinese, Arabic, Turkish, Portuguese, Indonesian, Quechua, Swahili)
 - **🔄 Runtime Locale Switching**: Dynamic language switching in browser environments with automatic detection
 - **⚡ SSR Integration**: Server-side rendering with locale detection, SEO optimization, and hydration support
 - **📊 Pluralization**: CLDR-compliant pluralization rules for complex languages (Russian, Arabic, etc.)
@@ -92,16 +92,21 @@ module.exports = {
 
 ## Supported Languages
 
-| Language | Code | Status | Features | Example |
-|----------|------|--------|----------|---------|
-| English | `en` | ✅ Complete | Base language | `on click toggle .active` |
-| Spanish | `es` | ✅ Complete | Full dictionary, pluralization | `en clic alternar .activo` |
-| French | `fr` | ✅ Complete | Full dictionary, pluralization | `sur clic basculer .actif` |
-| German | `de` | ✅ Complete | Full dictionary, pluralization | `bei klick umschalten .aktiv` |
-| Japanese | `ja` | ✅ Complete | Full dictionary | `で クリック 切り替え .active` |
-| Korean | `ko` | ✅ Complete | Full dictionary | `클릭 토글 .active` |
-| Chinese | `zh` | ✅ Complete | Full dictionary | `当 点击 切换 .active` |
-| Arabic | `ar` | ✅ Complete | Full dictionary, RTL support, pluralization | `على نقر بدل .active` |
+| Language | Code | Status | Word Order | Features |
+|----------|------|--------|------------|----------|
+| English | `en` | ✅ Complete | SVO | Base language |
+| Spanish | `es` | ✅ Complete | SVO | Pluralization, morphological normalization |
+| French | `fr` | ✅ Complete | SVO | Pluralization |
+| German | `de` | ✅ Complete | V2 | Pluralization |
+| Japanese | `ja` | ✅ Complete | SOV | Native idioms, morphological normalization |
+| Korean | `ko` | ✅ Complete | SOV | Native idioms, morphological normalization |
+| Chinese | `zh` | ✅ Complete | SVO | Particle handling |
+| Arabic | `ar` | ✅ Complete | VSO | RTL support, morphological normalization |
+| Turkish | `tr` | ✅ Complete | SOV | Agglutinative morphology, vowel harmony |
+| Portuguese | `pt` | ✅ Complete | SVO | Full dictionary |
+| Indonesian | `id` | ✅ Complete | SVO | Agglutinative support |
+| Quechua | `qu` | ✅ Complete | SOV | Agglutinative support |
+| Swahili | `sw` | ✅ Complete | SVO | Noun class system |
 
 ## API Reference
 
