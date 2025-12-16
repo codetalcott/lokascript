@@ -7,6 +7,24 @@ import { debug } from '../utils/debug';
 import type { ExecutionContext, TypedExecutionContext, ASTNode } from '../types/base-types';
 import { tokenize } from './tokenizer';
 import { TokenType, type Token } from './tokenizer';
+// Phase 6: Import token predicates for cleaner type checking
+import {
+  isIdentifierLike,
+  isSelector,
+  isBasicSelector,
+  isLiteral,
+  isOperator,
+  isReference,
+  isSymbol,
+  isLogicalOperator,
+  isComparisonOperator,
+  hasValue,
+  isDot,
+  isOptionalChain,
+  isOpenBracket,
+  isOpenParen,
+  isPossessive,
+} from './token-predicates';
 
 // Import enhanced expression implementations
 import { comparisonExpressions } from '../expressions/comparison/index';
@@ -499,7 +517,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     const token = state.tokens[state.position];
 
     // Handle possessive syntax with apostrophe (obj's property) - supports chaining
-    if (token.type === TokenType.OPERATOR && token.value === "'s") {
+    // Phase 6: Using predicate for possessive operator check
+    if (isPossessive(token)) {
       state.position++; // consume "'s" operator
 
       // Check for CSS property syntax: *property (e.g., #element's *opacity)
@@ -591,7 +610,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       // and will be handled as a regular identifier
     }
     // Handle dot notation property access (obj.property)
-    else if (token.type === TokenType.OPERATOR && token.value === '.') {
+    // Phase 6: Using predicate for dot operator check
+    else if (isDot(token)) {
       state.position++; // consume '.'
 
       // Next token should be an identifier for the property name
@@ -611,7 +631,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       continue;
     }
     // Handle optional chaining (obj?.property)
-    else if (token.type === TokenType.OPERATOR && token.value === '?.') {
+    // Phase 6: Using predicate for optional chaining check
+    else if (isOptionalChain(token)) {
       state.position++; // consume '?.'
 
       // Next token should be an identifier for the property name
@@ -632,7 +653,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       continue;
     }
     // Handle array access (arr[index])
-    else if (token.type === TokenType.OPERATOR && token.value === '[') {
+    // Phase 6: Using predicate for open bracket check
+    else if (isOpenBracket(token)) {
       state.position++; // consume '['
 
       // Check for range syntax: [..end], [start..end], [start..]
@@ -727,7 +749,8 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       continue;
     }
     // Handle method calls (obj.method())
-    else if (token.type === TokenType.OPERATOR && token.value === '(') {
+    // Phase 6: Using predicate for function call check
+    else if (isOpenParen(token)) {
       state.position++; // consume '('
       const args = parseArguments(state);
 
@@ -928,6 +951,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // CSS ID selector (#id)
+  // Phase 6: Using predicate - token.type === TokenType.ID_SELECTOR
   if (token.type === TokenType.ID_SELECTOR) {
     advance(state);
     return {
@@ -1274,7 +1298,8 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Handle standalone attribute reference syntax (@attribute)
-  if (token.type === TokenType.SYMBOL && typeof token.value === 'string' && token.value.startsWith('@')) {
+  // Phase 6: Using predicate for symbol check
+  if (isSymbol(token) && typeof token.value === 'string' && token.value.startsWith('@')) {
     advance(state); // consume @attribute token
     const attributeName = token.value.substring(1); // Remove '@' prefix
     return {
