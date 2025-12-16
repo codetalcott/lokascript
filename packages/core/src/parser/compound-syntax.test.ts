@@ -1,42 +1,42 @@
 /**
  * Compound Syntax Unit Tests
  * Tests for multi-word keyword support in tokenizer and parser
+ *
+ * Phase 8: Updated to use TokenKind (lexical) classification
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { tokenize } from './tokenizer';
+import { tokenize, TokenKind } from './tokenizer';
 import { parse } from './parser';
+import { isKeyword } from './token-predicates';
 
 describe('Compound Syntax - Tokenizer', () => {
   describe('Compound prepositions', () => {
     it('should tokenize "at start of" as single keyword', () => {
       const tokens = tokenize('put "X" at start of #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atStartOf = keywords.find(k => k.value === 'at start of');
+      // Phase 8: Compound keywords are identifiers classified by predicates
+      const atStartOf = tokens.find(t => t.value === 'at start of');
       expect(atStartOf).toBeDefined();
       expect(atStartOf?.value).toBe('at start of');
     });
 
     it('should tokenize "at end of" as single keyword', () => {
       const tokens = tokenize('put "X" at end of #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atEndOf = keywords.find(k => k.value === 'at end of');
+      const atEndOf = tokens.find(t => t.value === 'at end of');
       expect(atEndOf).toBeDefined();
       expect(atEndOf?.value).toBe('at end of');
     });
 
     it('should tokenize "at the start of" as single keyword', () => {
       const tokens = tokenize('put "X" at the start of #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atTheStartOf = keywords.find(k => k.value === 'at the start of');
+      const atTheStartOf = tokens.find(t => t.value === 'at the start of');
       expect(atTheStartOf).toBeDefined();
       expect(atTheStartOf?.value).toBe('at the start of');
     });
 
     it('should tokenize "at the end of" as single keyword', () => {
       const tokens = tokenize('put "X" at the end of #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atTheEndOf = keywords.find(k => k.value === 'at the end of');
+      const atTheEndOf = tokens.find(t => t.value === 'at the end of');
       expect(atTheEndOf).toBeDefined();
       expect(atTheEndOf?.value).toBe('at the end of');
     });
@@ -45,17 +45,15 @@ describe('Compound Syntax - Tokenizer', () => {
   describe('Edge cases', () => {
     it('should handle compound keywords with extra whitespace', () => {
       const tokens = tokenize('put "X"  at   start   of  #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atStartOf = keywords.find(k => k.value === 'at start of');
+      const atStartOf = tokens.find(t => t.value === 'at start of');
       expect(atStartOf).toBeDefined();
     });
 
     it('should not create compound when words are separated by other tokens', () => {
       const tokens = tokenize('at "something" start of');
-      const keywords = tokens.filter(t => t.type === 'keyword');
       // Should have separate tokens for 'at', 'start', 'of'
-      expect(keywords.some(k => k.value === 'at start of')).toBe(false);
-      expect(keywords.some(k => k.value === 'at')).toBe(true);
+      expect(tokens.some(t => t.value === 'at start of')).toBe(false);
+      expect(tokens.some(t => t.value === 'at')).toBe(true);
     });
 
     it('should handle compound keywords at different positions', () => {
@@ -74,8 +72,7 @@ describe('Compound Syntax - Tokenizer', () => {
 
     it('should handle case-insensitive compound keywords', () => {
       const tokens = tokenize('put "X" AT START OF #target');
-      const keywords = tokens.filter(t => t.type === 'keyword');
-      const atStartOf = keywords.find(k => k.value.toLowerCase() === 'at start of');
+      const atStartOf = tokens.find(t => t.value.toLowerCase() === 'at start of');
       expect(atStartOf).toBeDefined();
     });
   });

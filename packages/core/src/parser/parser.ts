@@ -3308,9 +3308,60 @@ export class Parser {
     return resolved === value;
   }
 
+  /**
+   * Phase 8: checkTokenType now maps TokenType to predicate-based checks
+   * This maintains backward compatibility with consume() calls that use TokenType
+   */
   private checkTokenType(tokenType: TokenType): boolean {
     if (this.isAtEnd()) return false;
-    return this.peek().type === tokenType;
+    const token = this.peek();
+
+    // Map TokenType to corresponding predicate check
+    switch (tokenType) {
+      case TokenType.IDENTIFIER:
+        return isIdentifierLike(token);
+      case TokenType.EVENT:
+        return isEvent(token);
+      case TokenType.COMMAND:
+        return isCommand(token);
+      case TokenType.KEYWORD:
+        return isKeywordPredicate(token);
+      case TokenType.CONTEXT_VAR:
+        return isContextVar(token);
+      case TokenType.STRING:
+        return isString(token);
+      case TokenType.NUMBER:
+        return isNumber(token);
+      case TokenType.BOOLEAN:
+        return isBoolean(token);
+      case TokenType.TEMPLATE_LITERAL:
+        return isTemplateLiteral(token);
+      case TokenType.OPERATOR:
+        return isOperator(token);
+      case TokenType.LOGICAL_OPERATOR:
+        return isLogicalOperator(token);
+      case TokenType.COMPARISON_OPERATOR:
+        return isComparisonOperator(token);
+      case TokenType.ID_SELECTOR:
+        return isIdSelector(token);
+      case TokenType.CLASS_SELECTOR:
+        return isClassSelector(token);
+      case TokenType.QUERY_REFERENCE:
+        return isQueryReference(token);
+      case TokenType.CSS_SELECTOR:
+        return isCssSelector(token);
+      case TokenType.TIME_EXPRESSION:
+        return isTimeExpression(token);
+      case TokenType.SYMBOL:
+        return isSymbol(token);
+      case TokenType.COMMENT:
+        return isComment(token);
+      case TokenType.GLOBAL_VAR:
+        return isGlobalVar(token);
+      default:
+        // Fallback to kind check for any unmapped types
+        return token.kind === tokenType;
+    }
   }
 
   // ============================================================================
@@ -3517,8 +3568,8 @@ export class Parser {
 
   private peek(): Token {
     if (this.isAtEnd()) {
-      // Return a dummy EOF token
-      return { type: 'EOF', value: '', start: 0, end: 0, line: 1, column: 1 };
+      // Return a dummy EOF token - Phase 8: Use kind instead of type
+      return { kind: 'unknown', value: '', start: 0, end: 0, line: 1, column: 1 };
     }
     return this.tokens[this.current];
   }

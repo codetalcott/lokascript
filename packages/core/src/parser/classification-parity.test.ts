@@ -1,15 +1,16 @@
 /**
  * Classification Parity Tests
  *
- * Validates that the new predicate-based classification produces
- * identical results to direct TokenType checks.
+ * NOTE: Phase 8 - These tests are SKIPPED because they validate parity
+ * with the old TokenType semantic classification system which has been
+ * removed in favor of TokenKind lexical classification + predicates.
  *
- * This ensures backward compatibility during the migration from
- * TokenType enum checks to predicate functions.
+ * The predicate functionality is now tested in token-predicates.test.ts
+ * and the main tokenizer.test.ts files.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { tokenize, TokenType } from './tokenizer';
+import { tokenize, TokenKind } from './tokenizer';
 import { TokenPredicates } from './token-predicates';
 import type { Token } from '../types/core';
 
@@ -80,7 +81,8 @@ const TEST_EXPRESSIONS = [
   'if list does not contain item',
 ];
 
-describe('Classification Parity Tests', () => {
+// Phase 8: Skip all parity tests - TokenType semantic classification removed
+describe.skip('Classification Parity Tests', () => {
   describe('Token-by-Token Parity', () => {
     TEST_EXPRESSIONS.forEach((expr, index) => {
       it(`should maintain parity for: "${expr.slice(0, 50)}${expr.length > 50 ? '...' : ''}"`, () => {
@@ -356,7 +358,8 @@ import {
   isDeferredClassificationEnabled,
 } from './tokenizer';
 
-describe('Deferred Classification Mode', () => {
+// Phase 8: Skip deferred classification tests - TokenType semantic classification removed
+describe.skip('Deferred Classification Mode', () => {
   beforeEach(() => {
     // Ensure clean state
     disableDeferredClassification();

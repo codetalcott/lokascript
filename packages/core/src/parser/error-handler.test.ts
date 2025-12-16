@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { EnhancedErrorHandler, ErrorContext } from './error-handler';
-import { tokenize, TokenType } from './tokenizer';
+import { tokenize, TokenKind } from './tokenizer';
 
 // Skipped: Error handler features are stubbed/unimplemented (low priority)
 describe.skip('Enhanced Error Handler', () => {
@@ -168,7 +168,7 @@ describe.skip('Enhanced Error Handler', () => {
       // Create synthetic tokens to simulate unclosed string
       const syntheticTokens = [
         {
-          type: TokenType.STRING,
+          kind: TokenKind.STRING, // Phase 8: Use kind instead of type
           value: '"unclosed',
           start: 0,
           end: 9,

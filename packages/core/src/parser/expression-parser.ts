@@ -1252,13 +1252,13 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   if (isKeyword(token) && token.value === 'new') {
     debug.parse('EXPR: Found constructor call, parsing...', {
       token: token.value,
-      type: token.type,
+      kind: token.kind,
     });
     const newToken = advance(state); // consume 'new'
     const constructorToken = peek(state);
     debug.parse('EXPR: Constructor token:', {
       token: constructorToken?.value,
-      type: constructorToken?.type,
+      kind: constructorToken?.kind,
     });
 
     if (!constructorToken || !isIdentifier(constructorToken)) {
@@ -1306,7 +1306,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       'EXPR: Previous tokens:',
       state.tokens
         .slice(Math.max(0, state.position - 3), state.position)
-        .map(t => ({ type: t.type, value: t.value }))
+        .map(t => ({ kind: t.kind, value: t.value }))
     );
   }
 
@@ -1325,15 +1325,15 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
 
   // Enhanced debugging for other unexpected tokens
   debug.parse('EXPR: Unexpected token debug info:', {
-    token: { type: token.type, value: token.value },
+    token: { kind: token.kind, value: token.value },
     position: state.position,
     allTokens: state.tokens
       .slice(Math.max(0, state.position - 2), state.position + 3)
-      .map(t => ({ type: t.type, value: t.value })),
+      .map(t => ({ kind: t.kind, value: t.value })),
   });
 
   throw new ExpressionParseError(
-    `Unexpected token: ${token.value} (type: ${token.type}) at position ${state.position}`,
+    `Unexpected token: ${token.value} (kind: ${token.kind}) at position ${state.position}`,
     state.position
   );
 }

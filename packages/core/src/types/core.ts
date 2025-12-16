@@ -235,10 +235,8 @@ export interface FeatureImplementation {
 // ============================================================================
 
 export interface Token {
-  /** Semantic token type (TokenType) - what the token MEANS in hyperscript */
-  type: string;
-  /** Lexical token kind (TokenKind) - what the token IS structurally (Phase 5) */
-  kind?: string;
+  /** Lexical token kind (TokenKind) - what the token IS structurally */
+  kind: string;
   value: string;
   start: number;
   end: number;

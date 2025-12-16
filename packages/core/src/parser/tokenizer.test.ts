@@ -1,10 +1,21 @@
 /**
  * Test suite for Hyperscript Tokenizer
  * Tests lexical analysis and token classification
+ *
+ * Phase 8: Updated to use TokenKind (lexical) + predicates (semantic)
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Tokenizer, createTokenizer, tokenize, TokenType, type Token } from './tokenizer';
+import { Tokenizer, createTokenizer, tokenize, TokenKind, type Token } from './tokenizer';
+import {
+  isCommand,
+  isKeyword,
+  isEvent,
+  isContextVar,
+  isLogicalOperator,
+  isComparisonOperator,
+  isSymbol,
+} from './token-predicates';
 
 describe('Hyperscript Tokenizer', () => {
   let tokenizer: Tokenizer;
@@ -19,30 +30,41 @@ describe('Hyperscript Tokenizer', () => {
       const tokens = tokenize(input);
 
       expect(tokens).toHaveLength(4);
+      // 'on' - lexically an identifier, semantically a keyword
       expect(tokens[0]).toMatchObject({
-        type: TokenType.KEYWORD,
+        kind: TokenKind.IDENTIFIER,
         value: 'on',
         start: 0,
         end: 2,
       });
+      expect(isKeyword(tokens[0])).toBe(true);
+
+      // 'click' - lexically an identifier, semantically an event
       expect(tokens[1]).toMatchObject({
-        type: TokenType.EVENT,
+        kind: TokenKind.IDENTIFIER,
         value: 'click',
         start: 3,
         end: 8,
       });
+      expect(isEvent(tokens[1])).toBe(true);
+
+      // 'hide' - lexically an identifier, semantically a command
       expect(tokens[2]).toMatchObject({
-        type: TokenType.COMMAND,
+        kind: TokenKind.IDENTIFIER,
         value: 'hide',
         start: 9,
         end: 13,
       });
+      expect(isCommand(tokens[2])).toBe(true);
+
+      // 'me' - lexically an identifier, semantically a context var
       expect(tokens[3]).toMatchObject({
-        type: TokenType.CONTEXT_VAR,
+        kind: TokenKind.IDENTIFIER,
         value: 'me',
         start: 14,
         end: 16,
       });
+      expect(isContextVar(tokens[3])).toBe(true);
     });
 
     it('should tokenize string literals', () => {
@@ -51,7 +73,7 @@ describe('Hyperscript Tokenizer', () => {
 
       expect(tokens).toHaveLength(4);
       expect(tokens[3]).toMatchObject({
-        type: TokenType.STRING,
+        kind: TokenKind.STRING,
         value: '"hello world"',
         start: 9,
         end: 22,
@@ -64,7 +86,7 @@ describe('Hyperscript Tokenizer', () => {
 
       expect(tokens).toHaveLength(2);
       expect(tokens[1]).toMatchObject({
-        type: TokenType.TIME_EXPRESSION,
+        kind: TokenKind.TIME,
         value: '500ms',
         start: 5,
         end: 10,
@@ -77,7 +99,7 @@ describe('Hyperscript Tokenizer', () => {
 
       expect(tokens).toHaveLength(4);
       expect(tokens[3]).toMatchObject({
-        type: TokenType.ID_SELECTOR,
+        kind: TokenKind.SELECTOR,
         value: '#target',
         start: 16,
         end: 23,
@@ -93,19 +115,23 @@ describe('Hyperscript Tokenizer', () => {
       // Current tokenizer design tokenizes each element separately for parser flexibility
       expect(tokens).toHaveLength(4);
       expect(tokens[0]).toMatchObject({
-        type: TokenType.COMMAND,
+        kind: TokenKind.IDENTIFIER,
         value: 'get',
       });
+      expect(isCommand(tokens[0])).toBe(true);
+
       expect(tokens[1]).toMatchObject({
-        type: TokenType.CONTEXT_VAR,
+        kind: TokenKind.IDENTIFIER,
         value: 'my',
       });
+      expect(isContextVar(tokens[1])).toBe(true);
+
       expect(tokens[2]).toMatchObject({
-        type: TokenType.OPERATOR,
+        kind: TokenKind.OPERATOR,
         value: '.',
       });
       expect(tokens[3]).toMatchObject({
-        type: TokenType.IDENTIFIER,
+        kind: TokenKind.IDENTIFIER,
         value: 'value',
       });
     });
@@ -129,7 +155,7 @@ describe('Hyperscript Tokenizer', () => {
       const tokens = tokenize(input);
 
       const parenTokens = tokens.filter(
-        t => t.type === TokenType.OPERATOR && (t.value === '(' || t.value === ')')
+        t => t.kind === TokenKind.OPERATOR && (t.value === '(' || t.value === ')')
       );
       expect(parenTokens).toHaveLength(4);
     });
@@ -142,11 +168,12 @@ describe('Hyperscript Tokenizer', () => {
 
       expect(tokens).toHaveLength(4);
       expect(tokens[2]).toMatchObject({
-        type: TokenType.COMPARISON_OPERATOR,
+        kind: TokenKind.OPERATOR,
         value: '>=',
         start: 5,
         end: 7,
       });
+      expect(isComparisonOperator(tokens[2])).toBe(true);
     });
 
     it('should tokenize logical operators', () => {
@@ -156,8 +183,10 @@ describe('Hyperscript Tokenizer', () => {
       const andToken = tokens.find(t => t.value === 'and');
       const orToken = tokens.find(t => t.value === 'or');
 
-      expect(andToken?.type).toBe(TokenType.LOGICAL_OPERATOR);
-      expect(orToken?.type).toBe(TokenType.LOGICAL_OPERATOR);
+      expect(andToken).toBeDefined();
+      expect(orToken).toBeDefined();
+      expect(isLogicalOperator(andToken!)).toBe(true);
+      expect(isLogicalOperator(orToken!)).toBe(true);
     });
 
     it('should handle special symbols', () => {
@@ -165,7 +194,9 @@ describe('Hyperscript Tokenizer', () => {
       const tokens = tokenize(input);
 
       const symbolToken = tokens.find(t => t.value === '@foo');
-      expect(symbolToken?.type).toBe(TokenType.SYMBOL);
+      expect(symbolToken).toBeDefined();
+      expect(symbolToken?.kind).toBe(TokenKind.SYMBOL);
+      expect(isSymbol(symbolToken!)).toBe(true);
     });
   });
 
@@ -177,7 +208,7 @@ describe('Hyperscript Tokenizer', () => {
       // Should still tokenize what it can: set, x, to, "unterminated
       expect(tokens).toHaveLength(4);
       expect(tokens[3]).toMatchObject({
-        type: TokenType.STRING,
+        kind: TokenKind.STRING,
         value: '"unterminated',
         start: 9,
         end: 22,
@@ -221,21 +252,23 @@ describe('Hyperscript Tokenizer', () => {
     });
   });
 
-  describe('Context Classification', () => {
+  describe('Context Classification (via predicates)', () => {
     it('should classify hyperscript keywords correctly', () => {
       // Pure keywords (only in KEYWORDS, not in COMMANDS)
       const pureKeywords = ['on', 'init', 'behavior', 'end', 'def'];
       pureKeywords.forEach(keyword => {
         const tokens = tokenize(keyword);
-        expect(tokens[0].type).toBe(TokenType.KEYWORD);
+        expect(tokens[0].kind).toBe(TokenKind.IDENTIFIER);
+        expect(isKeyword(tokens[0])).toBe(true);
       });
 
       // Dual-purpose tokens that are in both KEYWORDS and COMMANDS
-      // These are classified as COMMAND since COMMANDS is checked before KEYWORDS
+      // These are semantically both keywords AND commands
       const dualPurpose = ['set', 'if', 'repeat'];
       dualPurpose.forEach(token => {
         const tokens = tokenize(token);
-        expect(tokens[0].type).toBe(TokenType.COMMAND);
+        expect(tokens[0].kind).toBe(TokenKind.IDENTIFIER);
+        expect(isCommand(tokens[0])).toBe(true);
       });
     });
 
@@ -244,7 +277,8 @@ describe('Hyperscript Tokenizer', () => {
 
       commands.forEach(command => {
         const tokens = tokenize(command);
-        expect(tokens[0].type).toBe(TokenType.COMMAND);
+        expect(tokens[0].kind).toBe(TokenKind.IDENTIFIER);
+        expect(isCommand(tokens[0])).toBe(true);
       });
     });
 
@@ -253,7 +287,8 @@ describe('Hyperscript Tokenizer', () => {
 
       contextVars.forEach(contextVar => {
         const tokens = tokenize(contextVar);
-        expect(tokens[0].type).toBe(TokenType.CONTEXT_VAR);
+        expect(tokens[0].kind).toBe(TokenKind.IDENTIFIER);
+        expect(isContextVar(tokens[0])).toBe(true);
       });
     });
   });

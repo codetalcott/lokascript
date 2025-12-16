@@ -1,10 +1,12 @@
 /**
  * Token Predicates Tests
  * Validates that predicate functions correctly classify tokens
+ *
+ * Phase 8: Updated to use TokenKind (lexical) classification
  */
 
 import { describe, it, expect } from 'vitest';
-import { tokenize, TokenType } from './tokenizer';
+import { tokenize, TokenKind } from './tokenizer';
 import {
   TokenPredicates,
   isCommand,
@@ -26,131 +28,142 @@ import {
   isCommandTerminator,
   hasValue,
   hasValueIn,
+  isTimeExpression,
+  isSymbol,
+  isString,
+  isNumber,
 } from './token-predicates';
 import type { Token } from '../types/core';
 
-// Helper to create a mock token
-function createToken(type: TokenType, value: string): Token {
-  return { type, value, line: 1, column: 1 };
+// Helper to create a mock token with TokenKind
+function createToken(kind: TokenKind, value: string): Token {
+  return { kind, value, start: 0, end: value.length, line: 1, column: 1 };
 }
 
 describe('Token Predicates', () => {
   describe('Semantic Predicates', () => {
     describe('isCommand', () => {
-      it('should return true for COMMAND token type', () => {
-        const token = createToken(TokenType.COMMAND, 'toggle');
-        expect(isCommand(token)).toBe(true);
-      });
-
       it('should return true for IDENTIFIER that is a command', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'toggle');
+        const token = createToken(TokenKind.IDENTIFIER, 'toggle');
         expect(isCommand(token)).toBe(true);
       });
 
       it('should return false for non-command IDENTIFIER', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'foo');
+        const token = createToken(TokenKind.IDENTIFIER, 'foo');
         expect(isCommand(token)).toBe(false);
       });
 
       it('should be case-insensitive', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'TOGGLE');
+        const token = createToken(TokenKind.IDENTIFIER, 'TOGGLE');
         expect(isCommand(token)).toBe(true);
       });
 
       it('should recognize all common commands', () => {
         const commands = ['add', 'remove', 'toggle', 'put', 'set', 'get', 'log', 'wait', 'fetch'];
         commands.forEach(cmd => {
-          const token = createToken(TokenType.IDENTIFIER, cmd);
+          const token = createToken(TokenKind.IDENTIFIER, cmd);
           expect(isCommand(token)).toBe(true);
         });
+      });
+
+      it('should return false for non-IDENTIFIER kind', () => {
+        const token = createToken(TokenKind.STRING, 'toggle');
+        expect(isCommand(token)).toBe(false);
       });
     });
 
     describe('isKeyword', () => {
-      it('should return true for KEYWORD token type', () => {
-        const token = createToken(TokenType.KEYWORD, 'if');
-        expect(isKeyword(token)).toBe(true);
-      });
-
       it('should return true for IDENTIFIER that is a keyword', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'then');
+        const token = createToken(TokenKind.IDENTIFIER, 'then');
         expect(isKeyword(token)).toBe(true);
       });
 
       it('should recognize common keywords', () => {
         const keywords = ['if', 'else', 'then', 'end', 'on', 'for', 'while', 'until'];
         keywords.forEach(kw => {
-          const token = createToken(TokenType.IDENTIFIER, kw);
+          const token = createToken(TokenKind.IDENTIFIER, kw);
           expect(isKeyword(token)).toBe(true);
         });
+      });
+
+      it('should return false for non-keywords', () => {
+        const token = createToken(TokenKind.IDENTIFIER, 'foo');
+        expect(isKeyword(token)).toBe(false);
       });
     });
 
     describe('isEvent', () => {
-      it('should return true for EVENT token type', () => {
-        const token = createToken(TokenType.EVENT, 'click');
-        expect(isEvent(token)).toBe(true);
-      });
-
       it('should return true for IDENTIFIER that is an event', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'click');
+        const token = createToken(TokenKind.IDENTIFIER, 'click');
         expect(isEvent(token)).toBe(true);
       });
 
       it('should recognize common DOM events', () => {
         const events = ['click', 'mouseenter', 'mouseleave', 'focus', 'blur', 'input', 'change'];
         events.forEach(evt => {
-          const token = createToken(TokenType.IDENTIFIER, evt);
+          const token = createToken(TokenKind.IDENTIFIER, evt);
           expect(isEvent(token)).toBe(true);
         });
+      });
+
+      it('should return false for non-events', () => {
+        const token = createToken(TokenKind.IDENTIFIER, 'foo');
+        expect(isEvent(token)).toBe(false);
       });
     });
 
     describe('isContextVar', () => {
-      it('should return true for CONTEXT_VAR token type', () => {
-        const token = createToken(TokenType.CONTEXT_VAR, 'me');
-        expect(isContextVar(token)).toBe(true);
-      });
-
       it('should return true for IDENTIFIER that is a context var', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'me');
+        const token = createToken(TokenKind.IDENTIFIER, 'me');
         expect(isContextVar(token)).toBe(true);
       });
 
       it('should recognize all context variables', () => {
         const contextVars = ['me', 'it', 'you', 'result', 'my', 'its', 'your'];
         contextVars.forEach(cv => {
-          const token = createToken(TokenType.IDENTIFIER, cv);
+          const token = createToken(TokenKind.IDENTIFIER, cv);
           expect(isContextVar(token)).toBe(true);
         });
+      });
+
+      it('should return false for non-context vars', () => {
+        const token = createToken(TokenKind.IDENTIFIER, 'foo');
+        expect(isContextVar(token)).toBe(false);
       });
     });
 
     describe('isLogicalOperator', () => {
-      it('should return true for LOGICAL_OPERATOR token type', () => {
-        const token = createToken(TokenType.LOGICAL_OPERATOR, 'and');
+      it('should return true for OPERATOR that is logical', () => {
+        const token = createToken(TokenKind.OPERATOR, 'and');
+        expect(isLogicalOperator(token)).toBe(true);
+      });
+
+      it('should return true for IDENTIFIER that is a logical operator', () => {
+        const token = createToken(TokenKind.IDENTIFIER, 'and');
         expect(isLogicalOperator(token)).toBe(true);
       });
 
       it('should recognize logical operators by value', () => {
         const ops = ['and', 'or', 'not', 'no'];
         ops.forEach(op => {
-          const token = createToken(TokenType.IDENTIFIER, op);
-          expect(isLogicalOperator(token)).toBe(true);
+          const tokenOp = createToken(TokenKind.OPERATOR, op);
+          const tokenId = createToken(TokenKind.IDENTIFIER, op);
+          expect(isLogicalOperator(tokenOp)).toBe(true);
+          expect(isLogicalOperator(tokenId)).toBe(true);
         });
       });
     });
 
     describe('isComparisonOperator', () => {
-      it('should return true for COMPARISON_OPERATOR token type', () => {
-        const token = createToken(TokenType.COMPARISON_OPERATOR, 'is');
+      it('should return true for OPERATOR that is comparison', () => {
+        const token = createToken(TokenKind.OPERATOR, '==');
         expect(isComparisonOperator(token)).toBe(true);
       });
 
       it('should recognize comparison operators by value', () => {
         const ops = ['==', '!=', '<', '>', '<=', '>=', 'is', 'contains', 'matches'];
         ops.forEach(op => {
-          const token = createToken(TokenType.OPERATOR, op);
+          const token = createToken(TokenKind.OPERATOR, op);
           expect(isComparisonOperator(token)).toBe(true);
         });
       });
@@ -159,104 +172,92 @@ describe('Token Predicates', () => {
 
   describe('Lexical Predicates', () => {
     describe('isIdentifierLike', () => {
-      it('should return true for IDENTIFIER', () => {
-        expect(isIdentifierLike(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(true);
+      it('should return true for IDENTIFIER kind', () => {
+        expect(isIdentifierLike(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(true);
       });
 
-      it('should return true for CONTEXT_VAR', () => {
-        expect(isIdentifierLike(createToken(TokenType.CONTEXT_VAR, 'me'))).toBe(true);
+      it('should return false for STRING kind', () => {
+        expect(isIdentifierLike(createToken(TokenKind.STRING, '"hello"'))).toBe(false);
       });
 
-      it('should return true for KEYWORD', () => {
-        expect(isIdentifierLike(createToken(TokenType.KEYWORD, 'if'))).toBe(true);
-      });
-
-      it('should return true for COMMAND', () => {
-        expect(isIdentifierLike(createToken(TokenType.COMMAND, 'toggle'))).toBe(true);
-      });
-
-      it('should return true for EVENT', () => {
-        expect(isIdentifierLike(createToken(TokenType.EVENT, 'click'))).toBe(true);
-      });
-
-      it('should return false for STRING', () => {
-        expect(isIdentifierLike(createToken(TokenType.STRING, '"hello"'))).toBe(false);
+      it('should return false for NUMBER kind', () => {
+        expect(isIdentifierLike(createToken(TokenKind.NUMBER, '42'))).toBe(false);
       });
     });
 
     describe('isSelector', () => {
-      it('should return true for ID_SELECTOR', () => {
-        expect(isSelector(createToken(TokenType.ID_SELECTOR, '#myId'))).toBe(true);
+      it('should return true for SELECTOR kind (ID)', () => {
+        expect(isSelector(createToken(TokenKind.SELECTOR, '#myId'))).toBe(true);
       });
 
-      it('should return true for CLASS_SELECTOR', () => {
-        expect(isSelector(createToken(TokenType.CLASS_SELECTOR, '.myClass'))).toBe(true);
+      it('should return true for SELECTOR kind (class)', () => {
+        expect(isSelector(createToken(TokenKind.SELECTOR, '.myClass'))).toBe(true);
       });
 
-      it('should return true for QUERY_REFERENCE', () => {
-        expect(isSelector(createToken(TokenType.QUERY_REFERENCE, '<button/>'))).toBe(true);
+      it('should return true for SELECTOR kind (query reference)', () => {
+        expect(isSelector(createToken(TokenKind.SELECTOR, '<button/>'))).toBe(true);
       });
 
-      it('should return false for IDENTIFIER', () => {
-        expect(isSelector(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(false);
+      it('should return false for IDENTIFIER kind', () => {
+        expect(isSelector(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(false);
       });
     });
 
     describe('isLiteral', () => {
-      it('should return true for STRING', () => {
-        expect(isLiteral(createToken(TokenType.STRING, '"hello"'))).toBe(true);
+      it('should return true for STRING kind', () => {
+        expect(isLiteral(createToken(TokenKind.STRING, '"hello"'))).toBe(true);
       });
 
-      it('should return true for NUMBER', () => {
-        expect(isLiteral(createToken(TokenType.NUMBER, '42'))).toBe(true);
+      it('should return true for NUMBER kind', () => {
+        expect(isLiteral(createToken(TokenKind.NUMBER, '42'))).toBe(true);
       });
 
-      it('should return true for BOOLEAN', () => {
-        expect(isLiteral(createToken(TokenType.BOOLEAN, 'true'))).toBe(true);
+      it('should return true for TEMPLATE kind', () => {
+        expect(isLiteral(createToken(TokenKind.TEMPLATE, '`hello`'))).toBe(true);
       });
 
-      it('should return true for TEMPLATE_LITERAL', () => {
-        expect(isLiteral(createToken(TokenType.TEMPLATE_LITERAL, '`hello`'))).toBe(true);
-      });
-
-      it('should return false for IDENTIFIER', () => {
-        expect(isLiteral(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(false);
+      it('should return false for IDENTIFIER kind', () => {
+        expect(isLiteral(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(false);
       });
     });
 
     describe('isOperator', () => {
-      it('should return true for OPERATOR', () => {
-        expect(isOperator(createToken(TokenType.OPERATOR, '+'))).toBe(true);
+      it('should return true for OPERATOR kind', () => {
+        expect(isOperator(createToken(TokenKind.OPERATOR, '+'))).toBe(true);
       });
 
-      it('should return true for LOGICAL_OPERATOR', () => {
-        expect(isOperator(createToken(TokenType.LOGICAL_OPERATOR, 'and'))).toBe(true);
-      });
-
-      it('should return true for COMPARISON_OPERATOR', () => {
-        expect(isOperator(createToken(TokenType.COMPARISON_OPERATOR, '=='))).toBe(true);
-      });
-
-      it('should return false for IDENTIFIER', () => {
-        expect(isOperator(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(false);
+      it('should return false for IDENTIFIER kind', () => {
+        expect(isOperator(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(false);
       });
     });
 
     describe('isReference', () => {
-      it('should return true for CONTEXT_VAR', () => {
-        expect(isReference(createToken(TokenType.CONTEXT_VAR, 'me'))).toBe(true);
+      it('should return true for IDENTIFIER kind', () => {
+        expect(isReference(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(true);
       });
 
-      it('should return true for GLOBAL_VAR', () => {
-        expect(isReference(createToken(TokenType.GLOBAL_VAR, '$foo'))).toBe(true);
+      it('should return false for STRING kind', () => {
+        expect(isReference(createToken(TokenKind.STRING, '"hello"'))).toBe(false);
+      });
+    });
+
+    describe('isTimeExpression', () => {
+      it('should return true for TIME kind', () => {
+        expect(isTimeExpression(createToken(TokenKind.TIME, '500ms'))).toBe(true);
       });
 
-      it('should return true for IDENTIFIER', () => {
-        expect(isReference(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(true);
+      it('should return false for NUMBER kind', () => {
+        expect(isTimeExpression(createToken(TokenKind.NUMBER, '500'))).toBe(false);
+      });
+    });
+
+    describe('isSymbol', () => {
+      it('should return true for SYMBOL kind', () => {
+        expect(isSymbol(createToken(TokenKind.SYMBOL, '@data-value'))).toBe(true);
       });
 
-      it('should return false for STRING', () => {
-        expect(isReference(createToken(TokenType.STRING, '"hello"'))).toBe(false);
+      it('should return false for IDENTIFIER kind', () => {
+        expect(isSymbol(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(false);
       });
     });
   });
@@ -264,65 +265,65 @@ describe('Token Predicates', () => {
   describe('Value Predicates', () => {
     describe('isPossessive', () => {
       it('should return true for possessive operator', () => {
-        expect(isPossessive(createToken(TokenType.OPERATOR, "'s"))).toBe(true);
+        expect(isPossessive(createToken(TokenKind.OPERATOR, "'s"))).toBe(true);
       });
 
       it('should return false for other operators', () => {
-        expect(isPossessive(createToken(TokenType.OPERATOR, '+'))).toBe(false);
+        expect(isPossessive(createToken(TokenKind.OPERATOR, '+'))).toBe(false);
       });
     });
 
     describe('isDot', () => {
       it('should return true for dot operator', () => {
-        expect(isDot(createToken(TokenType.OPERATOR, '.'))).toBe(true);
+        expect(isDot(createToken(TokenKind.OPERATOR, '.'))).toBe(true);
       });
 
       it('should return false for other operators', () => {
-        expect(isDot(createToken(TokenType.OPERATOR, '+'))).toBe(false);
+        expect(isDot(createToken(TokenKind.OPERATOR, '+'))).toBe(false);
       });
     });
 
     describe('isOpenBracket', () => {
       it('should return true for opening bracket', () => {
-        expect(isOpenBracket(createToken(TokenType.OPERATOR, '['))).toBe(true);
+        expect(isOpenBracket(createToken(TokenKind.OPERATOR, '['))).toBe(true);
       });
 
       it('should return false for closing bracket', () => {
-        expect(isOpenBracket(createToken(TokenType.OPERATOR, ']'))).toBe(false);
+        expect(isOpenBracket(createToken(TokenKind.OPERATOR, ']'))).toBe(false);
       });
     });
 
     describe('isOpenParen', () => {
       it('should return true for opening paren', () => {
-        expect(isOpenParen(createToken(TokenType.OPERATOR, '('))).toBe(true);
+        expect(isOpenParen(createToken(TokenKind.OPERATOR, '('))).toBe(true);
       });
 
       it('should return false for closing paren', () => {
-        expect(isOpenParen(createToken(TokenType.OPERATOR, ')'))).toBe(false);
+        expect(isOpenParen(createToken(TokenKind.OPERATOR, ')'))).toBe(false);
       });
     });
 
     describe('hasValue', () => {
       it('should match exact value case-insensitively', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'Toggle');
+        const token = createToken(TokenKind.IDENTIFIER, 'Toggle');
         expect(hasValue(token, 'toggle')).toBe(true);
         expect(hasValue(token, 'TOGGLE')).toBe(true);
       });
 
       it('should return false for non-matching value', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'toggle');
+        const token = createToken(TokenKind.IDENTIFIER, 'toggle');
         expect(hasValue(token, 'add')).toBe(false);
       });
     });
 
     describe('hasValueIn', () => {
       it('should match any value in list', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'toggle');
+        const token = createToken(TokenKind.IDENTIFIER, 'toggle');
         expect(hasValueIn(token, ['add', 'toggle', 'remove'])).toBe(true);
       });
 
       it('should return false if not in list', () => {
-        const token = createToken(TokenType.IDENTIFIER, 'toggle');
+        const token = createToken(TokenKind.IDENTIFIER, 'toggle');
         expect(hasValueIn(token, ['add', 'remove'])).toBe(false);
       });
     });
@@ -330,34 +331,33 @@ describe('Token Predicates', () => {
 
   describe('Compound Predicates', () => {
     describe('canStartExpression', () => {
-      it('should return true for identifier-like tokens', () => {
-        expect(canStartExpression(createToken(TokenType.IDENTIFIER, 'foo'))).toBe(true);
-        expect(canStartExpression(createToken(TokenType.CONTEXT_VAR, 'me'))).toBe(true);
+      it('should return true for IDENTIFIER kind', () => {
+        expect(canStartExpression(createToken(TokenKind.IDENTIFIER, 'foo'))).toBe(true);
       });
 
-      it('should return true for selectors', () => {
-        expect(canStartExpression(createToken(TokenType.ID_SELECTOR, '#id'))).toBe(true);
-        expect(canStartExpression(createToken(TokenType.CLASS_SELECTOR, '.class'))).toBe(true);
+      it('should return true for SELECTOR kind', () => {
+        expect(canStartExpression(createToken(TokenKind.SELECTOR, '#id'))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.SELECTOR, '.class'))).toBe(true);
       });
 
       it('should return true for literals', () => {
-        expect(canStartExpression(createToken(TokenType.STRING, '"hello"'))).toBe(true);
-        expect(canStartExpression(createToken(TokenType.NUMBER, '42'))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.STRING, '"hello"'))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.NUMBER, '42'))).toBe(true);
       });
 
       it('should return true for opening parens/brackets', () => {
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '('))).toBe(true);
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '['))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '('))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '['))).toBe(true);
       });
 
       it('should return true for unary operators', () => {
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '-'))).toBe(true);
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '!'))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '-'))).toBe(true);
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '!'))).toBe(true);
       });
 
-      it('should return false for binary operators', () => {
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '+'))).toBe(true); // + can be unary
-        expect(canStartExpression(createToken(TokenType.OPERATOR, '*'))).toBe(false);
+      it('should return false for binary-only operators', () => {
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '*'))).toBe(false);
+        expect(canStartExpression(createToken(TokenKind.OPERATOR, '/'))).toBe(false);
       });
     });
 
@@ -365,17 +365,17 @@ describe('Token Predicates', () => {
       it('should return true for terminator keywords', () => {
         const terminators = ['then', 'and', 'else', 'end', 'on'];
         terminators.forEach(term => {
-          const token = createToken(TokenType.KEYWORD, term);
+          const token = createToken(TokenKind.IDENTIFIER, term);
           expect(isCommandTerminator(token)).toBe(true);
         });
       });
 
       it('should be case-insensitive', () => {
-        expect(isCommandTerminator(createToken(TokenType.KEYWORD, 'THEN'))).toBe(true);
+        expect(isCommandTerminator(createToken(TokenKind.IDENTIFIER, 'THEN'))).toBe(true);
       });
 
       it('should return false for non-terminators', () => {
-        expect(isCommandTerminator(createToken(TokenType.KEYWORD, 'if'))).toBe(false);
+        expect(isCommandTerminator(createToken(TokenKind.IDENTIFIER, 'if'))).toBe(false);
       });
     });
   });
@@ -384,17 +384,21 @@ describe('Token Predicates', () => {
     it('should correctly classify tokens from real tokenization', () => {
       const tokens = tokenize('on click toggle .active');
 
-      // 'on' should be keyword
+      // 'on' should be keyword (semantically)
       expect(isKeyword(tokens[0])).toBe(true);
+      expect(tokens[0].kind).toBe(TokenKind.IDENTIFIER);
 
-      // 'click' should be event
+      // 'click' should be event (semantically)
       expect(isEvent(tokens[1])).toBe(true);
+      expect(tokens[1].kind).toBe(TokenKind.IDENTIFIER);
 
-      // 'toggle' should be command
+      // 'toggle' should be command (semantically)
       expect(isCommand(tokens[2])).toBe(true);
+      expect(tokens[2].kind).toBe(TokenKind.IDENTIFIER);
 
-      // '.active' should be selector
+      // '.active' should be selector (lexically)
       expect(isSelector(tokens[3])).toBe(true);
+      expect(tokens[3].kind).toBe(TokenKind.SELECTOR);
     });
 
     it('should classify context variables correctly', () => {
@@ -409,7 +413,22 @@ describe('Token Predicates', () => {
       const tokens = tokenize('set x to 42');
 
       expect(isCommand(tokens[0])).toBe(true); // 'set'
-      expect(isLiteral(tokens[3])).toBe(true); // '42'
+      expect(isNumber(tokens[3])).toBe(true); // '42'
+    });
+
+    it('should classify time expressions correctly', () => {
+      const tokens = tokenize('wait 500ms');
+
+      expect(isCommand(tokens[0])).toBe(true); // 'wait'
+      expect(isTimeExpression(tokens[1])).toBe(true); // '500ms'
+    });
+
+    it('should classify symbols correctly', () => {
+      const tokens = tokenize('get @data-value from #input');
+
+      const symbolToken = tokens.find(t => t.kind === TokenKind.SYMBOL);
+      expect(symbolToken).toBeDefined();
+      expect(isSymbol(symbolToken!)).toBe(true);
     });
   });
 

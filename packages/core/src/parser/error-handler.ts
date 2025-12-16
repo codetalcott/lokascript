@@ -286,7 +286,7 @@ export class ErrorHandler {
       // Create a synthetic EOF token
       const lastToken = this.tokens[this.tokens.length - 1];
       return {
-        type: 'EOF',
+        kind: 'unknown', // Phase 8: Use kind instead of type
         value: '',
         start: lastToken ? lastToken.end : 0,
         end: lastToken ? lastToken.end : 0,

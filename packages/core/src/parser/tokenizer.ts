@@ -560,20 +560,15 @@ function addToken(
     tokenColumn = start - lastNewlinePos;
   }
 
-  // Phase 5: Include kind field when dual output mode is enabled
+  // Phase 8: TokenKind-only output - semantic classification moved to predicates
   const token: import('../types/core').Token = {
-    type: type as string,
+    kind: getTokenKind(type),
     value,
     start: tokenStart,
     end: tokenEnd,
     line: getLineAtPosition(tokenizer, tokenStart),
     column: tokenColumn,
   };
-
-  // Add kind field when dual output is enabled
-  if (EMIT_TOKEN_KIND) {
-    token.kind = getTokenKind(type);
-  }
 
   tokenizer.tokens.push(token);
 }
