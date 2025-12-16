@@ -9,7 +9,7 @@
  */
 
 import type { Token } from '../../types/core';
-import { TokenType } from '../tokenizer';
+import type { TokenKind } from '../tokenizer';
 
 /**
  * TokenStreamState - Represents the current state of token stream navigation
@@ -28,6 +28,9 @@ export interface TokenStreamState {
  *
  * This interface defines the contract for token navigation that will be
  * provided through ParserContext to command parsers.
+ *
+ * Phase 8: Removed TokenType-based methods (checkTokenType, matchTokenType).
+ * Use predicate-based methods (checkIdentifier, matchIdentifier, etc.) instead.
  */
 export interface TokenNavigator {
   /** Consume and return the current token, advancing the position */
@@ -42,14 +45,8 @@ export interface TokenNavigator {
   /** Check if current token matches a value */
   check(value: string): boolean;
 
-  /** Check if current token matches a type */
-  checkTokenType(type: TokenType): boolean;
-
-  /** Match and consume if current token matches any of the given types */
-  match(...types: Array<string | TokenType>): boolean;
-
-  /** Match and consume if current token matches the given token type */
-  matchTokenType(type: TokenType): boolean;
+  /** Match and consume if current token matches any of the given values */
+  match(...values: string[]): boolean;
 
   /** Match and consume if current token is an operator with the given value */
   matchOperator(operator: string): boolean;
@@ -57,8 +54,8 @@ export interface TokenNavigator {
   /** Check if at end of token stream */
   isAtEnd(): boolean;
 
-  /** Consume expected token or add error */
-  consume(expected: string | TokenType, message: string): Token;
+  /** Consume expected token value or add error */
+  consume(expected: string, message: string): Token;
 }
 
 /**
@@ -81,16 +78,16 @@ export function peekMatches(tokens: Token[], current: number, expected: string):
 }
 
 /**
- * Check if next token matches expected type
+ * Check if next token matches expected kind
  *
  * @param tokens - Token array
  * @param current - Current position
- * @param expectedType - Expected token type
- * @returns True if next token matches type
+ * @param expectedKind - Expected token kind
+ * @returns True if next token matches kind
  */
-export function peekMatchesType(tokens: Token[], current: number, expectedType: TokenType): boolean {
+export function peekMatchesKind(tokens: Token[], current: number, expectedKind: TokenKind): boolean {
   if (current >= tokens.length) return false;
-  return tokens[current].type === expectedType;
+  return tokens[current].kind === expectedKind;
 }
 
 /**
@@ -104,9 +101,9 @@ export function peekMatchesType(tokens: Token[], current: number, expectedType: 
 export function peekAhead(tokens: Token[], current: number, offset: number = 1): Token {
   const index = current + offset;
   if (index >= tokens.length) {
-    // Return dummy EOF token
+    // Return dummy EOF token - Phase 8: use kind instead of type
     return {
-      type: 'EOF',
+      kind: 'unknown',
       value: '',
       start: 0,
       end: 0,
@@ -148,8 +145,9 @@ export function remainingTokens(tokens: Token[], current: number): number {
  */
 export function getTokenAt(tokens: Token[], index: number): Token {
   if (index < 0 || index >= tokens.length) {
+    // Phase 8: use kind instead of type
     return {
-      type: 'EOF',
+      kind: 'unknown',
       value: '',
       start: 0,
       end: 0,
@@ -190,16 +188,16 @@ export function findNextToken(tokens: Token[], current: number, value: string): 
 }
 
 /**
- * Find next occurrence of token with specific type
+ * Find next occurrence of token with specific kind
  *
  * @param tokens - Token array
  * @param current - Current position
- * @param type - Token type to find
+ * @param kind - Token kind to find
  * @returns Index of next occurrence, or -1 if not found
  */
-export function findNextTokenType(tokens: Token[], current: number, type: TokenType): number {
+export function findNextTokenKind(tokens: Token[], current: number, kind: TokenKind): number {
   for (let i = current; i < tokens.length; i++) {
-    if (tokens[i].type === type) {
+    if (tokens[i].kind === kind) {
       return i;
     }
   }

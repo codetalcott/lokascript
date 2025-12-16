@@ -4,9 +4,8 @@
  * Handles hyperscript's unique natural language syntax
  */
 
-// Phase 8: TokenType only used in deprecated bridge methods (checkTokenType, matchTokenType)
-// TODO: Remove TokenType import when bridge methods are removed
-import { tokenize, TokenType } from './tokenizer';
+// Phase 8: TokenType removed - parser now uses predicates exclusively
+import { tokenize } from './tokenizer';
 import type {
   Token,
   ASTNode,
@@ -3288,81 +3287,12 @@ export class Parser {
     return false;
   }
 
-  /**
-   * @deprecated Phase 8: Use predicate-based methods (matchIdentifier, etc.) instead
-   * Kept for backward compatibility with ParserContext interface
-   */
-  private matchTokenType(tokenType: TokenType): boolean {
-    if (this.checkTokenType(tokenType)) {
-      this.advance();
-      return true;
-    }
-    return false;
-  }
-
   private check(value: string): boolean {
     if (this.isAtEnd()) return false;
     const tokenValue = this.peek().value;
     // Resolve the token value to English before comparing
     const resolved = this.resolveKeyword(tokenValue);
     return resolved === value;
-  }
-
-  /**
-   * @deprecated Phase 8: Use predicate-based methods (checkIdentifier, etc.) instead
-   * Kept for backward compatibility with ParserContext interface.
-   * Maps TokenType enum to predicate-based checks.
-   */
-  private checkTokenType(tokenType: TokenType): boolean {
-    if (this.isAtEnd()) return false;
-    const token = this.peek();
-
-    // Map TokenType to corresponding predicate check
-    switch (tokenType) {
-      case TokenType.IDENTIFIER:
-        return isIdentifierLike(token);
-      case TokenType.EVENT:
-        return isEvent(token);
-      case TokenType.COMMAND:
-        return isCommand(token);
-      case TokenType.KEYWORD:
-        return isKeywordPredicate(token);
-      case TokenType.CONTEXT_VAR:
-        return isContextVar(token);
-      case TokenType.STRING:
-        return isString(token);
-      case TokenType.NUMBER:
-        return isNumber(token);
-      case TokenType.BOOLEAN:
-        return isBoolean(token);
-      case TokenType.TEMPLATE_LITERAL:
-        return isTemplateLiteral(token);
-      case TokenType.OPERATOR:
-        return isOperator(token);
-      case TokenType.LOGICAL_OPERATOR:
-        return isLogicalOperator(token);
-      case TokenType.COMPARISON_OPERATOR:
-        return isComparisonOperator(token);
-      case TokenType.ID_SELECTOR:
-        return isIdSelector(token);
-      case TokenType.CLASS_SELECTOR:
-        return isClassSelector(token);
-      case TokenType.QUERY_REFERENCE:
-        return isQueryReference(token);
-      case TokenType.CSS_SELECTOR:
-        return isCssSelector(token);
-      case TokenType.TIME_EXPRESSION:
-        return isTimeExpression(token);
-      case TokenType.SYMBOL:
-        return isSymbol(token);
-      case TokenType.COMMENT:
-        return isComment(token);
-      case TokenType.GLOBAL_VAR:
-        return isGlobalVar(token);
-      default:
-        // Fallback to kind check for any unmapped types
-        return token.kind === tokenType;
-    }
   }
 
   // ============================================================================
@@ -3771,13 +3701,12 @@ export class Parser {
       tokens: this.tokens,
       // Note: 'current' is added below via Object.defineProperty for getter/setter
 
-      // Token Navigation Methods (10 methods)
+      // Token Navigation Methods (Phase 8: removed deprecated checkTokenType)
       advance: this.advance.bind(this),
       peek: this.peek.bind(this),
       previous: this.previous.bind(this),
       consume: this.consume.bind(this),
       check: this.check.bind(this),
-      checkTokenType: this.checkTokenType.bind(this),
 
       // Predicate-Based Token Checking (Phase 4)
       checkIdentifierLike: this.checkIdentifierLike.bind(this),
@@ -3791,7 +3720,7 @@ export class Parser {
       checkContextVar: this.checkContextVar.bind(this),
 
       match: this.match.bind(this),
-      matchTokenType: this.matchTokenType.bind(this),
+      // Phase 8: removed deprecated matchTokenType
       matchOperator: this.matchOperator.bind(this),
       isAtEnd: this.isAtEnd.bind(this),
 

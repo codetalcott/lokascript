@@ -37,16 +37,14 @@ describe('ParserContext', () => {
       expect(context.current).toBeDefined();
     });
 
-    it('should expose all 48 required methods', () => {
-      // Token Navigation (10 methods)
+    it('should expose all 46 required methods', () => {
+      // Token Navigation (8 methods - Phase 8: removed checkTokenType, matchTokenType)
       expect(typeof context.advance).toBe('function');
       expect(typeof context.peek).toBe('function');
       expect(typeof context.previous).toBe('function');
       expect(typeof context.consume).toBe('function');
       expect(typeof context.check).toBe('function');
-      expect(typeof context.checkTokenType).toBe('function');
       expect(typeof context.match).toBe('function');
-      expect(typeof context.matchTokenType).toBe('function');
       expect(typeof context.matchOperator).toBe('function');
       expect(typeof context.isAtEnd).toBe('function');
 
