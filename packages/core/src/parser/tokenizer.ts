@@ -4,17 +4,25 @@
  */
 
 import type { Token } from '../types/core';
+import {
+  COMMANDS,
+  CONTEXT_VARS,
+  LOGICAL_OPERATORS,
+  COMPARISON_OPERATORS,
+  DOM_EVENTS,
+  TOKENIZER_KEYWORDS,
+} from './parser-constants';
 
 // Re-export Token for use in other parser files
 export type { Token } from '../types/core';
 
 // Token types based on hyperscript language elements
+// Note: Reduced from 28 to 24 values by removing unused types (FEATURE, PROPERTY_ACCESS, WHITESPACE, NEWLINE)
 export enum TokenType {
   // Language elements
   KEYWORD = 'keyword',
   COMMAND = 'command',
   EXPRESSION = 'expression',
-  FEATURE = 'feature',
 
   // Literals
   STRING = 'string',
@@ -30,7 +38,6 @@ export enum TokenType {
 
   // Context variables
   CONTEXT_VAR = 'context_var',
-  PROPERTY_ACCESS = 'property_access',
   GLOBAL_VAR = 'global_var',
 
   // Events
@@ -48,8 +55,6 @@ export enum TokenType {
   SYMBOL = 'symbol',
 
   // Structural
-  WHITESPACE = 'whitespace',
-  NEWLINE = 'newline',
   COMMENT = 'comment',
 
   // Unknown
@@ -57,210 +62,52 @@ export enum TokenType {
   UNKNOWN = 'unknown',
 }
 
-// Hyperscript language element sets (based on LSP database)
-const KEYWORDS = new Set([
-  'on',
-  'init',
-  'behavior',
-  'def',
-  'if',
-  'else',
-  'unless',
-  'for',
-  'while',
-  'until',
-  'end',
-  'and',
-  'or',
-  'not',
-  'in',
-  'to',
-  'from',
-  'into',
-  'with',
-  'as',
-  'then',
-  'when',
-  'where',
-  'after',
-  'before',
-  'by',
-  'at',
-  'async',
-  'no',
-  // Compound syntax keywords
-  'start',
-  'of',
-  'the',
-  // Constructor keyword
-  'new',
-  // Scope keywords
-  'global',
-  'local',
-  // Additional keywords for English-style operators
-  'equal',
-  'equals',
-  'greater',
-  'less',
-  'than',
-  'really',
-  // Exception handling keywords
-  'catch',
-  'finally',
-  'throw',
-  'return',
-]);
-
-const COMMANDS = new Set([
-  'add',
-  'append',
-  'async',
-  'beep',
-  'break',
-  'call',
-  'continue',
-  'copy',
-  'decrement',
-  'default',
-  'exit',
-  'fetch',
-  'for',
-  'get',
-  'go',
-  'halt',
-  'hide',
-  'if',
-  'increment',
-  'install',
-  'js',
-  'log',
-  'make',
-  'measure',
-  'morph',      // htmx-like: DOM morphing with state preservation
-  'pick',
-  'process',    // htmx-like: process partials
-  'push',       // htmx-like: push url to history
-  'put',
-  'remove',
-  'render',
-  'repeat',
-  'replace',    // htmx-like: replace url in history
-  'return',
-  'send',
-  'set',
-  'settle',
-  'show',
-  'swap',       // htmx-like: DOM swapping with multiple strategies
-  'take',
-  'tell',
-  'throw',
-  'toggle',
-  'transition',
-  'trigger',
-  'unless',
-  'wait',
-]);
-
-const CONTEXT_VARS = new Set(['me', 'it', 'you', 'result', 'my', 'its', 'your']);
-
-const LOGICAL_OPERATORS = new Set(['and', 'or', 'not', 'no']);
-
-const COMPARISON_OPERATORS = new Set([
-  '==',
-  '!=',
-  '===',
-  '!==',
-  '<',
-  '>',
-  '<=',
-  '>=',
-  'is',
-  'is not',
-  'is a',
-  'is an',
-  'is not a',
-  'is not an',
-  'contains',
-  'does not contain',
-  'include',
-  'includes',
-  'does not include',
-  'match',
-  'matches',
-  'exists',
-  'does not exist',
-  'is empty',
-  'is not empty',
-  'is in',
-  'is not in',
-  'equals',
-  'in',
-  // English-style comparison operators
-  'is equal to',
-  'is really equal to',
-  'is not equal to',
-  'is not really equal to',
-  'is greater than',
-  'is less than',
-  'is greater than or equal to',
-  'is less than or equal to',
-  'really equals',
-]);
-
+// Sets are imported from parser-constants.ts (single source of truth)
+// Local aliases for tokenizer-specific sets
+const KEYWORDS = TOKENIZER_KEYWORDS;
 const MATHEMATICAL_OPERATORS = new Set(['+', '-', '*', '/', 'mod']);
-
-// Compound prepositions used in put command and other DOM operations
-// (Currently not used directly, but kept for reference)
-// const COMPOUND_PREPOSITIONS = new Set([
-//   'at start of',
-//   'at end of',
-//   'at the start of',
-//   'at the end of',
-//   'before',
-//   'after',
-//   'into'
-// ]);
-
 const TIME_UNITS = new Set(['ms', 's', 'seconds', 'minutes', 'hours', 'days']);
 
-// Common DOM events
-const DOM_EVENTS = new Set([
-  'click',
-  'dblclick',
-  'mousedown',
-  'mouseup',
-  'mouseover',
-  'mouseout',
-  'mousemove',
-  'mouseenter',
-  'mouseleave',
-  'focus',
-  'blur',
-  'change',
-  'input',
-  'submit',
-  'reset',
-  'select',
-  'load',
-  'unload',
-  'resize',
-  'scroll',
-  'keydown',
-  'keyup',
-  'keypress',
-  'touchstart',
-  'touchend',
-  'touchmove',
-  'touchcancel',
-  'drag',
-  'drop',
-  'dragover',
-  'dragenter',
-  'dragleave',
-  'cut',
-  'copy',
-  'paste',
-]);
+// ============================================================================
+// FEATURE FLAGS - For gradual migration to predicate-based classification
+// ============================================================================
+
+/**
+ * When enabled, the tokenizer returns IDENTIFIER for all word-like tokens
+ * instead of classifying them as COMMAND, KEYWORD, EVENT, CONTEXT_VAR, etc.
+ *
+ * This defers semantic classification to the parser, which uses predicate
+ * functions from token-predicates.ts for context-aware classification.
+ *
+ * Benefits:
+ * - Cleaner separation between lexical and semantic analysis
+ * - Parser can make context-dependent classification decisions
+ * - Enables migration to simplified TokenKind enum
+ *
+ * @see token-predicates.ts for predicate functions
+ */
+let DEFER_IDENTIFIER_CLASSIFICATION = false;
+
+/**
+ * Enable deferred identifier classification (for testing/migration)
+ */
+export function enableDeferredClassification(): void {
+  DEFER_IDENTIFIER_CLASSIFICATION = true;
+}
+
+/**
+ * Disable deferred identifier classification (default behavior)
+ */
+export function disableDeferredClassification(): void {
+  DEFER_IDENTIFIER_CLASSIFICATION = false;
+}
+
+/**
+ * Check if deferred classification is enabled
+ */
+export function isDeferredClassificationEnabled(): boolean {
+  return DEFER_IDENTIFIER_CLASSIFICATION;
+}
 
 export interface Tokenizer {
   input: string;
@@ -316,6 +163,7 @@ export function tokenize(input: string): Token[] {
           prevToken.type === TokenType.CONTEXT_VAR ||
           prevToken.type === TokenType.ID_SELECTOR ||
           prevToken.type === TokenType.CLASS_SELECTOR ||
+          prevToken.type === TokenType.QUERY_REFERENCE ||
           // Support possessive after array/object literals and parenthesized expressions
           prevToken.value === ']' ||
           prevToken.value === ')' ||
@@ -1142,6 +990,44 @@ function tryBuildCompoundPreposition(
 
 function classifyIdentifier(value: string): TokenType {
   const lowerValue = value.toLowerCase();
+
+  // ============================================================================
+  // DEFERRED CLASSIFICATION MODE
+  // When enabled, return IDENTIFIER for semantic tokens (commands, keywords, etc.)
+  // Parser uses token-predicates.ts for context-aware classification instead.
+  //
+  // We still classify:
+  // - BOOLEAN literals (true, false, null, undefined) - literal values
+  // - LOGICAL_OPERATOR (and, or, not) - needed for expression precedence
+  // - COMPARISON_OPERATOR - needed for expression parsing
+  // - OPERATOR - structural operators
+  // ============================================================================
+  if (DEFER_IDENTIFIER_CLASSIFICATION) {
+    // Operators still need classification for expression parsing
+    if (lowerValue === 'include' || lowerValue === 'includes') {
+      return TokenType.COMPARISON_OPERATOR;
+    }
+    if (LOGICAL_OPERATORS.has(lowerValue)) {
+      return TokenType.LOGICAL_OPERATOR;
+    }
+    if (MATHEMATICAL_OPERATORS.has(value) || MATHEMATICAL_OPERATORS.has(lowerValue)) {
+      return TokenType.OPERATOR;
+    }
+    if (COMPARISON_OPERATORS.has(lowerValue)) {
+      return TokenType.COMPARISON_OPERATOR;
+    }
+    // Boolean literals are values, not identifiers
+    if (['true', 'false', 'null', 'undefined'].includes(lowerValue)) {
+      return TokenType.BOOLEAN;
+    }
+    // Everything else becomes IDENTIFIER - parser will classify semantically
+    return TokenType.IDENTIFIER;
+  }
+
+  // ============================================================================
+  // LEGACY CLASSIFICATION MODE (default)
+  // Full semantic classification at tokenization time
+  // ============================================================================
 
   // Special case for include/includes to ensure they're treated as comparison operators
   if (lowerValue === 'include' || lowerValue === 'includes') {

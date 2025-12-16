@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { parse } from './parser';
-import { tokenizeOptimized } from './tokenizer-optimized';
+import { tokenize } from './tokenizer';
 
 describe('Parser Performance Optimization', () => {
   let performanceBaseline: { [key: string]: number } = {};
@@ -356,7 +356,7 @@ describe('Parser Performance Optimization', () => {
         // Test tokenization directly
         const tokenStart = performance.now();
         for (let i = 0; i < iterations; i++) {
-          tokenizeOptimized(expr);
+          tokenize(expr);
         }
         const tokenTime = performance.now() - tokenStart;
 
@@ -393,7 +393,7 @@ describe('Parser Performance Optimization', () => {
       // Tokenize multiple times to test memory efficiency
       const results = [];
       for (let i = 0; i < 5; i++) {
-        results.push(tokenizeOptimized(largeExpression));
+        results.push(tokenize(largeExpression));
       }
 
       const endMemory = process.memoryUsage().heapUsed;

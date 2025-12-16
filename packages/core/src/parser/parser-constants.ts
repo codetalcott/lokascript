@@ -332,3 +332,159 @@ export const CSS_FUNCTIONS = new Set([
   'conic-gradient', 'repeating-linear-gradient',
   'repeating-radial-gradient', 'repeating-conic-gradient',
 ]);
+
+// ============================================================================
+// TOKENIZER SETS - Single source of truth for tokenizer classification
+// ============================================================================
+
+/**
+ * Context variables that reference execution context
+ */
+export const CONTEXT_VARS = new Set(['me', 'it', 'you', 'result', 'my', 'its', 'your']);
+
+/**
+ * Logical operators for boolean expressions
+ */
+export const LOGICAL_OPERATORS = new Set(['and', 'or', 'not', 'no']);
+
+/**
+ * Comparison operators (includes both symbolic and English-style)
+ */
+export const COMPARISON_OPERATORS = new Set([
+  '==',
+  '!=',
+  '===',
+  '!==',
+  '<',
+  '>',
+  '<=',
+  '>=',
+  'is',
+  'is not',
+  'is a',
+  'is an',
+  'is not a',
+  'is not an',
+  'contains',
+  'does not contain',
+  'include',
+  'includes',
+  'does not include',
+  'match',
+  'matches',
+  'exists',
+  'does not exist',
+  'is empty',
+  'is not empty',
+  'is in',
+  'is not in',
+  'equals',
+  'in',
+  // English-style comparison operators
+  'is equal to',
+  'is really equal to',
+  'is not equal to',
+  'is not really equal to',
+  'is greater than',
+  'is less than',
+  'is greater than or equal to',
+  'is less than or equal to',
+  'really equals',
+]);
+
+/**
+ * Common DOM events for event handling
+ */
+export const DOM_EVENTS = new Set([
+  'click',
+  'dblclick',
+  'mousedown',
+  'mouseup',
+  'mouseover',
+  'mouseout',
+  'mousemove',
+  'mouseenter',
+  'mouseleave',
+  'focus',
+  'blur',
+  'change',
+  'input',
+  'submit',
+  'reset',
+  'select',
+  'load',
+  'unload',
+  'resize',
+  'scroll',
+  'keydown',
+  'keyup',
+  'keypress',
+  'touchstart',
+  'touchend',
+  'touchmove',
+  'touchcancel',
+  'drag',
+  'drop',
+  'dragover',
+  'dragenter',
+  'dragleave',
+  'cut',
+  'copy',
+  'paste',
+]);
+
+/**
+ * Tokenizer keywords (superset of HYPERSCRIPT_KEYWORDS with additional tokenizer-specific entries)
+ */
+export const TOKENIZER_KEYWORDS = new Set([
+  'on',
+  'init',
+  'behavior',
+  'def',
+  'if',
+  'else',
+  'unless',
+  'for',
+  'while',
+  'until',
+  'end',
+  'and',
+  'or',
+  'not',
+  'in',
+  'to',
+  'from',
+  'into',
+  'with',
+  'as',
+  'then',
+  'when',
+  'where',
+  'after',
+  'before',
+  'by',
+  'at',
+  'async',
+  'no',
+  // Compound syntax keywords
+  'start',
+  'of',
+  'the',
+  // Constructor keyword
+  'new',
+  // Scope keywords
+  'global',
+  'local',
+  // Additional keywords for English-style operators
+  'equal',
+  'equals',
+  'greater',
+  'less',
+  'than',
+  'really',
+  // Exception handling keywords
+  'catch',
+  'finally',
+  'throw',
+  'return',
+]);

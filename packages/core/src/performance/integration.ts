@@ -5,7 +5,7 @@
 
 import type { ExecutionContext, ExpressionImplementation } from '../types/core';
 import { globalCache } from './expression-cache';
-import { tokenizeOptimized } from '../parser/tokenizer-optimized';
+import { tokenize } from '../parser/tokenizer';
 
 // Performance monitoring interface
 export interface PerformanceMetrics {
@@ -156,7 +156,7 @@ export function tokenizeWithPerformance(input: string) {
   performanceTracker.startTimer('tokenization');
 
   try {
-    const tokens = tokenizeOptimized(input);
+    const tokens = tokenize(input);
     return tokens;
   } finally {
     const duration = performanceTracker.endTimer('tokenization');
