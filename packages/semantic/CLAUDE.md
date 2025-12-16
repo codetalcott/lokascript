@@ -53,6 +53,11 @@ src/
 │   ├── renderer.ts       # Render to explicit syntax
 │   └── converter.ts      # Convert between formats
 │
+├── ast-builder/          # Direct Semantic → AST conversion
+│   ├── index.ts          # ASTBuilder class, buildAST()
+│   ├── value-converters.ts   # SemanticValue → ExpressionNode
+│   └── command-mappers.ts    # 46 command-specific mappers
+│
 ├── types.ts              # Core type definitions
 ├── browser.ts            # Browser bundle entry point
 ├── core-bridge.ts        # Integration with @hyperfixi/core
@@ -174,6 +179,8 @@ Each parse result includes a confidence score (0-1):
 | `src/parser/pattern-matcher.ts` | Pattern matching engine |
 | `src/tokenizers/base.ts` | BaseTokenizer class |
 | `src/core-bridge.ts` | SemanticIntegrationAdapter for core package |
+| `src/ast-builder/index.ts` | Direct SemanticNode → AST conversion |
+| `src/ast-builder/command-mappers.ts` | 46 command-specific AST mappers |
 
 ## Browser Usage
 
@@ -233,3 +240,46 @@ if (result.confidence >= 0.5) {
   // Fall back to traditional parser
 }
 ```
+
+## Direct AST Building
+
+The `ast-builder/` module converts SemanticNodes directly to AST, bypassing English text generation:
+
+```typescript
+import { parse, buildAST } from '@hyperfixi/semantic';
+
+// Parse Japanese → SemanticNode → AST (no English intermediate)
+const node = parse('#button の .active を 切り替え', 'ja');
+const ast = buildAST(node);
+// { type: 'command', name: 'toggle', args: [...], modifiers: { on: ... } }
+```
+
+### Command Mappers
+
+Each of 46 commands has a dedicated mapper in `src/ast-builder/command-mappers.ts`:
+
+```typescript
+// Semantic roles → AST structure
+// toggle patient:.active destination:#button
+// → { name: 'toggle', args: ['.active'], modifiers: { on: '#button' } }
+
+import { getCommandMapper, registerCommandMapper } from '@hyperfixi/semantic';
+
+// Custom mapper
+registerCommandMapper({
+  action: 'myCommand',
+  toAST(node, builder) { ... }
+});
+```
+
+### Value Converters
+
+`src/ast-builder/value-converters.ts` converts SemanticValue → ExpressionNode:
+
+| SemanticValue | ExpressionNode |
+|---------------|----------------|
+| `{ type: 'selector' }` | `{ type: 'selector' }` |
+| `{ type: 'literal' }` | `{ type: 'literal' }` |
+| `{ type: 'reference' }` | `{ type: 'contextReference' }` |
+| `{ type: 'property-path' }` | `{ type: 'propertyAccess' }` |
+| `{ type: 'expression' }` | Parsed via `@hyperfixi/expression-parser` |

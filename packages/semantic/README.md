@@ -401,6 +401,92 @@ The parser handles Portuguese verb conjugations automatically:
 | Past | clicou | clica |
 | Subjunctive | clique | clica |
 
+## Direct AST Building
+
+The semantic package can build AST nodes directly from semantic parsing results, bypassing English text generation and re-parsing.
+
+### The Direct Path
+
+```text
+Input (any language) → Semantic Parser → AST Builder → AST
+```
+
+Instead of the traditional path:
+
+```text
+Input → Semantic Parser → English Text → Core Parser → AST
+```
+
+### Basic AST Building
+
+```typescript
+import { parse, buildAST } from '@hyperfixi/semantic';
+
+// Parse input to semantic node
+const node = parse('#button の .active を 切り替え', 'ja');
+
+// Build AST directly
+const ast = buildAST(node);
+// {
+//   type: 'command',
+//   name: 'toggle',
+//   args: [{ type: 'selector', value: '.active' }],
+//   modifiers: { on: { type: 'selector', value: '#button' } }
+// }
+```
+
+### With MultilingualHyperscript (Core Package)
+
+```typescript
+import { MultilingualHyperscript } from '@hyperfixi/core';
+
+const ml = new MultilingualHyperscript();
+await ml.initialize();
+
+// Parse directly to AST
+const ast = await ml.parseToAST('#button の .active を 切り替え', 'ja');
+
+// With detailed result
+const result = await ml.parseToASTWithDetails('toggle .active', 'en');
+if (result.usedDirectPath) {
+  console.log('Direct AST:', result.ast);
+} else if (result.fallbackText) {
+  // Use fallback text with core parser
+  console.log('Fallback:', result.fallbackText);
+}
+```
+
+### AST Node Types
+
+| Semantic Node | AST Node |
+|---------------|----------|
+| `kind: 'command'` | `type: 'command'` |
+| `kind: 'event-handler'` | `type: 'eventHandler'` |
+| `kind: 'conditional'` | `type: 'if'` |
+| `kind: 'compound'` | `type: 'compound'` |
+
+### Command Mappers
+
+46 commands have dedicated mappers that convert semantic roles to AST structure:
+
+```typescript
+// Semantic: toggle patient:.active destination:#button
+// AST: { name: 'toggle', args: ['.active'], modifiers: { on: '#button' } }
+
+import { getCommandMapper, registerCommandMapper } from '@hyperfixi/semantic';
+
+// Get mapper for a command
+const mapper = getCommandMapper('toggle');
+
+// Register custom mapper
+registerCommandMapper({
+  action: 'myCommand',
+  toAST(node, builder) {
+    return { type: 'command', name: 'myCommand', args: [...] };
+  }
+});
+```
+
 ## API Reference
 
 ### Core Functions
@@ -410,6 +496,7 @@ The parser handles Portuguese verb conjugations automatically:
 - `translate(input, fromLang, toLang)` - Translate between languages
 - `tokenize(input, language)` - Get token stream for input
 - `render(node, language)` - Render semantic node to language
+- `buildAST(node)` - Build AST directly from semantic node
 
 ### Supported Languages
 
