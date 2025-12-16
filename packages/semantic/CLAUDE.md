@@ -6,7 +6,7 @@ This file provides guidance for working with the `@hyperfixi/semantic` package.
 
 **Semantic-first multilingual parsing** for Hyperscript. This package parses hyperscript commands directly from 13 languages without requiring English translation first.
 
-**730+ tests** | **13 languages** | **45 command schemas**
+**1240+ tests** | **13 languages** | **45 command schemas**
 
 ## Architecture
 
@@ -67,7 +67,7 @@ src/
 ## Essential Commands
 
 ```bash
-# Run tests (730+ tests)
+# Run tests (1240+ tests)
 npm test --prefix packages/semantic
 npm test --prefix packages/semantic -- --run  # Single run (no watch)
 
@@ -172,14 +172,15 @@ Each parse result includes a confidence score (0-1):
 
 | File | Purpose |
 |------|---------|
-| `src/types.ts` | ActionType union (45 actions), SemanticNode types |
+| `src/types.ts` | ActionType union (45 actions), SemanticNode types (command, event-handler, conditional, compound, loop) |
 | `src/generators/command-schemas.ts` | Schema definitions for all commands |
 | `src/generators/language-profiles.ts` | Keyword translations (13 languages) |
 | `src/parser/semantic-parser.ts` | Main parsing logic |
 | `src/parser/pattern-matcher.ts` | Pattern matching engine |
 | `src/tokenizers/base.ts` | BaseTokenizer class |
 | `src/core-bridge.ts` | SemanticIntegrationAdapter for core package |
-| `src/ast-builder/index.ts` | Direct SemanticNode → AST conversion |
+| `src/ast-builder/index.ts` | ASTBuilder class, buildAST(), node type interfaces |
+| `src/ast-builder/value-converters.ts` | SemanticValue → ExpressionNode conversion |
 | `src/ast-builder/command-mappers.ts` | 46 command-specific AST mappers |
 
 ## Browser Usage
@@ -253,6 +254,72 @@ const node = parse('#button の .active を 切り替え', 'ja');
 const ast = buildAST(node);
 // { type: 'command', name: 'toggle', args: [...], modifiers: { on: ... } }
 ```
+
+### Semantic Node Types
+
+The AST builder handles all semantic node kinds:
+
+| SemanticNode Kind | AST Output | Description |
+|-------------------|------------|-------------|
+| `command` | `CommandNode` | Simple commands (toggle, add, put, etc.) |
+| `event-handler` | `EventHandlerNode` | Event handlers with body commands |
+| `conditional` | `CommandNode` (name: 'if') | If/else with condition and branch blocks |
+| `compound` | `CommandSequenceNode` | Chained commands (then/and/async) |
+| `loop` | `CommandNode` (name: 'repeat') | Loops (forever, times, for, while, until) |
+
+### Runtime-Compatible Output
+
+The AST builder produces output compatible with the hyperfixi runtime:
+
+```typescript
+// Compound statements → CommandSequence
+{ type: 'CommandSequence', commands: [...] }
+
+// Conditionals → CommandNode with block args
+{ type: 'command', name: 'if', args: [condition, thenBlock, elseBlock?] }
+
+// Loops → CommandNode with variant and body
+{ type: 'command', name: 'repeat', args: [variant, ...params, bodyBlock] }
+```
+
+### Event Handler Parameters
+
+Event handlers support parameter destructuring:
+
+```typescript
+import { createEventHandler } from '@hyperfixi/semantic';
+
+// on click(clientX, clientY) ...
+const handler = createEventHandler(
+  new Map([['event', { type: 'literal', value: 'click' }]]),
+  bodyCommands,
+  undefined,  // eventModifiers
+  ['clientX', 'clientY']  // parameterNames
+);
+
+const ast = buildAST(handler);
+// { type: 'eventHandler', event: 'click', args: ['clientX', 'clientY'], ... }
+```
+
+### Loop Semantic Nodes
+
+Loops use `LoopSemanticNode` with explicit body attachment:
+
+```typescript
+import { createLoopNode } from '@hyperfixi/semantic';
+
+// repeat 5 times ...
+const loop = createLoopNode(
+  'repeat',
+  'times',
+  new Map([['quantity', { type: 'literal', value: 5 }]]),
+  bodyCommands,
+  'item',  // loopVariable (for 'for' loops)
+  'index'  // indexVariable (optional)
+);
+```
+
+Loop variants: `'forever'` | `'times'` | `'for'` | `'while'` | `'until'`
 
 ### Command Mappers
 
