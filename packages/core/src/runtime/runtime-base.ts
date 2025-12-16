@@ -980,13 +980,15 @@ export class RuntimeBase {
   }
 
   protected queryElements(selector: string, context: ExecutionContext): HTMLElement[] {
-    if (!context.me || typeof document === 'undefined') return [];
+    // Use element's ownerDocument for JSDOM compatibility, fall back to global document
+    const doc = (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+    if (!doc) return [];
     // Handle hyperscript queryReference syntax <tag/>
     let cleanSelector = selector;
     if (cleanSelector.startsWith('<') && cleanSelector.endsWith('/>')) {
       cleanSelector = cleanSelector.slice(1, -2); // Remove '<' and '/>'
     }
-    return Array.from(document.querySelectorAll(cleanSelector));
+    return Array.from(doc.querySelectorAll(cleanSelector));
   }
 
   protected isElement(obj: unknown): obj is HTMLElement {

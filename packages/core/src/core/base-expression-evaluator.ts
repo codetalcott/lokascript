@@ -1166,17 +1166,23 @@ export class BaseExpressionEvaluator {
    */
   protected async evaluateSelector(
     node: { value: string },
-    _context: ExecutionContext
+    context: ExecutionContext
   ): Promise<HTMLElement[]> {
     // Convert hyperscript selector <tag/> to CSS selector (tag)
     let selector = node.value;
     if (selector.startsWith('<') && selector.endsWith('/>')) {
       selector = selector.slice(1, -2); // Remove '<' and '/>'
     }
-    const elements = document.querySelectorAll(selector);
-    return Array.from(elements).filter(
-      (el): el is HTMLElement => el instanceof HTMLElement
-    );
+    // Use element's ownerDocument for JSDOM compatibility, fall back to global document
+    const doc = (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+    if (!doc) {
+      return [];
+    }
+    const elements = doc.querySelectorAll(selector);
+    // Use duck-typing check instead of instanceof for cross-document compatibility
+    const isElement = (el: any): el is HTMLElement =>
+      el && typeof el === 'object' && el.nodeType === 1 && typeof el.tagName === 'string';
+    return Array.from(elements).filter(isElement);
   }
 
   /**

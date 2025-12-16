@@ -73,19 +73,19 @@ export function resolveElement(
       return asHTMLElement(context.you);
     }
 
-    // Handle CSS selector
-    if (typeof document !== 'undefined') {
-      const element = document.querySelector(trimmed);
-      if (!element) {
-        throw new Error(`Element not found with selector: ${trimmed}`);
-      }
-      if (!isHTMLElement(element)) {
-        throw new Error(`Element found but is not an HTMLElement: ${trimmed}`);
-      }
-      return element as HTMLElement;
+    // Handle CSS selector - use element's ownerDocument for JSDOM compatibility
+    const doc = (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+    if (!doc) {
+      throw new Error('DOM not available - cannot resolve element selector');
     }
-
-    throw new Error('DOM not available - cannot resolve element selector');
+    const element = doc.querySelector(trimmed);
+    if (!element) {
+      throw new Error(`Element not found with selector: ${trimmed}`);
+    }
+    if (!isHTMLElement(element)) {
+      throw new Error(`Element found but is not an HTMLElement: ${trimmed}`);
+    }
+    return element as HTMLElement;
   }
 
   throw new Error(`Invalid target type: ${typeof target}`);
@@ -140,14 +140,15 @@ export function resolveElements(
       return context.you && isHTMLElement(context.you) ? [context.you as HTMLElement] : [];
     }
 
-    // Query DOM for selector
-    if (typeof document !== 'undefined') {
+    // Query DOM for selector - use element's ownerDocument for JSDOM compatibility
+    const doc = (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+    if (doc) {
       // Handle hyperscript queryReference syntax <tag/>
       let selector = trimmed;
       if (selector.startsWith('<') && selector.endsWith('/>')) {
         selector = selector.slice(1, -2); // Remove '<' and '/>'
       }
-      const elements = document.querySelectorAll(selector);
+      const elements = doc.querySelectorAll(selector);
       return Array.from(elements).filter(isHTMLElement) as HTMLElement[];
     }
   }
@@ -357,7 +358,12 @@ export async function resolveTargetsFromArgs(
         if (selector.startsWith('<') && selector.endsWith('/>')) {
           selector = selector.slice(1, -2); // Remove '<' and '/>'
         }
-        const selected = document.querySelectorAll(selector);
+        // Use element's ownerDocument for JSDOM compatibility
+        const doc = (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+        if (!doc) {
+          throw new Error('DOM not available - cannot resolve element selector');
+        }
+        const selected = doc.querySelectorAll(selector);
         const elements = Array.from(selected).filter(isHTMLElement) as HTMLElement[];
         targets.push(...elements);
       } catch (error) {

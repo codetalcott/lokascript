@@ -250,10 +250,7 @@ describe('Put Command E2E', () => {
 // =============================================================================
 
 describe('Commands with explicit targets', () => {
-  // TODO: Fix target resolution in JSDOM context
-  // The selector #target is parsed correctly but querySelector returns null
-  // because the context.meta.ownerDocument is not properly set up in JSDOM
-  it.skip('en: toggle on specific target', async () => {
+  it('en: toggle on specific target', async () => {
     const source = document.createElement('button');
     const target = document.createElement('div');
     target.id = 'target';
@@ -266,7 +263,7 @@ describe('Commands with explicit targets', () => {
     expect(source.classList.contains('active')).toBe(false);
   });
 
-  it.skip('ja: toggle on specific target (SOV order)', async () => {
+  it('ja: toggle on specific target (SOV order)', async () => {
     const source = document.createElement('button');
     const target = document.createElement('div');
     target.id = 'target';
@@ -278,7 +275,7 @@ describe('Commands with explicit targets', () => {
     expect(target.classList.contains('active')).toBe(true);
   });
 
-  it.skip('ko: toggle on specific target (SOV order)', async () => {
+  it('ko: toggle on specific target (SOV order)', async () => {
     const source = document.createElement('button');
     const target = document.createElement('div');
     target.id = 'target';
@@ -296,36 +293,33 @@ describe('Commands with explicit targets', () => {
 // =============================================================================
 
 describe('Increment Command E2E', () => {
-  // TODO: Add semantic parser support for "increment <variable>" pattern
-  // Currently only supports patterns like "increment :counter" with colon prefix
-  it.skip('en: increment counter variable', async () => {
+  it('en: increment counter variable', async () => {
     const element = document.createElement('div');
     document.body.appendChild(element);
 
-    const ctx = createContext(element, null, document);
-    ctx.locals.counter = 5;
+    const ctx = createContext(element);
+    ctx.locals.set('counter', 5);
 
     const semanticNode = parse('increment counter', 'en');
     const ast = buildAST(semanticNode);
     await runtime.execute(ast as ASTNode, ctx);
 
-    expect(ctx.locals.counter).toBe(6);
+    expect(ctx.locals.get('counter')).toBe(6);
   });
 });
 
 describe('Decrement Command E2E', () => {
-  // TODO: Add semantic parser support for "decrement <variable>" pattern
-  it.skip('en: decrement counter variable', async () => {
+  it('en: decrement counter variable', async () => {
     const element = document.createElement('div');
     document.body.appendChild(element);
 
-    const ctx = createContext(element, null, document);
-    ctx.locals.counter = 5;
+    const ctx = createContext(element);
+    ctx.locals.set('counter', 5);
 
     const semanticNode = parse('decrement counter', 'en');
     const ast = buildAST(semanticNode);
     await runtime.execute(ast as ASTNode, ctx);
 
-    expect(ctx.locals.counter).toBe(4);
+    expect(ctx.locals.get('counter')).toBe(4);
   });
 });
