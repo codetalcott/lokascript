@@ -258,6 +258,8 @@ const JAPANESE_KEYWORDS: Map<string, string> = new Map([
   ['クリック', 'click'],
   ['入力', 'input'],
   ['変更', 'change'],
+  ['送信', 'submit'],
+  ['フォーカス', 'focus'],
   ['キーダウン', 'keydown'],
   ['キーアップ', 'keyup'],
   ['マウスオーバー', 'mouseover'],

@@ -197,6 +197,8 @@ const KOREAN_KEYWORDS: Map<string, string> = new Map([
   ['입력', 'input'],
   ['변경', 'change'],
   ['제출', 'submit'],
+  ['포커스', 'focus'],
+  ['블러', 'blur'],
   ['키다운', 'keydown'],
   ['키업', 'keyup'],
   ['마우스오버', 'mouseover'],

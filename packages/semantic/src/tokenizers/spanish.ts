@@ -88,6 +88,7 @@ const SPANISH_KEYWORDS: Map<string, string> = new Map([
   ['eliminar', 'remove'],
   ['borrar', 'remove'],
   ['remover', 'remove'],
+  ['sacar', 'remove'],
   // Commands - Content operations
   ['poner', 'put'],
   ['pon', 'put'],
@@ -172,6 +173,7 @@ const SPANISH_KEYWORDS: Map<string, string> = new Map([
   // Events (for event name recognition)
   ['clic', 'click'],
   ['click', 'click'],
+  ['hacer clic', 'click'],  // Multi-word: "to make click" → click
   ['entrada', 'input'],
   ['cambio', 'change'],
   ['envío', 'submit'],
@@ -348,6 +350,7 @@ export class SpanishTokenizer extends BaseTokenizer {
       'raton encima',
       'ratón fuera',
       'raton fuera',
+      'hacer clic',    // "to make click" → click event
     ];
 
     for (const phrase of multiWordPhrases) {

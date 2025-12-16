@@ -225,7 +225,13 @@ const ARABIC_KEYWORDS: Map<string, string> = new Map([
   ['تغيير', 'change'],
   ['الإرسال', 'submit'],
   ['إرسال', 'submit'],
+  ['التركيز', 'focus'],
+  ['تركيز', 'focus'],
+  ['فقدان التركيز', 'blur'],
   ['ضغط', 'keydown'],
+  ['رفع', 'keyup'],
+  ['تمرير الفأرة', 'mouseover'],
+  ['مغادرة الفأرة', 'mouseout'],
   ['تحميل', 'load'],
   ['تمرير', 'scroll'],
   // References

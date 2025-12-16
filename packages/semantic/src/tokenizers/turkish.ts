@@ -234,9 +234,15 @@ const TURKISH_KEYWORDS: Map<string, string> = new Map([
   ['giris', 'input'],      // without diacritics
   ['değişim', 'change'],
   ['degisim', 'change'],   // without diacritics
+  ['gönder', 'submit'],
+  ['gonder', 'submit'],    // without diacritics
   ['odak', 'focus'],
   ['bulanık', 'blur'],
   ['bulanik', 'blur'],     // without diacritics
+  ['fare üzerinde', 'mouseover'],
+  ['fare uzerinde', 'mouseover'],  // without diacritics
+  ['fare dışında', 'mouseout'],
+  ['fare disinda', 'mouseout'],    // without diacritics
   ['yükle', 'load'],
   ['yukle', 'load'],       // without diacritics
   ['kaydır', 'scroll'],

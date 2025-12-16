@@ -46,6 +46,21 @@ export interface VerbConfig {
 }
 
 /**
+ * Configuration for possessive expression construction.
+ * Defines how "X's property" is expressed in a language.
+ */
+export interface PossessiveConfig {
+  /** Possessive marker (e.g., "'s" in English, "の" in Japanese) */
+  readonly marker: string;
+  /** Position of marker: 'after-object' (X's Y), 'between' (X の Y), 'before-property' */
+  readonly markerPosition: 'after-object' | 'between' | 'before-property';
+  /** Special possessive forms (e.g., 'me' → 'my' in English) */
+  readonly specialForms?: Record<string, string>;
+  /** Whether to use possessive adjectives instead of marker (e.g., Spanish mi/tu/su) */
+  readonly usePossessiveAdjectives?: boolean;
+}
+
+/**
  * Complete language profile for pattern generation.
  */
 export interface LanguageProfile {
@@ -71,6 +86,10 @@ export interface LanguageProfile {
   readonly usesSpaces: boolean;
   /** Special tokenization notes */
   readonly tokenization?: TokenizationConfig;
+  /** Reference translations (me, it, you, etc.) */
+  readonly references?: Record<string, string>;
+  /** Possessive expression configuration */
+  readonly possessive?: PossessiveConfig;
 }
 
 /**
@@ -116,6 +135,24 @@ export const englishProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: false,
+  },
+  references: {
+    me: 'me',
+    it: 'it',
+    you: 'you',
+    result: 'result',
+    event: 'event',
+    target: 'target',
+    body: 'body',
+  },
+  possessive: {
+    marker: "'s",
+    markerPosition: 'after-object',
+    specialForms: {
+      me: 'my',
+      it: 'its',
+      you: 'your',
+    },
   },
   roleMarkers: {
     destination: { primary: 'on', alternatives: ['to', 'from'], position: 'before' },
@@ -174,6 +211,7 @@ export const englishProfile: LanguageProfile = {
     call: { primary: 'call' },
     return: { primary: 'return' },
     then: { primary: 'then' },
+    and: { primary: 'and' },
     end: { primary: 'end' },
     // Advanced
     js: { primary: 'js' },
@@ -211,6 +249,20 @@ export const japaneseProfile: LanguageProfile = {
     position: 'end',
     suffixes: ['る', 'て', 'た', 'ます', 'ない'],
     subjectDrop: true,
+  },
+  references: {
+    me: '自分',      // "self" - in hyperscript context, refers to current element
+    it: 'それ',      // "it"
+    you: 'あなた',   // "you"
+    result: '結果',
+    event: 'イベント',
+    target: 'ターゲット',
+    body: 'ボディ',
+  },
+  possessive: {
+    marker: 'の',
+    markerPosition: 'between',
+    // In Japanese: 自分の value (jibun no value) = "my value"
   },
   roleMarkers: {
     patient: { primary: 'を', position: 'after' },
@@ -269,6 +321,7 @@ export const japaneseProfile: LanguageProfile = {
     call: { primary: '呼び出し', alternatives: ['コール', '呼ぶ'], normalized: 'call' },
     return: { primary: '戻る', alternatives: ['返す', 'リターン'], normalized: 'return' },
     then: { primary: 'それから', alternatives: ['次に', 'そして'], normalized: 'then' },
+    and: { primary: 'そして', alternatives: ['と', 'また'], normalized: 'and' },
     end: { primary: '終わり', alternatives: ['終了', 'おわり'], normalized: 'end' },
     // Advanced
     js: { primary: 'JS実行', alternatives: ['js'], normalized: 'js' },
@@ -309,6 +362,26 @@ export const arabicProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: true,
+  },
+  references: {
+    me: 'أنا',       // "I/me" - first person
+    it: 'هو',        // "it" (masculine)
+    you: 'أنت',      // "you"
+    result: 'النتيجة',
+    event: 'الحدث',
+    target: 'الهدف',
+    body: 'الجسم',
+  },
+  possessive: {
+    marker: '',      // No explicit marker - uses possessive pronouns
+    markerPosition: 'after-object',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      // Arabic: "value لي" (value for-me) - possessive pronoun follows property
+      me: 'لي',      // "for me" / "mine"
+      it: 'له',      // "for it" / "its"
+      you: 'لك',     // "for you" / "yours"
+    },
   },
   roleMarkers: {
     destination: { primary: 'على', alternatives: ['في', 'إلى', 'ب'], position: 'before' },
@@ -365,6 +438,7 @@ export const arabicProfile: LanguageProfile = {
     call: { primary: 'استدع', alternatives: ['نادِ'], normalized: 'call' },
     return: { primary: 'ارجع', alternatives: ['عُد'], normalized: 'return' },
     then: { primary: 'ثم', alternatives: ['بعدها', 'ثمّ'], normalized: 'then' },
+    and: { primary: 'و', alternatives: ['وأيضاً'], normalized: 'and' },
     end: { primary: 'نهاية', alternatives: ['انتهى', 'آخر'], normalized: 'end' },
     // Advanced
     js: { primary: 'جافاسكربت', alternatives: ['js'], normalized: 'js' },
@@ -405,6 +479,25 @@ export const spanishProfile: LanguageProfile = {
     position: 'start',
     subjectDrop: true,
   },
+  references: {
+    me: 'yo',        // "I/me"
+    it: 'ello',      // "it"
+    you: 'tú',       // "you"
+    result: 'resultado',
+    event: 'evento',
+    target: 'objetivo',
+    body: 'cuerpo',
+  },
+  possessive: {
+    marker: 'de',    // Spanish uses "de" for general possession
+    markerPosition: 'before-property',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'mi',      // "my" (possessive adjective)
+      it: 'su',      // "its"
+      you: 'tu',     // "your"
+    },
+  },
   roleMarkers: {
     destination: { primary: 'en', alternatives: ['sobre', 'a'], position: 'before' },
     source: { primary: 'de', alternatives: ['desde'], position: 'before' },
@@ -415,7 +508,7 @@ export const spanishProfile: LanguageProfile = {
     // Class/Attribute operations
     toggle: { primary: 'alternar', alternatives: ['cambiar', 'conmutar'], normalized: 'toggle' },
     add: { primary: 'agregar', alternatives: ['añadir'], normalized: 'add' },
-    remove: { primary: 'quitar', alternatives: ['eliminar', 'remover'], normalized: 'remove' },
+    remove: { primary: 'quitar', alternatives: ['eliminar', 'remover', 'sacar'], normalized: 'remove' },
     // Content operations
     put: { primary: 'poner', alternatives: ['colocar'], normalized: 'put' },
     append: { primary: 'añadir', normalized: 'append' },
@@ -460,6 +553,7 @@ export const spanishProfile: LanguageProfile = {
     call: { primary: 'llamar', normalized: 'call' },
     return: { primary: 'retornar', alternatives: ['devolver'], normalized: 'return' },
     then: { primary: 'entonces', alternatives: ['luego', 'después'], normalized: 'then' },
+    and: { primary: 'y', alternatives: ['además', 'también'], normalized: 'and' },
     end: { primary: 'fin', alternatives: ['final', 'terminar'], normalized: 'end' },
     // Advanced
     js: { primary: 'js', normalized: 'js' },
@@ -497,6 +591,24 @@ export const koreanProfile: LanguageProfile = {
     position: 'end',
     suffixes: ['다', '요', '니다', '세요'],
     subjectDrop: true,
+  },
+  references: {
+    me: '나',        // "I/me" (informal)
+    it: '그것',      // "it"
+    you: '너',       // "you" (informal)
+    result: '결과',
+    event: '이벤트',
+    target: '대상',
+    body: '본문',
+  },
+  possessive: {
+    marker: '의',    // Possessive particle
+    markerPosition: 'between',
+    specialForms: {
+      me: '내',      // Contracted form of 나의 (my)
+      it: '그것의',  // "its"
+      you: '네',     // Contracted form of 너의 (your)
+    },
   },
   roleMarkers: {
     patient: { primary: '을', alternatives: ['를'], position: 'after' },
@@ -552,6 +664,7 @@ export const koreanProfile: LanguageProfile = {
     call: { primary: '호출', normalized: 'call' },
     return: { primary: '반환', normalized: 'return' },
     then: { primary: '그다음', alternatives: ['그리고', '그런후'], normalized: 'then' },
+    and: { primary: '그리고', alternatives: ['또한', '및'], normalized: 'and' },
     end: { primary: '끝', alternatives: ['종료', '마침'], normalized: 'end' },
     // Advanced
     js: { primary: 'JS실행', alternatives: ['js'], normalized: 'js' },
@@ -592,6 +705,20 @@ export const chineseProfile: LanguageProfile = {
   verb: {
     position: 'second',
     subjectDrop: true,
+  },
+  references: {
+    me: '我',        // "I/me"
+    it: '它',        // "it"
+    you: '你',       // "you"
+    result: '结果',
+    event: '事件',
+    target: '目标',
+    body: '主体',
+  },
+  possessive: {
+    marker: '的',    // Possessive particle (de)
+    markerPosition: 'between',
+    // Chinese: 我的 value (wǒ de value) = "my value"
   },
   roleMarkers: {
     destination: { primary: '在', alternatives: ['到', '于'], position: 'before' },
@@ -648,6 +775,7 @@ export const chineseProfile: LanguageProfile = {
     call: { primary: '调用', normalized: 'call' },
     return: { primary: '返回', normalized: 'return' },
     then: { primary: '然后', alternatives: ['接着', '之后'], normalized: 'then' },
+    and: { primary: '并且', alternatives: ['和', '而且'], normalized: 'and' },
     end: { primary: '结束', alternatives: ['终止', '完'], normalized: 'end' },
     // Advanced
     js: { primary: 'JS执行', alternatives: ['js'], normalized: 'js' },
@@ -688,6 +816,25 @@ export const turkishProfile: LanguageProfile = {
     position: 'end',
     suffixes: ['mek', 'mak', 'yor', 'di', 'miş'],
     subjectDrop: true,
+  },
+  references: {
+    me: 'ben',       // "I/me"
+    it: 'o',         // "it"
+    you: 'sen',      // "you"
+    result: 'sonuç',
+    event: 'olay',
+    target: 'hedef',
+    body: 'gövde',
+  },
+  possessive: {
+    marker: '',      // Turkish uses genitive suffix -in/-ın + possessive suffix
+    markerPosition: 'after-object',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'benim',   // "my" (genitive of "ben")
+      it: 'onun',    // "its"
+      you: 'senin',  // "your"
+    },
   },
   roleMarkers: {
     patient: { primary: 'i', alternatives: ['ı', 'u', 'ü'], position: 'after' }, // Accusative
@@ -743,6 +890,7 @@ export const turkishProfile: LanguageProfile = {
     call: { primary: 'çağır', normalized: 'call' },
     return: { primary: 'dön', normalized: 'return' },
     then: { primary: 'sonra', alternatives: ['ardından', 'daha sonra'], normalized: 'then' },
+    and: { primary: 've', alternatives: ['ayrıca', 'hem de'], normalized: 'and' },
     end: { primary: 'son', alternatives: ['bitiş', 'bitti'], normalized: 'end' },
     // Advanced
     js: { primary: 'js', normalized: 'js' },
@@ -779,6 +927,25 @@ export const portugueseProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: true,
+  },
+  references: {
+    me: 'eu',        // "I/me"
+    it: 'ele',       // "it"
+    you: 'você',     // "you"
+    result: 'resultado',
+    event: 'evento',
+    target: 'alvo',
+    body: 'corpo',
+  },
+  possessive: {
+    marker: 'de',    // Uses "de" for general possession
+    markerPosition: 'before-property',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'meu',     // "my"
+      it: 'seu',     // "its"
+      you: 'teu',    // "your" (or "seu" in formal)
+    },
   },
   roleMarkers: {
     destination: { primary: 'em', alternatives: ['para', 'a'], position: 'before' },
@@ -826,6 +993,7 @@ export const portugueseProfile: LanguageProfile = {
     call: { primary: 'chamar', normalized: 'call' },
     return: { primary: 'retornar', alternatives: ['devolver'], normalized: 'return' },
     then: { primary: 'então', alternatives: ['depois', 'logo'], normalized: 'then' },
+    and: { primary: 'e', alternatives: ['também', 'além disso'], normalized: 'and' },
     end: { primary: 'fim', alternatives: ['final', 'término'], normalized: 'end' },
     js: { primary: 'js', normalized: 'js' },
     async: { primary: 'assíncrono', normalized: 'async' },
@@ -860,6 +1028,25 @@ export const frenchProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: false,
+  },
+  references: {
+    me: 'moi',       // "I/me"
+    it: 'il',        // "it"
+    you: 'toi',      // "you"
+    result: 'résultat',
+    event: 'événement',
+    target: 'cible',
+    body: 'corps',
+  },
+  possessive: {
+    marker: 'de',    // Uses "de" for general possession
+    markerPosition: 'before-property',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'ma',      // "my" (feminine; "mon" for masculine)
+      it: 'sa',      // "its" (feminine; "son" for masculine)
+      you: 'ta',     // "your" (feminine; "ton" for masculine)
+    },
   },
   roleMarkers: {
     destination: { primary: 'sur', alternatives: ['à', 'dans'], position: 'before' },
@@ -907,6 +1094,7 @@ export const frenchProfile: LanguageProfile = {
     call: { primary: 'appeler', normalized: 'call' },
     return: { primary: 'retourner', alternatives: ['renvoyer'], normalized: 'return' },
     then: { primary: 'puis', alternatives: ['ensuite', 'alors'], normalized: 'then' },
+    and: { primary: 'et', alternatives: ['aussi', 'également'], normalized: 'and' },
     end: { primary: 'fin', alternatives: ['terminer', 'finir'], normalized: 'end' },
     js: { primary: 'js', normalized: 'js' },
     async: { primary: 'asynchrone', normalized: 'async' },
@@ -941,6 +1129,25 @@ export const germanProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: false,
+  },
+  references: {
+    me: 'ich',       // "I"
+    it: 'es',        // "it"
+    you: 'du',       // "you"
+    result: 'Ergebnis',
+    event: 'Ereignis',
+    target: 'Ziel',
+    body: 'Körper',
+  },
+  possessive: {
+    marker: '',      // German uses possessive pronouns directly
+    markerPosition: 'before-property',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'mein',    // "my"
+      it: 'sein',    // "its"
+      you: 'dein',   // "your"
+    },
   },
   roleMarkers: {
     destination: { primary: 'auf', alternatives: ['zu', 'in'], position: 'before' },
@@ -988,6 +1195,7 @@ export const germanProfile: LanguageProfile = {
     call: { primary: 'aufrufen', normalized: 'call' },
     return: { primary: 'zurückgeben', normalized: 'return' },
     then: { primary: 'dann', alternatives: ['danach', 'anschließend'], normalized: 'then' },
+    and: { primary: 'und', alternatives: ['sowie', 'auch'], normalized: 'and' },
     end: { primary: 'ende', alternatives: ['beenden', 'fertig'], normalized: 'end' },
     js: { primary: 'js', alternatives: ['javascript'], normalized: 'js' },
     async: { primary: 'asynchron', normalized: 'async' },
@@ -1022,6 +1230,25 @@ export const indonesianProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: true,
+  },
+  references: {
+    me: 'saya',      // "I/me"
+    it: 'itu',       // "it"
+    you: 'anda',     // "you"
+    result: 'hasil',
+    event: 'peristiwa',
+    target: 'target',
+    body: 'tubuh',
+  },
+  possessive: {
+    marker: '',      // Indonesian: "X saya" (X of mine), possessor follows noun
+    markerPosition: 'after-object',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'saya',    // Possessor follows: "value saya" = "my value"
+      it: 'nya',     // Suffix: "valueny" = "its value"
+      you: 'anda',   // "value anda" = "your value"
+    },
   },
   roleMarkers: {
     destination: { primary: 'pada', alternatives: ['ke', 'di'], position: 'before' },
@@ -1069,6 +1296,7 @@ export const indonesianProfile: LanguageProfile = {
     call: { primary: 'panggil', normalized: 'call' },
     return: { primary: 'kembalikan', alternatives: ['kembali'], normalized: 'return' },
     then: { primary: 'lalu', alternatives: ['kemudian', 'setelah itu'], normalized: 'then' },
+    and: { primary: 'dan', alternatives: ['juga', 'serta'], normalized: 'and' },
     end: { primary: 'selesai', alternatives: ['akhir', 'tamat'], normalized: 'end' },
     js: { primary: 'js', alternatives: ['javascript'], normalized: 'js' },
     async: { primary: 'asinkron', normalized: 'async' },
@@ -1103,6 +1331,20 @@ export const quechuaProfile: LanguageProfile = {
   verb: {
     position: 'end',
     subjectDrop: true,
+  },
+  references: {
+    me: 'ñuqa',      // "I/me"
+    it: 'pay',       // "it/he/she" (same pronoun)
+    you: 'qam',      // "you"
+    result: 'rurasqa',
+    event: 'ruwakuq',
+    target: 'ñawpaqman',
+    body: 'ukhu',
+  },
+  possessive: {
+    marker: '-pa',   // Genitive suffix
+    markerPosition: 'after-object',
+    // Quechua: ñuqapa value = "my value"
   },
   roleMarkers: {
     patient: { primary: '-ta', position: 'after' },
@@ -1150,6 +1392,7 @@ export const quechuaProfile: LanguageProfile = {
     call: { primary: 'waqyay', normalized: 'call' },
     return: { primary: 'kutichiy', alternatives: ['kutimuy'], normalized: 'return' },
     then: { primary: 'chaymantataq', alternatives: ['hinaspa', 'chaymanta'], normalized: 'then' },
+    and: { primary: 'hinallataq', alternatives: ['ima', 'chaymantawan'], normalized: 'and' },
     end: { primary: 'tukukuy', alternatives: ['tukuy', 'puchukay'], normalized: 'end' },
     js: { primary: 'js', normalized: 'js' },
     async: { primary: 'mana waqtalla', normalized: 'async' },
@@ -1184,6 +1427,25 @@ export const swahiliProfile: LanguageProfile = {
   verb: {
     position: 'start',
     subjectDrop: true,
+  },
+  references: {
+    me: 'mimi',      // "I/me"
+    it: 'hiyo',      // "it"
+    you: 'wewe',     // "you"
+    result: 'matokeo',
+    event: 'tukio',
+    target: 'lengo',
+    body: 'mwili',
+  },
+  possessive: {
+    marker: '',      // Swahili uses possessive pronouns
+    markerPosition: 'after-object',
+    usePossessiveAdjectives: true,
+    specialForms: {
+      me: 'yangu',   // "my" (class-dependent: wangu/yangu/langu...)
+      it: 'yake',    // "its"
+      you: 'yako',   // "your"
+    },
   },
   roleMarkers: {
     destination: { primary: 'kwenye', alternatives: ['kwa'], position: 'before' },
@@ -1231,6 +1493,7 @@ export const swahiliProfile: LanguageProfile = {
     call: { primary: 'ita', normalized: 'call' },
     return: { primary: 'rudisha', alternatives: ['rejea'], normalized: 'return' },
     then: { primary: 'kisha', alternatives: ['halafu', 'baadaye'], normalized: 'then' },
+    and: { primary: 'na', alternatives: ['pia', 'vilevile'], normalized: 'and' },
     end: { primary: 'mwisho', alternatives: ['maliza', 'tamati'], normalized: 'end' },
     js: { primary: 'js', alternatives: ['javascript'], normalized: 'js' },
     async: { primary: 'isiyo sawia', normalized: 'async' },
