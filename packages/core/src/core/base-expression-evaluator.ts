@@ -120,6 +120,9 @@ export class BaseExpressionEvaluator {
       case 'propertyOfExpression':
         return this.evaluatePropertyOfExpression(node as any, context);
 
+      case 'contextReference':
+        return this.evaluateContextReference(node as any, context);
+
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
@@ -552,6 +555,43 @@ export class BaseExpressionEvaluator {
    */
   protected async evaluateLiteral(node: { value: any }, _context: ExecutionContext): Promise<any> {
     return node.value;
+  }
+
+  /**
+   * Evaluate context reference nodes (me, it, you, event, etc.)
+   * These are produced by the semantic AST builder for context-dependent values.
+   */
+  protected async evaluateContextReference(
+    node: { contextType: string; name: string },
+    context: ExecutionContext
+  ): Promise<any> {
+    const { contextType } = node;
+
+    switch (contextType) {
+      case 'me':
+        return context.me;
+      case 'it':
+        return context.result;
+      case 'you':
+        return context.target || context.you;
+      case 'event':
+        return context.event;
+      case 'body':
+        return context.meta?.ownerDocument?.body || document?.body;
+      case 'detail':
+        return (context.event as CustomEvent)?.detail;
+      case 'target':
+        return context.target || (context.event as Event)?.target;
+      case 'sender':
+        return (context.event as Event)?.target;
+      default:
+        // For unknown context types, try to look up in locals
+        if (context.locals && contextType in context.locals) {
+          return context.locals[contextType];
+        }
+        debug.expressions(`Unknown context reference type: ${contextType}`);
+        return undefined;
+    }
   }
 
   /**
