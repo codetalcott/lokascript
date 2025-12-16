@@ -103,10 +103,13 @@ export function isSelector(token: Token): boolean {
 }
 
 /**
- * Check if token is a basic CSS selector (same as isSelector in TokenKind mode)
+ * Check if token is a basic CSS selector (#id or .class) - NOT query references
+ * Query references (<selector/>) should be matched separately with isQueryReference
  */
 export function isBasicSelector(token: Token): boolean {
-  return token.kind === TokenKind.SELECTOR;
+  if (token.kind !== TokenKind.SELECTOR) return false;
+  // Exclude query references (they start with '<')
+  return !token.value.startsWith('<');
 }
 
 /**
@@ -190,16 +193,13 @@ export function isNumber(token: Token): boolean {
 }
 
 /**
- * Check if token is a boolean literal (true/false)
+ * Check if token is a boolean literal (true/false) or null/undefined
  */
 export function isBoolean(token: Token): boolean {
-  // Booleans are lexically identifiers with value 'true' or 'false'
-  if (token.kind === TokenKind.NUMBER) {
-    // If tokenizer classified it as NUMBER (for backward compat)
-    return token.value === 'true' || token.value === 'false';
-  }
+  // Booleans (and null/undefined) are lexically identifiers with specific values
   if (token.kind === TokenKind.IDENTIFIER) {
-    return token.value === 'true' || token.value === 'false';
+    const v = token.value;
+    return v === 'true' || v === 'false' || v === 'null' || v === 'undefined';
   }
   return false;
 }

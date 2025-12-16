@@ -78,8 +78,9 @@ export function getTokenKind(tokenType: TokenType): TokenKind {
     case TokenType.STRING:
       return TokenKind.STRING;
     case TokenType.NUMBER:
+      return TokenKind.NUMBER;
     case TokenType.BOOLEAN:
-      return TokenKind.NUMBER; // Booleans are lexically similar to identifiers but we keep them as NUMBER for now
+      return TokenKind.IDENTIFIER; // Booleans are lexically identifiers with value 'true', 'false', etc.
     case TokenType.TEMPLATE_LITERAL:
       return TokenKind.TEMPLATE;
 
@@ -290,14 +291,12 @@ export function tokenize(input: string): Token[] {
       // Check if this is possessive syntax (apostrophe followed by 's')
       const nextChar = peek(tokenizer, 1);
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
+      // Phase 8: Use TokenKind for possessive detection instead of TokenType
       const isPossessive =
         nextChar === 's' &&
         prevToken &&
-        (prevToken.type === TokenType.IDENTIFIER ||
-          prevToken.type === TokenType.CONTEXT_VAR ||
-          prevToken.type === TokenType.ID_SELECTOR ||
-          prevToken.type === TokenType.CLASS_SELECTOR ||
-          prevToken.type === TokenType.QUERY_REFERENCE ||
+        (prevToken.kind === TokenKind.IDENTIFIER ||
+          prevToken.kind === TokenKind.SELECTOR ||
           // Support possessive after array/object literals and parenthesized expressions
           prevToken.value === ']' ||
           prevToken.value === ')' ||
@@ -355,17 +354,26 @@ export function tokenize(input: string): Token[] {
 
       // Check if this is a CSS selector or a member access operator
       // It's a CSS selector if it's at the start or follows whitespace/operators
+      // Phase 8: Use TokenKind for CSS selector context detection
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
+      // Keywords that can precede CSS selectors (not member access)
+      const SELECTOR_CONTEXT_KEYWORDS = new Set(['from', 'to', 'into', 'on', 'in', 'at']);
+      // Commands like add, remove, toggle can be followed by class selectors
+      const isCommandContext = prevToken &&
+        prevToken.kind === TokenKind.IDENTIFIER &&
+        COMMANDS.has(prevToken.value.toLowerCase());
+      // Keywords like 'from' can also be followed by class selectors
+      const isKeywordContext = prevToken &&
+        prevToken.kind === TokenKind.IDENTIFIER &&
+        SELECTOR_CONTEXT_KEYWORDS.has(prevToken.value.toLowerCase());
       const isCSSSelectorContext =
         !prevToken ||
-        prevToken.type === 'whitespace' ||
-        (prevToken.type === 'operator' &&
+        (prevToken.kind === TokenKind.OPERATOR &&
           // Exclude closing parens and brackets which indicate method calls or array access
           prevToken.value !== ')' &&
           prevToken.value !== ']') ||
-        prevToken.type === 'keyword' ||
-        prevToken.type === 'command' || // Commands like "add .active" in conditionals
-        prevToken.type === 'comparison_operator' || // Comparison operators like "is not in"
+        isCommandContext || // Commands like add, remove, toggle allow class selectors
+        isKeywordContext || // Keywords like from, to allow class selectors
         prevToken.value === '(' ||
         prevToken.value === '[' ||
         prevToken.value === '{' ||

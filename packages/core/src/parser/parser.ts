@@ -1214,17 +1214,18 @@ export class Parser {
       return this.createLiteral(raw, raw); // Keep time expressions as string literals
     }
 
-    // Handle CSS selectors
-    if (this.matchSelector()) {
-      return this.createSelector(this.previous().value);
-    }
-
     // Handle query reference selectors (<button/>, <.class/>, <#id/>)
+    // IMPORTANT: Check this BEFORE matchSelector() since query references are also selectors
     if (this.matchQueryReference()) {
       const queryValue = this.previous().value;
       // Extract the selector from <.../>
       const selector = queryValue.slice(1, -2); // Remove < and />
       return this.createSelector(selector);
+    }
+
+    // Handle CSS selectors (#id, .class)
+    if (this.matchSelector()) {
+      return this.createSelector(this.previous().value);
     }
 
     // Handle hyperscript selector syntax: <button/>
