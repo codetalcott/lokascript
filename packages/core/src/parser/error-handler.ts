@@ -4,7 +4,7 @@
  */
 
 import type { Token, ParseError } from '../types/core';
-import { TokenType } from './tokenizer';
+import { isIdentifier, isString, isBasicOperator } from './token-predicates';
 
 export interface ErrorContext {
   parsing:
@@ -160,7 +160,7 @@ export class ErrorHandler {
     }
 
     // Check for common typos
-    if (token.type === TokenType.IDENTIFIER) {
+    if (isIdentifier(token)) {
       const suggestions = this.checkTypos(token.value);
       if (suggestions.length > 0) {
         return `Did you mean: ${suggestions.join(', ')}?`;
@@ -308,7 +308,7 @@ export class ErrorHandler {
       const next = tokens[i + 1];
 
       // Detect consecutive operators
-      if (token.type === TokenType.OPERATOR && next?.type === TokenType.OPERATOR) {
+      if (isBasicOperator(token) && next && isBasicOperator(next)) {
         errors.push({
           name: 'ParseError',
           message: `Consecutive operators '${token.value}' and '${next.value}' are not allowed`,
@@ -322,7 +322,7 @@ export class ErrorHandler {
 
       // Detect unclosed strings
       if (
-        token.type === TokenType.STRING &&
+        isString(token) &&
         !token.value.endsWith('"') &&
         !token.value.endsWith("'")
       ) {
@@ -338,7 +338,7 @@ export class ErrorHandler {
       }
 
       // Detect invalid operator combinations
-      if (token.type === TokenType.OPERATOR && (token.value === '++' || token.value === '--')) {
+      if (isBasicOperator(token) && (token.value === '++' || token.value === '--')) {
         errors.push({
           name: 'ParseError',
           message: `Invalid operator '${token.value}'. JavaScript-style increment/decrement operators are not supported`,

@@ -9,7 +9,6 @@
 
 import type { Token, ASTNode } from '../../types/core';
 import type { ParserContext } from '../parser-types';
-import { TokenType } from '../tokenizer';
 import { KEYWORDS } from '../parser-constants';
 
 /**
@@ -145,7 +144,7 @@ export function isCommandBoundary(
   }
 
   // Check if current token is a command
-  if (ctx.checkTokenType(TokenType.COMMAND)) {
+  if (ctx.checkIsCommand()) {
     return true;
   }
 

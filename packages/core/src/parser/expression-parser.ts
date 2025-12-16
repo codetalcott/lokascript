@@ -6,8 +6,8 @@
 import { debug } from '../utils/debug';
 import type { ExecutionContext, TypedExecutionContext, ASTNode } from '../types/base-types';
 import { tokenize } from './tokenizer';
-import { TokenType, type Token } from './tokenizer';
-// Phase 6: Import token predicates for cleaner type checking
+import type { Token } from './tokenizer';
+// Phase 7: Import token predicates for full TokenType removal
 import {
   isIdentifierLike,
   isSelector,
@@ -24,6 +24,19 @@ import {
   isOpenBracket,
   isOpenParen,
   isPossessive,
+  // Specific type predicates
+  isIdentifier,
+  isString,
+  isNumber,
+  isBoolean,
+  isTemplateLiteral,
+  isQueryReference,
+  isIdSelector,
+  isClassSelector,
+  isContextVar,
+  isKeyword,
+  isGlobalVar,
+  isBasicOperator,
 } from './token-predicates';
 
 // Import enhanced expression implementations
@@ -263,7 +276,7 @@ function parseLogicalExpressionWithPrecedence(state: ParseState, minPrecedence: 
   while (state.position < state.tokens.length) {
     const token = state.tokens[state.position];
 
-    if (token.type === TokenType.LOGICAL_OPERATOR && isLogicalBinaryOperator(token.value)) {
+    if (isLogicalOperator(token) && isLogicalBinaryOperator(token.value)) {
       const operator = token.value;
       const precedence = getLogicalOperatorPrecedence(operator);
 
@@ -327,8 +340,8 @@ function parseComparisonExpression(state: ParseState): ASTNode {
     const token = state.tokens[state.position];
 
     if (
-      token.type === TokenType.COMPARISON_OPERATOR ||
-      (token.type === TokenType.KEYWORD && ['is', 'equals'].includes(token.value))
+      isComparisonOperator(token) ||
+      (isKeyword(token) && ['is', 'equals'].includes(token.value))
     ) {
       const operator = token.value;
       state.position++; // consume operator
@@ -398,7 +411,7 @@ function parseArithmeticExpressionWithPrecedence(
   while (state.position < state.tokens.length) {
     const token = state.tokens[state.position];
 
-    if (token.type === TokenType.OPERATOR && isArithmeticOperator(token.value)) {
+    if (isBasicOperator(token) && isArithmeticOperator(token.value)) {
       const operator = token.value;
       const precedence = getArithmeticOperatorPrecedence(operator);
 
@@ -474,7 +487,7 @@ function parseAsExpression(state: ParseState): ASTNode {
   while (state.position < state.tokens.length) {
     const token = state.tokens[state.position];
 
-    if (token.type === TokenType.KEYWORD && token.value === 'as') {
+    if (isKeyword(token) && token.value === 'as') {
       state.position++; // consume 'as'
 
       const typeToken = advance(state);
@@ -525,7 +538,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
       let property: ASTNode;
       const nextToken = peek(state);
 
-      if (nextToken && nextToken.type === TokenType.OPERATOR && nextToken.value === '*') {
+      if (nextToken && isBasicOperator(nextToken) && nextToken.value === '*') {
         // Consume the * operator
         state.position++;
         const cssPropertyStart = nextToken.start;
@@ -557,7 +570,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     else if (
       left.type === 'identifier' &&
       ['my', 'its', 'your'].includes((left as any).name) &&
-      (token.type === TokenType.IDENTIFIER || token.type === TokenType.CONTEXT_VAR)
+      (isIdentifier(token) || isContextVar(token))
     ) {
       const property = parsePrimaryExpression(state);
 
@@ -575,7 +588,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
     else if (
       left.type === 'identifier' &&
       (left as any).name === 'the' &&
-      token.type === TokenType.IDENTIFIER
+      isIdentifier(token)
     ) {
       // Lookahead to check if this is actually a "the X of Y" pattern
       // before consuming the property token
@@ -589,7 +602,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
 
         // Check for "of" keyword (should always be true due to lookahead)
         const ofToken = peek(state);
-        if (ofToken && ofToken.type === TokenType.KEYWORD && ofToken.value === 'of') {
+        if (ofToken && isKeyword(ofToken) && ofToken.value === 'of') {
           state.position++; // consume 'of'
 
           const target = parsePrimaryExpression(state); // target element
@@ -616,7 +629,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
 
       // Next token should be an identifier for the property name
       const propertyToken = advance(state);
-      if (!propertyToken || propertyToken.type !== TokenType.IDENTIFIER) {
+      if (!propertyToken || !isIdentifier(propertyToken)) {
         throw new ExpressionParseError('Expected property name after "."');
       }
 
@@ -637,7 +650,7 @@ function parsePossessiveExpression(state: ParseState): ASTNode {
 
       // Next token should be an identifier for the property name
       const propertyToken = advance(state);
-      if (!propertyToken || propertyToken.type !== TokenType.IDENTIFIER) {
+      if (!propertyToken || !isIdentifier(propertyToken)) {
         throw new ExpressionParseError('Expected property name after "?."');
       }
 
@@ -789,7 +802,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
 
   // Handle unary operators (not, no, !, -, +)
   if (
-    token.type === TokenType.LOGICAL_OPERATOR &&
+    isLogicalOperator(token) &&
     (token.value === 'not' || token.value === 'no')
   ) {
     advance(state); // consume 'not' or 'no'
@@ -804,25 +817,25 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Handle positional expressions (first, last) - these can take arguments
-  if (token.type === TokenType.IDENTIFIER && (token.value === 'first' || token.value === 'last')) {
+  if (isIdentifier(token) && (token.value === 'first' || token.value === 'last')) {
     const operatorToken = advance(state)!; // consume 'first' or 'last'
 
     // Check if there's an argument (like '.test-item' in 'first .test-item')
     const nextToken = peek(state);
     if (
       nextToken &&
-      (nextToken.type === TokenType.CLASS_SELECTOR ||
-        nextToken.type === TokenType.ID_SELECTOR ||
-        nextToken.type === TokenType.QUERY_REFERENCE ||
-        nextToken.type === TokenType.IDENTIFIER ||
+      (isClassSelector(nextToken) ||
+        isIdSelector(nextToken) ||
+        isQueryReference(nextToken) ||
+        isIdentifier(nextToken) ||
         // Handle case where tokenizer split '.test-item' into '.' + 'test-item'
-        (nextToken.type === TokenType.OPERATOR && nextToken.value === '.'))
+        (isBasicOperator(nextToken) && nextToken.value === '.'))
     ) {
       // Special handling for dot followed by identifier (CSS class selector)
-      if (nextToken.type === TokenType.OPERATOR && nextToken.value === '.') {
+      if (isBasicOperator(nextToken) && nextToken.value === '.') {
         advance(state); // consume '.'
         const identifierToken = peek(state);
-        if (identifierToken && identifierToken.type === TokenType.IDENTIFIER) {
+        if (identifierToken && isIdentifier(identifierToken)) {
           advance(state); // consume identifier
           // Create a synthetic class selector argument
           const argument = {
@@ -864,7 +877,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Handle unary minus, plus, and negation operators
-  if (token.type === TokenType.OPERATOR && (token.value === '-' || token.value === '+' || token.value === '!')) {
+  if (isBasicOperator(token) && (token.value === '-' || token.value === '+' || token.value === '!')) {
     advance(state); // consume operator
     const operand = parsePrimaryExpression(state);
     return {
@@ -888,7 +901,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // String literals
-  if (token.type === TokenType.STRING) {
+  if (isString(token)) {
     advance(state);
     // Remove quotes and process escape sequences
     const rawValue = token.value.slice(1, -1);
@@ -897,7 +910,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Template literals
-  if (token.type === TokenType.TEMPLATE_LITERAL) {
+  if (isTemplateLiteral(token)) {
     advance(state);
     return {
       type: 'templateLiteral',
@@ -908,7 +921,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Number literals
-  if (token.type === TokenType.NUMBER) {
+  if (isNumber(token)) {
     advance(state);
     // Use parseFloat for all numbers to handle scientific notation (1e10) correctly
     // parseInt stops at 'e', but parseFloat handles it properly
@@ -920,7 +933,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Boolean literals
-  if (token.type === TokenType.BOOLEAN) {
+  if (isBoolean(token)) {
     advance(state);
     let value: any;
     let valueType: string;
@@ -951,8 +964,8 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // CSS ID selector (#id)
-  // Phase 6: Using predicate - token.type === TokenType.ID_SELECTOR
-  if (token.type === TokenType.ID_SELECTOR) {
+  // Phase 6: Using predicate - isIdSelector(token)
+  if (isIdSelector(token)) {
     advance(state);
     return {
       type: 'cssSelector',
@@ -964,7 +977,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // CSS class selector (.class)
-  if (token.type === TokenType.CLASS_SELECTOR) {
+  if (isClassSelector(token)) {
     advance(state);
     return {
       type: 'cssSelector',
@@ -976,7 +989,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Query reference (<selector/>)
-  if (token.type === TokenType.QUERY_REFERENCE) {
+  if (isQueryReference(token)) {
     advance(state);
     return {
       type: 'queryReference',
@@ -1012,10 +1025,10 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       }
 
       let key: ASTNode;
-      if (keyToken.type === TokenType.IDENTIFIER) {
+      if (isIdentifier(keyToken)) {
         advance(state);
         key = createIdentifierNode(keyToken.value, keyToken);
-      } else if (keyToken.type === TokenType.STRING) {
+      } else if (isString(keyToken)) {
         advance(state);
         key = createLiteralNode(keyToken.value.slice(1, -1), 'string', keyToken);
       } else {
@@ -1067,7 +1080,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
     if (nextToken?.value === '@') {
       advance(state); // consume '@'
       const attrToken = advance(state);
-      if (!attrToken || attrToken.type !== TokenType.IDENTIFIER) {
+      if (!attrToken || !isIdentifier(attrToken)) {
         throw new ExpressionParseError('Expected attribute name after @');
       }
 
@@ -1178,7 +1191,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Global variables ($identifier)
-  if (token.type === TokenType.GLOBAL_VAR) {
+  if (isGlobalVar(token)) {
     const globalToken = advance(state)!;
     return {
       type: 'globalVariable',
@@ -1190,9 +1203,9 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
 
   // Context variables, identifiers, and keywords (keywords can be used as identifiers in expression contexts)
   if (
-    token.type === TokenType.CONTEXT_VAR ||
-    token.type === TokenType.IDENTIFIER ||
-    (token.type === TokenType.KEYWORD &&
+    isContextVar(token) ||
+    isIdentifier(token) ||
+    (isKeyword(token) &&
       // Exclude keywords with special handling
       token.value !== 'new' &&
       token.value !== 'null' &&
@@ -1236,7 +1249,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Handle constructor calls with 'new' keyword
-  if (token.type === TokenType.KEYWORD && token.value === 'new') {
+  if (isKeyword(token) && token.value === 'new') {
     debug.parse('EXPR: Found constructor call, parsing...', {
       token: token.value,
       type: token.type,
@@ -1248,7 +1261,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
       type: constructorToken?.type,
     });
 
-    if (!constructorToken || constructorToken.type !== TokenType.IDENTIFIER) {
+    if (!constructorToken || !isIdentifier(constructorToken)) {
       throw new ExpressionParseError('Expected constructor name after "new"');
     }
 
@@ -1285,7 +1298,7 @@ function parsePrimaryExpression(state: ParseState): ASTNode {
   }
 
   // Debug: Check if we're hitting this case for constructor calls
-  if (token.type === TokenType.IDENTIFIER && token.value === 'Date') {
+  if (isIdentifier(token) && token.value === 'Date') {
     debug.parse(
       'EXPR: Date token reached unexpected case - this suggests constructor parsing failed earlier'
     );
@@ -2236,7 +2249,7 @@ function looksLikeAttributeSelector(state: ParseState, position: number): boolea
 
   // Look for pattern: identifier (optionally followed by operator and value)
   const firstToken = state.tokens[pos];
-  if (!firstToken || firstToken.type !== TokenType.IDENTIFIER) {
+  if (!firstToken || !isIdentifier(firstToken)) {
     return false;
   }
 
@@ -2272,7 +2285,7 @@ function looksLikeAttributeSelector(state: ParseState, position: number): boolea
 function parseAttributeSelector(state: ParseState, openBracket: Token): ASTNode {
   // Parse attribute name
   const attrToken = advance(state);
-  if (!attrToken || attrToken.type !== TokenType.IDENTIFIER) {
+  if (!attrToken || !isIdentifier(attrToken)) {
     throw new ExpressionParseError('Expected attribute name in selector');
   }
 
@@ -2290,9 +2303,9 @@ function parseAttributeSelector(state: ParseState, openBracket: Token): ASTNode 
       throw new ExpressionParseError('Expected value after attribute operator');
     }
 
-    if (valueToken.type === TokenType.STRING) {
+    if (isString(valueToken)) {
       value = valueToken.value.slice(1, -1); // Remove quotes
-    } else if (valueToken.type === TokenType.IDENTIFIER || valueToken.type === TokenType.NUMBER) {
+    } else if (isIdentifier(valueToken) || isNumber(valueToken)) {
       value = valueToken.value;
     } else {
       throw new ExpressionParseError(`Unexpected token in attribute selector: ${valueToken.value}`);

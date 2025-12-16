@@ -200,6 +200,88 @@ export function isComment(token: Token): boolean {
 }
 
 // ============================================================================
+// SPECIFIC TYPE PREDICATES - Individual token type checks
+// Used when you need to distinguish between specific types, not groups
+// ============================================================================
+
+/**
+ * Check if token is specifically an IDENTIFIER (not COMMAND, KEYWORD, etc.)
+ */
+export function isIdentifier(token: Token): boolean {
+  return token.type === TokenType.IDENTIFIER;
+}
+
+/**
+ * Check if token is a string literal
+ */
+export function isString(token: Token): boolean {
+  return token.type === TokenType.STRING;
+}
+
+/**
+ * Check if token is a number literal
+ */
+export function isNumber(token: Token): boolean {
+  return token.type === TokenType.NUMBER;
+}
+
+/**
+ * Check if token is a boolean literal
+ */
+export function isBoolean(token: Token): boolean {
+  return token.type === TokenType.BOOLEAN;
+}
+
+/**
+ * Check if token is a template literal
+ */
+export function isTemplateLiteral(token: Token): boolean {
+  return token.type === TokenType.TEMPLATE_LITERAL;
+}
+
+/**
+ * Check if token is a query reference (<selector/>)
+ */
+export function isQueryReference(token: Token): boolean {
+  return token.type === TokenType.QUERY_REFERENCE;
+}
+
+/**
+ * Check if token is an ID selector (#id)
+ */
+export function isIdSelector(token: Token): boolean {
+  return token.type === TokenType.ID_SELECTOR;
+}
+
+/**
+ * Check if token is a class selector (.class)
+ */
+export function isClassSelector(token: Token): boolean {
+  return token.type === TokenType.CLASS_SELECTOR;
+}
+
+/**
+ * Check if token is a CSS selector
+ */
+export function isCssSelector(token: Token): boolean {
+  return token.type === TokenType.CSS_SELECTOR;
+}
+
+/**
+ * Check if token is a global variable ($var)
+ */
+export function isGlobalVar(token: Token): boolean {
+  return token.type === TokenType.GLOBAL_VAR;
+}
+
+/**
+ * Check if token is a basic operator (not logical/comparison)
+ */
+export function isBasicOperator(token: Token): boolean {
+  return token.type === TokenType.OPERATOR;
+}
+
+// ============================================================================
 // VALUE PREDICATES - Check specific token values
 // ============================================================================
 
@@ -383,7 +465,7 @@ export const TokenPredicates = {
   isLogicalOperator,
   isComparisonOperator,
 
-  // Lexical predicates
+  // Lexical predicates (grouped)
   isIdentifierLike,
   isSelector,
   isBasicSelector,
@@ -393,6 +475,19 @@ export const TokenPredicates = {
   isTimeExpression,
   isSymbol,
   isComment,
+
+  // Specific type predicates (individual)
+  isIdentifier,
+  isString,
+  isNumber,
+  isBoolean,
+  isTemplateLiteral,
+  isQueryReference,
+  isIdSelector,
+  isClassSelector,
+  isCssSelector,
+  isGlobalVar,
+  isBasicOperator,
 
   // Value predicates
   hasValue,
