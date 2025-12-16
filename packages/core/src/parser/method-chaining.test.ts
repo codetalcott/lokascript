@@ -15,16 +15,17 @@ describe('Method Chaining', () => {
   it('should debug tokenization', () => {
     const tokens = tokenize('str.toUpperCase().toLowerCase()');
     // After fix, should have 9 tokens
+    // Phase 8: Tokens now use 'kind' instead of 'type'
     expect(tokens).toHaveLength(9);
-    expect(tokens[0]).toMatchObject({ type: 'identifier', value: 'str' });
-    expect(tokens[1]).toMatchObject({ type: 'operator', value: '.' });
-    expect(tokens[2]).toMatchObject({ type: 'identifier', value: 'toUpperCase' });
-    expect(tokens[3]).toMatchObject({ type: 'operator', value: '(' });
-    expect(tokens[4]).toMatchObject({ type: 'operator', value: ')' });
-    expect(tokens[5]).toMatchObject({ type: 'operator', value: '.' });
-    expect(tokens[6]).toMatchObject({ type: 'identifier', value: 'toLowerCase' });
-    expect(tokens[7]).toMatchObject({ type: 'operator', value: '(' });
-    expect(tokens[8]).toMatchObject({ type: 'operator', value: ')' });
+    expect(tokens[0]).toMatchObject({ kind: 'identifier', value: 'str' });
+    expect(tokens[1]).toMatchObject({ kind: 'operator', value: '.' });
+    expect(tokens[2]).toMatchObject({ kind: 'identifier', value: 'toUpperCase' });
+    expect(tokens[3]).toMatchObject({ kind: 'operator', value: '(' });
+    expect(tokens[4]).toMatchObject({ kind: 'operator', value: ')' });
+    expect(tokens[5]).toMatchObject({ kind: 'operator', value: '.' });
+    expect(tokens[6]).toMatchObject({ kind: 'identifier', value: 'toLowerCase' });
+    expect(tokens[7]).toMatchObject({ kind: 'operator', value: '(' });
+    expect(tokens[8]).toMatchObject({ kind: 'operator', value: ')' });
   });
 
   beforeEach(() => {

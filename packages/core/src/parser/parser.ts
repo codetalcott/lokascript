@@ -4,6 +4,8 @@
  * Handles hyperscript's unique natural language syntax
  */
 
+// Phase 8: TokenType only used in deprecated bridge methods (checkTokenType, matchTokenType)
+// TODO: Remove TokenType import when bridge methods are removed
 import { tokenize, TokenType } from './tokenizer';
 import type {
   Token,
@@ -1095,10 +1097,8 @@ export class Parser {
       if (this.match('(')) {
         expr = this.finishCall(expr);
       } else if (this.match('.')) {
-        const name = this.consume(
-          TokenType.IDENTIFIER,
-          "Expected property name after '.' - malformed member access"
-        );
+        // Phase 8: Use predicate-based consume
+        const name = this.consumeIdentifier("Expected property name after '.' - malformed member access");
         expr = this.createMemberExpression(expr, this.createIdentifier(name.value), false);
       } else if (this.match('[')) {
         const index = this.parseExpression();
@@ -1113,19 +1113,13 @@ export class Parser {
         if (this.check('*')) {
           // Consume the * operator
           this.advance();
-          // Get the property name after *
-          const propertyToken = this.consume(
-            TokenType.IDENTIFIER,
-            'Expected property name after * in CSS property syntax'
-          );
+          // Get the property name after * - Phase 8: Use predicate-based consume
+          const propertyToken = this.consumeIdentifier('Expected property name after * in CSS property syntax');
           // Combine * with property name
           propertyName = '*' + propertyToken.value;
         } else {
-          // Normal property access
-          const property = this.consume(
-            TokenType.IDENTIFIER,
-            'Expected property name after possessive'
-          );
+          // Normal property access - Phase 8: Use predicate-based consume
+          const property = this.consumeIdentifier('Expected property name after possessive');
           propertyName = property.value;
         }
 
@@ -1825,7 +1819,8 @@ export class Parser {
     } else if (this.checkIdentifier()) {
       eventToken = this.advance();
     } else {
-      eventToken = this.consume(TokenType.EVENT, errorMessage);
+      // Phase 8: Use predicate-based consume
+      eventToken = this.consumeEvent(errorMessage);
     }
 
     let event = eventToken.value;
@@ -2394,10 +2389,8 @@ export class Parser {
 
     // 'behavior' keyword should already be consumed
     // Now expect behavior name (must start with uppercase)
-    const nameToken = this.consume(
-      TokenType.IDENTIFIER,
-      "Expected behavior name after 'behavior' keyword"
-    );
+    // Phase 8: Use predicate-based consume
+    const nameToken = this.consumeIdentifier("Expected behavior name after 'behavior' keyword");
     const behaviorName = nameToken.value;
 
     // Validate behavior name starts with uppercase
@@ -2411,7 +2404,8 @@ export class Parser {
       // Parse parameter list
       if (!this.check(')')) {
         do {
-          const paramToken = this.consume(TokenType.IDENTIFIER, 'Expected parameter name');
+          // Phase 8: Use predicate-based consume
+          const paramToken = this.consumeIdentifier('Expected parameter name');
           parameters.push(paramToken.value);
         } while (this.match(','));
       }
@@ -3170,8 +3164,9 @@ export class Parser {
       );
     } else {
       // Standard JavaScript property access: my className, its value, your name
+      // Phase 8: Use predicate-based consume
       const contextLabels = { me: 'my', it: 'its', you: 'your' };
-      const property = this.consume(TokenType.IDENTIFIER, `Expected property name after '${contextLabels[contextVar]}'`);
+      const property = this.consumeIdentifier(`Expected property name after '${contextLabels[contextVar]}'`);
       return this.createMemberExpression(
         this.createIdentifier(contextVar),
         this.createIdentifier(property.value),
@@ -3293,6 +3288,10 @@ export class Parser {
     return false;
   }
 
+  /**
+   * @deprecated Phase 8: Use predicate-based methods (matchIdentifier, etc.) instead
+   * Kept for backward compatibility with ParserContext interface
+   */
   private matchTokenType(tokenType: TokenType): boolean {
     if (this.checkTokenType(tokenType)) {
       this.advance();
@@ -3310,8 +3309,9 @@ export class Parser {
   }
 
   /**
-   * Phase 8: checkTokenType now maps TokenType to predicate-based checks
-   * This maintains backward compatibility with consume() calls that use TokenType
+   * @deprecated Phase 8: Use predicate-based methods (checkIdentifier, etc.) instead
+   * Kept for backward compatibility with ParserContext interface.
+   * Maps TokenType enum to predicate-based checks.
    */
   private checkTokenType(tokenType: TokenType): boolean {
     if (this.isAtEnd()) return false;
@@ -3558,6 +3558,36 @@ export class Parser {
     return this.matchPredicate(isComparisonOperator);
   }
 
+  // ============================================================================
+  // PREDICATE-BASED CONSUME METHODS (Phase 8)
+  // These replace consume(TokenType.X, ...) calls with predicate-based checks
+  // ============================================================================
+
+  /**
+   * Consume a token if it satisfies the predicate, otherwise add error
+   */
+  private consumePredicate(predicate: (token: Token) => boolean, message: string): Token {
+    if (this.checkPredicate(predicate)) {
+      return this.advance();
+    }
+    this.addError(message);
+    return this.peek();
+  }
+
+  /**
+   * Consume an identifier token
+   */
+  private consumeIdentifier(message: string): Token {
+    return this.consumePredicate(isIdentifier, message);
+  }
+
+  /**
+   * Consume an event token
+   */
+  private consumeEvent(message: string): Token {
+    return this.consumePredicate(isEvent, message);
+  }
+
   private advance(): Token {
     if (!this.isAtEnd()) this.current++;
     return this.previous();
@@ -3579,18 +3609,14 @@ export class Parser {
     return this.tokens[this.current - 1];
   }
 
-  private consume(expected: string | TokenType, message: string): Token {
-    // Check if it's a token type (enum value) by checking if it matches any TokenType enum values
-    const isTokenType = Object.values(TokenType).includes(expected as TokenType);
-
-    if (isTokenType) {
-      // It's a token type - check the token's type property
-      if (this.checkTokenType(expected as TokenType)) return this.advance();
-    } else {
-      // It's a literal string value - check the token's value property
-      if (this.check(expected)) return this.advance();
+  /**
+   * Consume a token with the expected string value
+   * Phase 8: Simplified to string-only - use consumeIdentifier/consumeEvent for type-based checks
+   */
+  private consume(expected: string, message: string): Token {
+    if (this.check(expected)) {
+      return this.advance();
     }
-
     this.addError(message);
     return this.peek();
   }

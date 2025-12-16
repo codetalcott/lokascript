@@ -49,9 +49,10 @@ describe('CSS Pseudo-Class Support', () => {
     it('should tokenize :checked pseudo-class', () => {
       const tokens = tokenize('input:checked');
       expect(tokens).toHaveLength(3);
-      expect(tokens[0]).toMatchObject({ type: 'event', value: 'input' }); // 'input' is recognized as a DOM event
-      expect(tokens[1]).toMatchObject({ type: 'operator', value: ':' });
-      expect(tokens[2]).toMatchObject({ type: 'identifier', value: 'checked' });
+      // Phase 8: Tokens now use 'kind' instead of 'type'
+      expect(tokens[0]).toMatchObject({ kind: 'identifier', value: 'input' }); // 'input' is now classified as identifier
+      expect(tokens[1]).toMatchObject({ kind: 'operator', value: ':' });
+      expect(tokens[2]).toMatchObject({ kind: 'identifier', value: 'checked' });
     });
 
     it('should parse and evaluate :checked selector', async () => {

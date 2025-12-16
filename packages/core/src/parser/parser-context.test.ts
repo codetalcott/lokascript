@@ -140,7 +140,8 @@ describe('ParserContext', () => {
     it('should advance through tokens', () => {
       const token = context.advance();
       expect(token).toBeDefined();
-      expect(token.type).toBeDefined();
+      // Phase 8: Tokens now use 'kind' instead of 'type'
+      expect(token.kind).toBeDefined();
     });
 
     it('should peek at current token without advancing', () => {
