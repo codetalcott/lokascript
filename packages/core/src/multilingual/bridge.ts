@@ -16,6 +16,7 @@ import type {
   SemanticValue,
   SemanticAnalyzer,
   SemanticAnalysisResult,
+  ASTNode,
 } from '@hyperfixi/semantic';
 
 import type {
@@ -109,6 +110,22 @@ export interface BridgeResult {
   confidence: number;
   sourceLang: string;
   targetLang: string;
+}
+
+/**
+ * Result from direct AST parsing.
+ */
+export interface ParseToASTResult {
+  /** The AST node, or null if direct path failed */
+  ast: ASTNode | null;
+  /** Whether the direct Semantic→AST path was used */
+  usedDirectPath: boolean;
+  /** Confidence score from semantic parsing */
+  confidence: number;
+  /** Source language */
+  lang: string;
+  /** English text for fallback to core parser (if direct path failed) */
+  fallbackText: string | null;
 }
 
 // Lazy-loaded semantic module
@@ -209,6 +226,107 @@ export class SemanticGrammarBridge {
   async render(node: SemanticNode, targetLang: string): Promise<string> {
     const semantic = await getSemanticModule();
     return semantic.render(node, targetLang);
+  }
+
+  /**
+   * Parse input directly to an AST node, bypassing English text generation.
+   *
+   * This is the new direct path:
+   *   Input (any language) → Semantic Parser → AST Builder → AST
+   *
+   * Instead of the old path:
+   *   Input → Semantic Parser → English Text → Core Parser → AST
+   *
+   * @param input - The hyperscript text to parse
+   * @param lang - The language of the input
+   * @returns The AST node, or null if parsing failed
+   */
+  async parseToAST(input: string, lang: string): Promise<ASTNode | null> {
+    if (!this.isInitialized()) {
+      await this.initialize();
+    }
+
+    if (!this.analyzer) return null;
+
+    const result = this.analyzer.analyze(input, lang);
+
+    if (result.confidence >= this.config.confidenceThreshold && result.node) {
+      // Use the direct AST builder path
+      const semantic = await getSemanticModule();
+      try {
+        return semantic.buildAST(result.node);
+      } catch (error) {
+        // Fall through to fallback
+        console.warn('[SemanticGrammarBridge] AST build failed, using fallback:', error);
+      }
+    }
+
+    // Fallback: render to English and return null (let caller use core parser)
+    return null;
+  }
+
+  /**
+   * Parse input to AST with detailed result information.
+   *
+   * @param input - The hyperscript text to parse
+   * @param lang - The language of the input
+   * @returns Detailed result including AST, confidence, and whether direct path was used
+   */
+  async parseToASTWithDetails(
+    input: string,
+    lang: string
+  ): Promise<ParseToASTResult> {
+    if (!this.isInitialized()) {
+      await this.initialize();
+    }
+
+    if (!this.analyzer) {
+      return {
+        ast: null,
+        usedDirectPath: false,
+        confidence: 0,
+        lang,
+        fallbackText: null,
+      };
+    }
+
+    const result = this.analyzer.analyze(input, lang);
+
+    if (result.confidence >= this.config.confidenceThreshold && result.node) {
+      const semantic = await getSemanticModule();
+      try {
+        const ast = semantic.buildAST(result.node);
+        return {
+          ast,
+          usedDirectPath: true,
+          confidence: result.confidence,
+          lang,
+          fallbackText: null,
+        };
+      } catch {
+        // Fall through to fallback
+      }
+
+      // Fallback: render to English for core parser
+      if (this.config.fallbackOnLowConfidence) {
+        const englishText = semantic.render(result.node, 'en');
+        return {
+          ast: null,
+          usedDirectPath: false,
+          confidence: result.confidence,
+          lang,
+          fallbackText: englishText,
+        };
+      }
+    }
+
+    return {
+      ast: null,
+      usedDirectPath: false,
+      confidence: result.confidence,
+      lang,
+      fallbackText: null,
+    };
   }
 
   async getAllTranslations(

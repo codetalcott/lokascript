@@ -10,7 +10,7 @@
  * - translate: Convenience function for simple translations
  */
 
-import type { SemanticNode } from '@hyperfixi/semantic';
+import type { SemanticNode, ASTNode } from '@hyperfixi/semantic';
 import {
   SemanticGrammarBridge,
   semanticNodeToParsedStatement,
@@ -18,6 +18,7 @@ import {
   translate,
   type BridgeConfig,
   type BridgeResult,
+  type ParseToASTResult,
 } from './bridge';
 
 // Re-export bridge components
@@ -28,6 +29,7 @@ export {
   translate,
   type BridgeConfig,
   type BridgeResult,
+  type ParseToASTResult,
 };
 
 // Lazy-loaded semantic module
@@ -114,6 +116,56 @@ export class MultilingualHyperscript {
   async parse(input: string, lang: string = 'en'): Promise<SemanticNode | null> {
     await this.ensureInitialized();
     return this.bridge.parse(input, lang);
+  }
+
+  /**
+   * Parse input directly to an AST node.
+   *
+   * This uses the new direct path that bypasses English text generation:
+   *   Input (any language) → Semantic Parser → AST Builder → AST
+   *
+   * @param input - The hyperscript text to parse
+   * @param lang - The language of the input (default: 'en')
+   * @returns The AST node, or null if parsing failed
+   *
+   * @example
+   * ```typescript
+   * // Parse Japanese directly to AST
+   * const ast = await ml.parseToAST('#button の .active を 切り替え', 'ja');
+   * // ast.type === 'command'
+   * // ast.name === 'toggle'
+   * ```
+   */
+  async parseToAST(input: string, lang: string = 'en'): Promise<ASTNode | null> {
+    await this.ensureInitialized();
+    return this.bridge.parseToAST(input, lang);
+  }
+
+  /**
+   * Parse input to AST with detailed result information.
+   *
+   * @param input - The hyperscript text to parse
+   * @param lang - The language of the input (default: 'en')
+   * @returns Detailed result including AST, confidence, and whether direct path was used
+   *
+   * @example
+   * ```typescript
+   * const result = await ml.parseToASTWithDetails('トグル .active', 'ja');
+   * if (result.usedDirectPath) {
+   *   // Direct AST path succeeded
+   *   console.log('AST:', result.ast);
+   * } else if (result.fallbackText) {
+   *   // Use fallback text with core parser
+   *   const ast = coreParser.parse(result.fallbackText);
+   * }
+   * ```
+   */
+  async parseToASTWithDetails(
+    input: string,
+    lang: string = 'en'
+  ): Promise<ParseToASTResult> {
+    await this.ensureInitialized();
+    return this.bridge.parseToASTWithDetails(input, lang);
   }
 
   /**
