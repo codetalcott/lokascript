@@ -330,3 +330,31 @@ export {
   type WarningSeverity,
   type WarningCode,
 } from './analysis';
+
+// =============================================================================
+// AST Builder (Direct Semantic-to-AST conversion)
+// =============================================================================
+
+export {
+  // Main builder
+  ASTBuilder,
+  buildAST,
+  // Value converters
+  convertValue,
+  convertLiteral,
+  convertSelector,
+  convertReference,
+  convertPropertyPath,
+  convertExpression,
+  // Command mappers
+  getCommandMapper,
+  registerCommandMapper,
+  getRegisteredMappers,
+  // Types
+  type ASTNode,
+  type CommandNode,
+  type EventHandlerNode,
+  type ConditionalNode,
+  type ASTBuilderOptions,
+  type CommandMapper,
+} from './ast-builder';

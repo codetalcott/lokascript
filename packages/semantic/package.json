@@ -42,7 +42,8 @@
   "author": "Hyperfixi Team",
   "license": "MIT",
   "dependencies": {
-    "@hyperfixi/i18n": "*"
+    "@hyperfixi/i18n": "*",
+    "@hyperfixi/expression-parser": "*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
