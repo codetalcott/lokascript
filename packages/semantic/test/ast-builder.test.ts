@@ -5,13 +5,21 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ASTBuilder, buildAST } from '../src/ast-builder/index';
+import {
+  ASTBuilder,
+  buildAST,
+  type EventHandlerNode,
+  type ConditionalNode,
+  type CompoundNode,
+} from '../src/ast-builder/index';
 import { convertValue, convertLiteral, convertSelector, convertReference } from '../src/ast-builder/value-converters';
 import { getCommandMapper } from '../src/ast-builder/command-mappers';
 import type {
+  SemanticNode,
   CommandSemanticNode,
   EventHandlerSemanticNode,
   ConditionalSemanticNode,
+  CompoundSemanticNode,
   LiteralValue,
   SelectorValue,
   ReferenceValue,
@@ -780,5 +788,512 @@ describe('Command Mapper Coverage', () => {
     }
 
     expect(expectedCommands.length).toBe(46);
+  });
+});
+
+// =============================================================================
+// Enhanced Event Handler Tests (Phase 4)
+// =============================================================================
+
+describe('Enhanced Event Handler Building', () => {
+  const builder = new ASTBuilder();
+
+  describe('basic event handlers', () => {
+    it('should build a simple click event handler', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'click', dataType: 'string' }],
+        ]),
+        body: [
+          {
+            kind: 'command',
+            action: 'toggle',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.type).toBe('eventHandler');
+      expect(result.event).toBe('click');
+      expect(result.commands).toHaveLength(1);
+      expect((result.commands[0] as any).name).toBe('toggle');
+    });
+
+    it('should handle default event (click) when no event specified', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map(),
+        body: [
+          {
+            kind: 'command',
+            action: 'hide',
+            roles: new Map([
+              ['patient', { type: 'reference', value: 'me' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.event).toBe('click');
+    });
+  });
+
+  describe('event handler with selector (from clause)', () => {
+    it('should extract selector from source role', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'click', dataType: 'string' }],
+          ['source', { type: 'selector', value: '.button', selectorKind: 'class' }],
+        ]),
+        body: [
+          {
+            kind: 'command',
+            action: 'hide',
+            roles: new Map([
+              ['patient', { type: 'reference', value: 'me' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.selector).toBe('.button');
+      expect(result.target).toBe('.button');
+    });
+
+    it('should handle reference source (e.g., window, document)', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'keydown', dataType: 'string' }],
+          ['source', { type: 'reference', value: 'body' }],
+        ]),
+        body: [
+          {
+            kind: 'command',
+            action: 'log',
+            roles: new Map([
+              ['patient', { type: 'literal', value: 'key pressed', dataType: 'string' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.target).toBe('body');
+      expect(result.selector).toBeUndefined();
+    });
+  });
+
+  describe('multiple events (or syntax)', () => {
+    it('should parse multiple events separated by or', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'click or keydown', dataType: 'string' }],
+        ]),
+        body: [
+          {
+            kind: 'command',
+            action: 'toggle',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.event).toBe('click');
+      expect(result.events).toEqual(['click', 'keydown']);
+    });
+
+    it('should parse multiple events separated by pipe', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'mouseenter|mouseleave', dataType: 'string' }],
+        ]),
+        body: [],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.event).toBe('mouseenter');
+      expect(result.events).toEqual(['mouseenter', 'mouseleave']);
+    });
+  });
+
+  describe('event handler with condition', () => {
+    it('should include condition when present', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'keydown', dataType: 'string' }],
+          ['condition', { type: 'expression', raw: 'altKey and code is "KeyS"' }],
+        ]),
+        body: [
+          {
+            kind: 'command',
+            action: 'hide',
+            roles: new Map([
+              ['patient', { type: 'reference', value: 'me' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.condition).toBeDefined();
+    });
+  });
+
+  describe('event handler with watchTarget', () => {
+    it('should include watchTarget from destination role', () => {
+      const node: EventHandlerSemanticNode = {
+        kind: 'event-handler',
+        action: 'on',
+        roles: new Map([
+          ['event', { type: 'literal', value: 'mutation', dataType: 'string' }],
+          ['destination', { type: 'selector', value: '#target', selectorKind: 'id' }],
+        ]),
+        body: [],
+      };
+
+      const result = builder.build(node) as EventHandlerNode;
+
+      expect(result.watchTarget).toBeDefined();
+    });
+  });
+});
+
+// =============================================================================
+// Compound Statement Tests (Phase 4)
+// =============================================================================
+
+describe('Compound Statement Building', () => {
+  const builder = new ASTBuilder();
+
+  describe('then chains', () => {
+    it('should build compound node from multiple statements', () => {
+      const node: CompoundSemanticNode = {
+        kind: 'compound',
+        action: 'compound',
+        roles: new Map(),
+        statements: [
+          {
+            kind: 'command',
+            action: 'toggle',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'wait',
+            roles: new Map([
+              ['duration', { type: 'literal', value: '500ms', dataType: 'duration' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'hide',
+            roles: new Map([
+              ['patient', { type: 'reference', value: 'me' }],
+            ]),
+          },
+        ],
+        chainType: 'then',
+      };
+
+      const result = builder.build(node) as CompoundNode;
+
+      expect(result.type).toBe('compound');
+      expect(result.chainType).toBe('then');
+      expect(result.statements).toHaveLength(3);
+    });
+
+    it('should unwrap single-statement compound', () => {
+      const node: CompoundSemanticNode = {
+        kind: 'compound',
+        action: 'compound',
+        roles: new Map(),
+        statements: [
+          {
+            kind: 'command',
+            action: 'toggle',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+        chainType: 'then',
+      };
+
+      const result = builder.build(node);
+
+      // Single statement should be unwrapped
+      expect(result.type).toBe('command');
+      expect((result as any).name).toBe('toggle');
+    });
+
+    it('should return empty block for empty compound', () => {
+      const node: CompoundSemanticNode = {
+        kind: 'compound',
+        action: 'compound',
+        roles: new Map(),
+        statements: [],
+        chainType: 'then',
+      };
+
+      const result = builder.build(node);
+
+      expect(result.type).toBe('block');
+      expect((result as any).commands).toHaveLength(0);
+    });
+  });
+
+  describe('async chains', () => {
+    it('should preserve async chain type', () => {
+      const node: CompoundSemanticNode = {
+        kind: 'compound',
+        action: 'compound',
+        roles: new Map(),
+        statements: [
+          {
+            kind: 'command',
+            action: 'fetch',
+            roles: new Map([
+              ['source', { type: 'literal', value: '/api/data', dataType: 'string' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'log',
+            roles: new Map([
+              ['patient', { type: 'reference', value: 'result' }],
+            ]),
+          },
+        ],
+        chainType: 'async',
+      };
+
+      const result = builder.build(node) as CompoundNode;
+
+      expect(result.chainType).toBe('async');
+    });
+  });
+
+  describe('and chains (parallel)', () => {
+    it('should preserve and chain type', () => {
+      const node: CompoundSemanticNode = {
+        kind: 'compound',
+        action: 'compound',
+        roles: new Map(),
+        statements: [
+          {
+            kind: 'command',
+            action: 'add',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.loading', selectorKind: 'class' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'toggle',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+        chainType: 'and',
+      };
+
+      const result = builder.build(node) as CompoundNode;
+
+      expect(result.chainType).toBe('and');
+    });
+  });
+});
+
+// =============================================================================
+// Conditional Node Tests (Phase 4)
+// =============================================================================
+
+describe('Conditional Node Building', () => {
+  const builder = new ASTBuilder();
+
+  describe('if statements', () => {
+    it('should build conditional with then branch only', () => {
+      const node: ConditionalSemanticNode = {
+        kind: 'conditional',
+        action: 'if',
+        roles: new Map([
+          ['condition', { type: 'expression', raw: 'x > 5' }],
+        ]),
+        thenBranch: [
+          {
+            kind: 'command',
+            action: 'add',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as ConditionalNode;
+
+      expect(result.type).toBe('if');
+      expect(result.condition).toBeDefined();
+      expect(result.thenBranch).toHaveLength(1);
+      expect(result.elseBranch).toBeUndefined();
+    });
+
+    it('should build conditional with else branch', () => {
+      const node: ConditionalSemanticNode = {
+        kind: 'conditional',
+        action: 'if',
+        roles: new Map([
+          ['condition', { type: 'expression', raw: 'isLoggedIn' }],
+        ]),
+        thenBranch: [
+          {
+            kind: 'command',
+            action: 'show',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '#dashboard', selectorKind: 'id' }],
+            ]),
+          },
+        ],
+        elseBranch: [
+          {
+            kind: 'command',
+            action: 'show',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '#login', selectorKind: 'id' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as ConditionalNode;
+
+      expect(result.type).toBe('if');
+      expect(result.thenBranch).toHaveLength(1);
+      expect(result.elseBranch).toHaveLength(1);
+    });
+
+    it('should handle multiple commands in branches', () => {
+      const node: ConditionalSemanticNode = {
+        kind: 'conditional',
+        action: 'if',
+        roles: new Map([
+          ['condition', { type: 'literal', value: true }],
+        ]),
+        thenBranch: [
+          {
+            kind: 'command',
+            action: 'add',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.loading', selectorKind: 'class' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'wait',
+            roles: new Map([
+              ['duration', { type: 'literal', value: '1s', dataType: 'duration' }],
+            ]),
+          },
+          {
+            kind: 'command',
+            action: 'remove',
+            roles: new Map([
+              ['patient', { type: 'selector', value: '.loading', selectorKind: 'class' }],
+            ]),
+          },
+        ],
+      };
+
+      const result = builder.build(node) as ConditionalNode;
+
+      expect(result.thenBranch).toHaveLength(3);
+    });
+
+    it('should throw error when condition is missing', () => {
+      const node: ConditionalSemanticNode = {
+        kind: 'conditional',
+        action: 'if',
+        roles: new Map(),
+        thenBranch: [
+          {
+            kind: 'command',
+            action: 'hide',
+            roles: new Map(),
+          },
+        ],
+      };
+
+      expect(() => builder.build(node)).toThrow('Conditional node missing condition');
+    });
+  });
+});
+
+// =============================================================================
+// buildBlock Public Method Tests
+// =============================================================================
+
+describe('ASTBuilder.buildBlock', () => {
+  it('should build a block from semantic nodes', () => {
+    const builder = new ASTBuilder();
+    const nodes: SemanticNode[] = [
+      {
+        kind: 'command',
+        action: 'toggle',
+        roles: new Map([
+          ['patient', { type: 'selector', value: '.active', selectorKind: 'class' }],
+        ]),
+      },
+      {
+        kind: 'command',
+        action: 'wait',
+        roles: new Map([
+          ['duration', { type: 'literal', value: '500ms', dataType: 'duration' }],
+        ]),
+      },
+    ];
+
+    const result = builder.buildBlock(nodes);
+
+    expect(result.type).toBe('block');
+    expect(result.commands).toHaveLength(2);
+  });
+
+  it('should return empty block for empty array', () => {
+    const builder = new ASTBuilder();
+    const result = builder.buildBlock([]);
+
+    expect(result.type).toBe('block');
+    expect(result.commands).toHaveLength(0);
   });
 });

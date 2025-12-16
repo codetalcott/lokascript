@@ -54,14 +54,29 @@ export interface CommandNode extends ASTNode {
 }
 
 /**
- * Event handler AST node
+ * Event handler AST node (compatible with @hyperfixi/core)
  */
 export interface EventHandlerNode extends ASTNode {
   readonly type: 'eventHandler';
+  /** Primary event name */
   readonly event: string;
+  /** All event names when using "on event1 or event2" syntax */
   readonly events?: string[];
+  /** CSS selector for event delegation ("from" keyword) */
   readonly selector?: string;
+  /** Target for "from" clause (as string or expression) */
+  readonly target?: string;
+  /** Optional event condition ("[condition]" syntax) */
   readonly condition?: ASTNode;
+  /** Attribute name for mutation events ("of @attribute" syntax) */
+  readonly attributeName?: string;
+  /** Target element to watch for changes ("in <target>" syntax) */
+  readonly watchTarget?: ExpressionNode;
+  /** Event parameter names to destructure (e.g., ['clientX', 'clientY']) */
+  readonly args?: string[];
+  /** Event parameters (alias for args) */
+  readonly params?: string[];
+  /** Handler commands */
   readonly commands: ASTNode[];
 }
 
@@ -73,6 +88,25 @@ export interface ConditionalNode extends ASTNode {
   readonly condition: ExpressionNode;
   readonly thenBranch: ASTNode[];
   readonly elseBranch?: ASTNode[];
+}
+
+/**
+ * Compound statement node (command chains)
+ */
+export interface CompoundNode extends ASTNode {
+  readonly type: 'compound';
+  /** Chain type: 'then' for sequential, 'and' for parallel-like, 'async' for async */
+  readonly chainType: 'then' | 'and' | 'async';
+  /** Statements in the compound */
+  readonly statements: ASTNode[];
+}
+
+/**
+ * Block node (for grouping commands)
+ */
+export interface BlockNode extends ASTNode {
+  readonly type: 'block';
+  readonly commands: ASTNode[];
 }
 
 // =============================================================================
@@ -195,32 +229,74 @@ export class ASTBuilder {
    * Build an EventHandlerNode from an EventHandlerSemanticNode.
    */
   private buildEventHandler(node: EventHandlerSemanticNode): EventHandlerNode {
+    // Extract event name(s)
     const eventValue = node.roles.get('event');
-    const event = eventValue?.type === 'literal'
-      ? String(eventValue.value)
-      : eventValue?.type === 'reference'
-        ? eventValue.value
-        : 'click'; // Default event
+    let event: string;
+    let events: string[] | undefined;
+
+    if (eventValue?.type === 'literal') {
+      const eventStr = String(eventValue.value);
+      // Handle "click or keydown" syntax
+      if (eventStr.includes('|') || eventStr.includes(' or ')) {
+        events = eventStr.split(/\s+or\s+|\|/).map(e => e.trim());
+        event = events[0];
+      } else {
+        event = eventStr;
+      }
+    } else if (eventValue?.type === 'reference') {
+      event = eventValue.value;
+    } else {
+      event = 'click'; // Default event
+    }
 
     // Build body commands recursively
     const commands = node.body.map(child => this.build(child));
 
-    // Get selector from 'source' role if present
+    // Get selector/target from 'source' role if present
     const fromValue = node.roles.get('source');
-    const selector = fromValue?.type === 'selector' ? fromValue.value : null;
+    let selector: string | undefined;
+    let target: string | undefined;
 
-    const result: EventHandlerNode = {
-      type: 'eventHandler',
-      event,
-      commands,
-    };
-
-    // Only add selector if present (avoid exactOptionalPropertyTypes issue)
-    if (selector) {
-      return { ...result, selector };
+    if (fromValue?.type === 'selector') {
+      selector = fromValue.value;
+      target = fromValue.value;
+    } else if (fromValue?.type === 'reference') {
+      target = fromValue.value;
+    } else if (fromValue?.type === 'literal') {
+      target = String(fromValue.value);
     }
 
-    return result;
+    // Get condition from 'condition' role if present
+    const conditionValue = node.roles.get('condition');
+    const condition = conditionValue ? convertValue(conditionValue) : undefined;
+
+    // Get destination (watchTarget) if present
+    const destinationValue = node.roles.get('destination');
+    const watchTarget = destinationValue ? convertValue(destinationValue) : undefined;
+
+    // Extract event modifiers
+    const modifiers = node.eventModifiers;
+
+    // Handle queue modifier (debounce, throttle, etc. are runtime concerns)
+    let finalSelector = selector;
+    if (modifiers?.from) {
+      const fromMod = modifiers.from;
+      if (fromMod.type === 'selector' && !selector) {
+        finalSelector = fromMod.value;
+      }
+    }
+
+    // Build result with spread for optional properties (exactOptionalPropertyTypes compliant)
+    return {
+      type: 'eventHandler' as const,
+      event,
+      commands,
+      ...(events && events.length > 1 ? { events } : {}),
+      ...(finalSelector ? { selector: finalSelector } : {}),
+      ...(target ? { target } : {}),
+      ...(condition ? { condition: condition as ASTNode } : {}),
+      ...(watchTarget ? { watchTarget } : {}),
+    };
   }
 
   /**
@@ -252,23 +328,52 @@ export class ASTBuilder {
 
   /**
    * Build AST nodes from a CompoundSemanticNode.
-   * Returns the first command wrapped appropriately.
+   *
+   * Handles different chain types:
+   * - 'then': Sequential execution (default for hyperscript)
+   * - 'and': Parallel-like execution (both actions happen)
+   * - 'async': Async execution (commands run asynchronously)
    */
   private buildCompound(node: CompoundSemanticNode): ASTNode {
-    // Build all statements
+    // Build all statements recursively
     const statements = node.statements.map(child => this.build(child));
 
-    // For now, return the first statement
-    // TODO: Handle compound statements properly (then chains, etc.)
+    // Single statement: unwrap and return directly
     if (statements.length === 1) {
       return statements[0];
     }
 
-    // Multiple statements: wrap in a compound node
-    return {
+    // Empty: return a no-op block
+    if (statements.length === 0) {
+      return {
+        type: 'block',
+        commands: [],
+      };
+    }
+
+    // For 'then' chains, we can either:
+    // 1. Return a compound node (for explicit chain handling)
+    // 2. Attach 'next' pointers to create linked commands (like core parser)
+    //
+    // We use option 1 for now as it's more explicit and easier to process
+    const result: CompoundNode = {
       type: 'compound',
-      statements,
       chainType: node.chainType,
+      statements,
+    };
+
+    return result;
+  }
+
+  /**
+   * Build a BlockNode from an array of semantic nodes.
+   * Useful for grouping commands in if/else branches.
+   */
+  buildBlock(nodes: SemanticNode[]): BlockNode {
+    const commands = nodes.map(child => this.build(child));
+    return {
+      type: 'block',
+      commands,
     };
   }
 }

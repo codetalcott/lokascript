@@ -355,6 +355,8 @@ export {
   type CommandNode,
   type EventHandlerNode,
   type ConditionalNode,
+  type CompoundNode,
+  type BlockNode,
   type ASTBuilderOptions,
   type CommandMapper,
 } from './ast-builder';
