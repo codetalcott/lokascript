@@ -1488,6 +1488,386 @@ const eventChineseTemporalWithSource: LanguagePattern = {
 };
 
 // =============================================================================
+// French Patterns (SVO)
+// =============================================================================
+
+/**
+ * French: "sur click {body...}"
+ * Standard event handler form.
+ *
+ * sur = on
+ */
+const eventFrenchStandard: LanguagePattern = {
+  id: 'event-fr-standard',
+  language: 'fr',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: 'sur {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'sur', alternatives: ['lors'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * French: "quand click {body...}"
+ * Temporal "when" form - more natural.
+ *
+ * quand = when
+ */
+const eventFrenchQuand: LanguagePattern = {
+  id: 'event-fr-quand',
+  language: 'fr',
+  command: 'on',
+  priority: 105,
+  template: {
+    format: 'quand {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'quand', alternatives: ['lorsque'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * French: "sur click de #button {body...}"
+ * Standard form with source filter.
+ *
+ * de = from
+ */
+const eventFrenchWithSource: LanguagePattern = {
+  id: 'event-fr-source',
+  language: 'fr',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: 'sur {event} de {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'sur', alternatives: ['lors'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'de', alternatives: ['depuis'] },
+      { type: 'role', role: 'source' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'de', markerAlternatives: ['depuis'] },
+  },
+};
+
+// =============================================================================
+// German Patterns (SVO/V2)
+// =============================================================================
+
+/**
+ * German: "bei click {body...}"
+ * Standard event handler form.
+ *
+ * bei = on/at
+ */
+const eventGermanStandard: LanguagePattern = {
+  id: 'event-de-standard',
+  language: 'de',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: 'bei {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'bei', alternatives: ['auf'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * German: "wenn click {body...}"
+ * Conditional/temporal "when" form - very natural in German.
+ *
+ * wenn = when/if
+ */
+const eventGermanWenn: LanguagePattern = {
+  id: 'event-de-wenn',
+  language: 'de',
+  command: 'on',
+  priority: 105,
+  template: {
+    format: 'wenn {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'wenn', alternatives: ['falls'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * German: "bei click von #button {body...}"
+ * Standard form with source filter.
+ *
+ * von = from
+ */
+const eventGermanWithSource: LanguagePattern = {
+  id: 'event-de-source',
+  language: 'de',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: 'bei {event} von {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'bei', alternatives: ['auf'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'von', alternatives: ['aus'] },
+      { type: 'role', role: 'source' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'von', markerAlternatives: ['aus'] },
+  },
+};
+
+// =============================================================================
+// Indonesian Patterns (SVO)
+// =============================================================================
+
+/**
+ * Indonesian: "pada click {body...}"
+ * Standard event handler form.
+ *
+ * pada = on/at
+ */
+const eventIndonesianStandard: LanguagePattern = {
+  id: 'event-id-standard',
+  language: 'id',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: 'pada {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'pada' },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Indonesian: "ketika click {body...}"
+ * Temporal "when" form - very natural.
+ *
+ * ketika/saat = when
+ */
+const eventIndonesianKetika: LanguagePattern = {
+  id: 'event-id-ketika',
+  language: 'id',
+  command: 'on',
+  priority: 105,
+  template: {
+    format: 'ketika {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'ketika', alternatives: ['saat', 'waktu'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Indonesian: "pada click dari #button {body...}"
+ * Standard form with source filter.
+ *
+ * dari = from
+ */
+const eventIndonesianWithSource: LanguagePattern = {
+  id: 'event-id-source',
+  language: 'id',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: 'pada {event} dari {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'pada', alternatives: ['ketika', 'saat'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'dari' },
+      { type: 'role', role: 'source' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'dari' },
+  },
+};
+
+// =============================================================================
+// Quechua Patterns (SOV)
+// =============================================================================
+
+/**
+ * Quechua: "click-pi {body...}"
+ * Event handler using locative suffix.
+ *
+ * -pi = on/at (locative suffix)
+ */
+const eventQuechuaStandard: LanguagePattern = {
+  id: 'event-qu-standard',
+  language: 'qu',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: '{event} pi {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'pi', alternatives: ['kaqpi', 'kaqpim'] },
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Quechua: "click kaqtin {body...}"
+ * Subordinate clause form - "when there is a click"
+ *
+ * -qtin = when (subordinate suffix)
+ */
+const eventQuechuaKaqtin: LanguagePattern = {
+  id: 'event-qu-kaqtin',
+  language: 'qu',
+  command: 'on',
+  priority: 105,
+  template: {
+    format: '{event} kaqtin {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'kaqtin', alternatives: ['qtin', 'ptin'] },
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+  },
+};
+
+/**
+ * Quechua: "click-pi #button-manta {body...}"
+ * Standard form with source filter.
+ *
+ * -manta = from (ablative suffix)
+ */
+const eventQuechuaWithSource: LanguagePattern = {
+  id: 'event-qu-source',
+  language: 'qu',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: '{event} pi {source} manta {body}',
+    tokens: [
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'pi' },
+      { type: 'role', role: 'source' },
+      { type: 'literal', value: 'manta' },
+    ],
+  },
+  extraction: {
+    event: { position: 0 },
+    source: { marker: 'manta' },
+  },
+};
+
+// =============================================================================
+// Swahili Patterns (SVO)
+// =============================================================================
+
+/**
+ * Swahili: "wakati click {body...}"
+ * Standard event handler form using temporal "when".
+ *
+ * wakati = when/at the time of
+ */
+const eventSwahiliStandard: LanguagePattern = {
+  id: 'event-sw-standard',
+  language: 'sw',
+  command: 'on',
+  priority: 100,
+  template: {
+    format: 'wakati {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'wakati', alternatives: ['kwenye', 'kwa'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Swahili: "unapo click {body...}"
+ * Relative form - "when you click"
+ *
+ * unapo- = when you (relative prefix)
+ */
+const eventSwahiliUnapo: LanguagePattern = {
+  id: 'event-sw-unapo',
+  language: 'sw',
+  command: 'on',
+  priority: 105,
+  template: {
+    format: 'unapo {event} {body}',
+    tokens: [
+      { type: 'literal', value: 'unapo', alternatives: ['anapo', 'tunapo', 'mnapo', 'wanapo'] },
+      { type: 'role', role: 'event' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+  },
+};
+
+/**
+ * Swahili: "wakati click kutoka #button {body...}"
+ * Standard form with source filter.
+ *
+ * kutoka = from
+ */
+const eventSwahiliWithSource: LanguagePattern = {
+  id: 'event-sw-source',
+  language: 'sw',
+  command: 'on',
+  priority: 110,
+  template: {
+    format: 'wakati {event} kutoka {source} {body}',
+    tokens: [
+      { type: 'literal', value: 'wakati', alternatives: ['kwenye'] },
+      { type: 'role', role: 'event' },
+      { type: 'literal', value: 'kutoka' },
+      { type: 'role', role: 'source' },
+    ],
+  },
+  extraction: {
+    event: { position: 1 },
+    source: { marker: 'kutoka' },
+  },
+};
+
+// =============================================================================
 // Event Name Translations
 // =============================================================================
 
@@ -1635,6 +2015,114 @@ export const eventNameTranslations: Record<string, Record<string, string>> = {
     '载入': 'load',
     '滚动': 'scroll',
   },
+  // French event names → English
+  fr: {
+    'clic': 'click',
+    'cliquer': 'click',
+    'click': 'click',
+    'saisie': 'input',
+    'entrée': 'input',
+    'changement': 'change',
+    'changer': 'change',
+    'soumettre': 'submit',
+    'soumission': 'submit',
+    'envoi': 'submit',
+    'touche bas': 'keydown',
+    'touche haut': 'keyup',
+    'souris dessus': 'mouseover',
+    'souris dehors': 'mouseout',
+    'focus': 'focus',
+    'focaliser': 'focus',
+    'défocus': 'blur',
+    'défocaliser': 'blur',
+    'chargement': 'load',
+    'charger': 'load',
+    'défilement': 'scroll',
+    'défiler': 'scroll',
+  },
+  // German event names → English
+  de: {
+    'klick': 'click',
+    'klicken': 'click',
+    'click': 'click',
+    'eingabe': 'input',
+    'eingeben': 'input',
+    'änderung': 'change',
+    'ändern': 'change',
+    'absenden': 'submit',
+    'einreichen': 'submit',
+    'taste runter': 'keydown',
+    'taste hoch': 'keyup',
+    'maus über': 'mouseover',
+    'maus raus': 'mouseout',
+    'fokus': 'focus',
+    'fokussieren': 'focus',
+    'defokussieren': 'blur',
+    'unschärfe': 'blur',
+    'laden': 'load',
+    'ladung': 'load',
+    'scrollen': 'scroll',
+    'blättern': 'scroll',
+  },
+  // Indonesian event names → English
+  id: {
+    'klik': 'click',
+    'click': 'click',
+    'masukan': 'input',
+    'input': 'input',
+    'ubah': 'change',
+    'perubahan': 'change',
+    'kirim': 'submit',
+    'tekan tombol': 'keydown',
+    'lepas tombol': 'keyup',
+    'mouse masuk': 'mouseover',
+    'mouse keluar': 'mouseout',
+    'fokus': 'focus',
+    'blur': 'blur',
+    'muat': 'load',
+    'memuat': 'load',
+    'gulir': 'scroll',
+    'menggulir': 'scroll',
+  },
+  // Quechua event names → English (loanwords with native adaptations)
+  qu: {
+    'click': 'click',
+    'ñit\'iy': 'click',
+    'yaykuy': 'input',
+    'tikray': 'change',
+    't\'ikray': 'change',
+    'apachiy': 'submit',
+    'kachay': 'submit',
+    'llave uray': 'keydown',
+    'llave hawa': 'keyup',
+    'q\'away': 'focus',
+    'mana q\'away': 'blur',
+    'cargay': 'load',
+    'apamuy': 'load',
+    'muyuy': 'scroll',
+  },
+  // Swahili event names → English
+  sw: {
+    'bofya': 'click',
+    'click': 'click',
+    'kubofya': 'click',
+    'ingiza': 'input',
+    'kubadilisha': 'change',
+    'mabadiliko': 'change',
+    'tuma': 'submit',
+    'kutuma': 'submit',
+    'bonyeza chini': 'keydown',
+    'bonyeza juu': 'keyup',
+    'panya juu': 'mouseover',
+    'panya nje': 'mouseout',
+    'lenga': 'focus',
+    'kulenga': 'focus',
+    'blur': 'blur',
+    'pakia': 'load',
+    'kupakia': 'load',
+    'sogeza': 'scroll',
+    'kusogeza': 'scroll',
+  },
 };
 
 /**
@@ -1716,6 +2204,26 @@ export const eventHandlerPatterns: LanguagePattern[] = [
   eventChineseStandard,
   eventChineseCompletion,
   eventChineseConditional,
+  // French - patterns ordered by priority
+  eventFrenchWithSource,
+  eventFrenchQuand,
+  eventFrenchStandard,
+  // German - patterns ordered by priority
+  eventGermanWithSource,
+  eventGermanWenn,
+  eventGermanStandard,
+  // Indonesian - patterns ordered by priority
+  eventIndonesianWithSource,
+  eventIndonesianKetika,
+  eventIndonesianStandard,
+  // Quechua - patterns ordered by priority
+  eventQuechuaWithSource,
+  eventQuechuaKaqtin,
+  eventQuechuaStandard,
+  // Swahili - patterns ordered by priority
+  eventSwahiliWithSource,
+  eventSwahiliUnapo,
+  eventSwahiliStandard,
 ];
 
 /**

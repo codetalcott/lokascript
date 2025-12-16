@@ -33,6 +33,7 @@ import {
   prependSchema,
   triggerSchema,
   setSchema,
+  putSchema,
   // Tier 2: Content & variable operations
   takeSchema,
   makeSchema,
@@ -393,6 +394,9 @@ const generatedPatterns: LanguagePattern[] = [
   ...generatePatternsForCommand(prependSchema),
   ...generatePatternsForCommand(triggerSchema),
   ...generatePatternsForCommand(setSchema),
+  // Put command - hand-crafted patterns exist for en, ja, ar, es
+  // Generated patterns fill gap for: ko, zh, tr, pt, fr, de, id, qu, sw
+  ...generatePatternsForCommand(putSchema),
   // Tier 2: Content & variable operations
   ...generatePatternsForCommand(takeSchema),
   ...generatePatternsForCommand(makeSchema),
