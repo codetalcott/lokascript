@@ -36,6 +36,7 @@ type TokenKind =
   | 'selector'
   | 'literal'
   | 'particle'
+  | 'conjunction' // Grammatical conjunction (Arabic و/ف proclitics)
   | 'identifier'
   | 'operator'
   | 'punctuation'
@@ -124,6 +125,8 @@ function mapTokenKind(kind: TokenKind): TokenType {
     case 'literal':
       return 'literal';
     case 'particle':
+      return 'modifier';
+    case 'conjunction':
       return 'modifier';
     case 'identifier':
       return 'identifier';
