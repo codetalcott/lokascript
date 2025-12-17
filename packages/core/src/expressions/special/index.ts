@@ -16,6 +16,7 @@ import type {
 } from '../../types/base-types';
 import type { ExpressionCategory } from '../../types/expression-types';
 import { isString, isNumber, isBoolean } from '../type-helpers';
+import { toNumber } from '../shared';
 
 // ============================================================================
 // Input Schemas
@@ -545,8 +546,9 @@ export class AdditionExpression implements BaseTypedExpression<number> {
         };
       }
 
-      const leftNum = this.ensureNumber(input.left, 'Left operand');
-      const rightNum = this.ensureNumber(input.right, 'Right operand');
+      // Use shared toNumber primitive for consistent number conversion
+      const leftNum = toNumber(input.left, 'left operand');
+      const rightNum = toNumber(input.right, 'right operand');
 
       const result = leftNum + rightNum;
 
@@ -608,33 +610,6 @@ export class AdditionExpression implements BaseTypedExpression<number> {
         suggestions: ['Check input structure and types'],
       };
     }
-  }
-
-  private ensureNumber(value: unknown, context: string): number {
-    if (isNumber(value)) {
-      if (!isFinite(value as number)) {
-        throw new Error(`${context} must be a finite number`);
-      }
-      return value as number;
-    }
-
-    if (isString(value)) {
-      const num = parseFloat(value as string);
-      if (isNaN(num)) {
-        throw new Error(`${context} cannot be converted to number: "${value}"`);
-      }
-      return num;
-    }
-
-    if (isBoolean(value)) {
-      return (value as boolean) ? 1 : 0;
-    }
-
-    if (value === null || value === undefined) {
-      return 0;
-    }
-
-    throw new Error(`${context} cannot be converted to number`);
   }
 
   private trackPerformance(
@@ -825,8 +800,9 @@ export class MultiplicationExpression implements BaseTypedExpression<number> {
         };
       }
 
-      const leftNum = this.ensureNumber(input.left, 'Left operand');
-      const rightNum = this.ensureNumber(input.right, 'Right operand');
+      // Use shared toNumber primitive for consistent number conversion
+      const leftNum = toNumber(input.left, 'left operand');
+      const rightNum = toNumber(input.right, 'right operand');
 
       const result = leftNum * rightNum;
 
@@ -888,33 +864,6 @@ export class MultiplicationExpression implements BaseTypedExpression<number> {
         suggestions: ['Check input structure and types'],
       };
     }
-  }
-
-  private ensureNumber(value: unknown, context: string): number {
-    if (isNumber(value)) {
-      if (!isFinite(value as number)) {
-        throw new Error(`${context} must be a finite number`);
-      }
-      return value as number;
-    }
-
-    if (isString(value)) {
-      const num = parseFloat(value as string);
-      if (isNaN(num)) {
-        throw new Error(`${context} cannot be converted to number: "${value}"`);
-      }
-      return num;
-    }
-
-    if (isBoolean(value)) {
-      return (value as boolean) ? 1 : 0;
-    }
-
-    if (value === null || value === undefined) {
-      return 0;
-    }
-
-    throw new Error(`${context} cannot be converted to number`);
   }
 
   private trackPerformance(
