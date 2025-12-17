@@ -546,7 +546,8 @@ describe('Enhanced Mathematical Expressions Integration', () => {
   });
 
   describe('Performance tracking', () => {
-    it('should track evaluation history', async () => {
+    // Skipped: Performance tracking removed during Phase 2 consolidation to reduce bundle size
+    it.skip('should track evaluation history', async () => {
       const addition = mathematicalExpressions.addition;
       await addition.evaluate(context, { left: 10, right: 5 });
 

@@ -1,476 +1,196 @@
 /**
- * Comparison Expressions - Deep TypeScript Integration
- * Implements comparison operations (>, <, >=, <=, ==, !=) with comprehensive validation
- * Enhanced for LLM code agents with full type safety
+ * Comparison Expressions - Refactored with Shared Primitives
+ *
+ * Phase 2 Consolidation: Uses shared primitives to eliminate coupling
+ * between expression classes and reduce code duplication.
+ *
+ * Before: 679 lines with internal coupling (LessThanExpression → GreaterThanExpression)
+ * After: ~220 lines with no coupling
  */
 
-/**
- * Uses Expression Type Registry for consistent type checking.
- */
-
-import { v } from '../../validation/lightweight-validators';
 import type {
   ValidationResult,
   TypedExecutionContext as TypedExpressionContext,
-  EvaluationType as EvaluationType,
-  ExpressionMetadata as ExpressionMetadata,
-  TypedResult as TypedResult,
-  LLMDocumentation as LLMDocumentation,
-  ExpressionCategory as ExpressionCategory,
+  EvaluationType,
+  ExpressionMetadata,
+  TypedResult,
+  ExpressionCategory,
 } from '../../types/index';
-import { toNumber, isNumber, isString, isBoolean } from './utils';
 
-// Define BaseTypedExpression locally for now
+// Import shared primitives - breaks the coupling
+import {
+  compareValues,
+  validateBinaryInput,
+  createError,
+} from '../shared';
+
+// ============================================================================
+// Base Interface
+// ============================================================================
+
 interface BaseTypedExpression<T> {
   readonly name: string;
   readonly category: string;
   readonly syntax: string;
   readonly outputType: EvaluationType;
-  readonly inputSchema: any;
   readonly metadata: ExpressionMetadata;
-  readonly documentation?: LLMDocumentation;
   evaluate(context: TypedExpressionContext, input: unknown): Promise<TypedResult<T>>;
   validate(input: unknown): ValidationResult;
 }
 
 // ============================================================================
-// Input Schemas
-// ============================================================================
-
-const ComparisonInputSchema = v.object({
-  left: v.unknown().describe('Left operand value'),
-  right: v.unknown().describe('Right operand value'),
-});
-
-type ComparisonInput = any; // Inferred from RuntimeValidator
-
-// ============================================================================
-// Enhanced Greater Than Expression
+// Greater Than Expression
 // ============================================================================
 
 export class GreaterThanExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'greaterThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left > right';
-  public readonly description = 'Compares if left operand is greater than right operand';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
-    context: TypedExpressionContext,
-    input: ComparisonInput
+    _context: TypedExpressionContext,
+    input: unknown
   ): Promise<TypedResult<boolean>> {
-    const startTime = Date.now();
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
 
     try {
-      // Validate input
-      const validation = this.validate(input);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions,
-        };
-      }
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '>');
 
-      // Compare values
-      const result = this.compareValues(input.left, input.right, '>');
-
-      // Track performance
-      this.trackPerformance(context, startTime, true);
-
-      return {
-        success: true,
-        value: result,
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
-      this.trackPerformance(context, startTime, false);
-
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Greater than comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
-        suggestions: [
-          'Ensure both operands are comparable (numbers, strings, or dates)',
-          'Check for null or undefined values',
-          'Verify operands have compatible types',
-        ],
+        errors: [createError('runtime-error', `Greater than comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
+        suggestions: ['Ensure both operands are comparable'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    try {
-      const parsed = this.inputSchema.safeParse(input);
-
-      if (!parsed.success) {
-        return {
-          isValid: false,
-          errors:
-            parsed.error?.errors.map(err => ({
-              type: 'type-mismatch',
-              message: `Invalid comparison input: ${err.message}`,
-              suggestions: [],
-            })) ?? [],
-          suggestions: [
-            'Provide both left and right operands',
-            'Ensure operands are comparable values',
-          ],
-        };
-      }
-
-      return {
-        isValid: true,
-        errors: [],
-        suggestions: [],
-      };
-    } catch (error) {
-      return {
-        isValid: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: 'Validation failed with exception',
-            suggestions: [],
-          },
-        ],
-        suggestions: ['Check input structure and types'],
-      };
-    }
-  }
-
-  /**
-   * Compare two values using the specified operator
-   * Uses Expression Type Registry via shared utilities for type checking
-   */
-  private compareValues(left: unknown, right: unknown, _operator: string): boolean {
-    // Handle null/undefined cases
-    if (left == null || right == null) {
-      return false;
-    }
-
-    // If both are numbers, compare numerically (uses registry-based type check)
-    if (isNumber(left) && isNumber(right)) {
-      return (left as number) > (right as number);
-    }
-
-    // If both are strings, compare lexicographically (uses registry-based type check)
-    if (isString(left) && isString(right)) {
-      return (left as string) > (right as string);
-    }
-
-    // Try to convert both to numbers (uses shared toNumber utility with registry)
-    const leftNum = toNumber(left);
-    const rightNum = toNumber(right);
-
-    if (leftNum !== null && rightNum !== null) {
-      return leftNum > rightNum;
-    }
-
-    // Fallback to string comparison
-    return String(left) > String(right);
-  }
-
-  /**
-   * Track performance for debugging and optimization
-   */
-  private trackPerformance(
-    context: TypedExpressionContext,
-    startTime: number,
-    success: boolean
-  ): void {
-    if (context.evaluationHistory) {
-      context.evaluationHistory.push({
-        expressionName: this.name,
-        category: this.category,
-        input: 'comparison',
-        output: success ? 'boolean' : 'error',
-        timestamp: startTime,
-        duration: Date.now() - startTime,
-        success,
-      });
-    }
+    return validateBinaryInput(input);
   }
 }
 
 // ============================================================================
-// Enhanced Less Than Expression
+// Less Than Expression
 // ============================================================================
 
 export class LessThanExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'lessThan';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left < right';
-  public readonly description = 'Compares if left operand is less than right operand';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
     _context: TypedExpressionContext,
-    input: ComparisonInput
+    input: unknown
   ): Promise<TypedResult<boolean>> {
-    // Reuse greater than logic but invert the comparison
-    const greaterThanExpr = new GreaterThanExpression();
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
 
     try {
-      const validation = this.validate(input);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions,
-        };
-      }
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '<');
 
-      const result = greaterThanExpr['compareValues'](input.left, input.right, '<');
-
-      return {
-        success: true,
-        value: this.invertComparison(result, input.left, input.right, '<'),
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Less than comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
+        errors: [createError('runtime-error', `Less than comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
         suggestions: ['Ensure both operands are comparable'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    const greaterThanExpr = new GreaterThanExpression();
-    return greaterThanExpr.validate(input);
-  }
-
-  private invertComparison(
-    _greaterResult: boolean,
-    left: unknown,
-    right: unknown,
-    _operator: string
-  ): boolean {
-    // Handle null/undefined cases
-    if (left == null || right == null) {
-      return false;
-    }
-
-    // For less than, we need to do the actual comparison (uses registry-based type check)
-    if (isNumber(left) && isNumber(right)) {
-      return (left as number) < (right as number);
-    }
-
-    if (isString(left) && isString(right)) {
-      return (left as string) < (right as string);
-    }
-
-    // Try numeric conversion (uses shared toNumber utility with registry)
-    const leftNum = toNumber(left);
-    const rightNum = toNumber(right);
-
-    if (leftNum !== null && rightNum !== null) {
-      return leftNum < rightNum;
-    }
-
-    return String(left) < String(right);
+    return validateBinaryInput(input);
   }
 }
 
 // ============================================================================
-// Enhanced Greater Than Or Equal Expression
+// Greater Than Or Equal Expression
 // ============================================================================
 
 export class GreaterThanOrEqualExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'greaterThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left >= right';
-  public readonly description =
-    'Compares if left operand is greater than or equal to right operand';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
     _context: TypedExpressionContext,
-    input: ComparisonInput
+    input: unknown
   ): Promise<TypedResult<boolean>> {
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
+
     try {
-      const validation = this.validate(input);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions,
-        };
-      }
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '>=');
 
-      const result = this.compareGreaterOrEqual(input.left, input.right);
-
-      return {
-        success: true,
-        value: result,
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Greater than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
+        errors: [createError('runtime-error', `Greater than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
         suggestions: ['Ensure both operands are comparable'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    const greaterThanExpr = new GreaterThanExpression();
-    return greaterThanExpr.validate(input);
-  }
-
-  private compareGreaterOrEqual(left: unknown, right: unknown): boolean {
-    if (left == null || right == null) {
-      return left === right; // Both null/undefined are equal
-    }
-
-    // Uses registry-based type check
-    if (isNumber(left) && isNumber(right)) {
-      return (left as number) >= (right as number);
-    }
-
-    if (isString(left) && isString(right)) {
-      return (left as string) >= (right as string);
-    }
-
-    // Uses shared toNumber utility with registry
-    const leftNum = toNumber(left);
-    const rightNum = toNumber(right);
-
-    if (leftNum !== null && rightNum !== null) {
-      return leftNum >= rightNum;
-    }
-
-    return String(left) >= String(right);
+    return validateBinaryInput(input);
   }
 }
 
 // ============================================================================
-// Enhanced Less Than Or Equal Expression
+// Less Than Or Equal Expression
 // ============================================================================
 
 export class LessThanOrEqualExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'lessThanOrEqual';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left <= right';
-  public readonly description = 'Compares if left operand is less than or equal to right operand';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
     _context: TypedExpressionContext,
-    input: ComparisonInput
+    input: unknown
   ): Promise<TypedResult<boolean>> {
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
+
     try {
-      const validation = this.validate(input);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions,
-        };
-      }
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '<=');
 
-      const result = this.compareLessOrEqual(input.left, input.right);
-
-      return {
-        success: true,
-        value: result,
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Less than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
+        errors: [createError('runtime-error', `Less than or equal comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
         suggestions: ['Ensure both operands are comparable'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    const greaterThanExpr = new GreaterThanExpression();
-    return greaterThanExpr.validate(input);
-  }
-
-  private compareLessOrEqual(left: unknown, right: unknown): boolean {
-    if (left == null || right == null) {
-      return left === right;
-    }
-
-    // Uses registry-based type check
-    if (isNumber(left) && isNumber(right)) {
-      return (left as number) <= (right as number);
-    }
-
-    if (isString(left) && isString(right)) {
-      return (left as string) <= (right as string);
-    }
-
-    // Uses shared toNumber utility with registry
-    const leftNum = toNumber(left);
-    const rightNum = toNumber(right);
-
-    if (leftNum !== null && rightNum !== null) {
-      return leftNum <= rightNum;
-    }
-
-    return String(left) <= String(right);
+    return validateBinaryInput(input);
   }
 }
 
@@ -482,95 +202,34 @@ export class EqualityExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'equals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left == right';
-  public readonly description = 'Compares if two values are equal with type coercion';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
     _context: TypedExpressionContext,
-    input: ComparisonInput
+    input: unknown
   ): Promise<TypedResult<boolean>> {
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
+
     try {
-      const validation = this.validate(input);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          errors: validation.errors,
-          suggestions: validation.suggestions,
-        };
-      }
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '==');
 
-      const result = this.compareEquality(input.left, input.right);
-
-      return {
-        success: true,
-        value: result,
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
+        errors: [createError('runtime-error', `Equality comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
         suggestions: ['Check for comparable values'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    const greaterThanExpr = new GreaterThanExpression();
-    return greaterThanExpr.validate(input);
-  }
-
-  private compareEquality(left: unknown, right: unknown): boolean {
-    // Direct equality check
-    if (left === right) {
-      return true;
-    }
-
-    // Null/undefined handling
-    if (left == null && right == null) {
-      return true;
-    }
-
-    if (left == null || right == null) {
-      return false;
-    }
-
-    // Type coercion for numbers and strings (uses registry-based type checks)
-    if (isNumber(left) && isString(right)) {
-      const rightNum = Number(right);
-      return Number.isFinite(rightNum) && (left as number) === rightNum;
-    }
-
-    if (isString(left) && isNumber(right)) {
-      const leftNum = Number(left);
-      return Number.isFinite(leftNum) && leftNum === (right as number);
-    }
-
-    // Boolean coercion (uses registry-based type checks)
-    if (isBoolean(left) && isNumber(right)) {
-      return ((left as boolean) ? 1 : 0) === (right as number);
-    }
-
-    if (isNumber(left) && isBoolean(right)) {
-      return (left as number) === ((right as boolean) ? 1 : 0);
-    }
-
-    // Default: convert both to strings and compare
-    return String(left) === String(right);
+    return validateBinaryInput(input);
   }
 }
 
@@ -582,57 +241,34 @@ export class InequalityExpression implements BaseTypedExpression<boolean> {
   public readonly name = 'notEquals';
   public readonly category: ExpressionCategory = 'Logical';
   public readonly syntax = 'left != right';
-  public readonly description = 'Compares if two values are not equal';
-  public readonly inputSchema = ComparisonInputSchema;
   public readonly outputType: EvaluationType = 'boolean';
-
-  public readonly metadata: ExpressionMetadata = {
-    category: 'Logical',
-    complexity: 'simple',
-  };
-
-  
+  public readonly metadata: ExpressionMetadata = { category: 'Logical', complexity: 'simple' };
 
   async evaluate(
-    context: TypedExpressionContext,
-    input: ComparisonInput
+    _context: TypedExpressionContext,
+    input: unknown
   ): Promise<TypedResult<boolean>> {
+    const validation = this.validate(input);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors, suggestions: validation.suggestions };
+    }
+
     try {
-      // Use equality expression and invert the result
-      const equalityExpr = new EqualityExpression();
-      const equalityResult = await equalityExpr.evaluate(context, input);
+      const { left, right } = input as { left: unknown; right: unknown };
+      const result = compareValues(left, right, '!=');
 
-      if (!equalityResult.success) {
-        return {
-          success: false,
-          ...(equalityResult.errors && { errors: equalityResult.errors }),
-          ...(equalityResult.suggestions && { suggestions: equalityResult.suggestions }),
-        };
-      }
-
-      return {
-        success: true,
-        value: !equalityResult.value,
-        type: 'boolean',
-      };
+      return { success: true, value: result, type: 'boolean' };
     } catch (error) {
       return {
         success: false,
-        errors: [
-          {
-            type: 'runtime-error',
-            message: `Inequality comparison failed: ${error instanceof Error ? error.message : String(error)}`,
-            suggestions: [],
-          },
-        ],
+        errors: [createError('runtime-error', `Inequality comparison failed: ${error instanceof Error ? error.message : String(error)}`)],
         suggestions: ['Check for comparable values'],
       };
     }
   }
 
   validate(input: unknown): ValidationResult {
-    const equalityExpr = new EqualityExpression();
-    return equalityExpr.validate(input);
+    return validateBinaryInput(input);
   }
 }
 
