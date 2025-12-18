@@ -2,25 +2,20 @@
  * ShowCommand - Decorated Implementation
  *
  * Shows HTML elements by restoring display property. Uses Stage 3 decorators.
- * Shares visibility helpers with HideCommand.
+ * Extends VisibilityCommandBase for shared logic with HideCommand.
  *
  * Syntax:
  *   show                    # Show current element (me)
  *   show <target>           # Show specified element(s)
  */
 
-import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
-import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import type { TypedExecutionContext } from '../../types/core';
+import { command, meta, createFactory } from '../decorators';
 import { isHTMLElement } from '../../utils/element-check';
-import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
-import {
-  parseVisibilityInput,
-  type VisibilityRawInput,
-  type VisibilityInput,
-} from '../helpers/visibility-target-parser';
+import { VisibilityCommandBase, type VisibilityCommandInput } from './visibility-base';
 
 // Re-export for backward compatibility
-export interface ShowCommandInput extends VisibilityInput {
+export interface ShowCommandInput extends VisibilityCommandInput {
   defaultDisplay: string;
 }
 
@@ -34,33 +29,17 @@ export interface ShowCommandInput extends VisibilityInput {
   sideEffects: ['dom-mutation'],
 })
 @command({ name: 'show', category: 'dom' })
-export class ShowCommand implements DecoratedCommand {
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
+export class ShowCommand extends VisibilityCommandBase {
+  protected readonly mode = 'show' as const;
 
-  async parseInput(
-    raw: VisibilityRawInput,
-    evaluator: ExpressionEvaluator,
-    context: ExecutionContext
-  ): Promise<ShowCommandInput> {
-    const { targets } = await parseVisibilityInput(raw, evaluator, context, 'show');
-    return { targets, defaultDisplay: 'block' };
-  }
-
-  async execute(input: ShowCommandInput, _context: TypedExecutionContext): Promise<void> {
+  async execute(input: VisibilityCommandInput, _context: TypedExecutionContext): Promise<void> {
+    const defaultDisplay = input.defaultDisplay || 'block';
     for (const element of input.targets) {
-      element.classList.add('show');
-
-      const originalDisplay = element.dataset.originalDisplay;
-      if (originalDisplay !== undefined) {
-        element.style.display = originalDisplay || input.defaultDisplay;
-        delete element.dataset.originalDisplay;
-      } else if (element.style.display === 'none') {
-        element.style.display = input.defaultDisplay;
-      }
+      this.showElement(element, defaultDisplay);
     }
   }
 
+  // Override for backward compatibility - mode is optional for show
   validate(input: unknown): input is ShowCommandInput {
     if (typeof input !== 'object' || input === null) return false;
     const typed = input as Partial<ShowCommandInput>;

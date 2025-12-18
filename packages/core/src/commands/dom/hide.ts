@@ -2,22 +2,18 @@
  * HideCommand - Decorated Implementation
  *
  * Hides HTML elements by setting display: none. Uses Stage 3 decorators.
- * Shares visibility helpers with ShowCommand.
+ * Extends VisibilityCommandBase for shared logic with ShowCommand.
  *
  * Syntax:
  *   hide                    # Hide current element (me)
  *   hide <target>           # Hide specified element(s)
  */
 
-import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
-import type { ExpressionEvaluator } from '../../core/expression-evaluator';
+import type { TypedExecutionContext } from '../../types/core';
+import { command, meta, createFactory } from '../decorators';
 import { isHTMLElement } from '../../utils/element-check';
-import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
-import {
-  parseVisibilityInput,
-  type VisibilityRawInput,
-  type VisibilityInput,
-} from '../helpers/visibility-target-parser';
+import { VisibilityCommandBase, type VisibilityCommandInput } from './visibility-base';
+import type { VisibilityInput } from '../helpers/visibility-target-parser';
 
 // Re-export for backward compatibility
 export type HideCommandInput = VisibilityInput;
@@ -32,32 +28,16 @@ export type HideCommandInput = VisibilityInput;
   sideEffects: ['dom-mutation'],
 })
 @command({ name: 'hide', category: 'dom' })
-export class HideCommand implements DecoratedCommand {
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
+export class HideCommand extends VisibilityCommandBase {
+  protected readonly mode = 'hide' as const;
 
-  async parseInput(
-    raw: VisibilityRawInput,
-    evaluator: ExpressionEvaluator,
-    context: ExecutionContext
-  ): Promise<HideCommandInput> {
-    return parseVisibilityInput(raw, evaluator, context, 'hide');
-  }
-
-  async execute(input: HideCommandInput, _context: TypedExecutionContext): Promise<void> {
+  async execute(input: VisibilityCommandInput, _context: TypedExecutionContext): Promise<void> {
     for (const element of input.targets) {
-      element.classList.remove('show');
-
-      // Preserve original display value if not already stored
-      if (!element.dataset.originalDisplay) {
-        const currentDisplay = element.style.display;
-        element.dataset.originalDisplay = currentDisplay === 'none' ? '' : currentDisplay;
-      }
-
-      element.style.display = 'none';
+      this.hideElement(element);
     }
   }
 
+  // Override for backward compatibility - mode is optional for hide
   validate(input: unknown): input is HideCommandInput {
     if (typeof input !== 'object' || input === null) return false;
     const typed = input as Partial<HideCommandInput>;
