@@ -36,10 +36,12 @@ export default {
     terser({
       compress: {
         pure_getters: true,
-        unsafe: false,
-        unsafe_comps: false,
-        drop_console: true,
-        passes: 1,
+        unsafe: true,
+        unsafe_comps: true,
+        drop_console: false,  // Keep for LOG command
+        passes: 2,
+        dead_code: true,
+        unused: true,
         pure_funcs: [
           'debug.command',
           'debug.event',
@@ -53,7 +55,13 @@ export default {
         ]
       },
       mangle: {
-        properties: false // Keep property names for compatibility
+        // Mangle underscore-prefixed properties (internal/private) - 5% savings
+        properties: {
+          regex: /^_/
+        }
+      },
+      format: {
+        comments: false
       }
     })
   ]

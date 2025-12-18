@@ -27,10 +27,19 @@ export default {
       compress: {
         pure_getters: true,
         unsafe: true,
-        unsafe_comps: true
+        unsafe_comps: true,
+        passes: 2,
+        dead_code: true,
+        unused: true
       },
       mangle: {
-        properties: false // Keep property names for compatibility
+        // Mangle underscore-prefixed properties (internal/private) - 5% savings
+        properties: {
+          regex: /^_/
+        }
+      },
+      format: {
+        comments: false
       }
     })
   ]
