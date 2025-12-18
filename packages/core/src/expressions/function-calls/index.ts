@@ -1,9 +1,32 @@
 /**
  * Enhanced Function Calls Expression - JavaScript Interoperability
- * Implements comprehensive function call evaluation with TypeScript integration
- * Handles global functions, method calls, async operations, and proper context binding
  *
- * Uses centralized type-helpers for consistent type checking.
+ * This expression handles function invocation from hyperscript with comprehensive
+ * JavaScript interoperability. It supports:
+ * - Global function calls: `Math.max(1, 2, 3)`
+ * - Method calls: `element.getAttribute('id')`
+ * - Constructor calls: `new Date()`
+ * - Async function invocation with automatic promise awaiting
+ * - Proper this binding for method calls
+ *
+ * IMPORTANT ARCHITECTURAL DISTINCTION:
+ * This class handles FUNCTION CALLS from the expression system using STRING PATHS.
+ * Compare with BaseExpressionEvaluator.evaluateCallExpression() which handles:
+ * - AST-based method calls from the parser (e.g., `#dialog.showModal()`)
+ * - Both memberExpression and propertyAccess AST node types
+ *
+ * The difference:
+ * - BaseExpressionEvaluator: Parser creates callExpression AST with property access
+ * - FunctionCallExpression: Expression system receives string paths ("Math.max") or
+ *   direct function references
+ *
+ * These two approaches serve different use cases and should not be merged.
+ *
+ * Implementation uses:
+ * - Result-based error handling (returns EvaluationResult<T> not exceptions)
+ * - String path resolution: "obj.method" → traverse object hierarchy
+ * - Multi-context resolution: locals → variables → meta → context → element → global
+ * - Type inference via centralized type-helpers for consistency
  */
 
 import { v, z } from '../../validation/lightweight-validators';
@@ -69,6 +92,55 @@ export type FunctionCallExpressionInput = any; // Inferred from RuntimeValidator
 /**
  * Enhanced function call expression for JavaScript interoperability
  * Provides comprehensive function invocation with async support
+ *
+ * ARCHITECTURAL DESIGN NOTES:
+ *
+ * This class handles function calls VIA THE EXPRESSION SYSTEM, which is
+ * DIFFERENT from BaseExpressionEvaluator.evaluateCallExpression().
+ *
+ * COMPARISON TABLE:
+ * ┌─────────────────────────────┬──────────────────────┬──────────────────────┐
+ * │ Aspect                      │ BaseExpressionEval   │ FunctionCallExpr      │
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ Input Source                │ AST nodes from       │ Expressions/strings   │
+ * │                             │ the parser           │ at runtime            │
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ AST Types Handled           │ memberExpression     │ N/A - receives        │
+ * │                             │ propertyAccess       │ string paths or       │
+ * │                             │                      │ function refs         │
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ Path Format                 │ Explicit AST node    │ String paths:         │
+ * │                             │ fields (object,      │ "Math.max"            │
+ * │                             │ property)            │ "element.getAttribute"│
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ Resolution Strategy         │ Evaluate AST left    │ String split + multi- │
+ * │                             │ side, get property   │ context traversal     │
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ Error Handling              │ Try-catch +          │ Result-based (no      │
+ * │                             │ throw exceptions     │ exceptions)           │
+ * ├─────────────────────────────┼──────────────────────┼──────────────────────┤
+ * │ Use Case                    │ Parser-generated     │ Expression system     │
+ * │                             │ call expressions     │ function invocation   │
+ * └─────────────────────────────┴──────────────────────┴──────────────────────┘
+ *
+ * EXAMPLE WORKFLOWS:
+ *
+ * BaseExpressionEvaluator approach:
+ * - Parser: "call #dialog.showModal()" → callExpression AST
+ * - Has: { type: 'callExpression', callee: propertyAccess, ... }
+ * - Evaluator: Extract callee, evaluate it, apply with args
+ *
+ * FunctionCallExpression approach:
+ * - Expression: receives string "Math.max" or path "dialog.showModal"
+ * - Splits path: "Math.max" → ["Math", "max"]
+ * - Resolves from contexts: get Math, then Math.max
+ * - Executes with proper this binding
+ *
+ * WHY TWO DIFFERENT APPROACHES:
+ * 1. Parser-based (BaseExpressionEvaluator): Structured, type-safe, explicit
+ * 2. Expression-based (FunctionCallExpression): Flexible, runtime resolution
+ *
+ * They serve different parts of the execution pipeline and are not redundant.
  */
 export class FunctionCallExpression
   implements TypedExpressionImplementation<HyperScriptValue, TypedExpressionContext>
@@ -220,6 +292,31 @@ export class FunctionCallExpression
 
   /**
    * Evaluate function call expression with comprehensive handling
+   *
+   * Supports three call patterns:
+   * 1. Function call with arguments: [functionRef, args]
+   *    - functionRef: string path ("Math.max") or direct function reference
+   *    - args: array of arguments to pass to the function
+   * 2. Function call without arguments: [functionRef]
+   * 3. Constructor call: ['new', constructorName, args?]
+   *
+   * FUNCTION RESOLUTION (String Path Approach):
+   * When functionRef is a string, it's treated as a dot-notation path:
+   * - "Math.max" → resolve "Math" then access "max" property
+   * - "element.getAttribute" → resolve "element" then access "getAttribute" property
+   * - "myFunc" → resolve directly from contexts
+   *
+   * Resolution order: locals → variables → meta → context → element → global
+   *
+   * THIS BINDING:
+   * For string paths with dots, 'this' is bound to the parent object:
+   * - "Math.max" → func is Math.max, thisBinding is Math
+   * - "element.getAttribute" → func is getAttribute, thisBinding is element
+   * This ensures methods work correctly with proper context.
+   *
+   * ASYNC HANDLING:
+   * Both function results and arguments are automatically awaited if they
+   * are promises, enabling seamless async/await in hyperscript.
    */
   async evaluate(
     context: TypedExpressionContext,
@@ -256,10 +353,13 @@ export class FunctionCallExpression
         return await this.executeConstructor(constructorName, constructorArgs, context);
       } else {
         // Handle regular function call: [functionReference, args?]
+        // functionReference can be:
+        // - String path: "Math.max", "element.getAttribute", "myFunc"
+        // - Direct function reference: (a, b) => a + b
         const functionReference = parsedArgs[0];
         const functionArgs = parsedArgs.length > 1 ? (parsedArgs[1] as unknown[]) : [];
 
-        // Resolve the function to call
+        // Resolve the function to call (string path resolution with multi-context lookup)
         const resolvedFunction = await this.resolveFunction(
           functionReference as string | Function,
           context
@@ -268,7 +368,7 @@ export class FunctionCallExpression
           return resolvedFunction;
         }
 
-        // Execute the function call
+        // Execute the function call with proper this binding and async handling
         const result = await this.executeFunction(
           resolvedFunction.value.func,
           resolvedFunction.value.thisBinding,
@@ -296,12 +396,41 @@ export class FunctionCallExpression
 
   /**
    * Resolve function reference to callable function with proper this binding
+   *
+   * This is the KEY DIFFERENCE from BaseExpressionEvaluator.evaluateCallExpression():
+   * - BaseExpressionEvaluator: Evaluates AST nodes (memberExpression, propertyAccess)
+   * - This method: Resolves STRING PATHS like "Math.max" or "element.getAttribute"
+   *
+   * STRING PATH RESOLUTION:
+   * Converts dot-notation strings into traversable paths:
+   * - "Math.max" → ["Math", "max"] → resolve Math, then Math.max
+   * - "element.getAttribute" → ["element", "getAttribute"] → resolve element, then element.getAttribute
+   * - "myFunc" → ["myFunc"] → resolve myFunc directly
+   *
+   * MULTI-CONTEXT RESOLUTION (Priority Order):
+   * 1. Locals (function scope variables)
+   * 2. Variables (execution context variables)
+   * 3. Meta (metadata context)
+   * 4. Direct context properties
+   * 5. Current element (context.me)
+   * 6. Global scope (globalThis, window, or Node.js global)
+   *
+   * THIS BINDING PRESERVATION:
+   * For multi-part paths (e.g., "object.method"), the thisBinding is set to the
+   * parent object to ensure the method executes with correct context:
+   * - Path "Math.max": thisBinding = Math (so Math.max() has correct 'this')
+   * - Path "element.getAttribute": thisBinding = element (proper method context)
+   *
+   * CONTRAST WITH ASTNODE EVALUATION:
+   * BaseExpressionEvaluator evaluates already-parsed AST nodes that have explicit
+   * object and property fields. This method parses string paths at runtime.
+   * These approaches are complementary and serve different input sources.
    */
   private async resolveFunction(
     functionReference: string | Function,
     context: TypedExpressionContext
   ): Promise<EvaluationResult<{ func: Function; thisBinding: any }>> {
-    // Handle direct function reference
+    // Handle direct function reference (bypass string path resolution)
     if (isFunction(functionReference)) {
       return {
         success: true,
@@ -310,6 +439,7 @@ export class FunctionCallExpression
       };
     }
 
+    // String path resolution: split "Math.max" into ["Math", "max"]
     const functionPath = functionReference as string;
     const pathParts = functionPath.split('.');
 
@@ -482,6 +612,30 @@ export class FunctionCallExpression
 
   /**
    * Execute function with proper argument handling and async support
+   *
+   * EXECUTION STRATEGY:
+   * 1. Argument resolution: Convert all arguments (may include promises) to actual values
+   * 2. Function invocation: Call function with proper 'this' binding using func.apply()
+   * 3. Result unwrapping: If result is a promise, automatically await it
+   * 4. Type inference: Use centralized type-helpers to determine result type
+   *
+   * THIS BINDING:
+   * - If thisBinding provided: Use func.apply(thisBinding, args)
+   * - If no thisBinding: Call func(...args) directly
+   * This enables proper method execution context, especially important for:
+   * - Built-in methods: Math.max, Array.prototype.join
+   * - DOM methods: element.getAttribute, element.classList.add
+   * - Object methods: obj.method() with access to obj's properties
+   *
+   * ASYNC SUPPORT:
+   * Both arguments and return values can be promises:
+   * - Argument promises are awaited before function call
+   * - Result promises are awaited after function call
+   * This provides seamless async/await experience in hyperscript
+   *
+   * ERROR HANDLING:
+   * Uses Result-based error handling (returns EvaluationResult, not exceptions)
+   * Captures error details for debugging while maintaining graceful failure
    */
   private async executeFunction(
     func: Function,
@@ -490,18 +644,22 @@ export class FunctionCallExpression
     context: TypedExpressionContext
   ): Promise<EvaluationResult<HyperScriptValue>> {
     try {
-      // Resolve any promise arguments first
+      // Step 1: Resolve any promise arguments first
+      // This ensures all arguments are concrete values before function invocation
       const resolvedArgs = await Promise.all(args.map(arg => this.resolveArgument(arg, context)));
 
-      // Execute the function with proper this binding
+      // Step 2: Execute the function with proper this binding
+      // Using func.apply() ensures correct 'this' context for methods
       let result: unknown;
       if (thisBinding) {
+        // Method call: preserve the object context
         result = func.apply(thisBinding, resolvedArgs);
       } else {
+        // Function call: no special context needed
         result = func(...resolvedArgs);
       }
 
-      // Handle promise results
+      // Step 3: Handle promise results (auto-unwrap async function results)
       if (result && isObject(result) && 'then' in (result as object)) {
         result = await result;
       }
