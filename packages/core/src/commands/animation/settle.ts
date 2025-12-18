@@ -16,6 +16,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { resolveElement } from '../helpers/element-resolution';
 import { parseDuration, parseCSSDurations, calculateMaxAnimationTime } from '../helpers/duration-parsing';
+import { waitForAnimationComplete } from '../helpers/event-waiting';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
 /**
@@ -93,56 +94,24 @@ export class SettleCommand implements DecoratedCommand {
     const timeout = parseDuration(timeoutInput, 5000);
 
     const startTime = Date.now();
-    const settled = await this.waitForSettle(targetElement, timeout);
+
+    // Calculate total animation time from computed styles
+    const computedStyle = getComputedStyle(targetElement);
+    const transitionDurations = parseCSSDurations(computedStyle.transitionDuration);
+    const transitionDelays = parseCSSDurations(computedStyle.transitionDelay);
+    const animationDurations = parseCSSDurations(computedStyle.animationDuration);
+    const animationDelays = parseCSSDurations(computedStyle.animationDelay);
+
+    const maxTransitionTime = calculateMaxAnimationTime(transitionDurations, transitionDelays);
+    const maxAnimationTime = calculateMaxAnimationTime(animationDurations, animationDelays);
+    const totalAnimationTime = Math.max(maxTransitionTime, maxAnimationTime);
+
+    // Wait for animations using consolidated helper
+    const result = await waitForAnimationComplete(targetElement, totalAnimationTime, timeout);
     const duration = Date.now() - startTime;
 
     Object.assign(context, { it: targetElement });
-    return { element: targetElement, settled, timeout, duration };
-  }
-
-  private async waitForSettle(element: HTMLElement, timeout: number): Promise<boolean> {
-    return new Promise<boolean>(resolve => {
-      let settled = false;
-
-      const computedStyle = getComputedStyle(element);
-      const transitionDurations = parseCSSDurations(computedStyle.transitionDuration);
-      const transitionDelays = parseCSSDurations(computedStyle.transitionDelay);
-      const animationDurations = parseCSSDurations(computedStyle.animationDuration);
-      const animationDelays = parseCSSDurations(computedStyle.animationDelay);
-
-      const maxTransitionTime = calculateMaxAnimationTime(transitionDurations, transitionDelays);
-      const maxAnimationTime = calculateMaxAnimationTime(animationDurations, animationDelays);
-      const totalAnimationTime = Math.max(maxTransitionTime, maxAnimationTime);
-
-      if (totalAnimationTime <= 0) {
-        resolve(true);
-        return;
-      }
-
-      const cleanup = () => {
-        element.removeEventListener('transitionend', onTransitionEnd);
-        element.removeEventListener('animationend', onAnimationEnd);
-        clearTimeout(timeoutId);
-        clearTimeout(animationTimeoutId);
-      };
-
-      const settle = (wasTimeout = false) => {
-        if (!settled) {
-          settled = true;
-          cleanup();
-          resolve(!wasTimeout);
-        }
-      };
-
-      const onTransitionEnd = (event: Event) => { if (event.target === element) settle(); };
-      const onAnimationEnd = (event: Event) => { if (event.target === element) settle(); };
-
-      element.addEventListener('transitionend', onTransitionEnd);
-      element.addEventListener('animationend', onAnimationEnd);
-
-      const animationTimeoutId = setTimeout(() => settle(), totalAnimationTime + 50);
-      const timeoutId = setTimeout(() => settle(true), timeout);
-    });
+    return { element: targetElement, settled: result.completed, timeout, duration };
   }
 }
 

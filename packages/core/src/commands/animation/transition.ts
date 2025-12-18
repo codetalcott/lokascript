@@ -16,6 +16,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { resolveElement } from '../helpers/element-resolution';
 import { parseDuration, camelToKebab } from '../helpers/duration-parsing';
+import { waitForTransitionEnd } from '../helpers/event-waiting';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
 /**
@@ -128,7 +129,7 @@ export class TransitionCommand implements DecoratedCommand {
 
     targetElement.style.setProperty(property, toValue);
 
-    const completed = await this.waitForTransition(targetElement, property, duration);
+    const result = await waitForTransitionEnd(targetElement, property, duration);
     targetElement.style.transition = originalTransition;
 
     // If we transitioned to "initial", remove inline style to let stylesheet take over
@@ -138,20 +139,7 @@ export class TransitionCommand implements DecoratedCommand {
 
     Object.assign(context, { it: targetElement });
 
-    return { element: targetElement, property, fromValue, toValue, duration, completed };
-  }
-
-  private async waitForTransition(element: HTMLElement, property: string, duration: number): Promise<boolean> {
-    return new Promise(resolve => {
-      let done = false;
-      const cleanup = () => { element.removeEventListener('transitionend', onEnd); element.removeEventListener('transitioncancel', onCancel); clearTimeout(tid); };
-      const finish = (ok: boolean) => { if (!done) { done = true; cleanup(); resolve(ok); } };
-      const onEnd = (e: TransitionEvent) => { if (e.target === element && e.propertyName === property) finish(true); };
-      const onCancel = (e: TransitionEvent) => { if (e.target === element && e.propertyName === property) finish(false); };
-      element.addEventListener('transitionend', onEnd);
-      element.addEventListener('transitioncancel', onCancel);
-      const tid = setTimeout(() => finish(true), duration + 50);
-    });
+    return { element: targetElement, property, fromValue, toValue, duration, completed: result.completed };
   }
 }
 

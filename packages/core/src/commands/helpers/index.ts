@@ -113,8 +113,17 @@ export {
   isIdSelectorNode,
   isBareSmartElementNode,
   SMART_ELEMENT_TAGS,
+  // Phase 4: First argument evaluation helpers
+  evaluateFirstArg,
+  detectInputType,
 } from './selector-type-detection';
-export type { SelectorType, SmartElementTag } from './selector-type-detection';
+export type {
+  SelectorType,
+  SmartElementTag,
+  // Phase 4: First argument types
+  CommandInputType,
+  ParsedFirstArg,
+} from './selector-type-detection';
 
 // Input validation helpers (Phase 3)
 export {
@@ -165,3 +174,50 @@ export {
   clearElement,
 } from './dom-mutation';
 export type { ContentInsertPosition, SemanticPosition } from './dom-mutation';
+
+// Batch DOM operations (Phase 4 - Consolidation)
+export {
+  batchApply,
+  batchApplyItems,
+  batchAddClasses,
+  batchRemoveClasses,
+  batchToggleClasses,
+  batchSetAttribute,
+  batchRemoveAttribute,
+  batchToggleAttribute,
+  toggleAttribute,
+  batchSetStyles,
+  batchRemoveStyles,
+} from './batch-dom-operations';
+
+// Event waiting helpers (Phase 4 - Consolidation)
+export {
+  waitForEvent,
+  waitForTime,
+  waitForTransitionEnd,
+  waitForAnimationComplete,
+  waitForFirst,
+  createOnceGuard,
+  createCleanupManager,
+} from './event-waiting';
+export type {
+  EventWaitResult,
+  TransitionWaitResult,
+  AnimationWaitResult,
+  WaitCondition,
+  RaceResult,
+} from './event-waiting';
+
+// Temporal modifiers (Phase 4 - Consolidation)
+export {
+  createReversionFn,
+  setupDurationReversion,
+  setupEventReversion,
+  setupTemporalModifiers,
+  setupTemporalModifiersForElements,
+} from './temporal-modifiers';
+export type {
+  ToggleType,
+  CleanupFn,
+  TemporalModifierOptions,
+} from './temporal-modifiers';

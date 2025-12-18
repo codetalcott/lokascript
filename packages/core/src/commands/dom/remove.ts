@@ -19,10 +19,11 @@ import { isHTMLElement } from '../../utils/element-check';
 import { resolveTargetsFromArgs } from '../helpers/element-resolution';
 import { parseClasses } from '../helpers/class-manipulation';
 import { isAttributeSyntax, parseAttributeName } from '../helpers/attribute-manipulation';
-import { isCSSPropertySyntax, removeStyleProperty } from '../helpers/style-manipulation';
-import { isClassSelectorNode, extractSelectorValue } from '../helpers/selector-type-detection';
+import { isCSSPropertySyntax } from '../helpers/style-manipulation';
+import { evaluateFirstArg } from '../helpers/selector-type-detection';
 import { isValidTargetArray, isValidStringArray, isValidType } from '../helpers/input-validator';
 import { removeElement } from '../helpers/dom-mutation';
+import { batchRemoveClasses, batchRemoveAttribute, batchRemoveStyles } from '../helpers/batch-dom-operations';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
 /**
@@ -99,18 +100,9 @@ export class RemoveCommand implements DecoratedCommand {
     }
 
     // First arg determines the type
-    const firstArg = raw.args[0];
-
-    // Handle CSS selector nodes directly without evaluation
-    // For "remove .active", .active is a selector node with value='.active'
-    // not evaluated as a DOM query (which would return an empty NodeList)
-    let firstValue: unknown;
-    if (isClassSelectorNode(firstArg)) {
-      // Use value directly for class names (includes the leading dot)
-      firstValue = extractSelectorValue(firstArg);
-    } else {
-      firstValue = await evaluator.evaluate(firstArg, context);
-    }
+    // Use evaluateFirstArg to handle class selector nodes specially
+    // (extract value directly rather than evaluating as DOM query)
+    const { value: firstValue } = await evaluateFirstArg(raw.args[0], evaluator, context);
 
     // Check if we're removing an element from the DOM (e.g., "remove closest .item")
     // When firstValue is an HTMLElement, we remove it from the DOM entirely
@@ -172,29 +164,15 @@ export class RemoveCommand implements DecoratedCommand {
     // Handle different input types using discriminated union
     switch (input.type) {
       case 'classes':
-        // Remove CSS classes
-        for (const element of input.targets) {
-          for (const className of input.classes) {
-            // classList.remove() is safe even if class doesn't exist
-            element.classList.remove(className);
-          }
-        }
+        batchRemoveClasses(input.targets, input.classes);
         break;
 
       case 'attribute':
-        // Remove HTML attribute
-        for (const element of input.targets) {
-          element.removeAttribute(input.name);
-        }
+        batchRemoveAttribute(input.targets, input.name);
         break;
 
       case 'styles':
-        // Remove inline styles using helper
-        for (const element of input.targets) {
-          for (const property of input.properties) {
-            removeStyleProperty(element, property);
-          }
-        }
+        batchRemoveStyles(input.targets, input.properties);
         break;
 
       case 'element':

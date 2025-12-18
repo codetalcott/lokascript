@@ -14,6 +14,7 @@ import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { parseDurationStrict } from '../helpers/duration-parsing';
+import { waitForTime, waitForEvent } from '../helpers/event-waiting';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
 export interface WaitTimeInput { type: 'time'; milliseconds: number; }
@@ -66,13 +67,14 @@ export class WaitCommand implements DecoratedCommand {
     const startTime = Date.now();
 
     if (input.type === 'time') {
-      await this.waitForTime(input.milliseconds);
+      await waitForTime(input.milliseconds);
       return { type: 'time', result: input.milliseconds, duration: Date.now() - startTime };
     }
 
     if (input.type === 'event') {
       const target = input.target ?? context.me ?? document;
-      const event = await this.waitForEvent(input.eventName, target);
+      const result = await waitForEvent(target, input.eventName);
+      const event = result.event!;
       Object.assign(context, { it: event });
       if (input.destructure) {
         for (const prop of input.destructure) {
@@ -83,7 +85,7 @@ export class WaitCommand implements DecoratedCommand {
     }
 
     // Race
-    const { result, winningCondition } = await this.waitForRace(input.conditions, context);
+    const { result, winningCondition } = await this.executeRace(input.conditions, context);
     Object.assign(context, { it: result });
     if (result instanceof Event && winningCondition?.type === 'event' && winningCondition.destructure) {
       for (const prop of winningCondition.destructure) {
@@ -177,25 +179,13 @@ export class WaitCommand implements DecoratedCommand {
     return { type: 'race', conditions };
   }
 
-  private waitForTime(ms: number): Promise<void> {
-    return new Promise(r => setTimeout(r, ms));
-  }
-
-  private waitForEvent(eventName: string, target: EventTarget): Promise<Event> {
-    if (!target) throw new Error('wait for: no event target available');
-    return new Promise(r => {
-      const h = (e: Event) => { target.removeEventListener(eventName, h); r(e); };
-      target.addEventListener(eventName, h);
-    });
-  }
-
-  private async waitForRace(conditions: (WaitTimeInput | WaitEventInput)[], context: TypedExecutionContext): Promise<{ result: Event | number; winningCondition: WaitTimeInput | WaitEventInput | null }> {
+  private async executeRace(conditions: (WaitTimeInput | WaitEventInput)[], context: TypedExecutionContext): Promise<{ result: Event | number; winningCondition: WaitTimeInput | WaitEventInput | null }> {
     const promises = conditions.map(c => {
       if (c.type === 'time') {
-        return this.waitForTime(c.milliseconds).then(() => ({ result: c.milliseconds as number, winningCondition: c }));
+        return waitForTime(c.milliseconds).then(() => ({ result: c.milliseconds as number, winningCondition: c }));
       }
-      const t = c.target ?? context.me ?? document;
-      return this.waitForEvent(c.eventName, t).then(e => ({ result: e as Event, winningCondition: c }));
+      const target = c.target ?? context.me ?? document;
+      return waitForEvent(target, c.eventName).then(res => ({ result: res.event as Event, winningCondition: c }));
     });
     return Promise.race(promises);
   }

@@ -19,8 +19,9 @@ import { resolveTargetsFromArgs } from '../helpers/element-resolution';
 import { parseClasses } from '../helpers/class-manipulation';
 import { isAttributeSyntax, parseAttributeWithValue } from '../helpers/attribute-manipulation';
 import { isCSSPropertySyntax } from '../helpers/style-manipulation';
-import { isClassSelectorNode, extractSelectorValue } from '../helpers/selector-type-detection';
+import { evaluateFirstArg } from '../helpers/selector-type-detection';
 import { isValidTargetArray, isValidStringArray, isValidType } from '../helpers/input-validator';
+import { batchAddClasses, batchSetAttribute, batchSetStyles } from '../helpers/batch-dom-operations';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
 /**
@@ -93,18 +94,9 @@ export class AddCommand implements DecoratedCommand {
     }
 
     // First arg determines the type
-    const firstArg = raw.args[0];
-
-    // Handle CSS selector nodes directly without evaluation
-    // For "add .active", .active is a selector node with value='.active'
-    // not evaluated as a DOM query (which would return an empty NodeList)
-    let firstValue: unknown;
-    if (isClassSelectorNode(firstArg)) {
-      // Use value directly for class names (includes the leading dot)
-      firstValue = extractSelectorValue(firstArg);
-    } else {
-      firstValue = await evaluator.evaluate(firstArg, context);
-    }
+    // Use evaluateFirstArg to handle class selector nodes specially
+    // (extract value directly rather than evaluating as DOM query)
+    const { value: firstValue } = await evaluateFirstArg(raw.args[0], evaluator, context);
 
     // Detect input type based on first argument
 
@@ -171,32 +163,15 @@ export class AddCommand implements DecoratedCommand {
     // Handle different input types using discriminated union
     switch (input.type) {
       case 'classes':
-        // Add CSS classes
-        for (const element of input.targets) {
-          for (const className of input.classes) {
-            // Only add if not already present
-            if (!element.classList.contains(className)) {
-              element.classList.add(className);
-            }
-          }
-        }
+        batchAddClasses(input.targets, input.classes);
         break;
 
       case 'attribute':
-        // Add HTML attribute
-        for (const element of input.targets) {
-          element.setAttribute(input.name, input.value);
-        }
+        batchSetAttribute(input.targets, input.name, input.value);
         break;
 
       case 'styles':
-        // Add inline styles
-        for (const element of input.targets) {
-          for (const [property, value] of Object.entries(input.styles)) {
-            // Use setProperty for type-safe style assignment (handles both kebab-case and camelCase)
-            element.style.setProperty(property, value);
-          }
-        }
+        batchSetStyles(input.targets, input.styles);
         break;
     }
   }

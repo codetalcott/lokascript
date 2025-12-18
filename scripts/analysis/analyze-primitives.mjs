@@ -16,7 +16,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PROJECT_ROOT = join(__dirname, '..');
+const PROJECT_ROOT = join(__dirname, '../..');
 const COMMANDS_DIR = join(PROJECT_ROOT, 'packages/core/src/commands');
 const EXPRESSIONS_DIR = join(PROJECT_ROOT, 'packages/core/src/expressions');
 

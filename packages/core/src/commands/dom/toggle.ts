@@ -37,7 +37,7 @@ import {
   isSmartElementSelector,
   isBareSmartElementNode,
   isClassSelectorNode,
-  extractSelectorValue,
+  evaluateFirstArg,
 } from '../helpers/selector-type-detection';
 import {
   detectSmartElementType,
@@ -46,6 +46,15 @@ import {
   toggleDetails,
   toggleSelect,
 } from '../helpers/smart-element';
+import {
+  batchToggleClasses,
+  batchToggleAttribute,
+  batchApply,
+} from '../helpers/batch-dom-operations';
+import {
+  setupDurationReversion,
+  setupEventReversion,
+} from '../helpers/temporal-modifiers';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
 /**
@@ -167,23 +176,11 @@ export class ToggleCommand implements DecoratedCommand {
     }
 
     // Evaluate first argument to determine toggle type
+    // Use evaluateFirstArg to handle class selector nodes specially
+    // (extract value directly rather than evaluating as DOM query)
+    // ID selectors (#id) are evaluated normally to get actual DOM elements
     const firstArg = raw.args[0];
-
-    // CRITICAL: Check for CLASS selector nodes before evaluating
-    // Class selector nodes should extract their value directly to avoid DOM queries
-    // that return empty NodeList (no elements match the class at parse time)
-    //
-    // ID selectors (#id) should be EVALUATED to get the actual DOM element
-    // because they reference specific elements that exist in the DOM
-    let firstValue: unknown;
-    if (isClassSelectorNode(firstArg)) {
-      // Extract value directly from class selector node
-      firstValue = extractSelectorValue(firstArg);
-    } else {
-      // Evaluate normally for ID selectors and other node types
-      // This allows #myDialog to resolve to the actual DOM element
-      firstValue = await evaluator.evaluate(firstArg, context);
-    }
+    const { value: firstValue } = await evaluateFirstArg(firstArg, evaluator, context);
 
     // Pattern detection:
     // 1. Check if first value is an HTMLElement (smart element toggle)
@@ -338,161 +335,63 @@ export class ToggleCommand implements DecoratedCommand {
     input: ToggleCommandInput,
     context: TypedExecutionContext
   ): Promise<HTMLElement[]> {
-    const modifiedElements: HTMLElement[] = [];
-
     switch (input.type) {
       case 'classes':
-        for (const element of input.targets) {
-          for (const className of input.classes) {
-            element.classList.toggle(className);
-          }
-          modifiedElements.push(element);
+        // Toggle all classes on all targets
+        batchToggleClasses(input.targets, input.classes);
 
-          // Setup temporal modifier if specified
-          if (input.duration && input.classes.length > 0) {
-            this.setupTemporalModifier(element, 'class', input.classes[0], input.duration);
-          }
-          if (input.untilEvent && input.classes.length > 0) {
-            this.setupEventModifier(element, 'class', input.classes[0], input.untilEvent);
+        // Setup temporal modifiers if specified (per-element)
+        if ((input.duration || input.untilEvent) && input.classes.length > 0) {
+          for (const element of input.targets) {
+            if (input.duration) {
+              setupDurationReversion(element, 'class', input.classes[0], input.duration);
+            }
+            if (input.untilEvent) {
+              setupEventReversion(element, 'class', input.classes[0], input.untilEvent);
+            }
           }
         }
-        break;
+        return [...input.targets];
 
       case 'attribute':
-        for (const element of input.targets) {
-          this.toggleAttribute(element, input.name, input.value);
-          modifiedElements.push(element);
+        // Toggle attribute on all targets
+        batchToggleAttribute(input.targets, input.name, input.value);
 
-          // Setup temporal modifier if specified
-          if (input.duration) {
-            this.setupTemporalModifier(element, 'attribute', input.name, input.duration);
-          }
-          if (input.untilEvent) {
-            this.setupEventModifier(element, 'attribute', input.name, input.untilEvent);
+        // Setup temporal modifiers if specified (per-element)
+        if (input.duration || input.untilEvent) {
+          for (const element of input.targets) {
+            if (input.duration) {
+              setupDurationReversion(element, 'attribute', input.name, input.duration);
+            }
+            if (input.untilEvent) {
+              setupEventReversion(element, 'attribute', input.name, input.untilEvent);
+            }
           }
         }
-        break;
+        return [...input.targets];
 
       case 'css-property':
-        for (const element of input.targets) {
+        return batchApply(input.targets, (element) => {
           toggleCSSProperty(element, input.property);
-          modifiedElements.push(element);
-        }
-        break;
+        });
 
       case 'dialog':
-        for (const dialog of input.targets) {
-          toggleDialog(dialog, input.mode);
-          modifiedElements.push(dialog);
-        }
-        break;
+        return batchApply(input.targets as HTMLElement[], (dialog) => {
+          toggleDialog(dialog as HTMLDialogElement, input.mode);
+        });
 
       case 'details':
-        for (const details of input.targets) {
-          toggleDetails(details);
-          modifiedElements.push(details);
-        }
-        break;
+        return batchApply(input.targets as HTMLElement[], (details) => {
+          toggleDetails(details as HTMLDetailsElement);
+        });
 
       case 'select':
-        for (const select of input.targets) {
-          toggleSelect(select);
-          modifiedElements.push(select);
-        }
-        break;
-    }
-
-    return modifiedElements;
-  }
-
-  // ========== Private Utility Methods ==========
-
-  /**
-   * Toggle attribute on element
-   *
-   * If value is specified, toggles between that value and removal.
-   * If no value, toggles between empty string and removal (boolean attribute).
-   *
-   * @param element - Element to modify
-   * @param name - Attribute name
-   * @param value - Optional attribute value
-   */
-  private toggleAttribute(element: HTMLElement, name: string, value?: string): void {
-    const hasAttribute = element.hasAttribute(name);
-
-    if (value !== undefined) {
-      // Toggle with specific value
-      if (hasAttribute && element.getAttribute(name) === value) {
-        element.removeAttribute(name);
-      } else {
-        element.setAttribute(name, value);
-      }
-    } else {
-      // Boolean attribute toggle
-      if (hasAttribute) {
-        element.removeAttribute(name);
-      } else {
-        element.setAttribute(name, '');
-      }
+        return batchApply(input.targets as HTMLElement[], (select) => {
+          toggleSelect(select as HTMLSelectElement);
+        });
     }
   }
 
-  /**
-   * Setup temporal modifier for automatic reversion after duration
-   *
-   * @param element - Element to modify
-   * @param toggleType - Type of toggle ('class' or 'attribute')
-   * @param identifier - Class name or attribute name
-   * @param duration - Duration in milliseconds
-   */
-  private setupTemporalModifier(
-    element: HTMLElement,
-    toggleType: 'class' | 'attribute',
-    identifier: string,
-    duration: number
-  ): void {
-    setTimeout(() => {
-      if (toggleType === 'class') {
-        element.classList.toggle(identifier);
-      } else if (toggleType === 'attribute') {
-        if (element.hasAttribute(identifier)) {
-          element.removeAttribute(identifier);
-        } else {
-          element.setAttribute(identifier, '');
-        }
-      }
-    }, duration);
-  }
-
-  /**
-   * Setup event modifier for automatic reversion when event fires
-   *
-   * @param element - Element to modify
-   * @param toggleType - Type of toggle ('class' or 'attribute')
-   * @param identifier - Class name or attribute name
-   * @param eventName - Event to listen for
-   */
-  private setupEventModifier(
-    element: HTMLElement,
-    toggleType: 'class' | 'attribute',
-    identifier: string,
-    eventName: string
-  ): void {
-    const handler = () => {
-      if (toggleType === 'class') {
-        element.classList.toggle(identifier);
-      } else if (toggleType === 'attribute') {
-        if (element.hasAttribute(identifier)) {
-          element.removeAttribute(identifier);
-        } else {
-          element.setAttribute(identifier, '');
-        }
-      }
-      element.removeEventListener(eventName, handler);
-    };
-
-    element.addEventListener(eventName, handler, { once: true });
-  }
 }
 
 export const createToggleCommand = createFactory(ToggleCommand);
