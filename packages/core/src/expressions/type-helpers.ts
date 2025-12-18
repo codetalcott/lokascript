@@ -117,3 +117,49 @@ export function toNumber(value: unknown): number | null {
 
   return null;
 }
+
+// ============================================================================
+// Array-like Checking
+// ============================================================================
+
+/**
+ * Check if value is array-like (can be iterated with indices)
+ * Includes arrays, strings, NodeLists, and objects with 'length' property
+ *
+ * @param value - Value to check
+ * @returns True if value is array-like
+ */
+export function isArrayLike(value: unknown): boolean {
+  if (Array.isArray(value)) return true;
+  if (typeof value === 'string') return true;
+  if (value && isObject(value) && 'length' in (value as object)) return true;
+  return false;
+}
+
+// ============================================================================
+// Type Inference
+// ============================================================================
+
+/**
+ * Simple type inference for HyperScript values
+ * This provides consistent type inference across expressions
+ *
+ * Note: This uses explicit checks rather than the type registry to ensure
+ * consistent behavior across all expression implementations. The type registry's
+ * ElementList check has edge cases with sparse arrays.
+ *
+ * @param value - Value to infer type for
+ * @returns The HyperScriptValueType
+ */
+export function inferType(value: unknown): string {
+  if (value === null) return 'null';
+  if (value === undefined) return 'undefined';
+  if (typeof value === 'string') return 'string';
+  if (typeof value === 'number') return 'number';
+  if (typeof value === 'boolean') return 'boolean';
+  if (value instanceof HTMLElement) return 'element';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'function') return 'function';
+  if (typeof value === 'object') return 'object';
+  return 'unknown';
+}

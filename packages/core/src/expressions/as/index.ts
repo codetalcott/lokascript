@@ -23,6 +23,7 @@ import {
   isArray as sharedIsArray,
   isElement as sharedIsElement,
   isFunction as sharedIsFunction,
+  inferType,
 } from '../type-helpers';
 
 // ============================================================================
@@ -188,7 +189,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
       return Promise.resolve({
         success: true,
         value: convertedValue,
-        type: this.inferValueType(convertedValue),
+        type: inferType(convertedValue),
       });
     } catch (error) {
       return Promise.resolve({
@@ -284,11 +285,11 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private convertToString(value: unknown): string | null {
     if (value === null || value === undefined) return null;
-    if (this.isString(value)) return value as string;
-    if (this.isNumber(value) || this.isBoolean(value)) return String(value);
+    if (sharedIsString(value)) return value as string;
+    if (sharedIsNumber(value) || sharedIsBoolean(value)) return String(value);
     if (value instanceof Date) return value.toISOString().split('T')[0];
-    if (this.isArray(value)) return (value as unknown[]).join(',');
-    if (this.isElement(value)) return (value as Element).outerHTML;
+    if (sharedIsArray(value)) return (value as unknown[]).join(',');
+    if (sharedIsElement(value)) return (value as Element).outerHTML;
 
     // Try registry coercion as fallback
     const coerced = expressionTypeRegistry.coerce<string>(value, 'String');
@@ -301,18 +302,18 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private convertToNumber(value: unknown): number | null {
     if (value === null || value === undefined) return null;
-    if (this.isNumber(value)) return value as number;
+    if (sharedIsNumber(value)) return value as number;
 
     // Try registry coercion first
     const coerced = expressionTypeRegistry.coerce<number>(value, 'Number');
     if (coerced !== null) return coerced;
 
     // Fallback for special cases
-    if (this.isString(value)) {
+    if (sharedIsString(value)) {
       const num = parseFloat(value as string);
       return isNaN(num) ? null : num;
     }
-    if (this.isBoolean(value)) return (value as boolean) ? 1 : 0;
+    if (sharedIsBoolean(value)) return (value as boolean) ? 1 : 0;
     return null;
   }
 
@@ -331,16 +332,16 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private convertToBoolean(value: unknown): boolean {
     if (value === null || value === undefined) return false;
-    if (this.isBoolean(value)) return value as boolean;
+    if (sharedIsBoolean(value)) return value as boolean;
 
     // Try registry coercion first
     const coerced = expressionTypeRegistry.coerce<boolean>(value, 'Boolean');
     if (coerced !== null) return coerced;
 
     // Fallback for special cases
-    if (this.isNumber(value)) return (value as number) !== 0 && !isNaN(value as number);
-    if (this.isString(value)) return (value as string) !== '';
-    if (this.isArray(value)) return (value as unknown[]).length > 0;
+    if (sharedIsNumber(value)) return (value as number) !== 0 && !isNaN(value as number);
+    if (sharedIsString(value)) return (value as string) !== '';
+    if (sharedIsArray(value)) return (value as unknown[]).length > 0;
     return true; // Objects and other truthy values
   }
 
@@ -350,7 +351,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private convertToArray(value: unknown): unknown[] {
     if (value === null || value === undefined) return [];
-    if (this.isArray(value)) return value as unknown[];
+    if (sharedIsArray(value)) return value as unknown[];
 
     // Try registry coercion
     const coerced = expressionTypeRegistry.coerce<unknown[]>(value, 'Array');
@@ -369,7 +370,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
   private convertToDate(value: unknown): Date | null {
     if (value === null || value === undefined) return null;
     if (value instanceof Date) return value;
-    if (this.isString(value)) {
+    if (sharedIsString(value)) {
       const strVal = value as string;
       // Special handling for YYYY-MM-DD format
       if (/^\d{4}-\d{2}-\d{2}$/.test(strVal)) {
@@ -378,7 +379,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
       const date = new Date(strVal);
       return isNaN(date.getTime()) ? null : date;
     }
-    if (this.isNumber(value)) return new Date(value as number);
+    if (sharedIsNumber(value)) return new Date(value as number);
     return null;
   }
 
@@ -410,7 +411,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
     if (coerced !== null) return coerced as HyperScriptValue;
 
     // Fallback for string parsing
-    if (this.isString(value)) {
+    if (sharedIsString(value)) {
       try {
         return JSON.parse(value as string) as HyperScriptValue;
       } catch {
@@ -426,16 +427,16 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private convertToHTML(value: unknown): string | null {
     if (value === null || value === undefined) return null;
-    if (this.isString(value)) return value as string;
-    if (this.isElement(value)) return (value as Element).outerHTML;
-    if (this.isArray(value)) {
+    if (sharedIsString(value)) return value as string;
+    if (sharedIsElement(value)) return (value as Element).outerHTML;
+    if (sharedIsArray(value)) {
       return (value as unknown[]).map(item =>
-        this.isElement(item) ? (item as Element).outerHTML : String(item)
+        sharedIsElement(item) ? (item as Element).outerHTML : String(item)
       ).join('');
     }
     if (value instanceof NodeList) {
       return Array.from(value)
-        .map(node => this.isElement(node) ? (node as Element).outerHTML : String(node))
+        .map(node => sharedIsElement(node) ? (node as Element).outerHTML : String(node))
         .join('');
     }
     return String(value);
@@ -450,17 +451,17 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
 
     const fragment = document.createDocumentFragment();
 
-    if (this.isString(value)) {
+    if (sharedIsString(value)) {
       const temp = document.createElement('div');
       temp.innerHTML = value as string;
       while (temp.firstChild) {
         fragment.appendChild(temp.firstChild);
       }
-    } else if (this.isElement(value)) {
+    } else if (sharedIsElement(value)) {
       fragment.appendChild((value as Element).cloneNode(true));
-    } else if (this.isArray(value)) {
+    } else if (sharedIsArray(value)) {
       (value as unknown[]).forEach(item => {
-        if (this.isElement(item)) {
+        if (sharedIsElement(item)) {
           fragment.appendChild((item as Element).cloneNode(true));
         }
       });
@@ -473,7 +474,7 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    * Extract form values as object
    */
   private extractFormValues(value: unknown): Record<string, unknown> | null {
-    if (!this.isFormElement(value) && !this.isElement(value)) return null;
+    if (!this.isFormElement(value) && !sharedIsElement(value)) return null;
 
     const element = value as Element;
     const values: Record<string, unknown> = {};
@@ -588,60 +589,6 @@ export class AsExpression implements TypedExpressionImplementation<HyperScriptVa
    */
   private isFormElement(value: unknown): boolean {
     return value instanceof HTMLFormElement;
-  }
-
-  /**
-   * Check if value is an element - delegates to shared type-helpers
-   */
-  private isElement(value: unknown): boolean {
-    return sharedIsElement(value);
-  }
-
-  /**
-   * Check if value is an array - delegates to shared type-helpers
-   */
-  private isArray(value: unknown): boolean {
-    return sharedIsArray(value);
-  }
-
-  /**
-   * Check if value is a string - delegates to shared type-helpers
-   */
-  private isString(value: unknown): boolean {
-    return sharedIsString(value);
-  }
-
-  /**
-   * Check if value is a number - delegates to shared type-helpers
-   */
-  private isNumber(value: unknown): boolean {
-    return sharedIsNumber(value);
-  }
-
-  /**
-   * Check if value is a boolean - delegates to shared type-helpers
-   */
-  private isBoolean(value: unknown): boolean {
-    return sharedIsBoolean(value);
-  }
-
-  /**
-   * Infer TypeScript type from value
-   * Uses Expression Type Registry for consistent type inference
-   */
-  private inferValueType(value: unknown): HyperScriptValueType {
-    // Use registry for common types
-    const registryType = expressionTypeRegistry.getHyperScriptType(value);
-    if (registryType !== 'unknown') {
-      return registryType as HyperScriptValueType;
-    }
-
-    // Handle special cases not in registry
-    if (value === null || value === undefined) return 'null';
-    if (value instanceof DocumentFragment) return 'fragment';
-    if (value instanceof Date) return 'object';
-    if (sharedIsFunction(value)) return 'function';
-    return 'object';
   }
 
   /**

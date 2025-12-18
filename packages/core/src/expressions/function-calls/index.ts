@@ -18,7 +18,7 @@ import type {
   ExpressionAnalysisInfo,
 } from '../../types/command-types';
 import type { ValidationError } from '../../types/base-types';
-import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
+import { isString, isNumber, isBoolean, isObject, isFunction, inferType } from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schema
@@ -506,7 +506,7 @@ export class FunctionCallExpression
         result = await result;
       }
 
-      const valueType = this.inferType(result);
+      const valueType = inferType(result);
 
       return {
         success: true,
@@ -556,7 +556,7 @@ export class FunctionCallExpression
         finalResult = await result;
       }
 
-      const valueType = this.inferType(finalResult);
+      const valueType = inferType(finalResult);
 
       return {
         success: true,
@@ -672,22 +672,6 @@ export class FunctionCallExpression
     // For other types, return as-is
     // Note: In a full implementation, this might evaluate hyperscript expressions
     return arg;
-  }
-
-  /**
-   * Infer the type of a function result
-   */
-  private inferType(value: unknown): HyperScriptValueType {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    if (isString(value)) return 'string';
-    if (isNumber(value)) return 'number';
-    if (isBoolean(value)) return 'boolean';
-    if (value instanceof HTMLElement) return 'element';
-    if (Array.isArray(value)) return 'array';
-    if (isFunction(value)) return 'function';
-    if (isObject(value)) return 'object';
-    return 'unknown';
   }
 
   /**

@@ -13,6 +13,7 @@ import type { ExpressionMetadata, LLMDocumentation } from '../../types/expressio
 import { matchesWithCache } from '../../performance/integration';
 import { validateArgCount, validateTwoArgs } from '../validation-helpers';
 import { isString, isObject } from '../type-helpers';
+import { trackEvaluation } from '../shared';
 
 // ============================================================================
 // Enhanced Expression Interface
@@ -25,47 +26,6 @@ interface EnhancedExpressionImplementation extends ExpressionImplementation {
   metadata?: ExpressionMetadata;
   documentation?: LLMDocumentation;
   inputSchema?: RuntimeValidator<unknown>;
-}
-
-/**
- * Enhanced evaluation tracking
- */
-function trackEvaluation<T>(
-  expression: ExpressionImplementation,
-  context: ExecutionContext,
-  args: unknown[],
-  result: T,
-  startTime: number,
-  success: boolean = true,
-  error?: Error
-): T {
-  // Add evaluation tracking if context supports it
-  if ('evaluationHistory' in context && Array.isArray(context.evaluationHistory)) {
-    (
-      context as unknown as {
-        evaluationHistory: Array<{
-          expressionName: string;
-          category: string;
-          input: unknown;
-          output: unknown;
-          timestamp: number;
-          duration: number;
-          success: boolean;
-          error?: Error;
-        }>;
-      }
-    ).evaluationHistory.push({
-      expressionName: expression.name,
-      category: expression.category,
-      input: args,
-      output: result,
-      timestamp: startTime,
-      duration: Date.now() - startTime,
-      success,
-      ...(error !== undefined && { error }),
-    });
-  }
-  return result;
 }
 
 // ============================================================================
