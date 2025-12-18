@@ -9,13 +9,12 @@
 import { v, type RuntimeValidator } from '../../validation/lightweight-validators';
 import type {
   HyperScriptValue,
-  HyperScriptValueType,
   EvaluationResult,
   ValidationResult,
 } from '../../types/command-types';
 import type { ValidationError, TypedExpressionContext } from '../../types/base-types';
 import type { TypedExpressionImplementation } from '../../types/expression-types';
-import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
+import { isString, isObject, isArrayLike } from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schemas
@@ -155,9 +154,9 @@ export class InExpression implements TypedExpressionImplementation<HyperScriptVa
       const [searchValue, container] = this.inputSchema.parse(args) as [unknown, unknown];
 
       // Handle different container types
-      if (this.isArrayLike(container)) {
+      if (isArrayLike(container)) {
         return this.searchInArray(searchValue, container);
-      } else if (this.isDOMElement(container) || this.isDOMSelector(container)) {
+      } else if (container instanceof HTMLElement || this.isDOMSelector(container)) {
         return await this.searchInDOM(searchValue, container, context);
       } else {
         return {
@@ -404,23 +403,6 @@ export class InExpression implements TypedExpressionImplementation<HyperScriptVa
   }
 
   /**
-   * Check if value is array-like
-   */
-  private isArrayLike(value: unknown): boolean {
-    if (Array.isArray(value)) return true;
-    if (isString(value)) return true; // Strings are array-like
-    if (value && isObject(value) && 'length' in (value as object)) return true;
-    return false;
-  }
-
-  /**
-   * Check if value is a DOM element
-   */
-  private isDOMElement(value: unknown): boolean {
-    return value instanceof HTMLElement;
-  }
-
-  /**
    * Check if value is a DOM selector string
    */
   private isDOMSelector(value: unknown): boolean {
@@ -433,23 +415,6 @@ export class InExpression implements TypedExpressionImplementation<HyperScriptVa
       str === 'me' ||
       str === 'document'
     );
-  }
-
-  /**
-   * Infer the type of a search result
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Reserved for future use
-  private _inferType(value: unknown): HyperScriptValueType {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    if (isString(value)) return 'string';
-    if (isNumber(value)) return 'number';
-    if (isBoolean(value)) return 'boolean';
-    if (value instanceof HTMLElement) return 'element';
-    if (Array.isArray(value)) return 'array';
-    if (isObject(value)) return 'object';
-    if (isFunction(value)) return 'function';
-    return 'unknown';
   }
 
   /**

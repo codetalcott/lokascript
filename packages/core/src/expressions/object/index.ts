@@ -15,7 +15,7 @@ import type {
 } from '../../types/command-types';
 import type { ValidationError, TypedExpressionContext } from '../../types/base-types';
 import type { TypedExpressionImplementation } from '../../types/expression-types';
-import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
+import { isObject, isFunction, inferType } from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schemas
@@ -297,7 +297,7 @@ export class ObjectLiteralExpression
         return {
           success: true,
           value: resolvedValue as HyperScriptValue,
-          type: this.inferType(resolvedValue),
+          type: inferType(resolvedValue) as HyperScriptValueType,
         };
       }
 
@@ -308,7 +308,7 @@ export class ObjectLiteralExpression
           return {
             success: true,
             value: result as HyperScriptValue,
-            type: this.inferType(result),
+            type: inferType(result) as HyperScriptValueType,
           };
         } catch (functionError) {
           return {
@@ -330,7 +330,7 @@ export class ObjectLiteralExpression
       return {
         success: true,
         value: value,
-        type: this.inferType(value),
+        type: inferType(value) as HyperScriptValueType,
       };
     } catch (error) {
       return {
@@ -346,22 +346,6 @@ export class ObjectLiteralExpression
         type: 'error',
       };
     }
-  }
-
-  /**
-   * Infer the type of a field value
-   */
-  private inferType(value: unknown): HyperScriptValueType {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    if (isString(value)) return 'string';
-    if (isNumber(value)) return 'number';
-    if (isBoolean(value)) return 'boolean';
-    if (value instanceof HTMLElement) return 'element';
-    if (Array.isArray(value)) return 'array';
-    if (isObject(value)) return 'object';
-    if (isFunction(value)) return 'function';
-    return 'unknown';
   }
 
   /**

@@ -18,7 +18,7 @@ import type {
   TypedExpressionContext,
 } from '../../types/base-types';
 import type { TypedExpressionImplementation } from '../../types/expression-types';
-import { isString, isNumber, isBoolean, isObject, isFunction } from '../type-helpers';
+import { isString, isNumber, isBoolean, isObject, isFunction, inferType } from '../type-helpers';
 
 // ============================================================================
 // Input Validation Schemas
@@ -460,7 +460,7 @@ export class ArrayIndexExpression
         return {
           success: true,
           value: element,
-          type: this.inferType(element),
+          type: inferType(element),
         };
       }
 
@@ -471,7 +471,7 @@ export class ArrayIndexExpression
           return {
             success: true,
             value: element,
-            type: this.inferType(element),
+            type: inferType(element),
           };
         }
         return { success: true, value: undefined, type: 'undefined' };
@@ -550,22 +550,6 @@ export class ArrayIndexExpression
         type: 'error',
       };
     }
-  }
-
-  /**
-   * Infer the type of an indexed element
-   */
-  private inferType(value: unknown): HyperScriptValueType {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    if (isString(value)) return 'string';
-    if (isNumber(value)) return 'number';
-    if (isBoolean(value)) return 'boolean';
-    if (value instanceof HTMLElement) return 'element';
-    if (Array.isArray(value)) return 'array';
-    if (isObject(value)) return 'object';
-    if (isFunction(value)) return 'function';
-    return 'unknown';
   }
 
   /**
