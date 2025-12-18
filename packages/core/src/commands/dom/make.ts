@@ -9,7 +9,7 @@
  *   make a URL from "/path/", "origin"
  */
 
-import type { ASTNode, TypedTypedExecutionContext } from '../../types/base-types';
+import type { ASTNode, TypedExecutionContext } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';

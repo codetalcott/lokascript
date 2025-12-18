@@ -92,6 +92,8 @@ export type CommandSideEffect =
   | 'execution-termination'
   // Timing
   | 'time'
+  | 'timing'
+  | 'style-change'
   // Event operations
   | 'event-listening'
   | 'event-dispatch'
@@ -121,6 +123,7 @@ export type CommandSideEffect =
   | 'animation'
   | 'focus'
   | 'scroll'
+  | 'scrolling'
   // Template operations
   | 'template-execution'
   | 'behavior-installation'
@@ -151,6 +154,8 @@ export const COMMAND_SIDE_EFFECTS: CommandSideEffect[] = [
   'execution-termination',
   // Timing
   'time',
+  'timing',
+  'style-change',
   // Event operations
   'event-listening',
   'event-dispatch',
@@ -180,6 +185,7 @@ export const COMMAND_SIDE_EFFECTS: CommandSideEffect[] = [
   'animation',
   'focus',
   'scroll',
+  'scrolling',
   // Template operations
   'template-execution',
   'behavior-installation',

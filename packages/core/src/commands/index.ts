@@ -38,8 +38,8 @@ export { SendCommand, createSendCommand } from './events/send';
 
 // Navigation Commands
 export { GoCommand, createGoCommand } from './navigation/go';
-export { pushUrlCommand, createPushUrlCommand } from './navigation/push-url';
-export { replaceUrlCommand, createReplaceUrlCommand } from './navigation/replace-url';
+export { PushUrlCommand, createPushUrlCommand } from './navigation/push-url';
+export { ReplaceUrlCommand, createReplaceUrlCommand } from './navigation/replace-url';
 
 // Control Flow Commands
 export { IfCommand, createIfCommand } from './control-flow/if';
@@ -111,7 +111,7 @@ export type { DecrementCommandInput } from './data/decrement';
 export type { LogCommandInput } from './utility/log';
 export type { TriggerCommandInput } from './events/trigger';
 export type { SendCommandInput } from './events/send';
-export type { GoCommandRawInput as GoCommandInput } from './navigation/go';
+export type { GoCommandInput } from './navigation/go';
 export type { PushUrlCommandInput } from './navigation/push-url';
 export type { ReplaceUrlCommandInput } from './navigation/replace-url';
 export type { IfCommandInput } from './control-flow/if';

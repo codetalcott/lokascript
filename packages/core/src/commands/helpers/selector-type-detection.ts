@@ -10,7 +10,7 @@
  * - AST node value extraction
  */
 
-import type { ASTNode } from '../../types/base-types';
+import type { ASTNode, ExecutionContext } from '../../types/base-types';
 
 /**
  * Types of selectors recognized by HyperFixi commands
@@ -282,8 +282,8 @@ export interface ParsedFirstArg {
  */
 export async function evaluateFirstArg(
   firstArg: ASTNode,
-  evaluator: { evaluate: (node: ASTNode, context: unknown) => Promise<unknown> },
-  context: unknown
+  evaluator: { evaluate: (node: ASTNode, context: ExecutionContext) => Promise<unknown> },
+  context: ExecutionContext
 ): Promise<ParsedFirstArg> {
   // Class selector nodes should be extracted directly to get the class name
   // rather than evaluated (which would query the DOM)
