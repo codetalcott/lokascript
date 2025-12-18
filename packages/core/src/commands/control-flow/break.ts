@@ -2,14 +2,13 @@
  * BreakCommand - Decorated Implementation
  *
  * Exits from the current loop. Uses Stage 3 decorators.
+ * Extends ControlFlowSignalBase for shared logic.
  *
  * Syntax: break
  */
 
-import type { TypedExecutionContext, ExecutionContext } from '../../types/core';
-import type { ASTNode, ExpressionNode } from '../../types/base-types';
-import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
+import { command, meta, createFactory } from '../decorators';
+import { ControlFlowSignalBase } from './signal-base';
 
 // Re-export for backward compatibility
 export interface BreakCommandInput {}
@@ -20,9 +19,6 @@ export interface BreakCommandOutput {
 
 /**
  * BreakCommand - Exits from the current loop
- *
- * Before: 127 lines
- * After: ~45 lines (65% reduction)
  */
 @meta({
   description: 'Exit from the current loop (repeat, for, while, until)',
@@ -35,26 +31,10 @@ export interface BreakCommandOutput {
   sideEffects: ['control-flow'],
 })
 @command({ name: 'break', category: 'control-flow' })
-export class BreakCommand implements DecoratedCommand {
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
-
-  async parseInput(
-    _raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
-    _evaluator: ExpressionEvaluator,
-    _context: ExecutionContext
-  ): Promise<BreakCommandInput> {
-    return {};
-  }
-
-  async execute(
-    _input: BreakCommandInput,
-    _context: TypedExecutionContext
-  ): Promise<BreakCommandOutput> {
-    const breakError = new Error('BREAK_LOOP');
-    (breakError as any).isBreak = true;
-    throw breakError;
-  }
+export class BreakCommand extends ControlFlowSignalBase {
+  protected readonly signalType = 'break' as const;
+  protected readonly errorMessage = 'BREAK_LOOP';
+  protected readonly errorFlag = 'isBreak';
 }
 
 export const createBreakCommand = createFactory(BreakCommand);

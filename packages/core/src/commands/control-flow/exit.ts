@@ -2,16 +2,14 @@
  * ExitCommand - Decorated Implementation
  *
  * Exits early from an event handler or behavior without returning a value.
- * Uses Stage 3 decorators for reduced boilerplate.
+ * Uses Stage 3 decorators. Extends ControlFlowSignalBase for shared logic.
  *
  * Syntax:
  *   exit
  */
 
-import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
-import type { ASTNode, ExpressionNode } from '../../types/base-types';
-import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
+import { command, meta, createFactory } from '../decorators';
+import { ControlFlowSignalBase } from './signal-base';
 
 /**
  * Typed input for ExitCommand
@@ -28,9 +26,6 @@ export interface ExitCommandOutput {
 
 /**
  * ExitCommand - Exits from event handler
- *
- * Before: 134 lines
- * After: ~55 lines (59% reduction)
  */
 @meta({
   description: 'Immediately terminate execution of the current event handler or behavior',
@@ -39,28 +34,10 @@ export interface ExitCommandOutput {
   sideEffects: ['control-flow'],
 })
 @command({ name: 'exit', category: 'control-flow' })
-export class ExitCommand implements DecoratedCommand {
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
-
-  async parseInput(
-    _raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
-    _evaluator: ExpressionEvaluator,
-    _context: ExecutionContext
-  ): Promise<ExitCommandInput> {
-    return {};
-  }
-
-  async execute(
-    _input: ExitCommandInput,
-    _context: TypedExecutionContext
-  ): Promise<ExitCommandOutput> {
-    const exitError = new Error('EXIT_COMMAND');
-    (exitError as any).isExit = true;
-    (exitError as any).returnValue = undefined;
-    (exitError as any).timestamp = Date.now();
-    throw exitError;
-  }
+export class ExitCommand extends ControlFlowSignalBase {
+  protected readonly signalType = 'exit' as const;
+  protected readonly errorMessage = 'EXIT_COMMAND';
+  protected readonly errorFlag = 'isExit';
 }
 
 export const createExitCommand = createFactory(ExitCommand);
