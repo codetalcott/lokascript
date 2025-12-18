@@ -2,7 +2,7 @@
  * AddCommand - Decorated Implementation
  *
  * Adds CSS classes, attributes, or styles to HTML elements.
- * Uses Stage 3 decorators for reduced boilerplate.
+ * Extends DOMModificationBase for shared logic with RemoveCommand.
  *
  * Syntax:
  *   add .active                     # Add single class to me
@@ -15,14 +15,10 @@
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import { resolveTargetsFromArgs } from '../helpers/element-resolution';
-import { parseClasses } from '../helpers/class-manipulation';
-import { isAttributeSyntax, parseAttributeWithValue } from '../helpers/attribute-manipulation';
-import { isCSSPropertySyntax } from '../helpers/style-manipulation';
-import { evaluateFirstArg } from '../helpers/selector-type-detection';
-import { isValidTargetArray, isValidStringArray, isValidType } from '../helpers/input-validator';
+import { parseAttributeWithValue } from '../helpers/attribute-manipulation';
 import { batchAddClasses, batchSetAttribute, batchSetStyles } from '../helpers/batch-dom-operations';
-import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
+import { command, meta, createFactory } from '../decorators';
+import { DOMModificationBase } from './dom-modification-base';
 
 /**
  * Typed input for AddCommand
@@ -48,9 +44,6 @@ export type AddCommandInput =
 
 /**
  * AddCommand - Adds classes, attributes, or styles to elements
- *
- * Before: 308 lines
- * After: ~200 lines (35% reduction)
  */
 @meta({
   description: 'Add CSS classes, attributes, or styles to elements',
@@ -64,26 +57,10 @@ export type AddCommandInput =
   sideEffects: ['dom-mutation'],
 })
 @command({ name: 'add', category: 'dom' })
-export class AddCommand implements DecoratedCommand {
-  // Properties set by decorators
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
+export class AddCommand extends DOMModificationBase {
+  protected readonly mode = 'add' as const;
+  protected readonly preposition = 'to';
 
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * Detects input type (classes, attributes, or styles) and parses accordingly.
-   *
-   * Supports:
-   * - Classes: add .active, add "class1 class2"
-   * - Attributes: add @data-x="value", add [@attr="value"]
-   * - Styles: add { opacity: 0.5 }, add *opacity="0.5"
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -93,18 +70,12 @@ export class AddCommand implements DecoratedCommand {
       throw new Error('add command requires an argument');
     }
 
-    // First arg determines the type
-    // Use evaluateFirstArg to handle class selector nodes specially
-    // (extract value directly rather than evaluating as DOM query)
-    const { value: firstValue } = await evaluateFirstArg(raw.args[0], evaluator, context);
-
-    // Detect input type based on first argument
+    const { value: firstValue } = await this.evaluateFirst(raw.args[0], evaluator, context);
 
     // Check for object literal (inline styles)
     if (typeof firstValue === 'object' && firstValue !== null && !Array.isArray(firstValue)) {
       const styles = firstValue as Record<string, string>;
-      const targetArgs = raw.args.slice(1);
-      const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'add', { filterPrepositions: true, fallbackModifierKey: 'to' }, raw.modifiers);
+      const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
       return { type: 'styles', styles, targets };
     }
 
@@ -113,105 +84,65 @@ export class AddCommand implements DecoratedCommand {
       const trimmed = firstValue.trim();
 
       // Attribute syntax: [@attr="value"] or @attr
-      if (isAttributeSyntax(trimmed)) {
+      if (this.isAttribute(trimmed)) {
         const { name, value } = parseAttributeWithValue(trimmed);
-        const targetArgs = raw.args.slice(1);
-        const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'add', { filterPrepositions: true, fallbackModifierKey: 'to' }, raw.modifiers);
+        const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
         return { type: 'attribute', name, value, targets };
       }
 
       // CSS property shorthand: *property
-      if (isCSSPropertySyntax(trimmed)) {
+      if (this.isCSSProperty(trimmed)) {
         const property = trimmed.substring(1).trim();
-        // Next arg should be the value
         if (raw.args.length < 2) {
           throw new Error('add *property requires a value argument');
         }
         const valueArg = await evaluator.evaluate(raw.args[1], context);
         const styles = { [property]: String(valueArg) };
-        const targetArgs = raw.args.slice(2);
-        const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'add', { filterPrepositions: true, fallbackModifierKey: 'to' }, raw.modifiers);
+        const targets = await this.resolveTargets(raw.args.slice(2), evaluator, context, raw.modifiers);
         return { type: 'styles', styles, targets };
       }
     }
 
     // Default: class names
-    const classes = parseClasses(firstValue);
+    const classes = this.parseClassNames(firstValue);
     if (classes.length === 0) {
       throw new Error('add command: no valid class names found');
     }
 
-    const targetArgs = raw.args.slice(1);
-    const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'add', { filterPrepositions: true, fallbackModifierKey: 'to' }, raw.modifiers);
-
+    const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
     return { type: 'classes', classes, targets };
   }
 
-  /**
-   * Execute the add command
-   *
-   * Adds CSS classes, attributes, or inline styles to all target elements.
-   *
-   * @param input - Typed command input from parseInput()
-   * @param _context - Typed execution context (unused but required by interface)
-   * @returns void (command performs side effects)
-   */
-  async execute(
-    input: AddCommandInput,
-    _context: TypedExecutionContext
-  ): Promise<void> {
-    // Handle different input types using discriminated union
+  async execute(input: AddCommandInput, _context: TypedExecutionContext): Promise<void> {
     switch (input.type) {
       case 'classes':
         batchAddClasses(input.targets, input.classes);
         break;
-
       case 'attribute':
         batchSetAttribute(input.targets, input.name, input.value);
         break;
-
       case 'styles':
         batchSetStyles(input.targets, input.styles);
         break;
     }
   }
 
-  /**
-   * Validate parsed input (optional but recommended)
-   *
-   * Runtime validation to catch parsing errors early.
-   * Uses helper functions for consistent validation.
-   *
-   * @param input - Input to validate
-   * @returns true if input is valid AddCommandInput
-   */
   validate(input: unknown): input is AddCommandInput {
     if (typeof input !== 'object' || input === null) return false;
-
     const typed = input as Partial<AddCommandInput>;
 
-    // Check type discriminator using helper
-    if (!isValidType(typed.type, ['classes', 'attribute', 'styles'] as const)) {
-      return false;
-    }
+    if (!this.validateType(typed.type, ['classes', 'attribute', 'styles'] as const)) return false;
+    if (!this.validateTargets(typed.targets)) return false;
 
-    // Validate targets using helper (required for all types)
-    if (!Array.isArray(typed.targets) || !isValidTargetArray(typed.targets)) {
-      return false;
-    }
-
-    // Type-specific validation using helpers
     if (typed.type === 'classes') {
-      const classInput = input as Partial<{ type: 'classes'; classes: unknown; targets: unknown }>;
-      if (!Array.isArray(classInput.classes) || !isValidStringArray(classInput.classes, 1)) {
-        return false;
-      }
+      const classInput = input as Partial<{ classes: unknown }>;
+      if (!this.validateStringArray(classInput.classes, 1)) return false;
     } else if (typed.type === 'attribute') {
-      const attrInput = input as Partial<{ type: 'attribute'; name: unknown; value: unknown; targets: unknown }>;
+      const attrInput = input as Partial<{ name: unknown; value: unknown }>;
       if (typeof attrInput.name !== 'string' || attrInput.name.length === 0) return false;
       if (typeof attrInput.value !== 'string') return false;
     } else if (typed.type === 'styles') {
-      const styleInput = input as Partial<{ type: 'styles'; styles: unknown; targets: unknown }>;
+      const styleInput = input as Partial<{ styles: unknown }>;
       if (typeof styleInput.styles !== 'object' || styleInput.styles === null) return false;
       if (Array.isArray(styleInput.styles)) return false;
       const styles = styleInput.styles as Record<string, unknown>;
@@ -221,7 +152,6 @@ export class AddCommand implements DecoratedCommand {
 
     return true;
   }
-
 }
 
 export const createAddCommand = createFactory(AddCommand);

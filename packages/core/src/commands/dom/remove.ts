@@ -2,7 +2,7 @@
  * RemoveCommand - Decorated Implementation
  *
  * Removes CSS classes, attributes, styles, or elements from the DOM.
- * Uses Stage 3 decorators for reduced boilerplate.
+ * Extends DOMModificationBase for shared logic with AddCommand.
  *
  * Syntax:
  *   remove .active                     # Remove single class from me
@@ -16,15 +16,11 @@ import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
-import { resolveTargetsFromArgs } from '../helpers/element-resolution';
-import { parseClasses } from '../helpers/class-manipulation';
-import { isAttributeSyntax, parseAttributeName } from '../helpers/attribute-manipulation';
-import { isCSSPropertySyntax } from '../helpers/style-manipulation';
-import { evaluateFirstArg } from '../helpers/selector-type-detection';
-import { isValidTargetArray, isValidStringArray, isValidType } from '../helpers/input-validator';
+import { parseAttributeName } from '../helpers/attribute-manipulation';
 import { removeElement } from '../helpers/dom-mutation';
 import { batchRemoveClasses, batchRemoveAttribute, batchRemoveStyles } from '../helpers/batch-dom-operations';
-import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
+import { command, meta, createFactory } from '../decorators';
+import { DOMModificationBase } from './dom-modification-base';
 
 /**
  * Typed input for RemoveCommand
@@ -53,9 +49,6 @@ export type RemoveCommandInput =
 
 /**
  * RemoveCommand - Removes classes, attributes, styles, or elements
- *
- * Before: 308 lines
- * After: ~200 lines (35% reduction)
  */
 @meta({
   description: 'Remove CSS classes, attributes, styles, or elements from the DOM',
@@ -70,26 +63,10 @@ export type RemoveCommandInput =
   sideEffects: ['dom-mutation'],
 })
 @command({ name: 'remove', category: 'dom' })
-export class RemoveCommand implements DecoratedCommand {
-  // Properties set by decorators
-  declare readonly name: string;
-  declare readonly metadata: CommandMetadata;
+export class RemoveCommand extends DOMModificationBase {
+  protected readonly mode = 'remove' as const;
+  protected readonly preposition = 'from';
 
-  /**
-   * Parse raw AST nodes into typed command input
-   *
-   * Detects input type (classes, attributes, or styles) and parses accordingly.
-   *
-   * Supports:
-   * - Classes: remove .active, remove "class1 class2"
-   * - Attributes: remove @data-x, remove [@attr]
-   * - Styles: remove *opacity, remove *background-color
-   *
-   * @param raw - Raw command node with args and modifiers from AST
-   * @param evaluator - Expression evaluator for evaluating AST nodes
-   * @param context - Execution context with me, you, it, etc.
-   * @returns Typed input object for execute()
-   */
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
     evaluator: ExpressionEvaluator,
@@ -99,13 +76,9 @@ export class RemoveCommand implements DecoratedCommand {
       throw new Error('remove command requires an argument');
     }
 
-    // First arg determines the type
-    // Use evaluateFirstArg to handle class selector nodes specially
-    // (extract value directly rather than evaluating as DOM query)
-    const { value: firstValue } = await evaluateFirstArg(raw.args[0], evaluator, context);
+    const { value: firstValue } = await this.evaluateFirst(raw.args[0], evaluator, context);
 
     // Check if we're removing an element from the DOM (e.g., "remove closest .item")
-    // When firstValue is an HTMLElement, we remove it from the DOM entirely
     if (isHTMLElement(firstValue)) {
       return { type: 'element', targets: [firstValue as HTMLElement] };
     }
@@ -120,63 +93,42 @@ export class RemoveCommand implements DecoratedCommand {
       const trimmed = firstValue.trim();
 
       // Attribute syntax: [@attr] or @attr
-      if (isAttributeSyntax(trimmed)) {
+      if (this.isAttribute(trimmed)) {
         const name = parseAttributeName(trimmed);
-        const targetArgs = raw.args.slice(1);
-        const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'remove', { filterPrepositions: true, fallbackModifierKey: 'from' }, raw.modifiers);
+        const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
         return { type: 'attribute', name, targets };
       }
 
       // CSS property shorthand: *property
-      if (isCSSPropertySyntax(trimmed)) {
+      if (this.isCSSProperty(trimmed)) {
         const property = trimmed.substring(1).trim();
-        const targetArgs = raw.args.slice(1);
-        const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'remove', { filterPrepositions: true, fallbackModifierKey: 'from' }, raw.modifiers);
+        const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
         return { type: 'styles', properties: [property], targets };
       }
     }
 
     // Default: class names
-    const classes = parseClasses(firstValue);
+    const classes = this.parseClassNames(firstValue);
     if (classes.length === 0) {
       throw new Error('remove command: no valid class names found');
     }
 
-    const targetArgs = raw.args.slice(1);
-    const targets = await resolveTargetsFromArgs(targetArgs, evaluator, context, 'remove', { filterPrepositions: true, fallbackModifierKey: 'from' }, raw.modifiers);
-
+    const targets = await this.resolveTargets(raw.args.slice(1), evaluator, context, raw.modifiers);
     return { type: 'classes', classes, targets };
   }
 
-  /**
-   * Execute the remove command
-   *
-   * Removes CSS classes, attributes, or inline styles from all target elements.
-   *
-   * @param input - Typed command input from parseInput()
-   * @param _context - Typed execution context (unused but required by interface)
-   * @returns void (command performs side effects)
-   */
-  execute(
-    input: RemoveCommandInput,
-    _context: TypedExecutionContext
-  ): void {
-    // Handle different input types using discriminated union
+  execute(input: RemoveCommandInput, _context: TypedExecutionContext): void {
     switch (input.type) {
       case 'classes':
         batchRemoveClasses(input.targets, input.classes);
         break;
-
       case 'attribute':
         batchRemoveAttribute(input.targets, input.name);
         break;
-
       case 'styles':
         batchRemoveStyles(input.targets, input.properties);
         break;
-
       case 'element':
-        // Remove elements from the DOM using helper
         for (const element of input.targets) {
           removeElement(element);
         }
@@ -184,49 +136,26 @@ export class RemoveCommand implements DecoratedCommand {
     }
   }
 
-  /**
-   * Validate parsed input (optional but recommended)
-   *
-   * Runtime validation to catch parsing errors early.
-   * Uses helper functions for consistent validation.
-   *
-   * @param input - Input to validate
-   * @returns true if input is valid RemoveCommandInput
-   */
   validate(input: unknown): input is RemoveCommandInput {
     if (typeof input !== 'object' || input === null) return false;
-
     const typed = input as Partial<RemoveCommandInput>;
 
-    // Check type discriminator using helper
-    if (!isValidType(typed.type, ['classes', 'attribute', 'styles', 'element'] as const)) {
-      return false;
-    }
+    if (!this.validateType(typed.type, ['classes', 'attribute', 'styles', 'element'] as const)) return false;
+    if (!this.validateTargets(typed.targets)) return false;
 
-    // Validate targets using helper (required for all types)
-    if (!Array.isArray(typed.targets) || !isValidTargetArray(typed.targets)) {
-      return false;
-    }
-
-    // Type-specific validation using helpers
     if (typed.type === 'classes') {
-      const classInput = input as Partial<{ type: 'classes'; classes: unknown; targets: unknown }>;
-      if (!Array.isArray(classInput.classes) || !isValidStringArray(classInput.classes, 1)) {
-        return false;
-      }
+      const classInput = input as Partial<{ classes: unknown }>;
+      if (!this.validateStringArray(classInput.classes, 1)) return false;
     } else if (typed.type === 'attribute') {
-      const attrInput = input as Partial<{ type: 'attribute'; name: unknown; targets: unknown }>;
+      const attrInput = input as Partial<{ name: unknown }>;
       if (typeof attrInput.name !== 'string' || attrInput.name.length === 0) return false;
     } else if (typed.type === 'styles') {
-      const styleInput = input as Partial<{ type: 'styles'; properties: unknown; targets: unknown }>;
-      if (!Array.isArray(styleInput.properties) || !isValidStringArray(styleInput.properties, 1)) {
-        return false;
-      }
+      const styleInput = input as Partial<{ properties: unknown }>;
+      if (!this.validateStringArray(styleInput.properties, 1)) return false;
     }
 
     return true;
   }
-
 }
 
 export const createRemoveCommand = createFactory(RemoveCommand);
