@@ -186,8 +186,7 @@ export interface ExpressionAnalysisInfo {
 // Type System Enums and Utilities
 // ============================================================================
 
-// Use HyperScriptValueType from unified-types.ts instead of local definition
-export type { HyperScriptValueType as HyperScriptValueType } from './unified-types';
+// HyperScriptValueType is exported from base-types.ts above (line 54)
 
 export type ExpressionCategory =
   | 'reference'
