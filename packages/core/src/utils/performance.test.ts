@@ -629,7 +629,7 @@ describe('StyleBatcher', () => {
 
       // Should convert to camelCase
       const camelCase = 'veryVeryVeryLongPropertyName';
-      expect((testElement.style as any)[camelCase]).toBe('value');
+      expect((testElement.style as unknown as Record<string, string>)[camelCase]).toBe('value');
     });
 
     it('should handle special characters in values', async () => {

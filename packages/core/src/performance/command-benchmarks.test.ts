@@ -356,7 +356,7 @@ describe.skip('Enhanced Command Performance Benchmarks', () => {
       const errorResult = await benchmark.benchmark(
         'PutCommand.error-path',
         'integration',
-        () => putCommand.execute(context, 'content', 'invalid-position' as any),
+        () => putCommand.execute(context, 'content', 'invalid-position' as unknown as 'before' | 'after'),
         {
           iterations: 300,
           complexity: 'medium',

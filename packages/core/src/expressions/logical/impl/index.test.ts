@@ -560,7 +560,7 @@ describe('Enhanced Logical Expressions Integration', () => {
 
       for (const expr of expressions) {
         // Test with missing right operand (undefined)
-        const result = await expr.evaluate(context, { left: true } as any);
+        const result = await expr.evaluate(context, { left: true } as unknown as { left: boolean; right: boolean });
 
         expect(result.success).toBe(true);
         if (result.success) {

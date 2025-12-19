@@ -19,7 +19,7 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
   url: 'http://localhost',
 });
 global.document = dom.window.document;
-global.window = dom.window as any;
+global.window = dom.window as unknown as Window & typeof globalThis;
 
 describe('Enhanced Reference Expressions', () => {
   let mockContext: TypedExpressionContext;
