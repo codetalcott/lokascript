@@ -246,7 +246,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
         style: {},
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -286,7 +286,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
         classList: { add: vi.fn(), remove: vi.fn() },
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -313,7 +313,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       const mockElement = {
         classList: { add: vi.fn(), remove: vi.fn() },
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -351,7 +351,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
     it('should update instance parameters', async () => {
       const mockElement = {
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -379,7 +379,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
     it('should destroy instances', async () => {
       const mockElement = {
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -411,7 +411,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       const mockElement = {
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -451,7 +451,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
     it('should trigger lifecycle events', async () => {
       const mockElement = {
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -558,7 +558,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
     it('should execute lifecycle hooks', async () => {
       const mockElement = {
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -596,7 +596,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
     it('should trigger lifecycle events with data', async () => {
       const mockElement = {
         addEventListener: vi.fn(),
-      } as any;
+      } as unknown as HTMLElement;
 
       const result = await behaviorsFeature.initialize({
         behavior: {
@@ -787,7 +787,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
 
     it('should handle initialization failures gracefully', async () => {
       const result = await behaviorsFeature.initialize({
-        behavior: {} as any, // Invalid behavior definition
+        behavior: {} as Record<string, never>, // Invalid empty behavior definition
       });
 
       expect(result.success).toBe(false);

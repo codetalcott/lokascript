@@ -80,7 +80,7 @@ describe('Property Expressions', () => {
 
       it('should throw error for non-string property', async () => {
         await expect(
-          propertiesExpressions.possessive.evaluate(context, testElement, 123 as any)
+          propertiesExpressions.possessive.evaluate(context, testElement, 123 as unknown as string)
         ).rejects.toThrow('Property name must be a string');
       });
 
@@ -116,7 +116,7 @@ describe('Property Expressions', () => {
       });
 
       it('should throw error for non-string property', async () => {
-        await expect(propertiesExpressions.my.evaluate(context, 123 as any)).rejects.toThrow(
+        await expect(propertiesExpressions.my.evaluate(context, 123 as unknown as string)).rejects.toThrow(
           'Property name must be a string'
         );
       });
@@ -156,7 +156,7 @@ describe('Property Expressions', () => {
       });
 
       it('should throw error for non-string property', async () => {
-        await expect(propertiesExpressions.its.evaluate(context, 123 as any)).rejects.toThrow(
+        await expect(propertiesExpressions.its.evaluate(context, 123 as unknown as string)).rejects.toThrow(
           'Property name must be a string'
         );
       });
@@ -184,7 +184,7 @@ describe('Property Expressions', () => {
       });
 
       it('should throw error for non-string property', async () => {
-        await expect(propertiesExpressions.your.evaluate(context, 123 as any)).rejects.toThrow(
+        await expect(propertiesExpressions.your.evaluate(context, 123 as unknown as string)).rejects.toThrow(
           'Property name must be a string'
         );
       });
@@ -218,7 +218,7 @@ describe('Property Expressions', () => {
     });
 
     it('should throw error for non-string property', async () => {
-      await expect(propertiesExpressions.of.evaluate(context, 123 as any, {})).rejects.toThrow(
+      await expect(propertiesExpressions.of.evaluate(context, 123 as unknown as string, {})).rejects.toThrow(
         'Property name must be a string'
       );
     });
@@ -262,7 +262,7 @@ describe('Property Expressions', () => {
       });
 
       it('should throw error for non-string attribute name', async () => {
-        await expect(propertiesExpressions.attribute.evaluate(context, 123 as any)).rejects.toThrow(
+        await expect(propertiesExpressions.attribute.evaluate(context, 123 as unknown as string)).rejects.toThrow(
           'Attribute name must be a string'
         );
       });
@@ -331,10 +331,10 @@ describe('Property Expressions', () => {
 
       it('should throw error for non-string parameters', async () => {
         await expect(
-          propertiesExpressions.attributeWithValue.evaluate(context, 123 as any, 'value')
+          propertiesExpressions.attributeWithValue.evaluate(context, 123 as unknown as string, 'value')
         ).rejects.toThrow('Attribute name must be a string');
         await expect(
-          propertiesExpressions.attributeWithValue.evaluate(context, 'attr', 123 as any)
+          propertiesExpressions.attributeWithValue.evaluate(context, 'attr', 123 as unknown as string)
         ).rejects.toThrow('Expected value must be a string');
       });
 
@@ -398,7 +398,7 @@ describe('Property Expressions', () => {
 
       it('should throw error for non-string class name', async () => {
         await expect(
-          propertiesExpressions.classReference.evaluate(context, 123 as any)
+          propertiesExpressions.classReference.evaluate(context, 123 as unknown as string)
         ).rejects.toThrow('Class name must be a string');
       });
 
@@ -433,7 +433,7 @@ describe('Property Expressions', () => {
 
       it('should throw error for non-string ID', async () => {
         await expect(
-          propertiesExpressions.idReference.evaluate(context, 123 as any)
+          propertiesExpressions.idReference.evaluate(context, 123 as unknown as string)
         ).rejects.toThrow('ID value must be a string');
       });
 
@@ -478,7 +478,7 @@ describe('Property Expressions', () => {
 
       it('should fallback to regular property access', () => {
         // Add a custom property
-        (testElement as any).customProperty = 'custom-value';
+        (testElement as HTMLElement & { customProperty: string }).customProperty = 'custom-value';
         expect(getElementProperty(testElement, 'customProperty')).toBe('custom-value');
       });
     });
@@ -504,8 +504,8 @@ describe('Property Expressions', () => {
 
   describe('Expression Metadata', () => {
     it('should have correct categories', () => {
-      Object.values(propertiesExpressions).forEach(expr => {
-        expect(expr.category).toBe('Reference');
+      Object.values(propertiesExpressions).forEach((expr: unknown) => {
+        expect((expr as { category: string }).category).toBe('Reference');
       });
     });
 
