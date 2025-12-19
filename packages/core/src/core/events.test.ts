@@ -142,10 +142,17 @@ describe('Event System', () => {
     });
 
     it('should create hyperscript events with proper structure', () => {
-      const context = { me: testElement, it: null, you: null, result: null };
+      const context = {
+        me: testElement,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
       const hsEvent = createHyperscriptEvent('test-command', {
         element: testElement,
-        context: context as any,
+        context,
         result: 'test-result',
       });
 
