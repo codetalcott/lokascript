@@ -1,11 +1,104 @@
 // packages/i18n/src/index.ts
 
-export * from './types';
-export * from './translator';
-export * from './dictionaries';
+// =============================================================================
+// Type Exports
+// =============================================================================
 
-// Parser integration for multilingual hyperscript
-export * from './parser';
+export type {
+  DictionaryCategory,
+  Dictionary,
+  I18nConfig,
+  TranslationOptions,
+  ValidationResult,
+  ValidationError,
+  ValidationWarning,
+  LocaleMetadata,
+  TranslationContext,
+  TokenType,
+  Token,
+  TranslationResult,
+} from './types';
+
+export {
+  DICTIONARY_CATEGORIES,
+  isDictionaryCategory,
+  getDictionaryCategory,
+  forEachCategory,
+  findInDictionary,
+  translateFromEnglish,
+} from './types';
+
+// =============================================================================
+// Translator Exports
+// =============================================================================
+
+export { HyperscriptTranslator } from './translator';
+
+// =============================================================================
+// Dictionary Exports
+// =============================================================================
+
+export {
+  dictionaries,
+  en,
+  es,
+  ko,
+  zh,
+  fr,
+  de,
+  ja,
+  ar,
+  tr,
+  id,
+  qu,
+  sw,
+  pt,
+  supportedLocales,
+  isLocaleSupported,
+  getDictionary,
+} from './dictionaries';
+
+// =============================================================================
+// Parser Integration Exports
+// =============================================================================
+
+export type { KeywordProvider, KeywordProviderOptions } from './parser';
+
+export {
+  createKeywordProvider,
+  createEnglishProvider,
+  ENGLISH_COMMANDS,
+  ENGLISH_KEYWORDS,
+  UNIVERSAL_ENGLISH_KEYWORDS,
+  // Locale packs
+  esKeywords,
+  esDictionary,
+  jaKeywords,
+  jaDictionary,
+  frKeywords,
+  frDictionary,
+  deKeywords,
+  deDictionary,
+  arKeywords,
+  arDictionary,
+  koKeywords,
+  koDictionary,
+  zhKeywords,
+  zhDictionary,
+  trKeywords,
+  trDictionary,
+  idKeywords,
+  idDictionary,
+  quKeywords,
+  quDictionary,
+  swKeywords,
+  swDictionary,
+  ptKeywords,
+  ptDictionary,
+  // Locale management
+  LocaleManager,
+  detectBrowserLocale,
+} from './parser';
 
 // Re-export key utilities
 export { detectLocale, getBrowserLocales, isRTL } from './utils/locale';
