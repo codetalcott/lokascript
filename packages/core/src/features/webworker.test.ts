@@ -81,15 +81,15 @@ class MockWorker {
 }
 
 // Mock global Worker
-(globalThis as any).Worker = MockWorker;
+globalThis.Worker = MockWorker as unknown as typeof Worker;
 
 // Mock URL.createObjectURL and revokeObjectURL for inline workers
-(globalThis as any).URL = {
+globalThis.URL = {
   createObjectURL: (blob: Blob) => `blob:mock-${Date.now()}`,
   revokeObjectURL: (url: string) => {
     /* mock cleanup */
   },
-};
+} as unknown as typeof URL;
 
 // Skipped: Tests expect Worker mocking and methods that differ from implementation
 describe.skip('Enhanced WebWorker Feature Implementation', () => {
@@ -743,7 +743,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
 
     it('should handle initialization failures gracefully', async () => {
       const result = await webworkerFeature.initialize({
-        worker: {} as any, // Invalid worker definition
+        worker: {} as Record<string, never>, // Invalid empty worker definition
       });
 
       expect(result.success).toBe(false);

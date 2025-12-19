@@ -74,7 +74,7 @@ class MockWebSocket {
 }
 
 // Mock global WebSocket
-(globalThis as any).WebSocket = MockWebSocket;
+globalThis.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 
 // Skipped: Tests expect WebSocket mocking and methods that differ from implementation
 describe.skip('Enhanced Sockets Feature Implementation', () => {
@@ -723,7 +723,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
 
     it('should handle initialization failures gracefully', async () => {
       const result = await socketsFeature.initialize({
-        socket: {} as any, // Invalid socket definition
+        socket: {} as Record<string, never>, // Invalid empty socket definition
       });
 
       expect(result.success).toBe(false);
