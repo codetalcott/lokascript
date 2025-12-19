@@ -67,7 +67,6 @@ export class BaseExpressionEvaluator {
       console.error('EVALUATOR: Node missing type property:', node);
       throw new Error(`Node missing type property: ${JSON.stringify(node)}`);
     }
-
     switch (node.type) {
       case 'identifier':
         return this.evaluateIdentifier(node as any, context);
@@ -1250,6 +1249,7 @@ export class BaseExpressionEvaluator {
   ): Promise<HTMLElement[]> {
     // Convert hyperscript selector <tag/> to CSS selector (tag)
     let selector = node.value;
+
     if (selector.startsWith('<') && selector.endsWith('/>')) {
       selector = selector.slice(1, -2); // Remove '<' and '/>'
     }
@@ -1370,6 +1370,7 @@ export class BaseExpressionEvaluator {
   ): Promise<HTMLElement | HTMLElement[] | null> {
     // Convert hyperscript selector <tag/> to CSS selector (tag)
     let selector = node.selector;
+
     if (selector.startsWith('<') && selector.endsWith('/>')) {
       selector = selector.slice(1, -2); // Remove '<' and '/>'
     }

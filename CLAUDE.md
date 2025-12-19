@@ -207,6 +207,87 @@ npx playwright test --grep "Grammar Transformation"
 4. Export from `packages/i18n/src/browser.ts`
 5. Add tests in `packages/i18n/src/grammar/grammar.test.ts`
 
+## Debugging Tools
+
+### Compilation Metadata
+
+Every compilation returns metadata about which parser was used and any warnings:
+
+```javascript
+const result = hyperfixi.compile('toggle .active');
+console.log(result.metadata);
+// {
+//   parserUsed: 'semantic',
+//   semanticConfidence: 0.98,
+//   semanticLanguage: 'en',
+//   warnings: []
+// }
+```
+
+This helps identify:
+- Which parser processed the code (semantic vs traditional)
+- Confidence score if semantic parser was used
+- Any warnings about ambiguous type conversions or potential issues
+
+### Enable Debug Logging
+
+In browser console:
+```javascript
+hyperfixi.debugControl.enable();   // Enable detailed logging
+hyperfixi.debugControl.disable();  // Disable logging
+hyperfixi.debugControl.isEnabled(); // Check status
+hyperfixi.debugControl.status();   // Get detailed status
+```
+
+Or set localStorage directly:
+```javascript
+localStorage.setItem('hyperfixi:debug', '*');
+// Then reload page
+```
+
+Debug logging persists across page reloads via localStorage and works in production builds.
+
+### Debug Events
+
+Listen to semantic parse events to understand parser decisions:
+
+```javascript
+window.addEventListener('hyperfixi:semantic-parse', (e) => {
+  console.log('Semantic parse:', e.detail);
+  // {
+  //   input: 'toggle .active',
+  //   language: 'en',
+  //   confidence: 0.95,
+  //   semanticSuccess: true,
+  //   command: 'toggle',
+  //   roles: { patient: '.active' }
+  // }
+});
+```
+
+### Debug Statistics
+
+Get parsing statistics:
+```javascript
+const stats = hyperfixi.semanticDebug.getStats();
+console.log(stats);
+// {
+//   totalParses: 42,
+//   semanticSuccesses: 38,
+//   semanticFallbacks: 4,
+//   traditionalParses: 0,
+//   averageConfidence: 0.91
+// }
+```
+
+### Compilation Options
+
+Disable semantic parsing for specific code:
+```javascript
+// Use traditional parser only (useful for complex behaviors)
+const result = hyperfixi.compile(code, { disableSemanticParsing: true });
+```
+
 ## Important Files
 
 | File | Purpose |
