@@ -2841,9 +2841,8 @@ export class Parser {
       'remove',
       'exit',
       'closest',
-      // - 'call'/'get' need proper method call expression parsing (#element.method())
-      'call',
-      'get',
+      // ✅ 'call'/'get' now supported via ExpressionValue fallback to expression-parser
+      // This enables semantic parsing for method calls like #dialog.showModal()
     ];
 
     if (this.semanticAdapter && !skipSemanticParsing.includes(commandName.toLowerCase())) {
