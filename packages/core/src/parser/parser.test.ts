@@ -702,7 +702,7 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('if x > 5 then add .active else remove .active');
       expect(result.success).toBe(true);
 
-      const node = result.node as any;
+      const node = result.node;
       expect(node.type).toBe('command');
       expect(node.name).toBe('if');
       expect(node.args).toBeDefined();
@@ -1025,7 +1025,7 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('put :x into #result');
       expect(result.success).toBe(true);
       // The :x should be parsed as an identifier with scope: 'local'
-      const putCommand = result.node as any;
+      const putCommand = result.node;
       expect(putCommand.type).toBe('command');
       expect(putCommand.name).toBe('put');
       // First arg should be :x with scope metadata
@@ -1041,7 +1041,7 @@ describe('Hyperscript AST Parser', () => {
       // increment :counter by 1 → set :counter to (:counter + 1)
       const result = parse('increment :counter by 1');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.type).toBe('command');
       expect(command.name).toBe('set'); // Transformed from 'increment'
       expect(command.originalCommand).toBe('increment'); // Original preserved
@@ -1066,7 +1066,7 @@ describe('Hyperscript AST Parser', () => {
       // increment :sum by :amount → set :sum to (:sum + :amount)
       const result = parse('increment :sum by :amount');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.type).toBe('command');
       expect(command.name).toBe('set'); // Transformed from 'increment'
       // Target :sum should have scope: 'local'
@@ -1090,7 +1090,7 @@ describe('Hyperscript AST Parser', () => {
     it('should parse string values with :variable', () => {
       const result = parse('set :name to "hello"');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
 
       // args structure: [target, 'to', value]
       expect(command.args[0]).toMatchObject({
@@ -1111,7 +1111,7 @@ describe('Hyperscript AST Parser', () => {
     it('should handle :variable in repeat loops', () => {
       const result = parse('repeat 3 times set :idx to it end');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.type).toBe('command');
       expect(command.name).toBe('repeat');
     });
@@ -1124,8 +1124,8 @@ describe('Hyperscript AST Parser', () => {
       expect(localResult.success).toBe(true);
       expect(globalResult.success).toBe(true);
 
-      const localCommand = localResult.node as any;
-      const globalCommand = globalResult.node as any;
+      const localCommand = localResult.node;
+      const globalCommand = globalResult.node;
 
       // :x should have scope: 'local'
       expect(localCommand.args[0].scope).toBe('local');
@@ -1136,7 +1136,7 @@ describe('Hyperscript AST Parser', () => {
     it('should handle complex expressions with :variable', () => {
       const result = parse('set :result to (:a + :b) * 2');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.args[0]).toMatchObject({
         type: 'identifier',
         name: 'result',
@@ -1148,7 +1148,7 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('set :x to 1 set :y to 2 set :z to 3');
       expect(result.success).toBe(true);
       // Should create a command sequence or program with 3 commands
-      const node = result.node as any;
+      const node = result.node;
       // The structure depends on how the parser handles multiple commands
       expect(node.type).toMatch(/command|CommandSequence|Program/);
     });
@@ -1174,7 +1174,7 @@ describe('Hyperscript AST Parser', () => {
     it('should parse ::variable in expressions', () => {
       const result = parse('put ::x into #result');
       expect(result.success).toBe(true);
-      const putCommand = result.node as any;
+      const putCommand = result.node;
       expect(putCommand.type).toBe('command');
       expect(putCommand.name).toBe('put');
       // First arg should be ::x with scope: 'global'
@@ -1190,7 +1190,7 @@ describe('Hyperscript AST Parser', () => {
       // increment ::total by 5 → set ::total to (::total + 5)
       const result = parse('increment ::total by 5');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.type).toBe('command');
       expect(command.name).toBe('set'); // Transformed from 'increment'
       expect(command.originalCommand).toBe('increment'); // Original preserved
@@ -1215,7 +1215,7 @@ describe('Hyperscript AST Parser', () => {
       // increment ::sum by ::amount → set ::sum to (::sum + ::amount)
       const result = parse('increment ::sum by ::amount');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.type).toBe('command');
       expect(command.name).toBe('set'); // Transformed from 'increment'
       // Target ::sum should have scope: 'global'
@@ -1243,8 +1243,8 @@ describe('Hyperscript AST Parser', () => {
       expect(localResult.success).toBe(true);
       expect(globalResult.success).toBe(true);
 
-      const localCommand = localResult.node as any;
-      const globalCommand = globalResult.node as any;
+      const localCommand = localResult.node;
+      const globalCommand = globalResult.node;
 
       // :x should have scope: 'local'
       expect(localCommand.args[0].scope).toBe('local');
@@ -1259,8 +1259,8 @@ describe('Hyperscript AST Parser', () => {
       expect(implicitResult.success).toBe(true);
       expect(explicitResult.success).toBe(true);
 
-      const implicitCommand = implicitResult.node as any;
-      const explicitCommand = explicitResult.node as any;
+      const implicitCommand = implicitResult.node;
+      const explicitCommand = explicitResult.node;
 
       // x (implicit) should have no scope
       expect(implicitCommand.args[0].scope).toBeUndefined();
@@ -1271,7 +1271,7 @@ describe('Hyperscript AST Parser', () => {
     it('should handle ::variable in complex expressions', () => {
       const result = parse('set ::sum to (::x + ::y)');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.args[0]).toMatchObject({
         type: 'identifier',
         name: 'sum',
@@ -1284,7 +1284,7 @@ describe('Hyperscript AST Parser', () => {
       // increment ::globalSum by :localAmount → set ::globalSum to (::globalSum + :localAmount)
       const result = parse('increment ::globalSum by :localAmount');
       expect(result.success).toBe(true);
-      const command = result.node as any;
+      const command = result.node;
       expect(command.name).toBe('set'); // Transformed from 'increment'
       // Target should be global
       expect(command.args[0]).toMatchObject({
@@ -1307,7 +1307,7 @@ describe('Hyperscript AST Parser', () => {
     it('should parse multiple ::variables in sequence', () => {
       const result = parse('set ::a to 1 set ::b to 2 set ::c to 3');
       expect(result.success).toBe(true);
-      const node = result.node as any;
+      const node = result.node;
       expect(node.type).toMatch(/command|CommandSequence|Program/);
     });
   });
