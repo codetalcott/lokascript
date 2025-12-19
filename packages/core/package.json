@@ -21,7 +21,44 @@
       "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.mjs",
       "require": "./dist/runtime/index.js"
-    }
+    },
+    "./browser": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/hyperfixi-browser.js"
+    },
+    "./browser/multilingual": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/hyperfixi-multilingual.js"
+    },
+    "./browser/minimal": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/hyperfixi-browser-minimal.js"
+    },
+    "./browser/standard": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/hyperfixi-browser-standard.js"
+    },
+    "./commands": {
+      "types": "./dist/commands/index.d.ts",
+      "import": "./dist/commands/index.mjs",
+      "require": "./dist/commands/index.js"
+    },
+    "./expressions": {
+      "types": "./dist/expressions/index.d.ts",
+      "import": "./dist/expressions/index.mjs",
+      "require": "./dist/expressions/index.js"
+    },
+    "./behaviors": {
+      "types": "./dist/behaviors/index.d.ts",
+      "import": "./dist/behaviors/index.mjs",
+      "require": "./dist/behaviors/index.js"
+    },
+    "./multilingual": {
+      "types": "./dist/multilingual/index.d.ts",
+      "import": "./dist/multilingual/index.mjs",
+      "require": "./dist/multilingual/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist/",
@@ -90,8 +127,7 @@
     "happy-dom": "^20.0.6",
     "http-server": "^14.1.1",
     "prettier": "^3.0.0",
-    "rollup": "^2.79.2",
-    "rollup-plugin-terser": "^7.0.2",
+    "rollup": "^4.28.1",
     "rollup-plugin-visualizer": "^6.0.5",
     "tsx": "^4.0.0",
     "typescript": "^5.8.3",
