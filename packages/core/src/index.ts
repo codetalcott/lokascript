@@ -95,5 +95,5 @@ export type { ValidationResult, EvaluationType } from './types/base-types';
 
 export type { LLMDocumentation } from './types/command-types';
 
-// Export the main API as default
-export { default } from './api/hyperscript-api';
+// Note: Default export removed in favor of named exports for better tree-shaking
+// Use: import { hyperscript } from '@hyperfixi/core' instead of import hyperfixi from '@hyperfixi/core'

@@ -965,8 +965,5 @@ export const hyperscript: HyperscriptAPI = {
 // Export as _hyperscript for official _hyperscript API compatibility
 export const _hyperscript = hyperscript;
 
-// ============================================================================
-// Default Export
-// ============================================================================
-
-export default hyperscript;
+// Note: Default export removed in favor of named exports for better tree-shaking
+// Migration: import { hyperscript } from '@hyperfixi/core' instead of import hyperfixi from '@hyperfixi/core'
