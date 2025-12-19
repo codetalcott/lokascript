@@ -9,11 +9,13 @@ export default {
       file: 'dist/index.mjs', // ES module output
       format: 'es',
       sourcemap: true,
+      inlineDynamicImports: true,
     },
     {
       file: 'dist/index.js', // CommonJS output
       format: 'cjs',
       sourcemap: true,
+      inlineDynamicImports: true,
     },
     {
       file: 'dist/index.min.js', // Minified UMD for browser
@@ -21,6 +23,7 @@ export default {
       name: 'HyperFixiCore',
       plugins: [terser()],
       sourcemap: true,
+      inlineDynamicImports: true,
     },
   ],
   plugins: [nodeResolve(), typescript()],
