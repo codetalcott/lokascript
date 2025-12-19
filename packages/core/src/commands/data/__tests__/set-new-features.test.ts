@@ -31,14 +31,14 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
     globals: new Map(),
     target: meElement,
     detail: undefined,
-  } as any;
+  } as unknown as ExecutionContext & TypedExecutionContext;
 }
 
 function createMockEvaluator() {
   return {
     evaluate: async (node: ASTNode, context: ExecutionContext) => {
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as any).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
@@ -66,10 +66,10 @@ describe('SetCommand - Object Literal Support', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: { textContent: 'Hello', title: 'World' } } as any],
-          modifiers: { on: { value: context.me } as any },
+          args: [{ value: { textContent: 'Hello', title: 'World' } }],
+          modifiers: { on: { value: context.me } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -86,10 +86,10 @@ describe('SetCommand - Object Literal Support', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: { id: 'new-id', className: 'active', textContent: 'Text' } } as any],
-          modifiers: { on: { value: context.me } as any },
+          args: [{ value: { id: 'new-id', className: 'active', textContent: 'Text' } }],
+          modifiers: { on: { value: context.me } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -107,10 +107,10 @@ describe('SetCommand - Object Literal Support', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: { textContent: 'Default' } } as any],
+          args: [{ value: { textContent: 'Default' } }],
           modifiers: {},
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -234,10 +234,10 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the textContent of me' } as any],
-          modifiers: { to: { value: 'New Text' } as any },
+          args: [{ value: 'the textContent of me' }],
+          modifiers: { to: { value: 'New Text' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -257,10 +257,10 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the innerHTML of it' } as any],
-          modifiers: { to: { value: '<strong>Bold</strong>' } as any },
+          args: [{ value: 'the innerHTML of it' }],
+          modifiers: { to: { value: '<strong>Bold</strong>' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -280,10 +280,10 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the title of #target-el' } as any],
-          modifiers: { to: { value: 'Title Text' } as any },
+          args: [{ value: 'the title of #target-el' }],
+          modifiers: { to: { value: 'Title Text' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -304,10 +304,10 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'THE textContent OF me' } as any],
-          modifiers: { to: { value: 'Case' } as any },
+          args: [{ value: 'THE textContent OF me' }],
+          modifiers: { to: { value: 'Case' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -324,10 +324,10 @@ describe('SetCommand - "the X of Y" Syntax', () => {
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'the property' } as any], // Missing "of Y"
-            modifiers: { to: { value: 'value' } as any },
+            args: [{ value: 'the property' }], // Missing "of Y"
+            modifiers: { to: { value: 'value' } },
           },
-          evaluator as any,
+          evaluator,
           context
         )
       ).rejects.toThrow('Invalid "the X of Y" syntax');
@@ -370,10 +370,10 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*opacity' } as any],
-          modifiers: { to: { value: '0.5' } as any },
+          args: [{ value: '*opacity' }],
+          modifiers: { to: { value: '0.5' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -391,10 +391,10 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*background-color' } as any],
-          modifiers: { to: { value: 'blue' } as any },
+          args: [{ value: '*background-color' }],
+          modifiers: { to: { value: 'blue' } },
         },
-        evaluator as any,
+        evaluator,
         createMockContext()
       );
 
@@ -412,13 +412,13 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*color' } as any],
+          args: [{ value: '*color' }],
           modifiers: {
-            to: { value: 'red' } as any,
-            on: { value: targetElement } as any,
+            to: { value: 'red' },
+            on: { value: targetElement },
           },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -435,10 +435,10 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*width' } as any],
-          modifiers: { to: { value: 100 } as any }, // Number value
+          args: [{ value: '*width' }],
+          modifiers: { to: { value: 100 } }, // Number value
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -590,10 +590,10 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: { textContent: 'Object', id: 'obj-id' } } as any],
+        args: [{ value: { textContent: 'Object', id: 'obj-id' } }],
         modifiers: {},
       },
-      evaluator as any,
+      evaluator,
       context
     );
 
@@ -611,10 +611,10 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: 'the title of me' } as any],
-        modifiers: { to: { value: 'Title' } as any },
+        args: [{ value: 'the title of me' }],
+        modifiers: { to: { value: 'Title' } },
       },
-      evaluator as any,
+      evaluator,
       context
     );
 
@@ -631,10 +631,10 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: '*opacity' } as any],
-        modifiers: { to: { value: '0.8' } as any },
+        args: [{ value: '*opacity' }],
+        modifiers: { to: { value: '0.8' } },
       },
-      evaluator as any,
+      evaluator,
       context
     );
 

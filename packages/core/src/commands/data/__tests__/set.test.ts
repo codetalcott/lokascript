@@ -25,7 +25,7 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
     globals: new Map(),
     target: meElement,
     detail: undefined,
-  } as any;
+  } as unknown as ExecutionContext & TypedExecutionContext;
 }
 
 function createMockEvaluator() {
@@ -33,7 +33,7 @@ function createMockEvaluator() {
     evaluate: async (node: ASTNode, context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as any).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
@@ -74,7 +74,7 @@ describe('SetCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       await expect(
-        command.parseInput({ args: [], modifiers: {} }, evaluator as any, context)
+        command.parseInput({ args: [], modifiers: {} }, evaluator, context)
       ).rejects.toThrow('set command requires a target');
     });
 
@@ -84,8 +84,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput(
-          { args: [{ value: 'myVar' } as any], modifiers: {} },
-          evaluator as any,
+          { args: [{ value: 'myVar' }], modifiers: {} },
+          evaluator,
           context
         )
       ).rejects.toThrow('set command requires a value');
@@ -97,10 +97,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'myVar' } as any],
-          modifiers: { to: { value: 'test value' } as any },
+          args: [{ value: 'myVar' }],
+          modifiers: { to: { value: 'test value' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -117,10 +117,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '@data-theme' } as any],
-          modifiers: { to: { value: 'dark' } as any },
+          args: [{ value: '@data-theme' }],
+          modifiers: { to: { value: 'dark' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -137,10 +137,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'my textContent' } as any],
-          modifiers: { to: { value: 'Hello World' } as any },
+          args: [{ value: 'my textContent' }],
+          modifiers: { to: { value: 'Hello World' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -160,10 +160,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'its innerHTML' } as any],
-          modifiers: { to: { value: '<strong>Bold</strong>' } as any },
+          args: [{ value: 'its innerHTML' }],
+          modifiers: { to: { value: '<strong>Bold</strong>' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -181,10 +181,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' } as any, { value: 42 } as any],
+          args: [{ value: 'count' }, { value: 42 }],
           modifiers: {},
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -201,10 +201,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' } as any],
-          modifiers: { to: { value: 42 } as any },
+          args: [{ value: 'count' }],
+          modifiers: { to: { value: 42 } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -220,10 +220,10 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'isActive' } as any],
-          modifiers: { to: { value: true } as any },
+          args: [{ value: 'isActive' }],
+          modifiers: { to: { value: true } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -530,10 +530,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' } as any],
-          modifiers: { to: { value: 10 } as any },
+          args: [{ value: 'count' }],
+          modifiers: { to: { value: 10 } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -556,10 +556,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: '@data-theme' } as any],
-          modifiers: { to: { value: 'dark' } as any },
+          args: [{ value: '@data-theme' }],
+          modifiers: { to: { value: 'dark' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -582,10 +582,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'my textContent' } as any],
-          modifiers: { to: { value: 'Hello' } as any },
+          args: [{ value: 'my textContent' }],
+          modifiers: { to: { value: 'Hello' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
 
@@ -608,10 +608,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 1: Set variable
       const input1 = await command.parseInput(
         {
-          args: [{ value: 'greeting' } as any],
-          modifiers: { to: { value: 'Hello' } as any },
+          args: [{ value: 'greeting' }],
+          modifiers: { to: { value: 'Hello' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
       await command.execute(input1, context);
@@ -620,10 +620,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 2: Set property
       const input2 = await command.parseInput(
         {
-          args: [{ value: 'my textContent' } as any],
-          modifiers: { to: { value: 'World' } as any },
+          args: [{ value: 'my textContent' }],
+          modifiers: { to: { value: 'World' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
       await command.execute(input2, context);
@@ -632,10 +632,10 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 3: Set attribute
       const input3 = await command.parseInput(
         {
-          args: [{ value: '@data-status' } as any],
-          modifiers: { to: { value: 'complete' } as any },
+          args: [{ value: '@data-status' }],
+          modifiers: { to: { value: 'complete' } },
         },
-        evaluator as any,
+        evaluator,
         context
       );
       await command.execute(input3, context);

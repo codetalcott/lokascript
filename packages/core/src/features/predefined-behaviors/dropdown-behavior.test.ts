@@ -57,17 +57,17 @@ describe('Dropdown Behavior', () => {
   describe('Initialization', () => {
     it('should initialize on details element', () => {
       dropdownBehaviorDefinition.init(details);
-      expect(typeof (details as any).openDropdown).toBe('function');
-      expect(typeof (details as any).closeDropdown).toBe('function');
-      expect(typeof (details as any).toggleDropdown).toBe('function');
-      expect(typeof (details as any).isDropdownOpen).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { isDropdownOpen: () => boolean }).isDropdownOpen).toBe('function');
     });
 
     it('should handle non-details elements gracefully', () => {
       const div = document.createElement('div');
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      dropdownBehaviorDefinition.init(div as any);
+      dropdownBehaviorDefinition.init(div as unknown as HTMLDetailsElement);
 
       expect(consoleError).toHaveBeenCalledWith(
         'dropdown-behavior can only be installed on <details> elements'
@@ -84,13 +84,13 @@ describe('Dropdown Behavior', () => {
       dropdownBehaviorDefinition.init(details, options);
       expect(details.classList.contains('dropdown-open')).toBe(false); // Not open yet
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.classList.contains('dropdown-open')).toBe(true);
     });
 
     it('should use default options when not provided', () => {
       dropdownBehaviorDefinition.init(details);
-      expect((details as any).openDropdown).toBeDefined();
+      expect((details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown).toBeDefined();
     });
   });
 
@@ -100,50 +100,50 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should open dropdown', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
     });
 
     it('should close dropdown', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
-      (details as any).closeDropdown();
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown();
       expect(details.open).toBe(false);
     });
 
     it('should toggle dropdown open', () => {
       expect(details.open).toBe(false);
 
-      (details as any).toggleDropdown();
+      (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown();
       expect(details.open).toBe(true);
 
-      (details as any).toggleDropdown();
+      (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown();
       expect(details.open).toBe(false);
     });
 
     it('should not open if already open', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       const firstOpen = details.open;
 
-      (details as any).openDropdown(); // Try to open again
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown(); // Try to open again
       expect(details.open).toBe(firstOpen);
     });
 
     it('should not close if already closed', () => {
       expect(details.open).toBe(false);
-      (details as any).closeDropdown(); // Try to close when already closed
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown(); // Try to close when already closed
       expect(details.open).toBe(false);
     });
 
     it('should report open state correctly', () => {
-      expect((details as any).isDropdownOpen()).toBe(false);
+      expect((details as HTMLDetailsElement & { isDropdownOpen: () => boolean }).isDropdownOpen()).toBe(false);
 
-      (details as any).openDropdown();
-      expect((details as any).isDropdownOpen()).toBe(true);
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
+      expect((details as HTMLDetailsElement & { isDropdownOpen: () => boolean }).isDropdownOpen()).toBe(true);
 
-      (details as any).closeDropdown();
-      expect((details as any).isDropdownOpen()).toBe(false);
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown();
+      expect((details as HTMLDetailsElement & { isDropdownOpen: () => boolean }).isDropdownOpen()).toBe(false);
     });
   });
 
@@ -161,7 +161,7 @@ describe('Dropdown Behavior', () => {
         eventDetail = e.detail;
       }) as EventListener);
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
 
       expect(eventFired).toBe(true);
       expect(eventDetail.element).toBe(details);
@@ -176,8 +176,8 @@ describe('Dropdown Behavior', () => {
         eventDetail = e.detail;
       }) as EventListener);
 
-      (details as any).openDropdown();
-      (details as any).closeDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown();
 
       expect(eventFired).toBe(true);
       expect(eventDetail.element).toBe(details);
@@ -192,11 +192,11 @@ describe('Dropdown Behavior', () => {
         lastOpenState = e.detail.open;
       }) as EventListener);
 
-      (details as any).toggleDropdown();
+      (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown();
       expect(eventCount).toBe(1);
       expect(lastOpenState).toBe(true);
 
-      (details as any).toggleDropdown();
+      (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown();
       expect(eventCount).toBe(2);
       expect(lastOpenState).toBe(false);
     });
@@ -230,7 +230,7 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should close dropdown on outside click', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate outside click
@@ -241,7 +241,7 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should not close dropdown on inside click', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate inside click
@@ -256,7 +256,7 @@ describe('Dropdown Behavior', () => {
       dropdownBehaviorDefinition.destroy(details);
       dropdownBehaviorDefinition.init(details, { closeOnClickOutside: false });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate outside click
@@ -271,7 +271,7 @@ describe('Dropdown Behavior', () => {
     it('should close dropdown on inside click when enabled', () => {
       dropdownBehaviorDefinition.init(details, { closeOnClickInside: true });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate inside click (not on summary)
@@ -286,7 +286,7 @@ describe('Dropdown Behavior', () => {
     it('should not close when clicking summary', () => {
       dropdownBehaviorDefinition.init(details, { closeOnClickInside: true });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate click on summary
@@ -306,7 +306,7 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should close dropdown on Escape key', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate Escape key
@@ -317,7 +317,7 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should not close on other keys', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate other key
@@ -331,7 +331,7 @@ describe('Dropdown Behavior', () => {
       dropdownBehaviorDefinition.destroy(details);
       dropdownBehaviorDefinition.init(details, { closeOnEscape: false });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Simulate Escape key
@@ -348,17 +348,17 @@ describe('Dropdown Behavior', () => {
 
       expect(details.classList.contains('is-open')).toBe(false);
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.classList.contains('is-open')).toBe(true);
     });
 
     it('should remove open class when closed', () => {
       dropdownBehaviorDefinition.init(details, { openClass: 'is-open' });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.classList.contains('is-open')).toBe(true);
 
-      (details as any).closeDropdown();
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown();
       expect(details.classList.contains('is-open')).toBe(false);
     });
 
@@ -381,10 +381,10 @@ describe('Dropdown Behavior', () => {
     it('should create dropdown behavior with createDropdownBehavior', () => {
       createDropdownBehavior(details);
 
-      expect(typeof (details as any).openDropdown).toBe('function');
-      expect(typeof (details as any).closeDropdown).toBe('function');
-      expect(typeof (details as any).toggleDropdown).toBe('function');
-      expect(typeof (details as any).isDropdownOpen).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { toggleDropdown: () => void }).toggleDropdown).toBe('function');
+      expect(typeof (details as HTMLDetailsElement & { isDropdownOpen: () => boolean }).isDropdownOpen).toBe('function');
     });
 
     it('should create dropdown behavior with options', () => {
@@ -393,7 +393,7 @@ describe('Dropdown Behavior', () => {
         closeOnClickOutside: false
       });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.classList.contains('custom-open')).toBe(true);
     });
   });
@@ -404,7 +404,7 @@ describe('Dropdown Behavior', () => {
     });
 
     it('should close dropdown on destroy', () => {
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       dropdownBehaviorDefinition.destroy(details);
@@ -421,7 +421,7 @@ describe('Dropdown Behavior', () => {
     it('should remove event listeners on destroy', () => {
       dropdownBehaviorDefinition.destroy(details);
 
-      (details as any).openDropdown; // Methods removed, but element still exists
+      (details as HTMLDetailsElement & { openDropdown?: () => void }).openDropdown; // Methods removed, but element still exists
 
       // Click outside should not affect dropdown anymore
       details.open = true;
@@ -443,8 +443,8 @@ describe('Dropdown Behavior', () => {
       createDropdownBehavior(details, { closeOnClickOutside: true });
       createDropdownBehavior(details2, { closeOnClickOutside: true });
 
-      (details as any).openDropdown();
-      (details2 as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
+      (details2 as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
 
       expect(details.open).toBe(true);
       expect(details2.open).toBe(true);
@@ -464,7 +464,7 @@ describe('Dropdown Behavior', () => {
       });
 
       // Open with method
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       // Click item
@@ -476,7 +476,7 @@ describe('Dropdown Behavior', () => {
       expect(details.open).toBe(false);
 
       // Reopen and close with Escape
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
       const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
@@ -488,10 +488,10 @@ describe('Dropdown Behavior', () => {
     it('should handle animation duration', async () => {
       dropdownBehaviorDefinition.init(details, { animationDuration: 100 });
 
-      (details as any).openDropdown();
+      (details as HTMLDetailsElement & { openDropdown: () => void }).openDropdown();
       expect(details.open).toBe(true);
 
-      (details as any).closeDropdown();
+      (details as HTMLDetailsElement & { closeDropdown: () => void }).closeDropdown();
 
       // Should still be open immediately after closeDropdown call
       expect(details.open).toBe(true);
