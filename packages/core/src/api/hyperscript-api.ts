@@ -67,6 +67,14 @@ export interface CompilationResult {
   errors: ParseError[];
   tokens: import('../types/core').Token[];
   compilationTime: number;
+
+  // Debug metadata (always included, minimal overhead <1%)
+  metadata?: {
+    parserUsed: 'semantic' | 'traditional' | 'expression-only';
+    semanticConfidence?: number;  // 0-1, only if semantic attempted
+    semanticLanguage?: string;     // e.g., 'en', 'ja'
+    warnings?: string[];           // Non-fatal issues detected during compilation
+  };
 }
 
 export interface CompileOptions {
@@ -255,9 +263,12 @@ function compile(code: string, options?: CompileOptions): CompilationResult {
   const startTime = performance.now();
 
   try {
-    // Use traditional parsing if semantic parsing is disabled
-    const parserOptions = options?.disableSemanticParsing ? {} : getDefaultParserOptions();
-    debug.runtime('COMPILE: about to call parse()', { disableSemanticParsing: options?.disableSemanticParsing });
+    // Determine parser configuration
+    const disableSemantic = options?.disableSemanticParsing ?? false;
+    const parserOptions = disableSemantic ? {} : getDefaultParserOptions();
+    const usesSemanticParser = !disableSemantic;
+
+    debug.runtime('COMPILE: about to call parse()', { disableSemanticParsing: disableSemantic });
     const parseResult = parseToResult(code, parserOptions);
     debug.runtime('COMPILE: parse() returned', {
       success: parseResult.success,
@@ -266,6 +277,13 @@ function compile(code: string, options?: CompileOptions): CompilationResult {
     });
     const compilationTime = performance.now() - startTime;
 
+    // Create metadata about the compilation
+    const metadata: CompilationResult['metadata'] = {
+      parserUsed: usesSemanticParser ? 'semantic' : 'traditional',
+      semanticLanguage: usesSemanticParser ? (options?.language || 'en') : undefined,
+      warnings: [],
+    };
+
     if (parseResult.success && parseResult.node) {
       return {
         success: true,
@@ -273,6 +291,7 @@ function compile(code: string, options?: CompileOptions): CompilationResult {
         errors: [],
         tokens: parseResult.tokens,
         compilationTime,
+        metadata,
       };
     } else {
       return {
@@ -280,6 +299,7 @@ function compile(code: string, options?: CompileOptions): CompilationResult {
         errors: parseResult.error ? [parseResult.error] : [],
         tokens: parseResult.tokens,
         compilationTime,
+        metadata,
       };
     }
   } catch (error) {
@@ -297,6 +317,10 @@ function compile(code: string, options?: CompileOptions): CompilationResult {
       ],
       tokens: [],
       compilationTime,
+      metadata: {
+        parserUsed: 'traditional',
+        warnings: [],
+      },
     };
   }
 }
@@ -356,6 +380,12 @@ async function compileMultilingual(
         usedDirectPath: true,
         confidence: astResult.confidence,
         language: lang,
+        metadata: {
+          parserUsed: 'semantic',
+          semanticConfidence: astResult.confidence,
+          semanticLanguage: lang,
+          warnings: [],
+        },
       };
     }
 
@@ -367,6 +397,7 @@ async function compileMultilingual(
       usedDirectPath: false,
       confidence: astResult.confidence,
       language: lang,
+      // metadata already set by compile()
     };
   } catch (error) {
     debug.runtime('COMPILE_MULTILINGUAL: error, falling back', { error });
@@ -376,6 +407,7 @@ async function compileMultilingual(
       ...result,
       usedDirectPath: false,
       language: lang,
+      // metadata already set by compile()
     };
   }
 }

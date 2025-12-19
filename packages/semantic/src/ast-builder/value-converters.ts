@@ -34,18 +34,19 @@ import {
  * Convert a SemanticValue to an AST ExpressionNode.
  *
  * @param value - The semantic value to convert
+ * @param warnings - Optional array to collect warnings about potentially incorrect type choices
  * @returns The corresponding AST expression node
  */
-export function convertValue(value: SemanticValue): ExpressionNode {
+export function convertValue(value: SemanticValue, warnings?: string[]): ExpressionNode {
   switch (value.type) {
     case 'literal':
       return convertLiteral(value);
     case 'selector':
-      return convertSelector(value);
+      return convertSelector(value, warnings);
     case 'reference':
       return convertReference(value);
     case 'property-path':
-      return convertPropertyPath(value);
+      return convertPropertyPath(value, warnings);
     case 'expression':
       return convertExpression(value);
     default:
@@ -74,8 +75,21 @@ export function convertLiteral(value: LiteralValue): LiteralNode {
 
 /**
  * Convert a SelectorValue to a SelectorNode.
+ *
+ * @param value - The selector value to convert
+ * @param warnings - Optional array to collect warnings
  */
-export function convertSelector(value: SelectorValue): SelectorNode {
+export function convertSelector(value: SelectorValue, warnings?: string[]): SelectorNode {
+  // Warn if selector looks like a CSS property (starts with * followed by a letter/hyphen)
+  // This catches cases like "*background-color" which should likely be a literal string
+  if (warnings && value.value.startsWith('*') && /^[a-zA-Z-]/.test(value.value.slice(1))) {
+    warnings.push(
+      `Converted '${value.value}' to a CSS selector, but it looks like a CSS property name. ` +
+      `CSS properties in commands like 'transition' should be literal strings, not selectors. ` +
+      `Consider using expectedTypes: ['literal'] instead of ['literal', 'selector'] in the command schema.`
+    );
+  }
+
   return {
     type: 'selector',
     value: value.value,
@@ -98,11 +112,14 @@ export function convertReference(value: ReferenceValue): ContextReferenceNode {
 /**
  * Convert a PropertyPathValue to a PropertyAccessNode.
  * Recursively converts the object part.
+ *
+ * @param value - The property path value to convert
+ * @param warnings - Optional array to collect warnings
  */
-export function convertPropertyPath(value: PropertyPathValue): PropertyAccessNode {
+export function convertPropertyPath(value: PropertyPathValue, warnings?: string[]): PropertyAccessNode {
   return {
     type: 'propertyAccess',
-    object: convertValue(value.object),
+    object: convertValue(value.object, warnings),
     property: value.property,
   };
 }

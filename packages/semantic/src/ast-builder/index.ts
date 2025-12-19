@@ -23,7 +23,7 @@ import type {
 import type { SemanticRole } from '@hyperfixi/i18n/src/grammar/types';
 
 import { convertValue } from './value-converters';
-import { getCommandMapper } from './command-mappers';
+import { getCommandMapper, type CommandMapperResult } from './command-mappers';
 import type { ExpressionNode } from '@hyperfixi/expression-parser';
 
 // =============================================================================
@@ -128,6 +128,11 @@ export interface ASTBuilderOptions {
  * Builds AST nodes directly from SemanticNodes.
  */
 export class ASTBuilder {
+  /**
+   * Warnings collected during AST building (e.g., type inference issues).
+   */
+  public warnings: string[] = [];
+
   constructor(_options: ASTBuilderOptions = {}) {
     // Options reserved for future use (e.g., custom expression parser)
   }
@@ -163,7 +168,18 @@ export class ASTBuilder {
 
     if (mapper) {
       // Use command-specific mapper
-      return mapper.toAST(node, this);
+      const result = mapper.toAST(node, this);
+
+      // Handle both new CommandMapperResult format and legacy CommandNode format
+      if ('ast' in result && 'warnings' in result) {
+        // New format with warnings
+        const mapperResult = result as CommandMapperResult;
+        this.warnings.push(...mapperResult.warnings);
+        return mapperResult.ast;
+      } else {
+        // Legacy format (just CommandNode)
+        return result as CommandNode;
+      }
     }
 
     // Fallback: generic command mapping
@@ -479,14 +495,26 @@ export class ASTBuilder {
 // =============================================================================
 
 /**
+ * Result from building an AST, including any warnings.
+ */
+export interface BuildASTResult {
+  ast: ASTNode;
+  warnings: string[];
+}
+
+/**
  * Build an AST from a SemanticNode using default options.
  *
  * @param node - The semantic node to convert
- * @returns The corresponding AST node
+ * @returns The corresponding AST node and any warnings
  */
-export function buildAST(node: SemanticNode): ASTNode {
+export function buildAST(node: SemanticNode): BuildASTResult {
   const builder = new ASTBuilder();
-  return builder.build(node);
+  const ast = builder.build(node);
+  return {
+    ast,
+    warnings: builder.warnings,
+  };
 }
 
 // Re-exports from value-converters
@@ -505,4 +533,5 @@ export {
   registerCommandMapper,
   getRegisteredMappers,
   type CommandMapper,
+  type CommandMapperResult,
 } from './command-mappers';

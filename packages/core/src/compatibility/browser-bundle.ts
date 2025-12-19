@@ -24,7 +24,7 @@ import { tailwindExtension } from '../extensions/tailwind';
 import { Parser } from '../parser/parser';
 import { Runtime } from '../runtime/runtime';
 import { tokenize } from '../parser/tokenizer';
-import { debug } from '../utils/debug';
+import { debug, debugControl } from '../utils/debug';
 import { styleBatcher, ObjectPool } from '../utils/performance';
 import {
   enableDebugEvents,
@@ -67,6 +67,7 @@ declare global {
       tokenize: typeof tokenize;
       attributeProcessor: typeof defaultAttributeProcessor;
       debug: typeof debug;
+      debugControl: typeof debugControl;
       styleBatcher: typeof styleBatcher;
       ObjectPool: typeof ObjectPool;
       // Semantic parsing API for multilingual support
@@ -156,6 +157,7 @@ const hyperfixi = {
 
   // Debug utilities
   debug,
+  debugControl,
 
   // Semantic parsing API for multilingual support
   semantic: {

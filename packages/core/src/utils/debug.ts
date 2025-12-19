@@ -12,10 +12,38 @@
  * debug.event('pointerdown event fired on:', element);
  */
 
-// Check both browser and Node.js environments
-const isDebugEnabled =
-  (typeof window !== 'undefined' && (window as any).__HYPERFIXI_DEBUG__) ||
-  (typeof process !== 'undefined' && process.env?.HYPERFIXI_DEBUG === 'true');
+/**
+ * Check if debugging is enabled across multiple sources:
+ * 1. localStorage (persists across page reloads)
+ * 2. window.__HYPERFIXI_DEBUG__ (session-level)
+ * 3. process.env.HYPERFIXI_DEBUG (Node.js)
+ */
+function checkDebugEnabled(): boolean {
+  // Check localStorage first (browser only, persists across reloads)
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const setting = localStorage.getItem('hyperfixi:debug');
+      if (setting === '*' || setting === 'true') return true;
+      // Could also support namespace-specific: 'semantic,parser,evaluator'
+    } catch {
+      // localStorage might throw in some environments (e.g., private browsing)
+    }
+  }
+
+  // Fallback to window flag (browser, session-level)
+  if (typeof window !== 'undefined' && (window as any).__HYPERFIXI_DEBUG__) {
+    return true;
+  }
+
+  // Node.js environment variable
+  if (typeof process !== 'undefined' && process.env?.HYPERFIXI_DEBUG === 'true') {
+    return true;
+  }
+
+  return false;
+}
+
+const isDebugEnabled = checkDebugEnabled();
 
 /**
  * Debug flags for different subsystems
@@ -108,5 +136,78 @@ export const debugGroup = {
 
   end: () => {
     if (isDebugEnabled) console.groupEnd();
+  },
+};
+
+/**
+ * Debug control API for programmatic enable/disable
+ * Survives minification and works in production builds
+ */
+export const debugControl = {
+  /**
+   * Enable debug logging (persists via localStorage)
+   * Page must be reloaded for changes to take effect
+   */
+  enable(): void {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('hyperfixi:debug', '*');
+        console.log('✅ HyperFixi debug logging enabled. Reload page to see detailed logs.');
+      } catch (e) {
+        console.warn('⚠️  Could not enable debug logging (localStorage unavailable):', e);
+      }
+    } else {
+      console.warn('⚠️  localStorage not available. Set window.__HYPERFIXI_DEBUG__ = true instead.');
+    }
+  },
+
+  /**
+   * Disable debug logging (clears localStorage)
+   * Page must be reloaded for changes to take effect
+   */
+  disable(): void {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem('hyperfixi:debug');
+        console.log('✅ HyperFixi debug logging disabled. Reload page.');
+      } catch (e) {
+        console.warn('⚠️  Could not disable debug logging:', e);
+      }
+    } else {
+      console.warn('⚠️  localStorage not available. Set window.__HYPERFIXI_DEBUG__ = false instead.');
+    }
+  },
+
+  /**
+   * Check if debug logging is currently enabled
+   */
+  isEnabled(): boolean {
+    return isDebugEnabled;
+  },
+
+  /**
+   * Get current debug status and settings
+   */
+  status(): { enabled: boolean; source: string } {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const setting = localStorage.getItem('hyperfixi:debug');
+        if (setting) {
+          return { enabled: true, source: 'localStorage' };
+        }
+      } catch {
+        // Fall through
+      }
+    }
+
+    if (typeof window !== 'undefined' && (window as any).__HYPERFIXI_DEBUG__) {
+      return { enabled: true, source: 'window.__HYPERFIXI_DEBUG__' };
+    }
+
+    if (typeof process !== 'undefined' && process.env?.HYPERFIXI_DEBUG === 'true') {
+      return { enabled: true, source: 'process.env.HYPERFIXI_DEBUG' };
+    }
+
+    return { enabled: false, source: 'none' };
   },
 };

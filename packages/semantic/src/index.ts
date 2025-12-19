@@ -377,4 +377,6 @@ export {
   type BlockNode,
   type ASTBuilderOptions,
   type CommandMapper,
+  type CommandMapperResult,
+  type BuildASTResult,
 } from './ast-builder';

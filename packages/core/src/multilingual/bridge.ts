@@ -126,6 +126,8 @@ export interface ParseToASTResult {
   lang: string;
   /** English text for fallback to core parser (if direct path failed) */
   fallbackText: string | null;
+  /** Warnings generated during AST building (e.g., type inference issues) */
+  warnings?: string[];
 }
 
 // Lazy-loaded semantic module
@@ -254,7 +256,9 @@ export class SemanticGrammarBridge {
       // Use the direct AST builder path
       const semantic = await getSemanticModule();
       try {
-        return semantic.buildAST(result.node);
+        const buildResult = semantic.buildAST(result.node);
+        // buildAST now returns { ast, warnings }, extract just the AST
+        return buildResult.ast;
       } catch (error) {
         // Fall through to fallback
         console.warn('[SemanticGrammarBridge] AST build failed, using fallback:', error);
@@ -295,13 +299,15 @@ export class SemanticGrammarBridge {
     if (result.confidence >= this.config.confidenceThreshold && result.node) {
       const semantic = await getSemanticModule();
       try {
-        const ast = semantic.buildAST(result.node);
+        const buildResult = semantic.buildAST(result.node);
+        // buildAST now returns { ast, warnings }
         return {
-          ast,
+          ast: buildResult.ast,
           usedDirectPath: true,
           confidence: result.confidence,
           lang,
           fallbackText: null,
+          warnings: buildResult.warnings,
         };
       } catch {
         // Fall through to fallback

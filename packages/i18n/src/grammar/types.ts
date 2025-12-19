@@ -37,6 +37,7 @@ export type SemanticRole =
   | 'patient'      // What is acted upon (the counter, .active)
   | 'source'       // Origin (from #input, from URL)
   | 'destination'  // Target location (into #output, to .class)
+  | 'goal'         // Target value/state (to 'red', to 100)
   | 'event'        // Trigger (click, input, keydown)
   | 'condition'    // Boolean expression (if x > 5)
   // Quantitative roles

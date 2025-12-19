@@ -16,6 +16,14 @@ import type { ExpressionNode } from '@hyperfixi/expression-parser';
 // =============================================================================
 
 /**
+ * Result from command mapping, including the AST and any warnings.
+ */
+export interface CommandMapperResult {
+  ast: CommandNode;
+  warnings: string[];
+}
+
+/**
  * Interface for command-specific AST mappers.
  */
 export interface CommandMapper {
@@ -29,9 +37,9 @@ export interface CommandMapper {
    *
    * @param node - The semantic command node
    * @param builder - The AST builder (for recursive building if needed)
-   * @returns The AST command node
+   * @returns The AST command node with any warnings, or just the AST node for backward compatibility
    */
-  toAST(node: CommandSemanticNode, builder: ASTBuilder): CommandNode;
+  toAST(node: CommandSemanticNode, builder: ASTBuilder): CommandMapperResult | CommandNode;
 }
 
 // =============================================================================
@@ -47,10 +55,18 @@ function getRole(node: CommandSemanticNode, role: SemanticRole): SemanticValue |
 
 /**
  * Convert a semantic value to an AST expression, or return undefined.
+ *
+ * @param node - The semantic node containing roles
+ * @param role - The semantic role to extract
+ * @param warnings - Optional array to collect warnings
  */
-function convertRoleValue(node: CommandSemanticNode, role: SemanticRole): ExpressionNode | undefined {
+function convertRoleValue(
+  node: CommandSemanticNode,
+  role: SemanticRole,
+  warnings?: string[]
+): ExpressionNode | undefined {
   const value = getRole(node, role);
-  return value ? convertValue(value) : undefined;
+  return value ? convertValue(value, warnings) : undefined;
 }
 
 /**
@@ -470,23 +486,30 @@ const goMapper: CommandMapper = {
 /**
  * Transition command mapper.
  *
- * Semantic: transition patient:opacity duration:500ms destination:#element
- * AST: { name: 'transition', args: [opacity], modifiers: { over: 500ms, on: #element } }
+ * Semantic: transition patient:*background-color goal:'red' duration:500ms destination:#element
+ * AST: { name: 'transition', args: [*background-color], modifiers: { to: 'red', over: 500ms, on: #element } }
  */
 const transitionMapper: CommandMapper = {
   action: 'transition',
   toAST(node, _builder) {
-    const patient = convertRoleValue(node, 'patient');
-    const duration = convertRoleValue(node, 'duration');
-    const destination = convertRoleValue(node, 'destination');
+    const warnings: string[] = [];
+
+    const patient = convertRoleValue(node, 'patient', warnings);
+    const goal = convertRoleValue(node, 'goal', warnings);
+    const duration = convertRoleValue(node, 'duration', warnings);
+    const destination = convertRoleValue(node, 'destination', warnings);
 
     const args: ExpressionNode[] = patient ? [patient] : [];
     const modifiers: Record<string, ExpressionNode> = {};
 
+    if (goal) modifiers['to'] = goal;
     if (duration) modifiers['over'] = duration;
     if (destination) modifiers['on'] = destination;
 
-    return createCommandNode('transition', args, modifiers);
+    return {
+      ast: createCommandNode('transition', args, modifiers),
+      warnings,
+    };
   },
 };
 

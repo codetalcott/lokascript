@@ -52,6 +52,44 @@ await hyperscript.run('set my className to "active"', context);
 </button>
 ```
 
+## Debugging
+
+HyperFixi includes a built-in debug control API for troubleshooting compilation and execution issues.
+
+### Enable Debug Logging
+
+```javascript
+// In browser console
+hyperfixi.debugControl.enable();   // Enable detailed logging
+// Reload page to see logs
+
+hyperfixi.debugControl.disable();  // Disable logging
+hyperfixi.debugControl.isEnabled(); // Check if enabled
+hyperfixi.debugControl.status();   // Get detailed status
+```
+
+Debug settings persist across page reloads via localStorage. Logs include:
+
+- Parser selection (semantic vs traditional)
+- Expression evaluation steps
+- Command execution flow
+- Event handling
+
+### Compilation Metadata
+
+Every compilation returns metadata about parser usage and warnings:
+
+```javascript
+const result = hyperfixi.compile('toggle .active');
+console.log(result.metadata);
+// {
+//   parserUsed: 'semantic',
+//   semanticConfidence: 0.98,
+//   semanticLanguage: 'en',
+//   warnings: []
+// }
+```
+
 ## API Reference
 
 For complete API documentation, see [API.md](./docs/API.md).

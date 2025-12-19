@@ -952,11 +952,19 @@ export const transitionSchema: CommandSchema = {
   roles: [
     {
       role: 'patient',
-      description: 'The property to transition (opacity, transform, etc.)',
+      description: 'The property to transition (opacity, *background-color, etc.)',
       required: true,
-      expectedTypes: ['literal', 'selector'],
+      expectedTypes: ['literal'],  // Only literal - CSS properties are strings, not selectors
       svoPosition: 1,
       sovPosition: 2,
+    },
+    {
+      role: 'goal',
+      description: 'The target value to transition to',
+      required: true,
+      expectedTypes: ['literal', 'expression'],
+      svoPosition: 2,
+      sovPosition: 3,
     },
     {
       role: 'destination',
@@ -964,7 +972,7 @@ export const transitionSchema: CommandSchema = {
       required: false,
       expectedTypes: ['selector', 'reference'],
       default: { type: 'reference', value: 'me' },
-      svoPosition: 2,
+      svoPosition: 3,
       sovPosition: 1,
     },
     {
@@ -972,16 +980,16 @@ export const transitionSchema: CommandSchema = {
       description: 'Transition duration (over 500ms, for 2 seconds)',
       required: false,
       expectedTypes: ['literal'],
-      svoPosition: 3,
-      sovPosition: 3,
+      svoPosition: 4,
+      sovPosition: 4,
     },
     {
       role: 'style',
       description: 'Easing function (ease-in, linear, etc.)',
       required: false,
       expectedTypes: ['literal'],
-      svoPosition: 4,
-      sovPosition: 4,
+      svoPosition: 5,
+      sovPosition: 5,
     },
   ],
 };
@@ -1452,4 +1460,27 @@ export function getSchemasByCategory(category: CommandCategory): CommandSchema[]
  */
 export function getDefinedSchemas(): CommandSchema[] {
   return Object.values(commandSchemas).filter(s => s.roles.length > 0);
+}
+
+// =============================================================================
+// Schema Validation (Development Only)
+// =============================================================================
+
+// Run schema validation at module load time in development builds
+// This is tree-shaken out in production builds
+if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+  // Dynamic import to avoid bundling in production
+  import('./schema-validator').then(({ validateAllSchemas, formatValidationResults }) => {
+    const validations = validateAllSchemas(commandSchemas);
+
+    if (validations.size > 0) {
+      console.warn('[SCHEMA VALIDATION] Found issues in command schemas:');
+      console.warn(formatValidationResults(validations));
+      console.warn('\nThese warnings help identify potential schema design issues.');
+      console.warn('Fix them to improve type inference and avoid runtime bugs.');
+    }
+  }).catch((err) => {
+    // Silently ignore if schema validator is not available
+    console.debug('Schema validation skipped:', err);
+  });
 }
