@@ -9,8 +9,26 @@
 import type { LanguagePattern, PatternToken, ExtractionRule } from '../types';
 import type { LanguageProfile } from './language-profiles';
 import type { CommandSchema, RoleSpec } from './command-schemas';
-import { languageProfiles } from './language-profiles';
 import { getDefinedSchemas } from './command-schemas';
+
+// Note: languageProfiles is no longer imported here.
+// Pattern generation for specific languages uses the registry instead.
+
+// Import registry functions - this is safe because:
+// 1. Registry doesn't import pattern-generator
+// 2. The circular path is: pattern-generator -> registry -> pattern-generator
+//    But registry only uses setPatternGenerator which is exported, not module-level code
+import {
+  getRegisteredLanguages as registryGetLanguages,
+  tryGetProfile as registryTryGetProfile,
+} from '../registry';
+
+function getAllRegisteredProfiles(): LanguageProfile[] {
+  const languages = registryGetLanguages();
+  return languages
+    .map((lang: string) => registryTryGetProfile(lang))
+    .filter((p): p is LanguageProfile => p !== undefined);
+}
 
 // =============================================================================
 // Pattern Generator
@@ -152,15 +170,23 @@ export function generatePatternsForLanguage(
 }
 
 /**
- * Generate patterns for a command across all supported languages.
+ * Generate patterns for a command across specified profiles.
+ *
+ * @param schema Command schema to generate patterns for
+ * @param profiles Array of language profiles to generate patterns for (defaults to all registered)
+ * @param config Generator configuration
  */
 export function generatePatternsForCommand(
   schema: CommandSchema,
+  profiles?: LanguageProfile[],
   config: GeneratorConfig = defaultConfig
 ): LanguagePattern[] {
   const patterns: LanguagePattern[] = [];
 
-  for (const profile of Object.values(languageProfiles)) {
+  // If no profiles provided, use all registered profiles
+  const profilesToUse = profiles ?? getAllRegisteredProfiles();
+
+  for (const profile of profilesToUse) {
     // Skip if no keyword translation exists
     if (!profile.keywords[schema.action]) {
       continue;
@@ -174,14 +200,21 @@ export function generatePatternsForCommand(
 }
 
 /**
- * Generate all patterns for all commands in all languages.
+ * Generate all patterns for all commands across specified profiles.
+ *
+ * @param profiles Array of language profiles to generate patterns for (defaults to all registered)
+ * @param config Generator configuration
  */
 export function generateAllPatterns(
+  profiles?: LanguageProfile[],
   config: GeneratorConfig = defaultConfig
 ): LanguagePattern[] {
   const patterns: LanguagePattern[] = [];
 
-  for (const profile of Object.values(languageProfiles)) {
+  // If no profiles provided, use all registered profiles
+  const profilesToUse = profiles ?? getAllRegisteredProfiles();
+
+  for (const profile of profilesToUse) {
     const langPatterns = generatePatternsForLanguage(profile, config);
     patterns.push(...langPatterns);
   }
@@ -470,21 +503,25 @@ function buildFormatString(
 
 /**
  * Get a summary of what patterns can be generated.
+ * Note: This requires the registry to have languages registered.
  */
 export function getGeneratorSummary(): {
   languages: string[];
   commands: string[];
   totalPatterns: number;
 } {
-  const languages = Object.keys(languageProfiles);
+  const languages = registryGetLanguages();
   const commands = getDefinedSchemas().map(s => s.action);
 
   // Estimate total patterns (2 variants per command per language)
   let totalPatterns = 0;
-  for (const profile of Object.values(languageProfiles)) {
-    for (const schema of getDefinedSchemas()) {
-      if (profile.keywords[schema.action]) {
-        totalPatterns += 2; // Full + simple variant
+  for (const lang of languages) {
+    const profile = registryTryGetProfile(lang);
+    if (profile) {
+      for (const schema of getDefinedSchemas()) {
+        if (profile.keywords[schema.action]) {
+          totalPatterns += 2; // Full + simple variant
+        }
       }
     }
   }

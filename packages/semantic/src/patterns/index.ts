@@ -10,13 +10,15 @@
  */
 
 import type { LanguagePattern, ActionType } from '../types';
-import { togglePatterns, getTogglePatternsForLanguage } from './toggle';
-import { putPatterns, getPutPatternsForLanguage } from './put';
-import { eventHandlerPatterns, getEventHandlerPatternsForLanguage, eventNameTranslations, normalizeEventName } from './event-handler';
+// Import from subdirectories for tree-shaking
+// When only English is needed, only toggle/en.ts, put/en.ts, event-handler/en.ts are included
+import { getTogglePatternsForLanguage } from './toggle';
+import { getPutPatternsForLanguage } from './put';
+import { getEventHandlerPatternsForLanguage } from './event-handler';
+import { eventNameTranslations, normalizeEventName } from './event-handler/shared';
 
-// Import generator for new commands
+// Import schemas directly from command-schemas (not from barrel to avoid pulling all profiles)
 import {
-  generatePatternsForCommand,
   toggleSchema,
   addSchema,
   removeSchema,
@@ -52,7 +54,10 @@ import {
   behaviorSchema,
   installSchema,
   measureSchema,
-} from '../generators';
+} from '../generators/command-schemas';
+
+// Import generator directly (not from barrel)
+import { generatePatternsForCommand } from '../generators/pattern-generator';
 
 // =============================================================================
 // Hand-crafted Fetch Simple Pattern (English only)
@@ -370,90 +375,198 @@ const unlessEnglish: LanguagePattern = {
 // =============================================================================
 
 /**
- * Commands using generated patterns.
- * These don't have hand-crafted patterns, so we generate them.
+ * Generate patterns for all commands.
+ * Called lazily to ensure language profiles are registered first.
  */
-const generatedPatterns: LanguagePattern[] = [
-  // Tier 0: Toggle (generated for languages without hand-crafted patterns)
-  // Hand-crafted patterns exist for: en, ja, ar, es, ko, zh, tr
-  // Generated patterns fill gap for: pt, fr, de, id, qu, sw
-  ...generatePatternsForCommand(toggleSchema),
-  // Tier 1: Core commands
-  ...generatePatternsForCommand(addSchema),
-  ...generatePatternsForCommand(removeSchema),
-  ...generatePatternsForCommand(showSchema),
-  ...generatePatternsForCommand(hideSchema),
-  ...generatePatternsForCommand(waitSchema),
-  ...generatePatternsForCommand(logSchema),
-  ...generatePatternsForCommand(incrementSchema),
-  ...generatePatternsForCommand(decrementSchema),
-  ...generatePatternsForCommand(sendSchema),
-  ...generatePatternsForCommand(goSchema),
-  ...generatePatternsForCommand(fetchSchema),
-  ...generatePatternsForCommand(appendSchema),
-  ...generatePatternsForCommand(prependSchema),
-  ...generatePatternsForCommand(triggerSchema),
-  ...generatePatternsForCommand(setSchema),
-  // Put command - hand-crafted patterns exist for en, ja, ar, es
-  // Generated patterns fill gap for: ko, zh, tr, pt, fr, de, id, qu, sw
-  ...generatePatternsForCommand(putSchema),
-  // Tier 2: Content & variable operations
-  ...generatePatternsForCommand(takeSchema),
-  ...generatePatternsForCommand(makeSchema),
-  ...generatePatternsForCommand(cloneSchema),
-  ...generatePatternsForCommand(getCommandSchema),
-  // Tier 3: Control flow & DOM
-  ...generatePatternsForCommand(callSchema),
-  ...generatePatternsForCommand(returnSchema),
-  ...generatePatternsForCommand(focusSchema),
-  ...generatePatternsForCommand(blurSchema),
-  // Tier 4: DOM Content Manipulation
-  ...generatePatternsForCommand(swapSchema),
-  ...generatePatternsForCommand(morphSchema),
-  // Tier 5: Control flow & Behavior system
-  ...generatePatternsForCommand(haltSchema),
-  ...generatePatternsForCommand(behaviorSchema),
-  ...generatePatternsForCommand(installSchema),
-  ...generatePatternsForCommand(measureSchema),
-];
+function generateAllCommandPatterns(): LanguagePattern[] {
+  return [
+    // Tier 0: Toggle (generated for languages without hand-crafted patterns)
+    // Hand-crafted patterns exist for: en, ja, ar, es, ko, zh, tr
+    // Generated patterns fill gap for: pt, fr, de, id, qu, sw
+    ...generatePatternsForCommand(toggleSchema),
+    // Tier 1: Core commands
+    ...generatePatternsForCommand(addSchema),
+    ...generatePatternsForCommand(removeSchema),
+    ...generatePatternsForCommand(showSchema),
+    ...generatePatternsForCommand(hideSchema),
+    ...generatePatternsForCommand(waitSchema),
+    ...generatePatternsForCommand(logSchema),
+    ...generatePatternsForCommand(incrementSchema),
+    ...generatePatternsForCommand(decrementSchema),
+    ...generatePatternsForCommand(sendSchema),
+    ...generatePatternsForCommand(goSchema),
+    ...generatePatternsForCommand(fetchSchema),
+    ...generatePatternsForCommand(appendSchema),
+    ...generatePatternsForCommand(prependSchema),
+    ...generatePatternsForCommand(triggerSchema),
+    ...generatePatternsForCommand(setSchema),
+    // Put command - hand-crafted patterns exist for en, ja, ar, es
+    // Generated patterns fill gap for: ko, zh, tr, pt, fr, de, id, qu, sw
+    ...generatePatternsForCommand(putSchema),
+    // Tier 2: Content & variable operations
+    ...generatePatternsForCommand(takeSchema),
+    ...generatePatternsForCommand(makeSchema),
+    ...generatePatternsForCommand(cloneSchema),
+    ...generatePatternsForCommand(getCommandSchema),
+    // Tier 3: Control flow & DOM
+    ...generatePatternsForCommand(callSchema),
+    ...generatePatternsForCommand(returnSchema),
+    ...generatePatternsForCommand(focusSchema),
+    ...generatePatternsForCommand(blurSchema),
+    // Tier 4: DOM Content Manipulation
+    ...generatePatternsForCommand(swapSchema),
+    ...generatePatternsForCommand(morphSchema),
+    // Tier 5: Control flow & Behavior system
+    ...generatePatternsForCommand(haltSchema),
+    ...generatePatternsForCommand(behaviorSchema),
+    ...generatePatternsForCommand(installSchema),
+    ...generatePatternsForCommand(measureSchema),
+  ];
+}
+
+// Lazy cache for generated patterns
+let _generatedPatterns: LanguagePattern[] | null = null;
+
+function getGeneratedPatterns(): LanguagePattern[] {
+  if (_generatedPatterns === null) {
+    _generatedPatterns = generateAllCommandPatterns();
+  }
+  return _generatedPatterns;
+}
 
 // =============================================================================
-// All Patterns
+// Hand-crafted English patterns (always included)
 // =============================================================================
 
 /**
- * All registered patterns across all languages.
- * Combines hand-crafted (validated) with generated (new).
+ * Hand-crafted English-only patterns that are always included.
  */
-export const allPatterns: LanguagePattern[] = [
-  // Hand-crafted patterns (validated, higher priority)
-  ...togglePatterns,
-  ...putPatterns,
-  ...eventHandlerPatterns,
-  fetchWithResponseTypeEnglish, // fetch /url as json (higher priority)
-  fetchSimpleEnglish, // fetch /url without "from" (lower priority)
-  swapSimpleEnglish,  // swap <strategy> <target>
-  repeatUntilEventFromEnglish, // repeat until event X from Y (highest priority)
-  repeatUntilEventEnglish, // repeat until event X (lower priority)
-  setPossessiveEnglish, // set X to Y with possessive support (higher priority)
-  forEnglish, // for X in Y iteration (higher priority)
-  ifEnglish, // if {condition} conditional (higher priority)
-  unlessEnglish, // unless {condition} negated conditional (higher priority)
-  temporalInEnglish, // in 2s {command} - natural delay idiom
-  temporalAfterEnglish, // after 2s {command} - natural delay idiom
-  // Generated patterns (new commands)
-  ...generatedPatterns,
+const handcraftedEnglishPatterns: LanguagePattern[] = [
+  fetchWithResponseTypeEnglish,
+  fetchSimpleEnglish,
+  swapSimpleEnglish,
+  repeatUntilEventFromEnglish,
+  repeatUntilEventEnglish,
+  setPossessiveEnglish,
+  forEnglish,
+  ifEnglish,
+  unlessEnglish,
+  temporalInEnglish,
+  temporalAfterEnglish,
 ];
+
+// =============================================================================
+// Lazy Pattern Building
+// =============================================================================
+
+/**
+ * Build patterns for a specific language.
+ * This is the core function for tree-shakeable pattern loading.
+ */
+function buildPatternsForLanguage(language: string): LanguagePattern[] {
+  const patterns: LanguagePattern[] = [];
+
+  // 1. Hand-crafted patterns for this language
+  patterns.push(...getTogglePatternsForLanguage(language));
+  patterns.push(...getPutPatternsForLanguage(language));
+  patterns.push(...getEventHandlerPatternsForLanguage(language));
+
+  // 2. English-only hand-crafted patterns
+  if (language === 'en') {
+    patterns.push(...handcraftedEnglishPatterns);
+  }
+
+  // 3. Generated patterns for this language (lazy - ensures profiles are registered first)
+  const langGeneratedPatterns = getGeneratedPatterns().filter(p => p.language === language);
+  patterns.push(...langGeneratedPatterns);
+
+  return patterns;
+}
+
+// Pattern cache for performance
+const patternCache = new Map<string, LanguagePattern[]>();
+
+// =============================================================================
+// All Patterns (Lazy Getter - for backwards compatibility)
+// =============================================================================
+
+// Languages with hand-crafted patterns
+const handcraftedLanguages = ['en', 'ja', 'ar', 'es', 'ko', 'zh', 'tr', 'pt', 'fr', 'de', 'id', 'qu', 'sw'];
+
+/**
+ * Get all patterns lazily.
+ * @deprecated Use getPatternsForLanguage() for tree-shaking.
+ */
+function buildAllPatterns(): LanguagePattern[] {
+  const all: LanguagePattern[] = [];
+  for (const lang of handcraftedLanguages) {
+    all.push(...buildPatternsForLanguage(lang));
+  }
+  return all;
+}
+
+// Lazy all patterns - only built when accessed
+let _allPatterns: LanguagePattern[] | null = null;
+
+function ensureAllPatterns(): LanguagePattern[] {
+  if (_allPatterns === null) {
+    _allPatterns = buildAllPatterns();
+  }
+  return _allPatterns;
+}
+
+/**
+ * All registered patterns across all languages.
+ * @deprecated Use getPatternsForLanguage() for tree-shaking.
+ */
+export const allPatterns: LanguagePattern[] = new Proxy([] as LanguagePattern[], {
+  get(_target, prop) {
+    const arr = ensureAllPatterns();
+    const value = Reflect.get(arr, prop);
+    // Bind methods to the actual array, not the proxy target
+    if (typeof value === 'function') {
+      return value.bind(arr);
+    }
+    return value;
+  },
+  // Support iteration (for...of, spread operator)
+  ownKeys() {
+    return Reflect.ownKeys(ensureAllPatterns());
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    return Reflect.getOwnPropertyDescriptor(ensureAllPatterns(), prop);
+  },
+});
 
 // =============================================================================
 // Pattern Lookup
 // =============================================================================
 
 /**
+ * Get all patterns.
+ * @deprecated Use getPatternsForLanguage() for tree-shaking.
+ */
+export function getAllPatterns(): LanguagePattern[] {
+  if (_allPatterns === null) {
+    _allPatterns = buildAllPatterns();
+  }
+  return _allPatterns;
+}
+
+/**
  * Get all patterns for a specific language.
+ * Uses caching for performance.
  */
 export function getPatternsForLanguage(language: string): LanguagePattern[] {
-  return allPatterns.filter(p => p.language === language);
+  // Check cache first
+  if (patternCache.has(language)) {
+    return patternCache.get(language)!;
+  }
+
+  // Build patterns for this language
+  const patterns = buildPatternsForLanguage(language);
+  patternCache.set(language, patterns);
+  return patterns;
 }
 
 /**
@@ -463,9 +576,9 @@ export function getPatternsForLanguageAndCommand(
   language: string,
   command: ActionType
 ): LanguagePattern[] {
-  return allPatterns
-    .filter(p => p.language === language && p.command === command)
-    .sort((a, b) => b.priority - a.priority); // Sort by priority descending
+  return getPatternsForLanguage(language)
+    .filter(p => p.command === command)
+    .sort((a, b) => b.priority - a.priority);
 }
 
 /**
@@ -521,16 +634,43 @@ export function getPatternStats(): PatternStats {
 }
 
 // =============================================================================
-// Re-exports
+// Re-exports (Tree-Shaking Friendly)
 // =============================================================================
 
+// Export per-language getter functions (tree-shakeable)
 export {
-  togglePatterns,
   getTogglePatternsForLanguage,
-  putPatterns,
   getPutPatternsForLanguage,
-  eventHandlerPatterns,
   getEventHandlerPatternsForLanguage,
   eventNameTranslations,
   normalizeEventName,
 };
+
+// =============================================================================
+// Backwards Compatibility
+// =============================================================================
+// NOTE: togglePatterns, putPatterns, eventHandlerPatterns arrays are NOT
+// re-exported from this file to enable tree-shaking. Import them directly:
+//   import { togglePatterns } from './patterns/toggle';
+//   import { putPatterns } from './patterns/put';
+//   import { eventHandlerPatterns } from './patterns/event-handler';
+
+// =============================================================================
+// Registry Pattern Generator Setup
+// =============================================================================
+// Set up the pattern generator for the registry so that non-English languages
+// work correctly when using the full bundle. This enables the registry's
+// getPatternsForLanguage to fall back to buildPatternsForLanguage when patterns
+// aren't directly registered.
+
+import { setPatternGenerator } from '../registry';
+import type { LanguageProfile } from '../generators/language-profiles';
+
+// Wrapper to match the registry's expected signature (profile -> patterns)
+function patternGeneratorForProfile(profile: LanguageProfile): LanguagePattern[] {
+  return buildPatternsForLanguage(profile.code);
+}
+
+// Register the pattern generator with the registry
+// This allows the registry to generate patterns for any registered language
+setPatternGenerator(patternGeneratorForProfile);

@@ -19,6 +19,14 @@
  */
 
 // =============================================================================
+// Register All Languages (Full Browser Bundle)
+// =============================================================================
+
+// Import to register all 13 languages for the full browser bundle.
+// For minimal bundles, use language-specific entry points (e.g., browser-en.ts).
+import './languages/_all';
+
+// =============================================================================
 // Core API
 // =============================================================================
 

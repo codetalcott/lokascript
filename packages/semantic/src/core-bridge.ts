@@ -10,7 +10,8 @@ import type { SemanticNode, SemanticValue, ActionType, PatternMatchResult } from
 import type { SemanticRole } from '@hyperfixi/i18n/src/grammar/types';
 import { PatternMatcher } from './parser/pattern-matcher';
 import { getTokenizer } from './tokenizers';
-import { getPatternsForLanguage } from './patterns';
+// Import from registry for tree-shaking (registry uses directly-registered patterns first)
+import { getPatternsForLanguage } from './registry';
 import { SemanticCache, semanticCache, type SemanticCacheConfig, type CacheStats } from './cache';
 
 // =============================================================================

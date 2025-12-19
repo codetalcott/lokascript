@@ -15,9 +15,9 @@ import type {
   ReferenceValue,
   PropertyPathValue,
 } from '../types';
-import { getPatternsForLanguageAndCommand } from '../patterns';
+// Import from registry for tree-shaking (registry uses directly-registered patterns first)
+import { getPatternsForLanguageAndCommand, tryGetProfile } from '../registry';
 import { getSupportedLanguages as getTokenizerLanguages } from '../tokenizers';
-import { getProfile } from '../generators/language-profiles';
 
 // =============================================================================
 // Semantic Renderer Implementation
@@ -63,7 +63,7 @@ export class SemanticRendererImpl implements ISemanticRenderer {
    * Get the translated chain word for the given language.
    */
   private getChainWord(chainType: 'then' | 'and' | 'async', language: string): string {
-    const profile = getProfile(language);
+    const profile = tryGetProfile(language);
     if (!profile?.keywords) {
       // Fall back to English
       return chainType;
@@ -308,7 +308,7 @@ export class SemanticRendererImpl implements ISemanticRenderer {
    * Render a reference value in the target language.
    */
   private renderReference(value: ReferenceValue, language: string): string {
-    const profile = getProfile(language);
+    const profile = tryGetProfile(language);
     if (!profile?.references) {
       return value.value; // Fall back to English reference
     }
@@ -326,7 +326,7 @@ export class SemanticRendererImpl implements ISemanticRenderer {
    * - Chinese: "我的 value", "它的 opacity"
    */
   private renderPropertyPath(value: PropertyPathValue, language: string): string {
-    const profile = getProfile(language);
+    const profile = tryGetProfile(language);
     const property = value.property;
 
     // Get the object reference

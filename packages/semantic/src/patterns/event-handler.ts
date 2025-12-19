@@ -2137,98 +2137,195 @@ export function normalizeEventName(event: string, language: string): string {
 }
 
 // =============================================================================
+// Per-Language Getter Functions (for tree-shaking)
+// =============================================================================
+
+/** Get English event handler patterns. */
+export function getEventHandlerPatternsEn(): LanguagePattern[] {
+  return [
+    eventEnglishWhenWithSource,
+    eventEnglishWhen,
+    eventEnglishWithSource,
+    eventEnglishStandard,
+    eventEnglishUpon,
+    eventEnglishIf,
+  ];
+}
+
+/** Get Japanese event handler patterns. */
+export function getEventHandlerPatternsJa(): LanguagePattern[] {
+  return [
+    eventJapaneseConditionalWithSource,
+    eventJapaneseConditionalTara,
+    eventJapaneseTemporalSuffix,
+    eventJapaneseStandard,
+    eventJapaneseWithSource,
+    eventJapaneseWhen,
+  ];
+}
+
+/** Get Korean event handler patterns. */
+export function getEventHandlerPatternsKo(): LanguagePattern[] {
+  return [
+    eventKoreanConditionalWithSource,
+    eventKoreanHonorificConditional,
+    eventKoreanConditionalMyeon,
+    eventKoreanImmediate,
+    eventKoreanSequentialAfter,
+    eventKoreanTemporalTtae,
+    eventKoreanWithSource,
+  ];
+}
+
+/** Get Arabic event handler patterns. */
+export function getEventHandlerPatternsAr(): LanguagePattern[] {
+  return [
+    eventArabicTemporalWithSource,
+    eventArabicTemporalIndama,
+    eventArabicTemporalLamma,
+    eventArabicTemporalHina,
+    eventArabicStandard,
+    eventArabicWithSource,
+    eventArabicConditional,
+  ];
+}
+
+/** Get Turkish event handler patterns. */
+export function getEventHandlerPatternsTr(): LanguagePattern[] {
+  return [
+    eventTurkishConditionalWithSource,
+    eventTurkishConditionalDiginda,
+    eventTurkishTemporalInca,
+    eventTurkishConditionalSa,
+    eventTurkishSimultaneityKen,
+    eventTurkishRepetitiveDikce,
+    eventTurkishStandard,
+  ];
+}
+
+/** Get Spanish event handler patterns. */
+export function getEventHandlerPatternsEs(): LanguagePattern[] {
+  return [
+    eventSpanishNativeAlWithSource,
+    eventSpanishWhenWithSource,
+    eventSpanishNativeAl,
+    eventSpanishStandard,
+    eventSpanishWithSource,
+    eventSpanishWhen,
+    eventSpanishConditionalSi,
+  ];
+}
+
+/** Get Portuguese event handler patterns. */
+export function getEventHandlerPatternsPt(): LanguagePattern[] {
+  return [
+    eventPortugueseAoWithSource,
+    eventPortugueseQuandoWithSource,
+    eventPortugueseAo,
+    eventPortugueseQuando,
+    eventPortugueseEm,
+    eventPortugueseSe,
+  ];
+}
+
+/** Get Chinese event handler patterns. */
+export function getEventHandlerPatternsZh(): LanguagePattern[] {
+  return [
+    eventChineseTemporalWithSource,
+    eventChineseWithSource,
+    eventChineseImmediate,
+    eventChineseTemporal,
+    eventChineseWhenever,
+    eventChineseStandard,
+    eventChineseCompletion,
+    eventChineseConditional,
+  ];
+}
+
+/** Get French event handler patterns. */
+export function getEventHandlerPatternsFr(): LanguagePattern[] {
+  return [
+    eventFrenchWithSource,
+    eventFrenchQuand,
+    eventFrenchStandard,
+  ];
+}
+
+/** Get German event handler patterns. */
+export function getEventHandlerPatternsDe(): LanguagePattern[] {
+  return [
+    eventGermanWithSource,
+    eventGermanWenn,
+    eventGermanStandard,
+  ];
+}
+
+/** Get Indonesian event handler patterns. */
+export function getEventHandlerPatternsId(): LanguagePattern[] {
+  return [
+    eventIndonesianWithSource,
+    eventIndonesianKetika,
+    eventIndonesianStandard,
+  ];
+}
+
+/** Get Quechua event handler patterns. */
+export function getEventHandlerPatternsQu(): LanguagePattern[] {
+  return [
+    eventQuechuaWithSource,
+    eventQuechuaKaqtin,
+    eventQuechuaStandard,
+  ];
+}
+
+/** Get Swahili event handler patterns. */
+export function getEventHandlerPatternsSw(): LanguagePattern[] {
+  return [
+    eventSwahiliWithSource,
+    eventSwahiliUnapo,
+    eventSwahiliStandard,
+  ];
+}
+
+// =============================================================================
 // Export All Event Handler Patterns
 // =============================================================================
 
 export const eventHandlerPatterns: LanguagePattern[] = [
-  // English - native idiom patterns first (higher priority)
-  eventEnglishWhenWithSource,
-  eventEnglishWhen,
-  eventEnglishWithSource,
-  eventEnglishStandard,
-  eventEnglishUpon,
-  eventEnglishIf,
-  // Japanese - native idiom patterns first (higher priority)
-  eventJapaneseConditionalWithSource,
-  eventJapaneseConditionalTara,
-  eventJapaneseTemporalSuffix,
-  eventJapaneseStandard,
-  eventJapaneseWithSource,
-  eventJapaneseWhen,
-  // Korean - native idiom patterns (conditional forms preferred over ambiguous 에)
-  eventKoreanConditionalWithSource,
-  eventKoreanHonorificConditional,
-  eventKoreanConditionalMyeon,
-  eventKoreanImmediate,
-  eventKoreanSequentialAfter,
-  eventKoreanTemporalTtae,
-  eventKoreanWithSource,
-  // Note: eventKoreanStandard disabled - 에 is ambiguous (event vs destination)
-  // Arabic - native idiom patterns first (higher priority)
-  eventArabicTemporalWithSource,
-  eventArabicTemporalIndama,
-  eventArabicTemporalLamma,
-  eventArabicTemporalHina,
-  eventArabicStandard,
-  eventArabicWithSource,
-  eventArabicConditional,
-  // Turkish - native idiom patterns first (higher priority)
-  eventTurkishConditionalWithSource,
-  eventTurkishConditionalDiginda,
-  eventTurkishTemporalInca,
-  eventTurkishConditionalSa,
-  eventTurkishSimultaneityKen,
-  eventTurkishRepetitiveDikce,
-  eventTurkishStandard,
-  // Spanish - native idiom patterns first (higher priority)
-  eventSpanishNativeAlWithSource,
-  eventSpanishWhenWithSource,
-  eventSpanishNativeAl,
-  eventSpanishStandard,
-  eventSpanishWithSource,
-  eventSpanishWhen,
-  eventSpanishConditionalSi,
-  // Portuguese - native idiom patterns first (higher priority)
-  eventPortugueseAoWithSource,
-  eventPortugueseQuandoWithSource,
-  eventPortugueseAo,
-  eventPortugueseQuando,
-  eventPortugueseEm,
-  eventPortugueseSe,
-  // Chinese - native idiom patterns first (higher priority)
-  eventChineseTemporalWithSource,
-  eventChineseWithSource,
-  eventChineseImmediate,
-  eventChineseTemporal,
-  eventChineseWhenever,
-  eventChineseStandard,
-  eventChineseCompletion,
-  eventChineseConditional,
-  // French - patterns ordered by priority
-  eventFrenchWithSource,
-  eventFrenchQuand,
-  eventFrenchStandard,
-  // German - patterns ordered by priority
-  eventGermanWithSource,
-  eventGermanWenn,
-  eventGermanStandard,
-  // Indonesian - patterns ordered by priority
-  eventIndonesianWithSource,
-  eventIndonesianKetika,
-  eventIndonesianStandard,
-  // Quechua - patterns ordered by priority
-  eventQuechuaWithSource,
-  eventQuechuaKaqtin,
-  eventQuechuaStandard,
-  // Swahili - patterns ordered by priority
-  eventSwahiliWithSource,
-  eventSwahiliUnapo,
-  eventSwahiliStandard,
+  ...getEventHandlerPatternsEn(),
+  ...getEventHandlerPatternsJa(),
+  ...getEventHandlerPatternsKo(),
+  ...getEventHandlerPatternsAr(),
+  ...getEventHandlerPatternsTr(),
+  ...getEventHandlerPatternsEs(),
+  ...getEventHandlerPatternsPt(),
+  ...getEventHandlerPatternsZh(),
+  ...getEventHandlerPatternsFr(),
+  ...getEventHandlerPatternsDe(),
+  ...getEventHandlerPatternsId(),
+  ...getEventHandlerPatternsQu(),
+  ...getEventHandlerPatternsSw(),
 ];
 
 /**
  * Get event handler patterns for a specific language.
+ * NOTE: Uses switch statement instead of filter for tree-shaking.
  */
 export function getEventHandlerPatternsForLanguage(language: string): LanguagePattern[] {
-  return eventHandlerPatterns.filter(p => p.language === language);
+  switch (language) {
+    case 'en': return getEventHandlerPatternsEn();
+    case 'ja': return getEventHandlerPatternsJa();
+    case 'ko': return getEventHandlerPatternsKo();
+    case 'ar': return getEventHandlerPatternsAr();
+    case 'tr': return getEventHandlerPatternsTr();
+    case 'es': return getEventHandlerPatternsEs();
+    case 'pt': return getEventHandlerPatternsPt();
+    case 'zh': return getEventHandlerPatternsZh();
+    case 'fr': return getEventHandlerPatternsFr();
+    case 'de': return getEventHandlerPatternsDe();
+    case 'id': return getEventHandlerPatternsId();
+    case 'qu': return getEventHandlerPatternsQu();
+    case 'sw': return getEventHandlerPatternsSw();
+    default: return [];
+  }
 }

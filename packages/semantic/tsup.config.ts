@@ -11,7 +11,8 @@ export default defineConfig([
     clean: true,
     external: ['@hyperfixi/i18n'],
   },
-  // Browser bundle (IIFE) - output: hyperfixi-semantic.browser.global.js
+  // Browser bundle (IIFE) - Full 13-language bundle
+  // Output: hyperfixi-semantic.browser.global.js
   {
     entry: ['src/browser.ts'],
     outDir: 'dist',
@@ -21,13 +22,74 @@ export default defineConfig([
     sourcemap: true,
     platform: 'browser',
     noExternal: ['@hyperfixi/i18n'],
-    // Use custom output name
     outExtension() {
       return { js: '.global.js' };
     },
     esbuildOptions(options) {
-      // Ensure browser-compatible output
       options.target = 'es2020';
+      options.treeShaking = true;
     },
+  },
+  // English-only browser bundle (IIFE) - Minimal bundle
+  // Output: hyperfixi-semantic.browser-en.global.js
+  {
+    entry: ['src/browser-en.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticEn',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.en.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
+  // Spanish + English browser bundle (IIFE)
+  // Output: hyperfixi-semantic.browser-es-en.global.js
+  {
+    entry: ['src/browser-es-en.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticEsEn',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.es-en.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
+  // Individual language modules (ESM) for npm tree-shaking
+  // These allow: import '@hyperfixi/semantic/languages/en'
+  {
+    entry: {
+      'languages/en': 'src/languages/en.ts',
+      'languages/es': 'src/languages/es.ts',
+      'languages/ja': 'src/languages/ja.ts',
+      'languages/ar': 'src/languages/ar.ts',
+      'languages/ko': 'src/languages/ko.ts',
+      'languages/zh': 'src/languages/zh.ts',
+      'languages/tr': 'src/languages/tr.ts',
+      'languages/pt': 'src/languages/pt.ts',
+      'languages/fr': 'src/languages/fr.ts',
+      'languages/de': 'src/languages/de.ts',
+      'languages/id': 'src/languages/id.ts',
+      'languages/qu': 'src/languages/qu.ts',
+      'languages/sw': 'src/languages/sw.ts',
+    },
+    format: ['esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    external: ['@hyperfixi/i18n'],
   },
 ]);

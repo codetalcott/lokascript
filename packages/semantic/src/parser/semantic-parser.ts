@@ -16,7 +16,8 @@ import type {
 } from '../types';
 import { createCommandNode, createEventHandler, createCompoundNode } from '../types';
 import { tokenize, getSupportedLanguages as getTokenizerLanguages } from '../tokenizers';
-import { getPatternsForLanguage } from '../patterns';
+// Import from registry for tree-shaking (registry uses directly-registered patterns first)
+import { getPatternsForLanguage } from '../registry';
 import { patternMatcher } from './pattern-matcher';
 
 // =============================================================================

@@ -28,6 +28,14 @@
  */
 
 // =============================================================================
+// Register All Languages (Full Bundle)
+// =============================================================================
+
+// Import to register all 13 languages. This enables tree-shaking for minimal bundles
+// by importing only specific languages (e.g., './languages/en').
+import './languages/_all';
+
+// =============================================================================
 // Core Types
 // =============================================================================
 
@@ -98,19 +106,24 @@ export {
 // =============================================================================
 
 export {
-  allPatterns,
+  getAllPatterns,
   getPatternsForLanguage,
   getPatternsForLanguageAndCommand,
   getSupportedLanguages as getSupportedPatternLanguages,
   getSupportedCommands,
   getPatternById,
   getPatternStats,
-  togglePatterns,
-  putPatterns,
-  eventHandlerPatterns,
+  getTogglePatternsForLanguage,
+  getPutPatternsForLanguage,
+  getEventHandlerPatternsForLanguage,
   eventNameTranslations,
   normalizeEventName,
 } from './patterns';
+
+// Direct exports for backwards compatibility (pulls in all patterns)
+export { togglePatterns } from './patterns/toggle';
+export { putPatterns } from './patterns/put';
+export { eventHandlerPatterns } from './patterns/event-handler';
 
 // =============================================================================
 // Tokenizers

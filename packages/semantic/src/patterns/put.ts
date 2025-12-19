@@ -343,31 +343,62 @@ const putSpanishAfter: LanguagePattern = {
 };
 
 // =============================================================================
+// Per-Language Getter Functions (for tree-shaking)
+// =============================================================================
+
+/**
+ * Get English put patterns.
+ * Exported separately for tree-shaking.
+ */
+export function getPutPatternsEn(): LanguagePattern[] {
+  return [putEnglishInto, putEnglishBefore, putEnglishAfter];
+}
+
+/**
+ * Get Japanese put patterns.
+ * Exported separately for tree-shaking.
+ */
+export function getPutPatternsJa(): LanguagePattern[] {
+  return [putJapaneseFull, putJapaneseInsert, putJapaneseTopicFirst];
+}
+
+/**
+ * Get Arabic put patterns.
+ * Exported separately for tree-shaking.
+ */
+export function getPutPatternsAr(): LanguagePattern[] {
+  return [putArabicFull, putArabicBefore, putArabicAfter];
+}
+
+/**
+ * Get Spanish put patterns.
+ * Exported separately for tree-shaking.
+ */
+export function getPutPatternsEs(): LanguagePattern[] {
+  return [putSpanishFull, putSpanishBefore, putSpanishAfter];
+}
+
+// =============================================================================
 // Export All Put Patterns
 // =============================================================================
 
 export const putPatterns: LanguagePattern[] = [
-  // English
-  putEnglishInto,
-  putEnglishBefore,
-  putEnglishAfter,
-  // Japanese
-  putJapaneseFull,
-  putJapaneseInsert,
-  putJapaneseTopicFirst,
-  // Arabic
-  putArabicFull,
-  putArabicBefore,
-  putArabicAfter,
-  // Spanish
-  putSpanishFull,
-  putSpanishBefore,
-  putSpanishAfter,
+  ...getPutPatternsEn(),
+  ...getPutPatternsJa(),
+  ...getPutPatternsAr(),
+  ...getPutPatternsEs(),
 ];
 
 /**
  * Get put patterns for a specific language.
+ * NOTE: Uses switch statement instead of filter for tree-shaking.
  */
 export function getPutPatternsForLanguage(language: string): LanguagePattern[] {
-  return putPatterns.filter(p => p.language === language);
+  switch (language) {
+    case 'en': return getPutPatternsEn();
+    case 'ja': return getPutPatternsJa();
+    case 'ar': return getPutPatternsAr();
+    case 'es': return getPutPatternsEs();
+    default: return [];
+  }
 }

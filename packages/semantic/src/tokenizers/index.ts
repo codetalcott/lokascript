@@ -1,88 +1,70 @@
 /**
  * Tokenizer Registry
  *
- * Exports all language-specific tokenizers and provides
- * a unified interface for tokenization.
+ * Provides a unified interface for tokenization.
+ * Delegates to the central registry for language lookups.
+ *
+ * For tree-shaking, import specific tokenizers directly:
+ *   import { englishTokenizer } from './tokenizers/english';
+ *
+ * To register languages, import the language modules:
+ *   import '@hyperfixi/semantic/languages/en';
  */
 
 import type { LanguageTokenizer, TokenStream } from '../types';
-import { englishTokenizer } from './english';
-import { japaneseTokenizer } from './japanese';
-import { koreanTokenizer } from './korean';
-import { arabicTokenizer } from './arabic';
-import { spanishTokenizer } from './spanish';
-import { turkishTokenizer } from './turkish';
-import { chineseTokenizer } from './chinese';
-import { portugueseTokenizer } from './portuguese';
-import { frenchTokenizer } from './french';
-import { germanTokenizer } from './german';
-import { indonesianTokenizer } from './indonesian';
-import { quechuaTokenizer } from './quechua';
-import { swahiliTokenizer } from './swahili';
+import {
+  tryGetTokenizer,
+  getRegisteredLanguages,
+  isLanguageRegistered,
+  tokenize as registryTokenize,
+  registerTokenizer as registryRegisterTokenizer,
+} from '../registry';
 
 // =============================================================================
-// Tokenizer Registry
+// Registry Delegation
 // =============================================================================
-
-/**
- * All registered tokenizers by language code.
- */
-const tokenizers = new Map<string, LanguageTokenizer>();
-tokenizers.set('en', englishTokenizer);
-tokenizers.set('ja', japaneseTokenizer);
-tokenizers.set('ko', koreanTokenizer);
-tokenizers.set('ar', arabicTokenizer);
-tokenizers.set('es', spanishTokenizer);
-tokenizers.set('tr', turkishTokenizer);
-tokenizers.set('zh', chineseTokenizer);
-tokenizers.set('pt', portugueseTokenizer);
-tokenizers.set('fr', frenchTokenizer);
-tokenizers.set('de', germanTokenizer);
-tokenizers.set('id', indonesianTokenizer);
-tokenizers.set('qu', quechuaTokenizer);
-tokenizers.set('sw', swahiliTokenizer);
 
 /**
  * Get a tokenizer for the specified language.
+ * Returns undefined if language is not registered.
  */
 export function getTokenizer(language: string): LanguageTokenizer | undefined {
-  return tokenizers.get(language);
+  return tryGetTokenizer(language);
 }
 
 /**
  * Tokenize input in the specified language.
+ * @throws Error if language is not registered
  */
 export function tokenize(input: string, language: string): TokenStream {
-  const tokenizer = tokenizers.get(language);
-  if (!tokenizer) {
-    throw new Error(`No tokenizer available for language: ${language}`);
-  }
-  return tokenizer.tokenize(input);
+  return registryTokenize(input, language);
 }
 
 /**
  * Get all supported languages.
+ * Returns only languages that have been registered.
  */
 export function getSupportedLanguages(): string[] {
-  return Array.from(tokenizers.keys());
+  return getRegisteredLanguages();
 }
 
 /**
  * Check if a language is supported.
  */
 export function isLanguageSupported(language: string): boolean {
-  return tokenizers.has(language);
+  return isLanguageRegistered(language);
 }
 
 /**
  * Register a custom tokenizer.
+ * Note: For full language support, use registerLanguage() from registry instead.
  */
 export function registerTokenizer(tokenizer: LanguageTokenizer): void {
-  tokenizers.set(tokenizer.language, tokenizer);
+  registryRegisterTokenizer(tokenizer);
 }
 
 // =============================================================================
-// Re-exports
+// Re-exports (tree-shakeable - only included if imported)
 // =============================================================================
 
 export { englishTokenizer } from './english';

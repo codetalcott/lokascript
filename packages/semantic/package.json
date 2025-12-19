@@ -14,7 +14,69 @@
     },
     "./browser": {
       "types": "./dist/browser.d.ts",
-      "default": "./dist/hyperfixi-semantic.browser.global.js"
+      "default": "./dist/browser.global.js"
+    },
+    "./browser/en": {
+      "default": "./dist/browser-en.en.global.js"
+    },
+    "./browser/es-en": {
+      "default": "./dist/browser-es-en.es-en.global.js"
+    },
+    "./languages": {
+      "types": "./dist/languages/index.d.ts",
+      "import": "./dist/languages/index.mjs"
+    },
+    "./languages/en": {
+      "types": "./dist/languages/en.d.ts",
+      "import": "./dist/languages/en.mjs"
+    },
+    "./languages/es": {
+      "types": "./dist/languages/es.d.ts",
+      "import": "./dist/languages/es.mjs"
+    },
+    "./languages/ja": {
+      "types": "./dist/languages/ja.d.ts",
+      "import": "./dist/languages/ja.mjs"
+    },
+    "./languages/ar": {
+      "types": "./dist/languages/ar.d.ts",
+      "import": "./dist/languages/ar.mjs"
+    },
+    "./languages/ko": {
+      "types": "./dist/languages/ko.d.ts",
+      "import": "./dist/languages/ko.mjs"
+    },
+    "./languages/zh": {
+      "types": "./dist/languages/zh.d.ts",
+      "import": "./dist/languages/zh.mjs"
+    },
+    "./languages/tr": {
+      "types": "./dist/languages/tr.d.ts",
+      "import": "./dist/languages/tr.mjs"
+    },
+    "./languages/pt": {
+      "types": "./dist/languages/pt.d.ts",
+      "import": "./dist/languages/pt.mjs"
+    },
+    "./languages/fr": {
+      "types": "./dist/languages/fr.d.ts",
+      "import": "./dist/languages/fr.mjs"
+    },
+    "./languages/de": {
+      "types": "./dist/languages/de.d.ts",
+      "import": "./dist/languages/de.mjs"
+    },
+    "./languages/id": {
+      "types": "./dist/languages/id.d.ts",
+      "import": "./dist/languages/id.mjs"
+    },
+    "./languages/qu": {
+      "types": "./dist/languages/qu.d.ts",
+      "import": "./dist/languages/qu.mjs"
+    },
+    "./languages/sw": {
+      "types": "./dist/languages/sw.d.ts",
+      "import": "./dist/languages/sw.mjs"
     },
     "./explicit": {
       "types": "./dist/explicit/index.d.ts",
@@ -30,7 +92,10 @@
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/languages/*.ts",
+    "./dist/languages/*.mjs"
+  ],
   "keywords": [
     "hyperscript",
     "semantic",

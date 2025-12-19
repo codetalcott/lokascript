@@ -1,0 +1,73 @@
+/**
+ * Korean Toggle Patterns
+ *
+ * Tree-shakeable: Only included when Korean is imported.
+ */
+
+import type { LanguagePattern } from '../../types';
+
+/**
+ * Get Korean toggle patterns.
+ */
+export function getTogglePatternsKo(): LanguagePattern[] {
+  return [
+    {
+      id: 'toggle-ko-full',
+      language: 'ko',
+      command: 'toggle',
+      priority: 100,
+      template: {
+        format: '{target} 에서 {patient} 를 토글',
+        tokens: [
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: '에서', alternatives: ['에'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 0 },
+        patient: { marker: '를', markerAlternatives: ['을'] },
+      },
+    },
+    {
+      id: 'toggle-ko-simple',
+      language: 'ko',
+      command: 'toggle',
+      priority: 90,
+      template: {
+        format: '{patient} 를 토글',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { default: { type: 'reference', value: 'me' } },
+      },
+    },
+    {
+      id: 'toggle-ko-possessive',
+      language: 'ko',
+      command: 'toggle',
+      priority: 95,
+      template: {
+        format: '{target} 의 {patient} 를 토글',
+        tokens: [
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: '의' },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '토글', alternatives: ['토글하다', '바꾸다', '전환'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 0 },
+        patient: { marker: '를', markerAlternatives: ['을'] },
+      },
+    },
+  ];
+}
