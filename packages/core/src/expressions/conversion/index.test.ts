@@ -203,7 +203,7 @@ describe('Conversion Expressions', () => {
 
       it('should throw error for non-string type', async () => {
         await expect(
-          conversionExpressions.as.evaluate(context, 'test', 123 as any)
+          conversionExpressions.as.evaluate(context, 'test', 123 as unknown as string)
         ).rejects.toThrow('Conversion type must be a string');
       });
 
@@ -301,7 +301,7 @@ describe('Conversion Expressions', () => {
     describe('Error handling', () => {
       it('should throw error for non-string type', async () => {
         await expect(
-          conversionExpressions.is.evaluate(context, 'test', 123 as any)
+          conversionExpressions.is.evaluate(context, 'test', 123 as unknown as string)
         ).rejects.toThrow('Type check requires a string type');
       });
 

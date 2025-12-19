@@ -19,7 +19,7 @@ import { createTypedExpressionContext, type TypedExpressionContext } from '../..
 // Mock DOM environment
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
 global.document = dom.window.document;
-global.window = dom.window as any;
+global.window = dom.window as unknown as Window & typeof globalThis;
 global.Element = dom.window.Element;
 global.Node = dom.window.Node;
 global.NodeList = dom.window.NodeList;
@@ -76,7 +76,7 @@ describe.skip('Enhanced Positional Bridge', () => {
         locals: undefined,
         globals: undefined,
         event: undefined,
-      } as any;
+      } as unknown as ExecutionContext;
 
       const typedContext = createTypedExpressionContext(contextWithoutMaps);
 

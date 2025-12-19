@@ -220,8 +220,8 @@ describe('Hyperscript Public API', () => {
     });
 
     it('should handle null/undefined inputs safely', () => {
-      expect(() => hyperscript.compile(null as any)).toThrow();
-      expect(() => hyperscript.compile(undefined as any)).toThrow();
+      expect(() => hyperscript.compile(null as unknown as string)).toThrow();
+      expect(() => hyperscript.compile(undefined as unknown as string)).toThrow();
     });
   });
 

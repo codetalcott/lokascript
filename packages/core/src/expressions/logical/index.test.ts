@@ -346,18 +346,18 @@ describe('Logical Expressions', () => {
 
         // Mock Array.from behavior for this NodeList
         const originalArrayFrom = Array.from;
-        (Array as any).from = (iterable: any) => {
+        (Array as unknown as { from: (iterable: unknown) => unknown[] }).from = (iterable: unknown) => {
           if (iterable === nodeList) {
             return ['item1', 'item2'];
           }
-          return originalArrayFrom(iterable);
+          return originalArrayFrom(iterable as ArrayLike<unknown>);
         };
 
         expect(await logicalExpressions.contains.evaluate(context, nodeList, 'item1')).toBe(true);
         expect(await logicalExpressions.contains.evaluate(context, nodeList, 'item3')).toBe(false);
 
         // Restore Array.from
-        (Array as any).from = originalArrayFrom;
+        Array.from = originalArrayFrom;
       });
 
       it('should return false for non-string/non-array containers', async () => {
