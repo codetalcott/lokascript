@@ -73,6 +73,7 @@
     "build:browser:prod": "rollup -c rollup.browser.prod.config.mjs",
     "build:browser:llm": "rollup -c rollup.browser.llm.config.mjs",
     "build:browser:lite": "rollup -c rollup.browser-lite.config.mjs",
+    "build:browser:hybrid": "rollup -c rollup.browser-hybrid.config.mjs",
     "build:browser:minimal": "rollup -c rollup.browser-minimal.config.mjs",
     "build:browser:standard": "rollup -c rollup.browser-standard.config.mjs",
     "build:browser:classic": "rollup -c rollup.browser-classic.config.mjs",
