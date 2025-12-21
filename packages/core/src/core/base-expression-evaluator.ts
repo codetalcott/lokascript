@@ -43,11 +43,25 @@ export class BaseExpressionEvaluator {
    * but property access and method calls typically expect a single element.
    */
   protected unwrapSelectorResult<T>(value: T | T[] | NodeList): T {
-    if (Array.isArray(value) && value.length > 0) {
-      return value[0];
-    }
+    // Only unwrap arrays/NodeLists that contain DOM elements (selector results)
+    // Don't unwrap regex match results or other arrays with extra properties
     if (value instanceof NodeList && value.length > 0) {
       return value[0] as T;
+    }
+    if (Array.isArray(value) && value.length > 0) {
+      // Check if this looks like a selector result (first element is a DOM node)
+      // Regex match results have 'index' and 'input' properties - don't unwrap those
+      const firstElement = value[0];
+      const hasRegexProps = 'index' in value && 'input' in value;
+      if (hasRegexProps) {
+        // This is a regex match result - preserve the full array with its properties
+        return value as unknown as T;
+      }
+      if (firstElement instanceof Element || firstElement instanceof Node) {
+        return firstElement;
+      }
+      // For other arrays, preserve them as-is to maintain properties like .index
+      return value as unknown as T;
     }
     return value as T;
   }
