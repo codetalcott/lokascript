@@ -64,9 +64,9 @@ beforeEach(() => {
  */
 async function executeCode(code: string, lang: string, element: Element): Promise<void> {
   const semanticNode = parse(code, lang);
-  const ast = buildAST(semanticNode);
-  const ctx = createContext(element, null, document);
-  await runtime.execute(ast as ASTNode, ctx);
+  const result = buildAST(semanticNode);
+  const ctx = createContext(element as HTMLElement);
+  await runtime.execute(result.ast as ASTNode, ctx);
 }
 
 // =============================================================================
@@ -301,8 +301,8 @@ describe('Increment Command E2E', () => {
     ctx.locals.set('counter', 5);
 
     const semanticNode = parse('increment counter', 'en');
-    const ast = buildAST(semanticNode);
-    await runtime.execute(ast as ASTNode, ctx);
+    const result = buildAST(semanticNode);
+    await runtime.execute(result.ast as ASTNode, ctx);
 
     expect(ctx.locals.get('counter')).toBe(6);
   });
@@ -317,8 +317,8 @@ describe('Decrement Command E2E', () => {
     ctx.locals.set('counter', 5);
 
     const semanticNode = parse('decrement counter', 'en');
-    const ast = buildAST(semanticNode);
-    await runtime.execute(ast as ASTNode, ctx);
+    const result = buildAST(semanticNode);
+    await runtime.execute(result.ast as ASTNode, ctx);
 
     expect(ctx.locals.get('counter')).toBe(4);
   });
