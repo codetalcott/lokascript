@@ -10,21 +10,45 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-const OFFICIAL_TEST_DIR = '/Users/williamtalcott/projects/_hyperscript/www/test/0.9.14/test/';
+// Search multiple directories for comprehensive pattern extraction
+const OFFICIAL_TEST_DIRS = [
+  '/Users/williamtalcott/projects/3rd-party-clones/_hyperscript/test/',
+  '/Users/williamtalcott/projects/3rd-party-clones/_hyperscript/www/test/',
+];
 const OUTPUT_FILE = 'extracted-patterns.json';
+
+async function getAllFiles(dir, files = []) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await getAllFiles(fullPath, files);
+    } else if (entry.name.endsWith('.html') || entry.name.endsWith('.js')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
 
 async function extractPatterns() {
   console.log('🔍 Extracting patterns from official _hyperscript test suite...\n');
 
-  if (!existsSync(OFFICIAL_TEST_DIR)) {
-    console.error(`❌ Error: Official test directory not found at ${OFFICIAL_TEST_DIR}`);
+  const existingDirs = OFFICIAL_TEST_DIRS.filter(dir => existsSync(dir));
+  if (existingDirs.length === 0) {
+    console.error(`❌ Error: No test directories found. Checked:`);
+    OFFICIAL_TEST_DIRS.forEach(dir => console.error(`   - ${dir}`));
     console.error('   Please ensure you have cloned the official _hyperscript repository.');
     process.exit(1);
   }
 
   try {
-    const files = await readdir(OFFICIAL_TEST_DIR);
-    const testFiles = files.filter(f => f.endsWith('.html') || f.endsWith('.js'));
+    // Collect files from all existing directories
+    let testFiles = [];
+    for (const dir of existingDirs) {
+      const files = await getAllFiles(dir);
+      testFiles = testFiles.concat(files);
+      console.log(`📂 Found ${files.length} files in ${dir}`);
+    }
 
     console.log(`📂 Found ${testFiles.length} test files`);
 
@@ -42,7 +66,7 @@ async function extractPatterns() {
 
     for (const file of testFiles) {
       try {
-        const content = await readFile(join(OFFICIAL_TEST_DIR, file), 'utf-8');
+        const content = await readFile(file, 'utf-8');
 
         // Extract patterns from _="" attributes
         const hyperscriptMatches = content.matchAll(/_="([^"]*)"/g);
@@ -114,7 +138,7 @@ async function extractPatterns() {
     // Save results
     const output = {
       extractedAt: new Date().toISOString(),
-      source: OFFICIAL_TEST_DIR,
+      sources: existingDirs,
       stats,
       patterns,
       patternsByCategory

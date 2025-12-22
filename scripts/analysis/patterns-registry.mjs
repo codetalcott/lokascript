@@ -91,7 +91,8 @@ export const PATTERN_REGISTRY = {
         description: 'Remove element(s) from DOM',
         status: 'implemented',
         tested: true,
-        example: 'remove me'
+        example: 'on click remove me',
+        notes: 'Example uses event trigger to prevent immediate self-removal during test'
       },
       {
         syntax: 'hide <target>',
@@ -248,6 +249,22 @@ export const PATTERN_REGISTRY = {
         example: 'put "<li>New</li>" after last <li/>',
         notes: 'VERIFIED: PutCommand.putAfter() implementation exists, registered in command registry'
       },
+      {
+        syntax: 'tell <target> <commands>',
+        description: 'Execute commands in context of target elements',
+        status: 'implemented',
+        tested: true,
+        example: 'tell <p/> in me add .highlight',
+        notes: 'VERIFIED: commands/utility/tell.ts - sets you reference for each target'
+      },
+      {
+        syntax: 'return <value>',
+        description: 'Return value from def or behavior',
+        status: 'implemented',
+        tested: true,
+        example: 'def factorial(n) if n <= 1 return 1 else return n * factorial(n - 1)',
+        notes: 'VERIFIED: Used in def functions and behaviors'
+      },
     ]
   },
 
@@ -299,6 +316,14 @@ export const PATTERN_REGISTRY = {
         example: 'on mutation of @disabled log "changed"',
         notes: 'VERIFIED Session 32 Part 3: Complete MutationObserver integration with oldValue/newValue in context'
       },
+      {
+        syntax: 'init',
+        description: 'Execute immediately when element is processed',
+        status: 'implemented',
+        tested: true,
+        example: 'init set my.indeterminate to true',
+        notes: 'VERIFIED: features/init.ts - runs commands on element initialization'
+      },
     ]
   },
 
@@ -319,6 +344,14 @@ export const PATTERN_REGISTRY = {
         status: 'implemented',
         tested: true,
         example: 'get #value then put it into #output'
+      },
+      {
+        syntax: 'you',
+        description: 'Reference to target element in tell blocks',
+        status: 'implemented',
+        tested: true,
+        example: 'tell <details/> set you.open to false',
+        notes: 'VERIFIED: expressions/references - used inside tell command blocks'
       },
       {
         syntax: '#<id>',

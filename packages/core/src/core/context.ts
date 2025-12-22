@@ -85,18 +85,23 @@ export function ensureContext(userContext?: Partial<ExecutionContext> | any): Ex
     return createContext();
   }
 
-  // If already has locals/globals Maps, use it directly (already valid)
-  if (userContext.locals instanceof Map && userContext.globals instanceof Map) {
+  // If already has locals/globals Maps AND flags, use it directly (already valid)
+  // Must check flags to ensure context is truly complete
+  if (userContext.locals instanceof Map && userContext.globals instanceof Map && userContext.flags) {
     return userContext as ExecutionContext;
   }
 
   // Create proper context with user's element, then merge other user values
-  const ctx = createContext(userContext.me instanceof HTMLElement ? userContext.me : null);
+  // Use Element (not HTMLElement) for SVG, MathML, and cross-frame element support
+  const ctx = createContext(
+    userContext.me instanceof Element ? (userContext.me as HTMLElement) : null
+  );
 
   // Merge user-provided values
   if (userContext.it !== undefined) Object.assign(ctx, { it: userContext.it });
   if (userContext.you !== undefined) ctx.you = userContext.you;
   if (userContext.result !== undefined) Object.assign(ctx, { result: userContext.result });
+  if (userContext.event !== undefined) Object.assign(ctx, { event: userContext.event });
 
   return ctx;
 }

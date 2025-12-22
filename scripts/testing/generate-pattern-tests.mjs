@@ -8,7 +8,7 @@
 
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
-import { PATTERN_REGISTRY } from '../patterns-registry.mjs';
+import { PATTERN_REGISTRY } from '../analysis/patterns-registry.mjs';
 
 const OUTPUT_DIR = 'cookbook/generated-tests';
 

@@ -62,8 +62,8 @@ npm test --prefix packages/core -- --run src/expressions/  # Test specific modul
 npm run build:browser --prefix packages/core        # Build browser bundle
 npm run typecheck --prefix packages/core            # TypeScript validation
 
-# Browser testing (Playwright)
-npx playwright test packages/core/src/compatibility/
+# Browser testing (Playwright) - MUST run from packages/core directory
+cd packages/core && npx playwright test src/compatibility/
 ```
 
 ### i18n Package
@@ -188,8 +188,8 @@ npm run test:quick --prefix packages/core  # Exit 0 = pass, 1 = fail
 # Run single test file
 npm test --prefix packages/core -- --run src/expressions/logical.test.ts
 
-# Playwright for browser tests
-npx playwright test --grep "Grammar Transformation"
+# Playwright for browser tests - MUST run from packages/core directory
+cd packages/core && npx playwright test --grep "Grammar Transformation"
 ```
 
 ### Adding a New Command

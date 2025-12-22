@@ -3,24 +3,94 @@
  * Comprehensive Pattern Test Runner
  *
  * Runs all generated pattern tests and produces detailed compatibility reports.
+ * Auto-starts HTTP server if not already running on port 3000.
  */
 
 import { chromium } from 'playwright';
 import { readdir, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import { spawn } from 'child_process';
+import { createConnection } from 'net';
 
-const BASE_URL = 'http://127.0.0.1:3000/cookbook/generated-tests/';
+const PORT = 3000;
+const BASE_URL = `http://127.0.0.1:${PORT}/cookbook/generated-tests/`;
 const TEST_DIR = 'cookbook/generated-tests';
 const RESULTS_DIR = 'test-results';
 const TIMEOUT = 30000; // 30 seconds per page
 
+let serverProcess = null;
+
+/**
+ * Check if a server is already running on the specified port
+ */
+async function isPortInUse(port) {
+  return new Promise((resolve) => {
+    const socket = createConnection({ port, host: '127.0.0.1' });
+    socket.on('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.on('error', () => {
+      resolve(false);
+    });
+  });
+}
+
+/**
+ * Start HTTP server and wait for it to be ready
+ */
+async function startServer() {
+  console.log(`🚀 Starting HTTP server on port ${PORT}...`);
+
+  serverProcess = spawn('npx', ['http-server', '.', '-p', String(PORT), '-c-1'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false
+  });
+
+  // Wait for server to be ready
+  let attempts = 0;
+  const maxAttempts = 30;
+
+  while (attempts < maxAttempts) {
+    if (await isPortInUse(PORT)) {
+      console.log(`✅ Server ready on port ${PORT}\n`);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, 200));
+    attempts++;
+  }
+
+  throw new Error(`Server failed to start after ${maxAttempts * 200}ms`);
+}
+
+/**
+ * Stop the server if we started it
+ */
+function stopServer() {
+  if (serverProcess) {
+    console.log('\n🛑 Stopping HTTP server...');
+    serverProcess.kill('SIGTERM');
+    serverProcess = null;
+  }
+}
+
 async function runAllPatternTests() {
   console.log('🧪 Running comprehensive pattern test suite...\n');
+
+  // Check if server is already running
+  const serverAlreadyRunning = await isPortInUse(PORT);
+
+  if (serverAlreadyRunning) {
+    console.log(`✅ Server already running on port ${PORT}\n`);
+  } else {
+    await startServer();
+  }
 
   // Check if test directory exists
   if (!existsSync(TEST_DIR)) {
     console.error(`❌ Error: Test directory not found at ${TEST_DIR}`);
-    console.error('   Run: node scripts/generate-pattern-tests.mjs first');
+    console.error('   Run: npm run patterns:generate first');
+    stopServer();
     process.exit(1);
   }
 
@@ -30,7 +100,8 @@ async function runAllPatternTests() {
 
   if (testFiles.length === 0) {
     console.error('❌ No test files found. Generate them first with:');
-    console.error('   node scripts/generate-pattern-tests.mjs');
+    console.error('   npm run patterns:generate');
+    stopServer();
     process.exit(1);
   }
 
@@ -152,6 +223,9 @@ async function runAllPatternTests() {
   console.log(`📝 Markdown report saved to: ${mdFile}`);
 
   console.log('='.repeat(70));
+
+  // Stop server if we started it
+  stopServer();
 
   // Exit with appropriate code
   process.exit(failedPatterns > 0 ? 1 : 0);
@@ -307,8 +381,19 @@ function generateMarkdownReport(results) {
   return md;
 }
 
+// Handle cleanup on unexpected exit
+process.on('SIGINT', () => {
+  stopServer();
+  process.exit(130);
+});
+process.on('SIGTERM', () => {
+  stopServer();
+  process.exit(143);
+});
+
 // Run tests
 runAllPatternTests().catch(error => {
   console.error('❌ Fatal error:', error);
+  stopServer();
   process.exit(1);
 });
