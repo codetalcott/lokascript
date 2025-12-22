@@ -9,9 +9,7 @@
 
 import { test, expect } from '@playwright/test';
 
-// TODO: Update tests after language file structure changes
-// The semantic bundle needs to register language patterns and the runtime context needs fixes
-test.describe.skip('Multilingual Bundle E2E', () => {
+test.describe('Multilingual Bundle E2E', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     // Navigate to the test page that loads both bundles
     await page.goto(`${baseURL}/packages/core/test-multilingual-e2e.html`);
@@ -233,7 +231,8 @@ test.describe.skip('Multilingual Bundle E2E', () => {
         return await (window as any).hyperfixi.translate('toggle .active', 'en', 'ja');
       });
 
-      expect(result).toContain('トグル');
+      // Either katakana トグル or native Japanese 切り替え are valid translations
+      expect(result).toMatch(/トグル|切り替え/);
     });
 
     test('translate from Japanese to English', async ({ page }) => {

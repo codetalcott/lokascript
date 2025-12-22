@@ -17,7 +17,7 @@
 import { Runtime } from '../runtime/runtime';
 import { parse } from '../parser/parser';
 import { defaultAttributeProcessor } from '../dom/attribute-processor';
-import { createContext } from '../core/context';
+import { createContext, ensureContext } from '../core/context';
 
 // Minimal command set (8 most common commands)
 const MINIMAL_COMMANDS = ['add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log'];
@@ -62,7 +62,7 @@ const runtime = createMinimalRuntime();
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');
     }
-    return await runtime.execute(parseResult.node, context || createContext());
+    return await runtime.execute(parseResult.node, ensureContext(context));
   },
 
   /**

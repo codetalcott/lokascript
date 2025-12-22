@@ -22,9 +22,44 @@
 // Register All Languages (Full Browser Bundle)
 // =============================================================================
 
-// Import to register all 13 languages for the full browser bundle.
+// Import patterns/index to register the pattern generator.
+// This enables non-English languages to generate patterns on-demand
+// via the patternGenerator fallback in the registry.
+import './patterns/index';
+
+// Import each language module directly to ensure side-effect registrations run.
+// Each module calls registerLanguage() and registerPatterns() at load time.
 // For minimal bundles, use language-specific entry points (e.g., browser-en.ts).
-import './languages/_all';
+import { englishProfile as _en } from './languages/en';
+import { spanishProfile as _es } from './languages/es';
+import { japaneseProfile as _ja } from './languages/ja';
+import { arabicProfile as _ar } from './languages/ar';
+import { koreanProfile as _ko } from './languages/ko';
+import { chineseProfile as _zh } from './languages/zh';
+import { turkishProfile as _tr } from './languages/tr';
+import { portugueseProfile as _pt } from './languages/pt';
+import { frenchProfile as _fr } from './languages/fr';
+import { germanProfile as _de } from './languages/de';
+import { indonesianProfile as _id } from './languages/id';
+import { quechuaProfile as _qu } from './languages/qu';
+import { swahiliProfile as _sw } from './languages/sw';
+
+// Export the profiles to force bundler to keep them (prevents tree-shaking)
+export const registeredLanguageProfiles = {
+  en: _en,
+  es: _es,
+  ja: _ja,
+  ar: _ar,
+  ko: _ko,
+  zh: _zh,
+  tr: _tr,
+  pt: _pt,
+  fr: _fr,
+  de: _de,
+  id: _id,
+  qu: _qu,
+  sw: _sw,
+};
 
 // =============================================================================
 // Core API

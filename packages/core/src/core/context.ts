@@ -70,6 +70,38 @@ export function createChildContext(
 }
 
 /**
+ * Ensures we have a valid execution context.
+ * If user provides a partial context (like { me: el }), merges it with a proper context.
+ *
+ * This is essential for browser bundle APIs where users may pass partial contexts.
+ * The runtime requires context.locals and context.globals to be Maps.
+ *
+ * @param userContext - Optional partial or complete context from the user
+ * @returns A valid ExecutionContext with all required properties
+ */
+export function ensureContext(userContext?: Partial<ExecutionContext> | any): ExecutionContext {
+  // If no context, create fresh one
+  if (!userContext) {
+    return createContext();
+  }
+
+  // If already has locals/globals Maps, use it directly (already valid)
+  if (userContext.locals instanceof Map && userContext.globals instanceof Map) {
+    return userContext as ExecutionContext;
+  }
+
+  // Create proper context with user's element, then merge other user values
+  const ctx = createContext(userContext.me instanceof HTMLElement ? userContext.me : null);
+
+  // Merge user-provided values
+  if (userContext.it !== undefined) Object.assign(ctx, { it: userContext.it });
+  if (userContext.you !== undefined) ctx.you = userContext.you;
+  if (userContext.result !== undefined) Object.assign(ctx, { result: userContext.result });
+
+  return ctx;
+}
+
+/**
  * Sets a value in the context
  */
 export function setContextValue(

@@ -28,7 +28,7 @@ import { parse } from '../parser/parser';
 import { createTreeShakeableRuntime } from '../runtime/runtime-factory';
 import { createCoreExpressionEvaluator } from '../expressions/bundles/core-expressions';
 import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
-import { createContext } from '../core/context';
+import { createContext, ensureContext } from '../core/context';
 
 // Import ONLY the 8 minimal commands (true tree-shaking!)
 import { createAddCommand } from '../commands/dom/add';
@@ -62,7 +62,7 @@ const runtime = createTreeShakeableRuntime(
 const runtimeAdapter = {
   parse: (code: string) => parse(code),
   execute: async (code: string, context?: any) => {
-    const ctx = context || createContext();
+    const ctx = ensureContext(context);
     const parseResult = parse(code);
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');

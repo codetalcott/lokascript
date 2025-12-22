@@ -32,7 +32,7 @@
  */
 
 import { createMinimalRuntime } from '../runtime/runtime-experimental';
-import { createContext } from '../core/context';
+import { createContext, ensureContext } from '../core/context';
 import type { ASTNode } from '../types/base-types';
 
 // Import ALL V2 commands (43 commands total)
@@ -265,9 +265,9 @@ const api = {
       );
     }
 
-    const ast = semantic.buildAST(result.node);
-    const ctx = context || createContext();
-    return runtime.execute(ast as unknown as ASTNode, ctx);
+    const buildResult = semantic.buildAST(result.node);
+    const ctx = ensureContext(context);
+    return runtime.execute(buildResult.ast as unknown as ASTNode, ctx);
   },
 
   /**
@@ -287,7 +287,8 @@ const api = {
       return null;
     }
 
-    return semantic.buildAST(result.node) as unknown as ASTNode;
+    const buildResult = semantic.buildAST(result.node);
+    return buildResult.ast as unknown as ASTNode;
   },
 
   /**

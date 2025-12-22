@@ -27,7 +27,8 @@ export default defineConfig([
     },
     esbuildOptions(options) {
       options.target = 'es2020';
-      options.treeShaking = true;
+      // Disable tree-shaking for full bundle to preserve language registration side effects
+      options.treeShaking = false;
     },
   },
   // English-only browser bundle (IIFE) - Minimal bundle

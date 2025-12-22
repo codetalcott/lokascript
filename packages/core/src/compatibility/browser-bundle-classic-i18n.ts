@@ -26,7 +26,7 @@
 import { parse } from '../parser/parser';
 import { createMinimalRuntime } from '../runtime/runtime-experimental';
 import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
-import { createContext } from '../core/context';
+import { createContext, ensureContext } from '../core/context';
 import type { KeywordResolver } from '../parser/types';
 
 // ============================================================================
@@ -295,7 +295,7 @@ function parseWithLocale(code: string) {
 const runtimeAdapter = {
   parse: (code: string) => parseWithLocale(code),
   execute: async (code: string, context?: any) => {
-    const ctx = context || createContext();
+    const ctx = ensureContext(context);
     const parseResult = parseWithLocale(code);
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');
@@ -497,7 +497,7 @@ const api = {
    * - execute(ast, context) - execute pre-compiled AST
    */
   execute: async (codeOrAst: string | any, context?: any) => {
-    const ctx = context || createContext();
+    const ctx = ensureContext(context);
 
     // If it's a string, parse and execute
     if (typeof codeOrAst === 'string') {
@@ -520,7 +520,7 @@ const api = {
    * Run/evaluate hyperscript code (alias for execute with string)
    */
   run: async (code: string, context?: any) => {
-    const ctx = context || createContext();
+    const ctx = ensureContext(context);
     const parseResult = parseWithLocale(code);
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');

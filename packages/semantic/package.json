@@ -94,7 +94,8 @@
   },
   "sideEffects": [
     "./src/languages/*.ts",
-    "./dist/languages/*.mjs"
+    "./dist/languages/*.mjs",
+    "./src/patterns/index.ts"
   ],
   "keywords": [
     "hyperscript",

@@ -30,7 +30,7 @@ import { parse } from '../parser/parser';
 import { createTreeShakeableRuntime } from '../runtime/runtime-factory';
 import { createCommonExpressionEvaluator } from '../expressions/bundles/common-expressions';
 import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
-import { createContext } from '../core/context';
+import { createContext, ensureContext } from '../core/context';
 
 // Import all 16 V2 standard commands (true tree-shaking!)
 // DOM Commands (7)
@@ -97,7 +97,7 @@ const runtime = createTreeShakeableRuntime(
 const runtimeAdapter = {
   parse: (code: string) => parse(code),
   execute: async (code: string, context?: any) => {
-    const ctx = context || createContext();
+    const ctx = ensureContext(context);
     const parseResult = parse(code);
     if (!parseResult.success || !parseResult.node) {
       throw new Error(parseResult.error?.message || 'Parse failed');
