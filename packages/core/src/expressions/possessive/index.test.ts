@@ -498,7 +498,7 @@ describe('Enhanced Possessive Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = possessiveExpression.documentation;
+      const docs = (possessiveExpression as any).documentation;
 
       expect(docs.summary).toContain('properties'); // Check for "properties" instead of "property"
       expect(docs.parameters).toHaveLength(2);

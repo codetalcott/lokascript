@@ -109,16 +109,19 @@ import { createRenderCommand } from '../commands/templates/render';
 // NO PARSER IMPORT - uses @hyperfixi/semantic package instead
 
 // =============================================================================
-// Lazy-loaded Semantic Module
+// Semantic Module Access (from browser global)
 // =============================================================================
 
-let _semanticModule: typeof import('@hyperfixi/semantic') | null = null;
-
-async function getSemanticModule() {
-  if (!_semanticModule) {
-    _semanticModule = await import('@hyperfixi/semantic');
+// In browser environment, use the already-loaded HyperFixiSemantic global
+function getSemanticModule(): typeof import('@hyperfixi/semantic') {
+  if (typeof window !== 'undefined' && (window as any).HyperFixiSemantic) {
+    return (window as any).HyperFixiSemantic;
   }
-  return _semanticModule;
+  throw new Error(
+    'HyperFixiSemantic not found. Load the semantic bundle before the multilingual bundle:\n' +
+    '<script src="hyperfixi-semantic.browser.global.js"></script>\n' +
+    '<script src="hyperfixi-multilingual.js"></script>'
+  );
 }
 
 // =============================================================================
@@ -252,7 +255,7 @@ const api = {
    * await hyperfixi.execute('alternar .active', 'es');
    */
   async execute(code: string, lang: string, context?: any): Promise<any> {
-    const semantic = await getSemanticModule();
+    const semantic = getSemanticModule();
     const analyzer = semantic.createSemanticAnalyzer();
     const result = analyzer.analyze(code, lang);
 
@@ -264,7 +267,7 @@ const api = {
 
     const ast = semantic.buildAST(result.node);
     const ctx = context || createContext();
-    return runtime.execute(ast as ASTNode, ctx);
+    return runtime.execute(ast as unknown as ASTNode, ctx);
   },
 
   /**
@@ -275,8 +278,8 @@ const api = {
    * @param lang - Language code
    * @returns Promise resolving to AST node or null
    */
-  async parse(code: string, lang: string): Promise<ASTNode | null> {
-    const semantic = await getSemanticModule();
+  parse(code: string, lang: string): ASTNode | null {
+    const semantic = getSemanticModule();
     const analyzer = semantic.createSemanticAnalyzer();
     const result = analyzer.analyze(code, lang);
 
@@ -284,7 +287,7 @@ const api = {
       return null;
     }
 
-    return semantic.buildAST(result.node) as ASTNode;
+    return semantic.buildAST(result.node) as unknown as ASTNode;
   },
 
   /**
@@ -295,8 +298,8 @@ const api = {
    * @param targetLang - Target language code
    * @returns Promise resolving to translated code
    */
-  async translate(code: string, sourceLang: string, targetLang: string): Promise<string> {
-    const semantic = await getSemanticModule();
+  translate(code: string, sourceLang: string, targetLang: string): string {
+    const semantic = getSemanticModule();
     return semantic.translate(code, sourceLang, targetLang);
   },
 
@@ -307,8 +310,8 @@ const api = {
    * @param sourceLang - Source language code
    * @returns Promise resolving to object with all translations
    */
-  async getAllTranslations(code: string, sourceLang: string): Promise<Record<string, string>> {
-    const semantic = await getSemanticModule();
+  getAllTranslations(code: string, sourceLang: string): Record<string, string> {
+    const semantic = getSemanticModule();
     return semantic.getAllTranslations(code, sourceLang);
   },
 

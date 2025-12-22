@@ -9,6 +9,27 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AddCommand } from '../add';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
 import type { ASTNode } from '../../../types/base-types';
+import type { ExpressionEvaluator } from '../../../core/expression-evaluator';
+
+// Helper to create mock AST nodes with required type property
+function mockNode<T>(value: T): ASTNode {
+  return { type: 'literal', value } as ASTNode;
+}
+
+// Helper to create inline mock evaluator
+function inlineEvaluator<T>(returnValue: T): ExpressionEvaluator {
+  return {
+    evaluate: async () => returnValue,
+  } as unknown as ExpressionEvaluator;
+}
+
+// Helper to create sequential mock evaluator that returns different values on each call
+function sequentialEvaluator<T>(values: T[]): ExpressionEvaluator {
+  let callCount = 0;
+  return {
+    evaluate: async () => values[callCount++],
+  } as unknown as ExpressionEvaluator;
+}
 
 // ========== Test Utilities ==========
 
@@ -27,16 +48,16 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
   } as unknown as ExecutionContext & TypedExecutionContext;
 }
 
-function createMockEvaluator() {
+function createMockEvaluator(): ExpressionEvaluator {
   return {
-    evaluate: async (node: ASTNode, context: ExecutionContext) => {
+    evaluate: async (node: ASTNode, _context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       if (typeof node === 'object' && node !== null && 'value' in node) {
         return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
-  };
+  } as unknown as ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -78,12 +99,10 @@ describe('AddCommand (Standalone V2)', () => {
 
     it('should parse single class with leading dot', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => '.active',
-      };
+      const evaluator = inlineEvaluator('.active');
 
       const input = await command.parseInput(
-        { args: [{ value: '.active' }], modifiers: {} },
+        { args: [mockNode('.active')], modifiers: {} },
         evaluator,
         context
       );
@@ -95,90 +114,78 @@ describe('AddCommand (Standalone V2)', () => {
 
     it('should parse single class without leading dot', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => 'selected',
-      };
+      const evaluator = inlineEvaluator('selected');
 
       const input = await command.parseInput(
-        { args: [{ value: 'selected' }], modifiers: {} },
+        { args: [mockNode('selected')], modifiers: {} },
         evaluator,
         context
       );
 
-      expect(input.classes).toEqual(['selected']);
-      expect(input.targets).toEqual([context.me]);
+      expect((input as any).classes).toEqual(['selected']);
+      expect((input as any).targets).toEqual([context.me]);
     });
 
     it('should parse multiple classes from space-separated string', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => 'active selected highlighted',
-      };
+      const evaluator = inlineEvaluator('active selected highlighted');
 
       const input = await command.parseInput(
-        { args: [{ value: 'active selected highlighted' }], modifiers: {} },
+        { args: [mockNode('active selected highlighted')], modifiers: {} },
         evaluator,
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect((input as any).classes).toEqual(['active', 'selected', 'highlighted']);
     });
 
     it('should parse multiple classes with leading dots', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => '.active .selected .highlighted',
-      };
+      const evaluator = inlineEvaluator('.active .selected .highlighted');
 
       const input = await command.parseInput(
-        { args: [{ value: '.active .selected .highlighted' }], modifiers: {} },
+        { args: [mockNode('.active .selected .highlighted')], modifiers: {} },
         evaluator,
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect((input as any).classes).toEqual(['active', 'selected', 'highlighted']);
     });
 
     it('should parse classes from array', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => ['.active', 'selected', '.highlighted'],
-      };
+      const evaluator = inlineEvaluator(['.active', 'selected', '.highlighted']);
 
       const input = await command.parseInput(
-        { args: [{ value: ['.active', 'selected', '.highlighted'] }], modifiers: {} },
+        { args: [mockNode(['.active', 'selected', '.highlighted'])], modifiers: {} },
         evaluator,
         context
       );
 
-      expect(input.classes).toEqual(['active', 'selected', 'highlighted']);
+      expect((input as any).classes).toEqual(['active', 'selected', 'highlighted']);
     });
 
     it('should filter out invalid class names', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => 'valid-class 123invalid -also-valid _underscore',
-      };
+      const evaluator = inlineEvaluator('valid-class 123invalid -also-valid _underscore');
 
       const input = await command.parseInput(
-        { args: [{ value: 'valid-class 123invalid -also-valid _underscore' }], modifiers: {} },
+        { args: [mockNode('valid-class 123invalid -also-valid _underscore')], modifiers: {} },
         evaluator,
         context
       );
 
       // 123invalid starts with digit (invalid), others are valid
-      expect(input.classes).toEqual(['valid-class', '-also-valid', '_underscore']);
+      expect((input as any).classes).toEqual(['valid-class', '-also-valid', '_underscore']);
     });
 
     it('should throw error when no valid class names found', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => '123 456 789', // All start with digits
-      };
+      const evaluator = inlineEvaluator('123 456 789'); // All start with digits
 
       await expect(
         command.parseInput(
-          { args: [{ value: '123 456 789' }], modifiers: {} },
+          { args: [mockNode('123 456 789')], modifiers: {} },
           evaluator,
           context
         )
@@ -188,20 +195,11 @@ describe('AddCommand (Standalone V2)', () => {
     it('should resolve HTMLElement target', async () => {
       const context = createMockContext();
       const targetElement = document.createElement('button');
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return 'active';
-          }
-          return targetElement;
-        },
-      };
+      const evaluator = sequentialEvaluator(['active', targetElement]);
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: targetElement }],
+          args: [mockNode('active'), mockNode(targetElement)],
           modifiers: {},
         },
         evaluator,
@@ -217,20 +215,11 @@ describe('AddCommand (Standalone V2)', () => {
       targetElement.id = 'test-target';
       document.body.appendChild(targetElement);
 
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return 'active';
-          }
-          return '#test-target';
-        },
-      };
+      const evaluator = sequentialEvaluator(['active', '#test-target']);
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: '#test-target' }],
+          args: [mockNode('active'), mockNode('#test-target')],
           modifiers: {},
         },
         evaluator,
@@ -252,20 +241,12 @@ describe('AddCommand (Standalone V2)', () => {
       document.body.appendChild(el1);
       document.body.appendChild(el2);
 
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return 'active';
-          }
-          return document.querySelectorAll('.test-class');
-        },
-      };
+      const nodeList = document.querySelectorAll('.test-class');
+      const evaluator = sequentialEvaluator(['active', nodeList]);
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: '.test-class' }],
+          args: [mockNode('active'), mockNode('.test-class')],
           modifiers: {},
         },
         evaluator,
@@ -282,21 +263,12 @@ describe('AddCommand (Standalone V2)', () => {
 
     it('should throw error for invalid CSS selector', async () => {
       const context = createMockContext();
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return 'active';
-          }
-          return ':::invalid:::';
-        },
-      };
+      const evaluator = sequentialEvaluator(['active', ':::invalid:::']);
 
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'active' }, { value: ':::invalid:::' }],
+            args: [mockNode('active'), mockNode(':::invalid:::')],
             modifiers: {},
           },
           evaluator,
@@ -307,21 +279,12 @@ describe('AddCommand (Standalone V2)', () => {
 
     it.skip('should throw error when no valid targets found', async () => {
       const context = createMockContext();
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return 'active';
-          }
-          return '.nonexistent-element';
-        },
-      };
+      const evaluator = sequentialEvaluator(['active', '.nonexistent-element']);
 
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'active' }, { value: '.nonexistent-element' }],
+            args: [mockNode('active'), mockNode('.nonexistent-element')],
             modifiers: {},
           },
           evaluator,
@@ -505,11 +468,10 @@ describe('AddCommand (Standalone V2)', () => {
     it('should add class end-to-end', async () => {
       const context = createMockContext();
       const evaluator = createMockEvaluator();
-      const element = document.createElement('div');
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '.active' }], modifiers: {} },
+        { args: [mockNode('.active')], modifiers: {} },
         evaluator,
         context
       );
@@ -526,13 +488,11 @@ describe('AddCommand (Standalone V2)', () => {
 
     it('should add multiple classes end-to-end', async () => {
       const context = createMockContext();
-      const evaluator = {
-        evaluate: async () => 'active selected highlighted',
-      };
+      const evaluator = inlineEvaluator('active selected highlighted');
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: 'active selected highlighted' }], modifiers: {} },
+        { args: [mockNode('active selected highlighted')], modifiers: {} },
         evaluator,
         context
       );
@@ -555,21 +515,12 @@ describe('AddCommand (Standalone V2)', () => {
       targetElement.id = 'test-button';
       document.body.appendChild(targetElement);
 
-      let evalCount = 0;
-      const evaluator = {
-        evaluate: async () => {
-          if (evalCount === 0) {
-            evalCount++;
-            return '.active';
-          }
-          return '#test-button';
-        },
-      };
+      const evaluator = sequentialEvaluator(['.active', '#test-button']);
 
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: '.active' }, { value: '#test-button' }],
+          args: [mockNode('.active'), mockNode('#test-button')],
           modifiers: {},
         },
         evaluator,
@@ -592,13 +543,11 @@ describe('AddCommand (Standalone V2)', () => {
     it('should preserve existing classes end-to-end', async () => {
       const context = createMockContext();
       context.me!.className = 'existing-1 existing-2';
-      const evaluator = {
-        evaluate: async () => '.new-class',
-      };
+      const evaluator = inlineEvaluator('.new-class');
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '.new-class' }], modifiers: {} },
+        { args: [mockNode('.new-class')], modifiers: {} },
         evaluator,
         context
       );

@@ -5,6 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createTypedExpressionContext, type TestExpressionContext } from '../../test-utilities';
+import { createTestElement } from '../../test-setup';
 import {
   positionalExpressions,
   findNextElementInDOM,
@@ -42,14 +43,14 @@ describe('Positional Expressions', () => {
         document.body.innerHTML = '<div><span>1</span><span>2</span><span>3</span></div>';
         const nodeList = document.querySelectorAll('span');
         const result = await positionalExpressions.first.evaluate(context, nodeList);
-        expect(result.textContent).toBe('1');
+        expect((result as { textContent: string }).textContent).toBe('1');
       });
 
       // Skip: DOM children access differs in test environment
       it.skip('should handle DOM element children', async () => {
         const container = createTestElement('<div><span>First</span><span>Second</span></div>');
         const result = await positionalExpressions.first.evaluate(context, container);
-        expect(result.textContent).toBe('First');
+        expect((result as { textContent: string }).textContent).toBe('First');
       });
 
       it('should handle strings', async () => {
@@ -91,14 +92,14 @@ describe('Positional Expressions', () => {
         document.body.innerHTML = '<div><span>1</span><span>2</span><span>3</span></div>';
         const nodeList = document.querySelectorAll('span');
         const result = await positionalExpressions.last.evaluate(context, nodeList);
-        expect(result.textContent).toBe('3');
+        expect((result as { textContent: string }).textContent).toBe('3');
       });
 
       // Skip: DOM children access differs in test environment
       it.skip('should handle DOM element children', async () => {
         const container = createTestElement('<div><span>First</span><span>Last</span></div>');
         const result = await positionalExpressions.last.evaluate(context, container);
-        expect(result.textContent).toBe('Last');
+        expect((result as { textContent: string }).textContent).toBe('Last');
       });
 
       it('should handle strings', async () => {
@@ -144,7 +145,7 @@ describe('Positional Expressions', () => {
         document.body.innerHTML = '<div><span>0</span><span>1</span><span>2</span></div>';
         const nodeList = document.querySelectorAll('span');
         const result = await positionalExpressions.at.evaluate(context, 1, nodeList);
-        expect(result.textContent).toBe('1');
+        expect((result as { textContent: string }).textContent).toBe('1');
       });
 
       // Skip: DOM children access differs in test environment
@@ -153,7 +154,7 @@ describe('Positional Expressions', () => {
           '<div><span>0</span><span>1</span><span>2</span></div>'
         );
         const result = await positionalExpressions.at.evaluate(context, 2, container);
-        expect(result.textContent).toBe('2');
+        expect((result as { textContent: string }).textContent).toBe('2');
       });
 
       it('should handle strings', async () => {
@@ -198,7 +199,7 @@ describe('Positional Expressions', () => {
         context.me = item1;
 
         const result = await positionalExpressions.next.evaluate(context);
-        expect(result.id).toBe('item2');
+        expect((result as { id: string }).id).toBe('item2');
       });
 
       it('should find next element with selector', async () => {
@@ -206,7 +207,7 @@ describe('Positional Expressions', () => {
         context.me = item2;
 
         const result = await positionalExpressions.next.evaluate(context, '.item');
-        expect(result.id).toBe('item3');
+        expect((result as { id: string }).id).toBe('item3');
       });
 
       it('should handle explicit fromElement', async () => {
@@ -214,7 +215,7 @@ describe('Positional Expressions', () => {
         const item2 = document.getElementById('item2')!;
 
         const result = await positionalExpressions.next.evaluate(context, undefined, item1);
-        expect(result.id).toBe('item2');
+        expect((result as { id: string }).id).toBe('item2');
       });
 
       it('should return null when no next element', async () => {
@@ -251,7 +252,7 @@ describe('Positional Expressions', () => {
         context.me = item2;
 
         const result = await positionalExpressions.previous.evaluate(context);
-        expect(result.id).toBe('item1');
+        expect((result as { id: string }).id).toBe('item1');
       });
 
       it('should find previous element with selector', async () => {
@@ -259,14 +260,14 @@ describe('Positional Expressions', () => {
         context.me = item3;
 
         const result = await positionalExpressions.previous.evaluate(context, '.item');
-        expect(result.id).toBe('item2');
+        expect((result as { id: string }).id).toBe('item2');
       });
 
       it('should handle explicit fromElement', async () => {
         const item3 = document.getElementById('item3')!;
 
         const result = await positionalExpressions.previous.evaluate(context, undefined, item3);
-        expect(result.id).toBe('item2');
+        expect((result as { id: string }).id).toBe('item2');
       });
 
       it('should return null when no previous element', async () => {
@@ -307,7 +308,7 @@ describe('Positional Expressions', () => {
           '.item',
           '#container'
         );
-        expect(result.id).toBe('item3');
+        expect((result as { id: string }).id).toBe('item3');
       });
 
       it('should respect container boundaries', async () => {
@@ -381,7 +382,7 @@ describe('Positional Expressions', () => {
           '.item',
           '#container'
         );
-        expect(result.id).toBe('item2');
+        expect((result as { id: string }).id).toBe('item2');
       });
 
       it('should respect container boundaries', async () => {

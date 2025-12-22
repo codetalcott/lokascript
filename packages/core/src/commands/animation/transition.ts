@@ -85,7 +85,7 @@ export class TransitionCommand implements DecoratedCommand {
 
     // Handle CSS keywords like 'initial', 'inherit', 'unset' that evaluate to undefined
     // because they're not defined as variables - use the raw identifier name instead
-    if (value === undefined && raw.modifiers.to.type === 'identifier') {
+    if (value === undefined && (raw.modifiers.to as any).type === 'identifier') {
       value = (raw.modifiers.to as any).name;
     }
 

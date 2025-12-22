@@ -46,15 +46,15 @@ function createMockContext(me: HTMLElement): ExecutionContext & TypedExecutionCo
 
 function createMockEvaluator() {
   return {
-    evaluate: async (node: ASTNode, context: ExecutionContext) => {
+    evaluate: async (node: ASTNode, _context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       // Real evaluator would parse AST
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as { value: unknown }).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -111,10 +111,10 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(element);
       const evaluator = {
         evaluate: async () => element,
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: element }], modifiers: {} },
+        { args: [{ type: 'literal', value: element }], modifiers: {} },
         evaluator,
         context
       );
@@ -130,10 +130,10 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(element);
       const evaluator = {
         evaluate: async () => '.target',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '.target' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '.target' }], modifiers: {} },
         evaluator,
         context
       );
@@ -151,10 +151,10 @@ describe('ShowCommand (Standalone V2)', () => {
       const nodeList = document.querySelectorAll('.item');
       const evaluator = {
         evaluate: async () => nodeList,
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: nodeList }], modifiers: {} },
+        { args: [{ type: 'literal', value: nodeList }], modifiers: {} },
         evaluator,
         context
       );
@@ -170,10 +170,10 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(el1);
       const evaluator = {
         evaluate: async () => [el1, el2],
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: [el1, el2] }], modifiers: {} },
+        { args: [{ type: 'literal', value: [el1, el2] }], modifiers: {} },
         evaluator,
         context
       );
@@ -188,11 +188,11 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(element);
       const evaluator = {
         evaluate: async () => '<<<invalid>>>',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
-          { args: [{ value: '<<<invalid>>>' }], modifiers: {} },
+          { args: [{ type: 'literal', value: '<<<invalid>>>' }], modifiers: {} },
           evaluator,
           context
         )
@@ -206,11 +206,11 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(element);
       const evaluator = {
         evaluate: async () => 12345, // number, not element
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
-          { args: [{ value: 12345 }], modifiers: {} },
+          { args: [{ type: 'literal', value: 12345 }], modifiers: {} },
           evaluator,
           context
         )
@@ -224,11 +224,11 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(element);
       const evaluator = {
         evaluate: async () => [], // empty array
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
-          { args: [{ value: [] }], modifiers: {} },
+          { args: [{ type: 'literal', value: [] }], modifiers: {} },
           evaluator,
           context
         )
@@ -244,7 +244,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       expect(element.style.display).toBe('block');
       expect(element.dataset.originalDisplay).toBeUndefined();
@@ -259,7 +259,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(el1);
 
-      await command.execute({ targets: [el1, el2], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [el1, el2], defaultDisplay: 'block', mode: 'show' }, context);
 
       expect(el1.style.display).toBe('flex');
       expect(el2.style.display).toBe('inline');
@@ -272,7 +272,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       expect(element.style.display).toBe('block');
       expect(element.dataset.originalDisplay).toBeUndefined();
@@ -284,7 +284,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       // Should NOT change display since it's not 'none'
       expect(element.style.display).toBe('flex');
@@ -296,7 +296,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       // Should change display since it IS 'none'
       expect(element.style.display).toBe('block');
@@ -308,7 +308,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       expect(element.classList.contains('show')).toBe(true);
       expect(element.classList.contains('hidden')).toBe(true); // Other classes preserved
@@ -321,7 +321,7 @@ describe('ShowCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element], defaultDisplay: 'block' }, context);
+      await command.execute({ targets: [element], defaultDisplay: 'block', mode: 'show' }, context);
 
       expect(element.style.display).toBe('inline-block');
       expect(element.dataset.originalDisplay).toBeUndefined();
@@ -435,11 +435,11 @@ describe('ShowCommand (Standalone V2)', () => {
       const context = createMockContext(parent);
       const evaluator = {
         evaluate: async () => '#parent .btn',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '#parent .btn' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '#parent .btn' }], modifiers: {} },
         evaluator,
         context
       );

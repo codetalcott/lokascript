@@ -72,16 +72,16 @@ describe('Expression Integration Tests - Core Combinations', () => {
       const form = await propertiesExpressions.idReference.evaluate(context, 'test-form');
       const formValues = await conversionExpressions.as.evaluate(context, form, 'Values');
 
-      expect(formValues.username).toBe('john');
-      expect(formValues.age).toBe(25);
-      expect(formValues.active).toBe(true);
+      expect((formValues as Record<string, unknown>).username).toBe('john');
+      expect((formValues as Record<string, unknown>).age).toBe(25);
+      expect((formValues as Record<string, unknown>).active).toBe(true);
     });
 
     it('should handle form as Values:JSON', async () => {
       const form = await propertiesExpressions.idReference.evaluate(context, 'test-form');
       const jsonValues = await conversionExpressions.as.evaluate(context, form, 'Values:JSON');
 
-      const parsed = JSON.parse(jsonValues);
+      const parsed = JSON.parse(jsonValues as string);
       expect(parsed.username).toBe('john');
       expect(parsed.age).toBe(25);
       expect(parsed.active).toBe(true);
@@ -126,8 +126,8 @@ describe('Expression Integration Tests - Core Combinations', () => {
     it('should handle "all buttons by selector"', async () => {
       const buttons = await referencesExpressions.elementWithSelector.evaluate(context, 'button');
       expect(buttons).toHaveLength(2);
-      expect(buttons[0].id).toBe('btn1');
-      expect(buttons[1].id).toBe('btn2');
+      expect((buttons as unknown[] & { [index: number]: { id: string } })[0].id).toBe('btn1');
+      expect((buttons as unknown[] & { [index: number]: { id: string } })[1].id).toBe('btn2');
     });
 
     it('should handle "buttons with primary class"', async () => {
@@ -136,7 +136,7 @@ describe('Expression Integration Tests - Core Combinations', () => {
         'button.primary'
       );
       expect(primaryButtons).toHaveLength(1);
-      expect(primaryButtons[0].id).toBe('btn1');
+      expect((primaryButtons as unknown[] & { [index: number]: { id: string } })[0].id).toBe('btn1');
     });
 
     it('should handle "first button text content"', async () => {
@@ -155,15 +155,15 @@ describe('Expression Integration Tests - Core Combinations', () => {
     it.skip('should handle "(my data-value as Int + 5) * 2"', async () => {
       const dataValue = await propertiesExpressions.my.evaluate(context, 'data-value');
       const intValue = await conversionExpressions.as.evaluate(context, dataValue, 'Int');
-      const sum = await specialExpressions.addition.evaluate(context, intValue, 5);
-      const result = await specialExpressions.multiplication.evaluate(context, sum, 2);
+      const sum = await (specialExpressions.addition as any).evaluate(context, intValue, 5);
+      const result = await (specialExpressions.multiplication as any).evaluate(context, sum, 2);
       expect(result).toBe(30); // (10 + 5) * 2
     });
 
     it.skip('should handle "it\'s values length mod 3"', async () => {
       const values = await propertiesExpressions.its.evaluate(context, 'values');
       const length = await propertiesExpressions.possessive.evaluate(context, values, 'length');
-      const result = await specialExpressions.modulo.evaluate(context, length, 3);
+      const result = await (specialExpressions as any).modulo.evaluate(context, length, 3);
       expect(result).toBe(2); // 5 mod 3 = 2
     });
   });
@@ -244,10 +244,10 @@ describe('Expression Integration Tests - Core Combinations', () => {
       );
       const usernameNotEmpty = await logicalExpressions.not.evaluate(
         context,
-        formValues.username === ''
+        (formValues as Record<string, unknown>).username === ''
       );
-      const ageValid = await logicalExpressions.greaterThan.evaluate(context, formValues.age, 0);
-      const isActive = formValues.active;
+      const ageValid = await logicalExpressions.greaterThan.evaluate(context, (formValues as Record<string, unknown>).age, 0);
+      const isActive = (formValues as Record<string, unknown>).active;
 
       // Combine all conditions
       const step1 = await logicalExpressions.and.evaluate(context, hasUsername, usernameNotEmpty);
@@ -266,7 +266,7 @@ describe('Expression Integration Tests - Core Combinations', () => {
 
       // Filter for visible elements (not .hidden)
       let visibleCount = 0;
-      for (const element of contentElements) {
+      for (const element of (contentElements as unknown[])) {
         const hasHidden = await logicalExpressions.matches.evaluate(context, element, '.hidden');
         const isVisible = await logicalExpressions.not.evaluate(context, hasHidden);
         if (isVisible) visibleCount++;
@@ -278,7 +278,7 @@ describe('Expression Integration Tests - Core Combinations', () => {
     it('should handle navigation between elements', async () => {
       // Get next button from current context
       const nextButton = await positionalExpressions.next.evaluate(context, 'button');
-      expect(nextButton?.id).toBe('btn2');
+      expect((nextButton as any)?.id).toBe('btn2');
 
       // Get previous button from btn2
       const btn2 = await propertiesExpressions.idReference.evaluate(context, 'btn2');
@@ -287,7 +287,7 @@ describe('Expression Integration Tests - Core Combinations', () => {
         'button',
         btn2 as HTMLElement
       );
-      expect(prevButton?.id).toBe('btn1');
+      expect((prevButton as any)?.id).toBe('btn1');
     });
   });
 

@@ -707,7 +707,7 @@ export class SemanticIntegrationAdapter {
         // Property paths become memberExpression nodes
         // e.g., "my value" -> { object: me, property: { type: 'identifier', name: 'value' } }
         // The evaluator expects node.object and node.property.name
-        const pathValue = value as { type: 'property-path'; object: SemanticValue; property: string };
+        const pathValue = value as unknown as { type: 'property-path'; object: SemanticValue; property: string };
         const objectNode = this.semanticValueToExpression(pathValue.object);
         return {
           type: 'memberExpression',

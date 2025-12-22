@@ -39,15 +39,8 @@ import {
   preloadFeatures,
 } from './feature-loader';
 
-// Export to global scope for browser testing
-declare global {
-  interface Window {
-    hyperfixi: typeof hyperfixi;
-    evalHyperScript: typeof evalHyperScript;
-    evalHyperScriptAsync: typeof evalHyperScriptAsync;
-    evalHyperScriptSmart: typeof evalHyperScriptSmart;
-  }
-}
+// Note: Window.hyperfixi type is declared in browser-bundle.ts with full interface.
+// This modular bundle exports a subset of that interface.
 
 // Main browser API - matches _hyperscript signature
 const hyperfixi = {
@@ -141,7 +134,8 @@ const hyperfixi = {
 
 // Export to global for browser usage
 if (typeof window !== 'undefined') {
-  window.hyperfixi = hyperfixi;
+  // Use type assertion since this modular bundle exports a subset of the full interface
+  (window as any).hyperfixi = hyperfixi;
   window.evalHyperScript = evalHyperScript;
   window.evalHyperScriptAsync = evalHyperScriptAsync;
   window.evalHyperScriptSmart = evalHyperScriptSmart;

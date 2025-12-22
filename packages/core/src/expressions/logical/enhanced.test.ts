@@ -185,8 +185,8 @@ describe('Enhanced Logical Expressions', () => {
       // Test normal operation first
       await andExpression.evaluate(errorContext, true, false);
       expect(errorContext.evaluationHistory).toHaveLength(1);
-      expect(errorContext.evaluationHistory[0].success).toBe(true);
-      expect(errorContext.evaluationHistory[0].output).toBe(false);
+      expect((errorContext.evaluationHistory as any)[0].success).toBe(true);
+      expect((errorContext.evaluationHistory as any)[0].output).toBe(false);
     });
   });
 

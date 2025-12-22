@@ -30,7 +30,7 @@ describe('Method Chaining', () => {
 
   beforeEach(() => {
     context = createMockHyperscriptContext();
-    context.locals = new Map([
+    (context as { locals: Map<string, unknown> }).locals = new Map<string, unknown>([
       ['arr', [1, 2, 3, 4, 5]],
       ['str', 'hello world'],
       [

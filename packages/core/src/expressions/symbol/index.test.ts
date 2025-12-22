@@ -139,7 +139,7 @@ describe('Enhanced Symbol Expression', () => {
     });
 
     test('resolves from meta context with highest priority', async () => {
-      context.meta!.set('testValue', 'meta-priority');
+      (context.meta as Record<string, unknown>)['testValue'] = 'meta-priority';
       context.locals.set('testValue', 'locals-value');
       // testValue also exists in direct context as 42
 
@@ -273,7 +273,7 @@ describe('Enhanced Symbol Expression', () => {
 
     test('handles evaluation errors gracefully', async () => {
       // Force an error by corrupting the context
-      const corruptContext = { ...context, locals: null } as unknown as TypedExecutionContext;
+      const corruptContext = { ...context, locals: null } as unknown as TypedExpressionContext;
 
       // This should still work as it falls back to other resolution methods
       const result = await symbolExpression.evaluate(corruptContext, 'testValue');
@@ -311,7 +311,7 @@ describe('Enhanced Symbol Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = symbolExpression.documentation;
+      const docs = (symbolExpression as any).documentation;
 
       expect(docs.summary).toContain('Resolves variables');
       expect(docs.parameters).toHaveLength(1);

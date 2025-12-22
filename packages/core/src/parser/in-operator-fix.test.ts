@@ -21,7 +21,7 @@ const context: ExecutionContext = {
     ['emptyObj', {}],
   ]),
   globals: new Map(),
-  parent: null,
+  parent: undefined,
   halted: false,
   returned: false,
   broke: false,

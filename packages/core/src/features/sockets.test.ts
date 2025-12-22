@@ -591,7 +591,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       // The error might be schema-validation instead of invalid-websocket-url because Zod validates URL format first
       expect(
         validationResult.errors.some(
-          e => e.type === 'schema-validation' || e.type === 'invalid-websocket-url'
+          e => e.type === 'schema-validation' || (e.type as string) === 'invalid-websocket-url'
         )
       ).toBe(true);
     });
@@ -610,8 +610,8 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-reconnect-attempts')).toBe(true);
-      expect(validationResult.errors.some(e => e.type === 'invalid-reconnect-delay')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-reconnect-attempts')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-reconnect-delay')).toBe(true);
     });
 
     it('should validate heartbeat settings', () => {
@@ -627,7 +627,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-heartbeat-interval')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-heartbeat-interval')).toBe(true);
     });
 
     it('should validate event handler filter expressions', () => {
@@ -645,7 +645,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-filter-expression')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-filter-expression')).toBe(true);
     });
 
     it('should validate conflicting performance options', () => {
@@ -666,7 +666,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'conflicting-performance-options')).toBe(
+      expect(validationResult.errors.some(e => (e.type as string) === 'conflicting-performance-options')).toBe(
         true
       );
     });
@@ -685,7 +685,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'empty-commands-array')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'empty-commands-array')).toBe(true);
     });
 
     it('should validate message queue settings', () => {
@@ -702,7 +702,7 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-queue-size')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-queue-size')).toBe(true);
     });
 
     it('should validate connection limits', () => {
@@ -717,8 +717,8 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-max-connections')).toBe(true);
-      expect(validationResult.errors.some(e => e.type === 'invalid-connection-timeout')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-max-connections')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-connection-timeout')).toBe(true);
     });
 
     it('should handle initialization failures gracefully', async () => {
@@ -727,8 +727,8 @@ describe.skip('Enhanced Sockets Feature Implementation', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errors!).toBeDefined();
-      expect(result.suggestions!).toBeDefined();
+      expect(result.error!).toBeDefined();
+      expect((result as any).suggestions!).toBeDefined();
     });
   });
 

@@ -36,7 +36,7 @@ export interface RuntimeCommand {
 export interface CommandWithParseInput {
   name: string;
   parseInput?(
-    raw: { args: ASTNode[]; modifiers: Record<string, any> },
+    raw: { args: ASTNode[]; modifiers: Record<string, any>; commandName?: string },
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
   ): Promise<any>;
@@ -140,7 +140,7 @@ export class CommandAdapterV2 implements RuntimeCommand {
 
       // Store evaluator in locals for commands that need it during execute()
       if (!context.locals) {
-        context.locals = new Map();
+        (context as { locals: Map<string, unknown> }).locals = new Map();
       }
       context.locals.set('__evaluator', this.expressionEvaluator);
 

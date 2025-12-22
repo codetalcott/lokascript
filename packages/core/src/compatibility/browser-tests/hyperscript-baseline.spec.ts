@@ -5,6 +5,13 @@
 
 import { test, expect, Page } from '@playwright/test';
 
+// Extend Window interface for test helper functions injected by compatibility-test.html
+declare global {
+  interface Window {
+    testExpressionWithContext: (expr: string, context: object) => { match: boolean; original: any; ours: any };
+  }
+}
+
 test.describe('_hyperscript Official Tests - Baseline', () => {
   let page: Page;
 
@@ -31,7 +38,7 @@ test.describe('_hyperscript Official Tests - Baseline', () => {
       },
     ];
 
-    const errorCases = [
+    const errorCases: Array<{ expr: string; expectedError: string; description: string }> = [
       // No error cases - our implementation correctly handles operator precedence
     ];
 
@@ -57,14 +64,14 @@ test.describe('_hyperscript Official Tests - Baseline', () => {
     }
 
     // Test error expressions
-    for (const testCase of errorCases) {
+    for (const testCase of errorCases as Array<{ expr: string; expectedError: string; description: string }>) {
       const result = await page.evaluate(({ e }) => window.testExpressionWithContext(e, {}), {
         e: testCase.expr,
       });
 
       // Check if both libraries failed with appropriate error
-      const bothFailed = result.original.includes('ERROR') && result.ours.includes('ERROR');
-      const hasCorrectError = result.ours.includes(testCase.expectedError);
+      const bothFailed = String(result.original).includes('ERROR') && String(result.ours).includes('ERROR');
+      const hasCorrectError = String(result.ours).includes(testCase.expectedError);
 
       if (bothFailed && hasCorrectError) {
         console.log(`  ✅ ${testCase.description}: ${testCase.expr} properly throws error`);
@@ -241,7 +248,7 @@ test.describe('_hyperscript Official Tests - Baseline', () => {
       },
     ];
 
-    const errorCases = [
+    const errorCases: Array<{ expr: string; expectedError: string; description: string }> = [
       // No error cases - our implementation correctly handles operator precedence
     ];
 
@@ -265,13 +272,13 @@ test.describe('_hyperscript Official Tests - Baseline', () => {
       }
     }
 
-    for (const testCase of errorCases) {
+    for (const testCase of errorCases as Array<{ expr: string; expectedError: string; description: string }>) {
       const result = await page.evaluate(({ e }) => window.testExpressionWithContext(e, {}), {
         e: testCase.expr,
       });
 
-      const bothFailed = result.original.includes('ERROR') && result.ours.includes('ERROR');
-      const hasCorrectError = result.ours.includes(testCase.expectedError);
+      const bothFailed = String(result.original).includes('ERROR') && String(result.ours).includes('ERROR');
+      const hasCorrectError = String(result.ours).includes(testCase.expectedError);
 
       if (bothFailed && hasCorrectError) {
         console.log(`  ✅ ${testCase.description}: ${testCase.expr} properly throws error`);

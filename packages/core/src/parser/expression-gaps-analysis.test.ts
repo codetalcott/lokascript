@@ -17,7 +17,7 @@ const context: ExecutionContext = {
   result: null,
   locals: new Map(),
   globals: new Map(),
-  parent: null,
+  parent: undefined,
   halted: false,
   returned: false,
   broke: false,
@@ -162,7 +162,7 @@ describe('Expression Gaps Analysis - Systematic TDD', () => {
 
       const contextWithMe = { ...context, me: mockElement };
 
-      const result = await parseAndEvaluateExpression('me.className', contextWithMe);
+      const result = await parseAndEvaluateExpression('me.className', contextWithMe as unknown as ExecutionContext);
       expect(result).toBe('test-class');
     });
 
@@ -177,7 +177,7 @@ describe('Expression Gaps Analysis - Systematic TDD', () => {
 
       const contextWithData = { ...context, me: mockData };
 
-      const result = await parseAndEvaluateExpression("my user's profile's name", contextWithData);
+      const result = await parseAndEvaluateExpression("my user's profile's name", contextWithData as unknown as ExecutionContext);
       expect(result).toBe('John');
     });
   });
@@ -193,7 +193,7 @@ describe('Expression Gaps Analysis - Systematic TDD', () => {
       // Test ternary-like expressions if supported
       const contextWithVar = {
         ...context,
-        locals: new Map([
+        locals: new Map<string, unknown>([
           ['condition', true],
           ['valueA', 'yes'],
           ['valueB', 'no'],

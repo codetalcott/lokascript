@@ -4,7 +4,7 @@
  */
 
 import type { CommandNode, ASTNode, Token } from '../types'
-import type { ParserContext } from '../parser-context'
+import type { ParserContext } from '../parser-types'
 
 /**
  * Result from parsing a statement in tests
@@ -32,7 +32,7 @@ export interface ASTNodeAssertable extends CommandNode {
   name: string
   type: 'Command'
   children?: CommandNode[]
-  arguments?: ASTNode[]
+  arguments: ASTNode[]
   target?: ASTNode
 }
 

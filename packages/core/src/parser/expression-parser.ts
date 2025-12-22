@@ -2018,9 +2018,9 @@ async function evaluateCallExpression(node: any, context: ExecutionContext): Pro
         case 'closest':
           return referencesExpressions.closest.evaluate(context, ...args);
         case 'previous':
-          return referencesExpressions.previous.evaluate(context, ...args);
+          return positionalExpressions.previous.evaluate(context, ...args);
         case 'next':
-          return referencesExpressions.next.evaluate(context, ...args);
+          return positionalExpressions.next.evaluate(context, ...args);
       }
     }
   }

@@ -85,7 +85,7 @@ describe('Compound Syntax - Parser', () => {
       expect(result.success).toBe(true);
       expect(result.node?.type).toBe('command');
       if (result.node?.type === 'command') {
-        expect(result.node.name.toLowerCase()).toBe('put');
+        expect(((result.node as unknown as { name: unknown }).name as string).toLowerCase()).toBe('put');
       }
     });
 

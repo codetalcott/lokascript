@@ -178,8 +178,7 @@ describe('ParserContext', () => {
 
   describe('AST Node Creation Methods', () => {
     it('should create identifier node', () => {
-      const pos = context.getPosition();
-      const node = context.createIdentifier('myVar', pos);
+      const node = context.createIdentifier('myVar');
 
       expect(node.type).toBe('identifier');
       expect(node.name).toBe('myVar');
@@ -188,8 +187,7 @@ describe('ParserContext', () => {
     });
 
     it('should create literal node', () => {
-      const pos = context.getPosition();
-      const node = context.createLiteral(42, '42', pos);
+      const node = context.createLiteral(42, '42');
 
       expect(node.type).toBe('literal');
       expect(node.value).toBe(42);
@@ -197,18 +195,16 @@ describe('ParserContext', () => {
     });
 
     it('should create selector node', () => {
-      const pos = context.getPosition();
-      const node = context.createSelector('button.active', pos);
+      const node = context.createSelector('button.active');
 
       expect(node.type).toBe('selector');
       expect(node.value).toBe('button.active');
     });
 
     it('should create binary expression node', () => {
-      const pos = context.getPosition();
-      const left = context.createLiteral(1, '1', pos);
-      const right = context.createLiteral(2, '2', pos);
-      const node = context.createBinaryExpression('+', left, right, pos);
+      const left = context.createLiteral(1, '1');
+      const right = context.createLiteral(2, '2');
+      const node = context.createBinaryExpression(left, '+', right);
 
       expect(node.type).toBe('binaryExpression');
       expect(node.operator).toBe('+');
@@ -217,9 +213,8 @@ describe('ParserContext', () => {
     });
 
     it('should create unary expression node', () => {
-      const pos = context.getPosition();
-      const arg = context.createLiteral(5, '5', pos);
-      const node = context.createUnaryExpression('-', arg, true, pos);
+      const arg = context.createLiteral(5, '5');
+      const node = context.createUnaryExpression('-', arg, true);
 
       expect(node.type).toBe('unaryExpression');
       expect(node.operator).toBe('-');
@@ -228,10 +223,9 @@ describe('ParserContext', () => {
     });
 
     it('should create member expression node', () => {
-      const pos = context.getPosition();
-      const obj = context.createIdentifier('window', pos);
-      const prop = context.createIdentifier('document', pos);
-      const node = context.createMemberExpression(obj, prop, false, pos);
+      const obj = context.createIdentifier('window');
+      const prop = context.createIdentifier('document');
+      const node = context.createMemberExpression(obj, prop, false);
 
       expect(node.type).toBe('memberExpression');
       expect(node.object).toBe(obj);
@@ -240,10 +234,9 @@ describe('ParserContext', () => {
     });
 
     it('should create call expression node', () => {
-      const pos = context.getPosition();
-      const callee = context.createIdentifier('alert', pos);
-      const args = [context.createLiteral('Hello', '"Hello"', pos)];
-      const node = context.createCallExpression(callee, args, pos);
+      const callee = context.createIdentifier('alert');
+      const args = [context.createLiteral('Hello', '"Hello"')];
+      const node = context.createCallExpression(callee, args);
 
       expect(node.type).toBe('callExpression');
       expect(node.callee).toBe(callee);
@@ -251,17 +244,15 @@ describe('ParserContext', () => {
     });
 
     it('should create error node', () => {
-      const pos = context.getPosition();
-      const node = context.createErrorNode(pos);
+      const node = context.createErrorNode();
 
       expect(node.type).toBe('identifier');
       expect(node.name).toBe('__ERROR__');
     });
 
     it('should create program node from statements', () => {
-      const pos = context.getPosition();
-      const stmt1 = context.createIdentifier('stmt1', pos);
-      const stmt2 = context.createIdentifier('stmt2', pos);
+      const stmt1 = context.createIdentifier('stmt1');
+      const stmt2 = context.createIdentifier('stmt2');
       const program = context.createProgramNode([stmt1, stmt2]);
 
       expect(program.type).toBe('Program');
@@ -333,7 +324,7 @@ describe('ParserContext', () => {
 
     it.skip('should check if token is a keyword', () => {
       const token = tokens.find(t => t.value === 'to');
-      const result = context.isKeyword(token, ['to', 'from']);
+      const result = context.isKeyword(token?.value ?? '');
       expect(typeof result).toBe('boolean');
     });
 
@@ -362,7 +353,7 @@ describe('ParserContext', () => {
       const pos = getPosition();
       expect(pos).toBeDefined();
 
-      const node = createIdentifier('test', pos);
+      const node = createIdentifier('test');
       expect(node.type).toBe('identifier');
       expect(node.name).toBe('test');
     });

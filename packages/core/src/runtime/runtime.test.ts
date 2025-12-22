@@ -187,7 +187,7 @@ describe('Hyperscript Runtime', () => {
 
     it('should update context variables during execution', async () => {
       // For now, test direct context manipulation since parser doesn't handle "set" commands yet
-      context.result = 'completed';
+      (context as { result: unknown }).result = 'completed';
 
       expect(context.result).toBe('completed');
     });
@@ -236,7 +236,7 @@ describe('Hyperscript Runtime', () => {
   describe('Command Registration Safety', () => {
     it.skip('should not have commands registered in both legacy and enhanced registries', () => {
       // Get enhanced registry
-      const enhancedRegistry = runtime.getEnhancedRegistry();
+      const enhancedRegistry = (runtime as any).getEnhancedRegistry();
       const enhancedCommands = enhancedRegistry.getCommandNames();
 
       // Expected list: commands that should be in enhanced registry only
@@ -310,7 +310,7 @@ describe('Hyperscript Runtime', () => {
     });
 
     it.skip('should have all critical commands registered', () => {
-      const enhancedRegistry = runtime.getEnhancedRegistry();
+      const enhancedRegistry = (runtime as any).getEnhancedRegistry();
 
       // Verify key commands are available
       const criticalCommands = [

@@ -127,6 +127,7 @@ import { createPseudoCommand } from '../commands/execution/pseudo-command';
 // ============================================================================
 
 // Keyword providers for each supported locale
+// Types declared in src/types.d.ts for bundler-resolved module
 import {
   esKeywords,
   jaKeywords,

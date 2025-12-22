@@ -16,8 +16,11 @@ describe('Enhanced Some Expression', () => {
     context = createTypedExpressionContext();
 
     // Restore console.log for debugging
-    if (console.log.mockRestore) {
-      console.log.mockRestore();
+    if ((console.log as any).mockRestore) {
+      (console.log as any).mockRestore();
+    }
+    if ((console.warn as any).mockRestore) {
+      (console.warn as any).mockRestore();
     }
   });
 
@@ -168,7 +171,7 @@ describe('Enhanced Some Expression', () => {
     });
 
     test('handles arguments object', async () => {
-      function testFunction() {
+      function testFunction(..._args: number[]) {
         return arguments;
       }
 
@@ -417,7 +420,7 @@ describe('Enhanced Some Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = someExpression.documentation;
+      const docs = (someExpression as any).documentation;
 
       expect(docs.summary).toContain('existence');
       expect(docs.parameters).toHaveLength(1);

@@ -3,7 +3,7 @@
  * Eliminates duplication across 29+ command parsing methods
  */
 
-import type { Token, CommandNode, ExpressionNode, ASTNode } from '../types/core';
+import type { Token, CommandNode, ExpressionNode, ASTNode, StatementNode } from '../types/core';
 
 /**
  * Position information for AST nodes
@@ -44,7 +44,7 @@ interface Position {
 export class CommandNodeBuilder {
   private name: string;
   private args: ExpressionNode[] = [];
-  private body?: ASTNode[];
+  private body?: StatementNode[];
   private implicitTarget?: ExpressionNode;
   private isBlocking = false;
   private modifiers?: Record<string, ExpressionNode>;
@@ -108,7 +108,7 @@ export class CommandNodeBuilder {
    * Set the command body (for block commands)
    * @param body Array of statement nodes
    */
-  withBody(body: ASTNode[]): this {
+  withBody(body: StatementNode[]): this {
     this.body = body;
     return this;
   }

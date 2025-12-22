@@ -36,7 +36,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -80,10 +80,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '.active',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '.active' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '.active' }], modifiers: {} },
         evaluator,
         context
       );
@@ -99,10 +99,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => 'selected',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: 'selected' }], modifiers: {} },
+        { args: [{ type: 'literal', value: 'selected' }], modifiers: {} },
         evaluator,
         context
       );
@@ -118,10 +118,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => 'active selected highlighted',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: 'active selected highlighted' }], modifiers: {} },
+        { args: [{ type: 'literal', value: 'active selected highlighted' }], modifiers: {} },
         evaluator,
         context
       );
@@ -136,10 +136,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '.active .selected .highlighted',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '.active .selected .highlighted' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '.active .selected .highlighted' }], modifiers: {} },
         evaluator,
         context
       );
@@ -154,10 +154,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => ['.active', 'selected', '.highlighted'],
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: ['.active', 'selected', '.highlighted'] }], modifiers: {} },
+        { args: [{ type: 'literal', value: ['.active', 'selected', '.highlighted'] }], modifiers: {} },
         evaluator,
         context
       );
@@ -172,10 +172,10 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => 'valid-class 123invalid -also-valid _underscore',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: 'valid-class 123invalid -also-valid _underscore' }], modifiers: {} },
+        { args: [{ type: 'literal', value: 'valid-class 123invalid -also-valid _underscore' }], modifiers: {} },
         evaluator,
         context
       );
@@ -191,11 +191,11 @@ describe('RemoveCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '123 456 789', // All start with digits
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
-          { args: [{ value: '123 456 789' }], modifiers: {} },
+          { args: [{ type: 'literal', value: '123 456 789' }], modifiers: {} },
           evaluator,
           context
         )
@@ -214,11 +214,11 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return targetElement;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: targetElement }],
+          args: [{ type: 'literal', value: 'active' }, { type: 'literal', value: targetElement }],
           modifiers: {},
         },
         evaluator,
@@ -244,11 +244,11 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return '#test-target';
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: '#test-target' }],
+          args: [{ type: 'literal', value: 'active' }, { type: 'literal', value: '#test-target' }],
           modifiers: {},
         },
         evaluator,
@@ -280,11 +280,11 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return document.querySelectorAll('.test-class');
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'active' }, { value: '.test-class' }],
+          args: [{ type: 'literal', value: 'active' }, { type: 'literal', value: '.test-class' }],
           modifiers: {},
         },
         evaluator,
@@ -311,12 +311,12 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return ':::invalid:::';
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'active' }, { value: ':::invalid:::' }],
+            args: [{ type: 'literal', value: 'active' }, { type: 'literal', value: ':::invalid:::' }],
             modifiers: {},
           },
           evaluator,
@@ -336,12 +336,12 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return '.nonexistent-element';
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'active' }, { value: '.nonexistent-element' }],
+            args: [{ type: 'literal', value: 'active' }, { type: 'literal', value: '.nonexistent-element' }],
             modifiers: {},
           },
           evaluator,
@@ -537,7 +537,7 @@ describe('RemoveCommand (Standalone V2)', () => {
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '.active' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '.active' }], modifiers: {} },
         evaluator,
         context
       );
@@ -558,11 +558,11 @@ describe('RemoveCommand (Standalone V2)', () => {
       context.me!.className = 'active selected highlighted';
       const evaluator = {
         evaluate: async () => 'active selected highlighted',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: 'active selected highlighted' }], modifiers: {} },
+        { args: [{ type: 'literal', value: 'active selected highlighted' }], modifiers: {} },
         evaluator,
         context
       );
@@ -595,12 +595,12 @@ describe('RemoveCommand (Standalone V2)', () => {
           }
           return '#test-button';
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: '.active' }, { value: '#test-button' }],
+          args: [{ type: 'literal', value: '.active' }, { type: 'literal', value: '#test-button' }],
           modifiers: {},
         },
         evaluator,
@@ -626,11 +626,11 @@ describe('RemoveCommand (Standalone V2)', () => {
       context.me!.className = 'keep-1 remove-me keep-2';
       const evaluator = {
         evaluate: async () => '.remove-me',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '.remove-me' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '.remove-me' }], modifiers: {} },
         evaluator,
         context
       );

@@ -225,8 +225,8 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Set variables directly in context for testing
-      if (!context.variables) context.variables = new Map();
-      context.variables.set('testVar', 'test value');
+      if (!context.variables) (context as any).variables = new Map();
+      context.variables!.set('testVar', 'test value');
 
       // Test that we can access context variables through evaluation
       const result = await hyperscript.run('testVar', context);
@@ -279,9 +279,9 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Set variables directly in context for testing
-      if (!context.variables) context.variables = new Map();
-      context.variables.set('counter', 1);
-      context.variables.set('message', 'Hello');
+      if (!context.variables) (context as any).variables = new Map();
+      context.variables!.set('counter', 1);
+      context.variables!.set('message', 'Hello');
 
       // Test variable evaluation
       const counterResult = await hyperscript.run('counter', context);

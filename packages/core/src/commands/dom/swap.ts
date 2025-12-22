@@ -210,7 +210,7 @@ export class SwapCommand implements DecoratedCommand {
         if (right && right.type === 'selector' && typeof right.value === 'string') {
           targetArg = right.value;
         } else if (right) {
-          targetArg = await evaluator.evaluate(right, context);
+          targetArg = await evaluator.evaluate(right as ASTNode, context);
         }
       } else {
         targetArg = await evaluator.evaluate(targetNode, context);

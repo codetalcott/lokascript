@@ -40,7 +40,7 @@ export class ShowCommand extends VisibilityCommandBase {
   }
 
   // Override for backward compatibility - mode is optional for show
-  validate(input: unknown): input is ShowCommandInput {
+  override validate(input: unknown): input is VisibilityCommandInput {
     if (typeof input !== 'object' || input === null) return false;
     const typed = input as Partial<ShowCommandInput>;
     if (!Array.isArray(typed.targets)) return false;

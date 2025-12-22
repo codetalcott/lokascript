@@ -42,7 +42,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Object Literal Tests ==========
@@ -62,12 +62,12 @@ describe('SetCommand - Object Literal Support', () => {
           if (node.value) return node.value;
           return node;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: { textContent: 'Hello', title: 'World' } }],
-          modifiers: { on: { value: context.me } },
+          args: [{ type: 'literal', value: { textContent: 'Hello', title: 'World' } }],
+          modifiers: { on: { type: 'expression', value: context.me } },
         },
         evaluator,
         context
@@ -86,8 +86,8 @@ describe('SetCommand - Object Literal Support', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: { id: 'new-id', className: 'active', textContent: 'Text' } }],
-          modifiers: { on: { value: context.me } },
+          args: [{ type: 'literal', value: { id: 'new-id', className: 'active', textContent: 'Text' } }],
+          modifiers: { on: { type: 'expression', value: context.me } },
         },
         evaluator,
         context
@@ -107,7 +107,7 @@ describe('SetCommand - Object Literal Support', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: { textContent: 'Default' } }],
+          args: [{ type: 'literal', value: { textContent: 'Default' } }],
           modifiers: {},
         },
         evaluator,
@@ -124,7 +124,7 @@ describe('SetCommand - Object Literal Support', () => {
   describe('execute - Object Literal', () => {
     it('should set multiple properties on single element', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         {
@@ -136,7 +136,7 @@ describe('SetCommand - Object Literal Support', () => {
       );
 
       expect(element!.textContent).toBe('Updated');
-      expect(element!.title).toBe('Tooltip');
+      expect((element as HTMLElement).title).toBe('Tooltip');
       expect(element!.id).toBe('updated-id');
     });
 
@@ -168,7 +168,7 @@ describe('SetCommand - Object Literal Support', () => {
         {
           type: 'object-literal',
           properties: props,
-          targets: [context.me],
+          targets: [context.me as HTMLElement],
         },
         context
       );
@@ -234,8 +234,8 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the textContent of me' }],
-          modifiers: { to: { value: 'New Text' } },
+          args: [{ type: 'literal', value: 'the textContent of me' }],
+          modifiers: { to: { type: 'expression', value: 'New Text' } },
         },
         evaluator,
         context
@@ -257,8 +257,8 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the innerHTML of it' }],
-          modifiers: { to: { value: '<strong>Bold</strong>' } },
+          args: [{ type: 'literal', value: 'the innerHTML of it' }],
+          modifiers: { to: { type: 'expression', value: '<strong>Bold</strong>' } },
         },
         evaluator,
         context
@@ -280,8 +280,8 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'the title of #target-el' }],
-          modifiers: { to: { value: 'Title Text' } },
+          args: [{ type: 'literal', value: 'the title of #target-el' }],
+          modifiers: { to: { type: 'expression', value: 'Title Text' } },
         },
         evaluator,
         context
@@ -304,8 +304,8 @@ describe('SetCommand - "the X of Y" Syntax', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'THE textContent OF me' }],
-          modifiers: { to: { value: 'Case' } },
+          args: [{ type: 'literal', value: 'THE textContent OF me' }],
+          modifiers: { to: { type: 'expression', value: 'Case' } },
         },
         evaluator,
         context
@@ -324,8 +324,8 @@ describe('SetCommand - "the X of Y" Syntax', () => {
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'the property' }], // Missing "of Y"
-            modifiers: { to: { value: 'value' } },
+            args: [{ type: 'literal', value: 'the property' }], // Missing "of Y"
+            modifiers: { to: { type: 'expression', value: 'value' } },
           },
           evaluator,
           context
@@ -337,7 +337,7 @@ describe('SetCommand - "the X of Y" Syntax', () => {
   describe('execute - "the X of Y" (via property type)', () => {
     it('should set property via "the X of Y" pattern', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         {
@@ -370,8 +370,8 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*opacity' }],
-          modifiers: { to: { value: '0.5' } },
+          args: [{ type: 'literal', value: '*opacity' }],
+          modifiers: { to: { type: 'expression', value: '0.5' } },
         },
         evaluator,
         context
@@ -391,8 +391,8 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*background-color' }],
-          modifiers: { to: { value: 'blue' } },
+          args: [{ type: 'literal', value: '*background-color' }],
+          modifiers: { to: { type: 'expression', value: 'blue' } },
         },
         evaluator,
         createMockContext()
@@ -412,10 +412,10 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*color' }],
+          args: [{ type: 'literal', value: '*color' }],
           modifiers: {
-            to: { value: 'red' },
-            on: { value: targetElement },
+            to: { type: 'expression', value: 'red' },
+            on: { type: 'expression', value: targetElement },
           },
         },
         evaluator,
@@ -435,8 +435,8 @@ describe('SetCommand - CSS Property Shorthand', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '*width' }],
-          modifiers: { to: { value: 100 } }, // Number value
+          args: [{ type: 'literal', value: '*width' }],
+          modifiers: { to: { type: 'expression', value: 100 } }, // Number value
         },
         evaluator,
         context
@@ -452,7 +452,7 @@ describe('SetCommand - CSS Property Shorthand', () => {
   describe('execute - CSS Property', () => {
     it('should set inline style property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         {
@@ -464,12 +464,12 @@ describe('SetCommand - CSS Property Shorthand', () => {
         context
       );
 
-      expect(element!.style.opacity).toBe('0.7');
+      expect((element as HTMLElement).style.opacity).toBe('0.7');
     });
 
     it('should set kebab-case style property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         {
@@ -481,12 +481,12 @@ describe('SetCommand - CSS Property Shorthand', () => {
         context
       );
 
-      expect(element!.style.backgroundColor).toBe('green');
+      expect((element as HTMLElement).style.backgroundColor).toBe('green');
     });
 
     it('should set multiple style properties', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         {
@@ -508,8 +508,8 @@ describe('SetCommand - CSS Property Shorthand', () => {
         context
       );
 
-      expect(element!.style.color).toBe('red');
-      expect(element!.style.fontSize).toBe('16px');
+      expect((element as HTMLElement).style.color).toBe('red');
+      expect((element as HTMLElement).style.fontSize).toBe('16px');
     });
 
     it('should update context.it when setting style', async () => {
@@ -518,7 +518,7 @@ describe('SetCommand - CSS Property Shorthand', () => {
       await command.execute(
         {
           type: 'style',
-          element: context.me,
+          element: context.me as HTMLElement,
           property: 'opacity',
           value: '0.5',
         },
@@ -590,7 +590,7 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: { textContent: 'Object', id: 'obj-id' } }],
+        args: [{ type: 'literal', value: { textContent: 'Object', id: 'obj-id' } }],
         modifiers: {},
       },
       evaluator,
@@ -611,8 +611,8 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: 'the title of me' }],
-        modifiers: { to: { value: 'Title' } },
+        args: [{ type: 'literal', value: 'the title of me' }],
+        modifiers: { to: { type: 'expression', value: 'Title' } },
       },
       evaluator,
       context
@@ -622,7 +622,7 @@ describe('SetCommand - Integration (New Features)', () => {
 
     await command.execute(input, context);
 
-    expect(context.me!.title).toBe('Title');
+    expect((context.me as HTMLElement).title).toBe('Title');
   });
 
   it('should set CSS property end-to-end', async () => {
@@ -631,8 +631,8 @@ describe('SetCommand - Integration (New Features)', () => {
 
     const input = await command.parseInput(
       {
-        args: [{ value: '*opacity' }],
-        modifiers: { to: { value: '0.8' } },
+        args: [{ type: 'literal', value: '*opacity' }],
+        modifiers: { to: { type: 'expression', value: '0.8' } },
       },
       evaluator,
       context
@@ -642,6 +642,6 @@ describe('SetCommand - Integration (New Features)', () => {
 
     await command.execute(input, context);
 
-    expect(context.me!.style.opacity).toBe('0.8');
+    expect((context.me as HTMLElement).style.opacity).toBe('0.8');
   });
 });

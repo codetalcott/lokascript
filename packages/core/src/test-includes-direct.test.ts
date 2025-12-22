@@ -36,8 +36,8 @@ describe('Includes Expression Direct Test', () => {
 
       debugOutput += '\n✅ All direct expression tests completed successfully\n';
     } catch (error) {
-      debugOutput += `❌ Error during direct expression test: ${error.message}\n`;
-      debugOutput += `Stack: ${error.stack}\n`;
+      debugOutput += `❌ Error during direct expression test: ${error instanceof Error ? error.message : String(error)}\n`;
+      debugOutput += `Stack: ${error instanceof Error ? error.stack : 'N/A'}\n`;
     }
 
     writeFileSync('debug-direct-expression-output.txt', debugOutput);

@@ -42,7 +42,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Attribute Removal Tests ==========
@@ -59,10 +59,10 @@ describe('RemoveCommand - Attribute Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '[@data-test]',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '[@data-test]' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '[@data-test]' }], modifiers: {} },
         evaluator,
         context
       );
@@ -78,10 +78,10 @@ describe('RemoveCommand - Attribute Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '@data-value',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '@data-value' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '@data-value' }], modifiers: {} },
         evaluator,
         context
       );
@@ -97,10 +97,10 @@ describe('RemoveCommand - Attribute Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '[@aria-label]',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '[@aria-label]' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '[@aria-label]' }], modifiers: {} },
         evaluator,
         context
       );
@@ -115,10 +115,10 @@ describe('RemoveCommand - Attribute Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '@disabled',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '@disabled' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '@disabled' }], modifiers: {} },
         evaluator,
         context
       );
@@ -270,10 +270,10 @@ describe('RemoveCommand - Style Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '*opacity',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '*opacity' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '*opacity' }], modifiers: {} },
         evaluator,
         context
       );
@@ -289,10 +289,10 @@ describe('RemoveCommand - Style Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '*background-color',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '*background-color' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '*background-color' }], modifiers: {} },
         evaluator,
         context
       );
@@ -307,10 +307,10 @@ describe('RemoveCommand - Style Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '*backgroundColor',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '*backgroundColor' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '*backgroundColor' }], modifiers: {} },
         evaluator,
         context
       );
@@ -325,10 +325,10 @@ describe('RemoveCommand - Style Support', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => '*border-top-color',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value: '*border-top-color' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '*border-top-color' }], modifiers: {} },
         evaluator,
         context
       );
@@ -494,11 +494,11 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
     context.me!.setAttribute('data-temp', 'temporary');
     const evaluator = {
       evaluate: async () => '@data-temp',
-    };
+    } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
     // Parse input
     const input = await command.parseInput(
-      { args: [{ value: '@data-temp' }], modifiers: {} },
+      { args: [{ type: 'literal', value: '@data-temp' }], modifiers: {} },
       evaluator,
       context
     );
@@ -515,14 +515,14 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
 
   it('should remove style end-to-end', async () => {
     const context = createMockContext();
-    context.me!.style.opacity = '0.7';
+    (context.me as HTMLElement).style.opacity = '0.7';
     const evaluator = {
       evaluate: async () => '*opacity',
-    };
+    } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
     // Parse input
     const input = await command.parseInput(
-      { args: [{ value: '*opacity' }], modifiers: {} },
+      { args: [{ type: 'literal', value: '*opacity' }], modifiers: {} },
       evaluator,
       context
     );
@@ -534,7 +534,7 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
     await command.execute(input, context);
 
     // Verify
-    expect(context.me!.style.opacity).toBe('');
+    expect((context.me as HTMLElement).style.opacity).toBe('');
   });
 
   it('should preserve classes when removing attributes', async () => {
@@ -543,10 +543,10 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
     context.me!.setAttribute('data-remove', 'value');
     const evaluator = {
       evaluate: async () => '@data-remove',
-    };
+    } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
     const input = await command.parseInput(
-      { args: [{ value: '@data-remove' }], modifiers: {} },
+      { args: [{ type: 'literal', value: '@data-remove' }], modifiers: {} },
       evaluator,
       context
     );
@@ -561,13 +561,13 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
   it('should preserve attributes when removing styles', async () => {
     const context = createMockContext();
     context.me!.setAttribute('data-keep', 'value');
-    context.me!.style.opacity = '0.5';
+    (context.me as HTMLElement).style.opacity = '0.5';
     const evaluator = {
       evaluate: async () => '*opacity',
-    };
+    } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
     const input = await command.parseInput(
-      { args: [{ value: '*opacity' }], modifiers: {} },
+      { args: [{ type: 'literal', value: '*opacity' }], modifiers: {} },
       evaluator,
       context
     );
@@ -576,6 +576,6 @@ describe('RemoveCommand - Integration (Attributes & Styles)', () => {
 
     // Attributes should be preserved
     expect(context.me!.getAttribute('data-keep')).toBe('value');
-    expect(context.me!.style.opacity).toBe('');
+    expect((context.me as HTMLElement).style.opacity).toBe('');
   });
 });

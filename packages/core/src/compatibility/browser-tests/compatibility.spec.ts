@@ -5,6 +5,14 @@
 
 import { test, expect, Page } from '@playwright/test';
 
+// Extend Window interface for test helper functions injected by compatibility-test.html
+declare global {
+  interface Window {
+    testExpression: (expr: string, context: object) => { match: boolean; original: any; ours: any };
+    testExpressionWithContext: (expr: string, context: object) => { match: boolean; original: any; ours: any };
+  }
+}
+
 test.describe('HyperScript Compatibility Tests', () => {
   let page: Page;
 

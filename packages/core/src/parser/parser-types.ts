@@ -161,9 +161,6 @@ export interface ParserContext {
   /** Check if current token value matches */
   check(value: string): boolean;
 
-  /** Check if current token type matches */
-  checkTokenType(type: TokenType): boolean;
-
   // ==========================================
   // Predicate-Based Token Checking (Phase 4)
   // These methods use token predicates for semantic classification,
@@ -199,9 +196,6 @@ export interface ParserContext {
 
   /** Match and consume if current token matches any given types */
   match(...types: Array<string | TokenType>): boolean;
-
-  /** Match and consume if current token matches given type */
-  matchTokenType(type: TokenType): boolean;
 
   /** Match and consume if current token is operator with given value */
   matchOperator(operator: string): boolean;

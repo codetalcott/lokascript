@@ -25,13 +25,13 @@ function createMockContext(): TypedExecutionContext {
     me: document.createElement('div'),
     you: document.createElement('button'),
     it: null,
-    locals: new Map([
+    locals: new Map<string, unknown>([
       ['x', 10],
       ['y', 5],
       ['user', { name: 'John', age: 30 }],
       ['addFunction', (a: number, b: number) => a + b],
     ]),
-    globals: new Map([
+    globals: new Map<string, unknown>([
       ['PI', 3.14159],
       ['globalFunc', (x: number) => x * 2],
     ]),
@@ -55,7 +55,7 @@ describe('Enhanced Lambda Expression', () => {
 
   describe('Basic Lambda Creation', () => {
     test.skip('creates simple arithmetic lambda', async () => {
-      const result = await expression.evaluate(context, ['x', 'y'], 'x + y');
+      const result = await expression.evaluate(context, { parameters: ['x', 'y'], body: 'x + y' });
 
       expect(result.success).toBe(true);
       if (result.success) {
@@ -69,7 +69,7 @@ describe('Enhanced Lambda Expression', () => {
     });
 
     test.skip('creates property access lambda', async () => {
-      const result = await expression.evaluate(context, ['item'], 'item.name');
+      const result = await expression.evaluate(context, { parameters: ['item'], body: 'item.name' });
 
       expect(result.success).toBe(true);
       if (result.success) {
@@ -82,7 +82,7 @@ describe('Enhanced Lambda Expression', () => {
     });
 
     test.skip('creates parameterless lambda', async () => {
-      const result = await expression.evaluate(context, [], 'true');
+      const result = await expression.evaluate(context, { parameters: [], body: 'true' });
 
       expect(result.success).toBe(true);
       if (result.success) {
@@ -95,7 +95,7 @@ describe('Enhanced Lambda Expression', () => {
     });
 
     test.skip('handles variable access in lambda', async () => {
-      const result = await expression.evaluate(context, ['param'], 'param');
+      const result = await expression.evaluate(context, { parameters: ['param'], body: 'param' });
 
       expect(result.success).toBe(true);
       if (result.success) {
@@ -107,7 +107,7 @@ describe('Enhanced Lambda Expression', () => {
 
   describe('Error Handling', () => {
     test('handles invalid parameters', async () => {
-      const result = await expression.evaluate(context, 'not-array' as unknown as string[], 'x + y');
+      const result = await expression.evaluate(context, { parameters: 'not-array' as unknown as string[], body: 'x + y' });
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -116,7 +116,7 @@ describe('Enhanced Lambda Expression', () => {
     });
 
     test.skip('handles invalid body', async () => {
-      const result = await expression.evaluate(context, ['x'], 123 as unknown as string);
+      const result = await expression.evaluate(context, { parameters: ['x'], body: 123 as unknown as string });
 
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -136,10 +136,10 @@ describe('Enhanced Lambda Expression', () => {
       ];
 
       for (const { body, expected } of tests) {
-        const result = await expression.evaluate(context, [], body);
+        const result = await expression.evaluate(context, { parameters: [], body });
         expect(result.success).toBe(true);
         if (result.success) {
-          expect(result.value()).toBe(expected);
+          expect(result.value!()).toBe(expected);
         }
       }
     });
@@ -571,7 +571,7 @@ describe('Utility Functions', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(typeof result.value).toBe('function');
-      expect(result.value(3, 4)).toBe(7);
+      expect(result.value!(3, 4)).toBe(7);
     }
   });
 
@@ -631,7 +631,7 @@ describe('Performance Characteristics', () => {
     const startTime = performance.now();
     const promises = Array(lambdaCount)
       .fill(0)
-      .map((_, i) => expr.evaluate(context, ['x'], `x + ${i}`));
+      .map((_, i) => expr.evaluate(context, { parameters: ['x'], body: `x + ${i}` }));
     const results = await Promise.all(promises);
     const endTime = performance.now();
 

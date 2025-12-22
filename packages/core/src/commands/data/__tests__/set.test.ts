@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { SetCommand } from '../set';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
 import type { ASTNode } from '../../../types/base-types.ts';
+import type { ExpressionEvaluator } from '../../../core/expression-evaluator';
 
 // ========== Test Utilities ==========
 
@@ -37,7 +38,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -84,7 +85,7 @@ describe('SetCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput(
-          { args: [{ value: 'myVar' }], modifiers: {} },
+          { args: [{ type: 'literal', value: 'myVar' }], modifiers: {} },
           evaluator,
           context
         )
@@ -97,8 +98,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'myVar' }],
-          modifiers: { to: { value: 'test value' } },
+          args: [{ type: 'literal', value: 'myVar' }],
+          modifiers: { to: { type: 'expression', value: 'test value' } },
         },
         evaluator,
         context
@@ -117,8 +118,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '@data-theme' }],
-          modifiers: { to: { value: 'dark' } },
+          args: [{ type: 'literal', value: '@data-theme' }],
+          modifiers: { to: { type: 'expression', value: 'dark' } },
         },
         evaluator,
         context
@@ -137,8 +138,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'my textContent' }],
-          modifiers: { to: { value: 'Hello World' } },
+          args: [{ type: 'literal', value: 'my textContent' }],
+          modifiers: { to: { type: 'expression', value: 'Hello World' } },
         },
         evaluator,
         context
@@ -160,8 +161,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'its innerHTML' }],
-          modifiers: { to: { value: '<strong>Bold</strong>' } },
+          args: [{ type: 'literal', value: 'its innerHTML' }],
+          modifiers: { to: { type: 'expression', value: '<strong>Bold</strong>' } },
         },
         evaluator,
         context
@@ -181,7 +182,7 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' }, { value: 42 }],
+          args: [{ type: 'literal', value: 'count' }, { type: 'literal', value: 42 }],
           modifiers: {},
         },
         evaluator,
@@ -201,8 +202,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' }],
-          modifiers: { to: { value: 42 } },
+          args: [{ type: 'literal', value: 'count' }],
+          modifiers: { to: { type: 'expression', value: 42 } },
         },
         evaluator,
         context
@@ -220,8 +221,8 @@ describe('SetCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'isActive' }],
-          modifiers: { to: { value: true } },
+          args: [{ type: 'literal', value: 'isActive' }],
+          modifiers: { to: { type: 'expression', value: true } },
         },
         evaluator,
         context
@@ -297,7 +298,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       const output = await command.execute(
-        { type: 'attribute', element: context.me, name: 'data-theme', value: 'dark' },
+        { type: 'attribute', element: context.me as HTMLElement, name: 'data-theme', value: 'dark' },
         context
       );
 
@@ -311,7 +312,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       await command.execute(
-        { type: 'attribute', element: context.me, name: 'aria-label', value: 'Close button' },
+        { type: 'attribute', element: context.me as HTMLElement, name: 'aria-label', value: 'Close button' },
         context
       );
 
@@ -322,7 +323,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       await command.execute(
-        { type: 'attribute', element: context.me, name: 'data-count', value: 42 },
+        { type: 'attribute', element: context.me as HTMLElement, name: 'data-count', value: 42 },
         context
       );
 
@@ -333,7 +334,7 @@ describe('SetCommand (Standalone V2)', () => {
       const context = createMockContext();
 
       await command.execute(
-        { type: 'attribute', element: context.me, name: 'data-value', value: 'test' },
+        { type: 'attribute', element: context.me as HTMLElement, name: 'data-value', value: 'test' },
         context
       );
 
@@ -344,7 +345,7 @@ describe('SetCommand (Standalone V2)', () => {
   describe('execute - properties', () => {
     it('should set textContent property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       const output = await command.execute(
         { type: 'property', element, property: 'textContent', value: 'Hello World' },
@@ -359,7 +360,7 @@ describe('SetCommand (Standalone V2)', () => {
 
     it('should set innerHTML property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'innerHTML', value: '<strong>Bold</strong>' },
@@ -371,19 +372,19 @@ describe('SetCommand (Standalone V2)', () => {
 
     it('should set innerText property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'innerText', value: 'Plain text' },
         context
       );
 
-      expect(element!.innerText).toBe('Plain text');
+      expect((element as HTMLElement).innerText).toBe('Plain text');
     });
 
     it('should set id property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'id', value: 'new-id' },
@@ -395,7 +396,7 @@ describe('SetCommand (Standalone V2)', () => {
 
     it('should set className property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'className', value: 'active selected' },
@@ -419,43 +420,43 @@ describe('SetCommand (Standalone V2)', () => {
 
     it('should set style property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'color', value: 'red' },
         context
       );
 
-      expect(element!.style.color).toBe('red');
+      expect((element as HTMLElement).style.color).toBe('red');
     });
 
     it('should set style property with hyphen', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'background-color', value: 'blue' },
         context
       );
 
-      expect(element!.style.backgroundColor).toBe('blue');
+      expect((element as HTMLElement).style.backgroundColor).toBe('blue');
     });
 
     it('should set generic property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'title', value: 'Element title' },
         context
       );
 
-      expect(element!.title).toBe('Element title');
+      expect((element as HTMLElement).title).toBe('Element title');
     });
 
     it('should update context.it when setting property', async () => {
       const context = createMockContext();
-      const element = context.me;
+      const element = context.me as HTMLElement;
 
       await command.execute(
         { type: 'property', element, property: 'textContent', value: 'test' },
@@ -530,8 +531,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'count' }],
-          modifiers: { to: { value: 10 } },
+          args: [{ type: 'literal', value: 'count' }],
+          modifiers: { to: { type: 'expression', value: 10 } },
         },
         evaluator,
         context
@@ -556,8 +557,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: '@data-theme' }],
-          modifiers: { to: { value: 'dark' } },
+          args: [{ type: 'literal', value: '@data-theme' }],
+          modifiers: { to: { type: 'expression', value: 'dark' } },
         },
         evaluator,
         context
@@ -582,8 +583,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'my textContent' }],
-          modifiers: { to: { value: 'Hello' } },
+          args: [{ type: 'literal', value: 'my textContent' }],
+          modifiers: { to: { type: 'expression', value: 'Hello' } },
         },
         evaluator,
         context
@@ -608,8 +609,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 1: Set variable
       const input1 = await command.parseInput(
         {
-          args: [{ value: 'greeting' }],
-          modifiers: { to: { value: 'Hello' } },
+          args: [{ type: 'literal', value: 'greeting' }],
+          modifiers: { to: { type: 'expression', value: 'Hello' } },
         },
         evaluator,
         context
@@ -620,8 +621,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 2: Set property
       const input2 = await command.parseInput(
         {
-          args: [{ value: 'my textContent' }],
-          modifiers: { to: { value: 'World' } },
+          args: [{ type: 'literal', value: 'my textContent' }],
+          modifiers: { to: { type: 'expression', value: 'World' } },
         },
         evaluator,
         context
@@ -632,8 +633,8 @@ describe('SetCommand (Standalone V2)', () => {
       // Step 3: Set attribute
       const input3 = await command.parseInput(
         {
-          args: [{ value: '@data-status' }],
-          modifiers: { to: { value: 'complete' } },
+          args: [{ type: 'literal', value: '@data-status' }],
+          modifiers: { to: { type: 'expression', value: 'complete' } },
         },
         evaluator,
         context

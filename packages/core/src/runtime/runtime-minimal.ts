@@ -15,7 +15,7 @@
  */
 
 import { RuntimeBase, type RuntimeBaseOptions } from './runtime-base';
-import { CommandRegistry } from './command-adapter';
+import { CommandRegistryV2 as CommandRegistry } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 
 // Import standalone V2 commands (zero V1 dependencies)

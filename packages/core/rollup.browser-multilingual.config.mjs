@@ -16,7 +16,9 @@ export default {
   output: {
     file: 'dist/hyperfixi-multilingual.js',
     format: 'iife',
-    name: 'hyperfixi',
+    // Use internal name to avoid overwriting window.hyperfixi
+    // The bundle sets window.hyperfixi internally
+    name: '_hyperfixiMultilingualInternal',
     sourcemap: true,
     inlineDynamicImports: true,
   },

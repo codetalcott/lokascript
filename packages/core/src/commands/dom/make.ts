@@ -57,7 +57,7 @@ function createClassInstance(className: string | HTMLElement, args: unknown[], c
   const name = String(className);
   let Constructor: (new (...args: unknown[]) => unknown) | undefined;
 
-  if (typeof window !== 'undefined') Constructor = (window as Record<string, unknown>)[name] as typeof Constructor;
+  if (typeof window !== 'undefined') Constructor = (window as unknown as Record<string, unknown>)[name] as typeof Constructor;
   if (!Constructor && typeof global !== 'undefined') Constructor = (global as Record<string, unknown>)[name] as typeof Constructor;
   if (!Constructor && context.variables?.has(name)) Constructor = context.variables.get(name) as typeof Constructor;
 

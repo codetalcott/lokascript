@@ -270,7 +270,7 @@ const api = {
 
     const ast = buildAST(result.node);
     const ctx = context || createContext();
-    return runtime.execute(ast as ASTNode, ctx);
+    return runtime.execute(ast as unknown as ASTNode, ctx);
   },
 
   /**
@@ -288,7 +288,7 @@ const api = {
       return null;
     }
 
-    return buildAST(result.node) as ASTNode;
+    return buildAST(result.node) as unknown as ASTNode;
   },
 
   /**

@@ -206,7 +206,7 @@ describe('Enhanced Object Expression', () => {
     test('evaluates dynamic field names from variables', async () => {
       // Set up context with variables
       context.me = document.createElement('div');
-      context.locals = { keyName: 'dynamicKey' };
+      context.locals = new Map([['keyName', 'dynamicKey']]);
 
       const result = await objectExpression.evaluate(
         context,
@@ -415,7 +415,7 @@ describe('Enhanced Object Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = objectExpression.documentation;
+      const docs = (objectExpression as any).documentation;
 
       expect(docs.summary).toContain('object literals');
       expect(docs.parameters).toHaveLength(1);
@@ -437,7 +437,7 @@ describe('Enhanced Object Expression', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(Object.keys(result.value)).toHaveLength(100);
+        expect(Object.keys(result.value!)).toHaveLength(100);
       }
 
       // Should be reasonably fast even for medium-sized objects

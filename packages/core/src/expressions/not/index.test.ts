@@ -308,7 +308,7 @@ describe('Enhanced Not Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = notExpression.documentation;
+      const docs = (notExpression as any).documentation;
 
       expect(docs.summary).toContain('logical negation');
       expect(docs.parameters).toHaveLength(1);

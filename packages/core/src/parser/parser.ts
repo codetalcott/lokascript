@@ -3832,7 +3832,7 @@ export class Parser {
           ? this.originalInput.slice(start, end)
           : this.originalInput.slice(start);
       },
-    } as import('./parser-types').ParserContext;
+    } as unknown as import('./parser-types').ParserContext;
 
     // Add 'current' as getter/setter that syncs with parser's position
     // This fixes the bug where ctx.current = savedPosition didn't restore parser state

@@ -22,7 +22,7 @@ describe('ContextBridge', () => {
       style: {},
       addEventListener: () => {},
       removeEventListener: () => {},
-    } as HTMLElement;
+    } as unknown as HTMLElement;
 
     // Create base execution context
     baseContext = {
@@ -59,20 +59,20 @@ describe('ContextBridge', () => {
       expect(typedContext.events).toBe(baseContext.events);
       expect(typedContext.meta!).toBe(baseContext.meta);
 
-      // Check enhanced features
-      expect(typedContext.errors).toEqual([]);
-      expect(typedContext.commandHistory).toEqual([]);
+      // Check enhanced features (cast to any for legacy properties not in current type)
+      expect((typedContext as any).errors).toEqual([]);
+      expect((typedContext as any).commandHistory).toEqual([]);
       expect(typedContext.validationMode).toBe('strict');
     });
 
     it('should handle missing optional properties', () => {
-      const minimalContext: ExecutionContext = {
+      const minimalContext = {
         me: mockElement,
         it: null,
         you: null,
         result: undefined,
         event: undefined,
-      };
+      } as unknown as ExecutionContext;
 
       const typedContext = ContextBridge.toTyped(minimalContext);
 
@@ -89,7 +89,7 @@ describe('ContextBridge', () => {
       const typedContext = ContextBridge.toTyped(baseContext);
 
       // Modify typed context
-      typedContext.result = 'new-result';
+      (typedContext as { result: unknown }).result = 'new-result';
       typedContext.it = 'modified-it';
       typedContext.variables!.set('newVar', 'newValue');
       typedContext.meta!.newMeta = 'newMetaValue';
@@ -131,7 +131,7 @@ describe('ContextBridge', () => {
     });
 
     it.skip('should handle context modifications during round-trip', () => {
-      const typedContext = ContextBridge.toTyped(baseContext);
+      const typedContext = ContextBridge.toTyped(baseContext) as any;
 
       // Simulate command execution modifying context
       typedContext.result = { status: 'success', data: 'command-result' };
@@ -149,7 +149,7 @@ describe('ContextBridge', () => {
 
   describe('enhanced features integration', () => {
     it.skip('should provide enhanced context features for typed commands', () => {
-      const typedContext = ContextBridge.toTyped(baseContext);
+      const typedContext = ContextBridge.toTyped(baseContext) as any;
 
       // Enhanced features should be available
       expect(Array.isArray(typedContext.errors)).toBe(true);
@@ -169,7 +169,7 @@ describe('ContextBridge', () => {
 
       expect(typedContext.validationMode).toBe('strict');
 
-      typedContext.validationMode = 'lenient';
+      (typedContext as { validationMode: string }).validationMode = 'lenient';
       expect(typedContext.validationMode).toBe('lenient');
     });
   });
@@ -182,7 +182,7 @@ describe('ContextBridge', () => {
         you: null,
         result: undefined,
         event: undefined,
-      } as ExecutionContext;
+      } as unknown as ExecutionContext;
 
       const typedContext = ContextBridge.toTyped(nullContext);
 
@@ -195,7 +195,7 @@ describe('ContextBridge', () => {
       const partialContext = {
         me: mockElement,
         it: 'test',
-      } as ExecutionContext;
+      } as unknown as ExecutionContext;
 
       const typedContext = ContextBridge.toTyped(partialContext);
 

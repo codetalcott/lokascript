@@ -74,7 +74,7 @@ describe('Enhanced Reference Expressions', () => {
       expect(meExpression.syntax).toBe('me');
       expect(meExpression.outputType).toBe('element');
       expect(meExpression.metadata.complexity).toBe('simple');
-      expect(meExpression.metadata!.performance.complexity).toBe('O(1)');
+      expect(meExpression.metadata?.performance?.complexity).toBe('O(1)');
     });
 
     it('should return the current element from context', async () => {
@@ -119,10 +119,10 @@ describe('Enhanced Reference Expressions', () => {
     });
 
     it.skip('should have comprehensive LLM documentation', () => {
-      expect(meExpression.documentation.summary).toContain('current HTML element');
-      expect(meExpression.documentation.examples).toHaveLength(4);
-      expect(meExpression.documentation.tags).toContain('context');
-      expect(meExpression.documentation.seeAlso).toContain('you');
+      expect((meExpression as any).documentation.summary).toContain('current HTML element');
+      expect((meExpression as any).documentation.examples).toHaveLength(4);
+      expect((meExpression as any).documentation.tags).toContain('context');
+      expect((meExpression as any).documentation.seeAlso).toContain('you');
     });
   });
 
@@ -171,9 +171,9 @@ describe('Enhanced Reference Expressions', () => {
     });
 
     it.skip('should have LLM documentation focused on target elements', () => {
-      expect(youExpression.documentation.summary).toContain('target element');
-      expect(youExpression.documentation.examples[0].title).toContain('Event target');
-      expect(youExpression.documentation.tags).toContain('target');
+      expect((youExpression as any).documentation.summary).toContain('target element');
+      expect((youExpression as any).documentation.examples[0].title).toContain('Event target');
+      expect((youExpression as any).documentation.tags).toContain('target');
     });
   });
 
@@ -229,10 +229,10 @@ describe('Enhanced Reference Expressions', () => {
     });
 
     it.skip('should have comprehensive documentation for context usage', () => {
-      expect(itExpression.documentation.summary).toContain('context variable');
-      expect(itExpression.documentation.examples).toHaveLength(4);
-      expect(itExpression.documentation.examples[0].title).toContain('Command result');
-      expect(itExpression.documentation.examples[1].title).toContain('Loop iteration');
+      expect((itExpression as any).documentation.summary).toContain('context variable');
+      expect((itExpression as any).documentation.examples).toHaveLength(4);
+      expect((itExpression as any).documentation.examples[0].title).toContain('Command result');
+      expect((itExpression as any).documentation.examples[1].title).toContain('Loop iteration');
     });
   });
 
@@ -336,11 +336,11 @@ describe('Enhanced Reference Expressions', () => {
     });
 
     it.skip('should have comprehensive LLM documentation', () => {
-      expect(selectorExpression.documentation.summary).toContain('CSS selectors');
-      expect(selectorExpression.documentation.parameters).toHaveLength(2);
-      expect(selectorExpression.documentation.examples).toHaveLength(4);
-      expect(selectorExpression.documentation.examples[0].title).toContain('Class selector');
-      expect(selectorExpression.documentation.tags).toContain('css');
+      expect((selectorExpression as any).documentation.summary).toContain('CSS selectors');
+      expect((selectorExpression as any).documentation.parameters).toHaveLength(2);
+      expect((selectorExpression as any).documentation.examples).toHaveLength(4);
+      expect((selectorExpression as any).documentation.examples[0].title).toContain('Class selector');
+      expect((selectorExpression as any).documentation.tags).toContain('css');
     });
   });
 
@@ -379,7 +379,7 @@ describe('Enhanced Reference Expressions', () => {
     });
 
     it.skip('should provide richer metadata than legacy expressions', () => {
-      const meExpr = referenceExpressions.me;
+      const meExpr = referenceExpressions.me as any;
 
       expect(meExpr.metadata).toBeDefined();
       expect(meExpr.metadata!.examples).toBeDefined();

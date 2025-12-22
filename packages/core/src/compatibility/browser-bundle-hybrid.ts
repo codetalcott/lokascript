@@ -433,7 +433,7 @@ class Parser {
 
     return {
       type: 'for',
-      condition: { variable, iterable },
+      condition: { type: 'forCondition', variable, iterable } as ASTNode,
       body,
     };
   }

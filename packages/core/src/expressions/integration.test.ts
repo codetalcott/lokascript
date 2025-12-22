@@ -62,7 +62,7 @@ describe('Expression Integration Tests', () => {
 
     it('should handle "the closest <section/>"', async () => {
       const result = await referencesExpressions.closest.evaluate(context, 'section');
-      expect(result?.id).toBe('main-section');
+      expect((result as any)?.id).toBe('main-section');
     });
 
     it('should handle "my closest <section/>\'s className"', async () => {
@@ -85,7 +85,7 @@ describe('Expression Integration Tests', () => {
         'children'
       );
       expect(Array.isArray(children)).toBe(true);
-      expect(children.length).toBe(3); // section, form, div#quotes
+      expect((children as unknown[] | { length: number }).length).toBe(3); // section, form, div#quotes
     });
   });
 
@@ -96,7 +96,7 @@ describe('Expression Integration Tests', () => {
 
       // Step 2: Get first button
       const firstButton = await positionalExpressions.first.evaluate(context, buttons);
-      expect(firstButton.id).toBe('btn1');
+      expect((firstButton as { id: string }).id).toBe('btn1');
     });
 
     it('should handle "last of <p/> in #container"', async () => {
@@ -104,16 +104,16 @@ describe('Expression Integration Tests', () => {
       const container = await propertiesExpressions.idReference.evaluate(context, 'container');
 
       // Step 2: Find paragraphs within container
-      const paragraphs = Array.from(container!.querySelectorAll('p'));
+      const paragraphs = Array.from((container as HTMLElement).querySelectorAll('p'));
 
       // Step 3: Get last paragraph
       const lastP = await positionalExpressions.last.evaluate(context, paragraphs);
-      expect(lastP.id).toBe('text2');
+      expect((lastP as { id: string }).id).toBe('text2');
     });
 
     it('should handle "next <button/> from me"', async () => {
       const result = await positionalExpressions.next.evaluate(context, 'button');
-      expect(result?.id).toBe('btn2');
+      expect((result as any)?.id).toBe('btn2');
     });
 
     it('should handle "previous <button/> from #btn2"', async () => {
@@ -123,7 +123,7 @@ describe('Expression Integration Tests', () => {
         'button',
         btn2 as HTMLElement
       );
-      expect(result?.id).toBe('btn1');
+      expect((result as any)?.id).toBe('btn1');
     });
   });
 
@@ -276,7 +276,7 @@ describe('Expression Integration Tests', () => {
 
       // Step 2: Check each one for .hidden class
       let hiddenCount = 0;
-      for (const element of contentElements) {
+      for (const element of (contentElements as unknown[])) {
         const hasHidden = await logicalExpressions.matches.evaluate(context, element, '.hidden');
         if (hasHidden) hiddenCount++;
       }
@@ -298,7 +298,7 @@ describe('Expression Integration Tests', () => {
       const jsonValues = await conversionExpressions.as.evaluate(context, form, 'Values:JSON');
 
       // Step 3: Parse and verify
-      const parsed = JSON.parse(jsonValues);
+      const parsed = JSON.parse(jsonValues as string);
       expect(parsed.username).toBe('john');
       expect(parsed.age).toBe(25);
       expect(parsed.active).toBe(true);
@@ -317,7 +317,7 @@ describe('Expression Integration Tests', () => {
       const form = await referencesExpressions.closest.evaluate(context, 'form');
 
       // Step 2: Find age input within form
-      const ageInput = form!.querySelector('input[name="age"]') as HTMLInputElement;
+      const ageInput = (form as HTMLElement).querySelector('input[name="age"]') as HTMLInputElement;
 
       // Step 3: Get its value and convert to Int
       const value = await propertiesExpressions.possessive.evaluate(context, ageInput, 'value');
@@ -337,10 +337,10 @@ describe('Expression Integration Tests', () => {
       const intValue = await conversionExpressions.as.evaluate(context, dataValue, 'Int');
 
       // Step 2: Add 5
-      const sum = await specialExpressions.addition.evaluate(context, intValue, 5);
+      const sum = await (specialExpressions.addition as any).evaluate(context, intValue, 5);
 
       // Step 3: Multiply by 2
-      const result = await specialExpressions.multiplication.evaluate(context, sum, 2);
+      const result = await (specialExpressions.multiplication as any).evaluate(context, sum, 2);
 
       expect(result).toBe(30); // (10 + 5) * 2 = 30
     });
@@ -353,7 +353,7 @@ describe('Expression Integration Tests', () => {
       const length = await propertiesExpressions.possessive.evaluate(context, values, 'length');
 
       // Step 3: Modulo 3
-      const result = await specialExpressions.modulo.evaluate(context, length, 3);
+      const result = await (specialExpressions as any).modulo.evaluate(context, length, 3);
 
       expect(result).toBe(2); // 5 mod 3 = 2
     });
@@ -402,14 +402,14 @@ describe('Expression Integration Tests', () => {
         context,
         '.missing'
       );
-      const noMissing = await logicalExpressions.not.evaluate(context, missingElements.length > 0);
+      const noMissing = await logicalExpressions.not.evaluate(context, (missingElements as unknown[] | { length: number }).length > 0);
 
       // Step 2: Check if .content elements exist
       const contentElements = await referencesExpressions.elementWithSelector.evaluate(
         context,
         '.content'
       );
-      const hasContent = contentElements.length > 0;
+      const hasContent = (contentElements as unknown[] | { length: number }).length > 0;
 
       // Step 3: Combine with OR
       const result = await logicalExpressions.or.evaluate(context, noMissing, hasContent);
@@ -438,7 +438,7 @@ describe('Expression Integration Tests', () => {
       );
 
       // Step 3: Check if username is not empty
-      const username = formValues.username;
+      const username = (formValues as Record<string, unknown>).username;
       const isNotEmpty = await logicalExpressions.not.evaluate(context, username === '');
 
       // Step 4: Combine conditions
@@ -459,7 +459,7 @@ describe('Expression Integration Tests', () => {
       const quotes = await propertiesExpressions.idReference.evaluate(context, 'quotes');
 
       // Step 2: Get all blockquotes
-      const blockquotes = Array.from(quotes!.querySelectorAll('blockquote'));
+      const blockquotes = Array.from((quotes as HTMLElement).querySelectorAll('blockquote'));
 
       // Step 3: Filter by data-author containing search term
       const filteredQuotes = [];
@@ -496,7 +496,7 @@ describe('Expression Integration Tests', () => {
       // Step 3: Check if it has primary class
       const hasPrimary = await logicalExpressions.matches.evaluate(context, nextButton, '.primary');
 
-      expect(nextButton?.id).toBe('btn2');
+      expect((nextButton as any)?.id).toBe('btn2');
       expect(hasPrimary).toBe(false); // btn2 has .secondary, not .primary
     });
   });
@@ -568,7 +568,7 @@ describe('Expression Integration Tests', () => {
         context,
         '.even'
       );
-      expect(evenElements.length).toBe(50);
+      expect((evenElements as unknown[] | { length: number }).length).toBe(50);
 
       // Cleanup
       document.body.removeChild(container);

@@ -77,7 +77,7 @@ export function expectASTStructure(
   expected: Partial<CommandNode | ASTNode>
 ): void {
   for (const [key, value] of Object.entries(expected)) {
-    const actualValue = (node as Record<string, unknown>)[key]
+    const actualValue = (node as unknown as Record<string, unknown>)[key]
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       if (typeof actualValue !== 'object' || actualValue === null) {
@@ -107,7 +107,7 @@ export function expectNodeProperty<T = unknown>(
   }
 
   if (expectedValue !== undefined) {
-    const actualValue = (node as Record<string, unknown>)[property]
+    const actualValue = (node as unknown as Record<string, unknown>)[property]
     if (actualValue !== expectedValue) {
       throw new Error(
         `Expected node.${property} to be ${String(expectedValue)}, got ${String(actualValue)}`
@@ -171,7 +171,7 @@ export function getNodeProperty<T = unknown>(
   property: string
 ): T | undefined {
   if (property in node) {
-    return (node as Record<string, unknown>)[property] as T
+    return (node as unknown as Record<string, unknown>)[property] as T
   }
   return undefined
 }

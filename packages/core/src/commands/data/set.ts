@@ -73,7 +73,7 @@ export class SetCommand implements DecoratedCommand {
 
     // Handle memberExpression: "set my innerHTML to X"
     if (firstArg?.type === 'memberExpression') {
-      const result = this.tryParseMemberExpression(firstArg, raw, evaluator, context);
+      const result = await this.tryParseMemberExpression(firstArg, raw, evaluator, context);
       if (result) return result;
     }
 
@@ -82,7 +82,7 @@ export class SetCommand implements DecoratedCommand {
     if ((firstArg?.type === 'identifier' || firstArg?.type === 'variable') && typeof argName === 'string') {
       firstValue = argName;
     } else {
-      firstValue = await evaluator.evaluate(firstArg, context);
+      firstValue = await evaluator.evaluate(firstArg as import('../../types/base-types').ASTNode, context);
     }
 
     // Object literal: set { x: 1, y: 2 } on element

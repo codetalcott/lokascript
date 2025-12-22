@@ -125,14 +125,14 @@ describe('Enhanced In Expression', () => {
 
   describe('Array-like Objects', () => {
     test('works with NodeList-like objects', async () => {
-      const nodeListLike = {
+      const nodeListLike: { [key: number]: string; length: number; [Symbol.iterator]: () => Generator<string> } = {
         0: 'first',
         1: 'second',
         2: 'third',
         length: 3,
-        [Symbol.iterator]: function* () {
+        [Symbol.iterator]: function* (): Generator<string> {
           for (let i = 0; i < this.length; i++) {
-            yield this[i as keyof this];
+            yield this[i];
           }
         },
       };
@@ -351,7 +351,7 @@ describe('Enhanced In Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = inExpression.documentation;
+      const docs = (inExpression as any).documentation;
 
       expect(docs.summary).toContain('membership');
       expect(docs.parameters).toHaveLength(2);

@@ -19,7 +19,9 @@ describe('Expression Evaluator - Assignment Operators', () => {
       result: null,
       variables: new Map(),
       events: new Map(),
-    };
+      locals: new Map(),
+      globals: new Map(),
+    } as ExecutionContext;
   });
 
   it('should handle simple assignment', async () => {

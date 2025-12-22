@@ -4,6 +4,8 @@
 
 import { test, expect } from '@playwright/test';
 
+// Window.evalHyperScript type is declared globally in browser-bundle.ts
+
 test.describe('Comprehensive Compatibility Metrics', () => {
   test('all expression types', async ({ page }) => {
     await page.goto('http://localhost:3000/test-global-functions.html');
@@ -108,7 +110,7 @@ test.describe('Comprehensive Compatibility Metrics', () => {
     const failed = total - passed;
     const passRate = Math.round((passed / total) * 100);
 
-    const byCategory = {};
+    const byCategory: Record<string, { total: number; passed: number; failed: number }> = {};
     for (const result of results) {
       if (!byCategory[result.category]) {
         byCategory[result.category] = { total: 0, passed: 0, failed: 0 };

@@ -14,6 +14,32 @@ import { tokenize, TokenKind } from './tokenizer';
 import { TokenPredicates } from './token-predicates';
 import type { Token } from '../types/core';
 
+// Legacy TokenType for skipped tests (old system removed)
+enum TokenType {
+  COMMAND = 'COMMAND',
+  KEYWORD = 'KEYWORD',
+  EVENT = 'EVENT',
+  CONTEXT_VAR = 'CONTEXT_VAR',
+  LOGICAL_OPERATOR = 'LOGICAL_OPERATOR',
+  COMPARISON_OPERATOR = 'COMPARISON_OPERATOR',
+  OPERATOR = 'OPERATOR',
+  ID_SELECTOR = 'ID_SELECTOR',
+  CLASS_SELECTOR = 'CLASS_SELECTOR',
+  CSS_SELECTOR = 'CSS_SELECTOR',
+  QUERY_REFERENCE = 'QUERY_REFERENCE',
+  STRING = 'STRING',
+  NUMBER = 'NUMBER',
+  BOOLEAN = 'BOOLEAN',
+  TEMPLATE_LITERAL = 'TEMPLATE_LITERAL',
+  GLOBAL_VAR = 'GLOBAL_VAR',
+  IDENTIFIER = 'IDENTIFIER',
+  TIME_EXPRESSION = 'TIME_EXPRESSION'
+}
+
+// Type assertion helper for legacy token access
+type LegacyToken = Token & { type: string; };
+const asLegacy = (t: Token) => t as LegacyToken;
+
 // Sample hyperscript expressions covering all token types and patterns
 const TEST_EXPRESSIONS = [
   // Basic commands
@@ -89,13 +115,14 @@ describe.skip('Classification Parity Tests', () => {
         const tokens = tokenize(expr);
 
         tokens.forEach((token, tokenIndex) => {
+          const legacyToken = asLegacy(token);
           // Test isCommand parity
-          const oldIsCommand = token.type === TokenType.COMMAND;
+          const oldIsCommand = legacyToken.type === TokenType.COMMAND;
           const newIsCommand = TokenPredicates.isCommand(token);
           if (oldIsCommand !== newIsCommand) {
             // New predicate may also accept IDENTIFIER tokens that are commands
             // This is expected and correct - new behavior is a superset
-            if (token.type === TokenType.IDENTIFIER) {
+            if (legacyToken.type === TokenType.IDENTIFIER) {
               // If old said false and new says true, that's the enhanced behavior
               expect(newIsCommand).toBe(true);
             } else {
@@ -104,36 +131,36 @@ describe.skip('Classification Parity Tests', () => {
           }
 
           // Test isKeyword parity
-          const oldIsKeyword = token.type === TokenType.KEYWORD;
+          const oldIsKeyword = legacyToken.type === TokenType.KEYWORD;
           const newIsKeyword = TokenPredicates.isKeyword(token);
           // Same logic - new predicate is a superset
-          if (oldIsKeyword !== newIsKeyword && token.type !== TokenType.IDENTIFIER) {
+          if (oldIsKeyword !== newIsKeyword && legacyToken.type !== TokenType.IDENTIFIER) {
             expect(newIsKeyword).toBe(oldIsKeyword);
           }
 
           // Test isEvent parity
-          const oldIsEvent = token.type === TokenType.EVENT;
+          const oldIsEvent = legacyToken.type === TokenType.EVENT;
           const newIsEvent = TokenPredicates.isEvent(token);
-          if (oldIsEvent !== newIsEvent && token.type !== TokenType.IDENTIFIER) {
+          if (oldIsEvent !== newIsEvent && legacyToken.type !== TokenType.IDENTIFIER) {
             expect(newIsEvent).toBe(oldIsEvent);
           }
 
           // Test isContextVar parity
-          const oldIsContextVar = token.type === TokenType.CONTEXT_VAR;
+          const oldIsContextVar = legacyToken.type === TokenType.CONTEXT_VAR;
           const newIsContextVar = TokenPredicates.isContextVar(token);
-          if (oldIsContextVar !== newIsContextVar && token.type !== TokenType.IDENTIFIER) {
+          if (oldIsContextVar !== newIsContextVar && legacyToken.type !== TokenType.IDENTIFIER) {
             expect(newIsContextVar).toBe(oldIsContextVar);
           }
 
           // Test isLogicalOperator parity
-          const oldIsLogical = token.type === TokenType.LOGICAL_OPERATOR;
+          const oldIsLogical = legacyToken.type === TokenType.LOGICAL_OPERATOR;
           const newIsLogical = TokenPredicates.isLogicalOperator(token);
-          if (oldIsLogical !== newIsLogical && token.type !== TokenType.IDENTIFIER && token.type !== TokenType.KEYWORD) {
+          if (oldIsLogical !== newIsLogical && legacyToken.type !== TokenType.IDENTIFIER && legacyToken.type !== TokenType.KEYWORD) {
             expect(newIsLogical).toBe(oldIsLogical);
           }
 
           // Test isComparisonOperator parity
-          const oldIsComparison = token.type === TokenType.COMPARISON_OPERATOR;
+          const oldIsComparison = legacyToken.type === TokenType.COMPARISON_OPERATOR;
           const newIsComparison = TokenPredicates.isComparisonOperator(token);
           // Comparison can match by value too
           if (oldIsComparison && !newIsComparison) {
@@ -142,37 +169,37 @@ describe.skip('Classification Parity Tests', () => {
 
           // Test lexical predicates - these should be exact matches
           const oldIsSelector =
-            token.type === TokenType.ID_SELECTOR ||
-            token.type === TokenType.CLASS_SELECTOR ||
-            token.type === TokenType.CSS_SELECTOR ||
-            token.type === TokenType.QUERY_REFERENCE;
+            legacyToken.type === TokenType.ID_SELECTOR ||
+            legacyToken.type === TokenType.CLASS_SELECTOR ||
+            legacyToken.type === TokenType.CSS_SELECTOR ||
+            legacyToken.type === TokenType.QUERY_REFERENCE;
           expect(TokenPredicates.isSelector(token)).toBe(oldIsSelector);
 
           const oldIsLiteral =
-            token.type === TokenType.STRING ||
-            token.type === TokenType.NUMBER ||
-            token.type === TokenType.BOOLEAN ||
-            token.type === TokenType.TEMPLATE_LITERAL;
+            legacyToken.type === TokenType.STRING ||
+            legacyToken.type === TokenType.NUMBER ||
+            legacyToken.type === TokenType.BOOLEAN ||
+            legacyToken.type === TokenType.TEMPLATE_LITERAL;
           expect(TokenPredicates.isLiteral(token)).toBe(oldIsLiteral);
 
           const oldIsOperator =
-            token.type === TokenType.OPERATOR ||
-            token.type === TokenType.LOGICAL_OPERATOR ||
-            token.type === TokenType.COMPARISON_OPERATOR;
+            legacyToken.type === TokenType.OPERATOR ||
+            legacyToken.type === TokenType.LOGICAL_OPERATOR ||
+            legacyToken.type === TokenType.COMPARISON_OPERATOR;
           expect(TokenPredicates.isOperator(token)).toBe(oldIsOperator);
 
           const oldIsReference =
-            token.type === TokenType.CONTEXT_VAR ||
-            token.type === TokenType.GLOBAL_VAR ||
-            token.type === TokenType.IDENTIFIER;
+            legacyToken.type === TokenType.CONTEXT_VAR ||
+            legacyToken.type === TokenType.GLOBAL_VAR ||
+            legacyToken.type === TokenType.IDENTIFIER;
           expect(TokenPredicates.isReference(token)).toBe(oldIsReference);
 
           const oldIsIdentifierLike =
-            token.type === TokenType.IDENTIFIER ||
-            token.type === TokenType.CONTEXT_VAR ||
-            token.type === TokenType.KEYWORD ||
-            token.type === TokenType.COMMAND ||
-            token.type === TokenType.EVENT;
+            legacyToken.type === TokenType.IDENTIFIER ||
+            legacyToken.type === TokenType.CONTEXT_VAR ||
+            legacyToken.type === TokenType.KEYWORD ||
+            legacyToken.type === TokenType.COMMAND ||
+            legacyToken.type === TokenType.EVENT;
           expect(TokenPredicates.isIdentifierLike(token)).toBe(oldIsIdentifierLike);
         });
       });
@@ -183,7 +210,7 @@ describe.skip('Classification Parity Tests', () => {
     it('should recognize commands from IDENTIFIER tokens', () => {
       // Create a token that the tokenizer classified as IDENTIFIER
       // but is actually a command
-      const token: Token = { type: TokenType.IDENTIFIER, value: 'toggle', line: 1, column: 1 };
+      const token: LegacyToken = { kind: TokenType.IDENTIFIER, type: TokenType.IDENTIFIER, value: 'toggle', line: 1, column: 1, start: 0, end: 6 };
 
       // Old check would fail
       expect(token.type === TokenType.COMMAND).toBe(false);
@@ -193,21 +220,21 @@ describe.skip('Classification Parity Tests', () => {
     });
 
     it('should recognize keywords from IDENTIFIER tokens', () => {
-      const token: Token = { type: TokenType.IDENTIFIER, value: 'then', line: 1, column: 1 };
+      const token: LegacyToken = { kind: TokenType.IDENTIFIER, type: TokenType.IDENTIFIER, value: 'then', line: 1, column: 1, start: 0, end: 4 };
 
       expect(token.type === TokenType.KEYWORD).toBe(false);
       expect(TokenPredicates.isKeyword(token)).toBe(true);
     });
 
     it('should recognize events from IDENTIFIER tokens', () => {
-      const token: Token = { type: TokenType.IDENTIFIER, value: 'click', line: 1, column: 1 };
+      const token: LegacyToken = { kind: TokenType.IDENTIFIER, type: TokenType.IDENTIFIER, value: 'click', line: 1, column: 1, start: 0, end: 5 };
 
       expect(token.type === TokenType.EVENT).toBe(false);
       expect(TokenPredicates.isEvent(token)).toBe(true);
     });
 
     it('should recognize context vars from IDENTIFIER tokens', () => {
-      const token: Token = { type: TokenType.IDENTIFIER, value: 'me', line: 1, column: 1 };
+      const token: LegacyToken = { kind: TokenType.IDENTIFIER, type: TokenType.IDENTIFIER, value: 'me', line: 1, column: 1, start: 0, end: 2 };
 
       expect(token.type === TokenType.CONTEXT_VAR).toBe(false);
       expect(TokenPredicates.isContextVar(token)).toBe(true);
@@ -218,9 +245,10 @@ describe.skip('Classification Parity Tests', () => {
     it('should correctly replace checkTokenType(TokenType.COMMAND) pattern', () => {
       const tokens = tokenize('toggle .active');
       const commandToken = tokens[0];
+      const legacyToken = asLegacy(commandToken);
 
       // Old pattern
-      const oldCheck = commandToken.type === TokenType.COMMAND;
+      const oldCheck = legacyToken.type === TokenType.COMMAND;
 
       // New pattern
       const newCheck = TokenPredicates.isCommand(commandToken);
@@ -233,10 +261,11 @@ describe.skip('Classification Parity Tests', () => {
       const tokens = tokenize("put me's value into it");
 
       tokens.forEach(token => {
+        const legacyToken = asLegacy(token);
         // Old pattern (very common in expression-parser.ts)
         const oldCheck =
-          token.type === TokenType.CONTEXT_VAR ||
-          token.type === TokenType.IDENTIFIER;
+          legacyToken.type === TokenType.CONTEXT_VAR ||
+          legacyToken.type === TokenType.IDENTIFIER;
 
         // New pattern
         const newCheck = TokenPredicates.isReference(token);
@@ -251,10 +280,11 @@ describe.skip('Classification Parity Tests', () => {
     it('should correctly replace type + value dual checks', () => {
       const tokens = tokenize("me's value");
       const possessiveToken = tokens[1];
+      const legacyToken = asLegacy(possessiveToken);
 
       // Old pattern (from expression-parser.ts line 502)
       const oldCheck =
-        possessiveToken.type === TokenType.OPERATOR &&
+        legacyToken.type === TokenType.OPERATOR &&
         possessiveToken.value === "'s";
 
       // New pattern
@@ -268,12 +298,12 @@ describe.skip('Classification Parity Tests', () => {
       const nonTerminators = ['if', 'for', 'while', 'toggle'];
 
       terminators.forEach(term => {
-        const token: Token = { type: TokenType.KEYWORD, value: term, line: 1, column: 1 };
+        const token: LegacyToken = { kind: TokenType.KEYWORD, type: TokenType.KEYWORD, value: term, line: 1, column: 1, start: 0, end: term.length };
         expect(TokenPredicates.isCommandTerminator(token)).toBe(true);
       });
 
       nonTerminators.forEach(term => {
-        const token: Token = { type: TokenType.KEYWORD, value: term, line: 1, column: 1 };
+        const token: LegacyToken = { kind: TokenType.KEYWORD, type: TokenType.KEYWORD, value: term, line: 1, column: 1, start: 0, end: term.length };
         expect(TokenPredicates.isCommandTerminator(token)).toBe(false);
       });
     });
@@ -306,9 +336,9 @@ describe.skip('Classification Parity Tests', () => {
       const queryTokens = tokenize('toggle <button/>');
 
       // Find the selector tokens
-      const idSelector = idTokens.find(t => t.type === TokenType.ID_SELECTOR);
-      const classSelector = classTokens.find(t => t.type === TokenType.CLASS_SELECTOR);
-      const queryRef = queryTokens.find(t => t.type === TokenType.QUERY_REFERENCE);
+      const idSelector = idTokens.find(t => asLegacy(t).type === TokenType.ID_SELECTOR);
+      const classSelector = classTokens.find(t => asLegacy(t).type === TokenType.CLASS_SELECTOR);
+      const queryRef = queryTokens.find(t => asLegacy(t).type === TokenType.QUERY_REFERENCE);
 
       expect(idSelector).toBeDefined();
       expect(classSelector).toBeDefined();
@@ -387,60 +417,60 @@ describe.skip('Deferred Classification Mode', () => {
   describe('Tokenization Differences', () => {
     it('should return IDENTIFIER for commands when enabled', () => {
       const legacyTokens = tokenize('toggle .active');
-      expect(legacyTokens[0].type).toBe(TokenType.COMMAND);
+      expect(asLegacy(legacyTokens[0]).type).toBe(TokenType.COMMAND);
 
       enableDeferredClassification();
       const deferredTokens = tokenize('toggle .active');
-      expect(deferredTokens[0].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(deferredTokens[0]).type).toBe(TokenType.IDENTIFIER);
     });
 
     it('should return IDENTIFIER for keywords when enabled', () => {
       const legacyTokens = tokenize('on click');
-      expect(legacyTokens[0].type).toBe(TokenType.KEYWORD);
+      expect(asLegacy(legacyTokens[0]).type).toBe(TokenType.KEYWORD);
 
       enableDeferredClassification();
       const deferredTokens = tokenize('on click');
-      expect(deferredTokens[0].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(deferredTokens[0]).type).toBe(TokenType.IDENTIFIER);
     });
 
     it('should return IDENTIFIER for events when enabled', () => {
       const legacyTokens = tokenize('on click');
-      expect(legacyTokens[1].type).toBe(TokenType.EVENT);
+      expect(asLegacy(legacyTokens[1]).type).toBe(TokenType.EVENT);
 
       enableDeferredClassification();
       const deferredTokens = tokenize('on click');
-      expect(deferredTokens[1].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(deferredTokens[1]).type).toBe(TokenType.IDENTIFIER);
     });
 
     it('should return IDENTIFIER for context vars when enabled', () => {
       const legacyTokens = tokenize("put me's value into it");
-      expect(legacyTokens[1].type).toBe(TokenType.CONTEXT_VAR); // 'me'
-      expect(legacyTokens[5].type).toBe(TokenType.CONTEXT_VAR); // 'it'
+      expect(asLegacy(legacyTokens[1]).type).toBe(TokenType.CONTEXT_VAR); // 'me'
+      expect(asLegacy(legacyTokens[5]).type).toBe(TokenType.CONTEXT_VAR); // 'it'
 
       enableDeferredClassification();
       const deferredTokens = tokenize("put me's value into it");
-      expect(deferredTokens[1].type).toBe(TokenType.IDENTIFIER); // 'me'
-      expect(deferredTokens[5].type).toBe(TokenType.IDENTIFIER); // 'it'
+      expect(asLegacy(deferredTokens[1]).type).toBe(TokenType.IDENTIFIER); // 'me'
+      expect(asLegacy(deferredTokens[5]).type).toBe(TokenType.IDENTIFIER); // 'it'
     });
 
     it('should still classify operators correctly', () => {
       enableDeferredClassification();
       const tokens = tokenize('x and y or not z');
-      expect(tokens[1].type).toBe(TokenType.LOGICAL_OPERATOR); // 'and'
-      expect(tokens[3].type).toBe(TokenType.LOGICAL_OPERATOR); // 'or'
-      expect(tokens[4].type).toBe(TokenType.LOGICAL_OPERATOR); // 'not'
+      expect(asLegacy(tokens[1]).type).toBe(TokenType.LOGICAL_OPERATOR); // 'and'
+      expect(asLegacy(tokens[3]).type).toBe(TokenType.LOGICAL_OPERATOR); // 'or'
+      expect(asLegacy(tokens[4]).type).toBe(TokenType.LOGICAL_OPERATOR); // 'not'
     });
 
     it('should still classify boolean literals correctly', () => {
       enableDeferredClassification();
       const tokens = tokenize('set x to true');
-      expect(tokens[3].type).toBe(TokenType.BOOLEAN);
+      expect(asLegacy(tokens[3]).type).toBe(TokenType.BOOLEAN);
     });
 
     it('should still classify comparison operators correctly', () => {
       enableDeferredClassification();
       const tokens = tokenize('if x contains y');
-      expect(tokens[2].type).toBe(TokenType.COMPARISON_OPERATOR);
+      expect(asLegacy(tokens[2]).type).toBe(TokenType.COMPARISON_OPERATOR);
     });
   });
 
@@ -450,17 +480,17 @@ describe.skip('Deferred Classification Mode', () => {
       const tokens = tokenize('on click toggle .active');
 
       // 'on' is now IDENTIFIER but predicate should recognize it as keyword
-      expect(tokens[0].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(tokens[0]).type).toBe(TokenType.IDENTIFIER);
       expect(tokens[0].value).toBe('on');
       expect(TokenPredicates.isKeyword(tokens[0])).toBe(true);
 
       // 'click' is now IDENTIFIER but predicate should recognize it as event
-      expect(tokens[1].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(tokens[1]).type).toBe(TokenType.IDENTIFIER);
       expect(tokens[1].value).toBe('click');
       expect(TokenPredicates.isEvent(tokens[1])).toBe(true);
 
       // 'toggle' is now IDENTIFIER but predicate should recognize it as command
-      expect(tokens[2].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(tokens[2]).type).toBe(TokenType.IDENTIFIER);
       expect(tokens[2].value).toBe('toggle');
       expect(TokenPredicates.isCommand(tokens[2])).toBe(true);
 
@@ -477,13 +507,13 @@ describe.skip('Deferred Classification Mode', () => {
       const tokens = tokenize('add .active to #main');
 
       // 'add' becomes IDENTIFIER
-      expect(tokens[0].type).toBe(TokenType.IDENTIFIER);
+      expect(asLegacy(tokens[0]).type).toBe(TokenType.IDENTIFIER);
       expect(TokenPredicates.isCommand(tokens[0])).toBe(true);
 
       // '.active' is still CLASS_SELECTOR (follows nothing after 'add' since operator context)
       // Actually check what happens:
-      const classSelector = tokens.find(t => t.type === TokenType.CLASS_SELECTOR);
-      const idSelector = tokens.find(t => t.type === TokenType.ID_SELECTOR);
+      const classSelector = tokens.find(t => asLegacy(t).type === TokenType.CLASS_SELECTOR);
+      const idSelector = tokens.find(t => asLegacy(t).type === TokenType.ID_SELECTOR);
 
       // At minimum, #main should be an ID_SELECTOR since # triggers selector tokenization
       expect(idSelector).toBeDefined();
@@ -507,6 +537,7 @@ describe.skip('Deferred Classification Mode', () => {
 
         // Every token should have predicates return consistent results
         tokens.forEach(token => {
+          const legacyToken = asLegacy(token);
           // These should not throw errors
           const isCmd = TokenPredicates.isCommand(token);
           const isKw = TokenPredicates.isKeyword(token);
@@ -518,8 +549,8 @@ describe.skip('Deferred Classification Mode', () => {
 
           // At least one category should be true for any token
           const hasCategory = isCmd || isKw || isEvt || isCtx || isSel || isLit || isOp ||
-            token.type === TokenType.IDENTIFIER ||
-            token.type === TokenType.TIME_EXPRESSION;
+            legacyToken.type === TokenType.IDENTIFIER ||
+            legacyToken.type === TokenType.TIME_EXPRESSION;
 
           expect(hasCategory).toBe(true);
         });
@@ -532,7 +563,7 @@ describe.skip('Deferred Classification Mode', () => {
 
       // All three should be IDENTIFIER but recognized as identifier-like
       tokens.forEach(token => {
-        expect(token.type).toBe(TokenType.IDENTIFIER);
+        expect(asLegacy(token).type).toBe(TokenType.IDENTIFIER);
         expect(TokenPredicates.isIdentifierLike(token)).toBe(true);
       });
     });

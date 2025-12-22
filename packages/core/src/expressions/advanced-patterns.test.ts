@@ -30,7 +30,7 @@ describe('Advanced Pattern Coverage', () => {
       you: testContainer.querySelector('.results') as HTMLElement,
       it: testContainer.querySelector('input') as HTMLElement,
       result: null,
-      locals: new Map([
+      locals: new Map<string, unknown>([
         ['appName', 'TestApp'],
         ['version', '1.2.3'],
         [
@@ -46,7 +46,7 @@ describe('Advanced Pattern Coverage', () => {
         ],
       ]),
       globals: new Map([['window', { location: { href: 'http://localhost:3000' } }]]),
-      parent: null,
+      parent: undefined,
       halted: false,
       returned: false,
       broke: false,

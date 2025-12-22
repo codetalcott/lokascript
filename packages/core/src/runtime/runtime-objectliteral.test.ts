@@ -99,7 +99,7 @@ describe('Runtime Object Literal Evaluation', () => {
 
   it('should evaluate object literals with variable values', async () => {
     const context = createTypedExecutionContext();
-    context.variables = new Map([
+    (context as { variables: Map<string, unknown> }).variables = new Map<string, unknown>([
       ['myColor', 'green'],
       ['mySize', 16],
     ]);
@@ -128,7 +128,7 @@ describe('Runtime Object Literal Evaluation', () => {
 
   it('should evaluate object literals with nested expressions', async () => {
     const context = createTypedExecutionContext();
-    context.variables = new Map([['baseSize', 10]]);
+    (context as { variables: Map<string, unknown> }).variables = new Map<string, unknown>([['baseSize', 10]]);
 
     const node = {
       type: 'objectLiteral',
@@ -154,7 +154,7 @@ describe('Runtime Object Literal Evaluation', () => {
 
   it('should handle object literals with dynamic keys', async () => {
     const context = createTypedExecutionContext();
-    context.variables = new Map([
+    (context as { variables: Map<string, unknown> }).variables = new Map<string, unknown>([
       ['keyName', 'dynamicProperty'],
       ['value', 'dynamicValue'],
     ]);

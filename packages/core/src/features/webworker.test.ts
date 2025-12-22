@@ -613,7 +613,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-worker-script')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-worker-script')).toBe(true);
       expect(validationResult.suggestions).toContain(
         'Provide valid JavaScript file URL or inline script code'
       );
@@ -628,7 +628,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-inline-script')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-inline-script')).toBe(true);
       expect(validationResult.suggestions).toContain(
         'Ensure inline script has valid JavaScript syntax'
       );
@@ -647,9 +647,9 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-max-workers')).toBe(true);
-      expect(validationResult.errors.some(e => e.type === 'invalid-worker-timeout')).toBe(true);
-      expect(validationResult.errors.some(e => e.type === 'invalid-termination-timeout')).toBe(
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-max-workers')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-worker-timeout')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-termination-timeout')).toBe(
         true
       );
     });
@@ -668,7 +668,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-queue-size')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-queue-size')).toBe(true);
       expect(validationResult.suggestions).toContain(
         'Set queue maxSize to 0 for unlimited or positive number for limit'
       );
@@ -689,7 +689,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-filter-expression')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'invalid-filter-expression')).toBe(true);
       expect(validationResult.suggestions).toContain(
         'Use valid JavaScript expression for message filtering'
       );
@@ -713,7 +713,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'conflicting-performance-options')).toBe(
+      expect(validationResult.errors.some(e => (e.type as string) === 'conflicting-performance-options')).toBe(
         true
       );
       expect(validationResult.suggestions).toContain(
@@ -735,7 +735,7 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'empty-commands-array')).toBe(true);
+      expect(validationResult.errors.some(e => (e.type as string) === 'empty-commands-array')).toBe(true);
       expect(validationResult.suggestions).toContain(
         'Add at least one command to execute for event handler'
       );
@@ -747,8 +747,8 @@ describe.skip('Enhanced WebWorker Feature Implementation', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errors!).toBeDefined();
-      expect(result.suggestions!).toBeDefined();
+      expect(result.error!).toBeDefined();
+      expect((result as any).suggestions!).toBeDefined();
     });
   });
 

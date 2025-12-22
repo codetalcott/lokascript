@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createTestElement } from '@/test-setup';
-import { ExecutionContext } from '@types/core';
+import type { ExecutionContext } from '../types/core';
 import { createContext, setContextValue, getContextValue, createChildContext } from './context';
 
 describe('ExecutionContext System', () => {

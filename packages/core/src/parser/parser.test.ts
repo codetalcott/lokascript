@@ -703,20 +703,20 @@ describe('Hyperscript AST Parser', () => {
       expect(result.success).toBe(true);
 
       const node = result.node;
-      expect(node.type).toBe('command');
-      expect(node.name).toBe('if');
-      expect(node.args).toBeDefined();
-      expect(node.args.length).toBeGreaterThanOrEqual(2); // condition + then block + optional else block
+      expect(node!.type).toBe('command');
+      expect(node!.name).toBe('if');
+      expect(node!.args).toBeDefined();
+      expect(((node as { args?: unknown }).args as unknown[] | { length: number }).length).toBeGreaterThanOrEqual(2); // condition + then block + optional else block
 
       // Verify condition exists (may be identifier, expression, or binaryExpression depending on parsing)
-      const condition = node.args[0];
+      const condition = ((node as { args?: unknown }).args as unknown[])[0];
       expect(condition).toBeDefined();
-      expect(condition.type).toBeDefined();
+      expect((condition as { type?: unknown }).type).toBeDefined();
 
       // Verify then block exists with commands
-      const thenBlock = node.args[1];
-      expect(thenBlock.type).toBe('block');
-      expect(thenBlock.commands).toBeDefined();
+      const thenBlock = ((node as { args?: unknown }).args as unknown[])[1];
+      expect((thenBlock as { type?: string }).type).toBe('block');
+      expect((thenBlock as { commands?: unknown }).commands).toBeDefined();
     });
 
     it('should parse complex event handler with multiple conditions', () => {
@@ -943,9 +943,9 @@ describe('Hyperscript AST Parser', () => {
       const input4 = 'hello world invalid!';
       const result4 = parse(input4);
       if (!result4.success && result4.error) {
-        const errorChar = input4[result4.error.position];
+        const errorChar = input4[result4.error.position!];
         expect(errorChar).toBeDefined();
-        expect(result4.error.position).toBeLessThan(input4.length);
+        expect(result4.error.position!).toBeLessThan(input4.length);
       }
     });
   });
@@ -1026,10 +1026,10 @@ describe('Hyperscript AST Parser', () => {
       expect(result.success).toBe(true);
       // The :x should be parsed as an identifier with scope: 'local'
       const putCommand = result.node;
-      expect(putCommand.type).toBe('command');
-      expect(putCommand.name).toBe('put');
+      expect(putCommand!.type).toBe('command');
+      expect(putCommand!.name).toBe('put');
       // First arg should be :x with scope metadata
-      expect(putCommand.args[0]).toMatchObject({
+      expect(((putCommand as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'x',
         scope: 'local',
@@ -1042,20 +1042,20 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('increment :counter by 1');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.type).toBe('command');
-      expect(command.name).toBe('set'); // Transformed from 'increment'
-      expect(command.originalCommand).toBe('increment'); // Original preserved
+      expect(command!.type).toBe('command');
+      expect(command!.name).toBe('set'); // Transformed from 'increment'
+      expect((command as { originalCommand?: unknown }).originalCommand).toBe('increment'); // Original preserved
       // args structure: [target, 'to', binaryExpression]
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'counter',
         scope: 'local',
       });
-      expect(command.args[1]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[1]).toMatchObject({
         type: 'identifier',
         name: 'to',
       });
-      expect(command.args[2]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[2]).toMatchObject({
         type: 'binaryExpression',
         operator: '+',
       });
@@ -1067,20 +1067,20 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('increment :sum by :amount');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.type).toBe('command');
-      expect(command.name).toBe('set'); // Transformed from 'increment'
+      expect(command!.type).toBe('command');
+      expect(command!.name).toBe('set'); // Transformed from 'increment'
       // Target :sum should have scope: 'local'
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'sum',
         scope: 'local',
       });
       // Binary expression contains target and amount
-      const binaryExpr = command.args[2];
-      expect(binaryExpr.type).toBe('binaryExpression');
-      expect(binaryExpr.operator).toBe('+');
+      const binaryExpr = ((command as { args?: unknown }).args as unknown[])[2];
+      expect((binaryExpr as { type?: string }).type).toBe('binaryExpression');
+      expect((binaryExpr as { operator?: string }).operator).toBe('+');
       // The right side of the expression is :amount
-      expect(binaryExpr.right).toMatchObject({
+      expect((binaryExpr as { right?: unknown }).right).toMatchObject({
         type: 'identifier',
         name: 'amount',
         scope: 'local',
@@ -1093,16 +1093,16 @@ describe('Hyperscript AST Parser', () => {
       const command = result.node;
 
       // args structure: [target, 'to', value]
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'name',
         scope: 'local',
       });
-      expect(command.args[1]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[1]).toMatchObject({
         type: 'identifier',
         name: 'to',
       });
-      expect(command.args[2]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[2]).toMatchObject({
         type: 'literal',
         value: 'hello',
       });
@@ -1112,8 +1112,8 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('repeat 3 times set :idx to it end');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.type).toBe('command');
-      expect(command.name).toBe('repeat');
+      expect(command!.type).toBe('command');
+      expect(command!.name).toBe('repeat');
     });
 
     it('should distinguish :local from global variables', () => {
@@ -1128,16 +1128,16 @@ describe('Hyperscript AST Parser', () => {
       const globalCommand = globalResult.node;
 
       // :x should have scope: 'local'
-      expect(localCommand.args[0].scope).toBe('local');
+      expect((((localCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBe('local');
       // x should have no scope (or undefined)
-      expect(globalCommand.args[0].scope).toBeUndefined();
+      expect((((globalCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBeUndefined();
     });
 
     it('should handle complex expressions with :variable', () => {
       const result = parse('set :result to (:a + :b) * 2');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'result',
         scope: 'local',
@@ -1150,7 +1150,7 @@ describe('Hyperscript AST Parser', () => {
       // Should create a command sequence or program with 3 commands
       const node = result.node;
       // The structure depends on how the parser handles multiple commands
-      expect(node.type).toMatch(/command|CommandSequence|Program/);
+      expect(node!.type).toMatch(/command|CommandSequence|Program/);
     });
   });
 
@@ -1175,10 +1175,10 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('put ::x into #result');
       expect(result.success).toBe(true);
       const putCommand = result.node;
-      expect(putCommand.type).toBe('command');
-      expect(putCommand.name).toBe('put');
+      expect(putCommand!.type).toBe('command');
+      expect(putCommand!.name).toBe('put');
       // First arg should be ::x with scope: 'global'
-      expect(putCommand.args[0]).toMatchObject({
+      expect(((putCommand as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'x',
         scope: 'global',
@@ -1191,20 +1191,20 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('increment ::total by 5');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.type).toBe('command');
-      expect(command.name).toBe('set'); // Transformed from 'increment'
-      expect(command.originalCommand).toBe('increment'); // Original preserved
+      expect(command!.type).toBe('command');
+      expect(command!.name).toBe('set'); // Transformed from 'increment'
+      expect((command as { originalCommand?: unknown }).originalCommand).toBe('increment'); // Original preserved
       // args structure: [target, 'to', binaryExpression]
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'total',
         scope: 'global',
       });
-      expect(command.args[1]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[1]).toMatchObject({
         type: 'identifier',
         name: 'to',
       });
-      expect(command.args[2]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[2]).toMatchObject({
         type: 'binaryExpression',
         operator: '+',
       });
@@ -1216,20 +1216,20 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('increment ::sum by ::amount');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.type).toBe('command');
-      expect(command.name).toBe('set'); // Transformed from 'increment'
+      expect(command!.type).toBe('command');
+      expect(command!.name).toBe('set'); // Transformed from 'increment'
       // Target ::sum should have scope: 'global'
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'sum',
         scope: 'global',
       });
       // Binary expression contains target and amount
-      const binaryExpr = command.args[2];
-      expect(binaryExpr.type).toBe('binaryExpression');
-      expect(binaryExpr.operator).toBe('+');
+      const binaryExpr = ((command as { args?: unknown }).args as unknown[])[2];
+      expect((binaryExpr as { type?: string }).type).toBe('binaryExpression');
+      expect((binaryExpr as { operator?: string }).operator).toBe('+');
       // The right side of the expression is ::amount
-      expect(binaryExpr.right).toMatchObject({
+      expect((binaryExpr as { right?: unknown }).right).toMatchObject({
         type: 'identifier',
         name: 'amount',
         scope: 'global',
@@ -1247,9 +1247,9 @@ describe('Hyperscript AST Parser', () => {
       const globalCommand = globalResult.node;
 
       // :x should have scope: 'local'
-      expect(localCommand.args[0].scope).toBe('local');
+      expect((((localCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBe('local');
       // ::x should have scope: 'global'
-      expect(globalCommand.args[0].scope).toBe('global');
+      expect((((globalCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBe('global');
     });
 
     it('should distinguish ::global from implicit global', () => {
@@ -1263,16 +1263,16 @@ describe('Hyperscript AST Parser', () => {
       const explicitCommand = explicitResult.node;
 
       // x (implicit) should have no scope
-      expect(implicitCommand.args[0].scope).toBeUndefined();
+      expect((((implicitCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBeUndefined();
       // ::x should have scope: 'global'
-      expect(explicitCommand.args[0].scope).toBe('global');
+      expect((((explicitCommand as { args?: unknown }).args as unknown[])[0] as any).scope).toBe('global');
     });
 
     it('should handle ::variable in complex expressions', () => {
       const result = parse('set ::sum to (::x + ::y)');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'sum',
         scope: 'global',
@@ -1285,19 +1285,19 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('increment ::globalSum by :localAmount');
       expect(result.success).toBe(true);
       const command = result.node;
-      expect(command.name).toBe('set'); // Transformed from 'increment'
+      expect(command!.name).toBe('set'); // Transformed from 'increment'
       // Target should be global
-      expect(command.args[0]).toMatchObject({
+      expect(((command as { args?: unknown }).args as unknown[])[0]).toMatchObject({
         type: 'identifier',
         name: 'globalSum',
         scope: 'global',
       });
       // Binary expression contains target and amount
-      const binaryExpr = command.args[2];
-      expect(binaryExpr.type).toBe('binaryExpression');
-      expect(binaryExpr.operator).toBe('+');
+      const binaryExpr = ((command as { args?: unknown }).args as unknown[])[2];
+      expect((binaryExpr as { type?: string }).type).toBe('binaryExpression');
+      expect((binaryExpr as { operator?: string }).operator).toBe('+');
       // Amount should be local
-      expect(binaryExpr.right).toMatchObject({
+      expect((binaryExpr as { right?: unknown }).right).toMatchObject({
         type: 'identifier',
         name: 'localAmount',
         scope: 'local',
@@ -1308,7 +1308,7 @@ describe('Hyperscript AST Parser', () => {
       const result = parse('set ::a to 1 set ::b to 2 set ::c to 3');
       expect(result.success).toBe(true);
       const node = result.node;
-      expect(node.type).toMatch(/command|CommandSequence|Program/);
+      expect(node!.type).toMatch(/command|CommandSequence|Program/);
     });
   });
 });

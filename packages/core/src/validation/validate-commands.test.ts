@@ -128,7 +128,7 @@ describe.skip('Enhanced Command Pattern Validation', () => {
       const commands = [HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand];
 
       commands.forEach(CommandClass => {
-        const instance = new CommandClass();
+        const instance = new CommandClass() as any;
 
         // Check interface compliance
         expect(typeof instance.name).toBe('string');
@@ -147,7 +147,7 @@ describe.skip('Enhanced Command Pattern Validation', () => {
       const commands = [HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand];
 
       commands.forEach(CommandClass => {
-        const instance = new CommandClass();
+        const instance = new CommandClass() as any;
         const { metadata } = instance;
 
         expect(typeof metadata.category).toBe('string');
@@ -169,7 +169,7 @@ describe.skip('Enhanced Command Pattern Validation', () => {
       const commands = [HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand];
 
       commands.forEach(CommandClass => {
-        const instance = new CommandClass();
+        const instance = new CommandClass() as any;
         const { documentation } = instance;
 
         expect(typeof documentation.summary).toBe('string');
@@ -194,7 +194,7 @@ describe.skip('Enhanced Command Pattern Validation', () => {
       const commands = [HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand];
 
       commands.forEach(CommandClass => {
-        const instance = new CommandClass();
+        const instance = new CommandClass() as any;
 
         // Test validation method
         const validResult = instance.validate([]);

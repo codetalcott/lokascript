@@ -47,11 +47,11 @@ export function getElementProperty(element: HTMLElement, property: string): unkn
   // Handle style properties
   if (property.includes('-') || property in element.style) {
     return (
-      element.style.getPropertyValue(property) || (element.style as Record<string, unknown>)[property]
+      element.style.getPropertyValue(property) || (element.style as unknown as Record<string, unknown>)[property]
     );
   }
   // Generic property access
-  return (element as Record<string, unknown>)[property];
+  return (element as unknown as Record<string, unknown>)[property];
 }
 
 /**
@@ -98,7 +98,7 @@ export function setElementProperty(element: HTMLElement, property: string, value
   }
   // Generic property with readonly protection
   try {
-    (element as Record<string, unknown>)[property] = value;
+    (element as unknown as Record<string, unknown>)[property] = value;
   } catch (error) {
     if (
       !(

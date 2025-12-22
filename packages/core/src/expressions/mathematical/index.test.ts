@@ -560,7 +560,7 @@ describe('Enhanced Mathematical Expressions Integration', () => {
 
   describe('Type safety', () => {
     it.skip('should have consistent metadata', () => {
-      const expressions = Object.values(mathematicalExpressions);
+      const expressions = Object.values(mathematicalExpressions) as any[];
 
       expressions.forEach(expr => {
         expect(expr.category).toBe('Special');

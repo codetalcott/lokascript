@@ -541,7 +541,7 @@ describe('Enhanced Logical Expressions Integration', () => {
 
   describe('Type safety', () => {
     it.skip('should have consistent metadata', () => {
-      const expressions = Object.values(logicalExpressions);
+      const expressions = Object.values(logicalExpressions) as any[];
 
       expressions.forEach(expr => {
         expect(expr.category).toBe('Logical');

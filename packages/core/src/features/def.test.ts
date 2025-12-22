@@ -19,10 +19,10 @@ describe('Def Feature', () => {
     context = createMockHyperscriptContext(testElement) as ExecutionContext;
 
     // Ensure required context properties exist
-    if (!context.locals) context.locals = new Map();
-    if (!context.globals) context.globals = new Map();
+    if (!context.locals) (context as any).locals = new Map();
+    if (!context.globals) (context as any).globals = new Map();
     if (!context.flags)
-      context.flags = {
+      (context as any).flags = {
         halted: false,
         breaking: false,
         continuing: false,

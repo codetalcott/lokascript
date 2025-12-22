@@ -113,7 +113,7 @@ describe('Reference Expressions', () => {
       it('should find element by ID selector', async () => {
         const result = await referenceExpressions.querySelector.evaluate(context, '#target');
         expect(result).toBe(targetElement);
-        expect(result?.id).toBe('target');
+        expect((result as any)?.id).toBe('target');
       });
 
       it('should find element by class selector', async () => {
@@ -164,8 +164,8 @@ describe('Reference Expressions', () => {
           '.shared-class'
         );
         expect(result).toHaveLength(2);
-        expect(result[0].textContent).toBe('Item 1');
-        expect(result[1].textContent).toBe('Item 2');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[0].textContent).toBe('Item 1');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[1].textContent).toBe('Item 2');
       });
 
       it('should return empty array for non-existent selector', async () => {
@@ -178,9 +178,9 @@ describe('Reference Expressions', () => {
 
       it('should search from document and find all matching elements', async () => {
         const result = await referenceExpressions.querySelectorAll.evaluate(context, 'div');
-        expect(result.length).toBeGreaterThan(0);
+        expect((result as unknown[] | { length: number }).length).toBeGreaterThan(0);
         // Should find at least the container and nested divs
-        expect(result.some((el: Element) => el.id === 'container')).toBe(true);
+        expect((result as unknown[]).some((el: unknown) => (el as { id: string }).id === 'container')).toBe(true);
       });
 
       it('should validate selector argument', () => {
@@ -209,7 +209,7 @@ describe('Reference Expressions', () => {
       it('should find element by ID', async () => {
         const result = await referenceExpressions.getElementById.evaluate(context, 'target');
         expect(result).toBe(targetElement);
-        expect(result?.id).toBe('target');
+        expect((result as any)?.id).toBe('target');
       });
 
       it('should return null for non-existent ID', async () => {
@@ -240,8 +240,8 @@ describe('Reference Expressions', () => {
           'shared-class'
         );
         expect(result).toHaveLength(2);
-        expect(result[0].textContent).toBe('Item 1');
-        expect(result[1].textContent).toBe('Item 2');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[0].textContent).toBe('Item 1');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[1].textContent).toBe('Item 2');
       });
 
       it('should return empty array for non-existent class', async () => {
@@ -258,8 +258,8 @@ describe('Reference Expressions', () => {
           'shared-class'
         );
         expect(result).toHaveLength(2);
-        expect(result[0].textContent).toBe('Item 1');
-        expect(result[1].textContent).toBe('Item 2');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[0].textContent).toBe('Item 1');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[1].textContent).toBe('Item 2');
       });
 
       it('should validate className argument', () => {
@@ -288,7 +288,7 @@ describe('Reference Expressions', () => {
       it('should find closest matching ancestor', async () => {
         context.me = testElement;
         const result = await referenceExpressions.closest.evaluate(context, '#container');
-        expect(result?.id).toBe('container');
+        expect((result as any)?.id).toBe('container');
       });
 
       it('should return null when no matching ancestor', async () => {
@@ -323,7 +323,7 @@ describe('Reference Expressions', () => {
       it('should return parent element', async () => {
         context.me = testElement;
         const result = await referenceExpressions.parent.evaluate(context);
-        expect(result?.id).toBe('container');
+        expect((result as any)?.id).toBe('container');
       });
 
       it('should return null when no parent', async () => {
@@ -340,7 +340,7 @@ describe('Reference Expressions', () => {
       });
 
       it('should validate without arguments', () => {
-        expect(referenceExpressions.parent.validate!()).toBeNull();
+        expect(referenceExpressions.parent.validate!([])).toBeNull();
       });
     });
   });

@@ -14,7 +14,7 @@ describe('Template Literals', () => {
 
   beforeEach(() => {
     context = createMockHyperscriptContext();
-    context.locals = new Map([
+    (context as { locals: Map<string, unknown> }).locals = new Map<string, unknown>([
       ['name', 'world'],
       ['count', 5],
       ['user', { name: 'Alice', age: 30 }],

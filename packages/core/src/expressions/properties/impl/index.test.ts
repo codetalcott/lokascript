@@ -356,11 +356,11 @@ describe('Enhanced Property Expressions', () => {
     // Skip: documentation property not implemented
     describe.skip('Documentation', () => {
       it('should have comprehensive documentation', () => {
-        expect(expression.documentation.summary).toContain('possessive syntax');
-        expect(expression.documentation.parameters).toHaveLength(2);
-        expect(expression.documentation.returns.type).toBe('any');
-        expect(expression.documentation.examples.length).toBeGreaterThan(0);
-        expect(expression.documentation.tags).toContain('possessive');
+        expect((expression as any).documentation.summary).toContain('possessive syntax');
+        expect((expression as any).documentation.parameters).toHaveLength(2);
+        expect((expression as any).documentation.returns.type).toBe('any');
+        expect((expression as any).documentation.examples.length).toBeGreaterThan(0);
+        expect((expression as any).documentation.tags).toContain('possessive');
       });
     });
   });
@@ -392,7 +392,7 @@ describe('Enhanced Property Expressions', () => {
     });
 
     it('should return undefined when me is not available', async () => {
-      context.me = undefined;
+      context.me = null;
       const result = await expression.evaluate(context, {
         property: 'id',
       });
@@ -537,7 +537,7 @@ describe('Enhanced Property Expressions', () => {
     });
 
     it('should return undefined when you is not available', async () => {
-      context.you = undefined;
+      context.you = null;
       const result = await expression.evaluate(context, {
         property: 'anything',
       });
@@ -773,7 +773,7 @@ describe('Enhanced Property Expressions', () => {
 
     // Skip: documentation property not implemented
     it.skip('should have consistent metadata across all expressions', () => {
-      Object.values(propertyExpressions).forEach(expression => {
+      Object.values(propertyExpressions).forEach((expression: any) => {
         expect(expression.category).toBe('Property');
         expect(expression.name).toBeTruthy();
         expect(expression.syntax).toBeTruthy();
@@ -886,7 +886,7 @@ describe('Enhanced Property Expressions', () => {
     });
 
     it('should maintain performance with large property access', async () => {
-      const largeObject = {};
+      const largeObject: Record<string, string> = {};
       for (let i = 0; i < 1000; i++) {
         largeObject[`prop${i}`] = `value${i}`;
       }

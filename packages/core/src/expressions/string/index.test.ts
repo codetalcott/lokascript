@@ -21,7 +21,7 @@ function createMockContext(): TypedExecutionContext {
     me: document.createElement('div'),
     you: document.createElement('button'),
     it: 'test-value',
-    locals: new Map([
+    locals: new Map<string, unknown>([
       ['name', 'John'],
       ['age', 30],
       ['user', { name: 'Jane', age: 25, email: 'jane@example.com' }],

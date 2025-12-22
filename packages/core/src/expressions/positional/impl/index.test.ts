@@ -253,11 +253,11 @@ describe('Enhanced Positional Expressions', () => {
     // Skip: Documentation property not implemented
     describe.skip('Documentation', () => {
       it('should have comprehensive documentation', () => {
-        expect(expression.documentation.summary).toContain('Retrieves the first element');
-        expect(expression.documentation.parameters).toHaveLength(1);
-        expect(expression.documentation.returns.type).toBe('any');
-        expect(expression.documentation.examples.length).toBeGreaterThan(0);
-        expect(expression.documentation.tags).toContain('first');
+        expect((expression as any).documentation.summary).toContain('Retrieves the first element');
+        expect((expression as any).documentation.parameters).toHaveLength(1);
+        expect((expression as any).documentation.returns.type).toBe('any');
+        expect((expression as any).documentation.examples.length).toBeGreaterThan(0);
+        expect((expression as any).documentation.tags).toContain('first');
       });
     });
   });
@@ -789,7 +789,7 @@ describe('Enhanced Positional Expressions', () => {
 
     // Skip: documentation property not implemented
     it.skip('should have consistent metadata across all expressions', () => {
-      Object.values(positionalExpressions).forEach(expression => {
+      Object.values(positionalExpressions).forEach((expression: any) => {
         expect(expression.category).toBe('Positional');
         expect(expression.name).toBeTruthy();
         expect(expression.syntax).toBeTruthy();

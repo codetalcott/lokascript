@@ -313,7 +313,7 @@ describe('Enhanced Form Values Expression', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(Object.keys(result.value)).toHaveLength(0);
+        expect(Object.keys(result.value!)).toHaveLength(0);
       }
     });
 
@@ -559,7 +559,7 @@ describe('Enhanced Form Serialization Expression', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        const parsed = JSON.parse(result.value);
+        const parsed = JSON.parse(result.value as string);
         expect(parsed.name).toBe('John');
         expect(parsed.age).toBe(25);
       }
@@ -572,7 +572,7 @@ describe('Enhanced Form Serialization Expression', () => {
 
       expect(result.success).toBe(true);
       if (result.success) {
-        const parsed = JSON.parse(result.value);
+        const parsed = JSON.parse(result.value as string);
         expect(parsed.username).toBe('john_doe');
         expect(parsed.age).toBe(25);
         expect(parsed.notifications).toBe('yes');
@@ -705,7 +705,7 @@ describe('Performance Characteristics', () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(Object.keys(result.value)).toHaveLength(100);
+      expect(Object.keys(result.value!)).toHaveLength(100);
     }
 
     // Should be very fast

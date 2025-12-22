@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
+// Window.hyperfixi and Window.evalHyperScript types are declared globally in browser-bundle.ts
+// Additional test helper functions (make, clearWorkArea, getParseErrorFor) are injected by compatibility-test.html
+// and accessed via type assertions in page.evaluate() contexts
+
 /**
  * Complete Official _hyperscript Test Suite Runner
  *
@@ -30,7 +34,7 @@ interface TestResults {
 }
 
 class OfficialTestSuiteRunner {
-  private results: TestResults = { total: 0, passed: 0, failed: 0, errors: [] };
+  public results: TestResults = { total: 0, passed: 0, failed: 0, errors: [] };
 
   /**
    * Discover all test files in the official _hyperscript test suite
@@ -170,25 +174,28 @@ class OfficialTestSuiteRunner {
     try {
       // NEW: Run the complete test code in browser context
       const testResult = await page.evaluate(
-        async ({ code, description }) => {
+        async ({ code, description }: { code: string; description: string }) => {
           try {
+            // Cast window to any to access test helper functions injected by compatibility-test.html
+            const win = window as any;
+
             // Clear work area before each test
-            if (window.clearWorkArea) {
-              window.clearWorkArea();
+            if (win.clearWorkArea) {
+              win.clearWorkArea();
             }
 
             // Create a test execution context with all utilities
             const testContext = {
-              make: window.make,
-              clearWorkArea: window.clearWorkArea,
-              evalHyperScript: window.evalHyperScript,
-              getParseErrorFor: window.getParseErrorFor,
+              make: win.make,
+              clearWorkArea: win.clearWorkArea,
+              evalHyperScript: win.evalHyperScript,
+              getParseErrorFor: win.getParseErrorFor,
               document: document,
               window: window,
               console: console,
               // Chai-style assertion helper
               should: {
-                equal: function(expected: any) {
+                equal: function(this: { value?: any }, expected: any) {
                   return {
                     actual: this.value,
                     equal: (actual: any) => {

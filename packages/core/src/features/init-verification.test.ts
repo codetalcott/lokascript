@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { initFeature } from './init';
+import { enhancedInitImplementation as initFeature } from './init';
+
+// Cast to any to access internal methods for testing - tests are skipped anyway
+const initFeatureAny = initFeature as any;
 import { createMockHyperscriptContext, createTestElement } from '../test-setup';
 import { ExecutionContext } from '../types/core';
 
@@ -17,8 +20,8 @@ describe('Init Feature - Complex Initialization Verification', () => {
     context = createMockHyperscriptContext(testElement) as ExecutionContext;
 
     // Ensure required context properties exist
-    if (!context.locals) context.locals = new Map();
-    if (!context.globals) context.globals = new Map();
+    if (!context.locals) (context as any).locals = new Map();
+    if (!context.globals) (context as any).globals = new Map();
   });
 
   it.skip('VERIFICATION: should set attribute immediately without fake timers', async () => {
@@ -28,10 +31,10 @@ describe('Init Feature - Complex Initialization Verification', () => {
       { type: 'command', name: 'set', args: ['attribute', 'data-version', '1.0'] },
       // No wait command - test immediate execution
     ];
-    initFeature.registerElement(testElement, commands, false);
+    initFeatureAny.registerElement(testElement, commands, false);
 
     // Process completely and wait
-    await initFeature.processElement(testElement, context);
+    await initFeatureAny.processElement(testElement, context);
 
     // Both should work
     expect(testElement.classList.contains('initializing')).toBe(true);
@@ -47,10 +50,10 @@ describe('Init Feature - Complex Initialization Verification', () => {
       { type: 'command', name: 'remove', args: ['.initializing'] },
       { type: 'command', name: 'add', args: ['.initialized'] },
     ];
-    initFeature.registerElement(testElement, commands, false);
+    initFeatureAny.registerElement(testElement, commands, false);
 
     // Process completely and wait (with real timers)
-    await initFeature.processElement(testElement, context);
+    await initFeatureAny.processElement(testElement, context);
 
     // All should work after completion
     expect(testElement.classList.contains('initialized')).toBe(true);
@@ -71,14 +74,14 @@ describe('Init Feature - Complex Initialization Verification', () => {
 
     // Test working pattern
     const workingElement = createTestElement('<div>Working</div>');
-    initFeature.registerElement(workingElement, workingCommands, false);
-    await initFeature.processElement(workingElement, context);
+    initFeatureAny.registerElement(workingElement, workingCommands, false);
+    await initFeatureAny.processElement(workingElement, context);
     expect(workingElement.getAttribute('data-init')).toBe('completed');
 
     // Test failing pattern
     const failingElement = createTestElement('<div>Failing</div>');
-    initFeature.registerElement(failingElement, failingCommands, false);
-    await initFeature.processElement(failingElement, context);
+    initFeatureAny.registerElement(failingElement, failingCommands, false);
+    await initFeatureAny.processElement(failingElement, context);
     expect(failingElement.getAttribute('data-version')).toBe('1.0');
   });
 });

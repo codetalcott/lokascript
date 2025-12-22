@@ -46,7 +46,7 @@ export class MinimalCommandRegistry {
    */
   async execute(node: ASTNode, context: ExecutionContext): Promise<any> {
     if (node.type === 'command') {
-      const commandName = node.name.toLowerCase();
+      const commandName = (node.name as string).toLowerCase();
       const command = this.commands.get(commandName);
 
       if (!command) {
@@ -55,8 +55,9 @@ export class MinimalCommandRegistry {
 
       // Evaluate arguments
       const evaluatedArgs = [];
-      if (node.args) {
-        for (const arg of node.args) {
+      const nodeArgs = node.args as ASTNode[] | undefined;
+      if (nodeArgs && Array.isArray(nodeArgs)) {
+        for (const arg of nodeArgs) {
           const result = await this.expressionEvaluator.evaluate(arg, context);
           evaluatedArgs.push(result);
         }

@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { WaitCommand } from '../wait';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
 import type { ASTNode } from '../../../types/base-types';
+import type { ExpressionEvaluator } from '../../../core/expression-evaluator';
 
 // ========== Test Utilities ==========
 
@@ -42,7 +43,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -88,7 +89,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: 100 }], modifiers: {} },
+        { args: [{ type: 'literal', value: 100 }], modifiers: {} },
         evaluator,
         context
       );
@@ -102,7 +103,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '2s' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '2s' }], modifiers: {} },
         evaluator,
         context
       );
@@ -116,7 +117,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '500ms' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '500ms' }], modifiers: {} },
         evaluator,
         context
       );
@@ -130,7 +131,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '1.5s' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '1.5s' }], modifiers: {} },
         evaluator,
         context
       );
@@ -144,7 +145,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '2 seconds' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '2 seconds' }], modifiers: {} },
         evaluator,
         context
       );
@@ -158,7 +159,7 @@ describe('WaitCommand (Standalone V2)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '100 milliseconds' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '100 milliseconds' }], modifiers: {} },
         evaluator,
         context
       );
@@ -173,7 +174,7 @@ describe('WaitCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput(
-          { args: [{ value: 'invalid' }], modifiers: {} },
+          { args: [{ type: 'literal', value: 'invalid' }], modifiers: {} },
           evaluator,
           context
         )
@@ -186,7 +187,7 @@ describe('WaitCommand (Standalone V2)', () => {
 
       await expect(
         command.parseInput(
-          { args: [{ value: -100 }], modifiers: {} },
+          { args: [{ type: 'literal', value: -100 }], modifiers: {} },
           evaluator,
           context
         )
@@ -201,16 +202,16 @@ describe('WaitCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'click' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'click' } },
         },
         evaluator,
         context
       );
 
       expect(input.type).toBe('event');
-      expect((input as { eventName: string }).eventName).toBe('click');
-      expect((input as { target: HTMLElement }).target).toBe(context.me);
+      expect((input as unknown as { eventName: string }).eventName).toBe('click');
+      expect((input as unknown as { target: HTMLElement }).target).toBe(context.me);
     });
 
     it('should parse "wait for load"', async () => {
@@ -219,8 +220,8 @@ describe('WaitCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'load' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'load' } },
         },
         evaluator,
         context
@@ -236,8 +237,8 @@ describe('WaitCommand (Standalone V2)', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'custom:event' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'custom:event' } },
         },
         evaluator,
         context
@@ -254,8 +255,8 @@ describe('WaitCommand (Standalone V2)', () => {
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'placeholder' }],
-            modifiers: { for: { value: 123 } },
+            args: [{ type: 'literal', value: 'placeholder' }],
+            modifiers: { for: { type: 'expression', value: 123 } },
           },
           evaluator,
           context
@@ -469,7 +470,7 @@ describe('WaitCommand (Standalone V2)', () => {
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '50ms' }], modifiers: {} },
+        { args: [{ type: 'literal', value: '50ms' }], modifiers: {} },
         evaluator,
         context
       );
@@ -493,8 +494,8 @@ describe('WaitCommand (Standalone V2)', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'click' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'click' } },
         },
         evaluator,
         context
@@ -534,7 +535,7 @@ describe('WaitCommand (Standalone V2)', () => {
 
       for (const { input: timeValue, expected } of formats) {
         const input = await command.parseInput(
-          { args: [{ value: timeValue }], modifiers: {} },
+          { args: [{ type: 'literal', value: timeValue }], modifiers: {} },
           evaluator,
           context
         );

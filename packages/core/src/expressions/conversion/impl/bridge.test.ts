@@ -61,7 +61,7 @@ describe.skip('Enhanced Conversion Bridge', () => {
 
   describe('Context Conversion', () => {
     it('should convert ExecutionContext to TypedExpressionContext', () => {
-      const typedContext = createTypedExpressionContext(mockExecutionContext);
+      const typedContext = createTypedExpressionContext(mockExecutionContext as unknown as Record<string, unknown>);
 
       // Check that core properties are preserved
       expect(typedContext.me).toBe(mockExecutionContext.me);
@@ -87,7 +87,7 @@ describe.skip('Enhanced Conversion Bridge', () => {
         event: undefined,
       };
 
-      const typedContext = createTypedExpressionContext(contextWithNulls as unknown as ExecutionContext);
+      const typedContext = createTypedExpressionContext(contextWithNulls as unknown as Record<string, unknown>);
 
       expect(typedContext.locals).toBeInstanceOf(Map);
       expect(typedContext.globals).toBeInstanceOf(Map);
@@ -310,7 +310,7 @@ describe.skip('Enhanced Conversion Bridge', () => {
       expect(result.results.valid).toBe(123);
       expect(result.results.invalid).toBe('invalid'); // Original value on failure
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].key).toBe('invalid');
+      expect((result.errors[0] as { key: string }).key).toBe('invalid');
     });
 
     it('should provide available conversion types', () => {

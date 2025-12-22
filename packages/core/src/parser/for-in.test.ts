@@ -12,7 +12,7 @@ describe('For...in Loop Syntax', () => {
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 
@@ -23,7 +23,7 @@ end`;
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
   });
 
   it('should parse for...in with local variable collection', () => {
@@ -33,7 +33,7 @@ end`;
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
   });
 
   it('should parse for...in with CSS selector collection', () => {
@@ -43,7 +43,7 @@ end`;
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
   });
 
   it('should parse for...in with index variable', () => {
@@ -54,6 +54,6 @@ end`;
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
   });
 });

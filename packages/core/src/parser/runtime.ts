@@ -359,34 +359,34 @@ async function evaluateCallExpression(node: any, context: ExecutionContext): Pro
         case 'closest':
           return referencesExpressions.closest.evaluate(context, ...args);
         case 'previous':
-          return referencesExpressions.previous.evaluate(context, ...args);
+          return positionalExpressions.previous.evaluate(context, ...args);
         case 'next':
-          return referencesExpressions.next.evaluate(context, ...args);
+          return positionalExpressions.next.evaluate(context, ...args);
       }
     }
 
-    const args = await Promise.all(node.arguments.map((arg: ASTNode) => evaluateAST(arg, context)));
+    const args2 = await Promise.all(node.arguments.map((arg: ASTNode) => evaluateAST(arg, context)));
 
     switch (funcName) {
       case 'closest':
-        return referencesExpressions.closest.evaluate(context, ...args);
+        return referencesExpressions.closest.evaluate(context, ...args2);
 
       case 'first':
-        return positionalExpressions.first.evaluate(context, ...args);
+        return positionalExpressions.first.evaluate(context, ...args2);
 
       case 'last':
-        return positionalExpressions.last.evaluate(context, ...args);
+        return positionalExpressions.last.evaluate(context, ...args2);
 
       case 'next':
-        return positionalExpressions.next.evaluate(context, ...args);
+        return positionalExpressions.next.evaluate(context, ...args2);
 
       case 'previous':
-        return positionalExpressions.previous.evaluate(context, ...args);
+        return positionalExpressions.previous.evaluate(context, ...args2);
 
       default:
         // Regular function call
         if (typeof callee === 'function') {
-          return callee(...args);
+          return callee(...args2);
         }
         throw new Error(`Cannot call non-function: ${funcName}`);
     }
@@ -394,7 +394,8 @@ async function evaluateCallExpression(node: any, context: ExecutionContext): Pro
 
   // Method calls
   if (typeof callee === 'function') {
-    return callee(...args);
+    const evaluatedArgs = await Promise.all(node.arguments.map((arg: ASTNode) => evaluateAST(arg, context)));
+    return callee(...evaluatedArgs);
   }
 
   throw new Error('Cannot call non-function');

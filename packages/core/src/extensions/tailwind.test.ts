@@ -228,7 +228,7 @@ describe('Tailwind CSS Extension', () => {
 
       // Mock the command to use the Tailwind strategy
       const originalExecute = hideCommand.execute.bind(hideCommand);
-      hideCommand.execute = async (context: ExecutionContext, target?: any, strategy?: string) => {
+      (hideCommand as any).execute = async (context: ExecutionContext, target?: any, strategy?: string) => {
         if (strategy === 'twDisplay') {
           const elements = target ? [target] : context.me ? [context.me] : [];
           for (const element of elements) {
@@ -236,12 +236,12 @@ describe('Tailwind CSS Extension', () => {
           }
           return;
         }
-        return originalExecute(context, target);
+        return originalExecute(context as any, target);
       };
 
       expect(testElement.classList.contains('hidden')).toBe(false);
 
-      await hideCommand.execute(context, testElement, 'twDisplay');
+      await (hideCommand as any).execute(context, testElement, 'twDisplay');
 
       expect(testElement.classList.contains('hidden')).toBe(true);
     });
@@ -253,7 +253,7 @@ describe('Tailwind CSS Extension', () => {
 
       // Mock the command to use the Tailwind strategy
       const originalExecute = showCommand.execute.bind(showCommand);
-      showCommand.execute = async (context: ExecutionContext, target?: any, strategy?: string) => {
+      (showCommand as any).execute = async (context: ExecutionContext, target?: any, strategy?: string) => {
         if (strategy === 'twVisibility') {
           const elements = target ? [target] : context.me ? [context.me] : [];
           for (const element of elements) {
@@ -261,12 +261,12 @@ describe('Tailwind CSS Extension', () => {
           }
           return;
         }
-        return originalExecute(context, target);
+        return originalExecute(context as any, target);
       };
 
       expect(testElement.classList.contains('invisible')).toBe(true);
 
-      await showCommand.execute(context, testElement, 'twVisibility');
+      await (showCommand as any).execute(context, testElement, 'twVisibility');
 
       expect(testElement.classList.contains('invisible')).toBe(false);
     });
@@ -330,13 +330,13 @@ describe('Tailwind CSS Extension', () => {
   describe('Error Handling', () => {
     it('should handle invalid strategy names gracefully', async () => {
       await expect(
-        extension.executeStrategy('invalidStrategy' as unknown as string, 'hide', testElement)
+        extension.executeStrategy('invalidStrategy' as any, 'hide', testElement)
       ).rejects.toThrow('Unknown Tailwind strategy: invalidStrategy');
     });
 
     it('should handle invalid operations gracefully', async () => {
       await expect(
-        extension.executeStrategy('twDisplay', 'invalidOp' as unknown as string, testElement)
+        extension.executeStrategy('twDisplay', 'invalidOp' as any, testElement)
       ).rejects.toThrow('Invalid operation: invalidOp');
     });
 

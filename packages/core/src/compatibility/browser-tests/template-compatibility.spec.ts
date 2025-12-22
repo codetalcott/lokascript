@@ -33,7 +33,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
         // Execute render command like official test:
         // _hyperscript("render tmpl with (x: x) then put it into window.res", {locals: {x: ":)", tmpl: tmpl}})
         const context = hyperfixi.createContext();
-        context.locals = new Map([
+        context.locals = new Map<string, unknown>([
           ['x', ':)'],
           ['tmpl', tmpl],
         ]);
@@ -100,7 +100,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
 
       try {
         const context = hyperfixi.createContext();
-        context.locals = new Map([
+        context.locals = new Map<string, unknown>([
           ['x', '<br>'],
           ['tmpl', tmpl],
         ]);
@@ -155,7 +155,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
 
       try {
         const context = hyperfixi.createContext();
-        context.locals = new Map([
+        context.locals = new Map<string, unknown>([
           ['x', ':)'],
           ['tmpl', tmpl],
         ]);
@@ -214,7 +214,7 @@ test.describe('Template Compatibility Tests (Official _hyperscript Patterns)', (
 
       try {
         const context = hyperfixi.createContext();
-        context.locals = new Map([
+        context.locals = new Map<string, unknown>([
           ['x', ':)'],
           ['tmpl', tmpl],
         ]);

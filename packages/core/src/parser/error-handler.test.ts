@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { EnhancedErrorHandler, ErrorContext } from './error-handler';
+import { ErrorHandler, ErrorContext, EnhancedParseError } from './error-handler';
 import { tokenize, TokenKind } from './tokenizer';
 
 // Skipped: Error handler features are stubbed/unimplemented (low priority)
@@ -16,7 +16,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Error Message Enhancement', () => {
     it('should enhance binary operator error messages', () => {
       const tokens = createTestTokens('5 +');
-      const handler = new EnhancedErrorHandler(tokens, 1); // Position at '+'
+      const handler = new ErrorHandler(tokens, 1); // Position at '+'
 
       const context: ErrorContext = {
         parsing: 'binary_op',
@@ -31,7 +31,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should enhance parentheses error messages', () => {
       const tokens = createTestTokens('(5 + 3');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = {
         parsing: 'parentheses',
@@ -46,7 +46,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should enhance member access error messages', () => {
       const tokens = createTestTokens('object.');
-      const handler = new EnhancedErrorHandler(tokens, 1); // Position at '.'
+      const handler = new ErrorHandler(tokens, 1); // Position at '.'
 
       const context: ErrorContext = {
         parsing: 'member',
@@ -60,7 +60,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should enhance command error messages', () => {
       const tokens = createTestTokens('hide');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = {
         parsing: 'command',
@@ -77,7 +77,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Typo Detection and Suggestions', () => {
     it('should detect common boolean typos', () => {
       const tokens = createTestTokens('tru');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = { parsing: 'expression' };
       const error = handler.addError('Unknown identifier', context);
@@ -87,7 +87,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should detect command typos', () => {
       const tokens = createTestTokens('hde'); // typo for 'hide'
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = { parsing: 'command' };
       const error = handler.addError('Unknown command', context);
@@ -97,7 +97,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should detect context variable typos', () => {
       const tokens = createTestTokens('m'); // typo for 'me'
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = { parsing: 'expression' };
       const error = handler.addError('Unknown identifier', context);
@@ -109,7 +109,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Recovery Strategy Generation', () => {
     it('should suggest recovery for binary operators', () => {
       const tokens = createTestTokens('5 +');
-      const handler = new EnhancedErrorHandler(tokens, 1);
+      const handler = new ErrorHandler(tokens, 1);
 
       const context: ErrorContext = { parsing: 'binary_op' };
       const error = handler.addError('Missing operand', context);
@@ -119,7 +119,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should suggest recovery for parentheses', () => {
       const tokens = createTestTokens('(5');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = { parsing: 'parentheses' };
       const error = handler.addError('Unclosed parenthesis', context);
@@ -129,7 +129,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should suggest recovery for member access', () => {
       const tokens = createTestTokens('obj.');
-      const handler = new EnhancedErrorHandler(tokens, 1);
+      const handler = new ErrorHandler(tokens, 1);
 
       const context: ErrorContext = { parsing: 'member' };
       const error = handler.addError('Missing property', context);
@@ -141,11 +141,11 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Pattern Detection', () => {
     it('should detect consecutive operators', () => {
       const tokens = createTestTokens('5 + + 3');
-      const errors = EnhancedErrorHandler.detectErrorPatterns(tokens);
+      const errors = ErrorHandler.detectErrorPatterns(tokens);
 
       expect(errors.length).toBeGreaterThan(0);
 
-      const consecutiveOpError = errors.find(e =>
+      const consecutiveOpError = errors.find((e: EnhancedParseError) =>
         e.message.toLowerCase().includes('consecutive operators')
       );
 
@@ -155,9 +155,9 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should detect invalid operator combinations', () => {
       const tokens = createTestTokens('value++');
-      const errors = EnhancedErrorHandler.detectErrorPatterns(tokens);
+      const errors = ErrorHandler.detectErrorPatterns(tokens);
 
-      const invalidOpError = errors.find(e => e.message.includes('Invalid operator'));
+      const invalidOpError = errors.find((e: EnhancedParseError) => e.message.includes('Invalid operator'));
 
       if (invalidOpError) {
         expect(invalidOpError.suggestion).toContain('value + 1');
@@ -177,9 +177,9 @@ describe.skip('Enhanced Error Handler', () => {
         },
       ];
 
-      const errors = EnhancedErrorHandler.detectErrorPatterns(syntheticTokens);
+      const errors = ErrorHandler.detectErrorPatterns(syntheticTokens);
 
-      const unclosedStringError = errors.find(e => e.message.includes('Unclosed string'));
+      const unclosedStringError = errors.find((e: EnhancedParseError) => e.message.includes('Unclosed string'));
 
       if (unclosedStringError) {
         expect(unclosedStringError.suggestion).toContain('closing quote');
@@ -190,7 +190,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Multiple Error Handling', () => {
     it('should collect multiple errors', () => {
       const tokens = createTestTokens('5 +');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       handler.addError('First error', { parsing: 'expression' });
       handler.addError('Second error', { parsing: 'binary_op' });
@@ -204,7 +204,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should handle errors at different positions', () => {
       const tokens = createTestTokens('(5 + 3 *');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       // Add error for unclosed parenthesis
       const parenError = handler.addError('Unclosed paren', { parsing: 'parentheses' });
@@ -224,7 +224,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Position Tracking', () => {
     it('should track accurate error positions', () => {
       const tokens = createTestTokens('hello + world');
-      const handler = new EnhancedErrorHandler(tokens, 1); // Position at '+'
+      const handler = new ErrorHandler(tokens, 1); // Position at '+'
 
       const error = handler.addError('Test error', { parsing: 'binary_op' });
 
@@ -235,7 +235,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should handle end-of-file errors', () => {
       const tokens = createTestTokens('5 +');
-      const handler = new EnhancedErrorHandler(tokens, tokens.length); // Past end
+      const handler = new ErrorHandler(tokens, tokens.length); // Past end
 
       const error = handler.addError('EOF error', { parsing: 'expression' });
 
@@ -248,7 +248,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Context-Aware Messaging', () => {
     it('should provide different messages for same error in different contexts', () => {
       const tokens = createTestTokens('missing');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const exprError = handler.addError('Missing', { parsing: 'expression' });
       const cmdError = handler.addError('Missing', { parsing: 'command', expected: ['element'] });
@@ -260,7 +260,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should handle wait command specific errors', () => {
       const tokens = createTestTokens('wait');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const context: ErrorContext = {
         parsing: 'command',
@@ -277,7 +277,7 @@ describe.skip('Enhanced Error Handler', () => {
   describe('Integration Readiness', () => {
     it('should maintain compatibility with existing error format', () => {
       const tokens = createTestTokens('test');
-      const handler = new EnhancedErrorHandler(tokens, 0);
+      const handler = new ErrorHandler(tokens, 0);
 
       const error = handler.addError('Test message', { parsing: 'expression' });
 
@@ -295,7 +295,7 @@ describe.skip('Enhanced Error Handler', () => {
 
     it('should work with real tokenizer output', () => {
       const realTokens = tokenize('5 + (3 *');
-      const handler = new EnhancedErrorHandler(realTokens, 0);
+      const handler = new ErrorHandler(realTokens, 0);
 
       const error = handler.addError('Real world error', { parsing: 'binary_op' });
 

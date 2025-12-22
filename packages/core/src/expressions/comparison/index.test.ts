@@ -617,7 +617,7 @@ describe('Enhanced Comparison Expressions Integration', () => {
 
   describe('Type safety', () => {
     it.skip('should have consistent metadata', () => {
-      const expressions = Object.values(comparisonExpressions);
+      const expressions = Object.values(comparisonExpressions) as any[];
 
       expressions.forEach(expr => {
         expect(expr.category).toBe('Logical');

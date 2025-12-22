@@ -66,7 +66,7 @@ describe('Conversion Expressions', () => {
         const dateStr = '2023-01-01T00:00:00.000Z';
         const result = await conversionExpressions.as.evaluate(context, dateStr, 'Date');
         expect(result).toBeInstanceOf(Date);
-        expect(result.getUTCFullYear()).toBe(2023);
+        expect((result as Date).getUTCFullYear()).toBe(2023);
 
         const existingDate = new Date('2022-12-31');
         const result2 = await conversionExpressions.as.evaluate(context, existingDate, 'Date');
@@ -107,10 +107,10 @@ describe('Conversion Expressions', () => {
       it('should convert to Fragment', async () => {
         const html = '<div>Hello</div><p>World</p>';
         const result = await conversionExpressions.as.evaluate(context, html, 'Fragment');
-        expect(result.constructor.name).toBe('DocumentFragment');
-        expect(result.children).toHaveLength(2);
-        expect(result.children[0].tagName).toBe('DIV');
-        expect(result.children[1].tagName).toBe('P');
+        expect((result as DocumentFragment).constructor.name).toBe('DocumentFragment');
+        expect((result as DocumentFragment).children).toHaveLength(2);
+        expect((result as DocumentFragment).children[0].tagName).toBe('DIV');
+        expect((result as DocumentFragment).children[1].tagName).toBe('P');
       });
 
       it('should convert to HTML string', async () => {

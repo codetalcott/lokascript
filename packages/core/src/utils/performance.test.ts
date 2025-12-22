@@ -280,7 +280,7 @@ describe('ObjectPool', () => {
   describe('Edge Cases', () => {
     it('should handle objects with complex reset logic', () => {
       const pool = new ObjectPool(
-        () => ({ map: new Map(), set: new Set(), arr: [] }),
+        () => ({ map: new Map<string, string>(), set: new Set<string>(), arr: [] as number[] }),
         obj => {
           obj.map.clear();
           obj.set.clear();

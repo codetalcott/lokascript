@@ -140,7 +140,7 @@ describe('Enhanced Function Call Expression', () => {
       (globalThis as Record<string, unknown>).testObj = {
         value: 'test-value',
         getValue() {
-          return this.value;
+          return (this as any).value;
         },
       };
 
@@ -158,7 +158,7 @@ describe('Enhanced Function Call Expression', () => {
       (globalThis as Record<string, unknown>).testObj = {
         multiplier: 10,
         multiply(value: number) {
-          return value * this.multiplier;
+          return value * (this as any).multiplier;
         },
       };
 
@@ -321,7 +321,7 @@ describe('Enhanced Function Call Expression', () => {
 
     test('resolves function from meta context', async () => {
       const metaFunc = () => 'meta-result';
-      context.meta!.set('metaFunc', metaFunc);
+      (context as { meta: Record<string, unknown> }).meta = { metaFunc };
 
       const result = await functionCallExpression.evaluate(context, 'metaFunc', []);
 
@@ -584,7 +584,7 @@ describe('Enhanced Function Call Expression', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation', () => {
-      const docs = functionCallExpression.documentation;
+      const docs = (functionCallExpression as any).documentation;
 
       expect(docs.summary).toContain('JavaScript functions');
       expect(docs.parameters).toHaveLength(2);

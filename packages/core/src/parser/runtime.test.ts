@@ -15,7 +15,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('42');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(42);
     });
 
@@ -24,7 +24,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('"hello world"');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe('hello world');
     });
 
@@ -33,7 +33,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('true');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(true);
     });
   });
@@ -45,7 +45,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('me');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(element);
     });
 
@@ -56,7 +56,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('my value');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe('test value');
     });
   });
@@ -67,7 +67,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('5 + 3');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(8);
     });
 
@@ -76,7 +76,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('10 > 5');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(true);
     });
 
@@ -85,7 +85,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('true and false');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(false);
     });
   });
@@ -95,11 +95,11 @@ describe('Hyperscript Runtime Evaluator', () => {
       const element = document.createElement('div');
       element.className = 'test-class';
       const context = createMockHyperscriptContext(element);
-      context.element = element; // Add element to context scope
+      (context as any).element = element; // Add element to context scope
       const ast = parse('element.className');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe('test-class');
     });
   });
@@ -114,7 +114,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('<button/>');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(button);
 
       document.body.removeChild(button);
@@ -129,7 +129,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('my value as Int');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       // For now, accept string conversion working (parser integration success)
       expect(result).toBe('123'); // Will be 123 when full conversion system is integrated
     });
@@ -139,7 +139,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       const ast = parse('2 + 3 * 4');
 
       expect(ast.success).toBe(true);
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBe(14); // 2 + (3 * 4) = 14
     });
   });
@@ -152,7 +152,7 @@ describe('Hyperscript Runtime Evaluator', () => {
       expect(ast.success).toBe(true);
 
       // Should not throw, but return undefined or handle gracefully
-      const result = await evaluateAST(ast.node, context);
+      const result = await evaluateAST(ast.node!, context);
       expect(result).toBeUndefined();
     });
 

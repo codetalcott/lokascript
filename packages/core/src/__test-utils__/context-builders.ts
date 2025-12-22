@@ -170,7 +170,7 @@ export class TestContextBuilder {
       meta: this.options.meta,
       ...this.options.globals,
       ...this.options,
-    } as TestExpressionContext
+    } as unknown as TestExpressionContext
   }
 }
 
@@ -210,7 +210,23 @@ export function createMockElement(
   tagName = 'div',
   attributes: Record<string, string> = {}
 ): Element {
-  const element = {
+  const element: {
+    tagName: string
+    nodeName: string
+    nodeType: number
+    attributes: Map<string, string>
+    classList: {
+      classes: Set<string>
+      add(...tokens: string[]): void
+      remove(...tokens: string[]): void
+      toggle(token: string): boolean
+      contains(token: string): boolean
+    }
+    getAttribute(name: string): string | null
+    setAttribute(name: string, value: string): void
+    removeAttribute(name: string): void
+    hasAttribute(name: string): boolean
+  } = {
     tagName: tagName.toUpperCase(),
     nodeName: tagName.toUpperCase(),
     nodeType: 1,
@@ -237,20 +253,20 @@ export function createMockElement(
       },
     },
     getAttribute(name: string) {
-      return this.attributes.get(name) || null
+      return element.attributes.get(name) || null
     },
     setAttribute(name: string, value: string) {
-      this.attributes.set(name, value)
+      element.attributes.set(name, value)
     },
     removeAttribute(name: string) {
-      this.attributes.delete(name)
+      element.attributes.delete(name)
     },
     hasAttribute(name: string) {
-      return this.attributes.has(name)
+      return element.attributes.has(name)
     },
-  } as unknown as Element
+  }
 
-  return element
+  return element as unknown as Element
 }
 
 /**
@@ -266,7 +282,18 @@ export function createMockEvent(
     [key: string]: unknown
   } = {}
 ): Event {
-  return {
+  const event: {
+    type: string
+    target: EventTarget | null
+    currentTarget: EventTarget | null
+    bubbles: boolean
+    cancelable: boolean
+    defaultPrevented: boolean
+    preventDefault(): void
+    stopPropagation(): void
+    stopImmediatePropagation(): void
+    [key: string]: unknown
+  } = {
     type,
     target: options.target || null,
     currentTarget: options.currentTarget || null,
@@ -274,10 +301,11 @@ export function createMockEvent(
     cancelable: options.cancelable ?? true,
     defaultPrevented: false,
     preventDefault() {
-      this.defaultPrevented = true
+      event.defaultPrevented = true
     },
     stopPropagation() {},
     stopImmediatePropagation() {},
     ...options,
-  } as unknown as Event
+  }
+  return event as unknown as Event
 }

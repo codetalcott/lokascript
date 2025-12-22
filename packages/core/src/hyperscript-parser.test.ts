@@ -23,7 +23,7 @@ function parseHyperscript(code: string): { success: boolean; node?: any; error?:
 
   if (node.type === 'eventHandler') {
     keyword = 'on';
-    body = node.commands || [node];
+    body = Array.isArray(node.commands) ? node.commands : [node];
   } else if (node.type === 'command') {
     keyword = 'command';
     body = [node];
@@ -326,8 +326,8 @@ describe('HyperscriptParser', () => {
       const ast = _hyperscript.parse('log "test"');
 
       expect(ast.type).toBe('program');
-      expect(ast.features).toHaveLength(1);
-      expect(ast.features[0].body[0].name).toBe('log');
+      expect((ast as { features?: unknown[] }).features).toHaveLength(1);
+      expect((((ast as { features?: unknown[] }).features as unknown[])[0] as any).body[0].name).toBe('log');
     });
   });
 });

@@ -12,13 +12,13 @@ const context: ExecutionContext = {
   you: null,
   it: null,
   result: null,
-  locals: new Map([
+  locals: new Map<string, unknown>([
     ['testVar', 'testValue'],
     ['items', [1, 2, 3, 4, 5]],
     ['user', { name: 'John', age: 30 }],
   ]),
   globals: new Map([['globalVar', 'globalValue']]),
-  parent: null,
+  parent: undefined,
   halted: false,
   returned: false,
   broke: false,

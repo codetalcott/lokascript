@@ -18,62 +18,62 @@ describe('Includes Integration Test', () => {
 
   it('should evaluate includes expressions correctly', async () => {
     // Test string includes
-    const result1 = hyperscript.execute('"hello world" includes "world"', mockElement);
+    const result1 = hyperscript.run('"hello world" includes "world"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result1).toBe(true);
 
-    const result2 = hyperscript.execute('"hello world" includes "xyz"', mockElement);
+    const result2 = hyperscript.run('"hello world" includes "xyz"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result2).toBe(false);
 
     // Test array includes
-    const result3 = hyperscript.execute('["a", "b", "c"] includes "b"', mockElement);
+    const result3 = hyperscript.run('["a", "b", "c"] includes "b"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result3).toBe(true);
 
-    const result4 = hyperscript.execute('["a", "b", "c"] includes "x"', mockElement);
+    const result4 = hyperscript.run('["a", "b", "c"] includes "x"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result4).toBe(false);
   });
 
   it('should evaluate include expressions correctly', async () => {
     // Test string include (singular form)
-    const result1 = hyperscript.execute('"hello world" include "world"', mockElement);
+    const result1 = hyperscript.run('"hello world" include "world"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result1).toBe(true);
 
-    const result2 = hyperscript.execute('"hello world" include "xyz"', mockElement);
+    const result2 = hyperscript.run('"hello world" include "xyz"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result2).toBe(false);
   });
 
   it('should evaluate does not include expressions correctly', async () => {
     // Test does not include
-    const result1 = hyperscript.execute('"hello world" does not include "xyz"', mockElement);
+    const result1 = hyperscript.run('"hello world" does not include "xyz"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result1).toBe(true);
 
-    const result2 = hyperscript.execute('"hello world" does not include "world"', mockElement);
+    const result2 = hyperscript.run('"hello world" does not include "world"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result2).toBe(false);
 
     // Test array does not include
-    const result3 = hyperscript.execute('["a", "b", "c"] does not include "x"', mockElement);
+    const result3 = hyperscript.run('["a", "b", "c"] does not include "x"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result3).toBe(true);
 
-    const result4 = hyperscript.execute('["a", "b", "c"] does not include "b"', mockElement);
+    const result4 = hyperscript.run('["a", "b", "c"] does not include "b"', { me: mockElement } as unknown as import('./types/core').ExecutionContext);
     expect(await result4).toBe(false);
   });
 
   it('should work in complex expressions', async () => {
     // Test includes in conditional expressions
-    const result1 = hyperscript.execute(
+    const result1 = hyperscript.run(
       '["apple", "banana"] includes "apple" and "hello" includes "ell"',
-      mockElement
+      { me: mockElement } as unknown as import('./types/core').ExecutionContext
     );
     expect(await result1).toBe(true);
 
-    const result2 = hyperscript.execute(
+    const result2 = hyperscript.run(
       '["apple", "banana"] includes "cherry" or "hello" includes "ell"',
-      mockElement
+      { me: mockElement } as unknown as import('./types/core').ExecutionContext
     );
     expect(await result2).toBe(true);
 
-    const result3 = hyperscript.execute(
+    const result3 = hyperscript.run(
       '["apple", "banana"] includes "cherry" and "hello" includes "xyz"',
-      mockElement
+      { me: mockElement } as unknown as import('./types/core').ExecutionContext
     );
     expect(await result3).toBe(false);
   });

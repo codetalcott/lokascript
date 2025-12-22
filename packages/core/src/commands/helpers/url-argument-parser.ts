@@ -29,9 +29,10 @@ export async function parseUrlArguments(
   const argStrings: string[] = [];
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i] as Record<string, unknown>;
-    const argType = arg?.type || 'unknown';
-    const argName = arg?.name as string | undefined;
+    const arg = args[i];
+    const argRecord = arg as unknown as Record<string, unknown>;
+    const argType = argRecord?.type || 'unknown';
+    const argName = argRecord?.name as string | undefined;
 
     if (argType === 'identifier' && argName && KEYWORDS.includes(argName.toLowerCase())) {
       evaluatedArgs.push(argName.toLowerCase());

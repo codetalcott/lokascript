@@ -44,7 +44,7 @@ function createMockEvaluator() {
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Race Condition Tests ==========
@@ -63,10 +63,10 @@ describe('WaitCommand - Race Conditions', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'click' },
-            or: { value: '1s' },
+            for: { type: 'expression', value: 'click' },
+            or: { type: 'expression', value: '1s' },
           },
         },
         evaluator,
@@ -74,11 +74,11 @@ describe('WaitCommand - Race Conditions', () => {
       );
 
       expect(input.type).toBe('race');
-      expect((input as { conditions: unknown[] }).conditions).toHaveLength(2);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('click');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(1000);
+      expect((input as unknown as { conditions: unknown[] }).conditions).toHaveLength(2);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('click');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(1000);
     });
 
     it('should parse "wait 2s or for click"', async () => {
@@ -87,9 +87,9 @@ describe('WaitCommand - Race Conditions', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '2s' }],
+          args: [{ type: 'literal', value: '2s' }],
           modifiers: {
-            or: { value: 'click' },
+            or: { type: 'expression', value: 'click' },
           },
         },
         evaluator,
@@ -97,11 +97,11 @@ describe('WaitCommand - Race Conditions', () => {
       );
 
       expect(input.type).toBe('race');
-      expect((input as { conditions: unknown[] }).conditions).toHaveLength(2);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('time');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].milliseconds).toBe(2000);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('event');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].eventName).toBe('click');
+      expect((input as unknown as { conditions: unknown[] }).conditions).toHaveLength(2);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('time');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].milliseconds).toBe(2000);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('event');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].eventName).toBe('click');
     });
 
     it('should parse "wait for click or keypress"', async () => {
@@ -110,10 +110,10 @@ describe('WaitCommand - Race Conditions', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'click' },
-            or: { value: 'keypress' },
+            for: { type: 'expression', value: 'click' },
+            or: { type: 'expression', value: 'keypress' },
           },
         },
         evaluator,
@@ -121,11 +121,11 @@ describe('WaitCommand - Race Conditions', () => {
       );
 
       expect(input.type).toBe('race');
-      expect((input as { conditions: unknown[] }).conditions).toHaveLength(2);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('click');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('event');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].eventName).toBe('keypress');
+      expect((input as unknown as { conditions: unknown[] }).conditions).toHaveLength(2);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('click');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('event');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].eventName).toBe('keypress');
     });
 
     it('should parse "wait 500ms or 1s" (multiple time conditions)', async () => {
@@ -134,9 +134,9 @@ describe('WaitCommand - Race Conditions', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: '500ms' }],
+          args: [{ type: 'literal', value: '500ms' }],
           modifiers: {
-            or: { value: '1s' },
+            or: { type: 'expression', value: '1s' },
           },
         },
         evaluator,
@@ -144,11 +144,11 @@ describe('WaitCommand - Race Conditions', () => {
       );
 
       expect(input.type).toBe('race');
-      expect((input as { conditions: unknown[] }).conditions).toHaveLength(2);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('time');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].milliseconds).toBe(500);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(1000);
+      expect((input as unknown as { conditions: unknown[] }).conditions).toHaveLength(2);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('time');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].milliseconds).toBe(500);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(1000);
     });
 
     it('should parse race condition with event destructuring', async () => {
@@ -157,10 +157,10 @@ describe('WaitCommand - Race Conditions', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'mousemove(clientX, clientY)' },
-            or: { value: '2s' },
+            for: { type: 'expression', value: 'mousemove(clientX, clientY)' },
+            or: { type: 'expression', value: '2s' },
           },
         },
         evaluator,
@@ -168,12 +168,12 @@ describe('WaitCommand - Race Conditions', () => {
       );
 
       expect(input.type).toBe('race');
-      expect((input as { conditions: unknown[] }).conditions).toHaveLength(2);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('mousemove');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[0].destructure).toEqual(['clientX', 'clientY']);
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
-      expect((input as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(2000);
+      expect((input as unknown as { conditions: unknown[] }).conditions).toHaveLength(2);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].type).toBe('event');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].eventName).toBe('mousemove');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[0].destructure).toEqual(['clientX', 'clientY']);
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].type).toBe('time');
+      expect((input as unknown as { conditions: Array<Record<string, unknown>> }).conditions[1].milliseconds).toBe(2000);
     });
 
     it('should throw error if race condition has less than 2 conditions', async () => {
@@ -185,7 +185,7 @@ describe('WaitCommand - Race Conditions', () => {
           {
             args: [],
             modifiers: {
-              or: { value: '1s' },
+              or: { type: 'expression', value: '1s' },
             },
           },
           evaluator,
@@ -388,10 +388,10 @@ describe('WaitCommand - Race Conditions', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'click' },
-            or: { value: '1s' },
+            for: { type: 'expression', value: 'click' },
+            or: { type: 'expression', value: '1s' },
           },
         },
         evaluator,
@@ -424,9 +424,9 @@ describe('WaitCommand - Race Conditions', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: '50ms' }],
+          args: [{ type: 'literal', value: '50ms' }],
           modifiers: {
-            or: { value: 'click' },
+            or: { type: 'expression', value: 'click' },
           },
         },
         evaluator,
@@ -463,8 +463,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'mousemove(clientX, clientY)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'mousemove(clientX, clientY)' } },
         },
         evaluator,
         context
@@ -481,8 +481,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'keydown(key, code)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'keydown(key, code)' } },
         },
         evaluator,
         context
@@ -499,8 +499,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'scroll(scrollY)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'scroll(scrollY)' } },
         },
         evaluator,
         context
@@ -517,8 +517,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'click(clientX, clientY, button)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'click(clientX, clientY, button)' } },
         },
         evaluator,
         context
@@ -535,8 +535,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'mousemove(clientX,clientY)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'mousemove(clientX,clientY)' } },
         },
         evaluator,
         context
@@ -553,8 +553,8 @@ describe('WaitCommand - Event Destructuring', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'click' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'click' } },
         },
         evaluator,
         context
@@ -804,8 +804,8 @@ describe('WaitCommand - Event Destructuring', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'mousemove(clientX, clientY)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'mousemove(clientX, clientY)' } },
         },
         evaluator,
         context
@@ -843,8 +843,8 @@ describe('WaitCommand - Event Destructuring', () => {
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
-          modifiers: { for: { value: 'keydown(key, code)' } },
+          args: [{ type: 'literal', value: 'placeholder' }],
+          modifiers: { for: { type: 'expression', value: 'keydown(key, code)' } },
         },
         evaluator,
         context
@@ -898,14 +898,14 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'load' },
-            from: { value: '<iframe/>' },
+            for: { type: 'expression', value: 'load' },
+            from: { type: 'expression', value: '<iframe/>' },
           },
         },
         evaluator,
@@ -933,14 +933,14 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'click' },
-            from: { value: '#other-element' },
+            for: { type: 'expression', value: 'click' },
+            from: { type: 'expression', value: '#other-element' },
           },
         },
         evaluator,
@@ -965,14 +965,14 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'message' },
-            from: { value: 'window' },
+            for: { type: 'expression', value: 'message' },
+            from: { type: 'expression', value: 'window' },
           },
         },
         evaluator,
@@ -990,9 +990,9 @@ describe('WaitCommand - Custom Event Sources', () => {
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'click' },
+            for: { type: 'expression', value: 'click' },
           },
         },
         evaluator,
@@ -1015,15 +1015,15 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       await expect(
         command.parseInput(
           {
-            args: [{ value: 'placeholder' }],
+            args: [{ type: 'literal', value: 'placeholder' }],
             modifiers: {
-              for: { value: 'click' },
-              from: { value: 'invalid' },
+              for: { type: 'expression', value: 'click' },
+              from: { type: 'expression', value: 'invalid' },
             },
           },
           evaluator,
@@ -1047,14 +1047,14 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'mousemove(clientX, clientY)' },
-            from: { value: 'customElement' },
+            for: { type: 'expression', value: 'mousemove(clientX, clientY)' },
+            from: { type: 'expression', value: 'customElement' },
           },
         },
         evaluator,
@@ -1205,15 +1205,15 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'load' },
-            from: { value: '<iframe/>' },
+            for: { type: 'expression', value: 'load' },
+            from: { type: 'expression', value: '<iframe/>' },
           },
         },
         evaluator,
@@ -1256,15 +1256,15 @@ describe('WaitCommand - Custom Event Sources', () => {
           }
           return (node as unknown as { value: unknown }).value;
         },
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
         {
-          args: [{ value: 'placeholder' }],
+          args: [{ type: 'literal', value: 'placeholder' }],
           modifiers: {
-            for: { value: 'mousemove(clientX, clientY)' },
-            from: { value: 'customElement' },
+            for: { type: 'expression', value: 'mousemove(clientX, clientY)' },
+            from: { type: 'expression', value: 'customElement' },
           },
         },
         evaluator,

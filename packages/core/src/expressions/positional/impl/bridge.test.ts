@@ -53,7 +53,7 @@ describe.skip('Enhanced Positional Bridge', () => {
 
   describe('Context Conversion', () => {
     it('should convert ExecutionContext to TypedExpressionContext', () => {
-      const typedContext = createTypedExpressionContext(mockContext);
+      const typedContext = createTypedExpressionContext(mockContext as unknown as Record<string, unknown>);
 
       expect(typedContext.me).toBe(mockContext.me);
       expect(typedContext.you).toBe(mockContext.you);
@@ -78,7 +78,7 @@ describe.skip('Enhanced Positional Bridge', () => {
         event: undefined,
       } as unknown as ExecutionContext;
 
-      const typedContext = createTypedExpressionContext(contextWithoutMaps);
+      const typedContext = createTypedExpressionContext(contextWithoutMaps as unknown as Record<string, unknown>);
 
       expect(typedContext.locals).toBeInstanceOf(Map);
       expect(typedContext.globals).toBeInstanceOf(Map);
@@ -86,7 +86,7 @@ describe.skip('Enhanced Positional Bridge', () => {
     });
 
     it('should update ExecutionContext from TypedExpressionContext', () => {
-      const typedContext = createTypedExpressionContext(mockContext);
+      const typedContext = createTypedExpressionContext(mockContext as unknown as Record<string, unknown>);
 
       // Modify typed context
       typedContext.result = 'updated-result';
@@ -137,8 +137,8 @@ describe.skip('Enhanced Positional Bridge', () => {
     it.skip('should provide expression documentation', () => {
       const documentation = EnhancedPositionalAdapter.getExpressionDocumentation('last');
       expect(documentation).toBeDefined();
-      expect(documentation?.summary).toContain('Returns the last element');
-      expect(documentation?.parameters).toHaveLength(1);
+      expect((documentation as any)?.summary).toContain('Returns the last element');
+      expect((documentation as any)?.parameters).toHaveLength(1);
     });
 
     it('should validate expression input', () => {

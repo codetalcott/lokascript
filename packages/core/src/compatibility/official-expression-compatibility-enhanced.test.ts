@@ -41,13 +41,13 @@ describe('Enhanced Official Expression Compatibility Tests', () => {
       you: testContainer.querySelector('.content') as HTMLElement,
       it: testContainer.querySelector('[data-testid="username"]') as HTMLElement,
       result: null,
-      locals: new Map([
+      locals: new Map<string, unknown>([
         ['username', 'john'],
         ['items', [1, 2, 3, 4, 5]],
         ['user', { name: 'John', age: 30, email: 'john@example.com' }],
       ]),
       globals: new Map([['app', { name: 'TestApp', version: '1.0' }]]),
-      parent: null,
+      parent: undefined,
       halted: false,
       returned: false,
       broke: false,

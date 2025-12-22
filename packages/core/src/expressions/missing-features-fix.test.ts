@@ -167,7 +167,7 @@ describe('Missing Expression Features Fix - Official Test Patterns', () => {
     it('should handle async argument evaluation', async () => {
       // Test that arguments are properly awaited in async contexts
       context.globals.set('asyncValue', Promise.resolve('promised-value'));
-      context.globals.set('processValue', value => `processed-${value}`);
+      context.globals.set('processValue', (value: unknown) => `processed-${value}`);
 
       const result = await parseAndEvaluateExpression('processValue(asyncValue)', context);
       expect(result).toBe('processed-promised-value');
@@ -175,7 +175,7 @@ describe('Missing Expression Features Fix - Official Test Patterns', () => {
 
     it('should work with non-async values in async context', async () => {
       // From official async.js test - async argument works w/ non-async value
-      context.globals.set('syncFunction', value => `sync-${value}`);
+      context.globals.set('syncFunction', (value: unknown) => `sync-${value}`);
 
       const result = await parseAndEvaluateExpression('syncFunction("test")', context);
       expect(result).toBe('sync-test');

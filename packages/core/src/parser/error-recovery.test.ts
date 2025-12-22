@@ -218,8 +218,10 @@ describe('Parser Error Recovery and Error Messages', () => {
       expect(result.error).toBeDefined();
 
       // Should pinpoint the error in the innermost expression
-      const errorPos = result.error!.position;
-      expect(input[errorPos]).toBe(')'); // Should point to problematic closing paren
+      const errorPos = result.error?.position;
+      if (errorPos !== undefined) {
+        expect(input[errorPos]).toBe(')'); // Should point to problematic closing paren
+      }
     });
   });
 

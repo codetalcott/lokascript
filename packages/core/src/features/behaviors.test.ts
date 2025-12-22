@@ -649,7 +649,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-parameter-name')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'invalid-parameter-name')).toBe(true);
     });
 
     it('should validate duplicate parameters', () => {
@@ -662,7 +662,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'duplicate-parameters')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'duplicate-parameters')).toBe(true);
     });
 
     it('should validate event types', () => {
@@ -674,7 +674,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-event-type')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'invalid-event-type')).toBe(true);
     });
 
     it('should validate event source selectors', () => {
@@ -692,7 +692,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-event-source-selector')).toBe(
+      expect(validationResult.errors.some((e: any) => e.type === 'invalid-event-source-selector')).toBe(
         true
       );
     });
@@ -712,7 +712,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-filter-expression')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'invalid-filter-expression')).toBe(true);
     });
 
     it('should validate conflicting performance options', () => {
@@ -733,7 +733,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'conflicting-performance-options')).toBe(
+      expect(validationResult.errors.some((e: any) => e.type === 'conflicting-performance-options')).toBe(
         true
       );
     });
@@ -749,7 +749,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'empty-commands-array')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'empty-commands-array')).toBe(true);
     });
 
     it('should validate event handler count limits', () => {
@@ -769,7 +769,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'too-many-event-handlers')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'too-many-event-handlers')).toBe(true);
     });
 
     it('should validate namespace format', () => {
@@ -782,7 +782,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(validationResult.isValid).toBe(false);
-      expect(validationResult.errors.some(e => e.type === 'invalid-namespace')).toBe(true);
+      expect(validationResult.errors.some((e: any) => e.type === 'invalid-namespace')).toBe(true);
     });
 
     it('should handle initialization failures gracefully', async () => {
@@ -791,8 +791,8 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errors!).toBeDefined();
-      expect(result.suggestions!).toBeDefined();
+      expect(result.error!).toBeDefined();
+      expect((result as any).suggestions!).toBeDefined();
     });
   });
 
@@ -1087,11 +1087,11 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
         expect(definition?.parameters).toEqual(['constraint', 'grid', 'axis', 'revert']);
 
         // Verify event handler configurations
-        const mouseDownHandler = definition?.eventHandlers.find(h => h.event === 'mousedown');
+        const mouseDownHandler = definition?.eventHandlers.find((h: { event: string }) => h.event === 'mousedown');
         expect(mouseDownHandler?.filter).toBe('event.button === 0');
         expect(mouseDownHandler?.options.capture).toBe(true);
 
-        const mouseMoveHandler = definition?.eventHandlers.find(h => h.event === 'mousemove');
+        const mouseMoveHandler = definition?.eventHandlers.find((h: { event: string }) => h.event === 'mousemove');
         expect(mouseMoveHandler?.eventSource).toBe('document');
         expect(mouseMoveHandler?.options.throttle).toBe(16);
       }
@@ -1156,7 +1156,7 @@ describe.skip('Enhanced Behaviors Feature Implementation', () => {
         expect(definition?.eventHandlers).toHaveLength(4);
 
         // Verify input handler with debouncing
-        const inputHandler = definition?.eventHandlers.find(h => h.event === 'input');
+        const inputHandler = definition?.eventHandlers.find((h: { event: string }) => h.event === 'input');
         expect(inputHandler?.options.debounce).toBe(300);
         expect(inputHandler?.filter).toContain('hasAttribute("data-validate")');
       }

@@ -382,8 +382,8 @@ describe('Property Expressions', () => {
       it('should get all elements with class', async () => {
         const result = await propertiesExpressions.classReference.evaluate(context, 'test-class');
         expect(result).toHaveLength(2);
-        expect(result[0].textContent).toBe('Item 1');
-        expect(result[1].textContent).toBe('Item 2');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[0].textContent).toBe('Item 1');
+        expect((result as unknown[] & { [index: number]: { textContent: string } })[1].textContent).toBe('Item 2');
       });
 
       it('should handle class with leading dot', async () => {
@@ -417,13 +417,13 @@ describe('Property Expressions', () => {
     describe('idReference expression', () => {
       it('should get element by ID', async () => {
         const result = await propertiesExpressions.idReference.evaluate(context, 'unique-id');
-        expect(result?.textContent).toBe('Unique Item');
-        expect(result?.id).toBe('unique-id');
+        expect((result as any)?.textContent).toBe('Unique Item');
+        expect((result as any)?.id).toBe('unique-id');
       });
 
       it('should handle ID with leading hash', async () => {
         const result = await propertiesExpressions.idReference.evaluate(context, '#unique-id');
-        expect(result?.id).toBe('unique-id');
+        expect((result as any)?.id).toBe('unique-id');
       });
 
       it('should return null for non-existent ID', async () => {

@@ -19,7 +19,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map([['obj', { prop: 'value' }]]),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -45,7 +45,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map(),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -53,7 +53,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         async: false,
       };
 
-      const result = await parseAndEvaluateExpression('me.className', context);
+      const result = await parseAndEvaluateExpression('me.className', context as unknown as ExecutionContext);
       expect(result).toBe('test-class');
     });
 
@@ -65,7 +65,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map([['obj', { nested: { prop: 'deep-value' } }]]),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -89,7 +89,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map(),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -98,11 +98,11 @@ describe('Dot Notation Property Access - TDD Fix', () => {
       };
 
       // Test dot notation
-      const dotResult = await parseAndEvaluateExpression('me.prop', context);
+      const dotResult = await parseAndEvaluateExpression('me.prop', context as unknown as ExecutionContext);
       expect(dotResult).toBe('dot-value');
 
       // Test possessive should still work
-      const possessiveResult = await parseAndEvaluateExpression('my otherProp', context);
+      const possessiveResult = await parseAndEvaluateExpression('my otherProp', context as unknown as ExecutionContext);
       expect(possessiveResult).toBe('possessive-value');
     });
   });
@@ -116,7 +116,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map(),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -137,7 +137,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map([['nullObj', null]]),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -161,7 +161,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
         result: null,
         locals: new Map(),
         globals: new Map(),
-        parent: null,
+        parent: undefined,
         halted: false,
         returned: false,
         broke: false,
@@ -170,7 +170,7 @@ describe('Dot Notation Property Access - TDD Fix', () => {
       };
 
       // Fixed: dot notation now works correctly
-      const result = await parseAndEvaluateExpression('me.className', context);
+      const result = await parseAndEvaluateExpression('me.className', context as unknown as ExecutionContext);
       expect(result).toBe('test');
     });
   });

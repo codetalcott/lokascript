@@ -26,15 +26,15 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
 
 function createMockEvaluator() {
   return {
-    evaluate: async (node: ASTNode, context: ExecutionContext) => {
+    evaluate: async (node: ASTNode, _context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       // Real evaluator would parse AST
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as { value:unknown }).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -85,10 +85,10 @@ describe('LogCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => 'Hello World',
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value:'Hello World' }], modifiers: {} },
+        { args: [{ type: 'literal', value:'Hello World' }], modifiers: {} },
         evaluator,
         context
       );
@@ -100,10 +100,10 @@ describe('LogCommand (Standalone V2)', () => {
       const context = createMockContext();
       const evaluator = {
         evaluate: async () => 42,
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value:42 }], modifiers: {} },
+        { args: [{ type: 'literal', value:42 }], modifiers: {} },
         evaluator,
         context
       );
@@ -117,14 +117,14 @@ describe('LogCommand (Standalone V2)', () => {
       const valuesToReturn = ['Result:', 42, true];
       const evaluator = {
         evaluate: async () => valuesToReturn[callCount++],
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
           args: [
-            { value:'Result:' },
-            { value:42 },
-            { value:true },
+            { type: 'literal', value:'Result:' },
+            { type: 'literal', value:42 },
+            { type: 'literal', value:true },
           ],
           modifiers: {},
         },
@@ -140,10 +140,10 @@ describe('LogCommand (Standalone V2)', () => {
       const obj = { foo: 'bar', baz: 123 };
       const evaluator = {
         evaluate: async () => obj,
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value:obj }], modifiers: {} },
+        { args: [{ type: 'literal', value:obj }], modifiers: {} },
         evaluator,
         context
       );
@@ -157,10 +157,10 @@ describe('LogCommand (Standalone V2)', () => {
       const arr = [1, 2, 3, 4, 5];
       const evaluator = {
         evaluate: async () => arr,
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
-        { args: [{ value:arr }], modifiers: {} },
+        { args: [{ type: 'literal', value:arr }], modifiers: {} },
         evaluator,
         context
       );
@@ -175,11 +175,11 @@ describe('LogCommand (Standalone V2)', () => {
       const valuesToReturn = [null, undefined];
       const evaluator = {
         evaluate: async () => valuesToReturn[callCount++],
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       const input = await command.parseInput(
         {
-          args: [{ value:null }, { value:undefined }],
+          args: [{ type: 'literal', value:null }, { type: 'literal', value:undefined }],
           modifiers: {},
         },
         evaluator,
@@ -333,7 +333,7 @@ describe('LogCommand (Standalone V2)', () => {
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value:'Test Message' }], modifiers: {} },
+        { args: [{ type: 'literal', value:'Test Message' }], modifiers: {} },
         evaluator,
         context
       );
@@ -358,16 +358,16 @@ describe('LogCommand (Standalone V2)', () => {
       const valuesToReturn = ['X:', 100, 'Y:', 200];
       const evaluator = {
         evaluate: async () => valuesToReturn[callCount++],
-      };
+      } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 
       // Parse input
       const input = await command.parseInput(
         {
           args: [
-            { value:'X:' },
-            { value:100 },
-            { value:'Y:' },
-            { value:200 },
+            { type: 'literal', value:'X:' },
+            { type: 'literal', value:100 },
+            { type: 'literal', value:'Y:' },
+            { type: 'literal', value:200 },
           ],
           modifiers: {},
         },

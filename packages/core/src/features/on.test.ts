@@ -15,8 +15,15 @@ import { OnFeature, createOnFeature } from './on';
 
 // Skipped: Tests expect methods that don't exist in current TypedOnFeatureImplementation
 // (register, unregister, handleEvent, etc.)
+// Using 'any' type to silence TS2339 errors for methods that would exist in a different implementation
+interface LegacyOnFeature {
+  register: (element: HTMLElement, event: string, commands: any[], context: ExecutionContext, options?: any) => string;
+  unregister: (listenerId: string) => boolean;
+  handleEvent: (event: Event) => void;
+}
+
 describe.skip('On Feature System', () => {
-  let feature: OnFeature;
+  let feature: LegacyOnFeature;
   let testElement: HTMLElement;
   let containerElement: HTMLElement;
   let context: ExecutionContext;
@@ -30,7 +37,7 @@ describe.skip('On Feature System', () => {
     const eventManager = createEventManager();
     registerManagerForDelegation(eventManager);
 
-    feature = createOnFeature(eventManager);
+    feature = createOnFeature(eventManager) as unknown as LegacyOnFeature;
 
     context = {
       me: testElement,
@@ -152,9 +159,9 @@ describe.skip('On Feature System', () => {
       await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(capturedContext).toBeDefined();
-      expect(capturedContext?.locals.get('event')).toBe(clickEvent);
-      expect(capturedContext?.locals.get('target')).toBe(testElement);
-      expect(capturedContext?.locals.get('currentTarget')).toBe(testElement);
+      expect((capturedContext as unknown as ExecutionContext).locals.get('event')).toBe(clickEvent);
+      expect((capturedContext as unknown as ExecutionContext).locals.get('target')).toBe(testElement);
+      expect((capturedContext as unknown as ExecutionContext).locals.get('currentTarget')).toBe(testElement);
 
       vi.unstubAllGlobals();
     });

@@ -180,7 +180,7 @@ export class JsCommand implements DecoratedCommand {
             value = context.variables?.get(param);
           }
           if (value === undefined) {
-            value = (context as Record<string, unknown>)[param];
+            value = (context as unknown as Record<string, unknown>)[param];
           }
           acc[param] = value;
           return acc;

@@ -112,7 +112,7 @@ export function parseMeasureCommand(
           end: variableName.end,
           line: variableName.line,
           column: variableName.column,
-        } as ExpressionNode;
+        } as unknown as ExpressionNode;
       }
     }
   }

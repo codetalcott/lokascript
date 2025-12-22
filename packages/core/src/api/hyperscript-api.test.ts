@@ -199,7 +199,7 @@ describe('Hyperscript Public API', () => {
     it.skip('should provide access to low-level parse function', () => {
       const result = hyperscript.parse('42');
       expect(result.success).toBe(true);
-      expect(result.node?.type).toBe('literal');
+      expect((result.node as any)?.type).toBe('literal');
     });
   });
 

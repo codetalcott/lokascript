@@ -28,9 +28,6 @@ export type MutableContext<T> = {
  * All properties are MUTABLE to allow test setup/modification.
  */
 export type TestExpressionContext = MutableContext<TypedExecutionContext> & {
-  // Meta context for template variables (test-specific)
-  meta?: Map<string, unknown> | Record<string, unknown>;
-
   // Performance tracking (test-specific)
   performanceMetrics?: {
     totalEvaluations: number;
@@ -327,7 +324,7 @@ export function createTypedExpressionContext(
     // ExecutionContext additions
     result: result ?? null,
     variables: variables instanceof Map ? variables : new Map(Object.entries(variables || {})),
-    meta: meta instanceof Map ? meta : new Map(Object.entries((meta as Record<string, unknown>) || {})),
+    meta: meta instanceof Map ? Object.fromEntries(meta) : ((meta as Record<string, unknown>) || {}),
     // Performance tracking (test-specific)
     performanceMetrics: {
       totalEvaluations: 0,
@@ -335,7 +332,15 @@ export function createTypedExpressionContext(
       lastEvaluationTime: 0,
     },
     // Evaluation history for tracking (test-specific)
-    evaluationHistory: [] as Array<{ expression: string; result: unknown; timestamp: number }>,
+    evaluationHistory: [] as Array<{
+      expressionName: string;
+      category: string;
+      input: unknown;
+      output: unknown;
+      timestamp: number;
+      duration: number;
+      success: boolean;
+    }>,
     // Spread remaining properties for flexible test data
     ...rest,
   };

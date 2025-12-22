@@ -14,7 +14,7 @@ describe('Existence Operators', () => {
 
   beforeEach(() => {
     context = createMockHyperscriptContext();
-    context.locals = new Map([
+    (context as any).locals = new Map<string, unknown>([
       ['emptyString', ''],
       ['emptyArray', []],
       ['emptyObject', {}],

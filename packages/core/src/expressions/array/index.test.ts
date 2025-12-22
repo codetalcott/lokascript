@@ -292,14 +292,14 @@ describe('Enhanced Array Expressions', () => {
 
     describe('Array-like Objects', () => {
       test('indexes NodeList-like objects', async () => {
-        const nodeListLike = {
+        const nodeListLike: { [key: number]: string; length: number; [Symbol.iterator]: () => Generator<string> } = {
           0: 'first',
           1: 'second',
           2: 'third',
           length: 3,
-          [Symbol.iterator]: function* () {
+          [Symbol.iterator]: function* (): Generator<string> {
             for (let i = 0; i < this.length; i++) {
-              yield this[i as keyof this];
+              yield this[i];
             }
           },
         };
@@ -425,7 +425,7 @@ describe('Enhanced Array Expressions', () => {
 
   describe('LLM Documentation', () => {
     test.skip('provides comprehensive documentation for array literals', () => {
-      const docs = arrayLiteralExpression.documentation;
+      const docs = (arrayLiteralExpression as any).documentation;
 
       expect(docs.summary).toContain('array literals');
       expect(docs.parameters).toHaveLength(1);
@@ -436,7 +436,7 @@ describe('Enhanced Array Expressions', () => {
     });
 
     test.skip('provides comprehensive documentation for array indexing', () => {
-      const docs = arrayIndexExpression.documentation;
+      const docs = (arrayIndexExpression as any).documentation;
 
       expect(docs.summary).toContain('array elements');
       expect(docs.parameters).toHaveLength(2);

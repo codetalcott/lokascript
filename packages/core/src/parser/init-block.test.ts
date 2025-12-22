@@ -10,7 +10,7 @@ describe('Top-level Init Blocks', () => {
   set x to 1
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 
@@ -22,7 +22,7 @@ end`;
   set :count to 0
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 
@@ -39,7 +39,7 @@ on checkout
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 
@@ -58,7 +58,7 @@ on countDown
   set :count to :count - 1
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 
@@ -74,7 +74,7 @@ on updateHistory
   end
 end`;
     const result = parse(code);
-    expect(result.errors?.length || 0).toBe(0);
+    expect(result.error).toBeUndefined();
     expect(result.success).toBe(true);
   });
 });

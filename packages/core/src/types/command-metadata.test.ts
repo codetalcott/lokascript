@@ -17,6 +17,7 @@ import {
   COMMAND_SIDE_EFFECTS,
   type CommandMetadata,
   type CommandCategory,
+  type CommandSideEffect,
 } from './command-metadata';
 
 describe('Command Metadata Validation', () => {
@@ -115,7 +116,7 @@ describe('Command Metadata Validation', () => {
         syntax: 'test',
         examples: ['test', 'test2'],
         category: 'dom',
-        sideEffects: ['dom-mutation', 'unknown-effect' as string],
+        sideEffects: ['dom-mutation', 'unknown-effect' as unknown as CommandSideEffect],
       };
 
       const result = validateCommandMetadata(metadata, 'test');

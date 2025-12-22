@@ -235,25 +235,25 @@ export function createMockExpressResponse<T = unknown>(): MockExpressResponse<T>
   let data: T | undefined
   const headers: Record<string, string> = {}
 
-  const response = {
-    json(newData: T): typeof response {
+  const response: MockExpressResponse<T> = {
+    json(newData: T): MockExpressResponse<T> {
       data = newData
       headers['Content-Type'] = 'application/json'
       return response
     },
-    send(newData: T): typeof response {
+    send(newData: T): MockExpressResponse<T> {
       data = newData
       return response
     },
-    status(code: number): typeof response {
+    status(code: number): MockExpressResponse<T> {
       statusCode = code
       return response
     },
-    header(name: string, value: string): typeof response {
+    header(name: string, value: string): MockExpressResponse<T> {
       headers[name] = value
       return response
     },
-    contentType(type: string): typeof response {
+    contentType(type: string): MockExpressResponse<T> {
       headers['Content-Type'] = type
       return response
     },

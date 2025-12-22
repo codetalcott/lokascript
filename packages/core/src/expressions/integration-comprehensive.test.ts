@@ -53,6 +53,7 @@ describe('Enhanced Expression Integration - Form Validation', () => {
     // - Element must not be disabled
 
     const emailField = createMockElement(
+      'input',
       {
         value: 'user@example.com',
         disabled: false,
@@ -112,17 +113,17 @@ describe('Enhanced Expression Integration - Form Validation', () => {
       // Combine all conditions
       const basicValidResult = await logicalExpressions.and.evaluate(context, {
         left: notEmptyResult.success ? notEmptyResult.value : false,
-        right: lengthValidResult.success ? lengthValidResult.value : false,
+        right: (lengthValidResult as { success?: boolean; value?: unknown }).success ? (lengthValidResult as { success?: boolean; value?: unknown }).value : false,
       });
 
       const finalValidResult = await logicalExpressions.and.evaluate(context, {
-        left: basicValidResult.success ? basicValidResult.value : false,
-        right: notDisabledResult.success ? notDisabledResult.value : false,
+        left: (basicValidResult as { success?: boolean; value?: unknown }).success ? (basicValidResult as { success?: boolean; value?: unknown }).value : false,
+        right: (notDisabledResult as { success?: boolean; value?: unknown }).success ? (notDisabledResult as { success?: boolean; value?: unknown }).value : false,
       });
 
-      expect(finalValidResult.success).toBe(true);
-      if (finalValidResult.success) {
-        expect(finalValidResult.value).toBe(true);
+      expect((finalValidResult as { success?: boolean; value?: unknown }).success).toBe(true);
+      if ((finalValidResult as { success?: boolean; value?: unknown }).success) {
+        expect((finalValidResult as { success?: boolean; value?: unknown }).value).toBe(true);
       }
     }
   });
@@ -232,18 +233,18 @@ describe('Enhanced Expression Integration - User Permissions', () => {
     // Combine owner AND not suspended
     const ownerAndNotSuspendedResult = await logicalExpressions.and.evaluate(context, {
       left: isOwnerResult.success ? isOwnerResult.value : false,
-      right: notSuspendedResult.success ? notSuspendedResult.value : false,
+      right: (notSuspendedResult as { success?: boolean; value?: unknown }).success ? (notSuspendedResult as { success?: boolean; value?: unknown }).value : false,
     });
 
     // Final permission: admin OR (owner AND not suspended)
     const canEditResult = await logicalExpressions.or.evaluate(context, {
       left: isAdminResult.success ? isAdminResult.value : false,
-      right: ownerAndNotSuspendedResult.success ? ownerAndNotSuspendedResult.value : false,
+      right: (ownerAndNotSuspendedResult as { success?: boolean; value?: unknown }).success ? (ownerAndNotSuspendedResult as { success?: boolean; value?: unknown }).value : false,
     });
 
-    expect(canEditResult.success).toBe(true);
-    if (canEditResult.success) {
-      expect(canEditResult.value).toBe(true); // Owner and not suspended = can edit
+    expect((canEditResult as { success?: boolean; value?: unknown }).success).toBe(true);
+    if ((canEditResult as { success?: boolean; value?: unknown }).success) {
+      expect((canEditResult as { success?: boolean; value?: unknown }).value).toBe(true); // Owner and not suspended = can edit
     }
   });
 
@@ -331,7 +332,7 @@ describe('Enhanced Expression Integration - E-commerce', () => {
         });
 
         if (newSubtotalResult.success) {
-          subtotal = newSubtotalResult.value;
+          subtotal = newSubtotalResult.value ?? subtotal;
         }
       }
     }
@@ -355,7 +356,7 @@ describe('Enhanced Expression Integration - E-commerce', () => {
       });
 
       if (discountedSubtotalResult.success) {
-        finalSubtotal = discountedSubtotalResult.value;
+        finalSubtotal = discountedSubtotalResult.value ?? finalSubtotal;
       }
     }
 
@@ -430,17 +431,17 @@ describe('Enhanced Expression Integration - E-commerce', () => {
     // Combine all conditions
     const stockAndQuantityResult = await logicalExpressions.and.evaluate(context, {
       left: stockAvailableResult.success ? stockAvailableResult.value : false,
-      right: quantityValidResult.success ? quantityValidResult.value : false,
+      right: (quantityValidResult as { success?: boolean; value?: unknown }).success ? (quantityValidResult as { success?: boolean; value?: unknown }).value : false,
     });
 
     const canPurchaseResult = await logicalExpressions.and.evaluate(context, {
-      left: stockAndQuantityResult.success ? stockAndQuantityResult.value : false,
+      left: (stockAndQuantityResult as { success?: boolean; value?: unknown }).success ? (stockAndQuantityResult as { success?: boolean; value?: unknown }).value : false,
       right: regionMatchResult.success ? regionMatchResult.value : false,
     });
 
-    expect(canPurchaseResult.success).toBe(true);
-    if (canPurchaseResult.success) {
-      expect(canPurchaseResult.value).toBe(true);
+    expect((canPurchaseResult as { success?: boolean; value?: unknown }).success).toBe(true);
+    if ((canPurchaseResult as { success?: boolean; value?: unknown }).success) {
+      expect((canPurchaseResult as { success?: boolean; value?: unknown }).value).toBe(true);
     }
   });
 });
@@ -468,7 +469,7 @@ describe('Enhanced Expression Integration - UI State Management', () => {
       connectionStatus: 'online',
     };
 
-    const submitButton = createMockElement({
+    const submitButton = createMockElement('button', {
       disabled: true,
     });
     context.me = submitButton;
@@ -498,22 +499,22 @@ describe('Enhanced Expression Integration - UI State Management', () => {
     // Combine conditions: all fields filled AND not submitting AND no errors AND online
     const step1Result = await logicalExpressions.and.evaluate(context, {
       left: allFieldsFilledResult.success ? allFieldsFilledResult.value : false,
-      right: notSubmittingResult.success ? notSubmittingResult.value : false,
+      right: (notSubmittingResult as { success?: boolean; value?: unknown }).success ? (notSubmittingResult as { success?: boolean; value?: unknown }).value : false,
     });
 
     const step2Result = await logicalExpressions.and.evaluate(context, {
-      left: step1Result.success ? step1Result.value : false,
-      right: noErrorsResult.success ? noErrorsResult.value : false,
+      left: (step1Result as { success?: boolean; value?: unknown }).success ? (step1Result as { success?: boolean; value?: unknown }).value : false,
+      right: (noErrorsResult as { success?: boolean; value?: unknown }).success ? (noErrorsResult as { success?: boolean; value?: unknown }).value : false,
     });
 
     const shouldEnableResult = await logicalExpressions.and.evaluate(context, {
-      left: step2Result.success ? step2Result.value : false,
+      left: (step2Result as { success?: boolean; value?: unknown }).success ? (step2Result as { success?: boolean; value?: unknown }).value : false,
       right: isOnlineResult.success ? isOnlineResult.value : false,
     });
 
-    expect(shouldEnableResult.success).toBe(true);
-    if (shouldEnableResult.success) {
-      expect(shouldEnableResult.value).toBe(true); // All conditions met
+    expect((shouldEnableResult as { success?: boolean; value?: unknown }).success).toBe(true);
+    if ((shouldEnableResult as { success?: boolean; value?: unknown }).success) {
+      expect((shouldEnableResult as { success?: boolean; value?: unknown }).value).toBe(true); // All conditions met
     }
   });
 
@@ -545,7 +546,7 @@ describe('Enhanced Expression Integration - UI State Management', () => {
           right: 1,
         });
         if (incrementResult.success) {
-          validStepsCount = incrementResult.value;
+          validStepsCount = incrementResult.value ?? validStepsCount;
         }
       }
     }

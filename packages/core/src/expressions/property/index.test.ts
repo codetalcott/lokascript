@@ -717,7 +717,7 @@ describe('Enhanced Property Expressions Integration', () => {
 
   describe('Type safety', () => {
     it.skip('should have consistent metadata', () => {
-      const expressions = Object.values(propertyExpressions);
+      const expressions = Object.values(propertyExpressions) as any[];
 
       expressions.forEach(expr => {
         // Implementation uses singular 'Property' for category

@@ -22,7 +22,7 @@ describe('Enhanced Special Expressions', () => {
     context = createTypedExecutionContext();
 
     // Set up context variables for template interpolation
-    context.locals = new Map([
+    (context as any).locals = new Map<string, unknown>([
       ['name', 'John'],
       ['age', 30],
       ['count', 42],
@@ -31,7 +31,7 @@ describe('Enhanced Special Expressions', () => {
       ['items', ['a', 'b', 'c']],
     ]);
 
-    context.globals = new Map([
+    (context as any).globals = new Map([
       ['appName', 'HyperFixi'],
       ['version', '1.0.0'],
     ]);
@@ -267,11 +267,11 @@ describe('Enhanced Special Expressions', () => {
 
     describe('Documentation', () => {
       it.skip('should have comprehensive documentation', () => {
-        expect(expression.documentation.summary).toContain('template interpolation');
-        expect(expression.documentation.parameters).toHaveLength(1);
-        expect(expression.documentation.returns.type).toBe('string');
-        expect(expression.documentation.examples.length).toBeGreaterThan(0);
-        expect(expression.documentation.tags).toContain('template');
+        expect((expression as any).documentation.summary).toContain('template interpolation');
+        expect((expression as any).documentation.parameters).toHaveLength(1);
+        expect((expression as any).documentation.returns.type).toBe('string');
+        expect((expression as any).documentation.examples.length).toBeGreaterThan(0);
+        expect((expression as any).documentation.tags).toContain('template');
       });
     });
   });
@@ -368,8 +368,8 @@ describe('Enhanced Special Expressions', () => {
         });
 
         expect(result.success).toBe(false);
-        expect(result.errors).toHaveLength(1);
-        expect(result.errors![0].message).toContain('finite');
+        expect((result as any).errors).toHaveLength(1);
+        expect((result as any).errors![0].message).toContain('finite');
       });
 
       it.skip('should reject NaN values', async () => {
@@ -378,8 +378,8 @@ describe('Enhanced Special Expressions', () => {
         });
 
         expect(result.success).toBe(false);
-        expect(result.errors).toHaveLength(1);
-        expect(result.errors![0].message).toMatch(/finite|nan|number/i);
+        expect((result as any).errors).toHaveLength(1);
+        expect((result as any).errors![0].message).toMatch(/finite|nan|number/i);
       });
 
       it('should validate correct input', () => {
@@ -582,8 +582,8 @@ describe('Enhanced Special Expressions', () => {
         });
 
         expect(result.success).toBe(false);
-        expect(result.errors).toHaveLength(1);
-        expect(result.errors![0].message).toContain('finite number');
+        expect((result as any).errors).toHaveLength(1);
+        expect((result as any).errors![0].message).toContain('finite number');
       });
 
       it.skip('should reject non-convertible strings', async () => {
@@ -593,8 +593,8 @@ describe('Enhanced Special Expressions', () => {
         });
 
         expect(result.success).toBe(false);
-        expect(result.errors).toHaveLength(1);
-        expect(result.errors![0].message).toContain('cannot be converted');
+        expect((result as any).errors).toHaveLength(1);
+        expect((result as any).errors![0].message).toContain('cannot be converted');
       });
 
       it('should validate correct input', () => {
@@ -734,7 +734,7 @@ describe('Enhanced Special Expressions', () => {
     });
 
     it.skip('should have consistent metadata across all expressions', () => {
-      Object.values(specialExpressions).forEach(expression => {
+      Object.values(specialExpressions).forEach((expression: any) => {
         expect(expression.category).toBe('Special');
         expect(expression.name).toBeTruthy();
         expect(expression.syntax).toBeTruthy();

@@ -38,7 +38,7 @@ export class HideCommand extends VisibilityCommandBase {
   }
 
   // Override for backward compatibility - mode is optional for hide
-  validate(input: unknown): input is HideCommandInput {
+  override validate(input: unknown): input is VisibilityCommandInput {
     if (typeof input !== 'object' || input === null) return false;
     const typed = input as Partial<HideCommandInput>;
     if (!Array.isArray(typed.targets)) return false;

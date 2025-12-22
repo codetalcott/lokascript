@@ -23,7 +23,7 @@ function createMockAnalyzer(
   supportedLangs: string[] = ['en', 'es', 'ja', 'ar']
 ): SemanticAnalyzer {
   return {
-    analyze: vi.fn((input: string, language: string) => {
+    analyze: vi.fn((input: string, _language: string) => {
       // Mock successful analysis for "toggle .active" pattern
       if (input.includes('toggle') || input.includes('alternar') || input.includes('切り替え')) {
         return {
@@ -43,7 +43,7 @@ function createMockAnalyzer(
         confidence: 0.2,
         errors: ['No pattern matched'],
       };
-    }),
+    }) as SemanticAnalyzer['analyze'],
     supportsLanguage: (lang: string) => supportedLangs.includes(lang),
     supportedLanguages: () => supportedLangs,
   };

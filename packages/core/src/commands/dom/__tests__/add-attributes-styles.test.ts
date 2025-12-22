@@ -9,6 +9,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { AddCommand } from '../add';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
 import type { ASTNode } from '../../../types/base-types';
+import type { ExpressionEvaluator } from '../../../core/expression-evaluator';
+
+// Helper to create mock AST nodes with required type property
+function mockNode<T>(value: T): ASTNode {
+  return { type: 'literal', value } as ASTNode;
+}
 
 // ========== Test Utilities ==========
 
@@ -28,16 +34,16 @@ function createMockContext(): ExecutionContext & TypedExecutionContext {
   } as unknown as ExecutionContext & TypedExecutionContext;
 }
 
-function createMockEvaluator() {
+function createMockEvaluator(): ExpressionEvaluator {
   return {
-    evaluate: async (node: ASTNode, context: ExecutionContext) => {
+    evaluate: async (node: ASTNode, _context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as { value: unknown }).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
-  };
+  } as unknown as ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -55,7 +61,7 @@ describe('AddCommand - Attribute Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '[@data-test="value"]' }], modifiers: {} },
+        { args: [mockNode('[@data-test="value"]')], modifiers: {} },
         evaluator,
         context
       );
@@ -73,7 +79,7 @@ describe('AddCommand - Attribute Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '@data-value' }], modifiers: {} },
+        { args: [mockNode('@data-value')], modifiers: {} },
         evaluator,
         context
       );
@@ -91,7 +97,7 @@ describe('AddCommand - Attribute Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: "[@aria-label='Test Label']" }], modifiers: {} },
+        { args: [mockNode("[@aria-label='Test Label']")], modifiers: {} },
         evaluator,
         context
       );
@@ -108,7 +114,7 @@ describe('AddCommand - Attribute Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '[@disabled]' }], modifiers: {} },
+        { args: [mockNode('[@disabled]')], modifiers: {} },
         evaluator,
         context
       );
@@ -235,7 +241,7 @@ describe('AddCommand - Style Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: { opacity: '0.5', color: 'red' } }], modifiers: {} },
+        { args: [mockNode({ opacity: '0.5', color: 'red' })], modifiers: {} },
         evaluator,
         context
       );
@@ -252,7 +258,7 @@ describe('AddCommand - Style Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '*opacity' }, { value: '0.5' }], modifiers: {} },
+        { args: [mockNode('*opacity'), mockNode('0.5')], modifiers: {} },
         evaluator,
         context
       );
@@ -268,7 +274,7 @@ describe('AddCommand - Style Support (Feature Restoration)', () => {
       const evaluator = createMockEvaluator();
 
       const input = await command.parseInput(
-        { args: [{ value: '*background-color' }, { value: 'blue' }], modifiers: {} },
+        { args: [mockNode('*background-color'), mockNode('blue')], modifiers: {} },
         evaluator,
         context
       );
@@ -285,7 +291,7 @@ describe('AddCommand - Style Support (Feature Restoration)', () => {
 
       await expect(
         command.parseInput(
-          { args: [{ value: '*opacity' }], modifiers: {} },
+          { args: [mockNode('*opacity')], modifiers: {} },
           evaluator,
           context
         )

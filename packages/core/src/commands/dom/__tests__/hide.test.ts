@@ -9,6 +9,19 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { HideCommand } from '../hide';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
 import type { ASTNode } from '../../../types/base-types';
+import type { ExpressionEvaluator } from '../../../core/expression-evaluator';
+
+// Helper to create mock AST nodes with required type property
+function mockNode<T>(value: T): ASTNode {
+  return { type: 'literal', value } as ASTNode;
+}
+
+// Helper to create inline mock evaluator
+function inlineEvaluator<T>(returnValue: T): ExpressionEvaluator {
+  return {
+    evaluate: async () => returnValue,
+  } as unknown as ExpressionEvaluator;
+}
 
 // ========== Test Utilities ==========
 
@@ -46,15 +59,15 @@ function createMockContext(me: HTMLElement): ExecutionContext & TypedExecutionCo
 
 function createMockEvaluator() {
   return {
-    evaluate: async (node: ASTNode, context: ExecutionContext) => {
+    evaluate: async (node: ASTNode, _context: ExecutionContext) => {
       // Simple mock - returns the node value directly
       // Real evaluator would parse AST
       if (typeof node === 'object' && node !== null && 'value' in node) {
-        return (node as { value: unknown }).value;
+        return (node as unknown as { value: unknown }).value;
       }
       return node;
     },
-  };
+  } as unknown as import('../../../core/expression-evaluator').ExpressionEvaluator;
 }
 
 // ========== Tests ==========
@@ -108,12 +121,10 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(element);
 
       const context = createMockContext(element);
-      const evaluator = {
-        evaluate: async () => element,
-      };
+      const evaluator = inlineEvaluator(element);
 
       const input = await command.parseInput(
-        { args: [{ value: element }], modifiers: {} },
+        { args: [mockNode(element)], modifiers: {} },
         evaluator,
         context
       );
@@ -126,12 +137,10 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(element);
 
       const context = createMockContext(element);
-      const evaluator = {
-        evaluate: async () => '.target',
-      };
+      const evaluator = inlineEvaluator('.target');
 
       const input = await command.parseInput(
-        { args: [{ value: '.target' }], modifiers: {} },
+        { args: [mockNode('.target')], modifiers: {} },
         evaluator,
         context
       );
@@ -147,12 +156,10 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(el1);
       const nodeList = document.querySelectorAll('.item');
-      const evaluator = {
-        evaluate: async () => nodeList,
-      };
+      const evaluator = inlineEvaluator(nodeList);
 
       const input = await command.parseInput(
-        { args: [{ value: nodeList }], modifiers: {} },
+        { args: [mockNode(nodeList)], modifiers: {} },
         evaluator,
         context
       );
@@ -166,12 +173,10 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(el1, el2);
 
       const context = createMockContext(el1);
-      const evaluator = {
-        evaluate: async () => [el1, el2],
-      };
+      const evaluator = inlineEvaluator([el1, el2]);
 
       const input = await command.parseInput(
-        { args: [{ value: [el1, el2] }], modifiers: {} },
+        { args: [mockNode([el1, el2])], modifiers: {} },
         evaluator,
         context
       );
@@ -184,13 +189,11 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(element);
 
       const context = createMockContext(element);
-      const evaluator = {
-        evaluate: async () => '<<<invalid>>>',
-      };
+      const evaluator = inlineEvaluator('<<<invalid>>>');
 
       await expect(
         command.parseInput(
-          { args: [{ value: '<<<invalid>>>' }], modifiers: {} },
+          { args: [mockNode('<<<invalid>>>')], modifiers: {} },
           evaluator,
           context
         )
@@ -202,13 +205,11 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(element);
 
       const context = createMockContext(element);
-      const evaluator = {
-        evaluate: async () => 12345, // number, not element
-      };
+      const evaluator = inlineEvaluator(12345); // number, not element
 
       await expect(
         command.parseInput(
-          { args: [{ value: 12345 }], modifiers: {} },
+          { args: [mockNode(12345)], modifiers: {} },
           evaluator,
           context
         )
@@ -220,13 +221,11 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(element);
 
       const context = createMockContext(element);
-      const evaluator = {
-        evaluate: async () => [], // empty array
-      };
+      const evaluator = inlineEvaluator([]); // empty array
 
       await expect(
         command.parseInput(
-          { args: [{ value: [] }], modifiers: {} },
+          { args: [mockNode([])], modifiers: {} },
           evaluator,
           context
         )
@@ -241,7 +240,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element] }, context);
+      await command.execute({ targets: [element], mode: 'hide' }, context);
 
       expect(element.style.display).toBe('none');
     });
@@ -253,7 +252,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(el1);
 
-      await command.execute({ targets: [el1, el2] }, context);
+      await command.execute({ targets: [el1, el2], mode: 'hide' }, context);
 
       expect(el1.style.display).toBe('none');
       expect(el2.style.display).toBe('none');
@@ -265,7 +264,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element] }, context);
+      await command.execute({ targets: [element], mode: 'hide' }, context);
 
       expect(element.dataset.originalDisplay).toBe('flex');
       expect(element.style.display).toBe('none');
@@ -278,7 +277,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element] }, context);
+      await command.execute({ targets: [element], mode: 'hide' }, context);
 
       expect(element.dataset.originalDisplay).toBe('inline'); // Unchanged
       expect(element.style.display).toBe('none');
@@ -290,7 +289,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element] }, context);
+      await command.execute({ targets: [element], mode: 'hide' }, context);
 
       expect(element.classList.contains('show')).toBe(false);
       expect(element.classList.contains('visible')).toBe(true); // Other classes preserved
@@ -303,7 +302,7 @@ describe('HideCommand (Standalone V2)', () => {
 
       const context = createMockContext(element);
 
-      await command.execute({ targets: [element] }, context);
+      await command.execute({ targets: [element], mode: 'hide' }, context);
 
       expect(element.dataset.originalDisplay).toBe('');
       expect(element.style.display).toBe('none');
@@ -395,13 +394,11 @@ describe('HideCommand (Standalone V2)', () => {
       testElements.push(parent);
 
       const context = createMockContext(parent);
-      const evaluator = {
-        evaluate: async () => '#parent .btn',
-      };
+      const evaluator = inlineEvaluator('#parent .btn');
 
       // Parse input
       const input = await command.parseInput(
-        { args: [{ value: '#parent .btn' }], modifiers: {} },
+        { args: [mockNode('#parent .btn')], modifiers: {} },
         evaluator,
         context
       );
