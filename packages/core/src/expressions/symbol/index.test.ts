@@ -139,7 +139,10 @@ describe('Enhanced Symbol Expression', () => {
     });
 
     test('resolves from meta context with highest priority', async () => {
-      (context.meta as Record<string, unknown>)['testValue'] = 'meta-priority';
+      // meta must be a Map-like object with has/get methods for priority resolution
+      const metaMap = new Map<string, unknown>();
+      metaMap.set('testValue', 'meta-priority');
+      (context as any).meta = metaMap;
       context.locals.set('testValue', 'locals-value');
       // testValue also exists in direct context as 42
 

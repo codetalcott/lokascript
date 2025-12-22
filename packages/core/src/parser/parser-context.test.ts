@@ -204,7 +204,8 @@ describe('ParserContext', () => {
     it('should create binary expression node', () => {
       const left = context.createLiteral(1, '1');
       const right = context.createLiteral(2, '2');
-      const node = context.createBinaryExpression(left, '+', right);
+      // Note: signature is (operator, left, right) matching the parser implementation
+      const node = context.createBinaryExpression('+', left, right);
 
       expect(node.type).toBe('binaryExpression');
       expect(node.operator).toBe('+');
