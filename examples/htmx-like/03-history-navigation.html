@@ -20,7 +20,9 @@
   <h1>History Navigation Example</h1>
 
   <div class="info">
-    <strong>Purpose:</strong> Demonstrates push url and replace url commands for SPA-like navigation.
+    <strong>Purpose:</strong> Demonstrates hypermedia navigation with server-fetched fragments,
+    <code>push url</code> / <code>replace url</code> commands, and the <code>HistorySwap</code> behavior
+    for handling browser back/forward.
     <div class="url-display">Current URL: <span id="current-url"></span></div>
   </div>
 
@@ -30,37 +32,41 @@
     <button id="nav-home" class="active" _="on click
       remove .active from <button/> in closest .page-nav
       add .active to me
-      set content to '<h3>Home</h3><p>Welcome to the home page!</p>'
-      swap innerHTML of #history-content with content
-      push url '#/home'
+      fetch '/examples/htmx-like/fragments/home.html' as html
+      swap innerHTML of #history-content with it
+      push url '/examples/htmx-like/fragments/home.html'
     ">Home</button>
 
     <button id="nav-products" _="on click
       remove .active from <button/> in closest .page-nav
       add .active to me
-      set content to '<h3>Products</h3><p>Browse our products here.</p><ul><li>Product A</li><li>Product B</li><li>Product C</li></ul>'
-      swap innerHTML of #history-content with content
-      push url '#/products'
+      fetch '/examples/htmx-like/fragments/products.html' as html
+      swap innerHTML of #history-content with it
+      push url '/examples/htmx-like/fragments/products.html'
     ">Products</button>
 
     <button id="nav-about" _="on click
       remove .active from <button/> in closest .page-nav
       add .active to me
-      set content to '<h3>About</h3><p>Learn more about us.</p>'
-      swap innerHTML of #history-content with content
-      push url '#/about'
+      fetch '/examples/htmx-like/fragments/about.html' as html
+      swap innerHTML of #history-content with it
+      push url '/examples/htmx-like/fragments/about.html'
     ">About</button>
 
     <button id="nav-contact" _="on click
       remove .active from <button/> in closest .page-nav
       add .active to me
-      set content to '<h3>Contact</h3><p>Get in touch!</p><p>Email: hello@example.com</p>'
-      swap innerHTML of #history-content with content
-      push url '#/contact'
+      fetch '/examples/htmx-like/fragments/contact.html' as html
+      swap innerHTML of #history-content with it
+      push url '/examples/htmx-like/fragments/contact.html'
     ">Contact</button>
   </div>
 
-  <div id="history-content">
+  <div id="history-content" _="
+    on load
+      install HistorySwap(target: me, strategy: 'innerHTML')
+    end
+  ">
     <h3>Home</h3>
     <p>Welcome to the home page!</p>
   </div>
@@ -70,29 +76,28 @@
   <div class="demo-box">
     <p>Replace URL updates the URL without creating a history entry (can't go back):</p>
     <button _="on click
-      set content to '<h3>Filtered Results</h3><p>Showing filtered content...</p>'
-      swap innerHTML of #history-content with content
-      replace url '#/filter'
+      fetch '/examples/htmx-like/fragments/filter.html' as html
+      swap innerHTML of #history-content with it
+      replace url '/examples/htmx-like/fragments/filter.html'
     ">Apply Filter (replace)</button>
 
     <button _="on click
-      set content to '<h3>Sorted Results</h3><p>Content sorted by date.</p>'
-      swap innerHTML of #history-content with content
-      replace url '#/sort=date'
+      fetch '/examples/htmx-like/fragments/sort-date.html' as html
+      swap innerHTML of #history-content with it
+      replace url '/examples/htmx-like/fragments/sort-date.html'
     ">Sort by Date (replace)</button>
   </div>
 
   <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
-    <script src="../debug-panel.js"></script>
+  <script src="../debug-panel.js"></script>
   <script>
     // Update URL display
     function updateUrlDisplay() {
-      document.getElementById('current-url').textContent = window.location.hash || '#/home';
+      document.getElementById('current-url').textContent = window.location.pathname;
     }
     updateUrlDisplay();
-    
-    // Listen for hash changes
-    window.addEventListener('hashchange', updateUrlDisplay);
+
+    // Listen for URL changes
     window.addEventListener('popstate', updateUrlDisplay);
   </script>
 </body>
