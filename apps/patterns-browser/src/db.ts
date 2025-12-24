@@ -40,6 +40,7 @@ export interface Translation {
   confidence: number;
   verifiedParses: boolean;
   verifiedExecutes: boolean;
+  roleAlignmentScore: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -125,6 +126,7 @@ interface TranslationRow {
   confidence: number;
   verified_parses: number;
   verified_executes: number;
+  role_alignment_score: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +142,7 @@ function mapTranslationRow(row: TranslationRow): Translation {
     confidence: row.confidence,
     verifiedParses: Boolean(row.verified_parses),
     verifiedExecutes: Boolean(row.verified_executes),
+    roleAlignmentScore: row.role_alignment_score,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };

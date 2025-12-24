@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS pattern_translations (
   confidence REAL DEFAULT 0.5,
   verified_parses INTEGER DEFAULT 0,
   verified_executes INTEGER DEFAULT 0,
+  role_alignment_score REAL,  -- Semantic role alignment with English (0-1)
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(code_example_id, language)

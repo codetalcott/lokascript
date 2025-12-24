@@ -907,6 +907,225 @@ button.ok,
 }
 
 /* =============================================================================
+   Alignment Indicators
+   ============================================================================= */
+
+/* Base indicator */
+.alignment-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  position: relative;
+  background: var(--panel);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  overflow: hidden;
+}
+
+.alignment-indicator .alignment-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  opacity: 0.2;
+  transition: width 0.3s ease;
+}
+
+.alignment-indicator .alignment-value {
+  position: relative;
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
+.alignment-indicator .alignment-label {
+  position: relative;
+  opacity: 0.8;
+}
+
+/* Size variants */
+.alignment-sm {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
+}
+
+.alignment-lg {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Color variants */
+.alignment-good .alignment-bar,
+.alignment-good.alignment-badge {
+  background-color: var(--success);
+}
+.alignment-good .alignment-value,
+.alignment-good .alignment-label {
+  color: var(--success-text);
+}
+
+.alignment-partial .alignment-bar,
+.alignment-partial.alignment-badge {
+  background-color: var(--warning);
+}
+.alignment-partial .alignment-value,
+.alignment-partial .alignment-label {
+  color: var(--warning-text);
+}
+
+.alignment-poor .alignment-bar,
+.alignment-poor.alignment-badge {
+  background-color: var(--error);
+}
+.alignment-poor .alignment-value,
+.alignment-poor .alignment-label {
+  color: var(--error-text);
+}
+
+.alignment-unknown .alignment-value,
+.alignment-unknown .alignment-label {
+  color: var(--text-muted);
+}
+
+/* Badge variant */
+.alignment-badge {
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
+.alignment-badge.alignment-good {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.alignment-badge.alignment-partial {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.alignment-badge.alignment-poor {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* Progress bar variant */
+.alignment-progress {
+  margin: 0.5rem 0;
+}
+
+.alignment-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.alignment-progress-title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.alignment-progress-value {
+  font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
+.alignment-progress-bar {
+  height: 6px;
+  background: var(--panel);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.alignment-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.alignment-progress-fill.alignment-good {
+  background: var(--success);
+}
+
+.alignment-progress-fill.alignment-partial {
+  background: var(--warning);
+}
+
+.alignment-progress-fill.alignment-poor {
+  background: var(--error);
+}
+
+/* Breakdown section */
+.alignment-breakdown {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.alignment-matched .breakdown-label {
+  color: var(--success-text);
+}
+
+.alignment-missing .breakdown-label {
+  color: var(--error-text);
+}
+
+.alignment-extra .breakdown-label {
+  color: var(--warning-text);
+}
+
+.breakdown-label {
+  font-weight: 500;
+  margin-right: 0.25rem;
+}
+
+.breakdown-roles {
+  color: var(--text-muted);
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+}
+
+/* Summary component */
+.alignment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--panel);
+  border-radius: 6px;
+}
+
+.alignment-summary-avg {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alignment-summary-breakdown {
+  display: flex;
+  gap: 1rem;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.summary-stat {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.summary-stat.alignment-good {
+  color: var(--success-text);
+}
+
+.summary-stat.alignment-partial {
+  color: var(--warning-text);
+}
+
+.summary-stat.alignment-poor {
+  color: var(--error-text);
+}
+
+/* =============================================================================
    Loading States
    ============================================================================= */
 

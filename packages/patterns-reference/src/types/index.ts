@@ -62,6 +62,7 @@ export interface Translation {
   confidence: number;
   verifiedParses: boolean;
   verifiedExecutes: boolean;
+  roleAlignmentScore: number | null; // Semantic role alignment with English (0-1)
   createdAt: Date;
   updatedAt: Date;
 }

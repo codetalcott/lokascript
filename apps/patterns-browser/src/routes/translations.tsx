@@ -5,6 +5,7 @@
 import { Elysia } from 'elysia';
 import { BaseLayout } from '../layouts/base';
 import { getPatterns, getPatternTranslations, getLanguages, type Translation } from '../db';
+import { AlignmentBadge } from '../components/alignment-indicator';
 
 export const translationsRoutes = new Elysia({ prefix: '/translations' })
   // Translations explorer page
@@ -111,6 +112,7 @@ export const translationsRoutes = new Elysia({ prefix: '/translations' })
                       <th>Language</th>
                       <th>Code</th>
                       <th>Confidence</th>
+                      <th>Role Alignment</th>
                       <th>Verified</th>
                     </tr>
                   </thead>
@@ -124,6 +126,9 @@ export const translationsRoutes = new Elysia({ prefix: '/translations' })
                             <code>{t.hyperscript}</code>
                           </td>
                           <td>{Math.round(t.confidence * 100)}%</td>
+                          <td>
+                            <AlignmentBadge score={t.roleAlignmentScore} />
+                          </td>
                           <td>{t.verifiedParses ? 'Yes' : 'No'}</td>
                         </tr>
                       );
