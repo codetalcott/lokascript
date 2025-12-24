@@ -1,4 +1,3 @@
-// @ts-nocheck - hyperscript _ attribute not typed in @kitajs/html
 /**
  * Pattern routes for the patterns browser.
  */
@@ -8,6 +7,7 @@ import { BaseLayout } from '../layouts/base';
 import { PatternList } from '../partials/pattern-list';
 import { CategoryFilter } from '../partials/category-filter';
 import { SearchInput } from '../partials/search-input';
+import { CodeBlock } from '../components/code-block';
 import {
   getPatterns,
   getPattern,
@@ -127,28 +127,34 @@ export const patternsRoutes = new Elysia({ prefix: '/patterns' })
           <chip class="muted">{pattern.difficulty}</chip>
         </div>
 
-        <h2>Code</h2>
-        <pre class="code-block">{pattern.rawCode}</pre>
+        <section class="pattern-detail-code">
+          <h2>Code</h2>
+          <CodeBlock code={pattern.rawCode} showCopy={true} />
+        </section>
 
-        <div>
-          <button
-            data-code={pattern.rawCode}
-            _="on click
-               call navigator.clipboard.writeText(my @data-code)
-               put 'Copied!' into me
-               add .ok to me
-               wait 2s
-               put 'Copy Code' into me
-               remove .ok from me"
-          >
-            Copy Code
-          </button>
-        </div>
+        <section class="pattern-usage">
+          <h2>Usage</h2>
+          <p>Add this pattern to any HTML element using the <code>_</code> attribute:</p>
+          <div class="usage-example">
+            <pre class="code-block">
+              <code>{`<button _="${pattern.rawCode}">`}</code>
+              {'\n'}
+              <code>{'  Click me'}</code>
+              {'\n'}
+              <code>{'</button>'}</code>
+            </pre>
+          </div>
+        </section>
 
-        <h2>Translations</h2>
-        <p class="muted">
-          <a href={`/translations/${pattern.id}`}>View translations in 13 languages</a>
-        </p>
+        <section>
+          <h2>Translations</h2>
+          <p class="muted">
+            This pattern is available in 13 languages with native word order support.
+          </p>
+          <a href={`/translations/${pattern.id}`} class="btn secondary">
+            View Translations
+          </a>
+        </section>
       </>
     );
 

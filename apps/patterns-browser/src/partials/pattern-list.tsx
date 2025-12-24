@@ -1,4 +1,3 @@
-// @ts-nocheck - hyperscript _ attribute not typed in @kitajs/html
 /**
  * Pattern list partial - the grid of pattern cards.
  */

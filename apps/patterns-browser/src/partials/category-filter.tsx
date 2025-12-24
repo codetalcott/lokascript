@@ -1,4 +1,3 @@
-// @ts-nocheck - hyperscript _ attribute not typed in @kitajs/html
 /**
  * Category filter sidebar component.
  */

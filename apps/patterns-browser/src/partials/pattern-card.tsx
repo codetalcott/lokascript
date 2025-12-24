@@ -1,9 +1,9 @@
-// @ts-nocheck - hyperscript _ attribute not typed in @kitajs/html
 /**
  * Pattern card component - displays a single pattern in the grid.
  */
 
 import type { Pattern } from '../db';
+import { HyperscriptCode } from '../components/code-block';
 
 interface PatternCardProps {
   pattern: Pattern;
@@ -20,7 +20,9 @@ export function PatternCard({ pattern }: PatternCardProps) {
         end`}
     >
       <h3>{pattern.title}</h3>
-      <div class="code">{pattern.rawCode}</div>
+      <div class="code">
+        <HyperscriptCode code={pattern.rawCode} />
+      </div>
       <div class="meta">
         {pattern.category && <chip>{pattern.category}</chip>}
         {pattern.primaryCommand && <chip class="muted">{pattern.primaryCommand}</chip>}

@@ -1,4 +1,3 @@
-// @ts-nocheck - hyperscript _ attribute not typed in @kitajs/html
 /**
  * Base HTML layout for the patterns browser.
  *

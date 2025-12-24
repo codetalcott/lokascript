@@ -516,6 +516,441 @@ const SEED_EXAMPLES: SeedExample[] = [
     description: 'Execute inline JavaScript',
     feature: 'advanced',
   },
+
+  // ==========================================================================
+  // UI Components - Tabs
+  // ==========================================================================
+  {
+    id: 'tabs-basic',
+    title: 'Tab Navigation',
+    raw_code: 'on click remove .active from .tab add .active to me',
+    description: 'Basic tab switching with active state',
+    feature: 'ui-components',
+  },
+  {
+    id: 'tabs-content',
+    title: 'Tab With Content Panel',
+    raw_code: 'on click remove .active from .tab add .active to me hide .tab-panel show the next <div.tab-panel/>',
+    description: 'Tab that shows associated content panel',
+    feature: 'ui-components',
+  },
+  {
+    id: 'tabs-aria',
+    title: 'Accessible Tabs',
+    raw_code: 'on click set @aria-selected to "true" on me set @aria-selected to "false" on .tab',
+    description: 'Tab navigation with ARIA attributes',
+    feature: 'ui-components',
+  },
+
+  // ==========================================================================
+  // UI Components - Modals
+  // ==========================================================================
+  {
+    id: 'modal-open',
+    title: 'Open Modal',
+    raw_code: 'on click show #modal add .modal-open to body',
+    description: 'Open modal and prevent body scroll',
+    feature: 'ui-components',
+  },
+  {
+    id: 'modal-close-button',
+    title: 'Close Modal Button',
+    raw_code: 'on click hide closest .modal remove .modal-open from body',
+    description: 'Close modal from button inside',
+    feature: 'ui-components',
+  },
+  {
+    id: 'modal-close-escape',
+    title: 'Close Modal On Escape',
+    raw_code: 'on keydown[key=="Escape"] from window hide .modal remove .modal-open from body',
+    description: 'Close modal when pressing Escape key',
+    feature: 'ui-components',
+  },
+  {
+    id: 'modal-close-backdrop',
+    title: 'Close Modal On Backdrop Click',
+    raw_code: 'on click if target matches .modal-backdrop hide .modal-backdrop end',
+    description: 'Close modal by clicking outside',
+    feature: 'ui-components',
+  },
+
+  // ==========================================================================
+  // UI Components - Accordion
+  // ==========================================================================
+  {
+    id: 'accordion-toggle',
+    title: 'Accordion Toggle',
+    raw_code: 'on click toggle .open on closest .accordion-item toggle @aria-expanded',
+    description: 'Toggle accordion panel visibility',
+    feature: 'ui-components',
+  },
+  {
+    id: 'accordion-exclusive',
+    title: 'Exclusive Accordion',
+    raw_code: 'on click remove .open from .accordion-item add .open to closest .accordion-item',
+    description: 'Accordion where only one panel is open',
+    feature: 'ui-components',
+  },
+
+  // ==========================================================================
+  // UI Components - Dropdown
+  // ==========================================================================
+  {
+    id: 'dropdown-toggle',
+    title: 'Dropdown Toggle',
+    raw_code: 'on click toggle .open on next .dropdown-menu halt',
+    description: 'Toggle dropdown menu visibility',
+    feature: 'ui-components',
+  },
+  {
+    id: 'dropdown-close-outside',
+    title: 'Close Dropdown On Outside Click',
+    raw_code: 'on click from elsewhere remove .open from .dropdown-menu',
+    description: 'Close dropdown when clicking outside',
+    feature: 'ui-components',
+  },
+
+  // ==========================================================================
+  // Forms - Input Handling
+  // ==========================================================================
+  {
+    id: 'input-mirror',
+    title: 'Input Mirror',
+    raw_code: 'on input put my value into #preview',
+    description: 'Mirror input value to another element',
+    feature: 'forms',
+  },
+  {
+    id: 'input-char-count',
+    title: 'Character Counter',
+    raw_code: 'on input set #count.innerText to my value.length',
+    description: 'Show character count as user types',
+    feature: 'forms',
+  },
+  {
+    id: 'input-validation',
+    title: 'Input Validation',
+    raw_code: 'on blur if my value is empty add .error to me else remove .error from me end',
+    description: 'Validate input on blur',
+    feature: 'forms',
+  },
+  {
+    id: 'input-clear',
+    title: 'Clear Input',
+    raw_code: 'on click set previous <input/>.value to ""',
+    description: 'Clear the previous input field',
+    feature: 'forms',
+  },
+  {
+    id: 'form-submit-prevent',
+    title: 'Prevent Form Submit',
+    raw_code: 'on submit halt the event call validateForm() if result is false log "Invalid form" end',
+    description: 'Prevent form submission and validate',
+    feature: 'forms',
+  },
+  {
+    id: 'form-disable-on-submit',
+    title: 'Disable Form On Submit',
+    raw_code: 'on submit add @disabled to <button/> in me put "Submitting..." into <button/> in me',
+    description: 'Disable submit button while processing',
+    feature: 'forms',
+  },
+
+  // ==========================================================================
+  // Window/Document Events
+  // ==========================================================================
+  {
+    id: 'window-keydown',
+    title: 'Window Keydown Handler',
+    raw_code: 'on keydown[key=="s" and ctrlKey] from window halt call saveDocument()',
+    description: 'Handle Ctrl+S globally',
+    feature: 'window-events',
+  },
+  {
+    id: 'window-scroll',
+    title: 'Scroll Handler',
+    raw_code: 'on scroll from window if window.scrollY > 100 add .sticky to #header else remove .sticky from #header end',
+    description: 'Add sticky class on scroll',
+    feature: 'window-events',
+  },
+  {
+    id: 'window-resize',
+    title: 'Resize Handler',
+    raw_code: 'on resize from window debounced at 200ms call adjustLayout()',
+    description: 'Handle window resize with debounce',
+    feature: 'window-events',
+  },
+  {
+    id: 'document-ready',
+    title: 'Document Ready',
+    raw_code: 'on load call initializeApp()',
+    description: 'Initialize app when element loads',
+    feature: 'window-events',
+  },
+
+  // ==========================================================================
+  // CSS Styles - Possessive Syntax
+  // ==========================================================================
+  {
+    id: 'set-opacity',
+    title: 'Set Opacity',
+    raw_code: 'on click set my *opacity to 0.5',
+    description: 'Set CSS opacity using possessive syntax',
+    feature: 'css-styles',
+  },
+  {
+    id: 'set-transform',
+    title: 'Set Transform',
+    raw_code: 'on click set my *transform to "rotate(45deg)"',
+    description: 'Set CSS transform property',
+    feature: 'css-styles',
+  },
+  {
+    id: 'set-color-variable',
+    title: 'Set CSS Variable',
+    raw_code: 'on click set the *--primary-color of #theme to "#ff6600"',
+    description: 'Set a CSS custom property',
+    feature: 'css-styles',
+  },
+  {
+    id: 'transition-color',
+    title: 'Transition Background Color',
+    raw_code: 'on click transition *background-color to "blue" over 500ms',
+    description: 'Animate background color change',
+    feature: 'css-styles',
+  },
+
+  // ==========================================================================
+  // Navigation - Positional
+  // ==========================================================================
+  {
+    id: 'next-element',
+    title: 'Next Element',
+    raw_code: 'on click add .highlight to next <li/>',
+    description: 'Select and modify next sibling element',
+    feature: 'navigation',
+  },
+  {
+    id: 'previous-element',
+    title: 'Previous Element',
+    raw_code: 'on click remove .highlight from previous <li/>',
+    description: 'Select and modify previous sibling element',
+    feature: 'navigation',
+  },
+  {
+    id: 'closest-ancestor',
+    title: 'Closest Ancestor',
+    raw_code: 'on click toggle .expanded on closest .card',
+    description: 'Toggle class on closest matching ancestor',
+    feature: 'navigation',
+  },
+  {
+    id: 'first-in-parent',
+    title: 'First In Collection',
+    raw_code: 'on click focus first <input/> in closest <form/>',
+    description: 'Focus first input in parent form',
+    feature: 'navigation',
+  },
+  {
+    id: 'last-in-collection',
+    title: 'Last In Collection',
+    raw_code: 'on click scroll to last <.message/> in #chat',
+    description: 'Scroll to last message in chat',
+    feature: 'navigation',
+  },
+
+  // ==========================================================================
+  // Repeat Patterns
+  // ==========================================================================
+  {
+    id: 'repeat-until-event',
+    title: 'Repeat Until Event',
+    raw_code: 'on mousedown repeat until event mouseup increment #counter wait 100ms end',
+    description: 'Repeat action while button is held',
+    feature: 'loops',
+  },
+  {
+    id: 'repeat-forever',
+    title: 'Repeat Forever',
+    raw_code: 'on load repeat forever toggle .pulse wait 1s end',
+    description: 'Infinite animation loop',
+    feature: 'loops',
+  },
+  {
+    id: 'repeat-while',
+    title: 'Repeat While Condition',
+    raw_code: 'on click repeat while #counter.innerText < 10 increment #counter wait 200ms end',
+    description: 'Repeat while condition is true',
+    feature: 'loops',
+  },
+
+  // ==========================================================================
+  // Event Modifiers
+  // ==========================================================================
+  {
+    id: 'event-once',
+    title: 'Event Once',
+    raw_code: 'on click once add .initialized to me call setup()',
+    description: 'Handle event only once',
+    feature: 'events',
+  },
+  {
+    id: 'event-debounce',
+    title: 'Event Debounce',
+    raw_code: 'on input debounced at 300ms fetch /api/search?q=${my value} as json then put it into #results',
+    description: 'Debounce input for search',
+    feature: 'events',
+  },
+  {
+    id: 'event-throttle',
+    title: 'Event Throttle',
+    raw_code: 'on scroll throttled at 100ms call updateScrollPosition()',
+    description: 'Throttle scroll handler',
+    feature: 'events',
+  },
+  {
+    id: 'event-from-elsewhere',
+    title: 'Click Elsewhere',
+    raw_code: 'on click from elsewhere remove .open from me',
+    description: 'Handle clicks outside element',
+    feature: 'events',
+  },
+  {
+    id: 'event-key-combo',
+    title: 'Key Combination',
+    raw_code: 'on keydown[key=="Enter" and shiftKey] call submitAndContinue()',
+    description: 'Handle Shift+Enter key combo',
+    feature: 'events',
+  },
+
+  // ==========================================================================
+  // Async - Loading States
+  // ==========================================================================
+  {
+    id: 'fetch-loading-state',
+    title: 'Fetch With Loading State',
+    raw_code: 'on click add .loading to me fetch /api/data then remove .loading from me put it into #result',
+    description: 'Show loading indicator during fetch',
+    feature: 'async',
+  },
+  {
+    id: 'fetch-error-handling',
+    title: 'Fetch With Error Handling',
+    raw_code: 'on click fetch /api/data catch error put error.message into #error end put it into #result',
+    description: 'Handle fetch errors gracefully',
+    feature: 'async',
+  },
+
+  // ==========================================================================
+  // Control Flow - Advanced
+  // ==========================================================================
+  {
+    id: 'if-matches',
+    title: 'If Matches Selector',
+    raw_code: 'on click if I match .disabled halt else toggle .active end',
+    description: 'Check if element matches selector',
+    feature: 'control-flow',
+  },
+  {
+    id: 'if-exists',
+    title: 'If Element Exists',
+    raw_code: 'on click if #modal exists show #modal else make a <div#modal/> put it into body end',
+    description: 'Check if element exists before action',
+    feature: 'control-flow',
+  },
+  {
+    id: 'if-empty',
+    title: 'If Value Empty',
+    raw_code: 'on blur if my value is empty add .error to me put "Required" into next .error-message end',
+    description: 'Validate empty input',
+    feature: 'control-flow',
+  },
+  {
+    id: 'unless-condition',
+    title: 'Unless Condition',
+    raw_code: 'on click unless I match .disabled toggle .selected',
+    description: 'Execute unless condition is true',
+    feature: 'control-flow',
+  },
+
+  // ==========================================================================
+  // Clipboard
+  // ==========================================================================
+  {
+    id: 'copy-to-clipboard',
+    title: 'Copy To Clipboard',
+    raw_code: 'on click call navigator.clipboard.writeText(#code.innerText) put "Copied!" into me wait 2s put "Copy" into me',
+    description: 'Copy text to clipboard with feedback',
+    feature: 'clipboard',
+  },
+
+  // ==========================================================================
+  // Animation - Complex
+  // ==========================================================================
+  {
+    id: 'fade-out-remove',
+    title: 'Fade Out And Remove',
+    raw_code: 'on click transition opacity to 0 over 300ms then remove me',
+    description: 'Fade element out then remove from DOM',
+    feature: 'animation',
+  },
+  {
+    id: 'slide-toggle',
+    title: 'Slide Toggle',
+    raw_code: 'on click toggle .collapsed on next .panel transition *max-height over 300ms',
+    description: 'Slide panel open/closed',
+    feature: 'animation',
+  },
+  {
+    id: 'stagger-animation',
+    title: 'Stagger Animation',
+    raw_code: 'on load repeat for item in .item with index add .visible to item wait 100ms end',
+    description: 'Staggered entrance animation',
+    feature: 'animation',
+  },
+
+  // ==========================================================================
+  // Data Binding
+  // ==========================================================================
+  {
+    id: 'two-way-binding',
+    title: 'Two-Way Binding',
+    raw_code: 'on input from #firstName set #greeting.innerText to "Hello, " + my value',
+    description: 'Update display as input changes',
+    feature: 'data',
+  },
+  {
+    id: 'computed-value',
+    title: 'Computed Value',
+    raw_code: 'on input from .quantity set #total.innerText to (the value of #price as Number) * (my value as Number)',
+    description: 'Calculate and display computed value',
+    feature: 'data',
+  },
+
+  // ==========================================================================
+  // Accessibility
+  // ==========================================================================
+  {
+    id: 'toggle-aria-expanded',
+    title: 'Toggle ARIA Expanded',
+    raw_code: 'on click toggle @aria-expanded on me toggle .open on next .panel',
+    description: 'Toggle ARIA expanded state',
+    feature: 'accessibility',
+  },
+  {
+    id: 'announce-screen-reader',
+    title: 'Screen Reader Announcement',
+    raw_code: 'on success put message into #sr-announce set @role to "alert" on #sr-announce',
+    description: 'Announce message to screen readers',
+    feature: 'accessibility',
+  },
+  {
+    id: 'focus-trap',
+    title: 'Focus Trap',
+    raw_code: 'on keydown[key=="Tab"] from .modal if target matches last <button/> in .modal focus first <button/> in .modal halt end',
+    description: 'Trap focus within modal',
+    feature: 'accessibility',
+  },
 ];
 
 // Language word orders

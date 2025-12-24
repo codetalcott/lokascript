@@ -300,32 +300,100 @@ pre.code-block {
   line-height: 1.5;
 }
 
-/* Syntax highlighting */
-.syntax-keyword {
+/* =============================================================================
+   Semantic Role Syntax Highlighting
+
+   Hyperscript tokens are colored by their semantic role:
+   - action: Commands/verbs (toggle, add, set, fetch)
+   - agent: Who performs the action (me, it, target)
+   - patient: What's acted upon (.class, #id, @attr)
+   - event: Trigger events (click, keydown, submit)
+   - condition: Conditionals (if, else, when, and, or)
+   - modifier: Adverbs (debounced, first, closest)
+   - structure: Control flow (on, end, then, from)
+   - literal: Values (strings, numbers, durations)
+   ============================================================================= */
+
+/* Action (verbs) - bold accent color */
+.hs-action {
+  color: var(--syntax-function);
+  font-weight: 600;
+}
+
+/* Agent (who) - variable color */
+.hs-agent {
+  color: var(--syntax-variable);
+}
+
+/* Patient (what) - keyword color */
+.hs-patient {
   color: var(--syntax-keyword);
 }
-.syntax-string {
+
+/* Event triggers - distinct color */
+.hs-event {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* Conditions - keyword style */
+.hs-condition {
+  color: var(--syntax-keyword);
+  font-weight: 500;
+}
+
+/* Modifiers - muted */
+.hs-modifier {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Structure - subtle */
+.hs-structure {
+  color: var(--syntax-punctuation);
+}
+
+/* Literals - string/number colors */
+.hs-literal {
   color: var(--syntax-string);
 }
-.syntax-number {
-  color: var(--syntax-number);
-}
-.syntax-comment {
+
+/* Comments */
+.hs-comment {
   color: var(--syntax-comment);
   font-style: italic;
 }
-.syntax-function {
-  color: var(--syntax-function);
-  font-style: italic;
+
+/* =============================================================================
+   Code Block Wrapper
+   ============================================================================= */
+
+.code-block-wrapper {
+  position: relative;
 }
-.syntax-variable {
-  color: var(--syntax-variable);
+
+.code-block-wrapper .copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
-.syntax-operator {
-  color: var(--syntax-operator);
+
+.code-block-wrapper:hover .copy-btn {
+  opacity: 1;
 }
-.syntax-punctuation {
-  color: var(--syntax-punctuation);
+
+.copy-btn.copied {
+  background: var(--success);
+}
+
+.hyperscript-code {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* =============================================================================
@@ -461,6 +529,61 @@ button.secondary:hover,
 button.ok,
 .btn.ok {
   background: var(--success);
+}
+
+/* =============================================================================
+   Breadcrumbs
+   ============================================================================= */
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* =============================================================================
+   Pattern Detail Page
+   ============================================================================= */
+
+.pattern-detail-code {
+  margin: 1.5rem 0;
+}
+
+.pattern-detail-code .code-block-wrapper {
+  margin-top: 0.75rem;
+}
+
+.pattern-usage {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--panel);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.pattern-usage p {
+  margin-bottom: 0.75rem;
+}
+
+.usage-example {
+  background: var(--background);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.usage-example pre {
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.85rem;
 }
 
 /* =============================================================================
