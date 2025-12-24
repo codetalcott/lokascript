@@ -36,12 +36,52 @@ export type {
 import type { LanguageProfile } from './generators/language-profiles';
 
 // =============================================================================
+// External Pattern Source Interface
+// =============================================================================
+
+/**
+ * Interface for external pattern sources (e.g., @hyperfixi/patterns-reference database).
+ * External sources can provide additional patterns at runtime.
+ */
+export interface ExternalPatternsSource {
+  /** Unique identifier for the source */
+  id: string;
+  /** Human-readable name */
+  name: string;
+  /** Get patterns for a specific language */
+  getPatternsForLanguage(language: string): Promise<ExternalPatternEntry[]>;
+  /** Get patterns for a specific command */
+  getPatternsForCommand(command: string, language?: string): Promise<ExternalPatternEntry[]>;
+  /** Check if source has patterns for a language */
+  hasPatterns(language: string): Promise<boolean>;
+  /** Get all supported languages */
+  getSupportedLanguages(): Promise<string[]>;
+}
+
+/**
+ * Pattern entry from external source.
+ */
+export interface ExternalPatternEntry {
+  id: string;
+  code: string;
+  command: string | null;
+  language: string;
+  confidence: number;
+  verified: boolean;
+  title?: string;
+  category?: string;
+}
+
+// =============================================================================
 // Registry State
 // =============================================================================
 
 const tokenizers = new Map<string, LanguageTokenizer>();
 const profiles = new Map<string, LanguageProfile>();
 const patternCache = new Map<string, LanguagePattern[]>();
+
+// External pattern sources (e.g., @hyperfixi/patterns-reference database)
+const externalSources = new Map<string, ExternalPatternsSource>();
 
 // Pattern generator function - set by patterns module to avoid circular deps
 let patternGenerator: ((profile: LanguageProfile) => LanguagePattern[]) | null = null;
@@ -116,6 +156,113 @@ export function hasRegisteredPatterns(code: string): boolean {
  */
 export function getRegisteredPatterns(code: string): LanguagePattern[] | undefined {
   return registeredPatterns.get(code);
+}
+
+// =============================================================================
+// External Pattern Sources
+// =============================================================================
+
+/**
+ * Register an external pattern source.
+ * External sources (like @hyperfixi/patterns-reference) can provide
+ * additional patterns at runtime.
+ *
+ * @example
+ * ```typescript
+ * import { registerPatternsSource } from '@hyperfixi/semantic';
+ * import { createPatternsProvider } from '@hyperfixi/patterns-reference';
+ *
+ * const provider = createPatternsProvider();
+ * registerPatternsSource(provider);
+ * ```
+ */
+export function registerPatternsSource(source: ExternalPatternsSource): void {
+  externalSources.set(source.id, source);
+}
+
+/**
+ * Unregister an external pattern source.
+ */
+export function unregisterPatternsSource(sourceId: string): boolean {
+  return externalSources.delete(sourceId);
+}
+
+/**
+ * Get a registered external pattern source.
+ */
+export function getPatternsSource(sourceId: string): ExternalPatternsSource | undefined {
+  return externalSources.get(sourceId);
+}
+
+/**
+ * Get all registered external pattern sources.
+ */
+export function getAllPatternsSources(): ExternalPatternsSource[] {
+  return Array.from(externalSources.values());
+}
+
+/**
+ * Check if any external pattern sources are registered.
+ */
+export function hasExternalSources(): boolean {
+  return externalSources.size > 0;
+}
+
+/**
+ * Query patterns from all external sources for a language.
+ * Returns patterns sorted by confidence.
+ */
+export async function queryExternalPatterns(
+  language: string
+): Promise<ExternalPatternEntry[]> {
+  if (externalSources.size === 0) {
+    return [];
+  }
+
+  const allPatterns: ExternalPatternEntry[] = [];
+
+  for (const source of externalSources.values()) {
+    try {
+      const patterns = await source.getPatternsForLanguage(language);
+      allPatterns.push(...patterns);
+    } catch (error) {
+      console.warn(
+        `[Registry] Failed to query patterns from ${source.name}:`,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+
+  // Sort by confidence (highest first)
+  return allPatterns.sort((a, b) => b.confidence - a.confidence);
+}
+
+/**
+ * Query patterns from all external sources for a command.
+ */
+export async function queryExternalPatternsForCommand(
+  command: string,
+  language?: string
+): Promise<ExternalPatternEntry[]> {
+  if (externalSources.size === 0) {
+    return [];
+  }
+
+  const allPatterns: ExternalPatternEntry[] = [];
+
+  for (const source of externalSources.values()) {
+    try {
+      const patterns = await source.getPatternsForCommand(command, language);
+      allPatterns.push(...patterns);
+    } catch (error) {
+      console.warn(
+        `[Registry] Failed to query patterns from ${source.name}:`,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+
+  return allPatterns.sort((a, b) => b.confidence - a.confidence);
 }
 
 // =============================================================================

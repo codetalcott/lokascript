@@ -123,6 +123,58 @@ export {
 } from './sync';
 
 // =============================================================================
+// Adapters (for cross-package integration)
+// =============================================================================
+
+export {
+  // Unified adapter factory
+  createLLMAdapter,
+  // Sync interface (backward compat with packages/core/src/context/llm-examples-query.ts)
+  findRelevantExamples,
+  findExamplesByCommand,
+  buildFewShotContextSync,
+  trackExampleUsage,
+  getLLMExampleStats,
+  isDatabaseAvailable,
+  // Types
+  type LLMExampleRecord,
+} from './adapters/llm-adapter';
+
+// =============================================================================
+// Registry Integration (for @hyperfixi/semantic)
+// =============================================================================
+
+export {
+  // Patterns provider
+  DatabasePatternsProvider,
+  createPatternsProvider,
+  getDefaultProvider,
+  resetDefaultProvider,
+  // Types
+  type PatternsSource,
+  type PatternEntry,
+} from './registry/patterns-provider';
+
+// =============================================================================
+// Semantic Bridge
+// =============================================================================
+
+export {
+  // Initialization
+  initializeSemanticIntegration,
+  uninitializeSemanticIntegration,
+  isSemanticIntegrationInitialized,
+  getBridgeProvider,
+  // Query helpers
+  queryPatterns,
+  queryPatternsForCommand,
+  getSupportedLanguages,
+  // Types
+  type SemanticIntegrationOptions,
+  type IntegrationResult,
+} from './semantic-bridge';
+
+// =============================================================================
 // Factory
 // =============================================================================
 

@@ -14,13 +14,42 @@ import {
 } from '../types/context-types';
 import type { ValidationResult, ValidationError, EvaluationType } from '../types/base-types';
 import type { LLMDocumentation } from '../types/command-types';
-import {
-  findRelevantExamples,
-  trackExampleUsage,
-  buildFewShotContext,
-  isDatabaseAvailable,
-  type LLMExampleRecord,
-} from './llm-examples-query';
+// Try to import from @hyperfixi/patterns-reference (preferred)
+// Falls back to deprecated llm-examples-query for backward compatibility
+let findRelevantExamples: (
+  prompt: string,
+  language?: string,
+  limit?: number
+) => Array<{ id: number; prompt: string; completion: string; language: string; qualityScore: number }>;
+let trackExampleUsage: (ids: number[]) => void;
+let buildFewShotContext: (prompt: string, language?: string, numExamples?: number) => string;
+let isDatabaseAvailable: () => boolean;
+
+// Attempt to load from patterns-reference first
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const patternsRef = require('@hyperfixi/patterns-reference');
+  findRelevantExamples = patternsRef.findRelevantExamples;
+  trackExampleUsage = patternsRef.trackExampleUsage;
+  buildFewShotContext = patternsRef.buildFewShotContextSync;
+  isDatabaseAvailable = patternsRef.isDatabaseAvailable;
+} catch {
+  // Fall back to deprecated local module
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const legacyModule = require('./llm-examples-query');
+  findRelevantExamples = legacyModule.findRelevantExamples;
+  trackExampleUsage = legacyModule.trackExampleUsage;
+  buildFewShotContext = legacyModule.buildFewShotContext;
+  isDatabaseAvailable = legacyModule.isDatabaseAvailable;
+}
+
+export type LLMExampleRecord = {
+  id: number;
+  prompt: string;
+  completion: string;
+  language: string;
+  qualityScore: number;
+};
 
 // ============================================================================
 // LLM Generation Input/Output Schemas

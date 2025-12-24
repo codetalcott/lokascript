@@ -1,0 +1,220 @@
+# @hyperfixi/patterns-reference
+
+Queryable patterns database for hyperscript with multilingual translations and LLM few-shot learning support.
+
+## Installation
+
+```bash
+npm install @hyperfixi/patterns-reference
+```
+
+## Quick Start
+
+### 1. Initialize the Database
+
+Before using the package, initialize the SQLite database with seed data:
+
+```bash
+npm run db:init
+```
+
+This creates a database at `data/patterns.db` with:
+- 16 code examples from the hyperscript cookbook
+- English translations for all patterns
+- 11 LLM few-shot examples
+
+### 2. Use the API
+
+```typescript
+import { createPatternsReference } from '@hyperfixi/patterns-reference';
+
+// Create a patterns reference instance
+const ref = createPatternsReference({
+  dbPath: './data/patterns.db',
+  readonly: true,
+});
+
+// Query patterns
+const pattern = await ref.getPatternById('toggle-class-basic');
+console.log(pattern?.rawCode); // 'on click toggle .active'
+
+// Search patterns
+const results = await ref.searchPatterns('toggle');
+
+// Get LLM examples for few-shot learning
+const examples = await ref.getLLMExamples('toggle a class on click');
+
+// Get statistics
+const stats = await ref.getStats();
+console.log(`Total patterns: ${stats.totalPatterns}`);
+
+// Clean up
+ref.close();
+```
+
+## API Reference
+
+### Pattern Queries
+
+```typescript
+// Get pattern by ID
+getPatternById(id: string): Promise<Pattern | null>
+
+// Get patterns by category (e.g., 'class-manipulation', 'visibility')
+getPatternsByCategory(category: string): Promise<Pattern[]>
+
+// Get patterns containing a specific command
+getPatternsByCommand(command: string): Promise<Pattern[]>
+
+// Full-text search across title, code, and description
+searchPatterns(query: string, options?: SearchOptions): Promise<Pattern[]>
+
+// Get all patterns (paginated)
+getAllPatterns(options?: SearchOptions): Promise<Pattern[]>
+
+// Get pattern statistics
+getPatternStats(): Promise<PatternStats>
+```
+
+### Translations
+
+```typescript
+// Get translation for a specific language
+getTranslation(patternId: string, language: string): Promise<Translation | null>
+
+// Get all translations for a pattern
+getAllTranslations(patternId: string): Promise<Translation[]>
+
+// Verify a translation parses correctly
+verifyTranslation(translation: Translation): Promise<VerificationResult>
+```
+
+### LLM Support
+
+```typescript
+// Get examples matching a prompt (for few-shot learning)
+getLLMExamples(prompt: string, language?: string, limit?: number): Promise<LLMExample[]>
+
+// Get examples by command type
+getExamplesByCommand(command: string, language?: string, limit?: number): Promise<LLMExample[]>
+
+// Get high-quality examples
+getHighQualityExamples(language?: string, minQuality?: number, limit?: number): Promise<LLMExample[]>
+
+// Build formatted context for LLM prompting
+buildFewShotContext(prompt: string, language?: string, numExamples?: number): Promise<string>
+
+// Get LLM example statistics
+getLLMStats(): Promise<{ total: number; byLanguage: Record<string, number>; avgQuality: number; totalUsage: number }>
+```
+
+## Configuration
+
+### Database Path
+
+The database path can be configured via:
+
+1. **Constructor option:**
+   ```typescript
+   createPatternsReference({ dbPath: '/path/to/db.sqlite' })
+   ```
+
+2. **Environment variables:**
+   ```bash
+   export LSP_DB_PATH="/path/to/db.sqlite"
+   # or
+   export HYPERSCRIPT_LSP_DB="/path/to/db.sqlite"
+   ```
+
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run db:init` | Initialize database with seed data |
+| `npm run db:init:force` | Reinitialize database (overwrites existing) |
+| `npm run build` | Build the package |
+| `npm test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once |
+
+## Database Schema
+
+### code_examples
+
+Pattern source code from the hyperscript cookbook.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | TEXT | Unique identifier |
+| title | TEXT | Human-readable title |
+| raw_code | TEXT | Hyperscript code |
+| description | TEXT | Pattern description |
+| feature | TEXT | Category (e.g., 'class-manipulation') |
+| created_at | TEXT | Creation timestamp |
+
+### pattern_translations
+
+Multilingual translations of patterns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Auto-increment ID |
+| code_example_id | TEXT | Foreign key to code_examples |
+| language | TEXT | Language code (en, ja, es, etc.) |
+| hyperscript | TEXT | Translated code |
+| word_order | TEXT | SVO, SOV, VSO, or V2 |
+| confidence | REAL | Translation confidence (0-1) |
+| verified_parses | INTEGER | Whether translation parses (0/1) |
+
+### llm_examples
+
+Prompt/completion pairs for few-shot learning.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Auto-increment ID |
+| code_example_id | TEXT | Foreign key to code_examples |
+| language | TEXT | Language code |
+| prompt | TEXT | Natural language prompt |
+| completion | TEXT | Hyperscript code |
+| quality_score | REAL | Quality rating (0-1) |
+| usage_count | INTEGER | Retrieval count |
+
+## Supported Languages
+
+The database supports 13 languages with different word orders:
+
+| Language | Code | Word Order |
+|----------|------|------------|
+| English | en | SVO |
+| Spanish | es | SVO |
+| French | fr | SVO |
+| Portuguese | pt | SVO |
+| Indonesian | id | SVO |
+| Swahili | sw | SVO |
+| Chinese | zh | SVO |
+| Japanese | ja | SOV |
+| Korean | ko | SOV |
+| Turkish | tr | SOV |
+| Quechua | qu | SOV |
+| Arabic | ar | VSO |
+| German | de | V2 |
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Initialize test database
+npm run db:init
+
+# Run tests
+npm test
+
+# Build
+npm run build
+```
+
+## License
+
+MIT

@@ -28,6 +28,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit",
+    "db:init": "tsx scripts/init-db.ts",
+    "db:init:force": "tsx scripts/init-db.ts --force",
     "sync": "bun run scripts/sync.ts",
     "validate": "bun run scripts/validate.ts",
     "seed": "bun run scripts/seed.ts"
@@ -51,12 +53,15 @@
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^4.0.0"
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "data",
+    "scripts"
   ],
   "sideEffects": false
 }
