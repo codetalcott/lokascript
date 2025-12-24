@@ -348,7 +348,7 @@ const KEYWORD_TRANSLATIONS: Record<string, Record<string, string>> = {
   },
   qu: {
     on: 'kaptinpi',
-    toggle: 't\'ikray',
+    toggle: 'tikray',
     add: 'yapay',
     remove: 'hurquy',
     show: 'rikuchiy',
@@ -362,14 +362,14 @@ const KEYWORD_TRANSLATIONS: Record<string, Record<string, string>> = {
     increment: 'yapay',
     decrement: 'pisiyachiy',
     log: 'qillqay',
-    transition: 't\'ikray',
+    transition: 'tikray',
     then: 'chaymanta',
     to: 'man',
     from: 'manta',
     into: 'man',
-    click: 'ñit\'iy',
+    click: 'nitiy',
     load: 'chaqnay',
-    me: 'ñuqa',
+    me: 'nuqa',
   },
 };
 
