@@ -120,6 +120,80 @@
 }
 
 /* =============================================================================
+   Manual Dark Mode Override
+   Activated by adding .dark-mode class to <html>
+   ============================================================================= */
+
+html.dark-mode {
+  /* Text colors */
+  --text: #f8fafb;
+  --text-muted: #ebedef;
+  --text-accent: #a5d8ff;
+
+  /* Background colors */
+  --background: #121210;
+  --panel: #252521;
+
+  /* Accent colors */
+  --accent: #a5d8ff;
+  --accent-hover: #339af0;
+
+  /* Border colors */
+  --border: #252521;
+  --border-variant: #979b9d;
+
+  /* Semantic colors */
+  --info: #228be6;
+  --info-bg: #0d375e;
+  --info-text: #a5d8ff;
+
+  --success: #40c057;
+  --success-bg: #1b5727;
+  --success-text: #b2f2bb;
+
+  --warning: #fab005;
+  --warning-bg: #663500;
+  --warning-text: #ffec99;
+
+  --error: #fa5252;
+  --error-bg: #7d1a1a;
+  --error-text: #ffc9c9;
+
+  /* Syntax highlighting */
+  --syntax-keyword: #a5d8ff;
+  --syntax-string: #b2f2bb;
+  --syntax-number: #ffc9c9;
+  --syntax-comment: #ebedef;
+  --syntax-function: #ffc9c9;
+  --syntax-variable: #ffec99;
+  --syntax-operator: #f8fafb;
+  --syntax-punctuation: #ebedef;
+
+  /* missing.css overrides */
+  --fg: var(--text);
+  --muted-fg: var(--text-muted);
+  --bg: var(--background);
+  --accent-fg: var(--accent);
+  --interactive-bg: var(--panel);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  background: transparent;
+}
+
+/* =============================================================================
    Layout
    ============================================================================= */
 
@@ -209,6 +283,22 @@ footer {
 .pattern-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pattern-card.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus state for keyboard navigation container */
+.pattern-grid:focus {
+  outline: none;
+}
+
+.pattern-grid:focus .pattern-card.selected {
+  outline-width: 3px;
 }
 
 .pattern-card h3 {

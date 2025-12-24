@@ -77,9 +77,9 @@ export function AlignmentBadge({ score }: { score: number | null }) {
   const colorClass = getAlignmentClass(score);
 
   return (
-    <chip class={`alignment-badge ${colorClass}`} title={`${percentage}% role alignment`}>
+    <span class={`chip alignment-badge ${colorClass}`} title={`${percentage}% role alignment`}>
       {percentage}%
-    </chip>
+    </span>
   );
 }
 

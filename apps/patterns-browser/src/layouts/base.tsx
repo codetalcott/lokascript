@@ -31,6 +31,16 @@ export function BaseLayout({ title, children }: PropsWithChildren<BaseLayoutProp
 
         {/* hyperfixi */}
         <script src="/public/hyperfixi-browser.js"></script>
+
+        {/* Theme initialization - must run before body renders */}
+        <script>{`
+          (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              document.documentElement.classList.add('dark-mode');
+            }
+          })();
+        `}</script>
       </head>
       <body
         _="on load
@@ -60,6 +70,31 @@ export function BaseLayout({ title, children }: PropsWithChildren<BaseLayoutProp
                 <a href="/stats">Stats</a>
               </li>
             </ul>
+            <button
+              id="theme-toggle"
+              class="theme-toggle"
+              title="Toggle dark mode"
+              aria-label="Toggle dark mode"
+              _="on load
+                   if <html/> matches .dark-mode
+                     put '☀️' into me
+                   else
+                     put '🌙' into me
+                   end
+                 end
+                 on click
+                   toggle .dark-mode on <html/>
+                   if <html/> matches .dark-mode
+                     set localStorage.theme to 'dark'
+                     put '☀️' into me
+                   else
+                     set localStorage.theme to 'light'
+                     put '🌙' into me
+                   end
+                 end"
+            >
+              🌙
+            </button>
           </nav>
         </header>
 
