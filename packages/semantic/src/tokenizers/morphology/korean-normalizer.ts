@@ -61,14 +61,25 @@ const KOREAN_SUFFIX_RULES: readonly SuffixRule[] = [
   // Sequential/temporal forms - "after doing", "before doing", "as soon as"
   { pattern: '하고나서', confidence: 0.85, conjugationType: 'sequential-after', minStemLength: 1 },
   { pattern: '하고 나서', confidence: 0.85, conjugationType: 'sequential-after', minStemLength: 1 },
+  { pattern: '하고서', confidence: 0.85, conjugationType: 'sequential-after', minStemLength: 1 },
   { pattern: '고나서', confidence: 0.82, conjugationType: 'sequential-after', minStemLength: 2 },
   { pattern: '고 나서', confidence: 0.82, conjugationType: 'sequential-after', minStemLength: 2 },
+  { pattern: '고서', confidence: 0.82, conjugationType: 'sequential-after', minStemLength: 2 },
   { pattern: '하기전에', confidence: 0.85, conjugationType: 'sequential-before', minStemLength: 1 },
   { pattern: '하기 전에', confidence: 0.85, conjugationType: 'sequential-before', minStemLength: 1 },
   { pattern: '기전에', confidence: 0.82, conjugationType: 'sequential-before', minStemLength: 2 },
   { pattern: '기 전에', confidence: 0.82, conjugationType: 'sequential-before', minStemLength: 2 },
   { pattern: '하자마자', confidence: 0.88, conjugationType: 'immediate', minStemLength: 1 },
   { pattern: '자마자', confidence: 0.85, conjugationType: 'immediate', minStemLength: 2 },
+
+  // Obligation forms - "must do", "should do"
+  { pattern: '해야해요', confidence: 0.85, conjugationType: 'obligation', minStemLength: 1 },
+  { pattern: '해야해', confidence: 0.85, conjugationType: 'obligation', minStemLength: 1 },
+  { pattern: '해야하다', confidence: 0.85, conjugationType: 'obligation', minStemLength: 1 },
+  { pattern: '어야해요', confidence: 0.82, conjugationType: 'obligation', minStemLength: 2 },
+  { pattern: '어야해', confidence: 0.82, conjugationType: 'obligation', minStemLength: 2 },
+  { pattern: '아야해요', confidence: 0.82, conjugationType: 'obligation', minStemLength: 2 },
+  { pattern: '아야해', confidence: 0.82, conjugationType: 'obligation', minStemLength: 2 },
 
   // Conditional forms - most natural for event handlers (longest first)
   // These are critical for native Korean idioms like "클릭하면 증가"
@@ -150,9 +161,15 @@ const HADA_PATTERNS: readonly { pattern: string; confidence: number; conjugation
   // Sequential/temporal forms - "after doing", "before doing", "as soon as"
   { pattern: '하고나서', confidence: 0.88, conjugationType: 'sequential-after' },
   { pattern: '하고 나서', confidence: 0.88, conjugationType: 'sequential-after' },
+  { pattern: '하고서', confidence: 0.88, conjugationType: 'sequential-after' },
   { pattern: '하기전에', confidence: 0.88, conjugationType: 'sequential-before' },
   { pattern: '하기 전에', confidence: 0.88, conjugationType: 'sequential-before' },
   { pattern: '하자마자', confidence: 0.88, conjugationType: 'immediate' },
+
+  // Obligation forms - "must do", "should do"
+  { pattern: '해야해요', confidence: 0.88, conjugationType: 'obligation' },
+  { pattern: '해야해', confidence: 0.88, conjugationType: 'obligation' },
+  { pattern: '해야하다', confidence: 0.88, conjugationType: 'obligation' },
 
   // Conditional forms - most natural for event handlers (highest priority)
   // 클릭하면 → 클릭 (if clicked)

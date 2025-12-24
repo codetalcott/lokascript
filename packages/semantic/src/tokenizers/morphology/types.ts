@@ -84,6 +84,7 @@ export type ConjugationType =
   | 'sequential-after'       // -고 나서 - after doing
   | 'sequential-before'      // -기 전에 - before doing
   | 'immediate'              // -자마자 - as soon as
+  | 'obligation'             // -아야/어야 해 - must do, should do
   // Spanish-specific
   | 'reflexive'
   | 'reflexive-imperative'
@@ -100,6 +101,13 @@ export type ConjugationType =
   | 'temporal-ince'       // -ince/-ınca/-unca/-ünce - when/as
   | 'temporal-dikce'      // -dikçe/-dıkça/-dukça/-dükçe - as/while
   | 'aorist'              // -ir/-ar - habitual/general
+  | 'optative'            // -eyim/-ayım/-elim/-alım - let me/us
+  | 'necessitative'       // -meli/-malı - must/should
+  // Japanese request/contracted forms
+  | 'request'          // てください/でください - polite request
+  | 'casual-request'   // てくれ/でくれ - casual request
+  | 'contracted'       // ちゃう/じゃう - contracted completion (てしまう)
+  | 'contracted-past'  // ちゃった/じゃった - contracted past completion
   // Compound
   | 'te-form' // Japanese て-form
   | 'dictionary'; // Base/infinitive form

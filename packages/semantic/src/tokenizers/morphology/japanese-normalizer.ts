@@ -40,11 +40,22 @@ const JAPANESE_SUFFIX_RULES: readonly SuffixRule[] = [
   // Compound forms (longest first)
   { pattern: 'ていました', confidence: 0.82, conjugationType: 'past', minStemLength: 2 },
   { pattern: 'ています', confidence: 0.85, conjugationType: 'progressive', minStemLength: 2 },
-  { pattern: 'てください', confidence: 0.85, conjugationType: 'polite', minStemLength: 2 },
+  { pattern: 'てください', confidence: 0.85, conjugationType: 'request', minStemLength: 2 },
+  { pattern: 'でください', confidence: 0.85, conjugationType: 'request', minStemLength: 2 },
   { pattern: 'ている', confidence: 0.85, conjugationType: 'progressive', minStemLength: 2 },
   { pattern: 'ておく', confidence: 0.82, conjugationType: 'progressive', minStemLength: 2 },
   { pattern: 'てみる', confidence: 0.82, conjugationType: 'progressive', minStemLength: 2 },
   { pattern: 'てある', confidence: 0.82, conjugationType: 'progressive', minStemLength: 2 },
+
+  // Casual request forms
+  { pattern: 'てくれ', confidence: 0.80, conjugationType: 'casual-request', minStemLength: 2 },
+  { pattern: 'でくれ', confidence: 0.80, conjugationType: 'casual-request', minStemLength: 2 },
+
+  // Contracted/colloquial forms (ちゃう/じゃう = てしまう/でしまう)
+  { pattern: 'ちゃった', confidence: 0.82, conjugationType: 'contracted-past', minStemLength: 2 },
+  { pattern: 'じゃった', confidence: 0.82, conjugationType: 'contracted-past', minStemLength: 2 },
+  { pattern: 'ちゃう', confidence: 0.82, conjugationType: 'contracted', minStemLength: 2 },
+  { pattern: 'じゃう', confidence: 0.82, conjugationType: 'contracted', minStemLength: 2 },
 
   // Polite forms
   { pattern: 'ました', confidence: 0.85, conjugationType: 'past', minStemLength: 2 },

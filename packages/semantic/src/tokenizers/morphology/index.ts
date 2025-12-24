@@ -46,3 +46,13 @@ export {
   PortugueseMorphologicalNormalizer,
   portugueseMorphologicalNormalizer,
 } from './portuguese-normalizer';
+
+export {
+  FrenchMorphologicalNormalizer,
+  frenchMorphologicalNormalizer,
+} from './french-normalizer';
+
+export {
+  GermanMorphologicalNormalizer,
+  germanMorphologicalNormalizer,
+} from './german-normalizer';

@@ -104,5 +104,45 @@ export function getTogglePatternsJa(): LanguagePattern[] {
         destination: { default: { type: 'reference', value: 'me' } },
       },
     },
+    // Phase 6d: Word order flexibility - verb-first pattern
+    {
+      id: 'toggle-ja-verb-first',
+      language: 'ja',
+      command: 'toggle',
+      priority: 75,
+      template: {
+        format: '切り替え {patient} を',
+        tokens: [
+          { type: 'literal', value: '切り替え', alternatives: ['トグル'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+        ],
+      },
+      extraction: {
+        patient: { position: 1 },
+        destination: { default: { type: 'reference', value: 'me' } },
+      },
+    },
+    // Phase 6d: Object-before-destination scrambled order
+    {
+      id: 'toggle-ja-scrambled',
+      language: 'ja',
+      command: 'toggle',
+      priority: 70,
+      template: {
+        format: '{patient} を {destination} で 切り替え',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '切り替え', alternatives: ['トグル'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { marker: 'で' },
+      },
+    },
   ];
 }

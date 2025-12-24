@@ -64,5 +64,25 @@ export function getTogglePatternsTr(): LanguagePattern[] {
         destination: { default: { type: 'reference', value: 'me' } },
       },
     },
+    // Phase 6d: Object-before-destination scrambled order
+    {
+      id: 'toggle-tr-scrambled',
+      language: 'tr',
+      command: 'toggle',
+      priority: 70,
+      template: {
+        format: '{patient} {destination} üzerinde değiştir',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'üzerinde', alternatives: ['üstünde'] },
+          { type: 'literal', value: 'değiştir', alternatives: ['değistir'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+      },
+    },
   ];
 }

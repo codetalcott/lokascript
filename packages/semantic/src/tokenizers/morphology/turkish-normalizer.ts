@@ -254,6 +254,38 @@ const TURKISH_SUFFIX_RULES: readonly SuffixRule[] = [
   { pattern: 'mek', confidence: 0.88, conjugationType: 'dictionary', minStemLength: 2 },
   { pattern: 'mak', confidence: 0.88, conjugationType: 'dictionary', minStemLength: 2 },
 
+  // Optative mood (let me/us...) - -eyim/-ayım/-elim/-alım
+  { pattern: 'eyelim', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+  { pattern: 'ayalım', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+  { pattern: 'eyim', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+  { pattern: 'ayım', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+  { pattern: 'elim', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+  { pattern: 'alım', confidence: 0.82, conjugationType: 'optative', minStemLength: 2 },
+
+  // Necessitative (must/should) - -meli/-malı
+  { pattern: 'melisiniz', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malısınız', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'melisin', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malısın', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'meliyiz', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malıyız', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'meliyim', confidence: 0.85, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malıyım', confidence: 0.85, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'meliler', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malılar', confidence: 0.82, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'meli', confidence: 0.85, conjugationType: 'necessitative', minStemLength: 2 },
+  { pattern: 'malı', confidence: 0.85, conjugationType: 'necessitative', minStemLength: 2 },
+
+  // Ability (can) - -ebil/-abil + tense suffixes
+  { pattern: 'ebiliyor', confidence: 0.82, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'abiliyor', confidence: 0.82, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'ebilir', confidence: 0.85, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'abilir', confidence: 0.85, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'ebildi', confidence: 0.82, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'abildi', confidence: 0.82, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'ebilmek', confidence: 0.85, conjugationType: 'potential', minStemLength: 2 },
+  { pattern: 'abilmek', confidence: 0.85, conjugationType: 'potential', minStemLength: 2 },
+
   // Imperative (2nd person singular is just stem, 2nd person plural has suffix)
   { pattern: 'iniz', confidence: 0.82, conjugationType: 'imperative', minStemLength: 2 },
   { pattern: 'ınız', confidence: 0.82, conjugationType: 'imperative', minStemLength: 2 },
