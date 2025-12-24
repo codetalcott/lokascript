@@ -4,7 +4,7 @@
 
 import { Elysia } from 'elysia';
 import { BaseLayout } from '../layouts/base';
-import { PatternList } from '../partials/pattern-list';
+import { PatternList, PatternListInner } from '../partials/pattern-list';
 import { CategoryFilter } from '../partials/category-filter';
 import { RoleFilter } from '../partials/role-filter';
 import { SearchInput } from '../partials/search-input';
@@ -93,28 +93,45 @@ export const patternsRoutes = new Elysia({ prefix: '/patterns' })
     return <BaseLayout title="Patterns">{content}</BaseLayout>;
   })
 
-  // Pattern list partial (for htmx/hyperfixi requests)
+  // Pattern list partial (for filter/search morph updates)
+  // Returns inner content only to avoid nesting #pattern-list divs
   .get('/list', async ({ query }) => {
     const category = query.category as string | undefined;
     const role = query.role as string | undefined;
     const q = query.q as string | undefined;
-    const page = parseInt((query.page as string) || '1', 10);
-    const offset = (page - 1) * PAGE_SIZE;
 
     let patterns: Pattern[];
     if (q) {
-      patterns = await search(q, { limit: PAGE_SIZE, offset });
+      patterns = await search(q, { limit: PAGE_SIZE });
     } else if (role) {
-      patterns = (await getPatternsByRole(role)).slice(offset, offset + PAGE_SIZE);
+      patterns = await getPatternsByRole(role);
     } else if (category) {
-      patterns = (await getPatternsByFeature(category)).slice(offset, offset + PAGE_SIZE);
+      patterns = await getPatternsByFeature(category);
     } else {
-      patterns = await getPatterns({ limit: PAGE_SIZE, offset });
+      patterns = await getPatterns({ limit: PAGE_SIZE });
+    }
+
+    // For role/category filters, limit to PAGE_SIZE
+    if (role || category) {
+      patterns = patterns.slice(0, PAGE_SIZE);
     }
 
     const hasMore = patterns.length === PAGE_SIZE;
 
-    return <PatternList patterns={patterns} page={page} hasMore={hasMore} />;
+    // Return inner content only (cards without wrapper div)
+    return <PatternListInner patterns={patterns} page={1} hasMore={hasMore} />;
+  })
+
+  // Load more patterns (for infinite scroll)
+  .get('/list/more', async ({ query }) => {
+    const page = parseInt((query.page as string) || '2', 10);
+    const offset = (page - 1) * PAGE_SIZE;
+
+    const patterns = await getPatterns({ limit: PAGE_SIZE, offset });
+    const hasMore = patterns.length === PAGE_SIZE;
+
+    // Return just cards for appending
+    return <PatternListInner patterns={patterns} page={page} hasMore={hasMore} />;
   })
 
   // Single pattern detail page
