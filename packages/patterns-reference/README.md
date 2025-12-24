@@ -20,9 +20,9 @@ npm run populate
 
 This creates a database at `data/patterns.db` with:
 
-- 53 code examples covering all hyperscript commands
-- 689 translations (53 patterns × 13 languages)
-- 212 LLM few-shot examples for code generation
+- 106 code examples covering hyperscript commands and real-world UI patterns
+- 1,378 translations (106 patterns × 13 languages)
+- 414 LLM few-shot examples for code generation
 
 ### 2. Use the API
 

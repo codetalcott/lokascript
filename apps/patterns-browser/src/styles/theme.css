@@ -1,0 +1,524 @@
+/**
+ * Custom theme for patterns-browser
+ * Based on Zed Missing theme from /missing.json
+ */
+
+/* =============================================================================
+   Light Theme (default)
+   ============================================================================= */
+
+:root {
+  /* Text colors */
+  --text: #121210;
+  --text-muted: #3a3a37;
+  --text-accent: #145591;
+
+  /* Background colors */
+  --background: #f8fafb;
+  --panel: #f2f4f6;
+
+  /* Accent colors */
+  --accent: #145591;
+  --accent-hover: #1c7ed6;
+
+  /* Border colors */
+  --border: #f2f4f6;
+  --border-variant: #979b9d;
+
+  /* Semantic colors */
+  --info: #228be6;
+  --info-bg: #d0ebff;
+  --info-text: #114678;
+
+  --success: #40c057;
+  --success-bg: #d4edda;
+  --success-text: #1b5727;
+
+  --warning: #fab005;
+  --warning-bg: #fff3bf;
+  --warning-text: #804200;
+
+  --error: #fa5252;
+  --error-bg: #ffe3e3;
+  --error-text: #962020;
+
+  /* Syntax highlighting */
+  --syntax-keyword: #114678;
+  --syntax-string: #1b5727;
+  --syntax-number: #962020;
+  --syntax-comment: #3a3a37;
+  --syntax-function: #962020;
+  --syntax-variable: #804200;
+  --syntax-operator: #121210;
+  --syntax-punctuation: #3a3a37;
+
+  /* missing.css overrides */
+  --fg: var(--text);
+  --muted-fg: var(--text-muted);
+  --bg: var(--background);
+  --accent-fg: var(--accent);
+  --interactive-bg: var(--panel);
+}
+
+/* =============================================================================
+   Dark Theme
+   ============================================================================= */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Text colors */
+    --text: #f8fafb;
+    --text-muted: #ebedef;
+    --text-accent: #a5d8ff;
+
+    /* Background colors */
+    --background: #121210;
+    --panel: #252521;
+
+    /* Accent colors */
+    --accent: #a5d8ff;
+    --accent-hover: #339af0;
+
+    /* Border colors */
+    --border: #252521;
+    --border-variant: #979b9d;
+
+    /* Semantic colors */
+    --info: #228be6;
+    --info-bg: #0d375e;
+    --info-text: #a5d8ff;
+
+    --success: #40c057;
+    --success-bg: #1b5727;
+    --success-text: #b2f2bb;
+
+    --warning: #fab005;
+    --warning-bg: #663500;
+    --warning-text: #ffec99;
+
+    --error: #fa5252;
+    --error-bg: #7d1a1a;
+    --error-text: #ffc9c9;
+
+    /* Syntax highlighting */
+    --syntax-keyword: #a5d8ff;
+    --syntax-string: #b2f2bb;
+    --syntax-number: #ffc9c9;
+    --syntax-comment: #ebedef;
+    --syntax-function: #ffc9c9;
+    --syntax-variable: #ffec99;
+    --syntax-operator: #f8fafb;
+    --syntax-punctuation: #ebedef;
+
+    /* missing.css overrides */
+    --fg: var(--text);
+    --muted-fg: var(--text-muted);
+    --bg: var(--background);
+    --accent-fg: var(--accent);
+    --interactive-bg: var(--panel);
+  }
+}
+
+/* =============================================================================
+   Layout
+   ============================================================================= */
+
+body {
+  background: var(--background);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+main {
+  padding: 1rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+footer {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* =============================================================================
+   Navbar
+   ============================================================================= */
+
+.navbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 2rem;
+}
+
+.navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.navbar .brand {
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.navbar ul {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.navbar a:hover,
+.navbar a.active {
+  color: var(--accent);
+  background: var(--background);
+}
+
+/* =============================================================================
+   Pattern Cards
+   ============================================================================= */
+
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.pattern-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pattern-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pattern-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.pattern-card .code {
+  background: var(--background);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pattern-card .meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* =============================================================================
+   Chips/Tags
+   ============================================================================= */
+
+chip,
+.chip {
+  display: inline-block;
+  background: var(--info-bg);
+  color: var(--info-text);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+chip.svo,
+.chip.svo {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+chip.sov,
+.chip.sov {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+chip.vso,
+.chip.vso {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+chip.v2,
+.chip.v2 {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+chip.muted,
+.chip.muted {
+  background: var(--border);
+  color: var(--text-muted);
+}
+
+/* =============================================================================
+   Code Blocks
+   ============================================================================= */
+
+pre,
+code {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+}
+
+pre.code-block {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Syntax highlighting */
+.syntax-keyword {
+  color: var(--syntax-keyword);
+}
+.syntax-string {
+  color: var(--syntax-string);
+}
+.syntax-number {
+  color: var(--syntax-number);
+}
+.syntax-comment {
+  color: var(--syntax-comment);
+  font-style: italic;
+}
+.syntax-function {
+  color: var(--syntax-function);
+  font-style: italic;
+}
+.syntax-variable {
+  color: var(--syntax-variable);
+}
+.syntax-operator {
+  color: var(--syntax-operator);
+}
+.syntax-punctuation {
+  color: var(--syntax-punctuation);
+}
+
+/* =============================================================================
+   Sidebar Layout
+   ============================================================================= */
+
+.sidebar-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.sidebar h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 0;
+}
+
+.sidebar a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.sidebar a:hover {
+  background: var(--background);
+}
+
+.sidebar a.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* =============================================================================
+   Search
+   ============================================================================= */
+
+.search-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--info-bg);
+}
+
+.search-container .spinner {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  color: var(--text-muted);
+}
+
+.search-container.loading .spinner {
+  display: block;
+}
+
+/* =============================================================================
+   Buttons
+   ============================================================================= */
+
+button,
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--accent-hover);
+}
+
+button.secondary,
+.btn.secondary {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.secondary:hover,
+.btn.secondary:hover {
+  background: var(--border);
+}
+
+button.ok,
+.btn.ok {
+  background: var(--success);
+}
+
+/* =============================================================================
+   Utilities
+   ============================================================================= */
+
+.center {
+  text-align: center;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.flow > * + * {
+  margin-top: 1rem;
+}
+
+.flow-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* =============================================================================
+   Loading States
+   ============================================================================= */
+
+.loading-indicator {
+  display: none;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.htmx-request .loading-indicator {
+  display: block;
+}
+
+/* =============================================================================
+   Responsive
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .sidebar-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .navbar nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+}
