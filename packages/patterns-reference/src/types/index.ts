@@ -97,6 +97,60 @@ export interface LLMExample {
 }
 
 // =============================================================================
+// Semantic Role Types
+// =============================================================================
+
+/**
+ * Semantic roles from @hyperfixi/i18n.
+ */
+export type SemanticRole =
+  | 'action'
+  | 'agent'
+  | 'patient'
+  | 'source'
+  | 'destination'
+  | 'goal'
+  | 'event'
+  | 'condition'
+  | 'quantity'
+  | 'duration'
+  | 'responseType'
+  | 'method'
+  | 'style'
+  | 'loopType';
+
+/**
+ * Role type classification.
+ */
+export type RoleType = 'selector' | 'literal' | 'reference' | 'expression' | 'keyword';
+
+/**
+ * A semantic role extracted from a pattern.
+ */
+export interface PatternRole {
+  id: number;
+  codeExampleId: string;
+  commandIndex: number;
+  role: SemanticRole;
+  roleValue: string | null;
+  roleType: RoleType | null;
+  required: boolean;
+}
+
+/**
+ * Result of role alignment validation for translations.
+ */
+export interface RoleAlignmentResult {
+  translationId: number;
+  patternId: string;
+  language: string;
+  alignmentScore: number;
+  matchedRoles: SemanticRole[];
+  missingRoles: SemanticRole[];
+  extraRoles: SemanticRole[];
+}
+
+// =============================================================================
 // API Types
 // =============================================================================
 

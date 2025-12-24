@@ -609,6 +609,260 @@ button.ok,
 }
 
 /* =============================================================================
+   Semantic Role Badges
+   ============================================================================= */
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: help;
+  transition: transform 0.1s;
+}
+
+.role-badge:hover {
+  transform: scale(1.02);
+}
+
+.role-badge-sm {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
+}
+
+.role-badge-lg {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.role-badge .role-name {
+  opacity: 0.85;
+}
+
+.role-badge .role-value {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-weight: 600;
+}
+
+/* Role type colors - Core Thematic */
+.role-action {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.role-agent {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.role-patient {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.role-source {
+  background: #e8d4f8;
+  color: #6b2d7b;
+}
+
+.role-destination {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.role-goal {
+  background: #fce4ec;
+  color: #ad1457;
+}
+
+.role-event {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.role-condition {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+/* Role type colors - Quantitative */
+.role-quantity {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.role-duration {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+/* Role type colors - Adverbial */
+.role-response {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+
+.role-method {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.role-style {
+  background: #f1f8e9;
+  color: #558b2f;
+}
+
+.role-manner {
+  background: #fff8e1;
+  color: #ff8f00;
+}
+
+/* Role type colors - Control Flow */
+.role-loop {
+  background: #e0f7fa;
+  color: #00838f;
+}
+
+.role-default {
+  background: var(--border);
+  color: var(--text-muted);
+}
+
+/* Dark mode role colors */
+@media (prefers-color-scheme: dark) {
+  .role-source {
+    background: #4a1259;
+    color: #e8d4f8;
+  }
+
+  .role-goal {
+    background: #4a1259;
+    color: #fce4ec;
+  }
+
+  .role-quantity {
+    background: #4a1a6b;
+    color: #e1bee7;
+  }
+
+  .role-duration {
+    background: #004d40;
+    color: #b2dfdb;
+  }
+
+  .role-response {
+    background: #1a237e;
+    color: #c5cae9;
+  }
+
+  .role-method {
+    background: #880e4f;
+    color: #f8bbd9;
+  }
+
+  .role-style {
+    background: #33691e;
+    color: #dcedc8;
+  }
+
+  .role-manner {
+    background: #e65100;
+    color: #ffe0b2;
+  }
+
+  .role-loop {
+    background: #006064;
+    color: #b2ebf2;
+  }
+}
+
+/* Role list layout */
+.role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.role-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Grouped roles by command */
+.role-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.role-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: var(--panel);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+
+.role-command {
+  margin-bottom: 0.25rem;
+}
+
+.role-args {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-left: 0.5rem;
+}
+
+/* Role filter badges */
+.role-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.role-filter-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.role-filter-badge.active {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.role-filter-badge .role-count {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0 0.35rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+}
+
+/* Pattern roles section */
+.pattern-roles {
+  margin: 1.5rem 0;
+}
+
+.pattern-roles h2 {
+  margin-bottom: 0.75rem;
+}
+
+.pattern-roles-intro {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* =============================================================================
    Loading States
    ============================================================================= */
 

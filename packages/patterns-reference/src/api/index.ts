@@ -37,3 +37,16 @@ export {
   updateQualityScore,
   getLLMStats,
 } from './llm';
+
+// Roles
+export {
+  getPatternRoles,
+  getPatternsByRole,
+  getPatternsByRoles,
+  getPatternsByRoleValue,
+  getRoleStats,
+  getRolesByCommand,
+  insertPatternRole,
+  deletePatternRoles,
+  clearAllRoles,
+} from './roles';

@@ -70,11 +70,25 @@ CREATE TABLE IF NOT EXISTS llm_examples (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Semantic roles extracted from patterns
+CREATE TABLE IF NOT EXISTS pattern_roles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code_example_id TEXT NOT NULL REFERENCES code_examples(id),
+  command_index INTEGER DEFAULT 0,
+  role TEXT NOT NULL,
+  role_value TEXT,
+  role_type TEXT,
+  required INTEGER DEFAULT 0,
+  UNIQUE(code_example_id, command_index, role)
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_translations_language ON pattern_translations(language);
 CREATE INDEX IF NOT EXISTS idx_translations_example ON pattern_translations(code_example_id);
 CREATE INDEX IF NOT EXISTS idx_llm_language ON llm_examples(language);
 CREATE INDEX IF NOT EXISTS idx_examples_feature ON code_examples(feature);
+CREATE INDEX IF NOT EXISTS idx_pattern_roles_role ON pattern_roles(role);
+CREATE INDEX IF NOT EXISTS idx_pattern_roles_example ON pattern_roles(code_example_id);
 `;
 
 // =============================================================================

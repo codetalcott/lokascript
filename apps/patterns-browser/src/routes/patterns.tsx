@@ -15,8 +15,11 @@ import {
   search,
   getCategories,
   getStats,
+  getPatternRoles,
   type Pattern,
+  type PatternRole,
 } from '../db';
+import { RoleList } from '../components/role-badge';
 
 const PAGE_SIZE = 24;
 
@@ -108,6 +111,9 @@ export const patternsRoutes = new Elysia({ prefix: '/patterns' })
       );
     }
 
+    // Fetch semantic roles for this pattern
+    const roles = await getPatternRoles(params.id);
+
     // Check if this is a partial request
     const isPartial = headers['hx-request'] === 'true';
 
@@ -130,6 +136,15 @@ export const patternsRoutes = new Elysia({ prefix: '/patterns' })
         <section class="pattern-detail-code">
           <h2>Code</h2>
           <CodeBlock code={pattern.rawCode} showCopy={true} />
+        </section>
+
+        <section class="pattern-roles">
+          <h2>Semantic Roles</h2>
+          <p class="pattern-roles-intro muted">
+            Hyperscript commands follow a semantic structure with distinct roles for each part.
+            Hover over a role to learn what it means.
+          </p>
+          <RoleList roles={roles} showValues={true} groupByCommand={true} />
         </section>
 
         <section class="pattern-usage">

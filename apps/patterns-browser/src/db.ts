@@ -430,6 +430,78 @@ export function getLanguages() {
 }
 
 // =============================================================================
+// Pattern Roles
+// =============================================================================
+
+export interface PatternRole {
+  id: number;
+  codeExampleId: string;
+  commandIndex: number;
+  role: string;
+  roleValue: string | null;
+  roleType: string | null;
+  required: boolean;
+}
+
+interface PatternRoleRow {
+  id: number;
+  code_example_id: string;
+  command_index: number;
+  role: string;
+  role_value: string | null;
+  role_type: string | null;
+  required: number;
+}
+
+function mapPatternRoleRow(row: PatternRoleRow): PatternRole {
+  return {
+    id: row.id,
+    codeExampleId: row.code_example_id,
+    commandIndex: row.command_index,
+    role: row.role,
+    roleValue: row.role_value,
+    roleType: row.role_type,
+    required: Boolean(row.required),
+  };
+}
+
+export async function getPatternRoles(patternId: string): Promise<PatternRole[]> {
+  const rows = db
+    .query<PatternRoleRow, [string]>(
+      'SELECT * FROM pattern_roles WHERE code_example_id = ? ORDER BY command_index, role'
+    )
+    .all(patternId);
+  return rows.map(mapPatternRoleRow);
+}
+
+export async function getRoleStats(): Promise<Record<string, number>> {
+  const rows = db
+    .query<{ role: string; count: number }, []>(
+      'SELECT role, COUNT(*) as count FROM pattern_roles GROUP BY role ORDER BY count DESC'
+    )
+    .all();
+
+  const result: Record<string, number> = {};
+  for (const row of rows) {
+    result[row.role] = row.count;
+  }
+  return result;
+}
+
+export async function getPatternsByRole(role: string): Promise<Pattern[]> {
+  const rows = db
+    .query<PatternRow, [string]>(
+      `SELECT DISTINCT ce.id, ce.title, ce.raw_code, ce.description, ce.feature, ce.source_url, ce.created_at
+       FROM code_examples ce
+       INNER JOIN pattern_roles pr ON ce.id = pr.code_example_id
+       WHERE pr.role = ?
+       ORDER BY ce.title`
+    )
+    .all(role);
+  return rows.map(mapPatternRow);
+}
+
+// =============================================================================
 // Cleanup
 // =============================================================================
 
