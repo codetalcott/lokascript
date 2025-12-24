@@ -19,6 +19,7 @@ export function BaseLayout({ title, children }: PropsWithChildren<BaseLayoutProp
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{pageTitle}</title>
+        <link rel="icon" href="/public/favicon.svg" type="image/svg+xml" />
 
         {/* missing.css */}
         <link

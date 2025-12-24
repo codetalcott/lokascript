@@ -60,7 +60,8 @@ export class RuntimeBase {
   protected options: RuntimeBaseOptions;
   protected registry: CommandRegistry;
   protected expressionEvaluator: BaseExpressionEvaluator;
-  protected behaviorRegistry: Map<string, any>;
+  /** Behavior registry for programmatic behavior registration */
+  public behaviorRegistry: Map<string, any>;
   public behaviorAPI: any;
   protected globalVariables: Map<string, any>;
 

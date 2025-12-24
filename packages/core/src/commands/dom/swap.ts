@@ -287,32 +287,69 @@ export class MorphCommand implements DecoratedCommand {
       throw new Error('[HyperFixi] morph: command requires arguments');
     }
 
-    let strategy: SwapStrategy = 'morph';
-    let targetArg: unknown = null;
-    let contentArg: unknown = null;
+    // Extract keywords from raw AST nodes (before evaluation)
+    // This is more robust than evaluating and checking strings
+    const getNodeKeyword = (arg: ASTNode): string | null => {
+      const nodeObj = arg as Record<string, unknown>;
+      const nodeType = nodeObj.type;
+      if (nodeType === 'identifier' && typeof nodeObj.name === 'string') {
+        return (nodeObj.name as string).toLowerCase();
+      }
+      return null;
+    };
 
-    const evaluatedArgs: unknown[] = [];
-    const argStrings: string[] = [];
-    for (const arg of args) {
-      const evaluated = await evaluator.evaluate(arg, context);
-      evaluatedArgs.push(evaluated);
-      if (typeof evaluated === 'string') {
-        argStrings.push(evaluated.toLowerCase());
+    const argKeywords: (string | null)[] = args.map(getNodeKeyword);
+    const withIndex = argKeywords.findIndex(k => k === 'with');
+    const overIndex = argKeywords.findIndex(k => k === 'over');
+    const usingIndex = argKeywords.findIndex(k => k === 'using');
+
+    // Check for 'using view transition' modifier
+    let useViewTransition = false;
+    if (usingIndex !== -1) {
+      const afterUsing = argKeywords.slice(usingIndex + 1);
+      if (afterUsing.includes('view') && afterUsing.includes('transition')) {
+        useViewTransition = true;
       }
     }
 
-    const withIndex = argStrings.findIndex(s => s === 'with');
-    const overIndex = argStrings.findIndex(s => s === 'over');
+    let strategy: SwapStrategy = 'morph';
+    let targetNode: ASTNode | null = null;
+    let contentNode: ASTNode | null = null;
 
     if (overIndex !== -1 && overIndex < (withIndex === -1 ? Infinity : withIndex)) {
+      // morph over <target> with <content>
       strategy = 'morphOuter';
-      targetArg = evaluatedArgs[overIndex + 1];
+      targetNode = args[overIndex + 1];
+      if (withIndex !== -1) {
+        contentNode = args[withIndex + 1];
+      }
     } else if (withIndex !== -1) {
-      targetArg = evaluatedArgs[withIndex - 1];
+      // morph <target> with <content>
+      targetNode = args[withIndex - 1];
+      contentNode = args[withIndex + 1];
+    } else if (args.length >= 2) {
+      // Fallback: morph <target> <content>
+      targetNode = args[0];
+      contentNode = args[1];
     }
 
-    if (withIndex !== -1) {
-      contentArg = evaluatedArgs[withIndex + 1];
+    if (!targetNode) {
+      throw new Error('[HyperFixi] morph: could not determine target');
+    }
+
+    // Evaluate target
+    let targetArg: unknown = null;
+    const targetNodeObj = targetNode as Record<string, unknown>;
+    if (targetNodeObj.type === 'selector' && typeof targetNodeObj.value === 'string') {
+      targetArg = targetNodeObj.value;
+    } else {
+      targetArg = await evaluator.evaluate(targetNode, context);
+    }
+
+    // Evaluate content
+    let contentArg: unknown = null;
+    if (contentNode) {
+      contentArg = await evaluator.evaluate(contentNode, context);
     }
 
     if (!targetArg) {
@@ -333,14 +370,19 @@ export class MorphCommand implements DecoratedCommand {
       content: extractContent(contentArg),
       strategy,
       morphOptions: { preserveChanges: true },
+      useViewTransition,
     };
   }
 
   async execute(input: SwapCommandInput, _context: TypedExecutionContext): Promise<void> {
-    const { targets, content, strategy, morphOptions } = input;
+    const { targets, content, strategy, morphOptions, useViewTransition } = input;
 
     for (const target of targets) {
-      executeSwap(target, content, strategy, morphOptions);
+      if (useViewTransition) {
+        await executeSwapWithTransition(target, content, strategy, morphOptions);
+      } else {
+        executeSwap(target, content, strategy, morphOptions);
+      }
     }
   }
 }

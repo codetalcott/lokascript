@@ -15,6 +15,7 @@ import {
   DEFAULT_CONFIDENCE_THRESHOLD,
   type SemanticAnalyzer,
 } from '@hyperfixi/semantic';
+import { registerHistorySwap, registerBoosted } from '../behaviors';
 
 // Singleton semantic analyzer instance (lazy-initialized)
 let semanticAnalyzerInstance: SemanticAnalyzer | null = null;
@@ -140,6 +141,10 @@ function getDefaultRuntime(): Runtime {
     _defaultRuntime = new Runtime({
       lazyLoad: false, // Eager load all expressions synchronously
     });
+
+    // Register built-in behaviors (HistorySwap, Boosted)
+    registerHistorySwap(_defaultRuntime.behaviorRegistry);
+    registerBoosted(_defaultRuntime.behaviorRegistry);
 
     // Expose default runtime globally for behavior registration/lookup
     // This allows behaviors defined in <script type="text/hyperscript"> to be found by install command
