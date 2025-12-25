@@ -38,6 +38,20 @@ function getTriggerEvent(code: string): string {
 }
 
 /**
+ * Extract button label from hyperscript code.
+ * Looks for the final `put "X" into me` which typically restores original text.
+ */
+function extractButtonLabel(code: string): string {
+  // Look for the last `put "X" into me` or `put 'X' into me`
+  const matches = [...code.matchAll(/put\s+['"]([^'"]+)['"]\s+into\s+me/g)];
+  if (matches.length > 0) {
+    // Return the last match (the "restore" text)
+    return matches[matches.length - 1][1];
+  }
+  return 'Click Me';
+}
+
+/**
  * Render a context element for a referenced ID.
  */
 function ContextElement({ id, pattern }: { id: string; pattern: Pattern }) {
@@ -102,6 +116,7 @@ function ContextElement({ id, pattern }: { id: string; pattern: Pattern }) {
 export function PatternDemo({ pattern }: PatternDemoProps) {
   const ids = extractReferencedIds(pattern.rawCode);
   const triggerEvent = getTriggerEvent(pattern.rawCode);
+  const buttonLabel = extractButtonLabel(pattern.rawCode);
 
   // Determine the appropriate trigger element
   const isInputTrigger = ['input', 'change', 'keydown', 'keyup', 'keypress'].includes(triggerEvent);
@@ -117,11 +132,11 @@ export function PatternDemo({ pattern }: PatternDemoProps) {
       <div class="usage-example">
         <div class="code-block-wrapper">
           <pre class="code-block">{
-            escapeHtml(`<button _="${pattern.rawCode}">\n  Click me\n</button>`)
+            escapeHtml(`<button _="${pattern.rawCode}">\n  ${buttonLabel}\n</button>`)
           }</pre>
           <button
             class="copy-btn"
-            data-code={`<button _="${pattern.rawCode}">\n  Click me\n</button>`}
+            data-code={`<button _="${pattern.rawCode}">\n  ${buttonLabel}\n</button>`}
             _="on click
                call navigator.clipboard.writeText(my @data-code)
                put 'Copied!' into me
@@ -156,7 +171,7 @@ export function PatternDemo({ pattern }: PatternDemoProps) {
             />
           ) : (
             <button class="btn demo-button" _={pattern.rawCode}>
-              Click Me
+              {buttonLabel}
             </button>
           )}
         </div>
