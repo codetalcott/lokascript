@@ -2,8 +2,6 @@
  * Patterns Reference Type Definitions
  */
 
-import type { ActionType, SemanticRole } from '@hyperfixi/semantic';
-
 // =============================================================================
 // Pattern Types
 // =============================================================================
@@ -101,24 +99,10 @@ export interface LLMExample {
 // Semantic Role Types
 // =============================================================================
 
-/**
- * Semantic roles from @hyperfixi/i18n.
- */
-export type SemanticRole =
-  | 'action'
-  | 'agent'
-  | 'patient'
-  | 'source'
-  | 'destination'
-  | 'goal'
-  | 'event'
-  | 'condition'
-  | 'quantity'
-  | 'duration'
-  | 'responseType'
-  | 'method'
-  | 'style'
-  | 'loopType';
+// SemanticRole is imported from @hyperfixi/semantic (which re-exports from @hyperfixi/i18n)
+// See packages/i18n/src/grammar/types.ts for the canonical definition and documentation
+import type { SemanticRole } from '@hyperfixi/semantic';
+export type { SemanticRole };
 
 /**
  * Role type classification.

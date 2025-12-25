@@ -16,24 +16,52 @@
 // =============================================================================
 
 /**
- * Semantic roles in hyperscript commands
- * These are universal across all languages - only the surface form changes
+ * Semantic roles in hyperscript commands.
+ * These are universal across all 13 supported languages - only the surface form changes.
  *
- * Core thematic roles (from linguistic theory):
- * - action, agent, patient, source, destination, event, condition
+ * ## Core Thematic Roles (from linguistic theory)
+ * | Role        | Usage | Purpose                     | Example                   |
+ * |-------------|-------|-----------------------------|---------------------------|
+ * | action      | 100%  | Command verb                | toggle, put, fetch        |
+ * | patient     | 90%   | What is acted upon          | .active, #count           |
+ * | destination | 40%   | Where something goes        | into #output, to .class   |
+ * | source      | 13%   | Where something comes from  | from #input, from URL     |
+ * | event       | 106%  | Trigger events              | click, keydown, submit    |
+ * | condition   | 8%    | Boolean expressions         | if x > 5, when visible    |
+ * | agent       | 0%    | Who performs action         | Reserved for future use   |
+ * | goal        | 1%    | Target value/state          | to 'red' (in transition)  |
  *
- * Quantitative roles (answer "how much/long"):
- * - quantity: numeric amounts (by 5, 3 times)
- * - duration: time spans (for 5 seconds, over 500ms)
+ * ## Quantitative Roles (answer "how much/long")
+ * | Role     | Usage | Purpose        | Example              |
+ * |----------|-------|----------------|----------------------|
+ * | quantity | 7%    | Numeric amount | by 5, 3 times        |
+ * | duration | 1%    | Time span      | for 5 seconds, 500ms |
  *
- * Adverbial roles (answer "how/by what means"):
- * - method: protocol/technique (as GET, via websocket)
- * - style: visual/behavioral manner (with fade, smoothly)
+ * ## Adverbial/Modifier Roles (answer "how/by what means")
+ * | Role         | Usage | Purpose                   | Example           |
+ * |--------------|-------|---------------------------|-------------------|
+ * | style        | 2%    | Animation/behavior        | with fade         |
+ * | manner       | 2%    | Insertion position        | before, after     |
+ * | method       | 1%    | HTTP method/technique     | via POST, as GET  |
+ * | responseType | 1%    | Response format           | as json, as html  |
+ *
+ * ## Control Flow Roles
+ * | Role     | Usage | Purpose      | Example               |
+ * |----------|-------|--------------|-----------------------|
+ * | loopType | 6%    | Loop variant | forever, until, times |
+ *
+ * ## Design Notes
+ * - Low-usage roles (agent, goal, method, responseType) are intentionally kept for:
+ *   - Linguistic completeness across all 13 languages
+ *   - Future extensibility (AI agents, server-side execution)
+ *   - Command-specific semantics (fetch, transition)
+ * - Each role has distinct grammatical markers per language (see profiles/index.ts)
+ * - Usage percentages based on pattern database analysis
  */
 export type SemanticRole =
   // Core thematic roles
   | 'action'       // The command/verb (increment, put, toggle)
-  | 'agent'        // Who/what performs action (me, the button, server)
+  | 'agent'        // Who/what performs action (reserved for future: AI agents, server-side)
   | 'patient'      // What is acted upon (the counter, .active)
   | 'source'       // Origin (from #input, from URL)
   | 'destination'  // Target location (into #output, to .class)
@@ -47,6 +75,7 @@ export type SemanticRole =
   | 'responseType' // Response format (as json, as text, as html)
   | 'method'       // HTTP method/technique (via POST, using GET)
   | 'style'        // Visual/behavioral manner (with fade, smoothly)
+  | 'manner'       // Insertion position (before, after)
   // Control flow roles
   | 'loopType';    // Loop variant: forever, times, for, while, until, until-event
 
