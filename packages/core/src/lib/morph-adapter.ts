@@ -25,15 +25,14 @@
  * ```
  */
 
-// Morphlex imports - wrapped in browser check to avoid crashes during bundling
-// The library uses Element.prototype at module load time which fails in Node
-let morphlexMorph: ((fromNode: Element, toNode: Element | string, options?: any) => void) | null = null;
-let morphlexMorphInner: ((fromNode: Element, toNode: Element | string, options?: any) => void) | null = null;
-let morphlexLoaded = false;
-let morphlexLoadError: Error | null = null;
+// Morphlex imports - static import for proper bundling
+import { morph as morphlexMorphFn, morphInner as morphlexMorphInnerFn } from 'morphlex';
 
-// Type for MorphlexOptions (inline since we can't import from morphlex at bundle time)
-// Note: preserveChanges maps to ignoreActiveValue in morphlex internals
+// Store references that Rollup can tree-shake if unused
+const morphlexMorph = morphlexMorphFn;
+const morphlexMorphInner = morphlexMorphInnerFn;
+
+// Type for MorphlexOptions
 type MorphlexOptions = {
   ignoreActiveValue?: boolean;
   preserveChanges?: boolean;
@@ -46,28 +45,6 @@ type MorphlexOptions = {
   beforeNodeRemoved?: (node: Node) => boolean;
   afterNodeRemoved?: (node: Node) => void;
 };
-
-// Load morphlex synchronously when first needed (browser runtime only)
-function ensureMorphlexLoaded(): void {
-  if (morphlexLoaded || morphlexLoadError) return;
-
-  // Only attempt to load in browser environment
-  if (typeof Element === 'undefined' || typeof document === 'undefined') {
-    morphlexLoadError = new Error('morphlex requires a browser environment');
-    return;
-  }
-
-  try {
-    // Dynamic require for browser bundle - Rollup will inline this
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const morphlex = require('morphlex');
-    morphlexMorph = morphlex.morph;
-    morphlexMorphInner = morphlex.morphInner;
-    morphlexLoaded = true;
-  } catch (e) {
-    morphlexLoadError = e instanceof Error ? e : new Error('Failed to load morphlex');
-  }
-}
 
 // ============================================================================
 // Types
@@ -177,32 +154,27 @@ function toMorphlexOptions(options?: MorphOptions): MorphlexOptions | undefined 
  */
 const morphlexEngine: MorphEngine = {
   morph(target: Element, content: string | Element, options?: MorphOptions): void {
-    ensureMorphlexLoaded();
-    if (!morphlexMorph) {
-      // Fallback to outerHTML replacement if morphlex unavailable
-      if (typeof content === 'string') {
-        target.outerHTML = content;
-      } else {
-        target.replaceWith(content);
-      }
-      return;
-    }
-    morphlexMorph(target, content as Element | string, toMorphlexOptions(options));
+    const morphlexOpts = toMorphlexOptions(options);
+    morphlexMorph(target, content as Element | string, morphlexOpts);
   },
 
   morphInner(target: Element, content: string | Element, options?: MorphOptions): void {
-    ensureMorphlexLoaded();
-    if (!morphlexMorphInner) {
-      // Fallback to innerHTML replacement if morphlex unavailable
-      if (typeof content === 'string') {
-        target.innerHTML = content;
-      } else {
-        target.innerHTML = '';
-        target.appendChild(content);
-      }
-      return;
+    const morphlexOpts = toMorphlexOptions(options);
+
+    // Convert content to an Element if it's a string
+    // Morphlex's morphInner expects a single element whose children will be morphed
+    let contentEl: Element;
+    if (typeof content === 'string') {
+      // Wrap the content in a container element matching the target's tag
+      // This allows morphInner to morph the children correctly
+      const wrapper = document.createElement(target.tagName);
+      wrapper.innerHTML = content;
+      contentEl = wrapper;
+    } else {
+      contentEl = content;
     }
-    morphlexMorphInner(target, content as Element | string, toMorphlexOptions(options));
+
+    morphlexMorphInner(target, contentEl, morphlexOpts);
   },
 };
 

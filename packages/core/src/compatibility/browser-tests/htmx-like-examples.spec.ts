@@ -58,9 +58,8 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
       expect(updatedText).toContain('Updated at');
     });
 
-    // TODO: morphlex preserveChanges not working as expected - needs investigation
-    // Skipping until morphlex value preservation is fixed
-    test.skip('morph preserves form input state', async ({ page }) => {
+    // Test morphlex preserveChanges with name attribute on inputs
+    test('morph preserves form input state', async ({ page }) => {
       await page.goto(`${BASE_URL}/examples/htmx-like/01-swap-morph.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
