@@ -14,6 +14,7 @@ import type { ASTNode, ExecutionContext } from '../types/core';
 import type { ExecutionResult, ExecutionSignal } from '../types/result';
 import { ok, err } from '../types/result';
 import { debug } from '../utils/debug';
+import { isElement, getElementProperty } from '../expressions/property-access-utils';
 
 /**
  * Base Expression Evaluator - Abstract class with shared evaluation logic
@@ -1473,7 +1474,13 @@ export class BaseExpressionEvaluator {
     }
 
     try {
-      const value = object[propertyName];
+      // Use DOM-aware property access for elements
+      let value: unknown;
+      if (isElement(object)) {
+        value = getElementProperty(object, propertyName);
+      } else {
+        value = object[propertyName];
+      }
 
       if (typeof value === 'function') {
         return value.bind(object);
@@ -1506,7 +1513,13 @@ export class BaseExpressionEvaluator {
     }
 
     try {
-      const value = target[propertyName];
+      // Use DOM-aware property access for elements
+      let value: unknown;
+      if (isElement(target)) {
+        value = getElementProperty(target, propertyName);
+      } else {
+        value = target[propertyName];
+      }
 
       if (typeof value === 'function') {
         return value.bind(target);

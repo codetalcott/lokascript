@@ -18,6 +18,7 @@ import type {
 } from '../../types/base-types';
 import type { HyperScriptValue } from '../../types/command-types';
 import { BaseExpressionImpl } from '../base-expression';
+import { isElement, getElementProperty } from '../property-access-utils';
 
 // ============================================================================
 // Input Schemas
@@ -54,12 +55,17 @@ type AttributeAccessInput = any; // Inferred from RuntimeValidator
 /**
  * Get property value with support for nested property paths
  * Shared between MyExpression and ItsExpression
+ * Uses DOM-aware property access for Element targets
  */
 function getPropertyValue(target: unknown, propertyPath: string): HyperScriptValue {
   if (target == null) return undefined;
 
   // Handle simple property access
   if (!propertyPath.includes('.')) {
+    // Use DOM-aware property access for elements
+    if (isElement(target)) {
+      return getElementProperty(target, propertyPath) as HyperScriptValue;
+    }
     return (target as Record<string, unknown>)[propertyPath] as HyperScriptValue;
   }
 
@@ -69,7 +75,12 @@ function getPropertyValue(target: unknown, propertyPath: string): HyperScriptVal
 
   for (const part of parts) {
     if (current == null) return undefined;
-    current = (current as Record<string, unknown>)[part];
+    // Use DOM-aware property access for elements
+    if (isElement(current)) {
+      current = getElementProperty(current, part);
+    } else {
+      current = (current as Record<string, unknown>)[part];
+    }
   }
 
   return current as HyperScriptValue;

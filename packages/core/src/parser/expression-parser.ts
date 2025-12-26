@@ -46,6 +46,7 @@ import { propertyExpressions } from '../expressions/property/index';
 import { positionalExpressions } from '../expressions/positional/index';
 import { logicalExpressions } from '../expressions/logical/index';
 import { referencesExpressions } from '../expressions/references/index';
+import { isElement, getElementProperty } from '../expressions/property-access-utils';
 
 // Import legacy conversion system for Date conversion compatibility
 import { conversionExpressions as legacyConversionExpressions } from '../expressions/conversion/index';
@@ -1839,9 +1840,15 @@ async function evaluatePropertyAccess(node: any, context: ExecutionContext): Pro
 
   const propertyName = propertyNode.name;
 
-  // Use standard JavaScript property access
+  // Use DOM-aware property access for elements, standard JavaScript for others
   try {
-    const value = object[propertyName];
+    let value: unknown;
+    if (isElement(object)) {
+      // Use DOM-aware property access for elements (handles value, checked, etc.)
+      value = getElementProperty(object, propertyName);
+    } else {
+      value = object[propertyName];
+    }
 
     // Handle method calls - if it's a function, bind it to the object
     if (typeof value === 'function') {

@@ -66,8 +66,6 @@ export abstract class VisibilityCommandBase implements DecoratedCommand {
    * Show an element - restores original display or uses default
    */
   protected showElement(element: HTMLElement, defaultDisplay: string = 'block'): void {
-    element.classList.add('show');
-
     const originalDisplay = element.dataset.originalDisplay;
     if (originalDisplay !== undefined) {
       element.style.display = originalDisplay || defaultDisplay;
@@ -81,8 +79,6 @@ export abstract class VisibilityCommandBase implements DecoratedCommand {
    * Hide an element - stores original display and sets to none
    */
   protected hideElement(element: HTMLElement): void {
-    element.classList.remove('show');
-
     // Preserve original display value if not already stored
     if (!element.dataset.originalDisplay) {
       const currentDisplay = element.style.display;

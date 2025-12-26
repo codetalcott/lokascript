@@ -43,9 +43,9 @@
 
   <div class="demo-box" id="compare-morph">
     <h4>Morph (preserves state)</h4>
-    <input type="text" placeholder="Type here, morph will preserve this">
-    <button _="on click
-      set html to '<h4>Morph (preserves state)</h4><input type=text placeholder=morphed><button _>Morph Content</button>'
+    <input type="text" id="morph-input" placeholder="Type here, morph will preserve this">
+    <button id="morph-btn" _="on click
+      set html to '<h4>Morph (preserves state)</h4><input type=text id=morph-input placeholder=morphed><button id=morph-btn _>Morph Content</button>'
       morph #compare-morph with html
     ">Morph Content</button>
   </div>
