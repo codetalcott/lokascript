@@ -303,12 +303,26 @@ const result = hyperfixi.compile(code, { disableSemanticParsing: true });
 
 ## Browser Bundles
 
+### Core Bundles
+
 | Bundle | Global | Size | Use Case |
 |--------|--------|------|----------|
 | `packages/core/dist/hyperfixi-browser.js` | `window.hyperfixi` | 663 KB | Full bundle with parser |
 | `packages/core/dist/hyperfixi-multilingual.js` | `window.hyperfixi` | 250 KB | Multilingual (no parser) |
-| `packages/semantic/dist/hyperfixi-semantic.browser.global.js` | `window.HyperFixiSemantic` | 261 KB | Semantic parsing |
 | `packages/i18n/dist/hyperfixi-i18n.min.js` | `window.HyperFixiI18n` | 68 KB | Grammar transformation |
+
+### Semantic Bundles (Regional Options)
+
+| Bundle | Global | Size (gzip) | Languages |
+|--------|--------|-------------|-----------|
+| `browser.global.js` | `HyperFixiSemantic` | 61 KB | All 13 |
+| `browser-priority.priority.global.js` | `HyperFixiSemanticPriority` | 48 KB | 11 priority |
+| `browser-western.western.global.js` | `HyperFixiSemanticWestern` | 30 KB | en, es, pt, fr, de |
+| `browser-east-asian.east-asian.global.js` | `HyperFixiSemanticEastAsian` | 24 KB | ja, zh, ko |
+| `browser-es-en.es-en.global.js` | `HyperFixiSemanticEsEn` | 25 KB | en, es |
+| `browser-en.en.global.js` | `HyperFixiSemanticEn` | 20 KB | en only |
+
+Choose the smallest bundle that covers your target languages. See `packages/semantic/README.md` for details.
 
 ### Multilingual Bundle (Recommended for i18n)
 

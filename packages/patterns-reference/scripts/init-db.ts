@@ -83,6 +83,17 @@ CREATE TABLE IF NOT EXISTS pattern_roles (
   UNIQUE(code_example_id, command_index, role)
 );
 
+-- Pattern test results (for verification tracking)
+CREATE TABLE IF NOT EXISTS pattern_tests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code_example_id TEXT NOT NULL REFERENCES code_examples(id),
+  language TEXT NOT NULL,
+  test_type TEXT NOT NULL,  -- 'parse', 'execute', 'round-trip'
+  success INTEGER NOT NULL,
+  error_message TEXT,
+  test_date TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_translations_language ON pattern_translations(language);
 CREATE INDEX IF NOT EXISTS idx_translations_example ON pattern_translations(code_example_id);
@@ -90,6 +101,7 @@ CREATE INDEX IF NOT EXISTS idx_llm_language ON llm_examples(language);
 CREATE INDEX IF NOT EXISTS idx_examples_feature ON code_examples(feature);
 CREATE INDEX IF NOT EXISTS idx_pattern_roles_role ON pattern_roles(role);
 CREATE INDEX IF NOT EXISTS idx_pattern_roles_example ON pattern_roles(code_example_id);
+CREATE INDEX IF NOT EXISTS idx_pattern_tests_example_lang ON pattern_tests(code_example_id, language);
 `;
 
 // =============================================================================

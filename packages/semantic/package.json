@@ -22,6 +22,15 @@
     "./browser/es-en": {
       "default": "./dist/browser-es-en.es-en.global.js"
     },
+    "./browser/western": {
+      "default": "./dist/browser-western.western.global.js"
+    },
+    "./browser/east-asian": {
+      "default": "./dist/browser-east-asian.east-asian.global.js"
+    },
+    "./browser/priority": {
+      "default": "./dist/browser-priority.priority.global.js"
+    },
     "./languages": {
       "types": "./dist/languages/index.d.ts",
       "import": "./dist/languages/index.mjs"

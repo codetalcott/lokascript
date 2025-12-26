@@ -69,6 +69,66 @@ export default defineConfig([
       options.treeShaking = true;
     },
   },
+  // Western languages browser bundle (IIFE)
+  // Output: hyperfixi-semantic.browser-western.western.global.js
+  // Languages: en, es, pt, fr, de (~150 KB)
+  {
+    entry: ['src/browser-western.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticWestern',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.western.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
+  // East Asian languages browser bundle (IIFE)
+  // Output: hyperfixi-semantic.browser-east-asian.east-asian.global.js
+  // Languages: ja, zh, ko (~130 KB)
+  {
+    entry: ['src/browser-east-asian.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticEastAsian',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.east-asian.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
+  // Priority languages browser bundle (IIFE)
+  // Output: hyperfixi-semantic.browser-priority.priority.global.js
+  // Languages: All 11 priority languages (~280 KB)
+  {
+    entry: ['src/browser-priority.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticPriority',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.priority.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
   // Individual language modules (ESM) for npm tree-shaking
   // These allow: import '@hyperfixi/semantic/languages/en'
   {

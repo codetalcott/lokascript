@@ -15,6 +15,65 @@ Semantic-first multilingual parser for HyperFixi. Parses hyperscript-like syntax
 npm install @hyperfixi/semantic
 ```
 
+## Bundle Selection Guide
+
+Choose the right bundle for your use case. All bundles are minified IIFE for direct browser usage.
+
+| Bundle | Import Path | Size (gzip) | Languages |
+|--------|-------------|-------------|-----------|
+| English only | `@hyperfixi/semantic/browser/en` | 20 KB | en |
+| Spanish + English | `@hyperfixi/semantic/browser/es-en` | 25 KB | en, es |
+| East Asian | `@hyperfixi/semantic/browser/east-asian` | 24 KB | ja, zh, ko |
+| Western | `@hyperfixi/semantic/browser/western` | 30 KB | en, es, pt, fr, de |
+| Priority | `@hyperfixi/semantic/browser/priority` | 48 KB | 11 priority languages |
+| Full | `@hyperfixi/semantic/browser` | 61 KB | All 13 languages |
+
+### Browser Usage
+
+```html
+<!-- English only (smallest) -->
+<script src="node_modules/@hyperfixi/semantic/dist/browser-en.en.global.js"></script>
+<script>
+  const { parse, canParse } = HyperFixiSemanticEn;
+</script>
+
+<!-- Western languages (European users) -->
+<script src="node_modules/@hyperfixi/semantic/dist/browser-western.western.global.js"></script>
+<script>
+  const { parse, canParse } = HyperFixiSemanticWestern;
+</script>
+
+<!-- East Asian languages (CJK users) -->
+<script src="node_modules/@hyperfixi/semantic/dist/browser-east-asian.east-asian.global.js"></script>
+<script>
+  const { parse, canParse } = HyperFixiSemanticEastAsian;
+</script>
+
+<!-- Priority languages (11 most common) -->
+<script src="node_modules/@hyperfixi/semantic/dist/browser-priority.priority.global.js"></script>
+<script>
+  const { parse, canParse } = HyperFixiSemanticPriority;
+</script>
+
+<!-- Full bundle (all 13 languages) -->
+<script src="node_modules/@hyperfixi/semantic/dist/browser.global.js"></script>
+<script>
+  const { parse, canParse } = HyperFixiSemantic;
+</script>
+```
+
+### Node.js / Bundler Usage
+
+For tree-shakeable imports in bundlers:
+
+```typescript
+// Import specific languages for optimal tree-shaking
+import '@hyperfixi/semantic/languages/en';
+import '@hyperfixi/semantic/languages/ja';
+
+import { parse } from '@hyperfixi/semantic';
+```
+
 ## Usage
 
 ```typescript

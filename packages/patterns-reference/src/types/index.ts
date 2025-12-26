@@ -48,6 +48,16 @@ export type WordOrder = 'SVO' | 'SOV' | 'VSO' | 'V2';
 export type TranslationMethod = 'auto-generated' | 'hand-crafted' | 'verified';
 
 /**
+ * Pattern priority levels for translation selection.
+ * When multiple translations exist, higher priority wins.
+ *
+ * - hand-crafted: Manually written by a native speaker (highest priority)
+ * - verified: Auto-generated but verified by human review
+ * - auto-generated: Machine-generated without human verification (lowest priority)
+ */
+export type PatternPriority = 'hand-crafted' | 'verified' | 'auto-generated';
+
+/**
  * A translation of a pattern to a specific language.
  */
 export interface Translation {
@@ -66,6 +76,27 @@ export interface Translation {
 }
 
 /**
+ * Compute priority from translation properties.
+ * hand-crafted > verified > auto-generated
+ */
+export function getTranslationPriority(translation: Translation): PatternPriority {
+  if (translation.translationMethod === 'hand-crafted') {
+    return 'hand-crafted';
+  }
+  if (translation.verifiedParses && translation.verifiedExecutes) {
+    return 'verified';
+  }
+  return 'auto-generated';
+}
+
+/**
+ * Translation with computed priority.
+ */
+export interface TranslationWithPriority extends Translation {
+  priority: PatternPriority;
+}
+
+/**
  * Result of translation verification.
  */
 export interface VerificationResult {
@@ -75,6 +106,36 @@ export interface VerificationResult {
   errorMessage: string | null;
   confidence: number;
   testedAt: Date;
+}
+
+/**
+ * Test result for a pattern in a specific language.
+ */
+export interface PatternTestResult {
+  id: number;
+  patternId: string;
+  language: string;
+  testType: 'parse' | 'execute' | 'round-trip';
+  success: boolean;
+  errorMessage: string | null;
+  testDate: Date;
+}
+
+/**
+ * Result of round-trip verification (EN → Lang → Parse → Compare).
+ */
+export interface RoundTripResult {
+  patternId: string;
+  language: string;
+  englishHyperscript: string;
+  translatedHyperscript: string;
+  englishAction: string;
+  translatedAction: string;
+  rolesMatch: boolean;
+  missingRoles: string[];
+  extraRoles: string[];
+  success: boolean;
+  errorMessage: string | null;
 }
 
 // =============================================================================
