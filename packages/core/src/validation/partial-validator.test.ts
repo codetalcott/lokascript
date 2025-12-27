@@ -345,3 +345,125 @@ describe('getPartialValidationConfig', () => {
     expect(config.showWarnings).toBe(false);
   });
 });
+
+/**
+ * Real-world regression tests
+ *
+ * These tests are based on actual bugs discovered in production.
+ * They validate that our partial validation system would catch these issues.
+ */
+describe('real-world regression tests', () => {
+  beforeEach(() => {
+    resetPartialValidationConfig();
+    configurePartialValidation({ enabled: true });
+  });
+
+  afterEach(() => {
+    resetPartialValidationConfig();
+  });
+
+  /**
+   * Regression test for: patterns-browser duplicate nav bug (commit e36862f)
+   *
+   * The bug: Pattern cards used `fetch '/patterns/${id}' as html` then
+   * `morph #main with it`, but the endpoint returned a FULL PAGE (with
+   * <header>, <nav>, <main>) instead of a partial. This caused duplicate
+   * nav menus to appear.
+   *
+   * Fix: Changed pattern cards to use standard <a> links with CSS View Transitions.
+   *
+   * Our validation should catch this by detecting <header>, <nav>, and <main>
+   * when morphing content into #main.
+   */
+  describe('patterns-browser duplicate nav (commit e36862f)', () => {
+    it('should detect full page response morphed into #main', () => {
+      // Simulates what /patterns/:id returned (a full page, not a partial)
+      const fullPageResponse = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Pattern Details</title>
+        </head>
+        <body>
+          <header class="navbar">
+            <nav>
+              <a href="/" class="brand">HyperFixi Patterns</a>
+              <div class="nav-links">
+                <a href="/patterns">Patterns</a>
+                <a href="/translations">Translations</a>
+              </div>
+            </nav>
+          </header>
+          <main id="main">
+            <article class="pattern-detail">
+              <h1>Toggle Class Pattern</h1>
+              <p>This pattern demonstrates toggling a CSS class.</p>
+            </article>
+          </main>
+          <footer>
+            <p>© 2024 HyperFixi</p>
+          </footer>
+        </body>
+        </html>
+      `;
+
+      // Validate as if morphing into #main (the actual bug scenario)
+      const result = validatePartialContent(fullPageResponse, '#main');
+
+      // Should detect critical issues (DOCTYPE, html, body, head)
+      expect(result.valid).toBe(false);
+      expect(result.bySeverity.critical.length).toBeGreaterThan(0);
+
+      // Check specific critical elements
+      expect(result.issues.some(i => i.element === 'DOCTYPE')).toBe(true);
+      expect(result.issues.some(i => i.element === 'html')).toBe(true);
+      expect(result.issues.some(i => i.element === 'body')).toBe(true);
+      expect(result.issues.some(i => i.element === 'head')).toBe(true);
+
+      // Should also detect structural issues (header, nav, main, footer)
+      expect(result.bySeverity.structural.some(i => i.element === 'header')).toBe(true);
+      expect(result.bySeverity.structural.some(i => i.element === 'nav')).toBe(true);
+      expect(result.bySeverity.structural.some(i => i.element === 'main')).toBe(true);
+      expect(result.bySeverity.structural.some(i => i.element === 'footer')).toBe(true);
+
+      // In standard mode, should have many issues
+      expect(result.totalIssues).toBeGreaterThanOrEqual(8); // At least 4 critical + 4 structural
+    });
+
+    it('should pass validation for correct partial response', () => {
+      // This is what the endpoint SHOULD have returned (just the content)
+      const properPartialResponse = `
+        <article class="pattern-detail">
+          <h1>Toggle Class Pattern</h1>
+          <p>This pattern demonstrates toggling a CSS class.</p>
+          <div class="code-example">
+            <pre><code>on click toggle .active</code></pre>
+          </div>
+        </article>
+      `;
+
+      const result = validatePartialContent(properPartialResponse, '#main');
+
+      // Should pass validation - no layout or semantic landmark elements
+      expect(result.valid).toBe(true);
+      expect(result.totalIssues).toBe(0);
+    });
+
+    it('should provide helpful suggestions for the bug scenario', () => {
+      const fullPageResponse = '<header><nav>Nav</nav></header><main><article>Content</article></main>';
+      const result = validatePartialContent(fullPageResponse, '#main');
+
+      // Find the header issue
+      const headerIssue = result.issues.find(i => i.element === 'header');
+      expect(headerIssue).toBeDefined();
+      expect(headerIssue?.suggestion).toBeDefined();
+      expect(headerIssue?.suggestion.length).toBeGreaterThan(0);
+
+      // Find the main issue
+      const mainIssue = result.issues.find(i => i.element === 'main');
+      expect(mainIssue).toBeDefined();
+      expect(mainIssue?.targetSelector).toBe('#main');
+    });
+  });
+});
