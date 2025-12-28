@@ -16,6 +16,13 @@ import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
 import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
+import {
+  isPropertyOfExpressionNode,
+  isPropertyTargetString,
+  resolvePropertyTargetFromNode,
+  resolvePropertyTargetFromString,
+  type PropertyOfExpressionNode,
+} from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
 export type InsertPosition = 'replace' | 'beforeend' | 'afterend' | 'beforebegin' | 'afterbegin';
@@ -93,6 +100,19 @@ export class PutCommand implements DecoratedCommand {
 
     if (targetArg) {
       const tt = nodeType(targetArg);
+
+      // Parser path: propertyOfExpression AST node (e.g., "the innerHTML of #target")
+      if (isPropertyOfExpressionNode(targetArg)) {
+        const target = await resolvePropertyTargetFromNode(
+          targetArg as PropertyOfExpressionNode,
+          evaluator,
+          context
+        );
+        if (target) {
+          return { value, targets: [target.element], position: 'replace', memberPath: target.property };
+        }
+      }
+
       if (tt === 'memberExpression') {
         const obj = (targetArg as any).object, prop = (targetArg as any).property;
         if (obj?.type === 'selector') targetSelector = obj.value;
@@ -105,6 +125,13 @@ export class PutCommand implements DecoratedCommand {
         targetSelector = (targetArg as any).value || (targetArg as any).selector;
       } else if (tt === 'literal') {
         const lv = (targetArg as any).value;
+        // Runtime path: "the X of Y" string pattern
+        if (typeof lv === 'string' && isPropertyTargetString(lv)) {
+          const target = resolvePropertyTargetFromString(lv, context);
+          if (target) {
+            return { value, targets: [target.element], position: 'replace', memberPath: target.property };
+          }
+        }
         if (typeof lv === 'string' && this.looksLikeCss(lv)) targetSelector = lv;
         else variableName = String(lv);
       } else if (tt === 'identifier') {

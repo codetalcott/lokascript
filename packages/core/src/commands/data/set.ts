@@ -26,6 +26,13 @@ import {
 } from '../helpers/element-property-access';
 import { isCSSPropertySyntax, setStyleValue } from '../helpers/style-manipulation';
 import { isAttributeSyntax } from '../helpers/attribute-manipulation';
+import {
+  isPropertyOfExpressionNode,
+  isPropertyTargetString,
+  resolvePropertyTargetFromNode,
+  resolvePropertyTargetFromString,
+  type PropertyOfExpressionNode,
+} from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
 /** Typed input for SetCommand (Discriminated Union) */
@@ -66,6 +73,19 @@ export class SetCommand implements DecoratedCommand {
     const firstArg = raw.args[0] as Record<string, unknown>;
     const argName = (firstArg?.name || firstArg?.value) as string | undefined;
 
+    // Parser path: propertyOfExpression AST node (compiled "the X of Y")
+    if (isPropertyOfExpressionNode(firstArg)) {
+      const target = await resolvePropertyTargetFromNode(
+        firstArg as PropertyOfExpressionNode,
+        evaluator,
+        context
+      );
+      if (target) {
+        const value = await this.extractValue(raw, evaluator, context);
+        return { type: 'property', element: target.element, property: target.property, value };
+      }
+    }
+
     // Handle possessiveExpression: "set #element's *opacity to X"
     if (firstArg?.type === 'possessiveExpression') {
       return this.parsePossessiveExpression(firstArg, raw, evaluator, context);
@@ -91,8 +111,14 @@ export class SetCommand implements DecoratedCommand {
       return { type: 'object-literal', properties: firstValue, targets };
     }
 
-    // "the X of Y" syntax
-    if (typeof firstValue === 'string' && firstValue.toLowerCase().startsWith('the ')) {
+    // Runtime path: "the X of Y" string pattern (dynamic/literal values)
+    if (isPropertyTargetString(firstValue)) {
+      const target = resolvePropertyTargetFromString(firstValue, context);
+      if (target) {
+        const value = await this.extractValue(raw, evaluator, context);
+        return { type: 'property', element: target.element, property: target.property, value };
+      }
+      // Fallback to original parseTheXofY if utility fails (rollback-friendly)
       return this.parseTheXofY(firstValue, raw, evaluator, context);
     }
 

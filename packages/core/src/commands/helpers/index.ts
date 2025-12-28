@@ -34,6 +34,26 @@ export {
   isPlainObject,
 } from './element-property-access';
 
+// PropertyTarget helpers - shared 'x of y' pattern primitive
+export {
+  PROPERTY_OF_PATTERN,
+  isPropertyOfExpressionNode,
+  isPossessiveExpressionNode,
+  isPropertyTargetString,
+  parsePropertyTargetString,
+  resolvePropertyTargetFromNode,
+  resolvePropertyTargetFromString,
+  resolvePropertyTargetFromPossessive,
+  readPropertyTarget,
+  writePropertyTarget,
+  togglePropertyTarget,
+  isBooleanProperty,
+} from './property-target';
+export type {
+  PropertyTarget,
+  PropertyOfExpressionNode,
+} from './property-target';
+
 // Element resolution helpers
 export {
   resolveElement,

@@ -23,6 +23,16 @@ import { isSmartElementSelector, isBareSmartElementNode, evaluateFirstArg } from
 import { detectSmartElementType, resolveSmartElementTargets, toggleDialog, toggleDetails, toggleSelect } from '../helpers/smart-element';
 import { batchToggleClasses, batchToggleAttribute, batchApply } from '../helpers/batch-dom-operations';
 import { setupDurationReversion, setupEventReversion } from '../helpers/temporal-modifiers';
+import {
+  isPropertyOfExpressionNode,
+  isPropertyTargetString,
+  resolvePropertyTargetFromNode,
+  resolvePropertyTargetFromString,
+  togglePropertyTarget,
+  isBooleanProperty,
+  type PropertyOfExpressionNode,
+  type PropertyTarget,
+} from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
 /** Typed input for ToggleCommand */
@@ -30,6 +40,7 @@ export type ToggleCommandInput =
   | { type: 'classes'; classes: string[]; targets: HTMLElement[]; duration?: number; untilEvent?: string }
   | { type: 'attribute'; name: string; value?: string; targets: HTMLElement[]; duration?: number; untilEvent?: string }
   | { type: 'css-property'; property: 'display' | 'visibility' | 'opacity'; targets: HTMLElement[] }
+  | { type: 'property'; target: PropertyTarget }
   | { type: 'dialog'; mode: 'modal' | 'non-modal'; targets: HTMLDialogElement[] }
   | { type: 'details'; targets: HTMLDetailsElement[] }
   | { type: 'select'; targets: HTMLSelectElement[] };
@@ -118,9 +129,33 @@ export class ToggleCommand implements DecoratedCommand {
   ): Promise<ToggleCommandInput> {
     if (!raw.args?.length) throw new Error('toggle command requires an argument');
 
-    const { duration, untilEvent } = await parseTemporalModifiers(raw.modifiers, evaluator, context);
     const firstArg = raw.args[0];
+
+    // Parser path: propertyOfExpression AST node (e.g., "toggle the disabled of #button")
+    if (isPropertyOfExpressionNode(firstArg)) {
+      const target = await resolvePropertyTargetFromNode(
+        firstArg as PropertyOfExpressionNode,
+        evaluator,
+        context
+      );
+      if (target && isBooleanProperty(target.property)) {
+        return { type: 'property', target };
+      }
+      // Fall through to other patterns if not a boolean property
+    }
+
+    const { duration, untilEvent } = await parseTemporalModifiers(raw.modifiers, evaluator, context);
     const { value: firstValue } = await evaluateFirstArg(firstArg, evaluator, context);
+
+    // Runtime path: "the X of Y" string pattern for boolean properties
+    if (isPropertyTargetString(firstValue)) {
+      const target = resolvePropertyTargetFromString(firstValue as string, context);
+      if (target && isBooleanProperty(target.property)) {
+        return { type: 'property', target };
+      }
+      // Fall through to other patterns if not a boolean property
+    }
+
     const { type: exprType, expression } = detectExpressionType(firstValue, firstArg);
     const resolveOpts = { filterPrepositions: true, fallbackModifierKey: 'on' } as const;
 
@@ -204,6 +239,11 @@ export class ToggleCommand implements DecoratedCommand {
 
       case 'css-property':
         return batchApply(input.targets, el => toggleCSSProperty(el, input.property));
+
+      case 'property': {
+        togglePropertyTarget(input.target);
+        return [input.target.element];
+      }
 
       case 'dialog':
         return batchApply(input.targets as HTMLElement[], el => toggleDialog(el as HTMLDialogElement, input.mode));
