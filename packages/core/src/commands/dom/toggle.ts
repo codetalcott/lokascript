@@ -29,7 +29,6 @@ import {
   resolvePropertyTargetFromNode,
   resolvePropertyTargetFromString,
   togglePropertyTarget,
-  isBooleanProperty,
   type PropertyOfExpressionNode,
   type PropertyTarget,
 } from '../helpers/property-target';
@@ -138,22 +137,20 @@ export class ToggleCommand implements DecoratedCommand {
         evaluator,
         context
       );
-      if (target && isBooleanProperty(target.property)) {
+      if (target) {
         return { type: 'property', target };
       }
-      // Fall through to other patterns if not a boolean property
     }
 
     const { duration, untilEvent } = await parseTemporalModifiers(raw.modifiers, evaluator, context);
     const { value: firstValue } = await evaluateFirstArg(firstArg, evaluator, context);
 
-    // Runtime path: "the X of Y" string pattern for boolean properties
+    // Runtime path: "the X of Y" string pattern
     if (isPropertyTargetString(firstValue)) {
       const target = resolvePropertyTargetFromString(firstValue as string, context);
-      if (target && isBooleanProperty(target.property)) {
+      if (target) {
         return { type: 'property', target };
       }
-      // Fall through to other patterns if not a boolean property
     }
 
     const { type: exprType, expression } = detectExpressionType(firstValue, firstArg);

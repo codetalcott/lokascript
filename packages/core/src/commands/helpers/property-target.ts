@@ -206,15 +206,51 @@ export function writePropertyTarget(target: PropertyTarget, value: unknown): voi
 }
 
 /**
- * Toggle a boolean property target
+ * Toggle a property target
  *
- * Only appropriate for boolean properties like:
- * - disabled, checked, hidden, readOnly, required, etc.
+ * Behavior depends on property type:
+ * - Boolean properties (disabled, checked, hidden): true ↔ false
+ * - Numeric properties (opacity, tabIndex): current ↔ 0 (or 0 → 1)
+ * - String properties: current ↔ '' (empty string)
  *
- * For non-boolean properties, the behavior may be unexpected.
+ * @returns The new value after toggling
  */
-export function togglePropertyTarget(target: PropertyTarget): boolean {
+export function togglePropertyTarget(target: PropertyTarget): unknown {
   const current = readPropertyTarget(target);
+
+  // Boolean: simple negation
+  if (typeof current === 'boolean' || isBooleanProperty(target.property)) {
+    const newValue = !current;
+    writePropertyTarget(target, newValue);
+    return newValue;
+  }
+
+  // Numeric: toggle between current and 0 (or 0 → 1)
+  if (typeof current === 'number') {
+    const newValue = current === 0 ? 1 : 0;
+    writePropertyTarget(target, newValue);
+    return newValue;
+  }
+
+  // String: toggle between current and empty
+  if (typeof current === 'string') {
+    // Store original value for restoration
+    const storageKey = `__hyperfixi_toggle_${target.property}`;
+    const stored = (target.element as any)[storageKey];
+
+    if (current === '' && stored !== undefined) {
+      // Restore original value
+      writePropertyTarget(target, stored);
+      return stored;
+    } else {
+      // Store current and clear
+      (target.element as any)[storageKey] = current;
+      writePropertyTarget(target, '');
+      return '';
+    }
+  }
+
+  // Fallback: treat as boolean-like
   const newValue = !current;
   writePropertyTarget(target, newValue);
   return newValue;
