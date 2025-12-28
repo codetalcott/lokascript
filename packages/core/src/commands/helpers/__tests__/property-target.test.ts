@@ -15,6 +15,9 @@ import {
   resolvePropertyTargetFromString,
   resolvePropertyTargetFromNode,
   resolvePropertyTargetFromAccessNode,
+  resolveAnyPropertyTarget,
+  readPropertyTarget,
+  writePropertyTarget,
   togglePropertyTarget,
 } from '../property-target';
 
@@ -386,5 +389,237 @@ describe('togglePropertyTarget', () => {
     const result2 = togglePropertyTarget(target);
     expect(result2).toBe('Hello World');
     expect(testElement.title).toBe('Hello World');
+  });
+});
+
+describe('readPropertyTarget', () => {
+  let testElement: HTMLElement;
+
+  beforeEach(() => {
+    testElement = document.createElement('div');
+    testElement.id = 'test-read';
+    document.body.appendChild(testElement);
+  });
+
+  afterEach(() => {
+    if (testElement.parentNode) {
+      document.body.removeChild(testElement);
+    }
+  });
+
+  it('should read textContent property', () => {
+    testElement.textContent = 'Hello World';
+    const target: PropertyTarget = { element: testElement, property: 'textContent' };
+
+    expect(readPropertyTarget(target)).toBe('Hello World');
+  });
+
+  it('should read innerHTML property', () => {
+    testElement.innerHTML = '<span>Test</span>';
+    const target: PropertyTarget = { element: testElement, property: 'innerHTML' };
+
+    expect(readPropertyTarget(target)).toBe('<span>Test</span>');
+  });
+
+  it('should read value property on input', () => {
+    const input = document.createElement('input');
+    input.value = 'test value';
+    document.body.appendChild(input);
+
+    const target: PropertyTarget = { element: input, property: 'value' };
+
+    expect(readPropertyTarget(target)).toBe('test value');
+
+    document.body.removeChild(input);
+  });
+
+  it('should read boolean properties (disabled)', () => {
+    const button = document.createElement('button');
+    button.disabled = true;
+    document.body.appendChild(button);
+
+    const target: PropertyTarget = { element: button, property: 'disabled' };
+
+    expect(readPropertyTarget(target)).toBe(true);
+
+    document.body.removeChild(button);
+  });
+
+  it('should read boolean properties (checked)', () => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    document.body.appendChild(checkbox);
+
+    const target: PropertyTarget = { element: checkbox, property: 'checked' };
+
+    expect(readPropertyTarget(target)).toBe(true);
+
+    document.body.removeChild(checkbox);
+  });
+
+  it('should read hidden property', () => {
+    testElement.hidden = true;
+    const target: PropertyTarget = { element: testElement, property: 'hidden' };
+
+    expect(readPropertyTarget(target)).toBe(true);
+  });
+});
+
+describe('writePropertyTarget', () => {
+  let testElement: HTMLElement;
+
+  beforeEach(() => {
+    testElement = document.createElement('div');
+    testElement.id = 'test-write';
+    document.body.appendChild(testElement);
+  });
+
+  afterEach(() => {
+    if (testElement.parentNode) {
+      document.body.removeChild(testElement);
+    }
+  });
+
+  it('should write textContent property', () => {
+    const target: PropertyTarget = { element: testElement, property: 'textContent' };
+
+    writePropertyTarget(target, 'New Content');
+
+    expect(testElement.textContent).toBe('New Content');
+  });
+
+  it('should write innerHTML property', () => {
+    const target: PropertyTarget = { element: testElement, property: 'innerHTML' };
+
+    writePropertyTarget(target, '<em>Emphasized</em>');
+
+    expect(testElement.innerHTML).toBe('<em>Emphasized</em>');
+  });
+
+  it('should write value property on input', () => {
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+
+    const target: PropertyTarget = { element: input, property: 'value' };
+
+    writePropertyTarget(target, 'new input value');
+
+    expect(input.value).toBe('new input value');
+
+    document.body.removeChild(input);
+  });
+
+  it('should write boolean properties (disabled)', () => {
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+
+    const target: PropertyTarget = { element: button, property: 'disabled' };
+
+    writePropertyTarget(target, true);
+    expect(button.disabled).toBe(true);
+
+    writePropertyTarget(target, false);
+    expect(button.disabled).toBe(false);
+
+    document.body.removeChild(button);
+  });
+
+  it('should write hidden property', () => {
+    const target: PropertyTarget = { element: testElement, property: 'hidden' };
+
+    writePropertyTarget(target, true);
+    expect(testElement.hidden).toBe(true);
+
+    writePropertyTarget(target, false);
+    expect(testElement.hidden).toBe(false);
+  });
+});
+
+describe('resolveAnyPropertyTarget', () => {
+  let testElement: HTMLElement;
+
+  beforeEach(() => {
+    testElement = document.createElement('div');
+    testElement.id = 'any-target';
+    document.body.appendChild(testElement);
+  });
+
+  afterEach(() => {
+    if (testElement.parentNode) {
+      document.body.removeChild(testElement);
+    }
+  });
+
+  it('should resolve propertyOfExpression nodes', async () => {
+    const node: PropertyOfExpressionNode = {
+      type: 'propertyOfExpression',
+      property: { type: 'identifier', name: 'innerHTML' },
+      target: { type: 'idSelector', value: '#any-target' } as any,
+    };
+
+    const evaluator = createMockEvaluator();
+    const context = createMockContext();
+
+    const result = await resolveAnyPropertyTarget(node as any, evaluator as any, context);
+
+    expect(result).not.toBeNull();
+    expect(result!.element).toBe(testElement);
+    expect(result!.property).toBe('innerHTML');
+  });
+
+  it('should resolve propertyAccess nodes', async () => {
+    const node: PropertyAccessNode = {
+      type: 'propertyAccess',
+      object: { type: 'idSelector', value: '#any-target' } as any,
+      property: 'textContent',
+    };
+
+    const evaluator = createMockEvaluator();
+    const context = createMockContext();
+
+    const result = await resolveAnyPropertyTarget(node as any, evaluator as any, context);
+
+    expect(result).not.toBeNull();
+    expect(result!.element).toBe(testElement);
+    expect(result!.property).toBe('textContent');
+  });
+
+  it('should resolve possessiveExpression nodes', async () => {
+    const node = {
+      type: 'possessiveExpression',
+      object: { type: 'idSelector', value: '#any-target' },
+      property: { type: 'identifier', name: 'hidden' },
+    };
+
+    const evaluator = createMockEvaluator();
+    const context = createMockContext();
+
+    const result = await resolveAnyPropertyTarget(node as any, evaluator as any, context);
+
+    expect(result).not.toBeNull();
+    expect(result!.element).toBe(testElement);
+    expect(result!.property).toBe('hidden');
+  });
+
+  it('should return null for unsupported node types', async () => {
+    const node = {
+      type: 'literal',
+      value: 'not a property target',
+    };
+
+    const evaluator = createMockEvaluator();
+    const context = createMockContext();
+
+    const result = await resolveAnyPropertyTarget(node as any, evaluator as any, context);
+    expect(result).toBeNull();
+  });
+
+  it('should return null for null node', async () => {
+    const evaluator = createMockEvaluator();
+    const context = createMockContext();
+
+    const result = await resolveAnyPropertyTarget(null as any, evaluator as any, context);
+    expect(result).toBeNull();
   });
 });

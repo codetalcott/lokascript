@@ -42,6 +42,9 @@ export {
   resolvePropertyTargetFromNode,
   resolvePropertyTargetFromAccessNode,
   resolvePropertyTargetFromString,
+  resolveAnyPropertyTarget,
+  readPropertyTarget,
+  writePropertyTarget,
   togglePropertyTarget,
 } from './property-target';
 export type {

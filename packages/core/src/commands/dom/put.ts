@@ -17,14 +17,9 @@ import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import {
-  isPropertyOfExpressionNode,
-  isPropertyAccessNode,
   isPropertyTargetString,
-  resolvePropertyTargetFromNode,
-  resolvePropertyTargetFromAccessNode,
+  resolveAnyPropertyTarget,
   resolvePropertyTargetFromString,
-  type PropertyOfExpressionNode,
-  type PropertyAccessNode,
 } from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
@@ -104,28 +99,10 @@ export class PutCommand implements DecoratedCommand {
     if (targetArg) {
       const tt = nodeType(targetArg);
 
-      // Parser path: propertyOfExpression AST node (e.g., "the innerHTML of #target")
-      if (isPropertyOfExpressionNode(targetArg)) {
-        const target = await resolvePropertyTargetFromNode(
-          targetArg as PropertyOfExpressionNode,
-          evaluator,
-          context
-        );
-        if (target) {
-          return { value, targets: [target.element], position: 'replace', memberPath: target.property };
-        }
-      }
-
-      // Semantic parser path: propertyAccess AST node ("#element's X")
-      if (isPropertyAccessNode(targetArg)) {
-        const target = await resolvePropertyTargetFromAccessNode(
-          targetArg as PropertyAccessNode,
-          evaluator,
-          context
-        );
-        if (target) {
-          return { value, targets: [target.element], position: 'replace', memberPath: target.property };
-        }
+      // Unified PropertyTarget resolution: handles propertyOfExpression, propertyAccess, possessiveExpression
+      const propertyTarget = await resolveAnyPropertyTarget(targetArg, evaluator, context);
+      if (propertyTarget) {
+        return { value, targets: [propertyTarget.element], position: 'replace', memberPath: propertyTarget.property };
       }
 
       if (tt === 'memberExpression') {

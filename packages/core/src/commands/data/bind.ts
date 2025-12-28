@@ -15,6 +15,7 @@ import type { ASTNode, ExpressionNode } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { resolvePossessive } from '../helpers/element-resolution';
+import { getElementProperty, setElementProperty } from '../helpers/element-property-access';
 import { command, meta, createFactory, type DecoratedCommand , type CommandMetadata } from '../decorators';
 
 /**
@@ -217,7 +218,7 @@ export class BindCommand implements DecoratedCommand {
     // Direction: 'to' - Element changes update variable
     if (direction === 'to' || direction === 'bidirectional') {
       const updateVariable = () => {
-        const value = this.getElementProperty(element, property);
+        const value = getElementProperty(element, property);
 
         // Update variable in context
         context.locals.set(variable, value);
@@ -252,7 +253,7 @@ export class BindCommand implements DecoratedCommand {
         // Only update if this element is not the origin of the change
         const originElement = customEvent.detail?.originElement;
         if (!originElement || originElement !== element) {
-          this.setElementProperty(element, property, value);
+          setElementProperty(element, property, value);
         }
       };
 
@@ -266,7 +267,7 @@ export class BindCommand implements DecoratedCommand {
       if (property.startsWith('@') || property === 'textContent' || property === 'innerHTML') {
         const observer = new MutationObserver(() => {
           const value = context.locals.get(variable);
-          this.setElementProperty(element, property, value);
+          setElementProperty(element, property, value);
         });
 
         observer.observe(element, {
@@ -281,7 +282,7 @@ export class BindCommand implements DecoratedCommand {
       // Initial sync
       const initialValue = context.locals.get(variable);
       if (initialValue !== undefined) {
-        this.setElementProperty(element, property, initialValue);
+        setElementProperty(element, property, initialValue);
       }
     }
 
@@ -374,103 +375,6 @@ export class BindCommand implements DecoratedCommand {
     };
 
     return eventMap[property] || 'change';
-  }
-
-  /**
-   * Get property value from element
-   *
-   * Handles:
-   * - Attributes (@attribute)
-   * - Special properties (value, checked, textContent, innerHTML)
-   * - Nested properties (style.color)
-   * - Generic property access
-   *
-   * @param element - Target element
-   * @param property - Property path
-   * @returns Property value
-   */
-  private getElementProperty(element: HTMLElement, property: string): any {
-    // Handle attribute syntax (@attribute)
-    if (property.startsWith('@')) {
-      return element.getAttribute(property.substring(1));
-    }
-
-    // Handle common properties
-    if (property === 'textContent') return element.textContent;
-    if (property === 'innerHTML') return element.innerHTML;
-    if (property === 'value' && 'value' in element) {
-      return (element as HTMLInputElement).value;
-    }
-    if (property === 'checked' && 'checked' in element) {
-      return (element as HTMLInputElement).checked;
-    }
-
-    // Handle nested properties (e.g., 'style.color')
-    if (property.includes('.')) {
-      const parts = property.split('.');
-      let value: any = element;
-      for (const part of parts) {
-        value = value[part];
-        if (value === undefined) break;
-      }
-      return value;
-    }
-
-    // Generic property access
-    return (element as any)[property];
-  }
-
-  /**
-   * Set property value on element
-   *
-   * Handles:
-   * - Attributes (@attribute)
-   * - Special properties (value, checked, textContent, innerHTML)
-   * - Nested properties (style.color)
-   * - Generic property setting
-   *
-   * @param element - Target element
-   * @param property - Property path
-   * @param value - Value to set
-   */
-  private setElementProperty(element: HTMLElement, property: string, value: any): void {
-    // Handle attribute syntax (@attribute)
-    if (property.startsWith('@')) {
-      element.setAttribute(property.substring(1), String(value));
-      return;
-    }
-
-    // Handle common properties
-    if (property === 'textContent') {
-      element.textContent = String(value);
-      return;
-    }
-    if (property === 'innerHTML') {
-      element.innerHTML = String(value);
-      return;
-    }
-    if (property === 'value' && 'value' in element) {
-      (element as HTMLInputElement).value = String(value);
-      return;
-    }
-    if (property === 'checked' && 'checked' in element) {
-      (element as HTMLInputElement).checked = Boolean(value);
-      return;
-    }
-
-    // Handle nested properties (e.g., 'style.color')
-    if (property.includes('.')) {
-      const parts = property.split('.');
-      let target: any = element;
-      for (let i = 0; i < parts.length - 1; i++) {
-        target = target[parts[i]];
-      }
-      target[parts[parts.length - 1]] = value;
-      return;
-    }
-
-    // Generic property setting
-    (element as any)[property] = value;
   }
 
   /**

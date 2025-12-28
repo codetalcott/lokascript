@@ -109,22 +109,77 @@ export function resolvePropertyTargetFromString(
   }
 }
 
+/**
+ * Resolve PropertyTarget from any supported AST node type.
+ * Unified function that handles all parser output formats.
+ *
+ * Supported node types:
+ * - propertyOfExpression: "the X of Y" (core parser)
+ * - propertyAccess: "#element's X" (semantic parser)
+ * - possessiveExpression: "#element's *opacity" (possessive syntax)
+ *
+ * @param node - AST node to resolve
+ * @param evaluator - Expression evaluator
+ * @param context - Execution context
+ * @returns PropertyTarget or null if not resolvable
+ */
+export async function resolveAnyPropertyTarget(
+  node: ASTNode,
+  evaluator: ExpressionEvaluator,
+  context: ExecutionContext
+): Promise<PropertyTarget | null> {
+  // Core parser: "the X of Y"
+  if (isPropertyOfExpressionNode(node)) {
+    return resolvePropertyTargetFromNode(node as PropertyOfExpressionNode, evaluator, context);
+  }
+
+  // Semantic parser: "#element's X"
+  if (isPropertyAccessNode(node)) {
+    return resolvePropertyTargetFromAccessNode(node as PropertyAccessNode, evaluator, context);
+  }
+
+  // Possessive expression: "#element's *opacity"
+  const anyNode = node as Record<string, unknown>;
+  if (anyNode?.type === 'possessiveExpression') {
+    const objectNode = anyNode.object as ASTNode;
+    const propertyNode = anyNode.property as Record<string, unknown>;
+    let element = await evaluator.evaluate(objectNode, context);
+    if (Array.isArray(element)) element = element[0];
+    if (!isHTMLElement(element)) return null;
+    const propertyName = (propertyNode?.name || propertyNode?.value) as string;
+    if (!propertyName) return null;
+    return { element: element as HTMLElement, property: propertyName };
+  }
+
+  return null;
+}
+
+/** Read the value from a PropertyTarget */
+export function readPropertyTarget(target: PropertyTarget): unknown {
+  return getElementProperty(target.element, target.property);
+}
+
+/** Write a value to a PropertyTarget */
+export function writePropertyTarget(target: PropertyTarget, value: unknown): void {
+  setElementProperty(target.element, target.property, value);
+}
+
 /** Toggle a property target (boolean: true↔false, numeric: n↔0, string: s↔'') */
 export function togglePropertyTarget(target: PropertyTarget): unknown {
-  const current = getElementProperty(target.element, target.property);
+  const current = readPropertyTarget(target);
   const prop = target.property;
 
   // Boolean
   if (typeof current === 'boolean' || BOOL_PROPS.has(prop) || BOOL_PROPS.has(prop.toLowerCase())) {
     const val = !current;
-    setElementProperty(target.element, prop, val);
+    writePropertyTarget(target, val);
     return val;
   }
 
   // Numeric
   if (typeof current === 'number') {
     const val = current === 0 ? 1 : 0;
-    setElementProperty(target.element, prop, val);
+    writePropertyTarget(target, val);
     return val;
   }
 
@@ -133,16 +188,16 @@ export function togglePropertyTarget(target: PropertyTarget): unknown {
     const key = `__ht_${prop}`;
     const stored = (target.element as any)[key];
     if (current === '' && stored !== undefined) {
-      setElementProperty(target.element, prop, stored);
+      writePropertyTarget(target, stored);
       return stored;
     }
     (target.element as any)[key] = current;
-    setElementProperty(target.element, prop, '');
+    writePropertyTarget(target, '');
     return '';
   }
 
   // Fallback
   const val = !current;
-  setElementProperty(target.element, prop, val);
+  writePropertyTarget(target, val);
   return val;
 }

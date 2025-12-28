@@ -24,15 +24,10 @@ import { detectSmartElementType, resolveSmartElementTargets, toggleDialog, toggl
 import { batchToggleClasses, batchToggleAttribute, batchApply } from '../helpers/batch-dom-operations';
 import { setupDurationReversion, setupEventReversion } from '../helpers/temporal-modifiers';
 import {
-  isPropertyOfExpressionNode,
-  isPropertyAccessNode,
   isPropertyTargetString,
-  resolvePropertyTargetFromNode,
-  resolvePropertyTargetFromAccessNode,
+  resolveAnyPropertyTarget,
   resolvePropertyTargetFromString,
   togglePropertyTarget,
-  type PropertyOfExpressionNode,
-  type PropertyAccessNode,
   type PropertyTarget,
 } from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
@@ -133,28 +128,10 @@ export class ToggleCommand implements DecoratedCommand {
 
     const firstArg = raw.args[0];
 
-    // Parser path: propertyOfExpression AST node (e.g., "toggle the disabled of #button")
-    if (isPropertyOfExpressionNode(firstArg)) {
-      const target = await resolvePropertyTargetFromNode(
-        firstArg as PropertyOfExpressionNode,
-        evaluator,
-        context
-      );
-      if (target) {
-        return { type: 'property', target };
-      }
-    }
-
-    // Semantic parser path: propertyAccess AST node ("#element's disabled")
-    if (isPropertyAccessNode(firstArg)) {
-      const target = await resolvePropertyTargetFromAccessNode(
-        firstArg as PropertyAccessNode,
-        evaluator,
-        context
-      );
-      if (target) {
-        return { type: 'property', target };
-      }
+    // Unified PropertyTarget resolution: handles propertyOfExpression, propertyAccess, possessiveExpression
+    const propertyTarget = await resolveAnyPropertyTarget(firstArg, evaluator, context);
+    if (propertyTarget) {
+      return { type: 'property', target: propertyTarget };
     }
 
     const { duration, untilEvent } = await parseTemporalModifiers(raw.modifiers, evaluator, context);

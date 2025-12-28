@@ -18,9 +18,12 @@ import { isHTMLElement } from '../../utils/element-check';
  * Get element property value (handles common DOM properties and styles)
  *
  * Handles:
+ * - @attribute syntax (getAttribute)
  * - textContent, innerHTML, innerText
  * - id, className
  * - value (for input elements)
+ * - checked (for checkbox/radio with boolean return)
+ * - Nested paths (e.g., style.color)
  * - CSS style properties (with hyphenated names)
  * - Generic DOM properties
  *
@@ -29,6 +32,11 @@ import { isHTMLElement } from '../../utils/element-check';
  * @returns Property value
  */
 export function getElementProperty(element: HTMLElement, property: string): unknown {
+  // Handle @attribute syntax
+  if (property.startsWith('@')) {
+    return element.getAttribute(property.substring(1));
+  }
+
   // Handle common properties directly
   switch (property) {
     case 'textContent':
@@ -43,7 +51,21 @@ export function getElementProperty(element: HTMLElement, property: string): unkn
       return element.className;
     case 'value':
       return 'value' in element ? (element as HTMLInputElement).value : undefined;
+    case 'checked':
+      return 'checked' in element ? (element as HTMLInputElement).checked : undefined;
   }
+
+  // Handle nested paths (e.g., 'style.color', 'dataset.foo')
+  if (property.includes('.')) {
+    const parts = property.split('.');
+    let value: unknown = element;
+    for (const part of parts) {
+      if (value === undefined || value === null) break;
+      value = (value as Record<string, unknown>)[part];
+    }
+    return value;
+  }
+
   // Handle style properties
   if (property.includes('-') || property in element.style) {
     return (
@@ -58,9 +80,12 @@ export function getElementProperty(element: HTMLElement, property: string): unkn
  * Set element property value (handles common DOM properties and styles)
  *
  * Handles:
+ * - @attribute syntax (setAttribute)
  * - textContent, innerHTML, innerText
  * - id, className
  * - value (for input elements)
+ * - checked (for checkbox/radio with boolean conversion)
+ * - Nested paths (e.g., style.color)
  * - CSS style properties (with hyphenated names)
  * - Generic DOM properties with readonly protection
  *
@@ -70,6 +95,12 @@ export function getElementProperty(element: HTMLElement, property: string): unkn
  * @throws Error if property is readonly or protected
  */
 export function setElementProperty(element: HTMLElement, property: string, value: unknown): void {
+  // Handle @attribute syntax
+  if (property.startsWith('@')) {
+    element.setAttribute(property.substring(1), String(value));
+    return;
+  }
+
   const strValue = String(value);
   switch (property) {
     case 'textContent':
@@ -90,7 +121,23 @@ export function setElementProperty(element: HTMLElement, property: string, value
     case 'value':
       if ('value' in element) (element as HTMLInputElement).value = strValue;
       return;
+    case 'checked':
+      if ('checked' in element) (element as HTMLInputElement).checked = Boolean(value);
+      return;
   }
+
+  // Handle nested paths (e.g., 'style.color', 'dataset.foo')
+  if (property.includes('.')) {
+    const parts = property.split('.');
+    let target: unknown = element;
+    for (let i = 0; i < parts.length - 1; i++) {
+      target = (target as Record<string, unknown>)[parts[i]];
+      if (target === undefined || target === null) return;
+    }
+    (target as Record<string, unknown>)[parts[parts.length - 1]] = value;
+    return;
+  }
+
   // Handle style properties
   if (property.includes('-') || property in element.style) {
     element.style.setProperty(property, strValue);

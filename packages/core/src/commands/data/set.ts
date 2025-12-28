@@ -27,14 +27,9 @@ import {
 import { isCSSPropertySyntax, setStyleValue } from '../helpers/style-manipulation';
 import { isAttributeSyntax } from '../helpers/attribute-manipulation';
 import {
-  isPropertyOfExpressionNode,
-  isPropertyAccessNode,
   isPropertyTargetString,
-  resolvePropertyTargetFromNode,
-  resolvePropertyTargetFromAccessNode,
+  resolveAnyPropertyTarget,
   resolvePropertyTargetFromString,
-  type PropertyOfExpressionNode,
-  type PropertyAccessNode,
 } from '../helpers/property-target';
 import { command, meta, createFactory, type DecoratedCommand, type CommandMetadata } from '../decorators';
 
@@ -76,35 +71,16 @@ export class SetCommand implements DecoratedCommand {
     const firstArg = raw.args[0] as Record<string, unknown>;
     const argName = (firstArg?.name || firstArg?.value) as string | undefined;
 
-    // Parser path: propertyOfExpression AST node (compiled "the X of Y")
-    if (isPropertyOfExpressionNode(firstArg)) {
-      const target = await resolvePropertyTargetFromNode(
-        firstArg as PropertyOfExpressionNode,
-        evaluator,
-        context
-      );
-      if (target) {
-        const value = await this.extractValue(raw, evaluator, context);
-        return { type: 'property', element: target.element, property: target.property, value };
+    // Unified PropertyTarget resolution: handles propertyOfExpression, propertyAccess, possessiveExpression
+    const propertyTarget = await resolveAnyPropertyTarget(firstArg as import('../../types/base-types').ASTNode, evaluator, context);
+    if (propertyTarget) {
+      const value = await this.extractValue(raw, evaluator, context);
+      // Handle CSS style properties (*opacity syntax)
+      if (propertyTarget.property.startsWith('*')) {
+        const styleProp = propertyTarget.property.substring(1);
+        return { type: 'style', element: propertyTarget.element, property: styleProp, value: String(value) };
       }
-    }
-
-    // Semantic parser path: propertyAccess AST node ("#element's X")
-    if (isPropertyAccessNode(firstArg)) {
-      const target = await resolvePropertyTargetFromAccessNode(
-        firstArg as PropertyAccessNode,
-        evaluator,
-        context
-      );
-      if (target) {
-        const value = await this.extractValue(raw, evaluator, context);
-        return { type: 'property', element: target.element, property: target.property, value };
-      }
-    }
-
-    // Handle possessiveExpression: "set #element's *opacity to X"
-    if (firstArg?.type === 'possessiveExpression') {
-      return this.parsePossessiveExpression(firstArg, raw, evaluator, context);
+      return { type: 'property', element: propertyTarget.element, property: propertyTarget.property, value };
     }
 
     // Handle memberExpression: "set my innerHTML to X"
@@ -225,35 +201,6 @@ export class SetCommand implements DecoratedCommand {
   }
 
   // ========== Private Helpers ==========
-
-  private async parsePossessiveExpression(
-    firstArg: Record<string, unknown>,
-    raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
-    evaluator: ExpressionEvaluator,
-    context: ExecutionContext
-  ): Promise<SetCommandInput> {
-    const objectNode = firstArg.object as ASTNode;
-    const propertyNode = firstArg.property as Record<string, unknown>;
-
-    let element = await evaluator.evaluate(objectNode, context);
-    if (Array.isArray(element) && element.length > 0) element = element[0];
-    if (!isHTMLElement(element)) {
-      throw new Error('set command: possessive object must resolve to an HTMLElement');
-    }
-
-    const propertyName = (propertyNode?.name || propertyNode?.value) as string;
-    if (!propertyName) throw new Error('set command: possessive property name not found');
-
-    const value = await this.extractValue(raw, evaluator, context);
-
-    // CSS style property from *opacity syntax
-    if (propertyNode?.type === 'cssProperty' || propertyName.startsWith('*')) {
-      const styleProp = propertyName.startsWith('*') ? propertyName.substring(1) : propertyName;
-      return { type: 'style', element, property: styleProp, value: String(value) };
-    }
-
-    return { type: 'property', element, property: propertyName, value };
-  }
 
   private async tryParseMemberExpression(
     firstArg: Record<string, unknown>,
