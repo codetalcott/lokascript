@@ -1,8 +1,7 @@
-// import { ComponentDefinition } from '@hyperfixi/component-schema';
-// import { HyperFixiTemplateEngine, TemplateContext } from '@hyperfixi/template-integration';
+import { promises as fs } from 'fs';
+import { ComponentDefinition } from '@hyperfixi/component-schema';
+import { HyperFixiTemplateEngine, TemplateContext } from '@hyperfixi/template-integration';
 import {
-  ComponentDefinition,
-  TemplateContext,
   CompilationResult,
   SSREngine,
   SSROptions,
@@ -13,34 +12,6 @@ import {
   SSRCache,
   SSRError,
 } from './types';
-
-// Placeholder for template engine until package is available
-interface HyperFixiTemplateEngine {
-  compile(template: string, options?: any): Promise<CompilationResult>;
-  render(compiled: CompilationResult, context: TemplateContext): Promise<string>;
-  registerComponent(component: ComponentDefinition): void;
-}
-
-class MockHyperFixiTemplateEngine implements HyperFixiTemplateEngine {
-  constructor(options?: any) {}
-  
-  async compile(template: string, options?: any): Promise<CompilationResult> {
-    return {
-      html: template,
-      css: [],
-      javascript: [],
-      components: []
-    };
-  }
-  
-  async render(compiled: CompilationResult, context: TemplateContext): Promise<string> {
-    return compiled.html;
-  }
-  
-  registerComponent(component: ComponentDefinition): void {
-    // Mock implementation
-  }
-}
 import { CriticalCSSExtractor } from './critical-css';
 import { SEOGenerator } from './seo';
 
@@ -55,7 +26,7 @@ export class HyperFixiSSREngine implements SSREngine {
   private components: Map<string, ComponentDefinition> = new Map();
 
   constructor() {
-    this.templateEngine = new MockHyperFixiTemplateEngine({
+    this.templateEngine = new HyperFixiTemplateEngine({
       target: 'server',
       minify: false, // Will be handled at SSR level
     });
@@ -132,6 +103,9 @@ export class HyperFixiSSREngine implements SSREngine {
         criticalCSS,
         externalCSS: compiled.css.filter(css => !criticalCSS.includes(css)),
         javascript: compiled.javascript,
+        variables: compiled.variables ?? [],
+        hyperscript: compiled.hyperscript ?? [],
+        components: compiled.components ?? [],
         metaTags,
         linkTags,
         performance: {
@@ -427,9 +401,27 @@ export class HyperFixiSSREngine implements SSREngine {
   }
 
   private async loadCSSContent(cssFile: string): Promise<string> {
-    // In a real implementation, this would load CSS from file system or CDN
-    // For now, return placeholder
-    return `/* CSS content for ${cssFile} */`;
+    // Handle URLs (CDN or remote CSS)
+    if (cssFile.startsWith('http://') || cssFile.startsWith('https://')) {
+      try {
+        const response = await fetch(cssFile);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return await response.text();
+      } catch (error) {
+        console.warn(`Failed to fetch CSS from ${cssFile}:`, error);
+        return '';
+      }
+    }
+
+    // Handle local file paths
+    try {
+      return await fs.readFile(cssFile, 'utf-8');
+    } catch (error) {
+      console.warn(`Failed to read CSS file ${cssFile}:`, error);
+      return '';
+    }
   }
 }
 

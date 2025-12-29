@@ -1,30 +1,9 @@
-// Temporary: Import types or create placeholders until packages are built
-// import { ComponentDefinition } from '@hyperfixi/component-schema';
-// import { TemplateContext, CompilationResult } from '@hyperfixi/template-integration';
+// Import types from actual packages
+import { ComponentDefinition } from '@hyperfixi/component-schema';
+import { TemplateContext, CompilationResult } from '@hyperfixi/template-integration';
 
-// Placeholder types until packages are available
-export interface ComponentDefinition {
-  id: string;
-  name: string;
-  hyperscript: string | string[];
-  template?: {
-    html?: string;
-    variables?: Record<string, any>;
-  };
-  metadata?: any;
-}
-
-export interface TemplateContext {
-  variables?: Record<string, any>;
-  components?: ComponentDefinition[];
-}
-
-export interface CompilationResult {
-  html: string;
-  css: string[];
-  javascript: string[];
-  components: ComponentDefinition[];
-}
+// Re-export imported types for consumers
+export { ComponentDefinition, TemplateContext, CompilationResult };
 
 /**
  * Server-side rendering and hydration types
@@ -119,6 +98,12 @@ export interface SSRResult {
   externalCSS: string[];
   /** JavaScript bundles */
   javascript: string[];
+  /** Template variables used */
+  variables: string[];
+  /** Hyperscript blocks extracted from template */
+  hyperscript: string[];
+  /** Components used in the template */
+  components: ComponentDefinition[];
   /** Meta tags for SEO */
   metaTags: Array<{
     name?: string;
