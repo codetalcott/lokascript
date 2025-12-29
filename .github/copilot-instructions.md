@@ -13,7 +13,7 @@
 - Multi-language clients under `clients/*` consume the HTTP API; keep payload shapes consistent with `packages/server-integration/src/types.ts`.
 - Shared schemas/types live in `packages/component-schema`; consume validators there rather than redefining payload shapes.
 - Docs and cookbook examples live under `docs/` and `cookbook/`; update matching demo HTML when changing public APIs.
-- Playground app (`apps/playground`) runs via `npm run dev --workspace=apps/playground` with Vite and the integrated bundle.
+- Examples gallery (`examples/`) can be served via `npm run dev` which starts an HTTP server at port 3000.
 - Docs site (`apps/docs-site`) serves documentation; build with `npm run docs:build` or preview via `npm run docs:dev`.
 - Quick regression loop for core: `npm run test:quick --prefix packages/core` (build + targeted suite) or `npm run test:feedback --prefix packages/core` for rich summaries.
 - Browser compatibility uses Playwright; run `npm run test:browser --prefix packages/core` for full official _hyperscript parity and expect multi-minute runs.

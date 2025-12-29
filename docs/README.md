@@ -25,7 +25,7 @@ Welcome to the HyperFixi documentation directory.
 
 ### Getting Started
 - [Installation & Setup](../README.md#quick-start)
-- [Interactive Playground](../apps/playground/)
+- [Examples Gallery](../examples/)
 - [Basic Examples](../packages/core/docs/EXAMPLES.md#basic-dom-manipulation)
 
 ### API Reference

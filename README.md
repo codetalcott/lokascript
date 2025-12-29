@@ -123,7 +123,7 @@ context.variables?.set("date", dateUtils);
 
 - Enhanced error messages with suggestions and recovery strategies
 - Real-time syntax validation
-- Interactive playground for testing expressions
+- Interactive examples gallery for testing expressions
 - Comprehensive documentation with examples
 
 ### 🧪 Thoroughly Tested
@@ -191,7 +191,7 @@ git clone https://github.com/hyperfixi/hyperfixi.git
 cd hyperfixi
 npm install
 
-# Start playground
+# Start dev server (serves examples at http://127.0.0.1:3000/examples/)
 npm run dev
 
 # Run all tests
@@ -211,7 +211,7 @@ npm run lint --workspaces
 
 # Run command in specific workspace
 npm run test --workspace=@hyperfixi/core
-npm run dev --workspace=apps/playground
+npm run build --workspace=@hyperfixi/core
 ```
 
 ### Package Development

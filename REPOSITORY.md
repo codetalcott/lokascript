@@ -11,9 +11,8 @@ hyperfixi/                           # Monorepo root
 │   ├── fixi/                        # @hyperfixi/fixi - Utility functions  
 │   └── integrated/                  # hyperfixi - Complete solution
 ├── apps/                            # Applications and demos
-│   ├── playground/                  # Interactive testing environment
 │   ├── docs-site/                   # Documentation website (planned)
-│   └── examples/                    # Example applications (planned)
+│   └── patterns-browser/            # Pattern reference browser
 ├── docs/                            # Documentation
 │   └── archive/                     # Historical development docs
 ├── roadmap/                         # Development planning
@@ -95,12 +94,14 @@ Shared testing utilities (planned):
 
 ## 🚀 Applications
 
-### Playground (`apps/playground/`)
+### Examples Gallery (`examples/`)
+
 Interactive testing environment for hyperscript expressions:
+
 - Real-time expression evaluation
-- Example gallery
-- Context variable testing
-- Performance monitoring
+- Feature demonstrations
+- Multilingual demos
+- HTMX-like patterns
 
 ### Documentation Site (`apps/docs-site/`)
 Future comprehensive documentation website:
@@ -109,12 +110,13 @@ Future comprehensive documentation website:
 - Tutorials and guides
 - Performance benchmarks
 
-### Examples (`apps/examples/`)
-Example applications demonstrating real-world usage:
-- Framework integrations
-- Common patterns
-- Performance optimizations
-- Best practices
+### Patterns Browser (`apps/patterns-browser/`)
+
+Pattern reference application:
+
+- Searchable pattern database
+- Translation examples
+- LLM integration demos
 
 ## 🔧 Configuration Files
 
