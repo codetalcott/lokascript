@@ -481,7 +481,70 @@ export function transformWithPatterns(
   ast: ASTNode,
   templates: PatternTemplate[]
 ): ASTNode {
-  // This would need to be integrated with the transformation API
-  // For now, return the original AST
-  return ast;
+  if (templates.length === 0) {
+    return ast;
+  }
+
+  // Try to match each template against the AST
+  for (const template of templates) {
+    const match = matchPattern(ast, template.pattern);
+    if (match && match.confidence > 0.7) {
+      // Check constraints if provided
+      if (template.constraints) {
+        let constraintsPassed = true;
+        for (const [key, constraint] of Object.entries(template.constraints)) {
+          const value = match.bindings[key];
+          if (value !== undefined && !constraint(value)) {
+            constraintsPassed = false;
+            break;
+          }
+        }
+        if (!constraintsPassed) continue;
+      }
+
+      // Apply the template transformation
+      const transformedCode = applyPatternTemplate(template, match.bindings);
+
+      // Create a new node with the transformed structure
+      // For now, update the source representation
+      return {
+        ...ast,
+        _transformed: true,
+        _transformedCode: transformedCode,
+        _originalPattern: template.pattern,
+        _bindings: match.bindings
+      } as ASTNode;
+    }
+  }
+
+  // Recursively transform children
+  const result = { ...ast } as any;
+
+  for (const [key, value] of Object.entries(ast)) {
+    if (Array.isArray(value)) {
+      result[key] = value.map(item => {
+        if (item && typeof item === 'object' && item.type) {
+          return transformWithPatterns(item as ASTNode, templates);
+        }
+        return item;
+      });
+    } else if (value && typeof value === 'object' && (value as any).type) {
+      result[key] = transformWithPatterns(value as ASTNode, templates);
+    }
+  }
+
+  return result;
 }
+
+// Re-export patterns bridge for external use
+export {
+  searchPatterns,
+  getPatternsByCommand,
+  getLLMExamples,
+  findMatchingPatterns,
+  closePatternSource,
+  isPatternsReferenceAvailable,
+  type PatternEntry,
+  type LLMExample,
+  type PatternSource
+} from './patterns-bridge.js';

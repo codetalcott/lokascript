@@ -64,21 +64,41 @@ export {
   SymbolKind
 } from './lsp/index.js';
 
-export const transformer = {
-  // Will be implemented  
-};
+// Transformer functionality - WORKING
+export {
+  transform,
+  optimize,
+  applyOptimizationPasses,
+  normalize,
+  inlineVariables,
+  extractCommonExpressions,
+  createOptimizationPass
+} from './transformer/index.js';
 
-export const generator = {
-  // Will be implemented
-};
+// Code Generator functionality - WORKING
+export {
+  generate,
+  generateWithMetadata,
+  generateCommand,
+  generateExpression,
+  minify,
+  format
+} from './generator/index.js';
 
-// AI-Friendly APIs functionality - WORKING  
+export type {
+  GeneratorOptions,
+  GeneratorResult
+} from './generator/index.js';
+
+// AI-Friendly APIs functionality - WORKING
 export {
   explainCode,
   generateCodeTemplate,
   recognizeIntent,
+  recognizeIntentAsync,
   generateQualityInsights,
-  createAIAssistant
+  createAIAssistant,
+  isEnhancedIntentRecognitionAvailable
 } from './ai/index.js';
 
 export type {
@@ -157,3 +177,21 @@ export type {
   MCPResult,
   MCPMessage
 } from './mcp/types.js';
+
+// Documentation Generator functionality - WORKING
+export {
+  generateDocumentation,
+  generateMarkdown,
+  generateHTML,
+  generateJSON
+} from './documentation/index.js';
+
+export type {
+  DocumentationOutput,
+  EventHandlerDoc,
+  BehaviorDoc,
+  FunctionDoc,
+  CommandDoc,
+  CodeMetrics,
+  MarkdownOptions
+} from './documentation/index.js';

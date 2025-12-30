@@ -5,6 +5,13 @@
 
 import { findNodes, calculateComplexity, analyzeMetrics, detectCodeSmells } from '../index.js';
 import type { ASTNode, ComplexityMetrics, CodeSmell, AnalysisResult } from '../types.js';
+import {
+  searchPatterns,
+  getLLMExamples,
+  isPatternsReferenceAvailable,
+  type PatternEntry,
+  type LLMExample
+} from '../pattern-matching/patterns-bridge.js';
 
 // ============================================================================
 // Natural Language Explanation
@@ -662,6 +669,10 @@ export interface RecognizedIntent {
   confidence: number;
   parameters: Record<string, string>;
   suggestions: string[];
+  /** Matching patterns from the patterns-reference database */
+  matchingPatterns?: PatternEntry[];
+  /** LLM examples for this intent from the database */
+  examples?: LLMExample[];
 }
 
 /**
@@ -732,6 +743,92 @@ export function recognizeIntent(description: string): RecognizedIntent {
       'Examples: "toggle class active", "fetch data from API", "submit form"'
     ]
   };
+}
+
+/**
+ * Recognize intent from natural language description with patterns-reference integration
+ *
+ * This async variant queries the patterns-reference database for:
+ * - Matching patterns from 53 validated patterns
+ * - LLM examples from 212 curated examples with quality scores
+ *
+ * Falls back to regex-based recognition if patterns-reference is unavailable.
+ */
+export async function recognizeIntentAsync(
+  description: string,
+  options: { language?: string; limit?: number } = {}
+): Promise<RecognizedIntent> {
+  const { language = 'en', limit = 5 } = options;
+
+  // First try the sync regex-based recognition
+  const baseResult = recognizeIntent(description);
+
+  // If patterns-reference is not available, return the base result
+  if (!isPatternsReferenceAvailable()) {
+    return baseResult;
+  }
+
+  try {
+    // Search patterns database for matching patterns
+    const matchingPatterns = await searchPatterns(description);
+
+    // Get LLM examples for this intent
+    const examples = await getLLMExamples(description, language, limit);
+
+    // If we found matching patterns with better confidence, use them
+    const topPattern = matchingPatterns[0];
+    if (topPattern) {
+      // Combine database results with regex-based recognition
+      const enhancedResult: RecognizedIntent = {
+        ...baseResult,
+        // Boost confidence if we found matching patterns
+        confidence: Math.max(baseResult.confidence, topPattern.confidence * 0.9),
+        matchingPatterns: matchingPatterns.slice(0, limit),
+        examples,
+        suggestions: [
+          ...baseResult.suggestions,
+          ...matchingPatterns.slice(0, 3).map(p =>
+            p.title || `Pattern: ${p.command || 'custom'}`
+          )
+        ]
+      };
+
+      // If the pattern has a clear command, use it as the intent
+      if (topPattern.command && topPattern.confidence > 0.8) {
+        enhancedResult.intent = topPattern.command;
+        enhancedResult.parameters = {
+          ...baseResult.parameters,
+          patternId: topPattern.id,
+          patternCode: topPattern.code
+        };
+      }
+
+      return enhancedResult;
+    }
+
+    // No matching patterns found, but add any LLM examples we found
+    if (examples.length > 0) {
+      return {
+        ...baseResult,
+        examples
+      };
+    }
+
+    return baseResult;
+
+  } catch (error) {
+    // If patterns-reference fails, fall back to base result
+    console.warn('patterns-reference lookup failed:', error);
+    return baseResult;
+  }
+}
+
+/**
+ * Check if enhanced intent recognition is available
+ * (patterns-reference database is installed and initialized)
+ */
+export function isEnhancedIntentRecognitionAvailable(): boolean {
+  return isPatternsReferenceAvailable();
 }
 
 function generateIntentSuggestions(intent: string): string[] {
@@ -872,7 +969,9 @@ export interface AIAssistant {
   explainCode: typeof explainCode;
   generateCodeTemplate: typeof generateCodeTemplate;
   recognizeIntent: typeof recognizeIntent;
+  recognizeIntentAsync: typeof recognizeIntentAsync;
   generateQualityInsights: typeof generateQualityInsights;
+  isEnhancedIntentRecognitionAvailable: typeof isEnhancedIntentRecognitionAvailable;
 }
 
 /**
@@ -883,6 +982,8 @@ export function createAIAssistant(): AIAssistant {
     explainCode,
     generateCodeTemplate,
     recognizeIntent,
-    generateQualityInsights
+    recognizeIntentAsync,
+    generateQualityInsights,
+    isEnhancedIntentRecognitionAvailable
   };
 }

@@ -403,13 +403,52 @@ function mapSmellSeverityToLSP(severity: string): DiagnosticSeverity {
 }
 
 function nodeToRange(node: ASTNode): Range {
-  const startLine = (node.line || 1) - 1;
-  const startChar = (node.column || 1) - 1;
-  
+  const startLine = (node.line ?? 1) - 1;
+  const startChar = node.column ?? 0;
+
+  // Use actual end position when available (parser provides start/end offsets)
+  if (node.end !== undefined && node.start !== undefined) {
+    const length = node.end - node.start;
+    return {
+      start: { line: startLine, character: startChar },
+      end: { line: startLine, character: startChar + length }
+    };
+  }
+
+  // Fallback: use raw text length if available
+  if ((node as any).raw && typeof (node as any).raw === 'string') {
+    return {
+      start: { line: startLine, character: startChar },
+      end: { line: startLine, character: startChar + (node as any).raw.length }
+    };
+  }
+
+  // Last resort: estimate based on node type
+  const estimatedLength = estimateNodeLength(node);
   return {
     start: { line: startLine, character: startChar },
-    end: { line: startLine, character: startChar + 10 } // Default 10 char width
+    end: { line: startLine, character: startChar + estimatedLength }
   };
+}
+
+function estimateNodeLength(node: ASTNode): number {
+  const data = node as any;
+  switch (node.type) {
+    case 'selector':
+      return (data.value?.length ?? 5) + 1;
+    case 'command':
+      return (data.name?.length ?? 5) + 10;
+    case 'identifier':
+      return data.name?.length ?? 2;
+    case 'literal':
+      return String(data.value ?? '').length + 2; // +2 for quotes
+    case 'eventHandler':
+      return 20; // "on click" etc.
+    case 'behavior':
+      return 15 + (data.name?.length ?? 5);
+    default:
+      return 10;
+  }
 }
 
 function extractCommandSymbols(commands: any[]): DocumentSymbol[] {
@@ -423,46 +462,69 @@ function extractCommandSymbols(commands: any[]): DocumentSymbol[] {
 }
 
 function findNodeAtPosition(ast: ASTNode, position: Position): ASTNode | null {
-  // Simple implementation - in practice this would need proper position mapping
-  const targetLine = position.line + 1;
-  const targetChar = position.character + 1;
-  
-  const nodesAtLine = findNodes(ast, node => 
-    node.line === targetLine && 
-    (node.column || 0) <= targetChar && 
-    ((node.column || 0) + 20) >= targetChar // Rough character range
-  );
-  
-  if (nodesAtLine.length === 0) {
-    // If no exact match, look for nodes on the same line
+  const targetLine = position.line + 1;  // LSP is 0-based, AST is 1-based
+  const targetChar = position.character; // Both use 0-based column
+
+  // Find nodes that contain the target position using actual boundaries
+  const containingNodes = findNodes(ast, node => {
+    if (node.line !== targetLine) return false;
+
+    const nodeStart = node.column ?? 0;
+
+    // Calculate node end position
+    let nodeEnd: number;
+    if (node.end !== undefined && node.start !== undefined) {
+      nodeEnd = nodeStart + (node.end - node.start);
+    } else if ((node as any).raw) {
+      nodeEnd = nodeStart + (node as any).raw.length;
+    } else {
+      nodeEnd = nodeStart + estimateNodeLength(node);
+    }
+
+    return targetChar >= nodeStart && targetChar <= nodeEnd;
+  });
+
+  if (containingNodes.length === 0) {
+    // Fallback: find closest node on the same line
     const lineNodes = findNodes(ast, node => node.line === targetLine);
     if (lineNodes.length > 0) {
-      // Return the first meaningful node (prefer event handlers, commands over selectors)
+      // Prefer meaningful node types
       const priorityNodes = lineNodes.filter(node =>
-        ['eventHandler', 'command', 'conditional'].includes(node.type)
+        ['eventHandler', 'command', 'conditional', 'behavior', 'def'].includes(node.type)
       );
       return priorityNodes[0] ?? lineNodes[0] ?? null;
     }
     return null;
   }
-  
-  // Return the most specific node (smallest range containing the position)
-  return nodesAtLine.reduce<ASTNode | null>((best, current) => {
+
+  // Return the most specific (smallest) node containing the position
+  return containingNodes.reduce<ASTNode | null>((best, current) => {
     if (!best) return current;
 
-    // Prefer higher-level nodes (eventHandler > command > selector)
+    // Calculate sizes for comparison
+    const currentSize = getNodeSize(current);
+    const bestSize = getNodeSize(best);
+
+    // Prefer smaller (more specific) nodes
+    if (currentSize < bestSize) return current;
+    if (bestSize < currentSize) return best;
+
+    // If same size, prefer higher-priority node types
     const currentPriority = getNodePriority(current.type);
     const bestPriority = getNodePriority(best.type);
 
-    if (currentPriority > bestPriority) return current;
-    if (bestPriority > currentPriority) return best;
-
-    // If same priority, prefer smaller nodes
-    const currentSize = (current.end || 0) - (current.start || 0);
-    const bestSize = (best.end || 0) - (best.start || 0);
-
-    return currentSize < bestSize ? current : best;
+    return currentPriority >= bestPriority ? current : best;
   }, null);
+}
+
+function getNodeSize(node: ASTNode): number {
+  if (node.end !== undefined && node.start !== undefined) {
+    return node.end - node.start;
+  }
+  if ((node as any).raw) {
+    return (node as any).raw.length;
+  }
+  return estimateNodeLength(node);
 }
 
 function getNodePriority(nodeType: string): number {
