@@ -392,10 +392,15 @@ function extractAstValues(ast: ASTNode): string[] {
 
 function buildPatternStructure(tokens: PatternToken[]): PatternStructure {
   // Simple structure building - could be enhanced
+  // Convert tokens to PatternStructures for type compatibility
+  const tokenStructures: PatternStructure[] = tokens.map(token => ({
+    type: token.type,
+    properties: { value: token.value as unknown as PatternStructure }
+  }));
   return {
     type: 'pattern',
     properties: {
-      tokens: tokens
+      tokens: tokenStructures
     }
   };
 }

@@ -29,7 +29,8 @@ import {
   recognizeIntent,
   generateQualityInsights,
   benchmarkASTOperations,
-  analyzePerformance
+  analyzePerformance,
+  ASTVisitor
 } from '../index.js';
 
 import type { ASTNode } from '../types.js';
@@ -548,16 +549,16 @@ class ASTToolkitMCPServer {
     let nodeCount = 0;
     
     try {
-      const visitor = {
-        enterNode: (node: ASTNode) => {
+      const visitor = new ASTVisitor({
+        enter: (node: ASTNode) => {
           nodeCount++;
           if (collectNodes) {
             visitedNodes.push(node);
           }
         }
-      };
-      
-      await visit(ast as ASTNode, visitor);
+      });
+
+      visit(ast as ASTNode, visitor);
       
       return {
         content: [{

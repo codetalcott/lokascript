@@ -438,10 +438,10 @@ function findNodeAtPosition(ast: ASTNode, position: Position): ASTNode | null {
     const lineNodes = findNodes(ast, node => node.line === targetLine);
     if (lineNodes.length > 0) {
       // Return the first meaningful node (prefer event handlers, commands over selectors)
-      const priorityNodes = lineNodes.filter(node => 
+      const priorityNodes = lineNodes.filter(node =>
         ['eventHandler', 'command', 'conditional'].includes(node.type)
       );
-      return priorityNodes[0] || lineNodes[0];
+      return priorityNodes[0] ?? lineNodes[0] ?? null;
     }
     return null;
   }

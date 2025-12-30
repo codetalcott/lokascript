@@ -4,13 +4,26 @@
  */
 
 import { ASTVisitor, visit, findNodes, createVisitorContext } from '../visitor/index.js';
-import type { 
-  ASTNode, 
-  VisitorHandlers, 
-  TransformOptions, 
+import type {
+  ASTNode,
+  VisitorHandlers,
+  TransformOptions,
   OptimizationPass,
   VisitorContext
 } from '../types.js';
+
+/**
+ * Helper to normalize visitor result to a single ASTNode
+ */
+function normalizeVisitResult(result: ASTNode | ASTNode[] | null, fallback: ASTNode): ASTNode {
+  if (result === null) {
+    return fallback;
+  }
+  if (Array.isArray(result)) {
+    return result.length > 0 ? result[0]! : fallback;
+  }
+  return result;
+}
 
 // ============================================================================
 // Core Transformation
@@ -20,23 +33,34 @@ import type {
  * Transform an AST using visitor pattern
  */
 export function transform(
-  ast: ASTNode, 
-  visitor: VisitorHandlers, 
+  ast: ASTNode,
+  visitor: VisitorHandlers,
   options: TransformOptions = {}
 ): ASTNode {
   const transformVisitor = new ASTVisitor(visitor);
-  let result = transformVisitor.visit(ast, createVisitorContext()) || ast;
-  
+  const visitResult = transformVisitor.visit(ast, createVisitorContext());
+
+  // Handle different return types from visit
+  let result: ASTNode;
+  if (visitResult === null) {
+    result = ast;
+  } else if (Array.isArray(visitResult)) {
+    // If multiple nodes returned, wrap in a program node or use the first
+    result = visitResult.length > 0 ? visitResult[0]! : ast;
+  } else {
+    result = visitResult;
+  }
+
   // Apply optimizations if requested
   if (options.optimize) {
     result = optimize(result, options);
   }
-  
+
   // Apply minification if requested
   if (options.minify) {
     result = minify(result);
   }
-  
+
   return result;
 }
 
@@ -83,8 +107,8 @@ function applyOptimizationPass(ast: ASTNode, pass: OptimizationPass): ASTNode {
       }
     }
   });
-  
-  return visitor.visit(ast, createVisitorContext()) || ast;
+
+  return normalizeVisitResult(visitor.visit(ast, createVisitorContext()), ast);
 }
 
 // ============================================================================
@@ -181,7 +205,7 @@ export function normalize(ast: ASTNode): ASTNode {
     }
   });
 
-  return visitor.visit(ast, createVisitorContext()) || ast;
+  return normalizeVisitResult(visitor.visit(ast, createVisitorContext()), ast);
 }
 
 /**
@@ -214,7 +238,7 @@ export function inlineVariables(ast: ASTNode): ASTNode {
     }
   });
   
-  return inlineVisitor.visit(ast, createVisitorContext()) || ast;
+  return normalizeVisitResult(inlineVisitor.visit(ast, createVisitorContext()), ast);
 }
 
 /**
@@ -272,18 +296,18 @@ export function extractCommonExpressions(ast: ASTNode): ASTNode {
         if (extractions.has(expr)) {
           context.replace({
             type: 'identifier',
-            name: extractions.get(expr),
-            start: node.start,
-            end: node.end,
-            line: node.line,
-            column: node.column
-          });
+            name: extractions.get(expr)!,
+            start: node.start ?? 0,
+            end: node.end ?? 0,
+            line: node.line ?? 1,
+            column: node.column ?? 1
+          } as ASTNode);
         }
       }
     }
   });
   
-  let result = replaceVisitor.visit(ast, createVisitorContext()) || ast;
+  let result = normalizeVisitResult(replaceVisitor.visit(ast, createVisitorContext()), ast);
   
   // Add extracted variable assignments to the beginning
   if (newCommands.length > 0 && (result as any).commands) {
@@ -456,5 +480,5 @@ function minify(ast: ASTNode): ASTNode {
     }
   });
   
-  return visitor.visit(ast, createVisitorContext()) || ast;
+  return normalizeVisitResult(visitor.visit(ast, createVisitorContext()), ast);
 }

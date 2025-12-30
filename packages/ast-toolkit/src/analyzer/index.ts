@@ -201,14 +201,15 @@ function detectDuplicateCode(ast: ASTNode): CodeSmell[] {
   
   for (const [nodeString, nodes] of nodeStrings) {
     if (nodes.length > 1) {
+      const firstNode = nodes[0]!;
       smells.push({
         type: 'duplicate-code',
         severity: 'medium',
         location: {
-          ...(nodes[0].start !== undefined && { start: nodes[0].start }),
-          ...(nodes[0].end !== undefined && { end: nodes[0].end }),
-          ...(nodes[0].line !== undefined && { line: nodes[0].line }),
-          ...(nodes[0].column !== undefined && { column: nodes[0].column })
+          ...(firstNode.start !== undefined && { start: firstNode.start }),
+          ...(firstNode.end !== undefined && { end: firstNode.end }),
+          ...(firstNode.line !== undefined && { line: firstNode.line }),
+          ...(firstNode.column !== undefined && { column: firstNode.column })
         },
         message: `Duplicate code found (${nodes.length} occurrences)`,
         suggestion: 'Consider extracting common logic into a reusable function'
@@ -421,13 +422,13 @@ function detectCycles(nodes: Set<string>, edges: Map<string, Set<string>>): stri
 export function findDeadCode(ast: ASTNode): Array<{
   type: 'unused-variable' | 'unreachable-code';
   name?: string;
-  location: { start: number; end: number; line: number; column: number };
+  location: { start?: number; end?: number; line?: number; column?: number };
   message: string;
 }> {
   const deadCode: Array<{
     type: 'unused-variable' | 'unreachable-code';
     name?: string;
-    location: { start: number; end: number; line: number; column: number };
+    location: { start?: number; end?: number; line?: number; column?: number };
     message: string;
   }> = [];
   

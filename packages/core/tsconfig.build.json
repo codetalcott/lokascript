@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist",
+    "composite": false,
+    "incremental": false
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/legacy/**/*",
+    "src/deno-mod.ts",
+    "src/examples/deno-*.ts",
+    "src/context/**/*",
+    "src/performance/benchmarks.ts",
+    "src/test-helpers/**/*",
+    "vitest.config.ts"
+  ]
+}

@@ -205,9 +205,18 @@ export class ASTVisitor {
  */
 export function visit(ast: ASTNode | null, visitor: ASTVisitor): ASTNode | null {
   if (!ast) return null;
-  
+
   const context = new VisitorContextImpl();
-  return visitor.visit(ast, context);
+  const result = visitor.visit(ast, context);
+
+  // Handle different return types
+  if (result === null) {
+    return null;
+  }
+  if (Array.isArray(result)) {
+    return result.length > 0 ? result[0]! : null;
+  }
+  return result;
 }
 
 /**
@@ -308,7 +317,7 @@ export function createTypeCollector(types: string[]): ASTVisitor {
   return new ASTVisitor({
     enter(node) {
       if (typeSet.has(node.type)) {
-        collected[node.type].push(node);
+        collected[node.type]!.push(node);
       }
     }
   });

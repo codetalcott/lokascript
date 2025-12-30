@@ -67,7 +67,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && tsc -p tsconfig.build.json",
+    "build:types": "tsc -p tsconfig.build.json",
     "build:browser": "rollup -c rollup.browser.config.mjs",
     "build:browser:dev": "rollup -c rollup.browser.dev.config.mjs",
     "build:browser:prod": "rollup -c rollup.browser.prod.config.mjs",
