@@ -5,13 +5,13 @@
 
 import { z } from 'zod';
 import type {
-  TypedContextImplementation,
-  ContextMetadata,
+  ValidationResult,
+  ValidationError,
   EvaluationResult,
-  EnhancedContextBase
-} from '../../core/src/types/enhanced-context.js';
-import type { ValidationResult, EvaluationType } from '../../core/src/types/base-types.js';
-import type { LLMDocumentation } from '../../core/src/types/enhanced-core.js';
+  EvaluationType,
+  ContextMetadata,
+  LLMDocumentation
+} from './enhanced-types.js';
 import type { 
   TenantInfo, 
   TenantContext, 
@@ -153,7 +153,7 @@ export class TypedMultiTenantContextImplementation {
 
   private evaluationHistory: Array<{
     input: EnhancedMultiTenantInput;
-    output?: EnhancedMultiTenantOutput;
+    output?: EnhancedMultiTenantOutput | undefined;
     success: boolean;
     duration: number;
     timestamp: number;
@@ -262,7 +262,7 @@ export class TypedMultiTenantContextImplementation {
         return {
           success: false,
           errors: validation.errors,
-          suggestions: validation.suggestions
+          suggestions: [...validation.suggestions]
         };
       }
 
@@ -341,12 +341,18 @@ export class TypedMultiTenantContextImplementation {
 
     } catch (error) {
       this.trackPerformance(startTime, false);
-      
+
       return {
         success: false,
         errors: [{
           type: 'runtime-error',
-          message: `Multi-tenant context initialization failed: ${error instanceof Error ? error.message : String(error)}`
+          message: `Multi-tenant context initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+          suggestions: [
+            'Verify tenant resolver configuration is valid',
+            'Check customization provider setup',
+            'Ensure isolation settings are supported',
+            'Validate tenant identifier configuration'
+          ]
         }],
         suggestions: [
           'Verify tenant resolver configuration is valid',
@@ -370,7 +376,7 @@ export class TypedMultiTenantContextImplementation {
       }
 
       const parsed = this.inputSchema.parse(input);
-      const errors: Array<{ type: string; message: string; path?: string }> = [];
+      const errors: ValidationError[] = [];
       const suggestions: string[] = [];
 
       // Enhanced validation logic
@@ -381,7 +387,8 @@ export class TypedMultiTenantContextImplementation {
         errors.push({
           type: 'missing-tenant-resolver',
           message: 'Tenant resolver is required for multi-tenant functionality',
-          path: 'config.tenantResolver'
+          path: 'config.tenantResolver',
+          suggestions: ['Provide a valid tenant resolver function or object']
         });
         suggestions.push('Provide a valid tenant resolver function or object');
       }
@@ -391,7 +398,8 @@ export class TypedMultiTenantContextImplementation {
         errors.push({
           type: 'missing-custom-resolver',
           message: 'Custom identifier type requires a resolver function',
-          path: 'identifier.resolver'
+          path: 'identifier.resolver',
+          suggestions: ['Provide a custom resolver function for custom identifier type']
         });
         suggestions.push('Provide a custom resolver function for custom identifier type');
       }
@@ -401,7 +409,8 @@ export class TypedMultiTenantContextImplementation {
         errors.push({
           type: 'missing-header-name',
           message: 'Header identifier type requires a header name',
-          path: 'identifier.value'
+          path: 'identifier.value',
+          suggestions: ['Specify the header name for tenant identification (e.g., "x-tenant-id")']
         });
         suggestions.push('Specify the header name for tenant identification (e.g., "x-tenant-id")');
       }
@@ -411,7 +420,8 @@ export class TypedMultiTenantContextImplementation {
         errors.push({
           type: 'incompatible-sandbox-level',
           message: 'Complete sandbox isolation is not supported in frontend environment',
-          path: 'config.isolation.sandboxLevel'
+          path: 'config.isolation.sandboxLevel',
+          suggestions: ['Use "strict" or "basic" sandbox level for frontend environments']
         });
         suggestions.push('Use "strict" or "basic" sandbox level for frontend environments');
       }
@@ -421,7 +431,8 @@ export class TypedMultiTenantContextImplementation {
         errors.push({
           type: 'invalid-cache-ttl',
           message: 'Cache TTL should be at least 1000ms for optimal performance',
-          path: 'config.caching.ttl'
+          path: 'config.caching.ttl',
+          suggestions: ['Set cache TTL to at least 1 second (1000ms)']
         });
         suggestions.push('Set cache TTL to at least 1 second (1000ms)');
       }
@@ -829,15 +840,11 @@ export class TypedMultiTenantContextImplementation {
         requests: tenantMetrics.reduce((sum, m) => sum + m.requests, 0),
         scriptsExecuted: tenantMetrics.reduce((sum, m) => sum + m.scriptsExecuted, 0),
         errors: tenantMetrics.reduce((sum, m) => sum + m.errors, 0),
-        averageResponseTime: tenantMetrics.length > 0 
-          ? tenantMetrics.reduce((sum, m) => sum + m.responseTime, 0) / tenantMetrics.length 
+        averageResponseTime: tenantMetrics.length > 0
+          ? tenantMetrics.reduce((sum, m) => sum + m.responseTime, 0) / tenantMetrics.length
           : 0,
-        memoryUsage: tenantMetrics.length > 0 
-          ? tenantMetrics[tenantMetrics.length - 1].memoryUsage 
-          : 0,
-        customizations: tenantMetrics.length > 0 
-          ? tenantMetrics[tenantMetrics.length - 1].customizations 
-          : 0
+        memoryUsage: tenantMetrics.at(-1)?.memoryUsage ?? 0,
+        customizations: tenantMetrics.at(-1)?.customizations ?? 0
       };
     };
   }
@@ -929,6 +936,8 @@ export async function createEnhancedMultiTenant(
       type: 'subdomain',
       value: '',
     },
+    environment: 'universal',
+    debug: false,
     ...options
   });
 }

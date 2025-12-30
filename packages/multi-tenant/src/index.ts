@@ -1,6 +1,6 @@
 /**
  * Multi-Tenant System for HyperFixi Applications
- * 
+ *
  * Provides comprehensive multi-tenant support including:
  * - Tenant resolution and context management
  * - Behavior customization and isolation
@@ -8,10 +8,26 @@
  * - Permission and feature management
  */
 
+// Core imports (for internal use and re-export)
+import { TenantManager, createTenantManager } from './tenant-manager.js';
+import { TenantIsolation, IsolationViolationError, createTenantIsolation } from './isolation.js';
+import { TenantCustomizationEngine, createCustomizationEngine } from './customization.js';
+import {
+  createExpressMiddleware,
+  createElysiaPlugin,
+  createTenantMiddleware,
+  extractTenantContext,
+  extractTenantInfo,
+  hasValidTenant,
+  requireTenant,
+  requireFeature,
+  requirePermission,
+} from './middleware.js';
+
 // Core exports
-export { TenantManager, createTenantManager } from './tenant-manager';
-export { TenantIsolation, IsolationViolationError, createTenantIsolation } from './isolation';
-export { TenantCustomizationEngine, createCustomizationEngine } from './customization';
+export { TenantManager, createTenantManager };
+export { TenantIsolation, IsolationViolationError, createTenantIsolation };
+export { TenantCustomizationEngine, createCustomizationEngine };
 
 // Enhanced Pattern exports
 export {
@@ -23,7 +39,7 @@ export {
   EnhancedMultiTenantOutputSchema,
   type EnhancedMultiTenantInput,
   type EnhancedMultiTenantOutput
-} from './enhanced-multi-tenant';
+} from './enhanced-multi-tenant.js';
 
 // Middleware exports
 export {
@@ -36,7 +52,7 @@ export {
   requireTenant,
   requireFeature,
   requirePermission,
-} from './middleware';
+};
 
 // Type exports
 export type {
@@ -179,11 +195,11 @@ export async function quickStartMultiTenant(options: {
     async resolveTenantByDomain(domain) {
       const tenant = options.tenants.find(t => t.domain === domain);
       if (!tenant) return null;
-      
+
       return {
         id: tenant.id,
         name: tenant.name,
-        domain: tenant.domain,
+        ...(tenant.domain !== undefined && { domain: tenant.domain }),
         plan: tenant.plan || 'free',
         status: 'active' as const,
         features: tenant.features || [],

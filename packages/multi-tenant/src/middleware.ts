@@ -263,8 +263,13 @@ async function resolveTenantContext(
  */
 async function extractTenantIdentifier(
   request: any,
-  identifier: TenantIdentifier
+  identifier?: TenantIdentifier
 ): Promise<string | null> {
+  // Default to subdomain extraction if no identifier specified
+  if (!identifier) {
+    return extractSubdomain(request);
+  }
+
   switch (identifier.type) {
     case 'domain':
       return extractDomain(request);

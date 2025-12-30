@@ -457,7 +457,10 @@ export class TenantCustomizationEngine {
       case 'lessThan':
         return typeof value === 'number' && value < compareValue;
       case 'between':
-        return typeof value === 'number' && compareValues && 
+        if (!compareValues || compareValues.length < 2) {
+          return false;
+        }
+        return typeof value === 'number' &&
                value >= compareValues[0] && value <= compareValues[1];
       default:
         return false;

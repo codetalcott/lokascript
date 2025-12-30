@@ -7,29 +7,29 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./tenant-manager": {
+      "types": "./dist/tenant-manager.d.ts",
       "import": "./dist/tenant-manager.mjs",
-      "require": "./dist/tenant-manager.js",
-      "types": "./dist/tenant-manager.d.ts"
+      "require": "./dist/tenant-manager.js"
     },
     "./isolation": {
+      "types": "./dist/isolation.d.ts",
       "import": "./dist/isolation.mjs",
-      "require": "./dist/isolation.js",
-      "types": "./dist/isolation.d.ts"
+      "require": "./dist/isolation.js"
     },
     "./customization": {
+      "types": "./dist/customization.d.ts",
       "import": "./dist/customization.mjs",
-      "require": "./dist/customization.js",
-      "types": "./dist/customization.d.ts"
+      "require": "./dist/customization.js"
     },
     "./middleware": {
+      "types": "./dist/middleware.d.ts",
       "import": "./dist/middleware.mjs",
-      "require": "./dist/middleware.js",
-      "types": "./dist/middleware.d.ts"
+      "require": "./dist/middleware.js"
     }
   },
   "scripts": {

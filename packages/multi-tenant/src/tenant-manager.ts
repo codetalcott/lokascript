@@ -78,7 +78,9 @@ class TenantCache {
   setTenant(key: string, tenant: TenantInfo): void {
     if (this.tenantCache.size >= this.maxSize) {
       const firstKey = this.tenantCache.keys().next().value;
-      this.tenantCache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.tenantCache.delete(firstKey);
+      }
     }
     this.tenantCache.set(key, { tenant, timestamp: Date.now() });
   }
@@ -95,7 +97,9 @@ class TenantCache {
   setCustomization(tenantId: string, customization: TenantCustomization): void {
     if (this.customizationCache.size >= this.maxSize) {
       const firstKey = this.customizationCache.keys().next().value;
-      this.customizationCache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.customizationCache.delete(firstKey);
+      }
     }
     this.customizationCache.set(tenantId, { customization, timestamp: Date.now() });
   }
@@ -410,6 +414,10 @@ export class TenantManager {
    * Private helper methods
    */
   private getCacheKey(identifier: TenantIdentifier): string {
+    if (identifier.type === 'custom') {
+      // Custom identifiers use resolver function, generate unique key per call
+      return `custom:${Date.now()}`;
+    }
     return `${identifier.type}:${identifier.value}`;
   }
 

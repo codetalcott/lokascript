@@ -312,7 +312,7 @@ export interface TenantMetrics {
  */
 export interface TenantMiddlewareConfig {
   tenantManager: any; // Will be the TenantManager instance
-  tenantIdentifier: TenantIdentifier;
+  tenantIdentifier?: TenantIdentifier; // Optional - can be resolved from request
   enableIsolation: boolean;
   requireTenant: boolean;
   defaultTenant?: string;
