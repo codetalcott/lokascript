@@ -9,15 +9,18 @@ import compression from 'compression';
 import { CompilationCache } from '../cache/compilation-cache.js';
 import { ServerContextParser } from '../parser/server-context-parser.js';
 import { HyperscriptCompiler } from './hyperscript-compiler.js';
-import type { 
-  ServiceConfig, 
-  CompileRequest, 
-  CompileResponse, 
-  ValidateRequest, 
-  ValidateResponse, 
+import type {
+  ServiceConfig,
+  CompileRequest,
+  CompileResponse,
+  ValidateRequest,
+  ValidateResponse,
   BatchCompileRequest,
-  CompilationOptions
+  CompilationOptions,
+  DocsRequest,
+  DocsResponse
 } from '../types.js';
+import { generateDocumentation, generateMarkdown, generateHTML, analyzeMetrics } from '@hyperfixi/ast-toolkit';
 
 export class HyperfixiService {
   private app: Application;
@@ -145,6 +148,11 @@ export class HyperfixiService {
     // Cache management
     this.app.post('/cache/clear', this.handleCacheClear.bind(this));
     this.app.get('/cache/stats', this.handleCacheStats.bind(this));
+
+    // Documentation endpoints
+    this.app.post('/docs', this.handleDocs.bind(this));
+    this.app.post('/docs/markdown', this.handleDocsMarkdown.bind(this));
+    this.app.post('/docs/html', this.handleDocsHTML.bind(this));
 
     // 404 handler
     this.app.use('*', (req, res) => {
@@ -275,6 +283,125 @@ export class HyperfixiService {
   private async handleCacheStats(req: Request, res: Response): Promise<void> {
     const stats = this.cache.getStats();
     res.json(stats);
+  }
+
+  /**
+   * Documentation endpoint - returns JSON documentation
+   */
+  private async handleDocs(req: Request, res: Response): Promise<void> {
+    try {
+      const docsRequest = req.body as DocsRequest;
+
+      if (!docsRequest.script || typeof docsRequest.script !== 'string') {
+        res.status(400).json({
+          error: 'Missing or invalid "script" field'
+        });
+        return;
+      }
+
+      const parsed = this.parser.parse(docsRequest.script, docsRequest.context);
+      const ast = await this.compiler.getAST(parsed.processed);
+
+      if (!ast) {
+        res.status(400).json({
+          error: 'Could not parse script'
+        });
+        return;
+      }
+
+      const docs = generateDocumentation(ast);
+
+      // Include metrics if requested
+      if (docsRequest.options?.includeMetrics) {
+        const metrics = analyzeMetrics(ast);
+        res.json({
+          ...docs,
+          metrics: {
+            complexity: metrics.complexity.cyclomatic,
+            maintainability: metrics.maintainabilityIndex,
+            readability: metrics.readabilityScore
+          }
+        });
+      } else {
+        res.json(docs);
+      }
+    } catch (error) {
+      console.error('Documentation generation error:', error);
+      res.status(500).json({
+        error: 'Documentation generation failed',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  /**
+   * Documentation endpoint - returns Markdown
+   */
+  private async handleDocsMarkdown(req: Request, res: Response): Promise<void> {
+    try {
+      const docsRequest = req.body as DocsRequest;
+
+      if (!docsRequest.script || typeof docsRequest.script !== 'string') {
+        res.status(400).json({
+          error: 'Missing or invalid "script" field'
+        });
+        return;
+      }
+
+      const parsed = this.parser.parse(docsRequest.script, docsRequest.context);
+      const ast = await this.compiler.getAST(parsed.processed);
+
+      if (!ast) {
+        res.status(400).json({
+          error: 'Could not parse script'
+        });
+        return;
+      }
+
+      const markdown = generateMarkdown(ast);
+      res.type('text/markdown').send(markdown);
+    } catch (error) {
+      console.error('Markdown generation error:', error);
+      res.status(500).json({
+        error: 'Markdown generation failed',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  /**
+   * Documentation endpoint - returns HTML
+   */
+  private async handleDocsHTML(req: Request, res: Response): Promise<void> {
+    try {
+      const docsRequest = req.body as DocsRequest;
+
+      if (!docsRequest.script || typeof docsRequest.script !== 'string') {
+        res.status(400).json({
+          error: 'Missing or invalid "script" field'
+        });
+        return;
+      }
+
+      const parsed = this.parser.parse(docsRequest.script, docsRequest.context);
+      const ast = await this.compiler.getAST(parsed.processed);
+
+      if (!ast) {
+        res.status(400).json({
+          error: 'Could not parse script'
+        });
+        return;
+      }
+
+      const html = generateHTML(ast);
+      res.type('text/html').send(html);
+    } catch (error) {
+      console.error('HTML generation error:', error);
+      res.status(500).json({
+        error: 'HTML generation failed',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
 
   /**

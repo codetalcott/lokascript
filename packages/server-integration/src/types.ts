@@ -144,6 +144,58 @@ export interface ValidateResponse {
 }
 
 // ============================================================================
+// Documentation Types
+// ============================================================================
+
+export interface DocsRequest {
+  script: string;
+  context?: ParseContext;
+  options?: {
+    includeSource?: boolean;
+    includeMetrics?: boolean;
+  };
+}
+
+export interface DocsResponse {
+  title: string;
+  description: string;
+  eventHandlers: EventHandlerDoc[];
+  behaviors: BehaviorDoc[];
+  functions: FunctionDoc[];
+  metrics?: CodeMetrics;
+}
+
+export interface EventHandlerDoc {
+  event: string;
+  description?: string;
+  commands: CommandDoc[];
+}
+
+export interface BehaviorDoc {
+  name: string;
+  description?: string;
+  properties: string[];
+}
+
+export interface FunctionDoc {
+  name: string;
+  parameters: string[];
+  description?: string;
+}
+
+export interface CommandDoc {
+  name: string;
+  target?: string;
+  description?: string;
+}
+
+export interface CodeMetrics {
+  complexity: number;
+  maintainability: number;
+  readability: number;
+}
+
+// ============================================================================
 // Template Types
 // ============================================================================
 

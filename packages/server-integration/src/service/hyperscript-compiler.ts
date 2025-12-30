@@ -16,6 +16,7 @@ import type {
   CompilationWarning,
   ScriptMetadata
 } from '../types.js';
+import { ASTVisitor, visit, findNodes, calculateComplexity } from '@hyperfixi/ast-toolkit';
 import type { ASTNode } from '@hyperfixi/ast-toolkit';
 
 // Core compilation result interface (compatible with @hyperfixi/core)
@@ -210,8 +211,17 @@ export class HyperscriptCompiler {
   }
 
   /**
+   * Get the AST for a hyperscript source
+   * Public wrapper around parseWithCore for use by external callers
+   */
+  public async getAST(script: string): Promise<ASTNode | null> {
+    const result = await this.parseWithCore(script);
+    return result?.success ? result.ast ?? null : null;
+  }
+
+  /**
    * Extract metadata from parsed AST
-   * Also uses regex extraction as supplement for reliable extraction
+   * Uses ast-toolkit findNodes for clean extraction, supplemented by regex for completeness
    */
   private extractMetadataFromAST(ast: ASTNode, script: string): ScriptMetadata {
     const metadata: ScriptMetadata = {
@@ -223,62 +233,74 @@ export class HyperscriptCompiler {
       templateVariables: []
     };
 
-    // Traverse AST to extract metadata
-    this.traverseAST(ast, (node) => {
-      // Extract events from eventHandler nodes
-      if (node.type === 'eventHandler' && 'eventName' in node) {
-        const eventName = String(node.eventName);
+    // Extract events using findNodes
+    const eventHandlers = findNodes(ast, n => n.type === 'eventHandler');
+    for (const handler of eventHandlers) {
+      if ('eventName' in handler) {
+        const eventName = String(handler.eventName);
         if (eventName && !metadata.events.includes(eventName)) {
           metadata.events.push(eventName);
         }
       }
+    }
 
-      // Also check for 'on' features
-      if (node.type === 'feature' && 'keyword' in node && node.keyword === 'on') {
-        // Check for event in the body
-        const body = (node as { body?: ASTNode[] }).body || [];
-        for (const handler of body) {
-          if (handler.type === 'eventHandler' && 'eventName' in handler) {
-            const eventName = String(handler.eventName);
-            if (eventName && !metadata.events.includes(eventName)) {
-              metadata.events.push(eventName);
-            }
+    // Also check for 'on' features
+    const onFeatures = findNodes(ast, n =>
+      n.type === 'feature' && 'keyword' in n && (n as { keyword?: string }).keyword === 'on'
+    );
+    for (const feature of onFeatures) {
+      const body = (feature as { body?: ASTNode[] }).body || [];
+      for (const handler of body) {
+        if (handler.type === 'eventHandler' && 'eventName' in handler) {
+          const eventName = String(handler.eventName);
+          if (eventName && !metadata.events.includes(eventName)) {
+            metadata.events.push(eventName);
           }
         }
       }
+    }
 
-      // Extract command names
-      if (node.type === 'command' && 'name' in node) {
-        const commandName = String(node.name);
+    // Extract command names using findNodes
+    const commands = findNodes(ast, n => n.type === 'command');
+    for (const command of commands) {
+      if ('name' in command) {
+        const commandName = String(command.name);
         if (commandName && !metadata.commands.includes(commandName)) {
           metadata.commands.push(commandName);
         }
       }
+    }
 
-      // Extract CSS selectors from various node types
-      if ('selector' in node && typeof node.selector === 'string') {
-        const selector = node.selector;
-        if (selector.match(/^[.#][a-zA-Z0-9_-]+$/) && !metadata.selectors.includes(selector)) {
-          metadata.selectors.push(selector);
-        }
-      }
-
-      // Also look for classRef nodes
-      if (node.type === 'classRef' && 'className' in node) {
+    // Extract classRef selectors
+    const classRefs = findNodes(ast, n => n.type === 'classRef');
+    for (const node of classRefs) {
+      if ('className' in node) {
         const selector = '.' + String(node.className);
         if (!metadata.selectors.includes(selector)) {
           metadata.selectors.push(selector);
         }
       }
+    }
 
-      // Look for idRef nodes
-      if (node.type === 'idRef' && 'id' in node) {
+    // Extract idRef selectors
+    const idRefs = findNodes(ast, n => n.type === 'idRef');
+    for (const node of idRefs) {
+      if ('id' in node) {
         const selector = '#' + String(node.id);
         if (!metadata.selectors.includes(selector)) {
           metadata.selectors.push(selector);
         }
       }
-    });
+    }
+
+    // Extract nodes with explicit selector property
+    const selectorNodes = findNodes(ast, n => 'selector' in n && typeof (n as any).selector === 'string');
+    for (const node of selectorNodes) {
+      const selector = (node as { selector: string }).selector;
+      if (selector.match(/^[.#][a-zA-Z0-9_-]+$/) && !metadata.selectors.includes(selector)) {
+        metadata.selectors.push(selector);
+      }
+    }
 
     // ALWAYS use regex extraction as supplement - AST may not capture all details
     const lines = script.split('\n').map(line => line.trim());
@@ -319,47 +341,11 @@ export class HyperscriptCompiler {
       }
     }
 
-    // Calculate complexity
-    metadata.complexity = Math.max(1,
-      metadata.events.length +
-      metadata.commands.length +
-      (metadata.selectors.length > 0 ? 1 : 0) +
-      (script.includes('if') ? 1 : 0) +
-      (script.includes('else') ? 1 : 0) +
-      (script.includes('repeat') ? 1 : 0) +
-      (script.includes('wait') ? 1 : 0)
-    );
+    // Calculate complexity using ast-toolkit
+    const complexityMetrics = calculateComplexity(ast);
+    metadata.complexity = Math.max(1, complexityMetrics.cyclomatic);
 
     return metadata;
-  }
-
-  /**
-   * Traverse AST and call visitor for each node
-   */
-  private traverseAST(node: ASTNode, visitor: (node: ASTNode) => void): void {
-    if (!node || typeof node !== 'object') return;
-
-    visitor(node);
-
-    // Traverse children arrays
-    for (const key of ['children', 'commands', 'body', 'features', 'args', 'arguments']) {
-      const children = (node as Record<string, unknown>)[key];
-      if (Array.isArray(children)) {
-        for (const child of children) {
-          if (child && typeof child === 'object') {
-            this.traverseAST(child as ASTNode, visitor);
-          }
-        }
-      }
-    }
-
-    // Traverse single child properties
-    for (const key of ['then', 'else', 'target', 'value', 'expression', 'condition']) {
-      const child = (node as Record<string, unknown>)[key];
-      if (child && typeof child === 'object' && 'type' in child) {
-        this.traverseAST(child as ASTNode, visitor);
-      }
-    }
   }
 
   /**
