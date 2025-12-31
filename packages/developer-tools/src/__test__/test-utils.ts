@@ -52,10 +52,12 @@ export function createMockResponse(): MockResponse & Response {
       this._headers[name] = value;
       return this as any;
     }),
-    header: vi.fn(function (this: MockResponse, name: string, value: string) {
-      this._headers[name] = value;
+    header: vi.fn(function (this: MockResponse, name: string, value?: string) {
+      if (value !== undefined) {
+        this._headers[name] = value;
+      }
       return this as any;
-    }),
+    }) as any,
     sendStatus: vi.fn(function (this: MockResponse, code: number) {
       this._status = code;
       return this as any;
@@ -99,7 +101,7 @@ export function createMockWebSocket(): MockWebSocket {
       eventHandlers[event] = eventHandlers[event] || [];
       eventHandlers[event].push(handler);
       return ws;
-    }),
+    }) as any,
 
     simulateMessage(data: string) {
       eventHandlers['message']?.forEach(h => h(data));
@@ -244,7 +246,7 @@ export interface MockChokidarWatcher {
 }
 
 export interface MockChokidar {
-  watch: Mock<[], MockChokidarWatcher>;
+  watch: ReturnType<typeof vi.fn>;
 }
 
 export function createMockChokidar(): MockChokidar {
@@ -291,7 +293,7 @@ export interface MockOraSpinner {
   warn: Mock;
 }
 
-export function createMockOra(): Mock<[string?], MockOraSpinner> {
+export function createMockOra(): ReturnType<typeof vi.fn> {
   const createSpinner = (): MockOraSpinner => ({
     text: '',
     start: vi.fn(function (this: MockOraSpinner, text?: string) {

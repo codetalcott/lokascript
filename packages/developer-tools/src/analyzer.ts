@@ -85,17 +85,19 @@ export async function analyzeProject(
 ): Promise<AnalysisResult[]> {
   const { recursive = true, include = ['**/*.html', '**/*.htm'], exclude = ['node_modules/**', 'dist/**'] } = options;
 
-  // Find all HTML files
+  // Find all HTML files (use Set to deduplicate)
   const patterns = include.map(pattern => path.join(projectPath, pattern));
-  const files: string[] = [];
-  
+  const fileSet = new Set<string>();
+
   for (const pattern of patterns) {
     const matches = await glob(pattern, {
       ignore: exclude,
       absolute: true,
     });
-    files.push(...matches);
+    matches.forEach(f => fileSet.add(f));
   }
+
+  const files = Array.from(fileSet);
 
   // Analyze each file
   const results: AnalysisResult[] = [];
@@ -193,11 +195,13 @@ function parseElements(html: string): ElementAnalysis[] {
     let id: string | undefined;
     let hyperscript: string | undefined;
     
-    const attrRegex = /(\w+)=["']([^"']*)["']/g;
+    // Handle both single and double quoted attributes, including nested quotes
+    const attrRegex = /(\w+(?:-\w+)*)=(?:"([^"]*)"|'([^']*)')/g;
     let attrMatch;
-    
+
     while ((attrMatch = attrRegex.exec(attributes)) !== null) {
-      const [, name, value] = attrMatch;
+      const [, name, doubleQuotedValue, singleQuotedValue] = attrMatch;
+      const value = doubleQuotedValue ?? singleQuotedValue ?? '';
       attrs[name] = value;
       
       if (name === 'class') {
@@ -533,6 +537,26 @@ function generateDetailedReport(results: AnalysisResult[]): string {
       });
       lines.push('');
     }
+
+    // Events Used
+    if (result.metrics.eventsUsed.length > 0) {
+      lines.push('### Events Used');
+      lines.push('');
+      result.metrics.eventsUsed.forEach(event => {
+        lines.push(`- ${event}`);
+      });
+      lines.push('');
+    }
+
+    // Commands Used
+    if (result.metrics.commandsUsed.length > 0) {
+      lines.push('### Commands Used');
+      lines.push('');
+      result.metrics.commandsUsed.forEach(command => {
+        lines.push(`- ${command}`);
+      });
+      lines.push('');
+    }
     
     // Dependencies
     if (result.dependencies.length > 0) {
@@ -583,18 +607,37 @@ function generateDetailedReport(results: AnalysisResult[]): string {
  */
 export function validateScript(content: string): AnalysisIssue[] {
   const issues: AnalysisIssue[] = [];
-  
+
+  // Check for issue patterns
+  for (const issuePattern of ISSUE_PATTERNS) {
+    const matches = Array.from(content.matchAll(issuePattern.pattern));
+
+    for (const match of matches) {
+      const matchLine = content.substring(0, match.index).split('\n').length;
+      const matchColumn = match.index! - content.lastIndexOf('\n', match.index!);
+
+      issues.push({
+        type: issuePattern.type,
+        code: issuePattern.code,
+        message: issuePattern.message,
+        line: matchLine,
+        column: matchColumn,
+        suggestion: issuePattern.suggestion,
+      });
+    }
+  }
+
   // Basic syntax validation
   const lines = content.split('\n');
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
-    
+
     // Check for unmatched parentheses
     const openParens = (line.match(/\(/g) || []).length;
     const closeParens = (line.match(/\)/g) || []).length;
-    
+
     if (openParens !== closeParens) {
       issues.push({
         type: 'error',
@@ -605,7 +648,7 @@ export function validateScript(content: string): AnalysisIssue[] {
         suggestion: 'Check parentheses are properly matched',
       });
     }
-    
+
     // Check for incomplete statements
     if (line.endsWith('then') || line.endsWith('else')) {
       issues.push({
@@ -618,7 +661,7 @@ export function validateScript(content: string): AnalysisIssue[] {
       });
     }
   }
-  
+
   return issues;
 }
 

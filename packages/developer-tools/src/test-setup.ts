@@ -23,7 +23,7 @@ beforeEach(() => {
   });
 
   // Mock process.exit to prevent test crashes
-  vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
+  vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined) => {
     throw new Error(`process.exit(${code})`);
   });
 
