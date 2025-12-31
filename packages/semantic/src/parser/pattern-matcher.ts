@@ -407,10 +407,9 @@ export class PatternMatcher {
     }
     tokens.advance(); // consume (
 
-    // Consume arguments until we find )
-    // For now, we just consume until closing paren (simple case)
+    // Consume arguments until we find ) (with depth limit for security)
     const args: string[] = [];
-    while (!tokens.isAtEnd()) {
+    while (!tokens.isAtEnd() && args.length < PatternMatcher.MAX_METHOD_ARGS) {
       const argToken = tokens.peek();
       if (!argToken) break;
       if (argToken.kind === 'punctuation' && argToken.value === ')') {
@@ -467,9 +466,11 @@ export class PatternMatcher {
 
     // Build the property chain
     let chain = `${token.value}.${propertyToken.value}`;
+    let depth = 1; // Already have one property access
 
     // Continue for nested property access (e.g., userData.address.city)
-    while (!tokens.isAtEnd()) {
+    // With depth limit for security
+    while (!tokens.isAtEnd() && depth < PatternMatcher.MAX_PROPERTY_DEPTH) {
       const nextDot = tokens.peek();
       if (!nextDot || nextDot.kind !== 'operator' || nextDot.value !== '.') {
         break;
@@ -484,6 +485,7 @@ export class PatternMatcher {
       }
       tokens.advance(); // consume property
       chain += `.${nextProp.value}`;
+      depth++;
     }
 
     // Create expression value: userData.name
@@ -598,6 +600,16 @@ export class PatternMatcher {
    */
   private stemMatchCount: number = 0;
   private totalKeywordMatches: number = 0;
+
+  // ==========================================================================
+  // Depth Limits for Expression Parsing (security hardening)
+  // ==========================================================================
+
+  /** Maximum depth for nested property access (e.g., a.b.c.d...) */
+  private static readonly MAX_PROPERTY_DEPTH = 10;
+
+  /** Maximum number of arguments in method calls */
+  private static readonly MAX_METHOD_ARGS = 20;
 
   /**
    * Convert a language token to a semantic value.
