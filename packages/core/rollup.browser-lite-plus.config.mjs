@@ -3,20 +3,21 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 
 /**
- * HyperFixi Lite Bundle
+ * HyperFixi Lite Plus Bundle
  *
- * Ultra-minimal bundle using regex-based parser instead of full AST.
- * Target: ~20-25 KB gzipped (matching original hyperscript's ~18 KB)
+ * Extended lite bundle with more commands.
+ * Target: ~3-4 KB gzipped
  *
- * Features:
- * - 8 core commands (toggle, add, remove, put, set, log, send, wait)
- * - Simple event handlers (on click, on submit, etc.)
- * - No expression parser, no AST, no TypeScript runtime overhead
+ * Commands (14):
+ * - add, remove, toggle, take
+ * - put, append, set, increment, decrement
+ * - show, hide, focus, blur
+ * - log, send, trigger, wait, go
  */
 export default {
-  input: 'src/compatibility/browser-bundle-lite.ts',
+  input: 'src/compatibility/browser-bundle-lite-plus.ts',
   output: {
-    file: 'dist/hyperfixi-lite.js',
+    file: 'dist/hyperfixi-lite-plus.js',
     format: 'iife',
     name: 'hyperfixi',
     sourcemap: false
@@ -50,7 +51,7 @@ export default {
       mangle: {
         toplevel: true,
         properties: {
-          regex: /^_/  // Mangle private properties
+          regex: /^_/
         }
       },
       format: {
