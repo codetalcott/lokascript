@@ -25,6 +25,9 @@
     "./browser/es": {
       "default": "./dist/browser-es.es.global.js"
     },
+    "./browser/tr": {
+      "default": "./dist/browser-tr.tr.global.js"
+    },
     "./browser/western": {
       "default": "./dist/browser-western.western.global.js"
     },
