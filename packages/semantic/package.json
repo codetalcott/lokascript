@@ -22,6 +22,9 @@
     "./browser/es-en": {
       "default": "./dist/browser-es-en.es-en.global.js"
     },
+    "./browser/es": {
+      "default": "./dist/browser-es.es.global.js"
+    },
     "./browser/western": {
       "default": "./dist/browser-western.western.global.js"
     },

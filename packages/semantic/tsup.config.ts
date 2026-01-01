@@ -69,6 +69,26 @@ export default defineConfig([
       options.treeShaking = true;
     },
   },
+  // Spanish-only browser bundle (IIFE) - Minimal single-language bundle
+  // Output: hyperfixi-semantic.browser-es.es.global.js
+  // Size: ~70 KB (smallest possible for Spanish)
+  {
+    entry: ['src/browser-es.ts'],
+    outDir: 'dist',
+    format: ['iife'],
+    globalName: 'HyperFixiSemanticEs',
+    minify: true,
+    sourcemap: false,
+    platform: 'browser',
+    noExternal: ['@hyperfixi/i18n'],
+    outExtension() {
+      return { js: '.es.global.js' };
+    },
+    esbuildOptions(options) {
+      options.target = 'es2020';
+      options.treeShaking = true;
+    },
+  },
   // Western languages browser bundle (IIFE)
   // Output: hyperfixi-semantic.browser-western.western.global.js
   // Languages: en, es, pt, fr, de (~150 KB)
