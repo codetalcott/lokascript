@@ -809,8 +809,27 @@ class Parser {
     if (token.type === 'globalVar') { this.advance(); return { type: 'variable', name: token.value, scope: 'global' }; }
     if (token.type === 'selector') { this.advance(); return { type: 'selector', value: token.value }; }
 
-    if (this.match('me', 'my')) { this.advance(); return { type: 'identifier', value: 'me' }; }
-    if (this.match('it', 'its')) { this.advance(); return { type: 'identifier', value: 'it' }; }
+    // Handle implicit possessive: my value, its value (no 's or . needed)
+    if (this.match('my')) {
+      this.advance();
+      const next = this.peek();
+      if ((next.type === 'identifier' || next.type === 'keyword') && !this.isCommandKeyword(next)) {
+        const prop = this.advance().value;
+        return { type: 'possessive', object: { type: 'identifier', value: 'me' }, property: prop };
+      }
+      return { type: 'identifier', value: 'me' };
+    }
+    if (this.match('its')) {
+      this.advance();
+      const next = this.peek();
+      if ((next.type === 'identifier' || next.type === 'keyword') && !this.isCommandKeyword(next)) {
+        const prop = this.advance().value;
+        return { type: 'possessive', object: { type: 'identifier', value: 'it' }, property: prop };
+      }
+      return { type: 'identifier', value: 'it' };
+    }
+    if (this.match('me')) { this.advance(); return { type: 'identifier', value: 'me' }; }
+    if (this.match('it')) { this.advance(); return { type: 'identifier', value: 'it' }; }
     if (this.match('you')) { this.advance(); return { type: 'identifier', value: 'you' }; }
 
     // Positional: the first <li/> or first li
@@ -1076,6 +1095,14 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
     return '';
   };
 
+  // Normalize any value to an array of Elements (for commands that target elements)
+  const toElementArray = (val: any): Element[] => {
+    if (Array.isArray(val)) return val.filter(e => e instanceof Element);
+    if (val instanceof Element) return [val];
+    if (typeof val === 'string') return Array.from(document.querySelectorAll(val));
+    return [];
+  };
+
   switch (cmd.name) {
     case 'toggle': {
       const className = getClassName(cmd.args[0]) || String(await evaluate(cmd.args[0], ctx));
@@ -1239,7 +1266,16 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
         ctx.it = newVal;
         return newVal;
       }
-      return null;
+
+      // Handle element selectors (e.g., increment #count)
+      const elements = toElementArray(await evaluate(target, ctx));
+      for (const el of elements) {
+        const current = parseFloat(el.textContent || '0') || 0;
+        const newVal = current + delta;
+        el.textContent = String(newVal);
+        ctx.it = newVal;
+      }
+      return ctx.it;
     }
 
     case 'focus': {
