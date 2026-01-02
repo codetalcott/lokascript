@@ -50,9 +50,6 @@
     "./browser/hybrid-hx": {
       "default": "./dist/hyperfixi-hybrid-hx.js"
     },
-    "./browser/modular-standard": {
-      "default": "./dist/hyperfixi-modular-standard.js"
-    },
     "./commands": {
       "types": "./dist/commands/index.d.ts",
       "import": "./dist/commands/index.mjs",
@@ -104,7 +101,6 @@
     "build:browser:esm:standard": "rollup -c rollup.browser-standard-esm.config.mjs",
     "build:browser:esm:all": "npm run build:browser:esm && npm run build:browser:esm:minimal && npm run build:browser:esm:standard",
     "build:browser:modular": "rollup -c rollup.browser-modular.config.mjs",
-    "build:browser:modular-standard": "rollup -c rollup.browser-modular-standard.config.mjs",
     "dev": "rollup -c -w",
     "test": "vitest run",
     "test:watch": "vitest",
