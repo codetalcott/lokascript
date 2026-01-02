@@ -39,7 +39,7 @@ function normalizeEvent(name: string): string {
 // ============== TOKENIZER ==============
 
 type TokenType =
-  | 'identifier' | 'number' | 'string' | 'operator'
+  | 'identifier' | 'number' | 'string' | 'operator' | 'styleProperty'
   | 'selector' | 'localVar' | 'globalVar' | 'symbol' | 'keyword' | 'eof';
 
 interface Token {
@@ -203,6 +203,14 @@ function tokenize(code: string): Token[] {
     if (['==', '!=', '<=', '>=', '&&', '||'].includes(twoChar)) {
       tokens.push({ type: 'operator', value: twoChar, pos: start });
       pos += 2;
+      continue;
+    }
+
+    // CSS style property: *opacity, *background-color, *display
+    if (code[pos] === '*' && /[a-zA-Z]/.test(code[pos + 1] || '')) {
+      pos++;
+      while (pos < code.length && /[\w-]/.test(code[pos])) pos++;
+      tokens.push({ type: 'styleProperty', value: code.slice(start, pos), pos: start });
       continue;
     }
 
@@ -743,6 +751,12 @@ class Parser {
     while (true) {
       if (this.match("'s")) {
         this.advance();
+        // Handle style property (*opacity) or regular property
+        const next = this.peek();
+        const prop = next.type === 'styleProperty' ? this.advance().value : this.advance().value;
+        left = { type: 'possessive', object: left, property: prop };
+      } else if (this.peek().type === 'styleProperty') {
+        // Direct style property access: #el *opacity (without 's)
         const prop = this.advance().value;
         left = { type: 'possessive', object: left, property: prop };
       } else if (this.peek().value === '.') {
@@ -1103,6 +1117,19 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
     return [];
   };
 
+  // CSS style property helpers (*opacity, *display, *background-color)
+  const isStyleProp = (prop: string) => prop.startsWith('*');
+  const getStyleName = (prop: string) => prop.substring(1);
+  const setStyleProp = (el: Element, prop: string, value: any): boolean => {
+    if (!isStyleProp(prop)) return false;
+    (el as HTMLElement).style.setProperty(getStyleName(prop), String(value));
+    return true;
+  };
+  const getStyleProp = (el: Element, prop: string): string | undefined => {
+    if (!isStyleProp(prop)) return undefined;
+    return getComputedStyle(el as HTMLElement).getPropertyValue(getStyleName(prop));
+  };
+
   switch (cmd.name) {
     case 'toggle': {
       const className = getClassName(cmd.args[0]) || String(await evaluate(cmd.args[0], ctx));
@@ -1136,8 +1163,20 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
 
     case 'put': {
       const content = await evaluate(cmd.args[0], ctx);
-      const targets = await getTarget();
       const modifier = cmd.modifier || 'into';
+
+      // Handle possessive target with style property: put 0.5 into #el's *opacity
+      if (cmd.target?.type === 'possessive' && isStyleProp(cmd.target.property)) {
+        const obj = await evaluate(cmd.target.object, ctx);
+        const elements = toElementArray(obj);
+        for (const el of elements) {
+          setStyleProp(el, cmd.target.property, content);
+        }
+        ctx.it = content;
+        return content;
+      }
+
+      const targets = await getTarget();
       for (const el of targets) {
         const html = String(content);
         if (modifier === 'into') el.innerHTML = html;
@@ -1172,7 +1211,16 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
 
       if (target.type === 'possessive' || target.type === 'member') {
         const obj = await evaluate(target.object, ctx);
-        if (obj) { (obj as any)[target.property] = value; ctx.it = value; return value; }
+        if (obj) {
+          // Check for CSS style property (*opacity, *display, etc.)
+          if (obj instanceof Element && setStyleProp(obj, target.property, value)) {
+            ctx.it = value;
+            return value;
+          }
+          (obj as any)[target.property] = value;
+          ctx.it = value;
+          return value;
+        }
       }
 
       ctx.it = value;
@@ -1265,6 +1313,19 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
         map.set(varName, newVal);
         ctx.it = newVal;
         return newVal;
+      }
+
+      // Handle possessive with style property: increment #el's *opacity by 0.1
+      if (target.type === 'possessive' && isStyleProp(target.property)) {
+        const obj = await evaluate(target.object, ctx);
+        const elements = toElementArray(obj);
+        for (const el of elements) {
+          const current = parseFloat(getStyleProp(el, target.property) || '0') || 0;
+          const newVal = current + delta;
+          setStyleProp(el, target.property, newVal);
+          ctx.it = newVal;
+        }
+        return ctx.it;
       }
 
       // Handle element selectors (e.g., increment #count)

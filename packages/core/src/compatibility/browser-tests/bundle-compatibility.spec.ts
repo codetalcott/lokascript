@@ -274,6 +274,68 @@ for (const [bundleKey, bundleConfig] of Object.entries(BUNDLES)) {
         await expect(page.locator('#btn')).not.toHaveClass(/clicked/);
       });
     }
+
+    // Test *property CSS style syntax (hybrid-complete only)
+    if (bundleKey === 'hybrid-complete') {
+      test('*property CSS style syntax works with set', async ({ page }) => {
+        await page.setContent(`
+          <!DOCTYPE html>
+          <html><body>
+            <script src="${BASE_URL}/packages/core/dist/${bundleConfig.file}"></script>
+            <button id="btn" _="on click set #box's *opacity to 0.5">Set Opacity</button>
+            <div id="box" style="width:100px;height:100px;background:red;">Box</div>
+          </body></html>
+        `);
+        await page.waitForFunction(() => (window as any).hyperfixi !== undefined, { timeout: 10000 });
+        await page.evaluate(() => (window as any).hyperfixi.init());
+
+        await page.click('#btn');
+        await page.waitForTimeout(100);
+        const opacity = await page.locator('#box').evaluate(el => el.style.opacity);
+        expect(opacity).toBe('0.5');
+      });
+
+      test('*property CSS style syntax works with put', async ({ page }) => {
+        await page.setContent(`
+          <!DOCTYPE html>
+          <html><body>
+            <script src="${BASE_URL}/packages/core/dist/${bundleConfig.file}"></script>
+            <button id="btn" _="on click put '0.3' into #box's *opacity">Put Opacity</button>
+            <div id="box" style="width:100px;height:100px;background:blue;">Box</div>
+          </body></html>
+        `);
+        await page.waitForFunction(() => (window as any).hyperfixi !== undefined, { timeout: 10000 });
+        await page.evaluate(() => (window as any).hyperfixi.init());
+
+        await page.click('#btn');
+        await page.waitForTimeout(100);
+        const opacity = await page.locator('#box').evaluate(el => el.style.opacity);
+        expect(opacity).toBe('0.3');
+      });
+
+      test('*property CSS style syntax works with increment', async ({ page }) => {
+        await page.setContent(`
+          <!DOCTYPE html>
+          <html><body>
+            <div id="box" style="width:100px;height:100px;background:green;opacity:0;">Box</div>
+            <button id="btn" _="on click increment #box's *opacity by 0.2">Increment Opacity</button>
+            <script src="${BASE_URL}/packages/core/dist/${bundleConfig.file}"></script>
+          </body></html>
+        `);
+        await page.waitForFunction(() => (window as any).hyperfixi !== undefined, { timeout: 10000 });
+        // Don't call init() - bundle auto-initializes
+
+        // Get initial opacity (should be 0)
+        const initialOpacity = await page.locator('#box').evaluate(el => el.style.opacity);
+        expect(initialOpacity).toBe('0');
+
+        await page.click('#btn');
+        await page.waitForTimeout(100);
+        const opacity = await page.locator('#box').evaluate(el => el.style.opacity);
+        // Initial 0 + 0.2 = 0.2
+        expect(opacity).toBe('0.2');
+      });
+    }
   });
 }
 
