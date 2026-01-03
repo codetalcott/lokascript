@@ -88,6 +88,11 @@
       "import": "./dist/multilingual/index.mjs",
       "require": "./dist/multilingual/index.js"
     },
+    "./bundle-generator": {
+      "types": "./dist/bundle-generator/index.d.ts",
+      "import": "./dist/bundle-generator/index.mjs",
+      "require": "./dist/bundle-generator/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
