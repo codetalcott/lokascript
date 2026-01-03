@@ -70,6 +70,26 @@
       "import": "./dist/parser/hybrid-parser.mjs",
       "require": "./dist/parser/hybrid-parser.js"
     },
+    "./parser/hybrid/parser-core": {
+      "types": "./dist/parser/hybrid/parser-core.d.ts",
+      "import": "./dist/parser/hybrid/parser-core.mjs",
+      "require": "./dist/parser/hybrid/parser-core.js"
+    },
+    "./parser/hybrid/ast-types": {
+      "types": "./dist/parser/hybrid/ast-types.d.ts",
+      "import": "./dist/parser/hybrid/ast-types.mjs",
+      "require": "./dist/parser/hybrid/ast-types.js"
+    },
+    "./parser/hybrid/tokenizer": {
+      "types": "./dist/parser/hybrid/tokenizer.d.ts",
+      "import": "./dist/parser/hybrid/tokenizer.mjs",
+      "require": "./dist/parser/hybrid/tokenizer.js"
+    },
+    "./parser/hybrid/aliases": {
+      "types": "./dist/parser/hybrid/aliases.d.ts",
+      "import": "./dist/parser/hybrid/aliases.mjs",
+      "require": "./dist/parser/hybrid/aliases.js"
+    },
     "./parser/regex": {
       "types": "./dist/parser/regex-parser.d.ts",
       "import": "./dist/parser/regex-parser.mjs",
@@ -124,6 +144,7 @@
     "build:browser:esm:standard": "rollup -c rollup.browser-standard-esm.config.mjs",
     "build:browser:esm:all": "npm run build:browser:esm && npm run build:browser:esm:minimal && npm run build:browser:esm:standard",
     "build:browser:modular": "rollup -c rollup.browser-modular.config.mjs",
+    "build:parser-modules": "rollup -c rollup.parser-modules.config.mjs",
     "generate:bundle": "tsx scripts/generate-inline-bundle.ts",
     "generate:bundle:textshelf": "tsx scripts/generate-inline-bundle.ts --config bundle-configs/textshelf.config.json",
     "dev": "rollup -c -w",

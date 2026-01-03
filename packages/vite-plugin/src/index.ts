@@ -200,17 +200,30 @@ export function hyperfixi(options: HyperfixiPluginOptions = {}): Plugin {
     },
 
     /**
-     * Handle file deletion in HMR
+     * Handle file changes in HMR
      */
-    handleHotUpdate(ctx: HmrContext) {
-      const { file } = ctx;
+    async handleHotUpdate(ctx: HmrContext) {
+      const { file, read } = ctx;
 
-      // Check if a scanned file was deleted or changed
+      // Check if a scanned file was changed
       if (scanner.shouldScan(file)) {
-        // The transform hook will handle content changes
-        // Here we just need to check for deletions
         try {
-          require('fs').accessSync(file);
+          // Read the updated file content and re-scan
+          const content = await read();
+          const usage = scanner.scan(content, file);
+          const changed = aggregator.add(file, usage);
+
+          if (options.debug) {
+            console.log('[hyperfixi] HMR: Re-scanned', file.split('/').pop(), usage);
+          }
+
+          // Invalidate virtual module if usage changed
+          if (changed) {
+            const currentHash = computeUsageHash(aggregator.getUsage());
+            if (currentHash !== lastUsageHash) {
+              invalidateVirtualModule();
+            }
+          }
         } catch {
           // File was deleted, remove from aggregator
           if (aggregator.remove(file)) {

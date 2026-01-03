@@ -67,7 +67,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
     case 'show': {
       const targets = await getTarget();
       for (const el of targets) {
-        (el as HTMLElement).style.display = '';
+        el.style.display = '';
         el.classList.remove('hidden');
       }
       return targets;
@@ -76,7 +76,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
   hide: `
     case 'hide': {
       const targets = await getTarget();
-      for (const el of targets) (el as HTMLElement).style.display = 'none';
+      for (const el of targets) el.style.display = 'none';
       return targets;
     }`,
 
@@ -99,7 +99,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
           if (obj instanceof Element && isStyleProp(target.property)) {
             setStyleProp(obj, target.property, value);
           } else {
-            (obj as any)[target.property] = value;
+            obj[target.property] = value;
           }
           ctx.it = value;
           return value;
@@ -136,10 +136,10 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
                        parseInt(String(durationVal)) || 300;
 
       const targets = await getTarget();
-      const promises: Promise<void>[] = [];
+      const promises = [];
 
       for (const el of targets) {
-        const htmlEl = el as HTMLElement;
+        const htmlEl = el;
         const kebabProp = property.replace(/([A-Z])/g, '-$1').toLowerCase();
 
         const oldTransition = htmlEl.style.transition;
@@ -190,7 +190,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
 
   log: `
     case 'log': {
-      const values = await Promise.all(cmd.args.map((a: any) => evaluate(a, ctx)));
+      const values = await Promise.all(cmd.args.map(a => evaluate(a, ctx)));
       console.log(...values);
       return values[0];
     }`,
@@ -317,14 +317,14 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string> = {
   focus: `
     case 'focus': {
       const targets = await getTarget();
-      for (const el of targets) (el as HTMLElement).focus();
+      for (const el of targets) el.focus();
       return targets;
     }`,
 
   blur: `
     case 'blur': {
       const targets = await getTarget();
-      for (const el of targets) (el as HTMLElement).blur();
+      for (const el of targets) el.blur();
       return targets;
     }`,
 
@@ -364,7 +364,7 @@ const BLOCK_IMPLEMENTATIONS: Record<string, string> = {
 
   for: `
     case 'for': {
-      const { variable, iterable } = block.condition as any;
+      const { variable, iterable } = block.condition;
       const items = await evaluate(iterable, ctx);
       const arr = Array.isArray(items) ? items : items instanceof NodeList ? Array.from(items) : [items];
       const varName = variable.startsWith(':') ? variable.slice(1) : variable;
@@ -390,14 +390,14 @@ const BLOCK_IMPLEMENTATIONS: Record<string, string> = {
 
   fetch: `
     case 'fetch': {
-      const { url, responseType } = block.condition as any;
+      const { url, responseType } = block.condition;
       try {
         const urlVal = await evaluate(url, ctx);
         const response = await fetch(String(urlVal));
         if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
 
         const resType = await evaluate(responseType, ctx);
-        let data: any;
+        let data;
         if (resType === 'json') data = await response.json();
         else if (resType === 'html') {
           const text = await response.text();
@@ -411,7 +411,7 @@ const BLOCK_IMPLEMENTATIONS: Record<string, string> = {
         ctx.locals.set('response', response);
 
         await executeSequenceWithBlocks(block.body, ctx);
-      } catch (error: any) {
+      } catch (error) {
         if (error?.type === 'return') throw error;
         ctx.locals.set('error', error);
         console.error('Fetch error:', error);
@@ -465,21 +465,12 @@ function generateBundleCode(config: GeneratorOptions): string {
 
 // Parser imports
 import { HybridParser } from '${parserImportPath}/parser-core';
-import type { ASTNode, CommandNode, EventNode${hasBlocks ? ', BlockNode' : ''} } from '${parserImportPath}/ast-types';
 
-// Runtime context
-interface Context {
-  me: Element;
-  event?: Event;
-  it?: any;
-  you?: Element;
-  locals: Map<string, any>;
-}
-
-const globalVars = new Map<string, any>();
+// Runtime state
+const globalVars = new Map();
 ${hasBlocks ? 'const MAX_LOOP_ITERATIONS = 1000;' : ''}
 
-async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
+async function evaluate(node, ctx) {
   switch (node.type) {
     case 'literal': return node.value;
 
@@ -492,14 +483,14 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
       if (node.value === 'document') return document;
       if (node.value === 'window') return window;
       if (ctx.locals.has(node.value)) return ctx.locals.get(node.value);
-      if (node.value in (ctx.me as any)) return (ctx.me as any)[node.value];
+      if (node.value in ctx.me) return ctx.me[node.value];
       return node.value;
 
     case 'variable':
       if (node.scope === 'local') return ctx.locals.get(node.name.slice(1));
       const gName = node.name.slice(1);
       if (globalVars.has(gName)) return globalVars.get(gName);
-      return (window as any)[node.name];
+      return window[node.name];
 
     case 'selector':
       const elements = document.querySelectorAll(node.value);
@@ -516,8 +507,8 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
       return obj[prop];
 
     case 'call': {
-      let callContext: any = null;
-      let callee: any;
+      let callContext = null;
+      let callee;
 
       if (node.callee.type === 'member' || node.callee.type === 'possessive') {
         callContext = await evaluate(node.callee.object, ctx);
@@ -529,7 +520,7 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
         callee = await evaluate(node.callee, ctx);
       }
 
-      const args = await Promise.all(node.args.map((a: ASTNode) => evaluate(a, ctx)));
+      const args = await Promise.all(node.args.map(a => evaluate(a, ctx)));
       if (typeof callee === 'function') return callee.apply(callContext, args);
       return undefined;
     }
@@ -541,7 +532,7 @@ ${positionalExpressions ? `
   }
 }
 
-async function evaluateBinary(node: ASTNode, ctx: Context): Promise<any> {
+async function evaluateBinary(node, ctx) {
   if (node.operator === 'has') {
     const left = await evaluate(node.left, ctx);
     if (left instanceof Element && node.right.type === 'selector' && node.right.value.startsWith('.')) {
@@ -580,11 +571,11 @@ async function evaluateBinary(node: ASTNode, ctx: Context): Promise<any> {
   }
 }
 ${positionalExpressions ? `
-function evaluatePositional(node: ASTNode, ctx: Context): Element | null {
+function evaluatePositional(node, ctx) {
   const target = node.target;
-  let elements: Element[] = [];
+  let elements = [];
 
-  let selector: string | null = null;
+  let selector = null;
   if (target.type === 'selector') {
     selector = target.value;
   } else if (target.type === 'identifier') {
@@ -608,17 +599,17 @@ function evaluatePositional(node: ASTNode, ctx: Context): Element | null {
 }
 ` : ''}
 ${needsStyleHelpers ? `
-const isStyleProp = (prop: string) => prop?.startsWith('*');
-const getStyleName = (prop: string) => prop.substring(1);
-const setStyleProp = (el: Element, prop: string, value: any): boolean => {
+const isStyleProp = (prop) => prop?.startsWith('*');
+const getStyleName = (prop) => prop.substring(1);
+const setStyleProp = (el, prop, value) => {
   if (!isStyleProp(prop)) return false;
-  (el as HTMLElement).style.setProperty(getStyleName(prop), String(value));
+  el.style.setProperty(getStyleName(prop), String(value));
   return true;
 };
 ` : ''}
 
 ${needsElementArrayHelper ? `
-const toElementArray = (val: any): Element[] => {
+const toElementArray = (val) => {
   if (Array.isArray(val)) return val.filter(e => e instanceof Element);
   if (val instanceof Element) return [val];
   if (typeof val === 'string') return Array.from(document.querySelectorAll(val));
@@ -626,8 +617,8 @@ const toElementArray = (val: any): Element[] => {
 };
 ` : ''}
 
-async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
-  const getTarget = async (): Promise<Element[]> => {
+async function executeCommand(cmd, ctx) {
+  const getTarget = async () => {
     if (!cmd.target) return [ctx.me];
     const t = await evaluate(cmd.target, ctx);
     if (Array.isArray(t)) return t;
@@ -636,7 +627,7 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
     return [ctx.me];
   };
 
-  const getClassName = (node: any): string => {
+  const getClassName = (node) => {
     if (!node) return '';
     if (node.type === 'selector') return node.value.slice(1);
     if (node.type === 'string' || node.type === 'literal') {
@@ -656,7 +647,7 @@ ${commandCases}
   }
 }
 ${hasBlocks ? `
-async function executeBlock(block: BlockNode, ctx: Context): Promise<any> {
+async function executeBlock(block, ctx) {
   switch (block.type) {
 ${blockCases}
 
@@ -666,40 +657,40 @@ ${blockCases}
   }
 }
 ` : ''}
-async function executeSequence(nodes: ASTNode[], ctx: Context): Promise<any> {
-  let result: any;
+async function executeSequence(nodes, ctx) {
+  let result;
   for (const node of nodes) {
     if (node.type === 'command') {
-      result = await executeCommand(node as CommandNode, ctx);
+      result = await executeCommand(node, ctx);
     }${hasBlocks ? ` else if (['if', 'repeat', 'for', 'while', 'fetch'].includes(node.type)) {
-      result = await executeBlock(node as BlockNode, ctx);
+      result = await executeBlock(node, ctx);
     }` : ''}
   }
   return result;
 }
 ${hasBlocks ? `
-async function executeSequenceWithBlocks(nodes: ASTNode[], ctx: Context): Promise<any> {
+async function executeSequenceWithBlocks(nodes, ctx) {
   try {
     return await executeSequence(nodes, ctx);
-  } catch (e: any) {
+  } catch (e) {
     if (e?.type === 'return') throw e;
     throw e;
   }
 }
 ` : ''}
-async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any> {
-  const ctx: Context = { me, event, locals: new Map() };
+async function executeAST(ast, me, event) {
+  const ctx = { me, event, locals: new Map() };
 
   if (ast.type === 'sequence') {
-    ${hasReturn || hasBlocks ? 'try { return await executeSequence(ast.commands, ctx); } catch (e: any) { if (e?.type === \'return\') return e.value; throw e; }' : 'return executeSequence(ast.commands, ctx);'}
+    ${hasReturn || hasBlocks ? 'try { return await executeSequence(ast.commands, ctx); } catch (e) { if (e?.type === \'return\') return e.value; throw e; }' : 'return executeSequence(ast.commands, ctx);'}
   }
 
   if (ast.type === 'event') {
-    const eventNode = ast as EventNode;
+    const eventNode = ast;
     const eventName = eventNode.event;
 
     if (eventName === 'init') {
-      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, ctx); } catch (e: any) { if (e?.type !== \'return\') throw e; }' : 'await executeSequence(eventNode.body, ctx);'}
+      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, ctx); } catch (e) { if (e?.type !== \'return\') throw e; }' : 'await executeSequence(eventNode.body, ctx);'}
       return;
     }
 
@@ -707,22 +698,22 @@ async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any
     const targetEl = target instanceof Element ? target : me;
     const mods = eventNode.modifiers;
 
-    let handler = async (e: Event) => {
+    let handler = async (e) => {
       if (mods.prevent) e.preventDefault();
       if (mods.stop) e.stopPropagation();
 
-      const handlerCtx: Context = {
+      const handlerCtx = {
         me, event: e,
         you: e.target instanceof Element ? e.target : undefined,
         locals: new Map(),
       };
-      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, handlerCtx); } catch (err: any) { if (err?.type !== \'return\') throw err; }' : 'await executeSequence(eventNode.body, handlerCtx);'}
+      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, handlerCtx); } catch (err) { if (err?.type !== \'return\') throw err; }' : 'await executeSequence(eventNode.body, handlerCtx);'}
     };
 
     if (mods.debounce) {
-      let timeout: any;
+      let timeout;
       const orig = handler;
-      handler = async (e: Event) => {
+      handler = async (e) => {
         clearTimeout(timeout);
         timeout = setTimeout(() => orig(e), mods.debounce);
       };
@@ -731,9 +722,9 @@ async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any
     if (mods.throttle) {
       let lastCall = 0;
       const orig = handler;
-      handler = async (e: Event) => {
+      handler = async (e) => {
         const now = Date.now();
-        if (now - lastCall >= mods.throttle!) {
+        if (now - lastCall >= mods.throttle) {
           lastCall = now;
           await orig(e);
         }
@@ -747,7 +738,7 @@ async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any
   return null;
 }
 
-function processElement(el: Element): void {
+function processElement(el) {
   const code = el.getAttribute('_');
   if (!code) return;
 
@@ -760,7 +751,7 @@ function processElement(el: Element): void {
   }
 }
 
-function processElements(root: Element | Document = document): void {
+function processElements(root = document) {
   const elements = root.querySelectorAll('[_]');
   elements.forEach(processElement);
 }
@@ -768,20 +759,20 @@ function processElements(root: Element | Document = document): void {
 const api = {
   version: '1.0.0-${name.toLowerCase().replace(/\s+/g, '-')}',
 
-  parse(code: string): ASTNode {
+  parse(code) {
     const parser = new HybridParser(code);
     return parser.parse();
   },
 
-  async execute(code: string, element?: Element): Promise<any> {
+  async execute(code, element) {
     const me = element || document.body;
     const parser = new HybridParser(code);
     const ast = parser.parse();
     return executeAST(ast, me);
   },
 
-  run: async (code: string, element?: Element) => api.execute(code, element),
-  eval: async (code: string, element?: Element) => api.execute(code, element),
+  run: async (code, element) => api.execute(code, element),
+  eval: async (code, element) => api.execute(code, element),
 
   init: processElements,
   process: processElements,
@@ -792,8 +783,8 @@ const api = {
 };
 ${autoInit ? `
 if (typeof window !== 'undefined') {
-  (window as any).${globalName} = api;
-  (window as any)._hyperscript = api;
+  window.${globalName} = api;
+  window._hyperscript = api;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => processElements());
@@ -801,8 +792,8 @@ if (typeof window !== 'undefined') {
     processElements();
   }
 ${htmxIntegration ? `
-  document.addEventListener('htmx:afterSettle', (e: Event) => {
-    const target = (e as CustomEvent).detail?.target;
+  document.addEventListener('htmx:afterSettle', (e) => {
+    const target = e.detail?.target;
     if (target) processElements(target);
   });
 ` : ''}
