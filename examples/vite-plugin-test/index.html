@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vite Plugin Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .active { background: #667eea; color: white; }
+    .hidden { display: none; }
+    button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+    #output { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+    .counter { font-size: 2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Vite Plugin Test</h1>
+  <p>Testing automatic hyperscript detection and minimal bundle generation.</p>
+
+  <h2>1. Toggle Class</h2>
+  <button _="on click toggle .active on me">Toggle Active</button>
+
+  <h2>2. Show/Hide</h2>
+  <button _="on click show #content">Show</button>
+  <button _="on click hide #content">Hide</button>
+  <div id="content">This content can be shown/hidden.</div>
+
+  <h2>3. Put Content</h2>
+  <button _="on click put 'Hello from HyperFixi!' into #output">Say Hello</button>
+  <button _="on click put 'Goodbye!' into #output">Say Goodbye</button>
+  <div id="output">Click a button above.</div>
+
+  <h2>4. Counter</h2>
+  <button _="on click decrement #count">-</button>
+  <span id="count" class="counter">0</span>
+  <button _="on click increment #count">+</button>
+
+  <h2>5. Input Mirror</h2>
+  <input type="text" placeholder="Type here..." _="on input put my value into #mirror">
+  <div id="mirror" style="margin-top: 10px; color: #666;">Your text will appear here</div>
+
+  <hr>
+  <h2>Expected Detection</h2>
+  <p>The plugin should detect these commands: <code>toggle, show, hide, put, decrement, increment</code></p>
+  <p>Check the console for debug output from the plugin.</p>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

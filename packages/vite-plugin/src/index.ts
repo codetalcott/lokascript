@@ -120,6 +120,7 @@ export function hyperfixi(options: HyperfixiPluginOptions = {}): Plugin {
 
   return {
     name: 'vite-plugin-hyperfixi',
+    enforce: 'pre' as const,
 
     /**
      * Configure plugin based on Vite mode
@@ -133,10 +134,24 @@ export function hyperfixi(options: HyperfixiPluginOptions = {}): Plugin {
     },
 
     /**
-     * Store server reference for HMR
+     * Store server reference and pre-scan HTML files for HMR
      */
-    configureServer(_server: ViteDevServer) {
+    async configureServer(_server: ViteDevServer) {
       server = _server;
+
+      // Pre-scan project to detect hyperscript before first request
+      const cwd = _server.config.root;
+      if (options.debug) {
+        console.log('[hyperfixi] Pre-scanning project:', cwd);
+      }
+
+      const scannedFiles = await scanner.scanProject(cwd);
+      aggregator.loadFromScan(scannedFiles);
+
+      if (options.debug) {
+        const summary = aggregator.getSummary();
+        console.log('[hyperfixi] Pre-scan complete:', summary);
+      }
     },
 
     /**
