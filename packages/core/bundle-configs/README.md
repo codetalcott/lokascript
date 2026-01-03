@@ -11,6 +11,15 @@ npm run generate:bundle -- --config bundle-configs/textshelf.config.json
 # Generate from command line
 npm run generate:bundle -- --commands toggle,add,remove --output src/my-bundle.ts --name MyApp
 
+# Include block commands (if, repeat, for, while, fetch)
+npm run generate:bundle -- --commands toggle,set --blocks if,repeat --output src/my-bundle.ts
+
+# Include positional expressions (first, last, next, previous, closest, parent)
+npm run generate:bundle -- --commands toggle,add --positional --output src/my-bundle.ts
+
+# Output to any directory (import paths are auto-computed)
+npm run generate:bundle -- --commands toggle,add --output dist/custom/my-bundle.ts
+
 # Then build with Rollup
 npx rollup -c rollup.browser-custom.config.mjs
 ```
@@ -31,8 +40,10 @@ npx rollup -c rollup.browser-custom.config.mjs
 {
   "name": "MyBundle",
   "commands": ["toggle", "add", "remove", "show", "hide"],
+  "blocks": ["if", "repeat"],
   "output": "src/compatibility/browser-bundle-mybundle.ts",
   "htmxIntegration": true,
+  "positionalExpressions": true,
   "globalName": "hyperfixi"
 }
 ```
@@ -43,8 +54,10 @@ npx rollup -c rollup.browser-custom.config.mjs
 |--------|------|---------|-------------|
 | `name` | string | required | Bundle name (used in comments and errors) |
 | `commands` | string[] | required | List of commands to include |
-| `output` | string | required | Output TypeScript file path |
+| `blocks` | string[] | `[]` | Block commands: `if`, `repeat`, `for`, `while`, `fetch` |
+| `output` | string | required | Output TypeScript file path (any location) |
 | `htmxIntegration` | boolean | `false` | Add `htmx:afterSettle` listener |
+| `positionalExpressions` | boolean | `false` | Include `first`, `last`, `next`, `previous`, `closest`, `parent` |
 | `globalName` | string | `"hyperfixi"` | Global variable name |
 
 ## Available Commands
@@ -92,12 +105,39 @@ npx tsx scripts/generate-inline-bundle.ts [options]
 Options:
   --config <file>     JSON config file
   --commands <list>   Comma-separated list of commands
-  --output <file>     Output file path
+  --blocks <list>     Comma-separated list of blocks (if, repeat, for, while, fetch)
+  --output <file>     Output file path (any directory, paths auto-computed)
   --name <name>       Bundle name (default: "Custom")
   --htmx              Enable HTMX integration
+  --positional        Enable positional expressions (first, last, next, etc.)
   --global <name>     Global variable name (default: "hyperfixi")
   --help              Show help
 ```
+
+## Block Commands
+
+Block commands enable control flow:
+
+| Block | Description | Example |
+|-------|-------------|---------|
+| `if` | Conditional execution | `if me has .active then hide me end` |
+| `repeat` | Loop N times | `repeat 3 times add .pulse end` |
+| `for` | Iterate over elements | `for each item in .items toggle .active on item end` |
+| `while` | Loop while condition | `while :count < 10 increment :count end` |
+| `fetch` | HTTP requests | `fetch /api/data as json then put result into #output end` |
+
+## Positional Expressions
+
+When enabled, supports these selectors:
+
+| Expression | Description |
+|------------|-------------|
+| `first in .items` | First matching element |
+| `last in .items` | Last matching element |
+| `next <selector>` | Next sibling matching selector |
+| `previous <selector>` | Previous sibling matching selector |
+| `closest <selector>` | Closest ancestor matching selector |
+| `parent` | Direct parent element |
 
 ## Example Configs
 

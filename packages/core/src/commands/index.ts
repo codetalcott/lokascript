@@ -6,7 +6,105 @@
  *
  * These wrappers extend the original commands and move argument parsing
  * logic from Runtime to the commands themselves.
+ *
+ * ## Tree-Shaking Usage
+ *
+ * For optimal tree-shaking, import only the commands you need:
+ *
+ * ```typescript
+ * import { createTreeShakeableRuntime } from '@hyperfixi/core/runtime';
+ * import { toggle, add, remove } from '@hyperfixi/core/commands';
+ *
+ * const runtime = createTreeShakeableRuntime(
+ *   [toggle(), add(), remove()],
+ *   { expressionEvaluator: createCoreExpressionEvaluator() }
+ * );
+ * ```
  */
+
+// =============================================================================
+// TREE-SHAKEABLE FACTORY EXPORTS (Recommended for custom bundles)
+// =============================================================================
+// Import only what you need - bundlers will tree-shake unused exports
+
+// DOM Commands (factories)
+export { createHideCommand as hide } from './dom/hide';
+export { createShowCommand as show } from './dom/show';
+export { createAddCommand as add } from './dom/add';
+export { createRemoveCommand as remove } from './dom/remove';
+export { createToggleCommand as toggle } from './dom/toggle';
+export { createPutCommand as put } from './dom/put';
+export { createMakeCommand as make } from './dom/make';
+export { createSwapCommand as swap, createMorphCommand as morph } from './dom/swap';
+export { createProcessPartialsCommand as processPartialsCmd } from './dom/process-partials';
+
+// Async Commands (factories)
+export { createWaitCommand as wait } from './async/wait';
+export { createFetchCommand as fetch } from './async/fetch';
+
+// Data Commands (factories)
+export { createSetCommand as set } from './data/set';
+export { createGetCommand as get } from './data/get';
+export { createIncrementCommand as increment } from './data/increment';
+export { createDecrementCommand as decrement } from './data/decrement';
+export { createBindCommand as bind } from './data/bind';
+export { createPersistCommand as persist } from './data/persist';
+export { createDefaultCommand as defaultCmd } from './data/default';
+
+// Utility Commands (factories)
+export { createLogCommand as log } from './utility/log';
+export { createTellCommand as tell } from './utility/tell';
+export { createCopyCommand as copy } from './utility/copy';
+export { createPickCommand as pick } from './utility/pick';
+export { createBeepCommand as beep } from './utility/beep';
+
+// Event Commands (factories)
+export { createTriggerCommand as trigger } from './events/trigger';
+export { createSendCommand as send } from './events/send';
+
+// Navigation Commands (factories)
+export { createGoCommand as go } from './navigation/go';
+export { createPushUrlCommand as pushUrl } from './navigation/push-url';
+export { createReplaceUrlCommand as replaceUrl } from './navigation/replace-url';
+
+// Control Flow Commands (factories)
+export { createIfCommand as if_ } from './control-flow/if';
+export { createUnlessCommand as unless } from './control-flow/unless';
+export { createRepeatCommand as repeat } from './control-flow/repeat';
+export { createBreakCommand as break_ } from './control-flow/break';
+export { createContinueCommand as continue_ } from './control-flow/continue';
+export { createHaltCommand as halt } from './control-flow/halt';
+export { createReturnCommand as return_ } from './control-flow/return';
+export { createExitCommand as exit } from './control-flow/exit';
+export { createThrowCommand as throw_ } from './control-flow/throw';
+
+// Execution Commands (factories)
+export { createCallCommand as call } from './execution/call';
+export { createPseudoCommand as pseudo } from './execution/pseudo-command';
+
+// Content Commands (factories)
+export { createAppendCommand as append } from './content/append';
+
+// Animation Commands (factories)
+export { createTransitionCommand as transition } from './animation/transition';
+export { createMeasureCommand as measure } from './animation/measure';
+export { createSettleCommand as settle } from './animation/settle';
+export { createTakeCommand as take } from './animation/take';
+
+// Advanced Commands (factories)
+export { createJsCommand as js } from './advanced/js';
+export { createAsyncCommand as async_ } from './advanced/async';
+
+// Behavior Commands (factories)
+export { createInstallCommand as install } from './behaviors/install';
+
+// Template Commands (factories)
+export { createRenderCommand as render } from './templates/render';
+
+// =============================================================================
+// BACKWARD-COMPATIBLE EXPORTS (Full class + factory names)
+// =============================================================================
+// These exports maintain backward compatibility with existing code
 
 // DOM Commands
 export { HideCommand, createHideCommand } from './dom/hide';

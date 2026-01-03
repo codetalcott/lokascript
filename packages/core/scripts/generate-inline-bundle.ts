@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Inline Bundle Generator
+ * Inline Bundle Generator v2
  *
  * Generates minimal inline bundles by including only specified commands.
  * Uses code generation instead of tree-shaking for optimal bundle size.
@@ -13,8 +13,10 @@
  *   {
  *     "name": "my-bundle",
  *     "commands": ["toggle", "add", "remove", "show", "hide"],
- *     "output": "src/compatibility/browser-bundle-my-custom.ts",
- *     "htmxIntegration": true
+ *     "blocks": ["if", "repeat"],
+ *     "output": "dist/my-bundle.ts",
+ *     "htmxIntegration": true,
+ *     "positionalExpressions": true
  *   }
  */
 
@@ -338,38 +340,171 @@ const STYLE_COMMANDS = ['set', 'put', 'increment', 'decrement'];
 const ELEMENT_ARRAY_COMMANDS = ['put', 'increment', 'decrement'];
 
 // =============================================================================
+// BLOCK IMPLEMENTATIONS
+// =============================================================================
+
+const BLOCK_IMPLEMENTATIONS: Record<string, string> = {
+  if: `
+    case 'if': {
+      const condition = await evaluate(block.condition!, ctx);
+      if (condition) {
+        return executeSequenceWithBlocks(block.body, ctx);
+      } else if (block.elseBody) {
+        return executeSequenceWithBlocks(block.elseBody, ctx);
+      }
+      return null;
+    }`,
+
+  repeat: `
+    case 'repeat': {
+      const count = await evaluate(block.condition!, ctx);
+      const n = typeof count === 'number' ? count : parseInt(String(count));
+      for (let i = 0; i < n && i < MAX_LOOP_ITERATIONS; i++) {
+        ctx.locals.set('__loop_index__', i);
+        ctx.locals.set('__loop_count__', i + 1);
+        await executeSequenceWithBlocks(block.body, ctx);
+      }
+      return null;
+    }`,
+
+  for: `
+    case 'for': {
+      const { variable, iterable } = block.condition as any;
+      const items = await evaluate(iterable, ctx);
+      const arr = Array.isArray(items) ? items : items instanceof NodeList ? Array.from(items) : [items];
+      const varName = variable.startsWith(':') ? variable.slice(1) : variable;
+      for (let i = 0; i < arr.length && i < MAX_LOOP_ITERATIONS; i++) {
+        ctx.locals.set(varName, arr[i]);
+        ctx.locals.set('__loop_index__', i);
+        ctx.locals.set('__loop_count__', i + 1);
+        await executeSequenceWithBlocks(block.body, ctx);
+      }
+      return null;
+    }`,
+
+  while: `
+    case 'while': {
+      let iterations = 0;
+      while (await evaluate(block.condition!, ctx) && iterations < MAX_LOOP_ITERATIONS) {
+        ctx.locals.set('__loop_index__', iterations);
+        await executeSequenceWithBlocks(block.body, ctx);
+        iterations++;
+      }
+      return null;
+    }`,
+
+  fetch: `
+    case 'fetch': {
+      const { url, responseType } = block.condition as any;
+      try {
+        const urlVal = await evaluate(url, ctx);
+        const response = await fetch(String(urlVal));
+        if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
+
+        const resType = await evaluate(responseType, ctx);
+        let data: any;
+        if (resType === 'json') data = await response.json();
+        else if (resType === 'html') {
+          const text = await response.text();
+          const doc = new DOMParser().parseFromString(text, 'text/html');
+          data = doc.body.innerHTML;
+        } else data = await response.text();
+
+        ctx.it = data;
+        ctx.locals.set('it', data);
+        ctx.locals.set('result', data);
+        ctx.locals.set('response', response);
+
+        await executeSequenceWithBlocks(block.body, ctx);
+      } catch (error: any) {
+        if (error?.type === 'return') throw error;
+        ctx.locals.set('error', error);
+        console.error('Fetch error:', error);
+      }
+      return null;
+    }`,
+};
+
+// =============================================================================
 // TEMPLATE GENERATION
 // =============================================================================
 
 interface BundleConfig {
   name: string;
   commands: string[];
+  blocks?: string[];
   output: string;
   htmxIntegration?: boolean;
   globalName?: string;
+  positionalExpressions?: boolean;
+}
+
+function computeImportPath(outputPath: string): string {
+  // Compute relative path from output file to parser/hybrid/
+  const outputDir = path.dirname(outputPath);
+  const parserDir = 'src/parser/hybrid';
+
+  // Normalize paths
+  const normalizedOutput = path.normalize(outputDir);
+  const normalizedParser = path.normalize(parserDir);
+
+  // Compute relative path
+  let relativePath = path.relative(normalizedOutput, normalizedParser);
+
+  // Ensure it starts with . for relative imports
+  if (!relativePath.startsWith('.')) {
+    relativePath = './' + relativePath;
+  }
+
+  // Convert Windows backslashes to forward slashes
+  relativePath = relativePath.replace(/\\/g, '/');
+
+  return relativePath;
 }
 
 function generateBundle(config: BundleConfig): string {
-  const { name, commands, htmxIntegration = false, globalName = 'hyperfixi' } = config;
+  const {
+    name,
+    commands,
+    blocks = [],
+    htmxIntegration = false,
+    globalName = 'hyperfixi',
+    positionalExpressions = false,
+  } = config;
 
   const needsStyleHelpers = commands.some(cmd => STYLE_COMMANDS.includes(cmd));
   const needsElementArrayHelper = commands.some(cmd => ELEMENT_ARRAY_COMMANDS.includes(cmd));
+  const hasBlocks = blocks.length > 0;
+  const hasReturn = commands.includes('return');
+
+  // Compute import path based on output location
+  const importPath = computeImportPath(config.output);
 
   const commandCases = commands
     .filter(cmd => COMMAND_IMPLEMENTATIONS[cmd])
     .map(cmd => COMMAND_IMPLEMENTATIONS[cmd])
     .join('\n');
 
+  const blockCases = blocks
+    .filter(block => BLOCK_IMPLEMENTATIONS[block])
+    .map(block => BLOCK_IMPLEMENTATIONS[block])
+    .join('\n');
+
   const unknownCommands = commands.filter(cmd => !COMMAND_IMPLEMENTATIONS[cmd]);
+  const unknownBlocks = blocks.filter(block => !BLOCK_IMPLEMENTATIONS[block]);
+
   if (unknownCommands.length > 0) {
     console.warn(`Warning: Unknown commands will not be included: ${unknownCommands.join(', ')}`);
+  }
+  if (unknownBlocks.length > 0) {
+    console.warn(`Warning: Unknown blocks will not be included: ${unknownBlocks.join(', ')}`);
   }
 
   return `/**
  * HyperFixi ${name} Bundle (Auto-Generated)
  *
  * Generated by: npx tsx scripts/generate-inline-bundle.ts
- * Commands: ${commands.join(', ')}
+ * Commands: ${commands.join(', ')}${blocks.length > 0 ? `\n * Blocks: ${blocks.join(', ')}` : ''}${positionalExpressions ? '\n * Positional expressions: enabled' : ''}
  *
  * DO NOT EDIT - Regenerate with the build script.
  */
@@ -378,8 +513,8 @@ function generateBundle(config: BundleConfig): string {
 // MODULAR PARSER IMPORTS
 // =============================================================================
 
-import { HybridParser } from '../parser/hybrid/parser-core';
-import type { ASTNode, CommandNode, EventNode } from '../parser/hybrid/ast-types';
+import { HybridParser } from '${importPath}/parser-core';
+import type { ASTNode, CommandNode, EventNode${hasBlocks ? ', BlockNode' : ''} } from '${importPath}/ast-types';
 
 // =============================================================================
 // RUNTIME
@@ -394,6 +529,7 @@ interface Context {
 }
 
 const globalVars = new Map<string, any>();
+${hasBlocks ? 'const MAX_LOOP_ITERATIONS = 1000;' : ''}
 
 async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
   switch (node.type) {
@@ -449,7 +585,10 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
       if (typeof callee === 'function') return callee.apply(callContext, args);
       return undefined;
     }
-
+${positionalExpressions ? `
+    case 'positional':
+      return evaluatePositional(node, ctx);
+` : ''}
     default: return undefined;
   }
 }
@@ -471,6 +610,7 @@ async function evaluateBinary(node: ASTNode, ctx: Context): Promise<any> {
     case '-': return left - right;
     case '*': return left * right;
     case '/': return left / right;
+    case '%': return left % right;
     case '==': case 'is': return left == right;
     case '!=': case 'is not': return left != right;
     case '<': return left < right;
@@ -479,10 +619,46 @@ async function evaluateBinary(node: ASTNode, ctx: Context): Promise<any> {
     case '>=': return left >= right;
     case 'and': case '&&': return left && right;
     case 'or': case '||': return left || right;
+    case 'contains': case 'includes':
+      if (typeof left === 'string') return left.includes(right);
+      if (Array.isArray(left)) return left.includes(right);
+      if (left instanceof Element) return left.contains(right);
+      return false;
+    case 'matches':
+      if (left instanceof Element) return left.matches(right);
+      if (typeof left === 'string') return new RegExp(right).test(left);
+      return false;
     default: return undefined;
   }
 }
+${positionalExpressions ? `
+function evaluatePositional(node: ASTNode, ctx: Context): Element | null {
+  const target = node.target;
+  let elements: Element[] = [];
 
+  let selector: string | null = null;
+  if (target.type === 'selector') {
+    selector = target.value;
+  } else if (target.type === 'identifier') {
+    selector = target.value;
+  } else if (target.type === 'htmlSelector') {
+    selector = target.value;
+  }
+  if (selector) {
+    elements = Array.from(document.querySelectorAll(selector));
+  }
+
+  switch (node.position) {
+    case 'first': return elements[0] || null;
+    case 'last': return elements[elements.length - 1] || null;
+    case 'next': return ctx.me.nextElementSibling;
+    case 'previous': return ctx.me.previousElementSibling;
+    case 'closest': return target.value ? ctx.me.closest(target.value) : null;
+    case 'parent': return ctx.me.parentElement;
+    default: return elements[0] || null;
+  }
+}
+` : ''}
 // =============================================================================
 // COMMAND EXECUTOR
 // =============================================================================
@@ -535,7 +711,21 @@ ${commandCases}
       return null;
   }
 }
+${hasBlocks ? `
+// =============================================================================
+// BLOCK EXECUTOR
+// =============================================================================
 
+async function executeBlock(block: BlockNode, ctx: Context): Promise<any> {
+  switch (block.type) {
+${blockCases}
+
+    default:
+      console.warn(\`${name} bundle: Unknown block '\${block.type}'\`);
+      return null;
+  }
+}
+` : ''}
 // =============================================================================
 // SEQUENCE EXECUTOR
 // =============================================================================
@@ -545,16 +735,27 @@ async function executeSequence(nodes: ASTNode[], ctx: Context): Promise<any> {
   for (const node of nodes) {
     if (node.type === 'command') {
       result = await executeCommand(node as CommandNode, ctx);
-    }
+    }${hasBlocks ? ` else if (['if', 'repeat', 'for', 'while', 'fetch'].includes(node.type)) {
+      result = await executeBlock(node as BlockNode, ctx);
+    }` : ''}
   }
   return result;
 }
-
+${hasBlocks ? `
+async function executeSequenceWithBlocks(nodes: ASTNode[], ctx: Context): Promise<any> {
+  try {
+    return await executeSequence(nodes, ctx);
+  } catch (e: any) {
+    if (e?.type === 'return') throw e;
+    throw e;
+  }
+}
+` : ''}
 async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any> {
   const ctx: Context = { me, event, locals: new Map() };
 
   if (ast.type === 'sequence') {
-    return executeSequence(ast.commands, ctx);
+    ${hasReturn || hasBlocks ? 'try { return await executeSequence(ast.commands, ctx); } catch (e: any) { if (e?.type === \'return\') return e.value; throw e; }' : 'return executeSequence(ast.commands, ctx);'}
   }
 
   if (ast.type === 'event') {
@@ -562,7 +763,7 @@ async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any
     const eventName = eventNode.event;
 
     if (eventName === 'init') {
-      await executeSequence(eventNode.body, ctx);
+      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, ctx); } catch (e: any) { if (e?.type !== \'return\') throw e; }' : 'await executeSequence(eventNode.body, ctx);'}
       return;
     }
 
@@ -579,7 +780,7 @@ async function executeAST(ast: ASTNode, me: Element, event?: Event): Promise<any
         you: e.target instanceof Element ? e.target : undefined,
         locals: new Map(),
       };
-      await executeSequence(eventNode.body, handlerCtx);
+      ${hasReturn || hasBlocks ? 'try { await executeSequence(eventNode.body, handlerCtx); } catch (err: any) { if (err?.type !== \'return\') throw err; }' : 'await executeSequence(eventNode.body, handlerCtx);'}
     };
 
     if (mods.debounce) {
@@ -658,6 +859,7 @@ const api = {
   process: processElements,
 
   commands: ${JSON.stringify(commands)},
+  ${blocks.length > 0 ? `blocks: ${JSON.stringify(blocks)},` : ''}
   parserName: 'hybrid',
 };
 
@@ -697,7 +899,7 @@ function main() {
 
   if (args.includes('--help') || args.includes('-h')) {
     console.log(`
-Inline Bundle Generator
+Inline Bundle Generator v2
 
 Usage:
   npx tsx scripts/generate-inline-bundle.ts --config <config.json>
@@ -706,13 +908,28 @@ Usage:
 Options:
   --config <file>     JSON config file
   --commands <list>   Comma-separated list of commands
-  --output <file>     Output file path
+  --blocks <list>     Comma-separated list of blocks (if, repeat, for, while, fetch)
+  --output <file>     Output file path (relative paths supported)
   --name <name>       Bundle name (default: "Custom")
   --htmx              Enable HTMX integration
   --global <name>     Global variable name (default: "hyperfixi")
+  --positional        Include positional expressions (first, last, next, closest, parent)
 
 Available commands:
   ${Object.keys(COMMAND_IMPLEMENTATIONS).join(', ')}
+
+Available blocks:
+  ${Object.keys(BLOCK_IMPLEMENTATIONS).join(', ')}
+
+Examples:
+  # Generate to any path (import paths auto-computed)
+  npx tsx scripts/generate-inline-bundle.ts --commands toggle,add --output dist/my-bundle.ts
+
+  # With blocks and positional expressions
+  npx tsx scripts/generate-inline-bundle.ts --commands toggle,set --blocks if,repeat --positional --output src/custom.ts
+
+  # From config file
+  npx tsx scripts/generate-inline-bundle.ts --config bundle-configs/textshelf.config.json
 `);
     process.exit(0);
   }
@@ -726,6 +943,7 @@ Available commands:
     config = JSON.parse(configContent);
   } else {
     const commandsIndex = args.indexOf('--commands');
+    const blocksIndex = args.indexOf('--blocks');
     const outputIndex = args.indexOf('--output');
     const nameIndex = args.indexOf('--name');
     const globalIndex = args.indexOf('--global');
@@ -738,9 +956,11 @@ Available commands:
     config = {
       name: nameIndex !== -1 ? args[nameIndex + 1] : 'Custom',
       commands: args[commandsIndex + 1].split(','),
+      blocks: blocksIndex !== -1 ? args[blocksIndex + 1].split(',') : [],
       output: args[outputIndex + 1],
       htmxIntegration: args.includes('--htmx'),
       globalName: globalIndex !== -1 ? args[globalIndex + 1] : 'hyperfixi',
+      positionalExpressions: args.includes('--positional'),
     };
   }
 
@@ -752,6 +972,12 @@ Available commands:
 
   console.log(`Generated: ${outputPath}`);
   console.log(`Commands: ${config.commands.join(', ')}`);
+  if (config.blocks && config.blocks.length > 0) {
+    console.log(`Blocks: ${config.blocks.join(', ')}`);
+  }
+  if (config.positionalExpressions) {
+    console.log(`Positional expressions: enabled`);
+  }
 }
 
 main();

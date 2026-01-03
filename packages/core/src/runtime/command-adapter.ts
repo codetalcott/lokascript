@@ -111,8 +111,9 @@ export class ContextBridge {
 export class CommandAdapterV2 implements RuntimeCommand {
   private expressionEvaluator: ExpressionEvaluator;
 
-  constructor(private impl: CommandWithParseInput) {
-    this.expressionEvaluator = new ExpressionEvaluator();
+  constructor(private impl: CommandWithParseInput, sharedEvaluator?: ExpressionEvaluator) {
+    // Use shared evaluator if provided, otherwise create new (backward compat)
+    this.expressionEvaluator = sharedEvaluator ?? new ExpressionEvaluator();
   }
 
   get name(): string {
@@ -220,10 +221,23 @@ export class CommandAdapterV2 implements RuntimeCommand {
  *
  * Registry that uses CommandAdapterV2 for all commands.
  * Much simpler than V1 because it doesn't need command-specific logic.
+ *
+ * For tree-shaking: Pass a shared ExpressionEvaluator to avoid importing
+ * all 6 expression categories for each command.
  */
 export class CommandRegistryV2 {
   private adapters = new Map<string, CommandAdapterV2>();
   private implementations = new Map<string, CommandWithParseInput>();
+  private sharedEvaluator?: ExpressionEvaluator;
+
+  /**
+   * Create a command registry.
+   * @param sharedEvaluator Optional shared evaluator for tree-shaking optimization.
+   *                        If not provided, each adapter creates its own evaluator.
+   */
+  constructor(sharedEvaluator?: ExpressionEvaluator) {
+    this.sharedEvaluator = sharedEvaluator;
+  }
 
   /**
    * Register a command (V1 or V2 format)
@@ -236,7 +250,7 @@ export class CommandRegistryV2 {
     debug.runtime(`CommandRegistryV2: Registering command '${name}'`);
 
     this.implementations.set(name, impl);
-    const adapter = new CommandAdapterV2(impl);
+    const adapter = new CommandAdapterV2(impl, this.sharedEvaluator);
     this.adapters.set(name, adapter);
 
     // Register aliases (for consolidated commands)
@@ -311,9 +325,15 @@ export class CommandRegistryV2 {
 /**
  * Factory function for creating a pre-populated registry
  * (For backward compatibility with V1)
+ *
+ * @param commands Array of command implementations to register
+ * @param sharedEvaluator Optional shared evaluator for tree-shaking optimization
  */
-export function createCommandRegistryV2(commands: CommandWithParseInput[]): CommandRegistryV2 {
-  const registry = new CommandRegistryV2();
+export function createCommandRegistryV2(
+  commands: CommandWithParseInput[],
+  sharedEvaluator?: ExpressionEvaluator
+): CommandRegistryV2 {
+  const registry = new CommandRegistryV2(sharedEvaluator);
 
   for (const command of commands) {
     registry.register(command);
