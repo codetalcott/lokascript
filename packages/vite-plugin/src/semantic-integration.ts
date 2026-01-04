@@ -176,6 +176,28 @@ export function selectOptimalBundle(languages: Set<SupportedLanguage>): Semantic
 }
 
 /**
+ * Estimated bundle sizes (gzip) for each semantic bundle type.
+ * Used for debug logging to help users understand size impact.
+ */
+export const SEMANTIC_BUNDLE_SIZES: Record<SemanticBundleType, { raw: string; gzip: string }> = {
+  en: { raw: '80 KB', gzip: '~20 KB' },
+  es: { raw: '63 KB', gzip: '~16 KB' },
+  tr: { raw: '65 KB', gzip: '~17 KB' },
+  'es-en': { raw: '101 KB', gzip: '~25 KB' },
+  western: { raw: '124 KB', gzip: '~30 KB' },
+  'east-asian': { raw: '97 KB', gzip: '~24 KB' },
+  priority: { raw: '226 KB', gzip: '~48 KB' },
+  all: { raw: '315 KB', gzip: '~61 KB' },
+};
+
+/**
+ * Get the estimated size for a semantic bundle type.
+ */
+export function getSemanticBundleSize(bundleType: SemanticBundleType): { raw: string; gzip: string } {
+  return SEMANTIC_BUNDLE_SIZES[bundleType] ?? SEMANTIC_BUNDLE_SIZES.all;
+}
+
+/**
  * Get the import path for a semantic bundle type.
  */
 export function getSemanticBundleImport(bundleType: SemanticBundleType): string {

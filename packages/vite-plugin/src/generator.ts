@@ -17,6 +17,7 @@ import {
   resolveSemanticConfig,
   generateSemanticIntegrationCode,
   getSemanticExports,
+  getSemanticBundleSize,
   type SemanticConfig,
 } from './semantic-integration';
 
@@ -496,16 +497,31 @@ export class Generator {
     };
 
     if (this.debug) {
-      console.log('[hyperfixi] Generating bundle:', {
+      const bundleInfo: Record<string, unknown> = {
         commands,
         blocks,
         positional,
         htmx: config.htmxIntegration,
         semantic: semanticConfig.enabled,
-        semanticBundle: semanticConfig.bundleType,
-        languages: [...semanticConfig.languages],
-        grammar: semanticConfig.grammarEnabled,
-      });
+      };
+
+      if (semanticConfig.enabled && semanticConfig.bundleType) {
+        const sizeInfo = getSemanticBundleSize(semanticConfig.bundleType);
+        bundleInfo.semanticBundle = semanticConfig.bundleType;
+        bundleInfo.semanticSize = sizeInfo.gzip;
+        bundleInfo.languages = [...semanticConfig.languages];
+        bundleInfo.grammar = semanticConfig.grammarEnabled;
+      }
+
+      console.log('[hyperfixi] Generating bundle:', bundleInfo);
+
+      // Warn if semantic bundle is large
+      if (semanticConfig.bundleType === 'all' || semanticConfig.bundleType === 'priority') {
+        console.log(
+          `[hyperfixi] Note: Using '${semanticConfig.bundleType}' semantic bundle (${getSemanticBundleSize(semanticConfig.bundleType).gzip}). ` +
+            `Consider using 'region' option to select a smaller regional bundle if all languages aren't needed.`
+        );
+      }
     }
 
     // Generate base bundle code
