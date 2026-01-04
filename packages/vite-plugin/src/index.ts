@@ -51,7 +51,10 @@ import { transformHTML, extractScripts } from './html-transformer';
 
 // Re-export types
 export type { HyperfixiPluginOptions, FileUsage, AggregatedUsage } from './types';
-export type { CompiledHandler } from './compiler';
+export type { CompiledHandler, CompileOptions } from './compiler';
+
+// Re-export semantic parser integration functions for multilingual compile mode
+export { setSemanticParser, clearSemanticParser, hasSemanticParser } from './compiler';
 
 // Virtual module ID
 const VIRTUAL_MODULE_ID = 'virtual:hyperfixi';
@@ -90,7 +93,8 @@ export function hyperfixi(options: HyperfixiPluginOptions = {}): Plugin {
   function computeUsageHash(usage: AggregatedUsage): string {
     const commands = [...usage.commands].sort().join(',');
     const blocks = [...usage.blocks].sort().join(',');
-    return `${commands}|${blocks}|${usage.positional}`;
+    const languages = [...usage.detectedLanguages].sort().join(',');
+    return `${commands}|${blocks}|${usage.positional}|${languages}`;
   }
 
   /**
@@ -397,6 +401,7 @@ export function hyperfixi(options: HyperfixiPluginOptions = {}): Plugin {
             commands: summary.commands,
             blocks: summary.blocks,
             positional: summary.positional,
+            languages: summary.languages,
           });
         }
       }

@@ -14,6 +14,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(changed).toBe(true);
@@ -25,11 +26,13 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(['show', 'hide']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage = aggregator.getUsage();
@@ -44,11 +47,13 @@ describe('Aggregator', () => {
         commands: new Set(),
         blocks: new Set(['if']),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(),
         blocks: new Set(['for', 'fetch']),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage = aggregator.getUsage();
@@ -62,11 +67,13 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.getUsage().commands.size).toBe(1);
@@ -77,12 +84,14 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const changed = aggregator.add('a.html', {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(changed).toBe(false);
@@ -93,12 +102,14 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const changed = aggregator.add('a.html', {
         commands: new Set(['toggle', 'show']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(changed).toBe(true);
@@ -109,12 +120,14 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const changed = aggregator.add('a.html', {
         commands: new Set(['toggle']),
         blocks: new Set(['if']),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(changed).toBe(true);
@@ -125,12 +138,32 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const changed = aggregator.add('a.html', {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: true,
+        detectedLanguages: new Set(),
+      });
+
+      expect(changed).toBe(true);
+    });
+
+    it('returns true when languages change', () => {
+      aggregator.add('a.html', {
+        commands: new Set(['toggle']),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(),
+      });
+
+      const changed = aggregator.add('a.html', {
+        commands: new Set(['toggle']),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
       });
 
       expect(changed).toBe(true);
@@ -143,11 +176,13 @@ describe('Aggregator', () => {
         commands: new Set(),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(),
         blocks: new Set(),
         positional: true,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.getUsage().positional).toBe(true);
@@ -158,14 +193,56 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(['show']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.getUsage().positional).toBe(false);
+    });
+  });
+
+  describe('language aggregation', () => {
+    it('aggregates languages from multiple files', () => {
+      aggregator.add('a.html', {
+        commands: new Set(['toggle']),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
+      });
+      aggregator.add('b.html', {
+        commands: new Set(['show']),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['es', 'ko']),
+      });
+
+      const usage = aggregator.getUsage();
+      expect(usage.detectedLanguages.has('ja')).toBe(true);
+      expect(usage.detectedLanguages.has('es')).toBe(true);
+      expect(usage.detectedLanguages.has('ko')).toBe(true);
+      expect(usage.detectedLanguages.size).toBe(3);
+    });
+
+    it('deduplicates languages across files', () => {
+      aggregator.add('a.html', {
+        commands: new Set(),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
+      });
+      aggregator.add('b.html', {
+        commands: new Set(),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
+      });
+
+      expect(aggregator.getUsage().detectedLanguages.size).toBe(1);
     });
   });
 
@@ -175,11 +252,13 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(['show']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       aggregator.remove('a.html');
@@ -194,6 +273,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.remove('a.html')).toBe(true);
@@ -208,24 +288,50 @@ describe('Aggregator', () => {
         commands: new Set(),
         blocks: new Set(),
         positional: true,
+        detectedLanguages: new Set(),
       });
       aggregator.add('b.html', {
         commands: new Set(),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       aggregator.remove('a.html');
 
       expect(aggregator.getUsage().positional).toBe(false);
     });
+
+    it('updates languages when removing file', () => {
+      aggregator.add('a.html', {
+        commands: new Set(),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
+      });
+      aggregator.add('b.html', {
+        commands: new Set(),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['es']),
+      });
+
+      aggregator.remove('a.html');
+
+      const usage = aggregator.getUsage();
+      expect(usage.detectedLanguages.has('ja')).toBe(false);
+      expect(usage.detectedLanguages.has('es')).toBe(true);
+    });
   });
 
   describe('loadFromScan()', () => {
     it('loads scanned files', () => {
       const scanned = new Map([
-        ['a.html', { commands: new Set(['toggle']), blocks: new Set<string>(), positional: false }],
-        ['b.html', { commands: new Set(['show']), blocks: new Set(['if']), positional: true }],
+        [
+          'a.html',
+          { commands: new Set(['toggle']), blocks: new Set<string>(), positional: false, detectedLanguages: new Set<string>() },
+        ],
+        ['b.html', { commands: new Set(['show']), blocks: new Set(['if']), positional: true, detectedLanguages: new Set(['ja']) }],
       ]);
 
       aggregator.loadFromScan(scanned);
@@ -235,6 +341,7 @@ describe('Aggregator', () => {
       expect(usage.commands.has('show')).toBe(true);
       expect(usage.blocks.has('if')).toBe(true);
       expect(usage.positional).toBe(true);
+      expect(usage.detectedLanguages.has('ja')).toBe(true);
     });
 
     it('replaces existing usage', () => {
@@ -242,10 +349,11 @@ describe('Aggregator', () => {
         commands: new Set(['hide']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       aggregator.loadFromScan(
-        new Map([['new.html', { commands: new Set(['toggle']), blocks: new Set(), positional: false }]])
+        new Map([['new.html', { commands: new Set(['toggle']), blocks: new Set(), positional: false, detectedLanguages: new Set() }]])
       );
 
       const usage = aggregator.getUsage();
@@ -264,6 +372,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.hasUsage()).toBe(true);
@@ -274,6 +383,7 @@ describe('Aggregator', () => {
         commands: new Set(),
         blocks: new Set(['if']),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       expect(aggregator.hasUsage()).toBe(true);
@@ -284,6 +394,18 @@ describe('Aggregator', () => {
         commands: new Set(),
         blocks: new Set(),
         positional: true,
+        detectedLanguages: new Set(),
+      });
+
+      expect(aggregator.hasUsage()).toBe(true);
+    });
+
+    it('returns true when has detected languages', () => {
+      aggregator.add('a.html', {
+        commands: new Set(),
+        blocks: new Set(),
+        positional: false,
+        detectedLanguages: new Set(['ja']),
       });
 
       expect(aggregator.hasUsage()).toBe(true);
@@ -296,6 +418,7 @@ describe('Aggregator', () => {
         commands: new Set(['show', 'toggle', 'hide']),
         blocks: new Set(['while', 'if', 'for']),
         positional: true,
+        detectedLanguages: new Set(['ko', 'ja', 'es']),
       });
 
       const summary = aggregator.getSummary();
@@ -303,13 +426,14 @@ describe('Aggregator', () => {
       expect(summary.commands).toEqual(['hide', 'show', 'toggle']);
       expect(summary.blocks).toEqual(['for', 'if', 'while']);
       expect(summary.positional).toBe(true);
+      expect(summary.languages).toEqual(['es', 'ja', 'ko']);
       expect(summary.fileCount).toBe(1);
     });
 
     it('includes file count', () => {
-      aggregator.add('a.html', { commands: new Set(['toggle']), blocks: new Set(), positional: false });
-      aggregator.add('b.html', { commands: new Set(['show']), blocks: new Set(), positional: false });
-      aggregator.add('c.html', { commands: new Set(['hide']), blocks: new Set(), positional: false });
+      aggregator.add('a.html', { commands: new Set(['toggle']), blocks: new Set(), positional: false, detectedLanguages: new Set() });
+      aggregator.add('b.html', { commands: new Set(['show']), blocks: new Set(), positional: false, detectedLanguages: new Set() });
+      aggregator.add('c.html', { commands: new Set(['hide']), blocks: new Set(), positional: false, detectedLanguages: new Set() });
 
       expect(aggregator.getSummary().fileCount).toBe(3);
     });
@@ -321,6 +445,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(['if']),
         positional: true,
+        detectedLanguages: new Set(['ja']),
       });
 
       aggregator.clear();
@@ -329,6 +454,7 @@ describe('Aggregator', () => {
       expect(usage.commands.size).toBe(0);
       expect(usage.blocks.size).toBe(0);
       expect(usage.positional).toBe(false);
+      expect(usage.detectedLanguages.size).toBe(0);
     });
   });
 
@@ -338,6 +464,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage1 = aggregator.getUsage();
@@ -351,6 +478,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage1 = aggregator.getUsage();
@@ -359,6 +487,7 @@ describe('Aggregator', () => {
         commands: new Set(['show']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage2 = aggregator.getUsage();
@@ -371,6 +500,7 @@ describe('Aggregator', () => {
         commands: new Set(['toggle']),
         blocks: new Set(),
         positional: false,
+        detectedLanguages: new Set(),
       });
 
       const usage1 = aggregator.getUsage();

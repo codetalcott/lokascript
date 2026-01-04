@@ -83,6 +83,47 @@ export interface HyperfixiPluginOptions {
    * Enable verbose logging during development.
    */
   debug?: boolean;
+
+  // =========================================================================
+  // Multilingual Semantic Options
+  // =========================================================================
+
+  /**
+   * Enable semantic parsing for multilingual support.
+   * - false: No semantic parsing (default, current behavior)
+   * - true: Auto-detect languages from templates
+   * - 'en': English semantic only (synonyms, flexible syntax)
+   * - 'auto': Same as true
+   */
+  semantic?: boolean | 'en' | 'auto';
+
+  /**
+   * Explicit language list (overrides auto-detection).
+   * Use ISO 639-1 codes: 'en', 'es', 'ja', 'ko', 'zh', 'ar', etc.
+   */
+  languages?: string[];
+
+  /**
+   * Regional bundle shorthand (alternative to explicit languages).
+   * - 'western': en, es, pt, fr, de
+   * - 'east-asian': ja, zh, ko
+   * - 'priority': 11 most common languages
+   * - 'all': All 13 supported languages
+   */
+  region?: 'western' | 'east-asian' | 'priority' | 'all';
+
+  /**
+   * Enable grammar transformation for native word order.
+   * When true, semantic is automatically enabled.
+   * Adds support for SOV (Japanese, Korean) and VSO (Arabic) word orders.
+   */
+  grammar?: boolean;
+
+  /**
+   * Always include these languages in addition to detected ones.
+   * Useful for dynamic content not detectable at build time.
+   */
+  extraLanguages?: string[];
 }
 
 /**
@@ -97,6 +138,9 @@ export interface FileUsage {
 
   /** Whether positional expressions are used */
   positional: boolean;
+
+  /** Non-English languages detected in hyperscript (ISO 639-1 codes) */
+  detectedLanguages: Set<string>;
 }
 
 /**
@@ -111,6 +155,9 @@ export interface AggregatedUsage {
 
   /** Whether any file uses positional expressions */
   positional: boolean;
+
+  /** All non-English languages detected across all files */
+  detectedLanguages: Set<string>;
 
   /** Map of file paths to their usage */
   fileUsage: Map<string, FileUsage>;

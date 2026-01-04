@@ -3,6 +3,11 @@
  *
  * Compiles hyperscript AST to JavaScript at build time.
  * Eliminates the need for runtime parsing.
+ *
+ * Multilingual support:
+ * - For English: Uses HybridParser directly
+ * - For other languages: Uses semantic parser to translate → AST → JavaScript
+ * - Semantic parsing happens at BUILD time (zero runtime overhead)
  */
 
 import { HybridParser } from '@hyperfixi/core/parser/hybrid/parser-core';
@@ -20,6 +25,74 @@ import type {
   LiteralNode,
   PositionalNode,
 } from '@hyperfixi/core/parser/hybrid/ast-types';
+
+// =============================================================================
+// SEMANTIC PARSER INTEGRATION (optional)
+// =============================================================================
+
+/**
+ * Semantic analyzer interface for multilingual support.
+ * This matches the interface from @hyperfixi/semantic.
+ */
+interface SemanticAnalysisResult {
+  confidence: number;
+  node?: unknown;
+  errors?: string[];
+}
+
+interface SemanticAnalyzer {
+  analyze(input: string, language: string): SemanticAnalysisResult;
+  supportsLanguage(language: string): boolean;
+}
+
+type BuildASTFn = (node: unknown) => { ast: ASTNode; warnings: string[] };
+
+/**
+ * Optional semantic parser for multilingual support.
+ * Set via setSemanticParser() when semantic package is available.
+ */
+let semanticAnalyzer: SemanticAnalyzer | null = null;
+let buildASTFn: BuildASTFn | null = null;
+
+/**
+ * Configure the semantic parser for multilingual compilation.
+ * Call this with the semantic analyzer from @hyperfixi/semantic.
+ *
+ * @example
+ * ```typescript
+ * import { createSemanticAnalyzer, buildAST } from '@hyperfixi/semantic';
+ * import { setSemanticParser } from '@hyperfixi/vite-plugin';
+ *
+ * setSemanticParser(createSemanticAnalyzer(), buildAST);
+ * ```
+ */
+export function setSemanticParser(
+  analyzer: SemanticAnalyzer,
+  buildAST: BuildASTFn
+): void {
+  semanticAnalyzer = analyzer;
+  buildASTFn = buildAST;
+}
+
+/**
+ * Clear the semantic parser (for testing).
+ */
+export function clearSemanticParser(): void {
+  semanticAnalyzer = null;
+  buildASTFn = null;
+}
+
+/**
+ * Check if semantic parser is available.
+ */
+export function hasSemanticParser(): boolean {
+  return semanticAnalyzer !== null && buildASTFn !== null;
+}
+
+/**
+ * Confidence threshold for using semantic parse results.
+ */
+const SEMANTIC_CONFIDENCE_THRESHOLD = 0.7;
 
 // =============================================================================
 // SANITIZATION UTILITIES
@@ -148,15 +221,80 @@ function generateHandlerId(event: string, command: string, script: string): stri
 }
 
 /**
- * Compile a hyperscript string to JavaScript
+ * Compile options for multilingual support.
  */
-export function compile(script: string): CompiledHandler | null {
+export interface CompileOptions {
+  /** Language code (ISO 639-1). Defaults to 'en'. */
+  language?: string;
+  /** Enable debug logging. */
+  debug?: boolean;
+}
+
+/**
+ * Compile a hyperscript string to JavaScript.
+ *
+ * For non-English languages, uses the semantic parser (if available)
+ * to translate the input to an AST before compilation.
+ *
+ * @param script - The hyperscript code to compile
+ * @param options - Compilation options including language
+ * @returns Compiled handler or null if compilation failed
+ */
+export function compile(script: string, options: CompileOptions = {}): CompiledHandler | null {
+  const { language = 'en', debug = false } = options;
+
   try {
-    const parser = new HybridParser(script);
-    const ast = parser.parse();
+    let ast: ASTNode;
+
+    // For non-English, try semantic parser first
+    if (language !== 'en' && semanticAnalyzer && buildASTFn) {
+      if (semanticAnalyzer.supportsLanguage(language)) {
+        const result = semanticAnalyzer.analyze(script, language);
+
+        if (result.node && result.confidence >= SEMANTIC_CONFIDENCE_THRESHOLD) {
+          const { ast: builtAST, warnings } = buildASTFn(result.node);
+
+          if (debug && warnings.length > 0) {
+            console.log(`[hyperfixi] Semantic AST warnings for "${script}":`, warnings);
+          }
+
+          ast = builtAST;
+
+          if (debug) {
+            console.log(`[hyperfixi] Compiled ${language}: "${script}" (confidence: ${result.confidence.toFixed(2)})`);
+          }
+        } else {
+          // Semantic parsing failed or low confidence
+          if (debug) {
+            const reason = result.errors?.join(', ') || `low confidence (${result.confidence.toFixed(2)})`;
+            console.log(`[hyperfixi] Semantic parse failed for "${script}": ${reason}`);
+          }
+          return null;
+        }
+      } else {
+        // Language not supported by semantic parser
+        if (debug) {
+          console.log(`[hyperfixi] Language "${language}" not supported by semantic parser`);
+        }
+        return null;
+      }
+    } else if (language !== 'en') {
+      // Non-English but no semantic parser available
+      if (debug) {
+        console.log(`[hyperfixi] Semantic parser not available for "${language}". Install @hyperfixi/semantic and call setSemanticParser().`);
+      }
+      return null;
+    } else {
+      // English - use HybridParser directly
+      const parser = new HybridParser(script);
+      ast = parser.parse();
+    }
+
     return compileAST(ast, script);
   } catch (error) {
-    console.warn(`[hyperfixi] Failed to parse: ${script}`, error);
+    if (debug) {
+      console.warn(`[hyperfixi] Failed to compile: ${script}`, error);
+    }
     return null;
   }
 }

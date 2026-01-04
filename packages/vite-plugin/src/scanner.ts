@@ -2,9 +2,11 @@
  * Scanner
  *
  * Detects hyperscript usage in source files by scanning for _="..." attributes.
+ * Also detects non-English language keywords for multilingual semantic support.
  */
 
 import type { FileUsage, HyperfixiPluginOptions } from './types';
+import { detectLanguages } from './language-keywords';
 
 /**
  * Converts include/exclude options to RegExp
@@ -51,6 +53,7 @@ export class Scanner {
       commands: new Set(),
       blocks: new Set(),
       positional: false,
+      detectedLanguages: new Set(),
     };
 
     // Find all hyperscript in _="..." attributes (single, double, backtick quotes)
@@ -76,11 +79,12 @@ export class Scanner {
       this.analyzeScript(match[1], usage);
     }
 
-    if (this.debug && (usage.commands.size > 0 || usage.blocks.size > 0)) {
+    if (this.debug && (usage.commands.size > 0 || usage.blocks.size > 0 || usage.detectedLanguages.size > 0)) {
       console.log(`[hyperfixi] Scanned ${id}:`, {
         commands: [...usage.commands],
         blocks: [...usage.blocks],
         positional: usage.positional,
+        languages: [...usage.detectedLanguages],
       });
     }
 
@@ -111,6 +115,12 @@ export class Scanner {
     if (/\b(first|last|next|previous|closest|parent)\b/.test(script)) {
       usage.positional = true;
     }
+
+    // Detect non-English languages for multilingual semantic support
+    const languages = detectLanguages(script);
+    for (const lang of languages) {
+      usage.detectedLanguages.add(lang);
+    }
   }
 
   /**
@@ -135,7 +145,7 @@ export class Scanner {
           try {
             const code = fs.readFileSync(file, 'utf-8');
             const usage = this.scan(code, file);
-            if (usage.commands.size > 0 || usage.blocks.size > 0 || usage.positional) {
+            if (usage.commands.size > 0 || usage.blocks.size > 0 || usage.positional || usage.detectedLanguages.size > 0) {
               results.set(file, usage);
             }
           } catch {

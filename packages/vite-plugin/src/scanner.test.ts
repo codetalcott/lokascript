@@ -292,4 +292,96 @@ describe('Scanner', () => {
       expect(usage.commands.has('toggle')).toBe(true);
     });
   });
+
+  describe('language detection', () => {
+    it('detects Japanese keywords', () => {
+      const usage = scanner.scan('<button _="on click トグル .active">', 'test.html');
+      expect(usage.detectedLanguages.has('ja')).toBe(true);
+    });
+
+    it('detects Japanese 切り替え (toggle)', () => {
+      const usage = scanner.scan('<button _="on click 切り替え .active">', 'test.html');
+      expect(usage.detectedLanguages.has('ja')).toBe(true);
+    });
+
+    it('detects Spanish keywords', () => {
+      const usage = scanner.scan('<button _="on click alternar .active">', 'test.html');
+      expect(usage.detectedLanguages.has('es')).toBe(true);
+    });
+
+    it('detects Korean keywords', () => {
+      const usage = scanner.scan('<button _="on click 토글 .active">', 'test.html');
+      expect(usage.detectedLanguages.has('ko')).toBe(true);
+    });
+
+    it('detects Chinese keywords', () => {
+      const usage = scanner.scan('<button _="on click 切换 .active">', 'test.html');
+      expect(usage.detectedLanguages.has('zh')).toBe(true);
+    });
+
+    it('detects Arabic keywords', () => {
+      // Using 'بدّل' (badil - toggle) which is in the keyword list
+      const usage = scanner.scan('<button _="on click بدّل .active">', 'test.html');
+      expect(usage.detectedLanguages.has('ar')).toBe(true);
+    });
+
+    it('detects Turkish keywords', () => {
+      const usage = scanner.scan('<button _="on click değiştir .active">', 'test.html');
+      expect(usage.detectedLanguages.has('tr')).toBe(true);
+    });
+
+    it('detects German keywords', () => {
+      const usage = scanner.scan('<button _="on click umschalten .active">', 'test.html');
+      expect(usage.detectedLanguages.has('de')).toBe(true);
+    });
+
+    it('detects French keywords', () => {
+      const usage = scanner.scan('<button _="on click basculer .active">', 'test.html');
+      expect(usage.detectedLanguages.has('fr')).toBe(true);
+    });
+
+    it('detects Portuguese keywords', () => {
+      const usage = scanner.scan('<button _="on click alternar .active">', 'test.html');
+      // Note: 'alternar' is shared between Spanish and Portuguese
+      expect(usage.detectedLanguages.has('es') || usage.detectedLanguages.has('pt')).toBe(true);
+    });
+
+    it('detects Indonesian keywords', () => {
+      // Using 'tampilkan' (show) which is in the keyword list
+      const usage = scanner.scan('<button _="on click tampilkan #modal">', 'test.html');
+      expect(usage.detectedLanguages.has('id')).toBe(true);
+    });
+
+    it('detects Swahili keywords', () => {
+      const usage = scanner.scan('<button _="on click badilisha .active">', 'test.html');
+      expect(usage.detectedLanguages.has('sw')).toBe(true);
+    });
+
+    it('detects multiple languages in one file', () => {
+      const code = `
+        <button _="on click トグル .ja">Japanese</button>
+        <button _="on click alternar .es">Spanish</button>
+        <button _="on click 토글 .ko">Korean</button>
+      `;
+      const usage = scanner.scan(code, 'test.html');
+      expect(usage.detectedLanguages.has('ja')).toBe(true);
+      expect(usage.detectedLanguages.has('es')).toBe(true);
+      expect(usage.detectedLanguages.has('ko')).toBe(true);
+    });
+
+    it('does not detect English as a language', () => {
+      const usage = scanner.scan('<button _="on click toggle .active">', 'test.html');
+      expect(usage.detectedLanguages.size).toBe(0);
+    });
+
+    it('returns empty set for English-only code', () => {
+      const code = `
+        <button _="on click toggle .a">A</button>
+        <button _="on click show #b">B</button>
+        <button _="on click hide #c">C</button>
+      `;
+      const usage = scanner.scan(code, 'test.html');
+      expect(usage.detectedLanguages.size).toBe(0);
+    });
+  });
 });

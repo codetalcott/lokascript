@@ -3,6 +3,7 @@
  *
  * Generates minimal HyperFixi bundles based on detected usage.
  * Uses shared templates from @hyperfixi/core/bundle-generator.
+ * Supports multilingual semantic parsing when enabled.
  */
 
 import type { AggregatedUsage, HyperfixiPluginOptions } from './types';
@@ -12,6 +13,12 @@ import {
   STYLE_COMMANDS,
   ELEMENT_ARRAY_COMMANDS,
 } from '@hyperfixi/core/bundle-generator';
+import {
+  resolveSemanticConfig,
+  generateSemanticIntegrationCode,
+  getSemanticExports,
+  type SemanticConfig,
+} from './semantic-integration';
 
 // =============================================================================
 // BUNDLE GENERATOR
@@ -467,8 +474,11 @@ export class Generator {
     const blocks = [...usage.blocks, ...(options.extraBlocks ?? [])];
     const positional = usage.positional || options.positional || false;
 
-    // If no usage detected, return empty module that just sets up window.hyperfixi
-    if (commands.length === 0 && blocks.length === 0 && !positional) {
+    // Resolve semantic configuration
+    const semanticConfig = resolveSemanticConfig(options, usage.detectedLanguages);
+
+    // If no usage detected and no semantic, return empty module
+    if (commands.length === 0 && blocks.length === 0 && !positional && !semanticConfig.enabled) {
       return this.generateEmptyBundle(options);
     }
 
@@ -491,10 +501,51 @@ export class Generator {
         blocks,
         positional,
         htmx: config.htmxIntegration,
+        semantic: semanticConfig.enabled,
+        semanticBundle: semanticConfig.bundleType,
+        languages: [...semanticConfig.languages],
+        grammar: semanticConfig.grammarEnabled,
       });
     }
 
-    return generateBundleCode(config);
+    // Generate base bundle code
+    let bundleCode = generateBundleCode(config);
+
+    // Add semantic integration if enabled
+    if (semanticConfig.enabled) {
+      bundleCode = this.addSemanticIntegration(bundleCode, semanticConfig);
+    }
+
+    return bundleCode;
+  }
+
+  /**
+   * Add semantic integration code to the bundle
+   */
+  private addSemanticIntegration(bundleCode: string, config: SemanticConfig): string {
+    const semanticCode = generateSemanticIntegrationCode(config);
+    const semanticExports = getSemanticExports(config);
+
+    // Insert semantic imports after the parser imports
+    const parserImportEnd = bundleCode.indexOf('// Runtime state');
+    if (parserImportEnd === -1) {
+      // Fallback: prepend to code
+      bundleCode = semanticCode + '\n' + bundleCode;
+    } else {
+      bundleCode = bundleCode.slice(0, parserImportEnd) + semanticCode + '\n\n' + bundleCode.slice(parserImportEnd);
+    }
+
+    // Add semantic exports to the api object
+    if (semanticExports.length > 0) {
+      const apiExportsMarker = "parserName: 'hybrid',";
+      const additionalApiProps = semanticExports.map(exp => `  ${exp},`).join('\n');
+      bundleCode = bundleCode.replace(
+        apiExportsMarker,
+        `parserName: 'hybrid',\n${additionalApiProps}`
+      );
+    }
+
+    return bundleCode;
   }
 
   /**

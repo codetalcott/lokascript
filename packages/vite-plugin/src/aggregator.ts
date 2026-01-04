@@ -25,8 +25,9 @@ export class Aggregator {
       const commandsEqual = this.setsEqual(existing.commands, usage.commands);
       const blocksEqual = this.setsEqual(existing.blocks, usage.blocks);
       const positionalEqual = existing.positional === usage.positional;
+      const languagesEqual = this.setsEqual(existing.detectedLanguages, usage.detectedLanguages);
 
-      if (commandsEqual && blocksEqual && positionalEqual) {
+      if (commandsEqual && blocksEqual && positionalEqual && languagesEqual) {
         return false; // No change
       }
     }
@@ -60,11 +61,13 @@ export class Aggregator {
 
     const commands = new Set<string>();
     const blocks = new Set<string>();
+    const detectedLanguages = new Set<string>();
     let positional = false;
 
     for (const usage of this.fileUsage.values()) {
       for (const cmd of usage.commands) commands.add(cmd);
       for (const block of usage.blocks) blocks.add(block);
+      for (const lang of usage.detectedLanguages) detectedLanguages.add(lang);
       if (usage.positional) positional = true;
     }
 
@@ -72,6 +75,7 @@ export class Aggregator {
       commands,
       blocks,
       positional,
+      detectedLanguages,
       fileUsage: new Map(this.fileUsage),
     };
 
@@ -91,18 +95,19 @@ export class Aggregator {
    */
   hasUsage(): boolean {
     const usage = this.getUsage();
-    return usage.commands.size > 0 || usage.blocks.size > 0 || usage.positional;
+    return usage.commands.size > 0 || usage.blocks.size > 0 || usage.positional || usage.detectedLanguages.size > 0;
   }
 
   /**
    * Get summary for logging
    */
-  getSummary(): { commands: string[]; blocks: string[]; positional: boolean; fileCount: number } {
+  getSummary(): { commands: string[]; blocks: string[]; positional: boolean; languages: string[]; fileCount: number } {
     const usage = this.getUsage();
     return {
       commands: [...usage.commands].sort(),
       blocks: [...usage.blocks].sort(),
       positional: usage.positional,
+      languages: [...usage.detectedLanguages].sort(),
       fileCount: this.fileUsage.size,
     };
   }
