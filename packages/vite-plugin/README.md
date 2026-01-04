@@ -80,6 +80,8 @@ toggle, add, remove, show, hide, focus, blur, set, get, put, increment, decremen
 
 **Positional expressions:** next, previous, parent, first, last, closest
 
+**Animations:** Use CSS transitions - toggling classes triggers them automatically. No special `transition` command needed.
+
 ## Options
 
 ```javascript
