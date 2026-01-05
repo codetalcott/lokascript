@@ -67,12 +67,12 @@
     },
     "./parser/hybrid": {
       "types": "./dist/parser/hybrid-parser.d.ts",
-      "import": "./src/parser/hybrid-parser.ts",
+      "import": "./dist/parser/hybrid-parser.mjs",
       "require": "./dist/parser/hybrid-parser.js"
     },
     "./parser/hybrid/parser-core": {
       "types": "./dist/parser/hybrid/parser-core.d.ts",
-      "import": "./src/parser/hybrid/parser-core.ts",
+      "import": "./dist/parser/hybrid/parser-core.mjs",
       "require": "./dist/parser/hybrid/parser-core.js"
     },
     "./parser/hybrid/ast-types": {
