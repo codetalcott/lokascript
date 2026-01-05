@@ -9,6 +9,161 @@ import type { HyperfixiPluginOptions } from './types';
 import { REGIONS, type SupportedLanguage } from './language-keywords';
 
 /**
+ * Multilingual command aliases.
+ * Maps non-English command keywords to their English equivalents.
+ */
+const MULTILINGUAL_COMMAND_ALIASES: Partial<Record<SupportedLanguage, Record<string, string>>> = {
+  ja: {
+    'トグル': 'toggle', '切り替え': 'toggle',
+    '追加': 'add', '削除': 'remove',
+    '表示': 'show', '隠す': 'hide', '非表示': 'hide',
+    '設定': 'set', 'セット': 'set',
+    '増加': 'increment', '減少': 'decrement',
+    'ログ': 'log', '出力': 'log',
+  },
+  ko: {
+    '토글': 'toggle', '전환': 'toggle',
+    '추가': 'add', '제거': 'remove', '삭제': 'remove',
+    '표시': 'show', '숨기다': 'hide',
+    '설정': 'set', '증가': 'increment', '감소': 'decrement',
+    '로그': 'log',
+  },
+  zh: {
+    '切换': 'toggle', '添加': 'add', '移除': 'remove', '删除': 'remove',
+    '显示': 'show', '隐藏': 'hide',
+    '设置': 'set', '设定': 'set',
+    '增加': 'increment', '减少': 'decrement',
+    '日志': 'log', '记录': 'log',
+  },
+  ar: {
+    'بدّل': 'toggle', 'بدل': 'toggle',
+    'أضف': 'add', 'اضف': 'add',
+    'أزل': 'remove', 'ازل': 'remove', 'احذف': 'remove',
+    'أظهر': 'show', 'اظهر': 'show',
+    'أخفِ': 'hide', 'اخف': 'hide',
+    'ضع': 'set', 'اضع': 'set',
+    'زِد': 'increment', 'أنقص': 'decrement',
+  },
+  es: {
+    'alternar': 'toggle',
+    'añadir': 'add', 'agregar': 'add',
+    'quitar': 'remove', 'eliminar': 'remove',
+    'mostrar': 'show', 'ocultar': 'hide', 'esconder': 'hide',
+    'establecer': 'set', 'fijar': 'set',
+    'incrementar': 'increment', 'decrementar': 'decrement',
+  },
+  pt: {
+    'alternar': 'toggle',
+    'adicionar': 'add', 'remover': 'remove',
+    'mostrar': 'show', 'esconder': 'hide', 'ocultar': 'hide',
+    'definir': 'set',
+    'incrementar': 'increment', 'decrementar': 'decrement',
+  },
+  fr: {
+    'basculer': 'toggle',
+    'ajouter': 'add', 'supprimer': 'remove', 'retirer': 'remove',
+    'afficher': 'show', 'montrer': 'show',
+    'cacher': 'hide', 'masquer': 'hide',
+    'définir': 'set',
+    'incrémenter': 'increment', 'décrémenter': 'decrement',
+  },
+  de: {
+    'umschalten': 'toggle',
+    'hinzufügen': 'add', 'entfernen': 'remove', 'löschen': 'remove',
+    'anzeigen': 'show', 'zeigen': 'show',
+    'verbergen': 'hide', 'verstecken': 'hide',
+    'setzen': 'set', 'festlegen': 'set',
+    'erhöhen': 'increment', 'verringern': 'decrement',
+  },
+  tr: {
+    'değiştir': 'toggle', 'değistir': 'toggle',
+    'ekle': 'add', 'kaldır': 'remove', 'kaldir': 'remove', 'sil': 'remove',
+    'göster': 'show', 'gizle': 'hide', 'sakla': 'hide',
+    'ayarla': 'set', 'belirle': 'set',
+    'arttır': 'increment', 'azalt': 'decrement',
+  },
+  id: {
+    'alih': 'toggle', 'beralih': 'toggle',
+    'tambah': 'add', 'hapus': 'remove', 'buang': 'remove',
+    'tampilkan': 'show', 'sembunyikan': 'hide',
+    'atur': 'set', 'tetapkan': 'set',
+    'tambahkan': 'increment', 'kurangi': 'decrement',
+  },
+  sw: {
+    'badilisha': 'toggle',
+    'ongeza': 'add', 'ondoa': 'remove', 'futa': 'remove',
+    'onyesha': 'show', 'ficha': 'hide',
+    'weka': 'set', 'sanidi': 'set',
+    'ongezea': 'increment', 'punguza': 'decrement',
+  },
+  qu: {
+    'tikray': 'toggle',
+    'yapay': 'add', 'qichuy': 'remove', 'pichay': 'remove',
+    'rikuchiy': 'show', 'pakay': 'hide',
+    'churay': 'set',
+    'pisiyachiy': 'decrement',
+  },
+};
+
+/**
+ * Generate code to add multilingual command aliases to HybridParser.
+ */
+function generateMultilingualAliases(languages: Set<SupportedLanguage>): string {
+  const aliases: Record<string, string> = {};
+
+  for (const lang of languages) {
+    const langAliases = MULTILINGUAL_COMMAND_ALIASES[lang];
+    if (langAliases) {
+      Object.assign(aliases, langAliases);
+    }
+  }
+
+  if (Object.keys(aliases).length === 0) {
+    return `
+// No multilingual aliases needed - just pass through
+function preprocessMultilingual(code) { return code; }
+`;
+  }
+
+  // Generate code to add aliases to HybridParser via addCommandAliases
+  const aliasEntries = Object.entries(aliases)
+    .map(([key, val]) => `  '${key}': '${val}'`)
+    .join(',\n');
+
+  // Build regex pattern to match multilingual keywords
+  // Escape special regex characters in keys
+  const escapedKeys = Object.keys(aliases)
+    .map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+
+  return `
+// Multilingual command aliases for HybridParser fallback
+const MULTILINGUAL_ALIASES = {
+${aliasEntries}
+};
+
+// Register multilingual aliases with the parser
+addCommandAliases(MULTILINGUAL_ALIASES);
+
+// Preprocessing regex to translate multilingual keywords to English
+// The HybridParser tokenizer only accepts ASCII identifiers, so we need
+// to translate non-ASCII keywords before parsing.
+const MULTILINGUAL_KEYWORD_REGEX = new RegExp('(^|\\\\s)(${escapedKeys})(?=\\\\s|\\\\.|$)', 'g');
+
+/**
+ * Preprocess multilingual code to replace non-ASCII keywords with English equivalents.
+ * This is needed because HybridParser's tokenizer only accepts ASCII identifiers.
+ */
+function preprocessMultilingual(code) {
+  return code.replace(MULTILINGUAL_KEYWORD_REGEX, (match, prefix, keyword) => {
+    const english = MULTILINGUAL_ALIASES[keyword];
+    return english ? prefix + english : match;
+  });
+}
+`;
+}
+
+/**
  * Semantic bundle types available.
  */
 export type SemanticBundleType =
@@ -199,27 +354,20 @@ export function getSemanticBundleSize(bundleType: SemanticBundleType): { raw: st
 
 /**
  * Get the import path for a semantic bundle type.
+ *
+ * Note: For ES module usage (Vite, Rollup, etc.), we always use the main entry
+ * '@hyperfixi/semantic' which has proper ES module exports. The regional bundles
+ * (browser/en, browser/western, etc.) are IIFE format for direct <script> tag
+ * inclusion only.
+ *
+ * Bundle size optimization for ES modules is achieved through tree-shaking by
+ * the bundler, not through pre-built regional bundles.
  */
-export function getSemanticBundleImport(bundleType: SemanticBundleType): string {
-  switch (bundleType) {
-    case 'en':
-      return '@hyperfixi/semantic/browser/en';
-    case 'es':
-      return '@hyperfixi/semantic/browser/es';
-    case 'tr':
-      return '@hyperfixi/semantic/browser/tr';
-    case 'es-en':
-      return '@hyperfixi/semantic/browser/es-en';
-    case 'western':
-      return '@hyperfixi/semantic/browser/western';
-    case 'east-asian':
-      return '@hyperfixi/semantic/browser/east-asian';
-    case 'priority':
-      return '@hyperfixi/semantic/browser/priority';
-    case 'all':
-    default:
-      return '@hyperfixi/semantic';
-  }
+export function getSemanticBundleImport(_bundleType: SemanticBundleType): string {
+  // All ES module imports use the main entry which has named exports
+  // The regional bundles are IIFE format only (for <script> tags)
+  // Note: bundleType is kept for API compatibility but not used for ES modules
+  return '@hyperfixi/semantic';
 }
 
 /**
@@ -254,31 +402,61 @@ const grammarTransformer = new GrammarTransformer();
 `;
   }
 
+  // Generate multilingual command aliases for HybridParser fallback
+  const aliasesCode = generateMultilingualAliases(config.languages);
+
   code += `
 const semanticAnalyzer = createSemanticAnalyzer();
-const SUPPORTED_SEMANTIC_LANGUAGES = ['${languages}'];
+const SUPPORTED_SEMANTIC_LANGUAGES = ['${languages}', 'en'];
 const SEMANTIC_CONFIDENCE_THRESHOLD = 0.7;
 
+${aliasesCode}
+
 /**
- * Parse hyperscript using semantic parser with fallback to HybridParser.
+ * Parse hyperscript using semantic parser with auto-language detection.
+ * Tries each supported language until one returns a high-confidence result.
+ * Falls back to HybridParser if none match.
+ *
+ * @param code - The hyperscript code to parse
+ * @param lang - Optional language hint. If provided, tries this language first.
  */
-function parseWithSemantic(code, lang = 'en') {
-  // Only use semantic for supported languages
-  if (isLanguageSupported(lang)) {
+function parseWithSemantic(code, lang = null) {
+  // Determine languages to try: specified lang first, then others
+  let languagesToTry = [...SUPPORTED_SEMANTIC_LANGUAGES];
+  if (lang && !languagesToTry.includes(lang)) {
+    languagesToTry.unshift(lang);
+  } else if (lang) {
+    // Move specified lang to front
+    languagesToTry = [lang, ...languagesToTry.filter(l => l !== lang)];
+  }
+
+  // Try each language until one succeeds
+  for (const tryLang of languagesToTry) {
+    if (!isLanguageSupported(tryLang)) continue;
     try {
-      const result = semanticAnalyzer.analyze(code, lang);
+      const result = semanticAnalyzer.analyze(code, tryLang);
       if (result && result.confidence >= SEMANTIC_CONFIDENCE_THRESHOLD) {
-        return buildAST(result.node);
+        // buildAST returns {ast, warnings} - extract the ast
+        const buildResult = buildAST(result.node);
+        const ast = buildResult.ast;
+
+        // Semantic parser doesn't fully handle event handlers - fallback to HybridParser
+        // Event handlers like "on click toggle .active" produce incomplete AST
+        if (ast && ast.type === 'command' && ast.name === 'on') {
+          break; // Fallback to HybridParser
+        }
+
+        return ast;
       }
     } catch (e) {
-      // Fallback to HybridParser on error
-      if (typeof console !== 'undefined' && console.debug) {
-        console.debug('[hyperfixi] Semantic parse failed, falling back:', e);
-      }
+      // Continue trying other languages
     }
   }
-  // Fallback to HybridParser
-  return new HybridParser(code).parse();
+
+  // Fallback to HybridParser for event handlers and unrecognized patterns
+  // Preprocess to translate non-ASCII keywords to English (tokenizer only accepts ASCII)
+  const preprocessedCode = preprocessMultilingual(code);
+  return new HybridParser(preprocessedCode).parse();
 }
 `;
 

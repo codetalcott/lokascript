@@ -112,7 +112,7 @@ function generateBundleCode(config: GeneratorOptions): string {
  */
 
 // Parser imports
-import { HybridParser } from '${parserImportPath}/parser-core';
+import { HybridParser, addCommandAliases } from '${parserImportPath}';
 
 // Runtime state
 const globalVars = new Map();
@@ -133,6 +133,19 @@ async function evaluate(node, ctx) {
       if (ctx.locals.has(node.value)) return ctx.locals.get(node.value);
       if (node.value in ctx.me) return ctx.me[node.value];
       return node.value;
+
+    case 'contextReference':
+      // Semantic AST format for context references (me, you, it, etc.)
+      switch (node.contextType || node.name) {
+        case 'me': return ctx.me;
+        case 'it': return ctx.it;
+        case 'you': return ctx.you;
+        case 'event': return ctx.event;
+        case 'body': return document.body;
+        case 'document': return document;
+        case 'window': return window;
+        default: return ctx.me;
+      }
 
     case 'variable':
       if (node.scope === 'local') return ctx.locals.get(node.name.slice(1));
@@ -267,8 +280,10 @@ const toElementArray = (val) => {
 
 async function executeCommand(cmd, ctx) {
   const getTarget = async () => {
-    if (!cmd.target) return [ctx.me];
-    const t = await evaluate(cmd.target, ctx);
+    // Support both HybridParser (cmd.target) and semantic AST (cmd.modifiers.on) formats
+    const target = cmd.target || cmd.modifiers?.on;
+    if (!target) return [ctx.me];
+    const t = await evaluate(target, ctx);
     if (Array.isArray(t)) return t;
     if (t instanceof Element) return [t];
     if (typeof t === 'string') return Array.from(document.querySelectorAll(t));
@@ -381,6 +396,11 @@ async function executeAST(ast, me, event) {
 
     targetEl.addEventListener(eventName, handler, { once: !!mods.once });
     return;
+  }
+
+  // Handle single command (not wrapped in event or sequence)
+  if (ast.type === 'command') {
+    return executeCommand(ast, ctx);
   }
 
   return null;
@@ -550,6 +570,32 @@ export class Generator {
     } else {
       bundleCode = bundleCode.slice(0, parserImportEnd) + semanticCode + '\n\n' + bundleCode.slice(parserImportEnd);
     }
+
+    // Replace HybridParser usage with parseWithSemantic in processElement
+    bundleCode = bundleCode.replace(
+      /function processElement\(el\) \{\s*const code = el\.getAttribute\('_'\);\s*if \(!code\) return;\s*try \{\s*const parser = new HybridParser\(code\);\s*const ast = parser\.parse\(\);/g,
+      `function processElement(el) {
+  const code = el.getAttribute('_');
+  if (!code) return;
+
+  try {
+    const ast = parseWithSemantic(code);`
+    );
+
+    // Replace HybridParser usage in api.parse
+    bundleCode = bundleCode.replace(
+      /parse\(code\) \{\s*const parser = new HybridParser\(code\);\s*return parser\.parse\(\);/g,
+      `parse(code, lang = null) {
+    return parseWithSemantic(code, lang);`
+    );
+
+    // Replace HybridParser usage in api.execute
+    bundleCode = bundleCode.replace(
+      /async execute\(code, element\) \{\s*const me = element \|\| document\.body;\s*const parser = new HybridParser\(code\);\s*const ast = parser\.parse\(\);/g,
+      `async execute(code, element, lang = null) {
+    const me = element || document.body;
+    const ast = parseWithSemantic(code, lang);`
+    );
 
     // Add semantic exports to the api object
     if (semanticExports.length > 0) {

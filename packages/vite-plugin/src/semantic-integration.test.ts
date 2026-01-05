@@ -59,14 +59,16 @@ describe('selectOptimalBundle', () => {
 });
 
 describe('getSemanticBundleImport', () => {
-  it('returns correct import paths', () => {
-    expect(getSemanticBundleImport('en')).toBe('@hyperfixi/semantic/browser/en');
-    expect(getSemanticBundleImport('es')).toBe('@hyperfixi/semantic/browser/es');
-    expect(getSemanticBundleImport('tr')).toBe('@hyperfixi/semantic/browser/tr');
-    expect(getSemanticBundleImport('es-en')).toBe('@hyperfixi/semantic/browser/es-en');
-    expect(getSemanticBundleImport('western')).toBe('@hyperfixi/semantic/browser/western');
-    expect(getSemanticBundleImport('east-asian')).toBe('@hyperfixi/semantic/browser/east-asian');
-    expect(getSemanticBundleImport('priority')).toBe('@hyperfixi/semantic/browser/priority');
+  it('returns main entry for all bundle types (ES module usage)', () => {
+    // All ES module imports use the main entry which has named exports
+    // Regional bundles are IIFE format only (for <script> tags)
+    expect(getSemanticBundleImport('en')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('es')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('tr')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('es-en')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('western')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('east-asian')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('priority')).toBe('@hyperfixi/semantic');
     expect(getSemanticBundleImport('all')).toBe('@hyperfixi/semantic');
   });
 });
