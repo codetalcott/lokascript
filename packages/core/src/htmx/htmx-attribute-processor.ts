@@ -10,6 +10,53 @@
 
 import { translateToHyperscript, type HtmxConfig } from './htmx-translator.js';
 
+// ============================================================================
+// Lifecycle Event Types
+// ============================================================================
+
+/**
+ * Detail for htmx:configuring event
+ * Fired after attributes are collected but before translation.
+ * Cancel to prevent processing.
+ */
+export interface HtmxConfiguringEventDetail {
+  config: HtmxConfig;
+  element: Element;
+}
+
+/**
+ * Detail for htmx:beforeRequest event
+ * Fired before hyperscript execution starts.
+ * Cancel to prevent execution.
+ */
+export interface HtmxBeforeRequestEventDetail {
+  element: Element;
+  url: string | undefined;
+  method: string;
+}
+
+/**
+ * Detail for htmx:afterSettle event
+ * Fired after hyperscript execution completes successfully.
+ */
+export interface HtmxAfterSettleEventDetail {
+  element: Element;
+  target: string | undefined;
+}
+
+/**
+ * Detail for htmx:error event
+ * Fired when hyperscript execution fails.
+ */
+export interface HtmxErrorEventDetail {
+  element: Element;
+  error: Error;
+}
+
+// ============================================================================
+// Processor Options
+// ============================================================================
+
 export interface HtmxProcessorOptions {
   /** Process existing elements on initialization */
   processExisting?: boolean;
@@ -197,6 +244,19 @@ export class HtmxAttributeProcessor {
       return;
     }
 
+    // Dispatch htmx:configuring event (cancelable)
+    const configuringEvent = new CustomEvent<HtmxConfiguringEventDetail>('htmx:configuring', {
+      detail: { config, element },
+      bubbles: true,
+      cancelable: true,
+    });
+    if (!element.dispatchEvent(configuringEvent)) {
+      if (this.options.debug) {
+        console.log('[htmx-compat] Processing cancelled by htmx:configuring handler');
+      }
+      return; // Cancelled by event handler
+    }
+
     const hyperscript = translateToHyperscript(config, element);
 
     if (this.options.debug) {
@@ -214,9 +274,43 @@ export class HtmxAttributeProcessor {
       // Store the generated code on the element for inspection
       element.setAttribute('data-hx-generated', hyperscript);
 
-      this.executeCallback(hyperscript, element).catch((error) => {
-        console.error('[htmx-compat] Execution error:', error);
+      // Dispatch htmx:beforeRequest event (cancelable)
+      const beforeRequestEvent = new CustomEvent<HtmxBeforeRequestEventDetail>('htmx:beforeRequest', {
+        detail: {
+          element,
+          url: config.url,
+          method: config.method || 'GET',
+        },
+        bubbles: true,
+        cancelable: true,
       });
+      if (!element.dispatchEvent(beforeRequestEvent)) {
+        if (this.options.debug) {
+          console.log('[htmx-compat] Execution cancelled by htmx:beforeRequest handler');
+        }
+        return; // Cancelled by event handler
+      }
+
+      this.executeCallback(hyperscript, element)
+        .then(() => {
+          // Dispatch htmx:afterSettle event (not cancelable)
+          element.dispatchEvent(
+            new CustomEvent<HtmxAfterSettleEventDetail>('htmx:afterSettle', {
+              detail: { element, target: config.target },
+              bubbles: true,
+            })
+          );
+        })
+        .catch((error) => {
+          console.error('[htmx-compat] Execution error:', error);
+          // Dispatch htmx:error event (not cancelable)
+          element.dispatchEvent(
+            new CustomEvent<HtmxErrorEventDetail>('htmx:error', {
+              detail: { element, error: error instanceof Error ? error : new Error(String(error)) },
+              bubbles: true,
+            })
+          );
+        });
     }
   }
 

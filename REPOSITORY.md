@@ -8,8 +8,8 @@ This document provides an overview of the HyperFixi monorepo structure and organ
 hyperfixi/                           # Monorepo root
 ├── packages/                        # Publishable packages
 │   ├── core/                        # @hyperfixi/core - Pure hyperscript engine
-│   ├── fixi/                        # @hyperfixi/fixi - Utility functions  
-│   └── integrated/                  # hyperfixi - Complete solution
+│   ├── i18n/                        # @hyperfixi/i18n - 13-language i18n
+│   └── semantic/                    # @hyperfixi/semantic - Semantic parsing
 ├── apps/                            # Applications and demos
 │   ├── docs-site/                   # Documentation website (planned)
 │   └── patterns-browser/            # Pattern reference browser
@@ -30,21 +30,21 @@ hyperfixi/                           # Monorepo root
 
 ### Core Package (`@hyperfixi/core`)
 - **Purpose**: Pure hyperscript expression evaluation engine
-- **Size**: ~12KB gzipped
+- **Size**: ~224KB (39% reduction from original)
 - **Dependencies**: None
-- **Features**: Parser, runtime, DOM manipulation, error handling
+- **Features**: Parser, runtime, DOM manipulation, htmx compatibility, error handling
 
-### Fixi Package (`@hyperfixi/fixi`)  
-- **Purpose**: Utility functions for hyperscript expressions
-- **Size**: ~8KB gzipped
+### i18n Package (`@hyperfixi/i18n`)
+- **Purpose**: Grammar transformation for 13 languages
+- **Size**: ~68KB gzipped
 - **Dependencies**: `@hyperfixi/core`
-- **Features**: String, date, array, DOM, performance utilities
+- **Features**: SOV/VSO word order, agglutinative suffixes, native keyword support
 
-### Integrated Package (`hyperfixi`)
-- **Purpose**: Complete solution combining core + utilities
-- **Size**: ~20KB gzipped  
-- **Dependencies**: Both packages above
-- **Features**: All features with pre-loaded utilities
+### Semantic Package (`@hyperfixi/semantic`)
+- **Purpose**: Semantic-first multilingual parsing
+- **Size**: ~61KB gzipped (all 13 languages)
+- **Dependencies**: None (standalone)
+- **Features**: Language-specific tokenizers, confidence scoring, pattern matching
 
 ## 🛠️ Development Tools
 
@@ -82,8 +82,8 @@ Shared testing utilities (planned):
 
 ### Package Documentation
 - **Core**: `packages/core/docs/` - API reference, examples, coverage
-- **Fixi**: `packages/fixi/README.md` - Utility function documentation
-- **Integrated**: `packages/integrated/README.md` - Complete usage guide
+- **i18n**: `packages/i18n/README.md` - Internationalization guide
+- **Semantic**: `packages/semantic/README.md` - Semantic parsing documentation
 
 ### Development Planning (`roadmap/`)
 - **README.md** - Current roadmap and phase status

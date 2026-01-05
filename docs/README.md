@@ -11,8 +11,8 @@ Welcome to the HyperFixi documentation directory.
 
 ### Package Documentation
 - **[@hyperfixi/core](../packages/core/README.md)** - Pure hyperscript engine
-- **[@hyperfixi/fixi](../packages/fixi/README.md)** - Utility functions
-- **[hyperfixi](../packages/integrated/README.md)** - Complete solution
+- **[@hyperfixi/i18n](../packages/i18n/README.md)** - 13-language internationalization
+- **[@hyperfixi/semantic](../packages/semantic/README.md)** - Semantic-first parsing
 
 ### Development Documentation
 - **[Roadmap](../roadmap/)** - Project planning and development roadmap
@@ -36,7 +36,7 @@ Welcome to the HyperFixi documentation directory.
 ### Advanced Usage
 - [Performance Patterns](../packages/core/docs/EXAMPLES.md#performance-patterns)
 - [Integration Patterns](../packages/core/docs/EXAMPLES.md#state-management)
-- [Custom Utilities](../packages/fixi/README.md)
+- [Internationalization](../packages/i18n/README.md)
 
 ## Contributing
 

@@ -403,6 +403,43 @@ For projects prioritizing bundle size over features:
 <button hx-on:click="toggle .active on me">Toggle</button>
 ```
 
+### htmx Lifecycle Events
+
+The htmx compatibility layer dispatches CustomEvents at key points in the request lifecycle:
+
+| Event | When | Cancelable | Detail |
+|-------|------|------------|--------|
+| `htmx:configuring` | After attributes collected, before translation | Yes | `{ config, element }` |
+| `htmx:beforeRequest` | Before hyperscript execution | Yes | `{ element, url, method }` |
+| `htmx:afterSettle` | After successful execution | No | `{ element, target }` |
+| `htmx:error` | On execution failure | No | `{ element, error }` |
+
+**Example usage:**
+
+```javascript
+// Intercept and modify config before processing
+document.addEventListener('htmx:configuring', (e) => {
+  e.detail.config.headers = { 'X-Custom': 'value' };
+});
+
+// Cancel request based on condition
+document.addEventListener('htmx:beforeRequest', (e) => {
+  if (someCondition) {
+    e.preventDefault(); // Cancels execution
+  }
+});
+
+// React to successful completion
+document.addEventListener('htmx:afterSettle', (e) => {
+  console.log('Request completed for:', e.detail.url);
+});
+
+// Handle errors
+document.addEventListener('htmx:error', (e) => {
+  showErrorNotification(e.detail.error.message);
+});
+```
+
 ### Custom Bundle Generator
 
 Generate minimal bundles with only the commands you need:

@@ -72,37 +72,6 @@ const context = hyperscript.createContext(element);
 await hyperscript.run("hide me then wait 1s then show me", context);
 ```
 
-### For Complete Solution (Batteries Included)
-
-```bash
-npm install hyperfixi
-```
-
-```typescript
-import { hyperscript } from "hyperfixi";
-
-// All utilities automatically available
-const context = hyperscript.createContext(element);
-await hyperscript.run("capitalize(userName)", context);
-await hyperscript.run('format(date, "MM/DD/YYYY")', context);
-await hyperscript.run("debounce(search, 300)", context);
-```
-
-### For Custom Setup
-
-```bash
-npm install @hyperfixi/core @hyperfixi/fixi
-```
-
-```typescript
-import { hyperscript } from "@hyperfixi/core";
-import { dateUtils, stringUtils } from "@hyperfixi/fixi";
-
-const context = hyperscript.createContext(element);
-context.variables?.set("string", stringUtils);
-context.variables?.set("date", dateUtils);
-```
-
 ## Features
 
 ### 🚀 High Performance
@@ -164,21 +133,22 @@ context.variables?.set("date", dateUtils);
 ```
 @hyperfixi/core     - Pure hyperscript engine (no dependencies)
     ├── parser/     - Tokenizer, AST parser, error handling
-    ├── runtime/    - Expression evaluator, context management  
+    ├── runtime/    - Expression evaluator, context management
     ├── commands/   - DOM manipulation (hide, show, add, remove)
     ├── features/   - All 9 official features (behavior, def, js, set, etc.)
     ├── extensions/ - Plugin system (Tailwind CSS extension)
+    ├── htmx/       - htmx attribute compatibility layer
     └── api/        - Public API and type definitions
 
-@hyperfixi/fixi     - Utility functions (depends on core)
-    ├── string/     - String formatting and validation
-    ├── date/       - Date formatting and manipulation
-    ├── array/      - Array operations and transformations
-    ├── dom/        - Advanced DOM utilities
-    └── performance/ - Debouncing, throttling, memoization
+@hyperfixi/i18n     - Internationalization (13 languages)
+    ├── grammar/    - SOV/VSO word order transformation
+    ├── dictionaries/ - Per-language keyword mappings
+    └── parser/     - Multilingual keyword providers
 
-hyperfixi          - Integrated package (combines both)
-    └── Enhanced API with all utilities pre-loaded
+@hyperfixi/semantic - Semantic-first parsing (13 languages)
+    ├── tokenizers/ - Language-specific tokenizers
+    ├── patterns/   - Pattern generation from schemas
+    └── parser/     - Semantic parser with confidence scoring
 ```
 
 ## Development
@@ -222,14 +192,15 @@ cd packages/core
 npm run test:watch
 npm run dev
 
-# Work on fixi utilities  
-cd packages/fixi
+# Work on i18n package
+cd packages/i18n
 npm run test:watch
 npm run build
 
-# Test integration
-cd packages/integrated
-npm run test
+# Work on semantic package
+cd packages/semantic
+npm run test:watch
+npm run build
 ```
 
 ## Testing
@@ -314,9 +285,9 @@ for details.
 
 ### Package Guidelines
 
-- **Core**: Keep minimal, no external dependencies
-- **Fixi**: Utility functions only, depend on core
-- **Integrated**: Convenience package, combines both
+- **Core**: Main hyperscript implementation, no external dependencies
+- **i18n**: Grammar transformation for 13 languages, depends on core
+- **Semantic**: Semantic-first multilingual parsing, standalone
 - **Apps**: Development and demonstration tools
 
 ## Documentation

@@ -7,8 +7,6 @@
 - Command implementations live under `src/commands/<domain>`; register factories through `command-registry.ts` so `ENHANCED_COMMAND_FACTORIES` stays in sync.
 - Runtime orchestration is in `src/runtime/runtime.ts`; preserve async execution and context cloning patterns when extending execution flow.
 - Public exports are centralized in `src/index.ts` and mirrored in the `package.json` exports map; update Rollup configs when exposing new entry points.
-- Utility bundle `packages/fixi` re-exports category modules (`string`, `date`, `array`, `dom`, `performance`); context helpers live in `src/integration`.
-- Integrated package `packages/integrated` binds core + fixi; expect auto-injected utilities in expressions and keep manual context wiring optional.
 - Server API sits in `packages/server-integration`: Express service (`src/service/hyperfixi-service.ts`) invokes the compiler, cache layer (`src/cache`), and context parser (`src/parser`).
 - Multi-language clients under `clients/*` consume the HTTP API; keep payload shapes consistent with `packages/server-integration/src/types.ts`.
 - Shared schemas/types live in `packages/component-schema`; consume validators there rather than redefining payload shapes.
