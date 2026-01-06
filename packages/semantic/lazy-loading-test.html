@@ -174,11 +174,11 @@
         log(`Failed to load Japanese: ${jaResult.error || 'unknown error'}`, 'fail');
       }
 
-      // Test 8: Parse Japanese
+      // Test 8: Parse Japanese (SOV order: patient を verb)
       try {
-        const node = Lazy.parse('トグル .active', 'ja');
+        const node = Lazy.parse('.active を トグル', 'ja');
         if (node && node.action === 'toggle') {
-          log('Japanese parsing works: <code>トグル .active</code> → action=toggle');
+          log('Japanese parsing works: <code>.active を トグル</code> → action=toggle');
         } else {
           log(`Parse returned unexpected result: ${JSON.stringify(node)}`, 'fail');
         }

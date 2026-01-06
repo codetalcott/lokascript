@@ -21,113 +21,62 @@ import { getSetPatternsForLanguage } from './set/index';
 // Import English-only patterns
 import { getEnglishOnlyPatterns } from './languages/en';
 
-// Import schemas directly from command-schemas (not from barrel to avoid pulling all profiles)
-import {
-  toggleSchema,
-  addSchema,
-  removeSchema,
-  showSchema,
-  hideSchema,
-  waitSchema,
-  logSchema,
-  incrementSchema,
-  decrementSchema,
-  sendSchema,
-  goSchema,
-  fetchSchema,
-  appendSchema,
-  prependSchema,
-  triggerSchema,
-  setSchema,
-  putSchema,
-  // Tier 2: Content & variable operations
-  takeSchema,
-  makeSchema,
-  cloneSchema,
-  getCommandSchema,
-  // Tier 3: Control flow & DOM
-  callSchema,
-  returnSchema,
-  focusSchema,
-  blurSchema,
-  // Tier 4: DOM Content Manipulation
-  swapSchema,
-  morphSchema,
-  // Tier 5: Control flow & Behavior system
-  haltSchema,
-  behaviorSchema,
-  installSchema,
-  measureSchema,
-} from '../generators/command-schemas';
-
 // Import generator directly (not from barrel)
-import { generatePatternsForCommand } from '../generators/pattern-generator';
+import { generatePatternsForLanguage } from '../generators/pattern-generator';
 
-// =============================================================================
-// Generated Patterns (New Commands)
-// =============================================================================
+// Import registry functions for lazy loading support
+import { getRegisteredLanguages, tryGetProfile } from '../registry';
 
-/**
- * Generate patterns for all commands.
- * Called lazily to ensure language profiles are registered first.
- */
-function generateAllCommandPatterns(): LanguagePattern[] {
-  return [
-    // Tier 0: Toggle (generated for languages without hand-crafted patterns)
-    // Hand-crafted patterns exist for: en, ja, ar, es, ko, zh, tr
-    // Generated patterns fill gap for: pt, fr, de, id, qu, sw
-    ...generatePatternsForCommand(toggleSchema),
-    // Tier 1: Core commands
-    ...generatePatternsForCommand(addSchema),
-    ...generatePatternsForCommand(removeSchema),
-    ...generatePatternsForCommand(showSchema),
-    ...generatePatternsForCommand(hideSchema),
-    ...generatePatternsForCommand(waitSchema),
-    ...generatePatternsForCommand(logSchema),
-    ...generatePatternsForCommand(incrementSchema),
-    ...generatePatternsForCommand(decrementSchema),
-    ...generatePatternsForCommand(sendSchema),
-    ...generatePatternsForCommand(goSchema),
-    ...generatePatternsForCommand(fetchSchema),
-    ...generatePatternsForCommand(appendSchema),
-    ...generatePatternsForCommand(prependSchema),
-    ...generatePatternsForCommand(triggerSchema),
-    ...generatePatternsForCommand(setSchema),
-    // Put command - hand-crafted patterns exist for en, ja, ar, es
-    // Generated patterns fill gap for: ko, zh, tr, pt, fr, de, id, qu, sw
-    ...generatePatternsForCommand(putSchema),
-    // Tier 2: Content & variable operations
-    ...generatePatternsForCommand(takeSchema),
-    ...generatePatternsForCommand(makeSchema),
-    ...generatePatternsForCommand(cloneSchema),
-    ...generatePatternsForCommand(getCommandSchema),
-    // Tier 3: Control flow & DOM
-    ...generatePatternsForCommand(callSchema),
-    ...generatePatternsForCommand(returnSchema),
-    ...generatePatternsForCommand(focusSchema),
-    ...generatePatternsForCommand(blurSchema),
-    // Tier 4: DOM Content Manipulation
-    ...generatePatternsForCommand(swapSchema),
-    ...generatePatternsForCommand(morphSchema),
-    // Tier 5: Control flow & Behavior system
-    ...generatePatternsForCommand(haltSchema),
-    ...generatePatternsForCommand(behaviorSchema),
-    ...generatePatternsForCommand(installSchema),
-    ...generatePatternsForCommand(measureSchema),
-  ];
-}
-
-// Lazy cache for generated patterns
-let _generatedPatterns: LanguagePattern[] | null = null;
+// Lazy cache for generated patterns PER LANGUAGE
+// Using per-language cache instead of global cache to support lazy loading
+// where languages are registered one at a time
+const _generatedPatternsPerLanguage = new Map<string, LanguagePattern[]>();
 
 /**
  * Get all generated patterns (lazy loaded).
+ * @deprecated Use getGeneratedPatternsForLanguage() for lazy loading support.
  */
 export function getGeneratedPatterns(): LanguagePattern[] {
-  if (_generatedPatterns === null) {
-    _generatedPatterns = generateAllCommandPatterns();
+  // For backwards compatibility, generate for all currently registered languages
+  const allPatterns: LanguagePattern[] = [];
+  for (const lang of getRegisteredLanguages()) {
+    allPatterns.push(...getGeneratedPatternsForLanguage(lang));
   }
-  return _generatedPatterns;
+  return allPatterns;
+}
+
+/**
+ * Get generated patterns for a specific language.
+ * This supports lazy loading scenarios where languages are registered one at a time.
+ */
+export function getGeneratedPatternsForLanguage(language: string): LanguagePattern[] {
+  // Check per-language cache first
+  const cached = _generatedPatternsPerLanguage.get(language);
+  if (cached) {
+    return cached;
+  }
+
+  // Get profile from registry
+  const profile = tryGetProfile(language);
+  if (!profile) {
+    return [];
+  }
+
+  // Generate patterns for this language
+  const patterns = generatePatternsForLanguage(profile);
+  _generatedPatternsPerLanguage.set(language, patterns);
+  return patterns;
+}
+
+/**
+ * Clear the generated patterns cache for a language (useful for testing).
+ */
+export function clearGeneratedPatternsCache(language?: string): void {
+  if (language) {
+    _generatedPatternsPerLanguage.delete(language);
+  } else {
+    _generatedPatternsPerLanguage.clear();
+  }
 }
 
 // =============================================================================
@@ -158,8 +107,8 @@ export function buildPatternsForLanguage(language: string): LanguagePattern[] {
     patterns.push(...getEnglishOnlyPatterns());
   }
 
-  // 4. Generated patterns for this language (lazy - ensures profiles are registered first)
-  const langGeneratedPatterns = getGeneratedPatterns().filter(p => p.language === language);
+  // 4. Generated patterns for this language (per-language cache supports lazy loading)
+  const langGeneratedPatterns = getGeneratedPatternsForLanguage(language);
   patterns.push(...langGeneratedPatterns);
 
   return patterns;

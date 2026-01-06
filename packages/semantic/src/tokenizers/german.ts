@@ -110,8 +110,11 @@ const GERMAN_KEYWORDS: Map<string, string> = new Map([
   ['bekommen', 'get'],
   ['erhöhen', 'increment'],
   ['erhohen', 'increment'],
+  ['erhöhe', 'increment'],   // first person imperative (test case)
+  ['erhohe', 'increment'],   // without umlaut
   ['verringern', 'decrement'],
   ['vermindern', 'decrement'],
+  ['verringere', 'decrement'],  // first person imperative (test case)
   ['protokollieren', 'log'],
   ['ausgeben', 'log'],
   // Commands - Visibility

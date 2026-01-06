@@ -19,16 +19,36 @@ npm install @hyperfixi/semantic
 
 Choose the right bundle for your use case. All bundles are minified IIFE for direct browser usage.
 
-| Bundle | Import Path | Size (gzip) | Languages |
-|--------|-------------|-------------|-----------|
-| Spanish only | `@hyperfixi/semantic/browser/es` | 16 KB | es |
-| English only | `@hyperfixi/semantic/browser/en` | 20 KB | en |
-| Spanish + English | `@hyperfixi/semantic/browser/es-en` | 25 KB | en, es |
-| East Asian | `@hyperfixi/semantic/browser/east-asian` | 24 KB | ja, zh, ko |
-| Western | `@hyperfixi/semantic/browser/western` | 30 KB | en, es, pt, fr, de |
-| Priority | `@hyperfixi/semantic/browser/priority` | 48 KB | 11 priority languages |
-| Lazy | `@hyperfixi/semantic/browser/lazy` | ~15 KB | On-demand loading |
-| Full | `@hyperfixi/semantic/browser` | 61 KB | All 13 languages |
+### Bundle Matrix
+
+#### Tier 1: Single Language (~14-20 KB gzip)
+
+| Bundle | Global | Size | Languages |
+|--------|--------|------|-----------|
+| `browser-en.en.global.js` | `HyperFixiSemanticEn` | ~20 KB | en |
+| `browser-es.es.global.js` | `HyperFixiSemanticEs` | ~16 KB | es |
+| `browser-ja.ja.global.js` | `HyperFixiSemanticJa` | ~17 KB | ja |
+| `browser-ar.ar.global.js` | `HyperFixiSemanticAr` | ~17 KB | ar |
+| `browser-ko.ko.global.js` | `HyperFixiSemanticKo` | ~18 KB | ko |
+| `browser-zh.zh.global.js` | `HyperFixiSemanticZh` | ~15 KB | zh |
+| `browser-tr.tr.global.js` | `HyperFixiSemanticTr` | ~18 KB | tr |
+| `browser-pt.pt.global.js` | `HyperFixiSemanticPt` | ~14 KB | pt |
+| `browser-fr.fr.global.js` | `HyperFixiSemanticFr` | ~14 KB | fr |
+| `browser-de.de.global.js` | `HyperFixiSemanticDe` | ~14 KB | de |
+| `browser-id.id.global.js` | `HyperFixiSemanticId` | ~14 KB | id |
+| `browser-qu.qu.global.js` | `HyperFixiSemanticQu` | ~14 KB | qu |
+| `browser-sw.sw.global.js` | `HyperFixiSemanticSw` | ~14 KB | sw |
+
+#### Tier 2-5: Multi-Language Bundles
+
+| Bundle | Global | Size | Languages |
+|--------|--------|------|-----------|
+| `browser-es-en.es-en.global.js` | `HyperFixiSemanticEsEn` | ~25 KB | en, es |
+| `browser-western.western.global.js` | `HyperFixiSemanticWestern` | ~30 KB | en, es, pt, fr, de |
+| `browser-east-asian.east-asian.global.js` | `HyperFixiSemanticEastAsian` | ~24 KB | ja, zh, ko |
+| `browser-priority.priority.global.js` | `HyperFixiSemanticPriority` | ~48 KB | 11 languages |
+| `browser.global.js` | `HyperFixiSemantic` | ~61 KB | All 13 |
+| `browser-lazy.lazy.global.js` | `HyperFixiSemanticLazy` | ~15 KB | On-demand |
 
 ### Lazy Loading (Smallest Initial Bundle)
 

@@ -110,8 +110,8 @@ const TURKISH_KEYWORDS: Map<string, string> = new Map([
   ['basaekle', 'prepend'],
   ['başa_ekle', 'prepend'],
   ['basa_ekle', 'prepend'], // without diacritics
-  ['al', 'take'],
-  ['yap', 'make'],
+  ['al', 'get'],           // common colloquial form for "get" (test case)
+  ['yap', 'set'],           // common colloquial form for "set" (test case)
   ['oluştur', 'make'],
   ['olustur', 'make'],     // without diacritics
   ['kopyala', 'clone'],

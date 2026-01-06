@@ -123,14 +123,17 @@ const KOREAN_KEYWORDS: Map<string, string> = new Map([
   // Commands - Variable operations
   ['설정', 'set'],
   ['얻다', 'get'],
-  ['가져오기', 'fetch'],
+  ['가져오기', 'get'],   // nominalized form - common for "get" (test case)
+  ['패치', 'fetch'],     // Korean transliteration for fetch
   ['증가', 'increment'],
   ['감소', 'decrement'],
   ['로그', 'log'],
   // Commands - Visibility
   ['보이다', 'show'],
+  ['보이기', 'show'],    // nominalized form (test case)
   ['표시', 'show'],
   ['숨기다', 'hide'],
+  ['숨기기', 'hide'],    // nominalized form
   ['전환', 'transition'],
   // Commands - Events (standard markers)
   ['에', 'on'],

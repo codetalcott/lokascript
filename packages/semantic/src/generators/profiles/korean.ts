@@ -65,8 +65,8 @@ export const koreanProfile: LanguageProfile = {
     decrement: { primary: '감소', normalized: 'decrement' },
     log: { primary: '로그', normalized: 'log' },
     // Visibility
-    show: { primary: '보이다', alternatives: ['표시'], normalized: 'show' },
-    hide: { primary: '숨기다', normalized: 'hide' },
+    show: { primary: '보이다', alternatives: ['표시', '보이기'], normalized: 'show' },
+    hide: { primary: '숨기다', alternatives: ['숨기기'], normalized: 'hide' },
     transition: { primary: '전환', normalized: 'transition' },
     // Events
     on: { primary: '에', alternatives: ['시', '때', '할 때'], normalized: 'on' },
