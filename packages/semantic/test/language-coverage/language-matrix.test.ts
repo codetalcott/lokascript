@@ -88,9 +88,9 @@ describe('Cross-Language Consistency', () => {
         const testCase = getTestCase('toggle', lang);
         const stream = tokenize(testCase, lang);
 
-        // At least one token should be a keyword
+        // At least one token should be a keyword (tokens use 'kind' not 'type')
         const hasKeyword = stream.tokens.some(
-          t => t.type === 'keyword' || t.type === 'command'
+          t => t.kind === 'keyword' || t.kind === 'command'
         );
         expect(hasKeyword).toBe(true);
       });
