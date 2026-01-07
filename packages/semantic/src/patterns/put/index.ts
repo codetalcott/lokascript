@@ -18,6 +18,12 @@ export { getPutPatternsTr } from './tr';
 export { getPutPatternsId } from './id';
 export { getPutPatternsIt } from './it';
 export { getPutPatternsVi } from './vi';
+export { getPutPatternsPl } from './pl';
+export { getPutPatternsRu } from './ru';
+export { getPutPatternsUk } from './uk';
+export { getPutPatternsHi } from './hi';
+export { getPutPatternsBn } from './bn';
+export { getPutPatternsTh } from './th';
 
 // Import all for backwards compatibility (defeats tree-shaking)
 import { getPutPatternsEn } from './en';
@@ -30,6 +36,12 @@ import { getPutPatternsTr } from './tr';
 import { getPutPatternsId } from './id';
 import { getPutPatternsIt } from './it';
 import { getPutPatternsVi } from './vi';
+import { getPutPatternsPl } from './pl';
+import { getPutPatternsRu } from './ru';
+import { getPutPatternsUk } from './uk';
+import { getPutPatternsHi } from './hi';
+import { getPutPatternsBn } from './bn';
+import { getPutPatternsTh } from './th';
 
 /**
  * Get put patterns for a specific language.
@@ -49,6 +61,12 @@ export function getPutPatternsForLanguage(language: string): LanguagePattern[] {
     case 'id': return getPutPatternsId();
     case 'it': return getPutPatternsIt();
     case 'vi': return getPutPatternsVi();
+    case 'pl': return getPutPatternsPl();
+    case 'ru': return getPutPatternsRu();
+    case 'uk': return getPutPatternsUk();
+    case 'hi': return getPutPatternsHi();
+    case 'bn': return getPutPatternsBn();
+    case 'th': return getPutPatternsTh();
     default: return [];
   }
 }

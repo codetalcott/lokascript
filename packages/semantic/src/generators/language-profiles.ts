@@ -41,6 +41,14 @@ export { germanProfile } from './profiles/german';
 export { indonesianProfile } from './profiles/indonesian';
 export { quechuaProfile } from './profiles/quechua';
 export { swahiliProfile } from './profiles/swahili';
+export { italianProfile } from './profiles/italian';
+export { vietnameseProfile } from './profiles/vietnamese';
+export { polishProfile } from './profiles/polish';
+export { russianProfile } from './profiles/russian';
+export { ukrainianProfile } from './profiles/ukrainian';
+export { hindiProfile } from './profiles/hindi';
+export { bengaliProfile } from './profiles/bengali';
+export { thaiProfile } from './profiles/thai';
 
 // Import for creating the combined object
 import { englishProfile } from './profiles/english';
@@ -56,6 +64,14 @@ import { germanProfile } from './profiles/german';
 import { indonesianProfile } from './profiles/indonesian';
 import { quechuaProfile } from './profiles/quechua';
 import { swahiliProfile } from './profiles/swahili';
+import { italianProfile } from './profiles/italian';
+import { vietnameseProfile } from './profiles/vietnamese';
+import { polishProfile } from './profiles/polish';
+import { russianProfile } from './profiles/russian';
+import { ukrainianProfile } from './profiles/ukrainian';
+import { hindiProfile } from './profiles/hindi';
+import { bengaliProfile } from './profiles/bengali';
+import { thaiProfile } from './profiles/thai';
 import type { LanguageProfile } from './profiles/types';
 
 // =============================================================================
@@ -80,6 +96,14 @@ export const languageProfiles: Record<string, LanguageProfile> = {
   id: indonesianProfile,
   qu: quechuaProfile,
   sw: swahiliProfile,
+  it: italianProfile,
+  vi: vietnameseProfile,
+  pl: polishProfile,
+  ru: russianProfile,
+  uk: ukrainianProfile,
+  hi: hindiProfile,
+  bn: bengaliProfile,
+  th: thaiProfile,
 };
 
 /**

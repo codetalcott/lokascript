@@ -39,6 +39,12 @@ import { sw as swLegacy } from './sw';
 import { pt as ptLegacy } from './pt';
 import { it as itLegacy } from './it';
 import { vi as viLegacy } from './vi';
+import { pl as plLegacy } from './pl';
+import { russianDictionary as ruLegacy } from './ru';
+import { ukrainianDictionary as ukLegacy } from './uk';
+import { hindiDictionary as hiLegacy } from './hi';
+import { bengaliDictionary as bnLegacy } from './bn';
+import { thaiDictionary as thLegacy } from './th';
 
 // =============================================================================
 // Derived Dictionaries with Legacy Overrides
@@ -123,6 +129,36 @@ export const it: Dictionary = itLegacy;
  */
 export const vi: Dictionary = viLegacy;
 
+/**
+ * Polish dictionary - legacy overrides for compatibility.
+ */
+export const pl: Dictionary = plLegacy;
+
+/**
+ * Russian dictionary - legacy overrides for compatibility.
+ */
+export const ru: Dictionary = ruLegacy;
+
+/**
+ * Ukrainian dictionary - legacy overrides for compatibility.
+ */
+export const uk: Dictionary = ukLegacy;
+
+/**
+ * Hindi dictionary - legacy overrides for compatibility.
+ */
+export const hi: Dictionary = hiLegacy;
+
+/**
+ * Bengali dictionary - legacy overrides for compatibility.
+ */
+export const bn: Dictionary = bnLegacy;
+
+/**
+ * Thai dictionary - legacy overrides for compatibility.
+ */
+export const th: Dictionary = thLegacy;
+
 // =============================================================================
 // Dictionary Registry
 // =============================================================================
@@ -146,6 +182,12 @@ export const dictionaries: Record<string, Dictionary> = {
   pt,
   it,
   vi,
+  pl,
+  ru,
+  uk,
+  hi,
+  bn,
+  th,
 };
 
 // =============================================================================

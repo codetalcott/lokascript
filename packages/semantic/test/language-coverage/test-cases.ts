@@ -12,7 +12,7 @@
 
 // Priority languages (excludes sw, qu which are proof-of-concept)
 export const PRIORITY_LANGUAGES = [
-  'en', 'es', 'pt', 'fr', 'de', 'it', 'vi',  // Western + Vietnamese
+  'en', 'es', 'pt', 'fr', 'de', 'it', 'vi', 'pl',  // Western + Vietnamese + Polish
   'ja', 'zh', 'ko',                           // East Asian
   'ar', 'tr', 'id',                           // Other priority
 ] as const;
@@ -42,6 +42,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'umschalten .active',
     it: 'commutare .active',
     vi: 'chuyển đổi .active',
+    pl: 'przełącz .active',
     ja: '.active を 切り替え',
     zh: '切换 .active',
     ko: '.active 를 토글',
@@ -57,6 +58,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'hinzufügen .highlight',
     it: 'aggiungere .highlight',
     vi: 'thêm .highlight',
+    pl: 'dodaj .highlight',
     ja: '.highlight を 追加',
     zh: '添加 .highlight',
     ko: '.highlight 를 추가',
@@ -72,6 +74,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'entfernen .highlight',
     it: 'rimuovere .highlight',
     vi: 'xóa .highlight',
+    pl: 'usuń .highlight',
     ja: '.highlight を 削除',
     zh: '移除 .highlight',
     ko: '.highlight 를 제거',
@@ -87,6 +90,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'setzen "hallo" in #output',
     it: 'mettere "ciao" in #output',
     vi: 'đặt "xin chào" vào #output',
+    pl: 'umieść "cześć" w #output',
     ja: '"こんにちは" を #output に 入れる',
     zh: '放置 "你好" 到 #output',
     ko: '"안녕하세요" 를 #output 에 넣기',
@@ -102,6 +106,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'setze x auf 10',
     it: 'impostare x a 10',
     vi: 'gán x thành 10',
+    pl: 'ustaw x na 10',
     ja: 'x を 10 に 設定',
     zh: '设置 x 为 10',
     ko: 'x 를 10 으로 설정',
@@ -117,6 +122,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'hole #element',
     it: 'ottenere #element',
     vi: 'lấy giá trị #element',
+    pl: 'pobierz #element',
     ja: '#element を 取得',
     zh: '获取 #element',
     ko: '#element 를 가져오기',
@@ -132,6 +138,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'zeige #modal',
     it: 'mostrare #modal',
     vi: 'hiển thị #modal',
+    pl: 'pokaż #modal',
     ja: '#modal を 表示',
     zh: '显示 #modal',
     ko: '#modal 를 보이기',
@@ -147,6 +154,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'verstecke #modal',
     it: 'nascondere #modal',
     vi: 'ẩn #modal',
+    pl: 'ukryj #modal',
     ja: '#modal を 非表示',
     zh: '隐藏 #modal',
     ko: '#modal 를 숨기기',
@@ -162,6 +170,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'erhöhe zähler',
     it: 'incrementare contatore',
     vi: 'tăng counter',
+    pl: 'zwiększ counter',
     ja: 'counter を 増加',
     zh: '增加 counter',
     ko: 'counter 를 증가',
@@ -177,6 +186,7 @@ export const TEST_CASES: Record<CoreCommand, Record<PriorityLanguage, string>> =
     de: 'verringere zähler',
     it: 'decrementare contatore',
     vi: 'giảm counter',
+    pl: 'zmniejsz counter',
     ja: 'counter を 減少',
     zh: '减少 counter',
     ko: 'counter 를 감소',

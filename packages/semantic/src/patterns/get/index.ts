@@ -12,6 +12,12 @@ import { getGetPatternsKo } from './ko';
 import { getGetPatternsAr } from './ar';
 import { getGetPatternsIt } from './it';
 import { getGetPatternsVi } from './vi';
+import { getGetPatternsPl } from './pl';
+import { getGetPatternsRu } from './ru';
+import { getGetPatternsUk } from './uk';
+import { getGetPatternsHi } from './hi';
+import { getGetPatternsBn } from './bn';
+import { getGetPatternsTh } from './th';
 
 /**
  * Get get patterns for a specific language.
@@ -30,6 +36,18 @@ export function getGetPatternsForLanguage(language: string): LanguagePattern[] {
       return getGetPatternsIt();
     case 'vi':
       return getGetPatternsVi();
+    case 'pl':
+      return getGetPatternsPl();
+    case 'ru':
+      return getGetPatternsRu();
+    case 'uk':
+      return getGetPatternsUk();
+    case 'hi':
+      return getGetPatternsHi();
+    case 'bn':
+      return getGetPatternsBn();
+    case 'th':
+      return getGetPatternsTh();
     default:
       return [];
   }
@@ -42,3 +60,9 @@ export { getGetPatternsKo } from './ko';
 export { getGetPatternsAr } from './ar';
 export { getGetPatternsIt } from './it';
 export { getGetPatternsVi } from './vi';
+export { getGetPatternsPl } from './pl';
+export { getGetPatternsRu } from './ru';
+export { getGetPatternsUk } from './uk';
+export { getGetPatternsHi } from './hi';
+export { getGetPatternsBn } from './bn';
+export { getGetPatternsTh } from './th';

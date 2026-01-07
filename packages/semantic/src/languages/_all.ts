@@ -28,6 +28,12 @@ import './qu';
 import './sw';
 import './it';
 import './vi';
+import './pl';
+import './ru';
+import './uk';
+import './hi';
+import './bn';
+import './th';
 
 // Re-export everything for convenience
 export * from './en';
@@ -45,3 +51,9 @@ export * from './qu';
 export * from './sw';
 export * from './it';
 export * from './vi';
+export * from './pl';
+export * from './ru';
+export * from './uk';
+export * from './hi';
+export * from './bn';
+export * from './th';

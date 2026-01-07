@@ -14,6 +14,12 @@ import { getAddPatternsTr } from './tr';
 import { getAddPatternsZh } from './zh';
 import { getAddPatternsIt } from './it';
 import { getAddPatternsVi } from './vi';
+import { getAddPatternsPl } from './pl';
+import { getAddPatternsRu } from './ru';
+import { getAddPatternsUk } from './uk';
+import { getAddPatternsHi } from './hi';
+import { getAddPatternsBn } from './bn';
+import { getAddPatternsTh } from './th';
 
 /**
  * Get add patterns for a specific language.
@@ -34,6 +40,18 @@ export function getAddPatternsForLanguage(language: string): LanguagePattern[] {
       return getAddPatternsIt();
     case 'vi':
       return getAddPatternsVi();
+    case 'pl':
+      return getAddPatternsPl();
+    case 'ru':
+      return getAddPatternsRu();
+    case 'uk':
+      return getAddPatternsUk();
+    case 'hi':
+      return getAddPatternsHi();
+    case 'bn':
+      return getAddPatternsBn();
+    case 'th':
+      return getAddPatternsTh();
     default:
       return [];
   }
@@ -47,3 +65,9 @@ export { getAddPatternsTr } from './tr';
 export { getAddPatternsZh } from './zh';
 export { getAddPatternsIt } from './it';
 export { getAddPatternsVi } from './vi';
+export { getAddPatternsPl } from './pl';
+export { getAddPatternsRu } from './ru';
+export { getAddPatternsUk } from './uk';
+export { getAddPatternsHi } from './hi';
+export { getAddPatternsBn } from './bn';
+export { getAddPatternsTh } from './th';

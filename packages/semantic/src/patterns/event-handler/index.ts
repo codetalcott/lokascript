@@ -16,6 +16,9 @@ import { indonesianProfile } from '../../generators/profiles/indonesian';
 import { swahiliProfile } from '../../generators/profiles/swahili';
 import { italianProfile } from '../../generators/profiles/italian';
 import { vietnameseProfile } from '../../generators/profiles/vietnamese';
+import { polishProfile } from '../../generators/profiles/polish';
+import { russianProfile } from '../../generators/profiles/russian';
+import { ukrainianProfile } from '../../generators/profiles/ukrainian';
 
 // Re-export shared utilities
 export { eventNameTranslations, normalizeEventName } from './shared';
@@ -30,6 +33,9 @@ export { getEventHandlerPatternsEs } from './es';
 export { getEventHandlerPatternsPt } from './pt';
 export { getEventHandlerPatternsZh } from './zh';
 export { getEventHandlerPatternsQu } from './qu';
+export { getEventHandlerPatternsHi } from './hi';
+export { getEventHandlerPatternsBn } from './bn';
+export { getEventHandlerPatternsTh } from './th';
 
 // Generated pattern getters for simple SVO languages
 export function getEventHandlerPatternsDe(): LanguagePattern[] {
@@ -56,6 +62,18 @@ export function getEventHandlerPatternsVi(): LanguagePattern[] {
   return generateEventHandlerPatterns(vietnameseProfile);
 }
 
+export function getEventHandlerPatternsPl(): LanguagePattern[] {
+  return generateEventHandlerPatterns(polishProfile);
+}
+
+export function getEventHandlerPatternsRu(): LanguagePattern[] {
+  return generateEventHandlerPatterns(russianProfile);
+}
+
+export function getEventHandlerPatternsUk(): LanguagePattern[] {
+  return generateEventHandlerPatterns(ukrainianProfile);
+}
+
 // Import hand-crafted patterns for backwards compatibility
 import { getEventHandlerPatternsEn } from './en';
 import { getEventHandlerPatternsJa } from './ja';
@@ -66,6 +84,9 @@ import { getEventHandlerPatternsEs } from './es';
 import { getEventHandlerPatternsPt } from './pt';
 import { getEventHandlerPatternsZh } from './zh';
 import { getEventHandlerPatternsQu } from './qu';
+import { getEventHandlerPatternsHi } from './hi';
+import { getEventHandlerPatternsBn } from './bn';
+import { getEventHandlerPatternsTh } from './th';
 
 /**
  * Get event handler patterns for a specific language.
@@ -92,6 +113,12 @@ export function getEventHandlerPatternsForLanguage(language: string): LanguagePa
     case 'sw': return getEventHandlerPatternsSw();
     case 'it': return getEventHandlerPatternsIt();
     case 'vi': return getEventHandlerPatternsVi();
+    case 'pl': return getEventHandlerPatternsPl();
+    case 'ru': return getEventHandlerPatternsRu();
+    case 'uk': return getEventHandlerPatternsUk();
+    case 'hi': return getEventHandlerPatternsHi();
+    case 'bn': return getEventHandlerPatternsBn();
+    case 'th': return getEventHandlerPatternsTh();
     default: return [];
   }
 }
