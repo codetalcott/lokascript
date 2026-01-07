@@ -13,11 +13,11 @@ try {
   // ast-toolkit not available
 }
 
-// Try to import parser from core
-let parser: any = null;
+// Try to import parse function from core
+let parseFunction: any = null;
 try {
   const core = await import('@hyperfixi/core');
-  parser = core.parser || core.HyperscriptParser;
+  parseFunction = core.parse;
 } catch {
   // core not available
 }
@@ -151,9 +151,9 @@ async function getDiagnostics(
   const diagnostics: Diagnostic[] = [];
 
   // Try AST-based analysis first
-  if (astToolkit && parser) {
+  if (astToolkit && parseFunction) {
     try {
-      const ast = parser.parse(code);
+      const ast = parseFunction(code);
       if (ast && astToolkit.astToLSPDiagnostics) {
         const astDiagnostics = astToolkit.astToLSPDiagnostics(ast);
         diagnostics.push(...astDiagnostics);
@@ -321,9 +321,9 @@ async function getCompletions(
   const completions: CompletionItem[] = [];
 
   // Try AST-based completions first
-  if (astToolkit && parser) {
+  if (astToolkit && parseFunction) {
     try {
-      const ast = parser.parse(code);
+      const ast = parseFunction(code);
       if (ast && astToolkit.astToLSPCompletions) {
         const astCompletions = astToolkit.astToLSPCompletions(ast, { line, character });
         completions.push(...astCompletions);
@@ -459,9 +459,9 @@ async function getHoverInfo(
   character: number
 ): Promise<CallToolResult> {
   // Try AST-based hover first
-  if (astToolkit && parser) {
+  if (astToolkit && parseFunction) {
     try {
-      const ast = parser.parse(code);
+      const ast = parseFunction(code);
       if (ast && astToolkit.astToLSPHover) {
         const hover = astToolkit.astToLSPHover(ast, { line, character });
         if (hover) {
@@ -583,9 +583,9 @@ async function getDocumentSymbols(code: string): Promise<CallToolResult> {
   const symbols: DocumentSymbol[] = [];
 
   // Try AST-based symbols first
-  if (astToolkit && parser) {
+  if (astToolkit && parseFunction) {
     try {
-      const ast = parser.parse(code);
+      const ast = parseFunction(code);
       if (ast && astToolkit.astToLSPSymbols) {
         const astSymbols = astToolkit.astToLSPSymbols(ast);
         symbols.push(...astSymbols);
