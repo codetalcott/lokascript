@@ -1,6 +1,6 @@
 # @hyperfixi/mcp-server
 
-MCP (Model Context Protocol) server for hyperscript development assistance. Provides 15 tools and 5 resources for code analysis, pattern lookup, validation, and LSP-compatible features.
+MCP (Model Context Protocol) server for hyperscript development assistance. Provides 18 tools and 5 resources for code analysis, pattern lookup, validation, semantic parsing, and LSP-compatible features with full multilingual support.
 
 ## Installation
 
@@ -45,15 +45,18 @@ Or if installed globally:
 }
 ```
 
-## Available Tools (15)
+## Available Tools (18)
 
 ### Validation Tools
 
 | Tool | Description |
 |------|-------------|
-| `validate_hyperscript` | Validate syntax, detect errors and warnings |
+| `validate_hyperscript` | Validate syntax with semantic analysis, detect errors and warnings |
 | `suggest_command` | Suggest the best command for a task |
 | `get_bundle_config` | Get recommended Vite plugin configuration |
+| `parse_multilingual` | Parse hyperscript in any supported language with confidence scoring |
+| `translate_to_english` | Translate hyperscript from any language to English |
+| `explain_in_language` | Comprehensive code explanation with grammar, roles, and translations |
 
 ### Pattern Tools
 
@@ -131,6 +134,78 @@ User: Translate "on click toggle .active" to Japanese
 Claude: [uses translate_hyperscript]
 Japanese: クリック で .active を トグル
 ```
+
+### Parse Multilingual Code (Phase 5)
+
+```
+User: Parse this Korean hyperscript: .active 를 토글
+
+Claude: [uses parse_multilingual with language: 'ko']
+{
+  "success": true,
+  "confidence": 0.95,
+  "command": {
+    "name": "toggle",
+    "roles": { "patient": ".active" }
+  }
+}
+```
+
+### Translate to English (Phase 5)
+
+```
+User: What does this Japanese code mean? #button の .active を 切り替え
+
+Claude: [uses translate_to_english with sourceLanguage: 'ja']
+English: toggle .active on #button
+```
+
+### Explain Code in Detail (Phase 6)
+
+```
+User: Explain this Korean code in detail: .active 를 토글
+
+Claude: [uses explain_in_language with sourceLanguage: 'ko']
+{
+  "command": {
+    "name": "toggle",
+    "description": "Toggle a class or attribute on/off",
+    "category": "dom-class"
+  },
+  "roles": {
+    "patient": {
+      "value": ".active",
+      "description": "The class or attribute to toggle",
+      "required": true
+    }
+  },
+  "grammar": {
+    "wordOrder": "SOV",
+    "direction": "ltr"
+  },
+  "keywords": {
+    "toggle": { "primary": "토글", "alternatives": ["전환"] }
+  }
+}
+```
+
+## Supported Languages
+
+The MCP server supports hyperscript in 21+ languages:
+
+| Language | Code | Example |
+|----------|------|---------|
+| English | `en` | `toggle .active` |
+| Japanese | `ja` | `.active を 切り替え` |
+| Korean | `ko` | `.active 를 토글` |
+| Spanish | `es` | `alternar .active` |
+| Arabic | `ar` | `تبديل .active` |
+| Chinese | `zh` | `切换 .active` |
+| Portuguese | `pt` | `alternar .active` |
+| French | `fr` | `basculer .active` |
+| German | `de` | `umschalten .active` |
+| Turkish | `tr` | `.active değiştir` |
+| And more... | | |
 
 ## Optional Dependencies
 

@@ -2,9 +2,37 @@
  * Validation Tools
  *
  * Hyperscript syntax validation and development assistance.
+ * Supports 21 languages via @hyperfixi/semantic for multilingual validation.
  */
 
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+
+// Try to import semantic package for multilingual support
+let semanticPackage: any = null;
+try {
+  semanticPackage = await import('@hyperfixi/semantic');
+} catch {
+  // semantic not available - will use English-only fallback
+}
+
+// =============================================================================
+// Cached Semantic Analyzer (Phase 6 - Performance)
+// =============================================================================
+
+// Module-level cached analyzer instance - reuses built-in LRU cache
+let cachedAnalyzer: ReturnType<typeof semanticPackage.createSemanticAnalyzer> | null = null;
+
+/**
+ * Get or create cached semantic analyzer.
+ * The analyzer has built-in LRU caching (1000 entries) for repeated parses.
+ */
+function getSemanticAnalyzer(): ReturnType<typeof semanticPackage.createSemanticAnalyzer> | null {
+  if (!semanticPackage) return null;
+  if (!cachedAnalyzer) {
+    cachedAnalyzer = semanticPackage.createSemanticAnalyzer();
+  }
+  return cachedAnalyzer;
+}
 
 // =============================================================================
 // Tool Definitions
@@ -32,13 +60,18 @@ export const validationTools: Tool[] = [
   },
   {
     name: 'suggest_command',
-    description: 'Suggest the best hyperscript command for a task',
+    description: 'Suggest the best hyperscript command for a task. Returns suggestions in specified language.',
     inputSchema: {
       type: 'object',
       properties: {
         task: {
           type: 'string',
           description: 'Description of what you want to do',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code for command suggestions (en, ko, ja, es, zh, ar, tr, pt, fr, de, id, qu, sw, etc.). Default: en',
+          default: 'en',
         },
       },
       required: ['task'],
@@ -72,6 +105,74 @@ export const validationTools: Tool[] = [
       },
     },
   },
+  {
+    name: 'parse_multilingual',
+    description: 'Parse hyperscript in any supported language using semantic analysis. Returns parsed structure with confidence score and semantic roles.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description: 'Hyperscript code to parse (can be in any supported language)',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code (en, ja, ko, es, ar, zh, tr, pt, fr, de, id, qu, sw, etc.)',
+        },
+      },
+      required: ['code', 'language'],
+    },
+  },
+  {
+    name: 'translate_to_english',
+    description: 'Translate hyperscript from any supported language to English. Essential for LLMs to understand non-English code.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description: 'Hyperscript code in source language',
+        },
+        sourceLanguage: {
+          type: 'string',
+          description: 'Source language code (ja, ko, es, ar, etc.)',
+        },
+        getAllLanguages: {
+          type: 'boolean',
+          description: 'If true, return translations for all supported languages',
+          default: false,
+        },
+      },
+      required: ['code', 'sourceLanguage'],
+    },
+  },
+  {
+    name: 'explain_in_language',
+    description: 'Explain hyperscript code in detail. Returns command description, role breakdown, grammar rules, and translations.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'string',
+          description: 'Hyperscript code to explain',
+        },
+        sourceLanguage: {
+          type: 'string',
+          description: 'Language the code is written in',
+        },
+        targetLanguage: {
+          type: 'string',
+          description: 'Language to explain in (defaults to sourceLanguage)',
+        },
+        includeTranslations: {
+          type: 'boolean',
+          description: 'Include translations to all supported languages',
+          default: false,
+        },
+      },
+      required: ['code', 'sourceLanguage'],
+    },
+  },
 ];
 
 // =============================================================================
@@ -92,7 +193,8 @@ export async function handleValidationTool(
 
       case 'suggest_command': {
         const task = args.task as string;
-        return suggestCommand(task);
+        const language = (args.language as string) || 'en';
+        return suggestCommand(task, language);
       }
 
       case 'get_bundle_config': {
@@ -101,6 +203,27 @@ export async function handleValidationTool(
         const languages = (args.languages as string[]) || ['en'];
         const positional = (args.positional as boolean) || false;
         return getBundleConfig(commands, blocks, languages, positional);
+      }
+
+      case 'parse_multilingual': {
+        const code = args.code as string;
+        const language = args.language as string;
+        return parseMultilingual(code, language);
+      }
+
+      case 'translate_to_english': {
+        const code = args.code as string;
+        const sourceLanguage = args.sourceLanguage as string;
+        const getAllLanguages = (args.getAllLanguages as boolean) || false;
+        return translateToEnglish(code, sourceLanguage, getAllLanguages);
+      }
+
+      case 'explain_in_language': {
+        const code = args.code as string;
+        const sourceLanguage = args.sourceLanguage as string;
+        const targetLanguage = (args.targetLanguage as string) || sourceLanguage;
+        const includeTranslations = (args.includeTranslations as boolean) || false;
+        return explainInLanguage(code, sourceLanguage, targetLanguage, includeTranslations);
       }
 
       default:
@@ -126,12 +249,194 @@ export async function handleValidationTool(
 // Validation Implementation
 // =============================================================================
 
+/**
+ * Get valid command keywords for a language from semantic package.
+ */
+function getValidCommandsForLanguage(language: string): string[] {
+  const englishCommands = [
+    'toggle', 'add', 'remove', 'show', 'hide',
+    'set', 'get', 'put', 'append', 'prepend',
+    'increment', 'decrement', 'log', 'send', 'trigger',
+    'wait', 'fetch', 'call', 'go', 'focus', 'blur',
+    'return', 'break', 'continue', 'exit', 'halt', 'throw',
+    'transition', 'settle', 'measure', 'take',
+  ];
+
+  if (!semanticPackage || language === 'en') {
+    return englishCommands;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords) {
+      const commands: string[] = [...englishCommands]; // Always include English for compatibility
+      for (const [, translation] of Object.entries(profile.keywords)) {
+        const trans = translation as { primary?: string; alternatives?: string[] };
+        if (trans.primary) {
+          commands.push(trans.primary.toLowerCase());
+        }
+        if (trans.alternatives) {
+          commands.push(...trans.alternatives.map((a: string) => a.toLowerCase()));
+        }
+      }
+      return [...new Set(commands)];
+    }
+  } catch {
+    // Profile not available for this language
+  }
+
+  return englishCommands;
+}
+
+/**
+ * Get event handler keyword variants for a language (e.g., "on" in Korean).
+ */
+function getEventHandlerKeywords(language: string): string[] {
+  const variants = ['on'];
+
+  if (!semanticPackage || language === 'en') {
+    return variants;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords && profile.keywords['on']) {
+      const trans = profile.keywords['on'] as { primary?: string; alternatives?: string[] };
+      if (trans.primary) {
+        variants.push(trans.primary.toLowerCase());
+      }
+      if (trans.alternatives) {
+        variants.push(...trans.alternatives.map((a: string) => a.toLowerCase()));
+      }
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return variants;
+}
+
 function validateHyperscript(
   code: string,
   language: string
 ): { content: Array<{ type: string; text: string }>; isError?: boolean } {
-  const errors: Array<{ message: string; suggestion?: string }> = [];
-  const warnings: Array<{ message: string; suggestion?: string }> = [];
+  const errors: Array<{ message: string; suggestion?: string; source?: string }> = [];
+  const warnings: Array<{ message: string; suggestion?: string; source?: string }> = [];
+
+  // Get language-specific commands
+  const validCommands = getValidCommandsForLanguage(language);
+  const eventKeywords = getEventHandlerKeywords(language);
+
+  // Try semantic parsing first for better validation (Phase 5)
+  let semanticInfo: {
+    confidence: number;
+    command?: string;
+    roles?: Record<string, unknown>;
+    usedSemanticParsing: boolean;
+  } | null = null;
+
+  const analyzer = getSemanticAnalyzer();
+  if (analyzer) {
+    try {
+      const result = analyzer.analyze(code, language);
+
+      // Convert roles Map to object
+      let rolesObj: Record<string, unknown> | undefined;
+      if (result.command?.roles) {
+        rolesObj = {};
+        for (const [role, value] of result.command.roles) {
+          rolesObj[role] = value;
+        }
+      }
+
+      semanticInfo = {
+        confidence: result.confidence,
+        command: result.command?.name,
+        roles: rolesObj,
+        usedSemanticParsing: result.confidence >= 0.5,
+      };
+
+      // Add semantic-level errors
+      if (result.errors && result.errors.length > 0) {
+        for (const err of result.errors) {
+          errors.push({ message: err, source: 'semantic-parser' });
+        }
+      }
+
+      // Add confidence warning if parsing succeeded but with low confidence
+      if (result.confidence > 0 && result.confidence < 0.5) {
+        warnings.push({
+          message: `Low parsing confidence (${(result.confidence * 100).toFixed(0)}%)`,
+          suggestion: 'Code may have syntax issues or use unsupported patterns',
+          source: 'semantic-parser',
+        });
+      }
+
+      // Phase 6: Expanded semantic role validation for all commands
+      if (result.confidence >= 0.5 && result.command) {
+        const cmd = result.command.name;
+        const roles = result.command.roles;
+
+        // Commands requiring patient (target class/attribute/value)
+        const patientRequired = ['toggle', 'add', 'remove', 'show', 'hide', 'increment', 'decrement'];
+        if (patientRequired.includes(cmd) && !roles.has('patient')) {
+          warnings.push({
+            message: `${cmd} command missing target`,
+            suggestion: 'Add a class (.class), attribute (@attr), or element selector',
+            source: 'semantic-validator',
+          });
+        }
+
+        // Commands requiring both patient (content) and destination (target)
+        const contentCommands = ['put', 'append', 'prepend'];
+        if (contentCommands.includes(cmd)) {
+          if (!roles.has('patient')) {
+            warnings.push({
+              message: `${cmd} command missing content`,
+              suggestion: 'Add content/value to put',
+              source: 'semantic-validator',
+            });
+          }
+          if (!roles.has('destination')) {
+            warnings.push({
+              message: `${cmd} command missing destination`,
+              suggestion: 'Add "into #element" or "into .class"',
+              source: 'semantic-validator',
+            });
+          }
+        }
+
+        // Set command: requires destination (property) and patient (value)
+        if (cmd === 'set') {
+          if (!roles.has('destination')) {
+            warnings.push({
+              message: 'set command missing target property',
+              suggestion: 'Add property or variable to set (e.g., :count)',
+              source: 'semantic-validator',
+            });
+          }
+          if (!roles.has('patient')) {
+            warnings.push({
+              message: 'set command missing value',
+              suggestion: 'Add value to set (e.g., "to 10")',
+              source: 'semantic-validator',
+            });
+          }
+        }
+
+        // Fetch command: requires destination (URL)
+        if (cmd === 'fetch' && !roles.has('destination')) {
+          warnings.push({
+            message: 'fetch command missing URL',
+            suggestion: 'Add URL to fetch from (e.g., fetch /api/data)',
+            source: 'semantic-validator',
+          });
+        }
+      }
+    } catch {
+      // Semantic parsing failed - continue with regex validation
+    }
+  }
 
   // Basic syntax checks
   const lines = code.split('\n');
@@ -154,9 +459,24 @@ function validateHyperscript(
     errors.push({ message: 'Unbalanced double quotes' });
   }
 
-  // Check for unclosed blocks
-  const ifCount = (code.match(/\bif\b/gi) || []).length;
-  const endCount = (code.match(/\bend\b/gi) || []).length;
+  // Check for unclosed blocks (multilingual)
+  const ifVariants = ['if'];
+  const endVariants = ['end'];
+  if (semanticPackage && language !== 'en') {
+    try {
+      const profile = semanticPackage.getProfile(language);
+      if (profile?.keywords?.['if']?.primary) {
+        ifVariants.push(profile.keywords['if'].primary);
+      }
+      if (profile?.keywords?.['end']?.primary) {
+        endVariants.push(profile.keywords['end'].primary);
+      }
+    } catch { /* ignore */ }
+  }
+  const ifPattern = new RegExp(`\\b(${ifVariants.join('|')})\\b`, 'gi');
+  const endPattern = new RegExp(`\\b(${endVariants.join('|')})\\b`, 'gi');
+  const ifCount = (code.match(ifPattern) || []).length;
+  const endCount = (code.match(endPattern) || []).length;
   if (ifCount > endCount) {
     warnings.push({
       message: `Found ${ifCount} 'if' statements but only ${endCount} 'end' keywords`,
@@ -164,50 +484,54 @@ function validateHyperscript(
     });
   }
 
-  // Check for valid event handlers
-  const eventMatch = code.match(/on\s+(\w+)/gi);
-  if (eventMatch) {
-    const validEvents = [
-      'click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout',
-      'mousedown', 'mouseup', 'mousemove',
-      'keydown', 'keyup', 'keypress',
-      'focus', 'blur', 'focusin', 'focusout',
-      'input', 'change', 'submit', 'reset',
-      'load', 'unload', 'scroll', 'resize',
-      'touchstart', 'touchend', 'touchmove',
-      'dragstart', 'dragend', 'drag', 'drop',
-      'intersection', 'mutation',
-      'every', // timer
-    ];
-    for (const match of eventMatch) {
-      const event = match.replace(/on\s+/i, '').toLowerCase();
-      if (!validEvents.includes(event) && !event.includes('.')) {
-        warnings.push({
-          message: `Unknown event type: ${event}`,
-          suggestion: `Did you mean one of: ${validEvents.slice(0, 5).join(', ')}...?`,
-        });
-      }
+  // Check for valid event handlers (multilingual)
+  const eventPattern = new RegExp(`(${eventKeywords.join('|')})\\s+(\\w+)`, 'gi');
+  const eventMatches = code.matchAll(eventPattern);
+  const validEvents = [
+    'click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout',
+    'mousedown', 'mouseup', 'mousemove',
+    'keydown', 'keyup', 'keypress',
+    'focus', 'blur', 'focusin', 'focusout',
+    'input', 'change', 'submit', 'reset',
+    'load', 'unload', 'scroll', 'resize',
+    'touchstart', 'touchend', 'touchmove',
+    'dragstart', 'dragend', 'drag', 'drop',
+    'intersection', 'mutation',
+    'every', // timer
+  ];
+  for (const match of eventMatches) {
+    const event = match[2].toLowerCase();
+    if (!validEvents.includes(event) && !event.includes('.')) {
+      warnings.push({
+        message: `Unknown event type: ${event}`,
+        suggestion: `Did you mean one of: ${validEvents.slice(0, 5).join(', ')}...?`,
+      });
     }
   }
 
-  // Check for valid commands
-  const validCommands = [
-    'toggle', 'add', 'remove', 'show', 'hide',
-    'set', 'get', 'put', 'append', 'prepend',
-    'increment', 'decrement', 'log', 'send', 'trigger',
-    'wait', 'fetch', 'call', 'go', 'focus', 'blur',
-    'return', 'break', 'continue', 'exit', 'halt', 'throw',
-    'transition', 'settle', 'measure', 'take',
-  ];
+  // Build command pattern for matching (now multilingual)
+  const commandPattern = new RegExp(`\\b(${validCommands.slice(0, 30).join('|')})\\b`, 'gi');
+  const commandMatches = code.match(commandPattern);
 
-  const commandMatches = code.match(/\b(toggle|add|remove|show|hide|set|get|put|append|prepend|increment|decrement|log|send|trigger|wait|fetch|call|go|focus|blur|return|break|continue|exit|halt|throw|transition|settle|measure|take)\b/gi);
-
-  // Validate command usage patterns
-  if (code.includes('toggle') && !code.includes('.') && !code.includes('@')) {
-    warnings.push({
-      message: 'toggle command typically needs a class (.class) or attribute (@attr)',
-      suggestion: 'Example: toggle .active or toggle @disabled',
-    });
+  // Validate command usage patterns (check for toggle without class/attr)
+  // Skip if semantic parsing already handled this
+  if (!semanticInfo?.usedSemanticParsing) {
+    const toggleVariants = ['toggle'];
+    if (semanticPackage && language !== 'en') {
+      try {
+        const profile = semanticPackage.getProfile(language);
+        if (profile?.keywords?.toggle?.primary) {
+          toggleVariants.push(profile.keywords.toggle.primary);
+        }
+      } catch { /* ignore */ }
+    }
+    const hasToggle = toggleVariants.some(t => code.toLowerCase().includes(t.toLowerCase()));
+    if (hasToggle && !code.includes('.') && !code.includes('@')) {
+      warnings.push({
+        message: 'toggle command typically needs a class (.class) or attribute (@attr)',
+        suggestion: 'Example: toggle .active or toggle @disabled',
+      });
+    }
   }
 
   const result = {
@@ -217,6 +541,8 @@ function validateHyperscript(
     code,
     language,
     commandsFound: commandMatches ? [...new Set(commandMatches.map(c => c.toLowerCase()))] : [],
+    // Phase 5: Include semantic parsing info when available
+    semantic: semanticInfo,
   };
 
   return {
@@ -267,7 +593,38 @@ const TASK_KEYWORDS: Record<string, string[]> = {
   'log': ['log', 'debug', 'console', 'print', 'output'],
 };
 
-function suggestCommand(task: string): { content: Array<{ type: string; text: string }> } {
+/**
+ * Translate a command suggestion to a specific language.
+ */
+function translateSuggestion(
+  suggestion: { command: string; example: string; description: string },
+  language: string
+): { command: string; example: string; description: string; englishCommand?: string } {
+  if (!semanticPackage || language === 'en') {
+    return suggestion;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords && profile.keywords[suggestion.command]) {
+      const trans = profile.keywords[suggestion.command] as { primary?: string };
+      if (trans.primary) {
+        return {
+          command: trans.primary,
+          example: suggestion.example.replace(suggestion.command, trans.primary),
+          description: suggestion.description,
+          englishCommand: suggestion.command,
+        };
+      }
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return suggestion;
+}
+
+function suggestCommand(task: string, language: string = 'en'): { content: Array<{ type: string; text: string }> } {
   const taskLower = task.toLowerCase();
   const matches: Array<{ command: string; score: number; suggestion: typeof COMMAND_SUGGESTIONS[string] }> = [];
 
@@ -290,6 +647,11 @@ function suggestCommand(task: string): { content: Array<{ type: string; text: st
   matches.sort((a, b) => b.score - a.score);
 
   if (matches.length === 0) {
+    // Translate default suggestions to target language
+    const translatedSuggestions = Object.values(COMMAND_SUGGESTIONS)
+      .slice(0, 5)
+      .map(s => translateSuggestion(s, language));
+
     return {
       content: [
         {
@@ -297,7 +659,8 @@ function suggestCommand(task: string): { content: Array<{ type: string; text: st
           text: JSON.stringify(
             {
               task,
-              suggestions: Object.values(COMMAND_SUGGESTIONS).slice(0, 5),
+              language,
+              suggestions: translatedSuggestions,
               note: 'No exact match found. Here are common commands.',
             },
             null,
@@ -308,6 +671,10 @@ function suggestCommand(task: string): { content: Array<{ type: string; text: st
     };
   }
 
+  // Translate the best match and alternatives to target language
+  const bestMatch = translateSuggestion(matches[0].suggestion, language);
+  const alternatives = matches.slice(1, 4).map((m) => translateSuggestion(m.suggestion, language));
+
   return {
     content: [
       {
@@ -315,8 +682,9 @@ function suggestCommand(task: string): { content: Array<{ type: string; text: st
         text: JSON.stringify(
           {
             task,
-            bestMatch: matches[0].suggestion,
-            alternatives: matches.slice(1, 4).map((m) => m.suggestion),
+            language,
+            bestMatch,
+            alternatives,
           },
           null,
           2
@@ -402,4 +770,341 @@ export default {
       },
     ],
   };
+}
+
+// =============================================================================
+// Semantic Parsing Tools (Phase 5)
+// =============================================================================
+
+/**
+ * Parse hyperscript using semantic analyzer for full syntax-level parsing.
+ * Returns confidence score, command name, and semantic roles.
+ */
+function parseMultilingual(
+  code: string,
+  language: string
+): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  if (!semanticPackage) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: '@hyperfixi/semantic package not available',
+              suggestion: 'Install with: npm install @hyperfixi/semantic',
+              fallback: 'Using regex-based validation only',
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  try {
+    // Use cached semantic analyzer for confidence-scored parsing (Phase 6)
+    const analyzer = getSemanticAnalyzer();
+    if (!analyzer) {
+      throw new Error('Semantic analyzer not available');
+    }
+    const result = analyzer.analyze(code, language);
+
+    // Convert roles Map to object for JSON serialization
+    let rolesObj: Record<string, unknown> | null = null;
+    if (result.command?.roles) {
+      rolesObj = {};
+      for (const [role, value] of result.command.roles) {
+        rolesObj[role] = value;
+      }
+    }
+
+    const response = {
+      success: result.confidence >= 0.5,
+      confidence: result.confidence,
+      command: result.command
+        ? {
+            name: result.command.name,
+            roles: rolesObj,
+          }
+        : null,
+      errors: result.errors || [],
+      tokensConsumed: result.tokensConsumed,
+      language,
+      supportedLanguages: analyzer.supportedLanguages(),
+    };
+
+    return {
+      content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+      isError: result.confidence < 0.5,
+    };
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              success: false,
+              confidence: 0,
+              error: error instanceof Error ? error.message : String(error),
+              code,
+              language,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+/**
+ * Translate hyperscript from any supported language to English.
+ * Optionally returns translations for all supported languages.
+ */
+function translateToEnglish(
+  code: string,
+  sourceLanguage: string,
+  getAllLanguages: boolean
+): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  if (!semanticPackage) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: '@hyperfixi/semantic package not available',
+              suggestion: 'Install with: npm install @hyperfixi/semantic',
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  try {
+    if (getAllLanguages) {
+      // Get translations for all supported languages
+      const translations = semanticPackage.getAllTranslations(code, sourceLanguage);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                original: code,
+                sourceLanguage,
+                translations,
+                languageCount: Object.keys(translations).length,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+
+    // Translate to English only
+    const english = semanticPackage.translate(code, sourceLanguage, 'en');
+
+    // Also get explicit syntax for debugging/learning
+    let explicit: string | null = null;
+    try {
+      explicit = semanticPackage.toExplicit(code, sourceLanguage);
+    } catch {
+      // toExplicit may not be available or may fail
+    }
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              original: code,
+              sourceLanguage,
+              english,
+              explicit,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              original: code,
+              sourceLanguage,
+              suggestion: 'Check that the code is valid hyperscript in the specified language',
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
+/**
+ * Phase 6: Explain hyperscript code in detail.
+ * Returns command description, role breakdown, grammar rules, and translations.
+ */
+function explainInLanguage(
+  code: string,
+  sourceLanguage: string,
+  targetLanguage: string,
+  includeTranslations: boolean
+): { content: Array<{ type: string; text: string }>; isError?: boolean } {
+  if (!semanticPackage) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: '@hyperfixi/semantic package not available',
+              suggestion: 'Install with: npm install @hyperfixi/semantic',
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  try {
+    // Parse the code using cached analyzer
+    const analyzer = getSemanticAnalyzer();
+    if (!analyzer) {
+      throw new Error('Semantic analyzer not available');
+    }
+
+    const parseResult = analyzer.analyze(code, sourceLanguage);
+
+    // Get language profile for keyword translations
+    const profile = semanticPackage.getProfile(targetLanguage);
+
+    // Build the explanation
+    const explanation: Record<string, unknown> = {
+      code,
+      sourceLanguage,
+      targetLanguage,
+      confidence: parseResult.confidence,
+    };
+
+    // Add command information if successfully parsed
+    if (parseResult.command) {
+      const cmdName = parseResult.command.name;
+
+      // Get command schema for description
+      let commandSchema = null;
+      try {
+        commandSchema = semanticPackage.getValidatorSchema?.(cmdName) || null;
+      } catch {
+        // Schema not available
+      }
+
+      // Build command info
+      explanation.command = {
+        name: cmdName,
+        description: commandSchema?.description || `The ${cmdName} command`,
+        category: commandSchema?.category || 'unknown',
+      };
+
+      // Build role breakdown
+      const rolesInfo: Record<string, unknown> = {};
+      for (const [roleName, roleValue] of parseResult.command.roles) {
+        const roleSchema = commandSchema?.roles?.find(
+          (r: { role: string }) => r.role === roleName
+        );
+        rolesInfo[roleName] = {
+          value: roleValue,
+          description: roleSchema?.description || `The ${roleName} role`,
+          required: roleSchema?.required ?? false,
+        };
+      }
+      explanation.roles = rolesInfo;
+
+      // Add keyword info in target language
+      if (profile?.keywords?.[cmdName]) {
+        explanation.keywords = {
+          [cmdName]: {
+            primary: profile.keywords[cmdName].primary,
+            alternatives: profile.keywords[cmdName].alternatives || [],
+          },
+        };
+      }
+    }
+
+    // Add grammar information
+    if (profile) {
+      explanation.grammar = {
+        wordOrder: profile.wordOrder,
+        direction: profile.direction || 'ltr',
+      };
+    }
+
+    // Add translations if requested
+    if (includeTranslations) {
+      try {
+        const translations = semanticPackage.getAllTranslations(code, sourceLanguage);
+        explanation.translations = translations;
+        explanation.translationCount = Object.keys(translations).length;
+      } catch {
+        explanation.translations = null;
+        explanation.translationNote = 'Translations not available for this code';
+      }
+    }
+
+    // Add warnings if any
+    if (parseResult.errors && parseResult.errors.length > 0) {
+      explanation.warnings = parseResult.errors;
+    }
+
+    return {
+      content: [{ type: 'text', text: JSON.stringify(explanation, null, 2) }],
+      isError: parseResult.confidence < 0.3,
+    };
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: error instanceof Error ? error.message : String(error),
+              code,
+              sourceLanguage,
+              targetLanguage,
+              suggestion: 'Check that the code is valid hyperscript',
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
 }

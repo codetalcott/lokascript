@@ -1,6 +1,8 @@
 /**
  * LSP Bridge Tools for MCP Server
  * Exposes diagnostics, completions, and hover via MCP protocol
+ *
+ * Supports 21 languages via @hyperfixi/semantic for multilingual assistance.
  */
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
@@ -22,6 +24,33 @@ try {
   // core not available
 }
 
+// Try to import semantic package for multilingual support
+let semanticPackage: any = null;
+try {
+  semanticPackage = await import('@hyperfixi/semantic');
+} catch {
+  // semantic not available - will use English-only fallback
+}
+
+// =============================================================================
+// Cached Semantic Analyzer (Phase 6 - Performance)
+// =============================================================================
+
+// Module-level cached analyzer instance - reuses built-in LRU cache
+let cachedAnalyzer: ReturnType<typeof semanticPackage.createSemanticAnalyzer> | null = null;
+
+/**
+ * Get or create cached semantic analyzer.
+ * The analyzer has built-in LRU caching (1000 entries) for repeated parses.
+ */
+function getSemanticAnalyzer(): ReturnType<typeof semanticPackage.createSemanticAnalyzer> | null {
+  if (!semanticPackage) return null;
+  if (!cachedAnalyzer) {
+    cachedAnalyzer = semanticPackage.createSemanticAnalyzer();
+  }
+  return cachedAnalyzer;
+}
+
 // ============================================================================
 // LSP Bridge Tool Definitions
 // ============================================================================
@@ -29,13 +58,18 @@ try {
 export const lspBridgeTools = [
   {
     name: 'get_diagnostics',
-    description: 'Analyze hyperscript code and return LSP-compatible diagnostics (errors, warnings, hints)',
+    description: 'Analyze hyperscript code and return LSP-compatible diagnostics (errors, warnings, hints). Supports 21 languages.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         code: {
           type: 'string',
           description: 'The hyperscript code to analyze',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code (en, ko, ja, es, zh, ar, tr, pt, fr, de, id, qu, sw, etc.). Default: en',
+          default: 'en',
         },
         uri: {
           type: 'string',
@@ -47,7 +81,7 @@ export const lspBridgeTools = [
   },
   {
     name: 'get_completions',
-    description: 'Get context-aware code completions for hyperscript at a given position',
+    description: 'Get context-aware code completions for hyperscript at a given position. Returns keywords in specified language.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -62,6 +96,11 @@ export const lspBridgeTools = [
         character: {
           type: 'number',
           description: 'Character position in line (0-indexed)',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code (en, ko, ja, es, zh, ar, tr, pt, fr, de, id, qu, sw, etc.). Default: en',
+          default: 'en',
         },
         context: {
           type: 'string',
@@ -74,7 +113,7 @@ export const lspBridgeTools = [
   },
   {
     name: 'get_hover_info',
-    description: 'Get hover documentation for a hyperscript element at a given position',
+    description: 'Get hover documentation for a hyperscript element at a given position. Supports multilingual keywords.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -89,6 +128,11 @@ export const lspBridgeTools = [
         character: {
           type: 'number',
           description: 'Character position in line (0-indexed)',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code (en, ko, ja, es, zh, ar, tr, pt, fr, de, id, qu, sw, etc.). Default: en',
+          default: 'en',
         },
       },
       required: ['code', 'line', 'character'],
@@ -104,6 +148,11 @@ export const lspBridgeTools = [
           type: 'string',
           description: 'The hyperscript code to analyze',
         },
+        language: {
+          type: 'string',
+          description: 'Language code for recognizing keywords. Default: en',
+          default: 'en',
+        },
       },
       required: ['code'],
     },
@@ -118,20 +167,23 @@ export async function handleLspBridgeTool(
   name: string,
   args: Record<string, unknown>
 ): Promise<CallToolResult> {
+  const language = (args.language as string) || 'en';
+
   switch (name) {
     case 'get_diagnostics':
-      return getDiagnostics(args.code as string, args.uri as string | undefined);
+      return getDiagnostics(args.code as string, language, args.uri as string | undefined);
     case 'get_completions':
       return getCompletions(
         args.code as string,
         args.line as number,
         args.character as number,
+        language,
         args.context as string | undefined
       );
     case 'get_hover_info':
-      return getHoverInfo(args.code as string, args.line as number, args.character as number);
+      return getHoverInfo(args.code as string, args.line as number, args.character as number, language);
     case 'get_document_symbols':
-      return getDocumentSymbols(args.code as string);
+      return getDocumentSymbols(args.code as string, language);
     default:
       return {
         content: [{ type: 'text', text: `Unknown LSP bridge tool: ${name}` }],
@@ -146,12 +198,82 @@ export async function handleLspBridgeTool(
 
 async function getDiagnostics(
   code: string,
+  language: string,
   _uri?: string
 ): Promise<CallToolResult> {
   const diagnostics: Diagnostic[] = [];
+  let semanticConfidence = 0;
 
-  // Try AST-based analysis first
-  if (astToolkit && parseFunction) {
+  // Phase 5: Try semantic analysis first (works for all supported languages)
+  // Phase 6: Use cached analyzer for performance
+  const analyzer = getSemanticAnalyzer();
+  if (analyzer) {
+    try {
+      const result = analyzer.analyze(code, language);
+      semanticConfidence = result.confidence;
+
+      // Add semantic-level errors
+      if (result.errors && result.errors.length > 0) {
+        for (const err of result.errors) {
+          diagnostics.push({
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: 0, character: code.split('\n')[0]?.length || code.length },
+            },
+            severity: 1, // Error
+            code: 'semantic-error',
+            source: 'hyperfixi-semantic',
+            message: err,
+          });
+        }
+      }
+
+      // Low confidence warning
+      if (result.confidence > 0 && result.confidence < 0.3) {
+        diagnostics.push({
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: code.length },
+          },
+          severity: 2, // Warning
+          code: 'low-confidence',
+          source: 'hyperfixi-semantic',
+          message: `Code could not be fully parsed (${(result.confidence * 100).toFixed(0)}% confidence)`,
+        });
+      }
+
+      // Validate semantic roles (e.g., toggle without patient)
+      if (result.confidence >= 0.5 && result.command) {
+        const cmd = result.command.name;
+        const roles = result.command.roles;
+
+        if (cmd === 'toggle' && !roles.has('patient')) {
+          diagnostics.push({
+            range: { start: { line: 0, character: 0 }, end: { line: 0, character: code.length } },
+            severity: 2,
+            code: 'missing-role',
+            source: 'hyperfixi-semantic',
+            message: 'toggle command missing target (add .class, @attr, or selector)',
+          });
+        }
+
+        if (cmd === 'put' && !roles.has('destination')) {
+          diagnostics.push({
+            range: { start: { line: 0, character: 0 }, end: { line: 0, character: code.length } },
+            severity: 2,
+            code: 'missing-role',
+            source: 'hyperfixi-semantic',
+            message: 'put command missing destination (add "into #element")',
+          });
+        }
+      }
+    } catch {
+      // Semantic parsing failed - continue with other methods
+    }
+  }
+
+  // Try AST-based analysis if semantic didn't find issues
+  if (diagnostics.length === 0 && astToolkit && parseFunction) {
     try {
       const ast = parseFunction(code);
       if (ast && astToolkit.astToLSPDiagnostics) {
@@ -173,9 +295,9 @@ async function getDiagnostics(
     }
   }
 
-  // Fallback: simple pattern-based analysis
+  // Fallback: simple pattern-based analysis with multilingual support
   if (diagnostics.length === 0) {
-    diagnostics.push(...runSimpleDiagnostics(code));
+    diagnostics.push(...runSimpleDiagnostics(code, language));
   }
 
   return {
@@ -186,8 +308,10 @@ async function getDiagnostics(
           {
             diagnostics,
             count: diagnostics.length,
+            language,
             hasErrors: diagnostics.some((d) => d.severity === 1),
             hasWarnings: diagnostics.some((d) => d.severity === 2),
+            semanticConfidence: semanticConfidence > 0 ? semanticConfidence : undefined,
           },
           null,
           2
@@ -197,9 +321,53 @@ async function getDiagnostics(
   };
 }
 
-function runSimpleDiagnostics(code: string): Diagnostic[] {
+/**
+ * Get valid command keywords for a language.
+ * Uses semantic package if available, otherwise falls back to English.
+ */
+function getValidCommandsForLanguage(language: string): string[] {
+  const englishCommands = [
+    'toggle', 'add', 'remove', 'show', 'hide',
+    'set', 'get', 'put', 'append', 'prepend',
+    'increment', 'decrement', 'log', 'send', 'trigger',
+    'wait', 'fetch', 'call', 'go', 'focus', 'blur',
+    'on', 'if', 'then', 'else', 'end', 'repeat', 'for',
+  ];
+
+  if (!semanticPackage || language === 'en') {
+    return englishCommands;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords) {
+      const commands: string[] = [...englishCommands]; // Always include English for compatibility
+      for (const [engCommand, translation] of Object.entries(profile.keywords)) {
+        const trans = translation as { primary?: string; alternatives?: string[] };
+        if (trans.primary) {
+          commands.push(trans.primary.toLowerCase());
+        }
+        if (trans.alternatives) {
+          commands.push(...trans.alternatives.map((a: string) => a.toLowerCase()));
+        }
+      }
+      return [...new Set(commands)];
+    }
+  } catch {
+    // Profile not available for this language
+  }
+
+  return englishCommands;
+}
+
+function runSimpleDiagnostics(code: string, language: string = 'en'): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   const lines = code.split('\n');
+  const validCommands = getValidCommandsForLanguage(language);
+
+  // Build command pattern for 'missing then' check
+  const commandPattern = validCommands.slice(0, 10).join('|'); // Use first 10 common commands
+  const missingThenRegex = new RegExp(`\\b(${commandPattern})\\s+\\.\\w+\\s+(${commandPattern})\\b`, 'i');
 
   // Check for common issues
   for (let i = 0; i < lines.length; i++) {
@@ -255,8 +423,8 @@ function runSimpleDiagnostics(code: string): Diagnostic[] {
       });
     }
 
-    // Missing 'then' between commands (common mistake)
-    if (/\b(toggle|add|remove|show|hide)\s+\.\w+\s+(toggle|add|remove|show|hide)\b/.test(line)) {
+    // Missing 'then' between commands (common mistake) - now multilingual
+    if (missingThenRegex.test(line)) {
       diagnostics.push({
         range: { start: { line: i, character: 0 }, end: { line: i, character: line.length } },
         severity: 2,
@@ -316,6 +484,7 @@ async function getCompletions(
   code: string,
   line: number,
   character: number,
+  language: string,
   context?: string
 ): Promise<CallToolResult> {
   const completions: CompletionItem[] = [];
@@ -333,25 +502,69 @@ async function getCompletions(
     }
   }
 
-  // Add context-aware completions
+  // Add context-aware completions with multilingual support
   if (completions.length === 0 || context) {
-    completions.push(...getContextualCompletions(code, line, character, context));
+    completions.push(...getContextualCompletions(code, line, character, language, context));
   }
 
   return {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({ completions, count: completions.length }, null, 2),
+        text: JSON.stringify({ completions, count: completions.length, language }, null, 2),
       },
     ],
   };
+}
+
+/**
+ * Get keyword translation for a command in a specific language.
+ */
+function getKeywordTranslation(command: string, language: string): { label: string; englishLabel?: string } {
+  if (!semanticPackage || language === 'en') {
+    return { label: command };
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords && profile.keywords[command]) {
+      const trans = profile.keywords[command] as { primary?: string };
+      if (trans.primary) {
+        return { label: trans.primary, englishLabel: command };
+      }
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return { label: command };
+}
+
+/**
+ * Get reference translation (me, it, you) for a specific language.
+ */
+function getReferenceTranslation(ref: string, language: string): { label: string; englishLabel?: string } {
+  if (!semanticPackage || language === 'en') {
+    return { label: ref };
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.references && profile.references[ref]) {
+      return { label: profile.references[ref], englishLabel: ref };
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return { label: ref };
 }
 
 function getContextualCompletions(
   code: string,
   line: number,
   character: number,
+  language: string,
   context?: string
 ): CompletionItem[] {
   const completions: CompletionItem[] = [];
@@ -362,8 +575,29 @@ function getContextualCompletions(
   // Determine context from code if not provided
   const inferredContext = context || inferContext(beforeCursor);
 
+  // Helper to create completion with multilingual support
+  const cmd = (eng: string, detail: string, insertText?: string) => {
+    const trans = getKeywordTranslation(eng, language);
+    return {
+      label: trans.label,
+      kind: 2,
+      detail: trans.englishLabel ? `${detail} (${trans.englishLabel})` : detail,
+      insertText: insertText?.replace(eng, trans.label),
+    };
+  };
+
+  const ref = (eng: string, detail: string) => {
+    const trans = getReferenceTranslation(eng, language);
+    return {
+      label: trans.label,
+      kind: 6,
+      detail: trans.englishLabel ? `${detail} (${trans.englishLabel})` : detail,
+    };
+  };
+
   switch (inferredContext) {
     case 'event':
+      // Event names are generally not translated in hyperscript
       completions.push(
         { label: 'click', kind: 23, detail: 'Mouse click event' },
         { label: 'dblclick', kind: 23, detail: 'Double click event' },
@@ -382,30 +616,30 @@ function getContextualCompletions(
 
     case 'command':
       completions.push(
-        { label: 'toggle', kind: 2, detail: 'Toggle class/visibility', insertText: 'toggle .${1:class}' },
-        { label: 'add', kind: 2, detail: 'Add class/attribute', insertText: 'add .${1:class} to ${2:me}' },
-        { label: 'remove', kind: 2, detail: 'Remove class/element', insertText: 'remove .${1:class} from ${2:me}' },
-        { label: 'show', kind: 2, detail: 'Show element', insertText: 'show ${1:me}' },
-        { label: 'hide', kind: 2, detail: 'Hide element', insertText: 'hide ${1:me}' },
-        { label: 'put', kind: 2, detail: 'Set content', insertText: 'put ${1:value} into ${2:target}' },
-        { label: 'set', kind: 2, detail: 'Set variable', insertText: 'set ${1:variable} to ${2:value}' },
-        { label: 'fetch', kind: 2, detail: 'HTTP request', insertText: 'fetch ${1:/api/endpoint}' },
-        { label: 'wait', kind: 2, detail: 'Pause execution', insertText: 'wait ${1:1s}' },
-        { label: 'send', kind: 2, detail: 'Dispatch event', insertText: 'send ${1:eventName} to ${2:target}' },
-        { label: 'trigger', kind: 2, detail: 'Trigger event', insertText: 'trigger ${1:eventName} on ${2:target}' },
-        { label: 'call', kind: 2, detail: 'Call function', insertText: 'call ${1:functionName}()' },
-        { label: 'log', kind: 2, detail: 'Console log', insertText: 'log ${1:value}' },
-        { label: 'if', kind: 14, detail: 'Conditional', insertText: 'if ${1:condition} ${2:command} end' },
-        { label: 'repeat', kind: 14, detail: 'Loop', insertText: 'repeat ${1:3} times ${2:command} end' }
+        cmd('toggle', 'Toggle class/visibility', 'toggle .${1:class}'),
+        cmd('add', 'Add class/attribute', 'add .${1:class} to ${2:me}'),
+        cmd('remove', 'Remove class/element', 'remove .${1:class} from ${2:me}'),
+        cmd('show', 'Show element', 'show ${1:me}'),
+        cmd('hide', 'Hide element', 'hide ${1:me}'),
+        cmd('put', 'Set content', 'put ${1:value} into ${2:target}'),
+        cmd('set', 'Set variable', 'set ${1:variable} to ${2:value}'),
+        cmd('fetch', 'HTTP request', 'fetch ${1:/api/endpoint}'),
+        cmd('wait', 'Pause execution', 'wait ${1:1s}'),
+        cmd('send', 'Dispatch event', 'send ${1:eventName} to ${2:target}'),
+        cmd('trigger', 'Trigger event', 'trigger ${1:eventName} on ${2:target}'),
+        cmd('call', 'Call function', 'call ${1:functionName}()'),
+        cmd('log', 'Console log', 'log ${1:value}'),
+        { label: getKeywordTranslation('if', language).label, kind: 14, detail: 'Conditional' },
+        { label: getKeywordTranslation('repeat', language).label, kind: 14, detail: 'Loop' }
       );
       break;
 
     case 'expression':
       completions.push(
-        { label: 'me', kind: 6, detail: 'Current element' },
-        { label: 'you', kind: 6, detail: 'Event target' },
-        { label: 'it', kind: 6, detail: 'Last result' },
-        { label: 'result', kind: 6, detail: 'Last result (alias)' },
+        ref('me', 'Current element'),
+        ref('you', 'Event target'),
+        ref('it', 'Last result'),
+        ref('result', 'Last result (alias)'),
         { label: 'first', kind: 14, detail: 'First in collection' },
         { label: 'last', kind: 14, detail: 'Last in collection' },
         { label: 'next', kind: 14, detail: 'Next sibling' },
@@ -424,12 +658,12 @@ function getContextualCompletions(
       break;
 
     default:
-      // Top-level completions
+      // Top-level completions with multilingual support
       completions.push(
-        { label: 'on', kind: 14, detail: 'Event handler', insertText: 'on ${1:click} ${2:command}' },
-        { label: 'init', kind: 14, detail: 'Initialization', insertText: 'init ${1:command}' },
-        { label: 'behavior', kind: 7, detail: 'Define behavior', insertText: 'behavior ${1:Name}\n  ${2:// body}\nend' },
-        { label: 'def', kind: 3, detail: 'Define function', insertText: 'def ${1:name}(${2:params})\n  ${3:// body}\nend' }
+        { label: getKeywordTranslation('on', language).label, kind: 14, detail: 'Event handler' },
+        { label: getKeywordTranslation('init', language).label, kind: 14, detail: 'Initialization' },
+        { label: getKeywordTranslation('behavior', language).label, kind: 7, detail: 'Define behavior' },
+        { label: getKeywordTranslation('def', language).label, kind: 3, detail: 'Define function' }
       );
   }
 
@@ -456,7 +690,8 @@ function inferContext(beforeCursor: string): string {
 async function getHoverInfo(
   code: string,
   line: number,
-  character: number
+  character: number,
+  language: string
 ): Promise<CallToolResult> {
   // Try AST-based hover first
   if (astToolkit && parseFunction) {
@@ -466,7 +701,7 @@ async function getHoverInfo(
         const hover = astToolkit.astToLSPHover(ast, { line, character });
         if (hover) {
           return {
-            content: [{ type: 'text', text: JSON.stringify(hover, null, 2) }],
+            content: [{ type: 'text', text: JSON.stringify({ ...hover, language }, null, 2) }],
           };
         }
       }
@@ -475,17 +710,18 @@ async function getHoverInfo(
     }
   }
 
-  // Fallback: token-based hover
-  const hover = getTokenBasedHover(code, line, character);
+  // Fallback: token-based hover with multilingual support
+  const hover = getTokenBasedHover(code, line, character, language);
   return {
-    content: [{ type: 'text', text: JSON.stringify(hover, null, 2) }],
+    content: [{ type: 'text', text: JSON.stringify(hover ? { ...hover, language } : { language }, null, 2) }],
   };
 }
 
 function getTokenBasedHover(
   code: string,
   line: number,
-  character: number
+  character: number,
+  language: string
 ): { contents: string; range?: Range } | null {
   const lines = code.split('\n');
   const currentLine = lines[line];
@@ -495,8 +731,8 @@ function getTokenBasedHover(
   const word = getWordAtPosition(currentLine, character);
   if (!word) return null;
 
-  // Get documentation for the word
-  const doc = getHoverDocumentation(word.text);
+  // Get documentation for the word (with multilingual keyword lookup)
+  const doc = getHoverDocumentation(word.text, language);
   if (!doc) return null;
 
   return {
@@ -535,7 +771,51 @@ function getWordAtPosition(
   };
 }
 
-function getHoverDocumentation(word: string): string | null {
+/**
+ * Normalize a word to English for documentation lookup.
+ * Checks if the word is a translated keyword and returns the English equivalent.
+ */
+function normalizeToEnglish(word: string, language: string): string {
+  const wordLower = word.toLowerCase();
+
+  // If English or no semantic package, return as-is
+  if (!semanticPackage || language === 'en') {
+    return wordLower;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords) {
+      // Check if word matches any translated keyword
+      for (const [engKey, translation] of Object.entries(profile.keywords)) {
+        const trans = translation as { primary?: string; alternatives?: string[] };
+        if (trans.primary?.toLowerCase() === wordLower) {
+          return engKey;
+        }
+        if (trans.alternatives?.some((a: string) => a.toLowerCase() === wordLower)) {
+          return engKey;
+        }
+      }
+    }
+    // Check references (me, it, you)
+    if (profile && profile.references) {
+      for (const [engRef, translatedRef] of Object.entries(profile.references)) {
+        if ((translatedRef as string).toLowerCase() === wordLower) {
+          return engRef;
+        }
+      }
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return wordLower;
+}
+
+function getHoverDocumentation(word: string, language: string = 'en'): string | null {
+  // Normalize the word to English for documentation lookup
+  const normalizedWord = normalizeToEnglish(word, language);
+
   const docs: Record<string, string> = {
     // Commands
     toggle: '**toggle**\n\nToggle a class, attribute, or visibility on elements.\n\n```hyperscript\ntoggle .active on me\ntoggle @disabled on #input\n```',
@@ -572,14 +852,14 @@ function getHoverDocumentation(word: string): string | null {
     then: '**then**\n\nChain commands together.\n\n```hyperscript\nadd .loading then fetch /api then remove .loading\n```',
   };
 
-  return docs[word.toLowerCase()] || null;
+  return docs[normalizedWord] || null;
 }
 
 // ============================================================================
 // Document Symbols
 // ============================================================================
 
-async function getDocumentSymbols(code: string): Promise<CallToolResult> {
+async function getDocumentSymbols(code: string, language: string): Promise<CallToolResult> {
   const symbols: DocumentSymbol[] = [];
 
   // Try AST-based symbols first
@@ -595,33 +875,75 @@ async function getDocumentSymbols(code: string): Promise<CallToolResult> {
     }
   }
 
-  // Fallback: pattern-based extraction
+  // Fallback: pattern-based extraction with multilingual support
   if (symbols.length === 0) {
-    symbols.push(...extractSymbolsFromCode(code));
+    symbols.push(...extractSymbolsFromCode(code, language));
   }
 
   return {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({ symbols, count: symbols.length }, null, 2),
+        text: JSON.stringify({ symbols, count: symbols.length, language }, null, 2),
       },
     ],
   };
 }
 
-function extractSymbolsFromCode(code: string): DocumentSymbol[] {
+/**
+ * Get all keyword variants for a given English keyword in a specific language.
+ */
+function getKeywordVariants(engKeyword: string, language: string): string[] {
+  const variants = [engKeyword]; // Always include English
+
+  if (!semanticPackage || language === 'en') {
+    return variants;
+  }
+
+  try {
+    const profile = semanticPackage.getProfile(language);
+    if (profile && profile.keywords && profile.keywords[engKeyword]) {
+      const trans = profile.keywords[engKeyword] as { primary?: string; alternatives?: string[] };
+      if (trans.primary) {
+        variants.push(trans.primary);
+      }
+      if (trans.alternatives) {
+        variants.push(...trans.alternatives);
+      }
+    }
+  } catch {
+    // Profile not available
+  }
+
+  return variants;
+}
+
+function extractSymbolsFromCode(code: string, language: string = 'en'): DocumentSymbol[] {
   const symbols: DocumentSymbol[] = [];
   const lines = code.split('\n');
+
+  // Get multilingual keyword variants
+  const onVariants = getKeywordVariants('on', language);
+  const behaviorVariants = getKeywordVariants('behavior', language);
+  const defVariants = getKeywordVariants('def', language);
+  const initVariants = getKeywordVariants('init', language);
+
+  // Build regex patterns for multilingual keywords
+  const onPattern = new RegExp(`\\b(${onVariants.join('|')})\\s+(\\w+(?:\\[.*?\\])?)`, 'i');
+  const behaviorPattern = new RegExp(`\\b(${behaviorVariants.join('|')})\\s+(\\w+)`, 'i');
+  const defPattern = new RegExp(`\\b(${defVariants.join('|')})\\s+(\\w+)`, 'i');
+  const initPattern = new RegExp(`\\b(${initVariants.join('|')})\\b`, 'i');
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Event handlers: on click, on keydown, etc.
-    const eventMatch = line.match(/\bon\s+(\w+(?:\[.*?\])?)/);
+    // Event handlers: on click, on keydown, etc. (multilingual)
+    const eventMatch = line.match(onPattern);
     if (eventMatch) {
+      const keyword = eventMatch[1];
+      const eventName = eventMatch[2];
       symbols.push({
-        name: `on ${eventMatch[1]}`,
+        name: `${keyword} ${eventName}`,
         detail: 'Event Handler',
         kind: 24, // Event
         range: {
@@ -629,17 +951,19 @@ function extractSymbolsFromCode(code: string): DocumentSymbol[] {
           end: { line: i, character: line.length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf('on') },
-          end: { line: i, character: line.indexOf('on') + 2 + eventMatch[1].length },
+          start: { line: i, character: line.indexOf(keyword) },
+          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + eventName.length },
         },
       });
     }
 
-    // Behaviors: behavior Name
-    const behaviorMatch = line.match(/\bbehavior\s+(\w+)/);
+    // Behaviors: behavior Name (multilingual)
+    const behaviorMatch = line.match(behaviorPattern);
     if (behaviorMatch) {
+      const keyword = behaviorMatch[1];
+      const name = behaviorMatch[2];
       symbols.push({
-        name: `behavior ${behaviorMatch[1]}`,
+        name: `${keyword} ${name}`,
         detail: 'Behavior Definition',
         kind: 5, // Class
         range: {
@@ -647,17 +971,19 @@ function extractSymbolsFromCode(code: string): DocumentSymbol[] {
           end: { line: i, character: line.length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf('behavior') },
-          end: { line: i, character: line.indexOf('behavior') + 8 + behaviorMatch[1].length },
+          start: { line: i, character: line.indexOf(keyword) },
+          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + name.length },
         },
       });
     }
 
-    // Functions: def name()
-    const defMatch = line.match(/\bdef\s+(\w+)/);
+    // Functions: def name() (multilingual)
+    const defMatch = line.match(defPattern);
     if (defMatch) {
+      const keyword = defMatch[1];
+      const name = defMatch[2];
       symbols.push({
-        name: `def ${defMatch[1]}`,
+        name: `${keyword} ${name}`,
         detail: 'Function Definition',
         kind: 12, // Function
         range: {
@@ -665,16 +991,18 @@ function extractSymbolsFromCode(code: string): DocumentSymbol[] {
           end: { line: i, character: line.length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf('def') },
-          end: { line: i, character: line.indexOf('def') + 3 + defMatch[1].length },
+          start: { line: i, character: line.indexOf(keyword) },
+          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + name.length },
         },
       });
     }
 
-    // Init blocks
-    if (/\binit\b/.test(line)) {
+    // Init blocks (multilingual)
+    const initMatch = line.match(initPattern);
+    if (initMatch) {
+      const keyword = initMatch[1];
       symbols.push({
-        name: 'init',
+        name: keyword,
         detail: 'Initialization',
         kind: 9, // Constructor
         range: {
@@ -682,8 +1010,8 @@ function extractSymbolsFromCode(code: string): DocumentSymbol[] {
           end: { line: i, character: line.length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf('init') },
-          end: { line: i, character: line.indexOf('init') + 4 },
+          start: { line: i, character: line.indexOf(keyword) },
+          end: { line: i, character: line.indexOf(keyword) + keyword.length },
         },
       });
     }

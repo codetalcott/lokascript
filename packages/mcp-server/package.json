@@ -29,13 +29,17 @@
   },
   "peerDependencies": {
     "@hyperfixi/ast-toolkit": "*",
-    "@hyperfixi/patterns-reference": "*"
+    "@hyperfixi/patterns-reference": "*",
+    "@hyperfixi/semantic": "*"
   },
   "peerDependenciesMeta": {
     "@hyperfixi/ast-toolkit": {
       "optional": true
     },
     "@hyperfixi/patterns-reference": {
+      "optional": true
+    },
+    "@hyperfixi/semantic": {
       "optional": true
     }
   },
