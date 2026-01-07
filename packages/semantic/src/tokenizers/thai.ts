@@ -7,9 +7,13 @@
  * - No spaces between words (like Chinese/Japanese)
  * - Prepositions for grammatical marking
  * - CSS selectors are embedded ASCII
+ *
+ * This tokenizer derives keywords from the Thai profile (single source of truth)
+ * with extras for literals, positional words, and event names.
  */
 
 import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { KeywordEntry } from './base';
 import {
   BaseTokenizer,
   TokenStreamImpl,
@@ -22,6 +26,7 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
 } from './base';
+import { thaiProfile } from '../generators/profiles/thai';
 
 // =============================================================================
 // Thai Character Classification
@@ -37,123 +42,45 @@ function isThai(char: string): boolean {
 }
 
 // =============================================================================
-// Thai Keywords
+// Thai-Specific Keywords (not in profile)
 // =============================================================================
 
 /**
- * Thai command keywords mapped to their English equivalents.
- * Ordered longest first for greedy matching.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words (first, last, next, etc.)
+ * - Event names (click, change, submit, etc.)
+ * - Additional modifiers (when, to, with)
  */
-const THAI_KEYWORDS: [string, string][] = [
-  // Commands - Class/Attribute operations
-  ['สลับ', 'toggle'],
-  ['เพิ่ม', 'add'],
-  ['ลบ', 'remove'],
-  ['ลบออก', 'remove'],
-
-  // Commands - Content operations
-  ['ใส่', 'put'],
-  ['วาง', 'put'],
-  ['รับ', 'take'],
-  ['สร้าง', 'make'],
-  ['คัดลอก', 'clone'],
-  ['สำเนา', 'clone'],
-
-  // Commands - Variable operations
-  ['ตั้ง', 'set'],
-  ['กำหนด', 'set'],
-  ['รับค่า', 'get'],
-  ['เพิ่มค่า', 'increment'],
-  ['ลดค่า', 'decrement'],
-  ['บันทึก', 'log'],
-
-  // Commands - Visibility
-  ['แสดง', 'show'],
-  ['ซ่อน', 'hide'],
-  ['เปลี่ยน', 'transition'],
-
-  // Commands - Events
-  ['เมื่อ', 'on'],
-  ['ตอน', 'on'],
-  ['เวลา', 'when'],
-
-  // Commands - DOM focus
-  ['โฟกัส', 'focus'],
-  ['เบลอ', 'blur'],
-
-  // Commands - Navigation
-  ['ไป', 'go'],
-  ['ไปที่', 'go'],
-
-  // Commands - Async
-  ['รอ', 'wait'],
-  ['ดึงข้อมูล', 'fetch'],
-  ['คงที่', 'settle'],
-
-  // Commands - Control flow
-  ['ถ้า', 'if'],
-  ['หาก', 'if'],
-  ['ไม่งั้น', 'else'],
-  ['ไม่เช่นนั้น', 'else'],
-  ['ทำซ้ำ', 'repeat'],
-  ['สำหรับ', 'for'],
-  ['ในขณะที่', 'while'],
-  ['ต่อไป', 'continue'],
-  ['หยุด', 'halt'],
-  ['โยน', 'throw'],
-  ['เรียก', 'call'],
-  ['คืนค่า', 'return'],
-  ['กลับ', 'return'],
-
-  // Commands - Advanced
-  ['เจเอส', 'js'],
-  ['อะซิงค์', 'async'],
-  ['บอก', 'tell'],
-  ['ค่าเริ่มต้น', 'default'],
-  ['เริ่มต้น', 'init'],
-  ['พฤติกรรม', 'behavior'],
-
-  // Control flow helpers
-  ['แล้ว', 'then'],
-  ['จบ', 'end'],
-
-  // Modifiers
-  ['ใน', 'into'],
-  ['ไปยัง', 'to'],
-  ['จาก', 'from'],
-  ['ด้วย', 'with'],
-  ['ก่อน', 'before'],
-  ['หลัง', 'after'],
-  ['จนถึง', 'until'],
-
-  // Values
-  ['จริง', 'true'],
-  ['เท็จ', 'false'],
-  ['ว่าง', 'null'],
-  ['ไม่กำหนด', 'undefined'],
-  ['ฉัน', 'me'],
-  ['มัน', 'it'],
-  ['ผลลัพธ์', 'result'],
+const THAI_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'จริง', normalized: 'true' },
+  { native: 'เท็จ', normalized: 'false' },
+  { native: 'ว่าง', normalized: 'null' },
+  { native: 'ไม่กำหนด', normalized: 'undefined' },
 
   // Positional
-  ['แรก', 'first'],
-  ['สุดท้าย', 'last'],
-  ['ถัดไป', 'next'],
-  ['ก่อนหน้า', 'previous'],
-  ['ใกล้สุด', 'closest'],
-  ['ต้นทาง', 'parent'],
+  { native: 'แรก', normalized: 'first' },
+  { native: 'สุดท้าย', normalized: 'last' },
+  { native: 'ถัดไป', normalized: 'next' },
+  { native: 'ก่อนหน้า', normalized: 'previous' },
+  { native: 'ใกล้สุด', normalized: 'closest' },
+  { native: 'ต้นทาง', normalized: 'parent' },
 
   // Events
-  ['คลิก', 'click'],
-  ['เปลี่ยนแปลง', 'change'],
-  ['ส่ง', 'submit'],
-  ['อินพุต', 'input'],
-  ['โหลด', 'load'],
-  ['เลื่อน', 'scroll'],
-];
+  { native: 'คลิก', normalized: 'click' },
+  { native: 'เปลี่ยนแปลง', normalized: 'change' },
+  { native: 'ส่ง', normalized: 'submit' },
+  { native: 'อินพุต', normalized: 'input' },
+  { native: 'โหลด', normalized: 'load' },
+  { native: 'เลื่อน', normalized: 'scroll' },
 
-// Sort by length (longest first) for greedy matching
-const SORTED_KEYWORDS = THAI_KEYWORDS.sort((a, b) => b[0].length - a[0].length);
+  // Additional modifiers
+  { native: 'เวลา', normalized: 'when' },
+  { native: 'ไปยัง', normalized: 'to' },
+  { native: 'ด้วย', normalized: 'with' },
+  { native: 'และ', normalized: 'and' },
+];
 
 // =============================================================================
 // Thai Tokenizer Class
@@ -162,6 +89,12 @@ const SORTED_KEYWORDS = THAI_KEYWORDS.sort((a, b) => b[0].length - a[0].length);
 export class ThaiTokenizer extends BaseTokenizer {
   readonly language = 'th';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(thaiProfile, THAI_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -204,9 +137,9 @@ export class ThaiTokenizer extends BaseTokenizer {
         }
       }
 
-      // Try number
+      // Try number (use base class method)
       if (isDigit(input[pos]) || (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))) {
-        const numberToken = this.extractNumber(input, pos);
+        const numberToken = this.tryNumber(input, pos);
         if (numberToken) {
           tokens.push(numberToken);
           pos = numberToken.position.end;
@@ -232,47 +165,32 @@ export class ThaiTokenizer extends BaseTokenizer {
         pos = startPos;
       }
 
-      // Thai text - try keyword matching (longest match first)
+      // Thai text - try profile keyword matching (longest match first)
       if (isThai(input[pos])) {
         const startPos = pos;
-        let matched = false;
 
-        // Try to match keywords (longest first)
-        for (const [keyword, normalized] of SORTED_KEYWORDS) {
-          if (input.slice(pos).startsWith(keyword)) {
-            tokens.push(
-              createToken(keyword, 'keyword', createPosition(startPos, pos + keyword.length), normalized)
-            );
-            pos += keyword.length;
-            matched = true;
-            break;
-          }
+        // Try to match keywords from profile (longest first, greedy matching)
+        const keywordToken = this.tryProfileKeyword(input, pos);
+        if (keywordToken) {
+          tokens.push(keywordToken);
+          pos = keywordToken.position.end;
+          continue;
         }
 
-        if (!matched) {
-          // Unknown Thai word - read until non-Thai or known keyword
-          let word = '';
-          while (pos < input.length && isThai(input[pos])) {
-            // Check if we're at the start of a known keyword
-            const remaining = input.slice(pos);
-            let foundKeyword = false;
-            for (const [keyword] of SORTED_KEYWORDS) {
-              if (remaining.startsWith(keyword)) {
-                foundKeyword = true;
-                break;
-              }
-            }
-            if (foundKeyword && word.length > 0) {
-              break;
-            }
-            word += input[pos];
-            pos++;
+        // Unknown Thai word - read until non-Thai or known keyword
+        let word = '';
+        while (pos < input.length && isThai(input[pos])) {
+          // Check if we're at the start of a known keyword
+          if (word.length > 0 && this.isKeywordStart(input, pos)) {
+            break;
           }
-          if (word) {
-            tokens.push(
-              createToken(word, 'identifier', createPosition(startPos, pos))
-            );
-          }
+          word += input[pos];
+          pos++;
+        }
+        if (word) {
+          tokens.push(
+            createToken(word, 'identifier', createPosition(startPos, pos))
+          );
         }
         continue;
       }
@@ -303,44 +221,15 @@ export class ThaiTokenizer extends BaseTokenizer {
   }
 
   classifyToken(value: string): TokenKind {
-    for (const [keyword] of SORTED_KEYWORDS) {
-      if (value === keyword) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (value === entry.native) return 'keyword';
     }
     if (value.startsWith('.') || value.startsWith('#') || value.startsWith('[')) return 'selector';
     if (value.startsWith(':')) return 'identifier';
     if (value.startsWith('"') || value.startsWith("'")) return 'literal';
     if (/^-?\d/.test(value)) return 'literal';
     return 'identifier';
-  }
-
-  private extractNumber(input: string, start: number): LanguageToken | null {
-    let pos = start;
-    let num = '';
-
-    if (input[pos] === '-') {
-      num += '-';
-      pos++;
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      num += input[pos];
-      pos++;
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      num += '.';
-      pos++;
-      while (pos < input.length && isDigit(input[pos])) {
-        num += input[pos];
-        pos++;
-      }
-    }
-
-    if (num === '-') {
-      return null;
-    }
-
-    return createToken(num, 'literal', createPosition(start, pos));
   }
 }
 

@@ -141,7 +141,10 @@
     "dev": "tsup --watch",
     "test": "vitest",
     "test:run": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "add-language": "npx tsx scripts/add-language.ts",
+    "generate:indexes": "npx tsx scripts/generate-indexes.ts",
+    "prebuild": "npm run generate:indexes"
   },
   "sideEffects": [
     "./src/languages/*.ts",

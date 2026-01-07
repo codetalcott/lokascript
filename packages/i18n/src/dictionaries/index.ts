@@ -45,6 +45,7 @@ import { ukrainianDictionary as ukLegacy } from './uk';
 import { hindiDictionary as hiLegacy } from './hi';
 import { bengaliDictionary as bnLegacy } from './bn';
 import { thaiDictionary as thLegacy } from './th';
+import { malayDictionary as msLegacy } from './ms';
 
 // =============================================================================
 // Derived Dictionaries with Legacy Overrides
@@ -159,6 +160,11 @@ export const bn: Dictionary = bnLegacy;
  */
 export const th: Dictionary = thLegacy;
 
+/**
+ * Malay dictionary - legacy overrides for compatibility.
+ */
+export const ms: Dictionary = msLegacy;
+
 // =============================================================================
 // Dictionary Registry
 // =============================================================================
@@ -188,6 +194,7 @@ export const dictionaries: Record<string, Dictionary> = {
   hi,
   bn,
   th,
+  ms,
 };
 
 // =============================================================================

@@ -535,6 +535,24 @@ export function extractNumber(input: string, startPos: number): string | null {
 // =============================================================================
 
 /**
+ * Keyword entry for tokenizer - maps native word to normalized English form.
+ */
+export interface KeywordEntry {
+  readonly native: string;
+  readonly normalized: string;
+}
+
+/**
+ * Profile interface for keyword derivation.
+ * Matches the structure of LanguageProfile but only includes fields needed for tokenization.
+ */
+export interface TokenizerProfile {
+  readonly keywords?: Record<string, { primary: string; alternatives?: string[]; normalized?: string }>;
+  readonly references?: Record<string, string>;
+  readonly roleMarkers?: Record<string, { primary: string; alternatives?: string[]; position?: string }>;
+}
+
+/**
  * Abstract base class for language-specific tokenizers.
  * Provides common functionality for CSS selectors, strings, and numbers.
  */
@@ -545,8 +563,113 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
   /** Optional morphological normalizer for this language */
   protected normalizer?: MorphologicalNormalizer;
 
+  /** Keywords derived from profile, sorted longest-first for greedy matching */
+  protected profileKeywords: KeywordEntry[] = [];
+
   abstract tokenize(input: string): TokenStream;
   abstract classifyToken(token: string): TokenKind;
+
+  /**
+   * Initialize keyword mappings from a language profile.
+   * Builds a list of native→english mappings from:
+   * - profile.keywords (primary + alternatives)
+   * - profile.references (me, it, you, etc.)
+   * - profile.roleMarkers (into, from, with, etc.)
+   *
+   * Results are sorted longest-first for greedy matching (important for non-space languages).
+   *
+   * @param profile - Language profile containing keyword translations
+   * @param extras - Additional keyword entries to include (literals, positional, events)
+   */
+  protected initializeKeywordsFromProfile(
+    profile: TokenizerProfile,
+    extras: KeywordEntry[] = []
+  ): void {
+    const entries: KeywordEntry[] = [];
+
+    // Extract from keywords (command translations)
+    if (profile.keywords) {
+      for (const [normalized, translation] of Object.entries(profile.keywords)) {
+        // Primary translation
+        entries.push({
+          native: translation.primary,
+          normalized: translation.normalized || normalized,
+        });
+
+        // Alternative forms
+        if (translation.alternatives) {
+          for (const alt of translation.alternatives) {
+            entries.push({
+              native: alt,
+              normalized: translation.normalized || normalized,
+            });
+          }
+        }
+      }
+    }
+
+    // Extract from references (me, it, you, etc.)
+    if (profile.references) {
+      for (const [normalized, native] of Object.entries(profile.references)) {
+        entries.push({ native, normalized });
+      }
+    }
+
+    // Extract from roleMarkers (into, from, with, etc.)
+    if (profile.roleMarkers) {
+      for (const [role, marker] of Object.entries(profile.roleMarkers)) {
+        if (marker.primary) {
+          entries.push({ native: marker.primary, normalized: role });
+        }
+        if (marker.alternatives) {
+          for (const alt of marker.alternatives) {
+            entries.push({ native: alt, normalized: role });
+          }
+        }
+      }
+    }
+
+    // Add extra entries (literals, positional, events)
+    entries.push(...extras);
+
+    // Sort longest-first for greedy matching
+    this.profileKeywords = entries.sort((a, b) => b.native.length - a.native.length);
+  }
+
+  /**
+   * Try to match a keyword from profile at the current position.
+   * Uses longest-first greedy matching (important for non-space languages).
+   *
+   * @param input - Input string
+   * @param pos - Current position
+   * @returns Token if matched, null otherwise
+   */
+  protected tryProfileKeyword(input: string, pos: number): LanguageToken | null {
+    for (const entry of this.profileKeywords) {
+      if (input.slice(pos).startsWith(entry.native)) {
+        return createToken(
+          entry.native,
+          'keyword',
+          createPosition(pos, pos + entry.native.length),
+          entry.normalized
+        );
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check if the remaining input starts with any known keyword.
+   * Useful for non-space languages to detect word boundaries.
+   *
+   * @param input - Input string
+   * @param pos - Current position
+   * @returns true if a keyword starts at this position
+   */
+  protected isKeywordStart(input: string, pos: number): boolean {
+    const remaining = input.slice(pos);
+    return this.profileKeywords.some(entry => remaining.startsWith(entry.native));
+  }
 
   /**
    * Set the morphological normalizer for this tokenizer.

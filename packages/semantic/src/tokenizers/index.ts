@@ -89,6 +89,8 @@ export { hindiTokenizer } from './hindi';
 export { bengaliTokenizer } from './bengali';
 export { thaiTokenizer } from './thai';
 
+export { malayTokenizer } from './ms';
+
 export {
   BaseTokenizer,
   TokenStreamImpl,
@@ -100,3 +102,6 @@ export {
   isUrlStart,
   extractUrl,
 } from './base';
+
+// Types for profile-derived keyword initialization
+export type { KeywordEntry, TokenizerProfile } from './base';

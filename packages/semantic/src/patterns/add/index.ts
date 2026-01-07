@@ -2,72 +2,82 @@
  * Add Command Patterns
  *
  * Hand-crafted patterns for "add" command across languages.
- * Used for class manipulation: add .class to #element
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
 
+import { getAddPatternsAr } from './ar';
+import { getAddPatternsBn } from './bn';
+import { getAddPatternsHi } from './hi';
+import { getAddPatternsIt } from './it';
 import { getAddPatternsJa } from './ja';
 import { getAddPatternsKo } from './ko';
-import { getAddPatternsAr } from './ar';
-import { getAddPatternsTr } from './tr';
-import { getAddPatternsZh } from './zh';
-import { getAddPatternsIt } from './it';
-import { getAddPatternsVi } from './vi';
+import { getAddPatternsMs } from './ms';
 import { getAddPatternsPl } from './pl';
 import { getAddPatternsRu } from './ru';
-import { getAddPatternsUk } from './uk';
-import { getAddPatternsHi } from './hi';
-import { getAddPatternsBn } from './bn';
 import { getAddPatternsTh } from './th';
+import { getAddPatternsTr } from './tr';
+import { getAddPatternsUk } from './uk';
+import { getAddPatternsVi } from './vi';
+import { getAddPatternsZh } from './zh';
 
 /**
  * Get add patterns for a specific language.
  */
 export function getAddPatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
+    case 'ar':
+      return getAddPatternsAr();
+    case 'bn':
+      return getAddPatternsBn();
+    case 'hi':
+      return getAddPatternsHi();
+    case 'it':
+      return getAddPatternsIt();
     case 'ja':
       return getAddPatternsJa();
     case 'ko':
       return getAddPatternsKo();
-    case 'ar':
-      return getAddPatternsAr();
-    case 'tr':
-      return getAddPatternsTr();
-    case 'zh':
-      return getAddPatternsZh();
-    case 'it':
-      return getAddPatternsIt();
-    case 'vi':
-      return getAddPatternsVi();
+    case 'ms':
+      return getAddPatternsMs();
     case 'pl':
       return getAddPatternsPl();
     case 'ru':
       return getAddPatternsRu();
-    case 'uk':
-      return getAddPatternsUk();
-    case 'hi':
-      return getAddPatternsHi();
-    case 'bn':
-      return getAddPatternsBn();
     case 'th':
       return getAddPatternsTh();
+    case 'tr':
+      return getAddPatternsTr();
+    case 'uk':
+      return getAddPatternsUk();
+    case 'vi':
+      return getAddPatternsVi();
+    case 'zh':
+      return getAddPatternsZh();
     default:
       return [];
   }
 }
 
 // Re-export language-specific getters for tree-shaking
+export { getAddPatternsAr } from './ar';
+export { getAddPatternsBn } from './bn';
+export { getAddPatternsHi } from './hi';
+export { getAddPatternsIt } from './it';
 export { getAddPatternsJa } from './ja';
 export { getAddPatternsKo } from './ko';
-export { getAddPatternsAr } from './ar';
-export { getAddPatternsTr } from './tr';
-export { getAddPatternsZh } from './zh';
-export { getAddPatternsIt } from './it';
-export { getAddPatternsVi } from './vi';
+export { getAddPatternsMs } from './ms';
 export { getAddPatternsPl } from './pl';
 export { getAddPatternsRu } from './ru';
-export { getAddPatternsUk } from './uk';
-export { getAddPatternsHi } from './hi';
-export { getAddPatternsBn } from './bn';
 export { getAddPatternsTh } from './th';
+export { getAddPatternsTr } from './tr';
+export { getAddPatternsUk } from './uk';
+export { getAddPatternsVi } from './vi';
+export { getAddPatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted add patterns.
+ */
+export const addPatternLanguages = ['ar', 'bn', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];

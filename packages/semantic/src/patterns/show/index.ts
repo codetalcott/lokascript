@@ -2,80 +2,90 @@
  * Show Command Patterns
  *
  * Hand-crafted patterns for "show" command across languages.
- * Used for visibility: show #element
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
 
-import { getShowPatternsJa } from './ja';
-import { getShowPatternsKo } from './ko';
 import { getShowPatternsAr } from './ar';
-import { getShowPatternsTr } from './tr';
-import { getShowPatternsZh } from './zh';
+import { getShowPatternsBn } from './bn';
 import { getShowPatternsDe } from './de';
 import { getShowPatternsFr } from './fr';
+import { getShowPatternsHi } from './hi';
 import { getShowPatternsIt } from './it';
-import { getShowPatternsVi } from './vi';
+import { getShowPatternsJa } from './ja';
+import { getShowPatternsKo } from './ko';
+import { getShowPatternsMs } from './ms';
 import { getShowPatternsPl } from './pl';
 import { getShowPatternsRu } from './ru';
-import { getShowPatternsUk } from './uk';
-import { getShowPatternsHi } from './hi';
-import { getShowPatternsBn } from './bn';
 import { getShowPatternsTh } from './th';
+import { getShowPatternsTr } from './tr';
+import { getShowPatternsUk } from './uk';
+import { getShowPatternsVi } from './vi';
+import { getShowPatternsZh } from './zh';
 
 /**
  * Get show patterns for a specific language.
  */
 export function getShowPatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
-    case 'ja':
-      return getShowPatternsJa();
-    case 'ko':
-      return getShowPatternsKo();
     case 'ar':
       return getShowPatternsAr();
-    case 'tr':
-      return getShowPatternsTr();
-    case 'zh':
-      return getShowPatternsZh();
+    case 'bn':
+      return getShowPatternsBn();
     case 'de':
       return getShowPatternsDe();
     case 'fr':
       return getShowPatternsFr();
+    case 'hi':
+      return getShowPatternsHi();
     case 'it':
       return getShowPatternsIt();
-    case 'vi':
-      return getShowPatternsVi();
+    case 'ja':
+      return getShowPatternsJa();
+    case 'ko':
+      return getShowPatternsKo();
+    case 'ms':
+      return getShowPatternsMs();
     case 'pl':
       return getShowPatternsPl();
     case 'ru':
       return getShowPatternsRu();
-    case 'uk':
-      return getShowPatternsUk();
-    case 'hi':
-      return getShowPatternsHi();
-    case 'bn':
-      return getShowPatternsBn();
     case 'th':
       return getShowPatternsTh();
+    case 'tr':
+      return getShowPatternsTr();
+    case 'uk':
+      return getShowPatternsUk();
+    case 'vi':
+      return getShowPatternsVi();
+    case 'zh':
+      return getShowPatternsZh();
     default:
       return [];
   }
 }
 
 // Re-export language-specific getters for tree-shaking
-export { getShowPatternsJa } from './ja';
-export { getShowPatternsKo } from './ko';
 export { getShowPatternsAr } from './ar';
-export { getShowPatternsTr } from './tr';
-export { getShowPatternsZh } from './zh';
+export { getShowPatternsBn } from './bn';
 export { getShowPatternsDe } from './de';
 export { getShowPatternsFr } from './fr';
+export { getShowPatternsHi } from './hi';
 export { getShowPatternsIt } from './it';
-export { getShowPatternsVi } from './vi';
+export { getShowPatternsJa } from './ja';
+export { getShowPatternsKo } from './ko';
+export { getShowPatternsMs } from './ms';
 export { getShowPatternsPl } from './pl';
 export { getShowPatternsRu } from './ru';
-export { getShowPatternsUk } from './uk';
-export { getShowPatternsHi } from './hi';
-export { getShowPatternsBn } from './bn';
 export { getShowPatternsTh } from './th';
+export { getShowPatternsTr } from './tr';
+export { getShowPatternsUk } from './uk';
+export { getShowPatternsVi } from './vi';
+export { getShowPatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted show patterns.
+ */
+export const showPatternLanguages = ['ar', 'bn', 'de', 'fr', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];

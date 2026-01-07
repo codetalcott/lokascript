@@ -2,72 +2,82 @@
  * Remove Command Patterns
  *
  * Hand-crafted patterns for "remove" command across languages.
- * Used for class manipulation: remove .class from #element
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
 
+import { getRemovePatternsAr } from './ar';
+import { getRemovePatternsBn } from './bn';
+import { getRemovePatternsHi } from './hi';
+import { getRemovePatternsIt } from './it';
 import { getRemovePatternsJa } from './ja';
 import { getRemovePatternsKo } from './ko';
-import { getRemovePatternsAr } from './ar';
-import { getRemovePatternsTr } from './tr';
-import { getRemovePatternsZh } from './zh';
-import { getRemovePatternsIt } from './it';
-import { getRemovePatternsVi } from './vi';
+import { getRemovePatternsMs } from './ms';
 import { getRemovePatternsPl } from './pl';
 import { getRemovePatternsRu } from './ru';
-import { getRemovePatternsUk } from './uk';
-import { getRemovePatternsHi } from './hi';
-import { getRemovePatternsBn } from './bn';
 import { getRemovePatternsTh } from './th';
+import { getRemovePatternsTr } from './tr';
+import { getRemovePatternsUk } from './uk';
+import { getRemovePatternsVi } from './vi';
+import { getRemovePatternsZh } from './zh';
 
 /**
  * Get remove patterns for a specific language.
  */
 export function getRemovePatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
+    case 'ar':
+      return getRemovePatternsAr();
+    case 'bn':
+      return getRemovePatternsBn();
+    case 'hi':
+      return getRemovePatternsHi();
+    case 'it':
+      return getRemovePatternsIt();
     case 'ja':
       return getRemovePatternsJa();
     case 'ko':
       return getRemovePatternsKo();
-    case 'ar':
-      return getRemovePatternsAr();
-    case 'tr':
-      return getRemovePatternsTr();
-    case 'zh':
-      return getRemovePatternsZh();
-    case 'it':
-      return getRemovePatternsIt();
-    case 'vi':
-      return getRemovePatternsVi();
+    case 'ms':
+      return getRemovePatternsMs();
     case 'pl':
       return getRemovePatternsPl();
     case 'ru':
       return getRemovePatternsRu();
-    case 'uk':
-      return getRemovePatternsUk();
-    case 'hi':
-      return getRemovePatternsHi();
-    case 'bn':
-      return getRemovePatternsBn();
     case 'th':
       return getRemovePatternsTh();
+    case 'tr':
+      return getRemovePatternsTr();
+    case 'uk':
+      return getRemovePatternsUk();
+    case 'vi':
+      return getRemovePatternsVi();
+    case 'zh':
+      return getRemovePatternsZh();
     default:
       return [];
   }
 }
 
 // Re-export language-specific getters for tree-shaking
+export { getRemovePatternsAr } from './ar';
+export { getRemovePatternsBn } from './bn';
+export { getRemovePatternsHi } from './hi';
+export { getRemovePatternsIt } from './it';
 export { getRemovePatternsJa } from './ja';
 export { getRemovePatternsKo } from './ko';
-export { getRemovePatternsAr } from './ar';
-export { getRemovePatternsTr } from './tr';
-export { getRemovePatternsZh } from './zh';
-export { getRemovePatternsIt } from './it';
-export { getRemovePatternsVi } from './vi';
+export { getRemovePatternsMs } from './ms';
 export { getRemovePatternsPl } from './pl';
 export { getRemovePatternsRu } from './ru';
-export { getRemovePatternsUk } from './uk';
-export { getRemovePatternsHi } from './hi';
-export { getRemovePatternsBn } from './bn';
 export { getRemovePatternsTh } from './th';
+export { getRemovePatternsTr } from './tr';
+export { getRemovePatternsUk } from './uk';
+export { getRemovePatternsVi } from './vi';
+export { getRemovePatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted remove patterns.
+ */
+export const removePatternLanguages = ['ar', 'bn', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];

@@ -1,124 +1,99 @@
 /**
- * Event Handler Patterns Index
+ * EventHandler Command Patterns
  *
- * Re-exports per-language functions for tree-shaking.
- * Import specific languages directly for optimal bundle size.
+ * Hand-crafted patterns for "event-handler" command across languages.
  *
- * Languages de, fr, id, sw use generated patterns from profile.eventHandler config.
- * Other languages use hand-crafted patterns for complex word order/morphology.
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
-import { generateEventHandlerPatterns } from '../../generators/event-handler-generator';
-import { germanProfile } from '../../generators/profiles/german';
-import { frenchProfile } from '../../generators/profiles/french';
-import { indonesianProfile } from '../../generators/profiles/indonesian';
-import { swahiliProfile } from '../../generators/profiles/swahili';
-import { italianProfile } from '../../generators/profiles/italian';
-import { vietnameseProfile } from '../../generators/profiles/vietnamese';
-import { polishProfile } from '../../generators/profiles/polish';
-import { russianProfile } from '../../generators/profiles/russian';
-import { ukrainianProfile } from '../../generators/profiles/ukrainian';
 
-// Re-export shared utilities
-export { eventNameTranslations, normalizeEventName } from './shared';
-
-// Re-export per-language functions for direct import (hand-crafted languages)
-export { getEventHandlerPatternsEn } from './en';
-export { getEventHandlerPatternsJa } from './ja';
-export { getEventHandlerPatternsKo } from './ko';
-export { getEventHandlerPatternsAr } from './ar';
-export { getEventHandlerPatternsTr } from './tr';
-export { getEventHandlerPatternsEs } from './es';
-export { getEventHandlerPatternsPt } from './pt';
-export { getEventHandlerPatternsZh } from './zh';
-export { getEventHandlerPatternsQu } from './qu';
-export { getEventHandlerPatternsHi } from './hi';
-export { getEventHandlerPatternsBn } from './bn';
-export { getEventHandlerPatternsTh } from './th';
-
-// Generated pattern getters for simple SVO languages
-export function getEventHandlerPatternsDe(): LanguagePattern[] {
-  return generateEventHandlerPatterns(germanProfile);
-}
-
-export function getEventHandlerPatternsFr(): LanguagePattern[] {
-  return generateEventHandlerPatterns(frenchProfile);
-}
-
-export function getEventHandlerPatternsId(): LanguagePattern[] {
-  return generateEventHandlerPatterns(indonesianProfile);
-}
-
-export function getEventHandlerPatternsSw(): LanguagePattern[] {
-  return generateEventHandlerPatterns(swahiliProfile);
-}
-
-export function getEventHandlerPatternsIt(): LanguagePattern[] {
-  return generateEventHandlerPatterns(italianProfile);
-}
-
-export function getEventHandlerPatternsVi(): LanguagePattern[] {
-  return generateEventHandlerPatterns(vietnameseProfile);
-}
-
-export function getEventHandlerPatternsPl(): LanguagePattern[] {
-  return generateEventHandlerPatterns(polishProfile);
-}
-
-export function getEventHandlerPatternsRu(): LanguagePattern[] {
-  return generateEventHandlerPatterns(russianProfile);
-}
-
-export function getEventHandlerPatternsUk(): LanguagePattern[] {
-  return generateEventHandlerPatterns(ukrainianProfile);
-}
-
-// Import hand-crafted patterns for backwards compatibility
+import { getEventHandlerPatternsAr } from './ar';
+import { getEventHandlerPatternsBn } from './bn';
 import { getEventHandlerPatternsEn } from './en';
+import { getEventHandlerPatternsEs } from './es';
+import { getEventHandlerPatternsHi } from './hi';
+import { getEventHandlerPatternsIt } from './it';
 import { getEventHandlerPatternsJa } from './ja';
 import { getEventHandlerPatternsKo } from './ko';
-import { getEventHandlerPatternsAr } from './ar';
-import { getEventHandlerPatternsTr } from './tr';
-import { getEventHandlerPatternsEs } from './es';
+import { getEventHandlerPatternsMs } from './ms';
+import { getEventHandlerPatternsPl } from './pl';
 import { getEventHandlerPatternsPt } from './pt';
-import { getEventHandlerPatternsZh } from './zh';
 import { getEventHandlerPatternsQu } from './qu';
-import { getEventHandlerPatternsHi } from './hi';
-import { getEventHandlerPatternsBn } from './bn';
+import { getEventHandlerPatternsRu } from './ru';
 import { getEventHandlerPatternsTh } from './th';
+import { getEventHandlerPatternsTr } from './tr';
+import { getEventHandlerPatternsUk } from './uk';
+import { getEventHandlerPatternsVi } from './vi';
+import { getEventHandlerPatternsZh } from './zh';
 
 /**
- * Get event handler patterns for a specific language.
- * Returns empty array if language has no patterns.
- *
- * @deprecated Import per-language functions directly for tree-shaking.
+ * Get event-handler patterns for a specific language.
  */
 export function getEventHandlerPatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
-    // Hand-crafted patterns (complex languages)
-    case 'en': return getEventHandlerPatternsEn();
-    case 'ja': return getEventHandlerPatternsJa();
-    case 'ko': return getEventHandlerPatternsKo();
-    case 'ar': return getEventHandlerPatternsAr();
-    case 'tr': return getEventHandlerPatternsTr();
-    case 'es': return getEventHandlerPatternsEs();
-    case 'pt': return getEventHandlerPatternsPt();
-    case 'zh': return getEventHandlerPatternsZh();
-    case 'qu': return getEventHandlerPatternsQu();
-    // Generated patterns (simple SVO languages)
-    case 'de': return getEventHandlerPatternsDe();
-    case 'fr': return getEventHandlerPatternsFr();
-    case 'id': return getEventHandlerPatternsId();
-    case 'sw': return getEventHandlerPatternsSw();
-    case 'it': return getEventHandlerPatternsIt();
-    case 'vi': return getEventHandlerPatternsVi();
-    case 'pl': return getEventHandlerPatternsPl();
-    case 'ru': return getEventHandlerPatternsRu();
-    case 'uk': return getEventHandlerPatternsUk();
-    case 'hi': return getEventHandlerPatternsHi();
-    case 'bn': return getEventHandlerPatternsBn();
-    case 'th': return getEventHandlerPatternsTh();
-    default: return [];
+    case 'ar':
+      return getEventHandlerPatternsAr();
+    case 'bn':
+      return getEventHandlerPatternsBn();
+    case 'en':
+      return getEventHandlerPatternsEn();
+    case 'es':
+      return getEventHandlerPatternsEs();
+    case 'hi':
+      return getEventHandlerPatternsHi();
+    case 'it':
+      return getEventHandlerPatternsIt();
+    case 'ja':
+      return getEventHandlerPatternsJa();
+    case 'ko':
+      return getEventHandlerPatternsKo();
+    case 'ms':
+      return getEventHandlerPatternsMs();
+    case 'pl':
+      return getEventHandlerPatternsPl();
+    case 'pt':
+      return getEventHandlerPatternsPt();
+    case 'qu':
+      return getEventHandlerPatternsQu();
+    case 'ru':
+      return getEventHandlerPatternsRu();
+    case 'th':
+      return getEventHandlerPatternsTh();
+    case 'tr':
+      return getEventHandlerPatternsTr();
+    case 'uk':
+      return getEventHandlerPatternsUk();
+    case 'vi':
+      return getEventHandlerPatternsVi();
+    case 'zh':
+      return getEventHandlerPatternsZh();
+    default:
+      return [];
   }
 }
+
+// Re-export language-specific getters for tree-shaking
+export { getEventHandlerPatternsAr } from './ar';
+export { getEventHandlerPatternsBn } from './bn';
+export { getEventHandlerPatternsEn } from './en';
+export { getEventHandlerPatternsEs } from './es';
+export { getEventHandlerPatternsHi } from './hi';
+export { getEventHandlerPatternsIt } from './it';
+export { getEventHandlerPatternsJa } from './ja';
+export { getEventHandlerPatternsKo } from './ko';
+export { getEventHandlerPatternsMs } from './ms';
+export { getEventHandlerPatternsPl } from './pl';
+export { getEventHandlerPatternsPt } from './pt';
+export { getEventHandlerPatternsQu } from './qu';
+export { getEventHandlerPatternsRu } from './ru';
+export { getEventHandlerPatternsTh } from './th';
+export { getEventHandlerPatternsTr } from './tr';
+export { getEventHandlerPatternsUk } from './uk';
+export { getEventHandlerPatternsVi } from './vi';
+export { getEventHandlerPatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted event-handler patterns.
+ */
+export const eventhandlerPatternLanguages = ['ar', 'bn', 'en', 'es', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'pt', 'qu', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];

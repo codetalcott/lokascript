@@ -1,95 +1,103 @@
 /**
- * Set Command Patterns (Multilingual)
+ * Set Command Patterns
  *
  * Hand-crafted patterns for "set" command across languages.
- * Used for variable assignment: set x to 5
  *
- * Note: English patterns are in languages/en/set.ts and handled separately.
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
 
-import { getSetPatternsJa } from './ja';
-import { getSetPatternsKo } from './ko';
 import { getSetPatternsAr } from './ar';
-import { getSetPatternsTr } from './tr';
-import { getSetPatternsZh } from './zh';
-import { getSetPatternsEs } from './es';
-import { getSetPatternsPt } from './pt';
-import { getSetPatternsFr } from './fr';
+import { getSetPatternsBn } from './bn';
 import { getSetPatternsDe } from './de';
+import { getSetPatternsEs } from './es';
+import { getSetPatternsFr } from './fr';
+import { getSetPatternsHi } from './hi';
 import { getSetPatternsId } from './id';
 import { getSetPatternsIt } from './it';
-import { getSetPatternsVi } from './vi';
+import { getSetPatternsJa } from './ja';
+import { getSetPatternsKo } from './ko';
+import { getSetPatternsMs } from './ms';
 import { getSetPatternsPl } from './pl';
+import { getSetPatternsPt } from './pt';
 import { getSetPatternsRu } from './ru';
-import { getSetPatternsUk } from './uk';
-import { getSetPatternsHi } from './hi';
-import { getSetPatternsBn } from './bn';
 import { getSetPatternsTh } from './th';
+import { getSetPatternsTr } from './tr';
+import { getSetPatternsUk } from './uk';
+import { getSetPatternsVi } from './vi';
+import { getSetPatternsZh } from './zh';
 
 /**
  * Get set patterns for a specific language.
  */
 export function getSetPatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
-    case 'ja':
-      return getSetPatternsJa();
-    case 'ko':
-      return getSetPatternsKo();
     case 'ar':
       return getSetPatternsAr();
-    case 'tr':
-      return getSetPatternsTr();
-    case 'zh':
-      return getSetPatternsZh();
-    case 'es':
-      return getSetPatternsEs();
-    case 'pt':
-      return getSetPatternsPt();
-    case 'fr':
-      return getSetPatternsFr();
+    case 'bn':
+      return getSetPatternsBn();
     case 'de':
       return getSetPatternsDe();
+    case 'es':
+      return getSetPatternsEs();
+    case 'fr':
+      return getSetPatternsFr();
+    case 'hi':
+      return getSetPatternsHi();
     case 'id':
       return getSetPatternsId();
     case 'it':
       return getSetPatternsIt();
-    case 'vi':
-      return getSetPatternsVi();
+    case 'ja':
+      return getSetPatternsJa();
+    case 'ko':
+      return getSetPatternsKo();
+    case 'ms':
+      return getSetPatternsMs();
     case 'pl':
       return getSetPatternsPl();
+    case 'pt':
+      return getSetPatternsPt();
     case 'ru':
       return getSetPatternsRu();
-    case 'uk':
-      return getSetPatternsUk();
-    case 'hi':
-      return getSetPatternsHi();
-    case 'bn':
-      return getSetPatternsBn();
     case 'th':
       return getSetPatternsTh();
+    case 'tr':
+      return getSetPatternsTr();
+    case 'uk':
+      return getSetPatternsUk();
+    case 'vi':
+      return getSetPatternsVi();
+    case 'zh':
+      return getSetPatternsZh();
     default:
       return [];
   }
 }
 
 // Re-export language-specific getters for tree-shaking
-export { getSetPatternsJa } from './ja';
-export { getSetPatternsKo } from './ko';
 export { getSetPatternsAr } from './ar';
-export { getSetPatternsTr } from './tr';
-export { getSetPatternsZh } from './zh';
-export { getSetPatternsEs } from './es';
-export { getSetPatternsPt } from './pt';
-export { getSetPatternsFr } from './fr';
+export { getSetPatternsBn } from './bn';
 export { getSetPatternsDe } from './de';
+export { getSetPatternsEs } from './es';
+export { getSetPatternsFr } from './fr';
+export { getSetPatternsHi } from './hi';
 export { getSetPatternsId } from './id';
 export { getSetPatternsIt } from './it';
-export { getSetPatternsVi } from './vi';
+export { getSetPatternsJa } from './ja';
+export { getSetPatternsKo } from './ko';
+export { getSetPatternsMs } from './ms';
 export { getSetPatternsPl } from './pl';
+export { getSetPatternsPt } from './pt';
 export { getSetPatternsRu } from './ru';
-export { getSetPatternsUk } from './uk';
-export { getSetPatternsHi } from './hi';
-export { getSetPatternsBn } from './bn';
 export { getSetPatternsTh } from './th';
+export { getSetPatternsTr } from './tr';
+export { getSetPatternsUk } from './uk';
+export { getSetPatternsVi } from './vi';
+export { getSetPatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted set patterns.
+ */
+export const setPatternLanguages = ['ar', 'bn', 'de', 'es', 'fr', 'hi', 'id', 'it', 'ja', 'ko', 'ms', 'pl', 'pt', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];

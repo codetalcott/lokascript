@@ -12,6 +12,8 @@
  * // Full import (all profiles bundled)
  * import { englishProfile, languageProfiles } from './language-profiles';
  * ```
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 // Re-export types
@@ -28,50 +30,52 @@ export type {
 } from './profiles/types';
 
 // Re-export individual profiles
-export { englishProfile } from './profiles/english';
-export { japaneseProfile } from './profiles/japanese';
 export { arabicProfile } from './profiles/arabic';
-export { spanishProfile } from './profiles/spanish';
-export { koreanProfile } from './profiles/korean';
+export { bengaliProfile } from './profiles/bengali';
 export { chineseProfile } from './profiles/chinese';
-export { turkishProfile } from './profiles/turkish';
-export { portugueseProfile } from './profiles/portuguese';
+export { englishProfile } from './profiles/english';
 export { frenchProfile } from './profiles/french';
 export { germanProfile } from './profiles/german';
-export { indonesianProfile } from './profiles/indonesian';
-export { quechuaProfile } from './profiles/quechua';
-export { swahiliProfile } from './profiles/swahili';
-export { italianProfile } from './profiles/italian';
-export { vietnameseProfile } from './profiles/vietnamese';
-export { polishProfile } from './profiles/polish';
-export { russianProfile } from './profiles/russian';
-export { ukrainianProfile } from './profiles/ukrainian';
 export { hindiProfile } from './profiles/hindi';
-export { bengaliProfile } from './profiles/bengali';
+export { indonesianProfile } from './profiles/indonesian';
+export { italianProfile } from './profiles/italian';
+export { japaneseProfile } from './profiles/japanese';
+export { koreanProfile } from './profiles/korean';
+export { malayProfile } from './profiles/ms';
+export { polishProfile } from './profiles/polish';
+export { portugueseProfile } from './profiles/portuguese';
+export { quechuaProfile } from './profiles/quechua';
+export { russianProfile } from './profiles/russian';
+export { spanishProfile } from './profiles/spanish';
+export { swahiliProfile } from './profiles/swahili';
 export { thaiProfile } from './profiles/thai';
+export { turkishProfile } from './profiles/turkish';
+export { ukrainianProfile } from './profiles/ukrainian';
+export { vietnameseProfile } from './profiles/vietnamese';
 
 // Import for creating the combined object
-import { englishProfile } from './profiles/english';
-import { japaneseProfile } from './profiles/japanese';
 import { arabicProfile } from './profiles/arabic';
-import { spanishProfile } from './profiles/spanish';
-import { koreanProfile } from './profiles/korean';
+import { bengaliProfile } from './profiles/bengali';
 import { chineseProfile } from './profiles/chinese';
-import { turkishProfile } from './profiles/turkish';
-import { portugueseProfile } from './profiles/portuguese';
+import { englishProfile } from './profiles/english';
 import { frenchProfile } from './profiles/french';
 import { germanProfile } from './profiles/german';
-import { indonesianProfile } from './profiles/indonesian';
-import { quechuaProfile } from './profiles/quechua';
-import { swahiliProfile } from './profiles/swahili';
-import { italianProfile } from './profiles/italian';
-import { vietnameseProfile } from './profiles/vietnamese';
-import { polishProfile } from './profiles/polish';
-import { russianProfile } from './profiles/russian';
-import { ukrainianProfile } from './profiles/ukrainian';
 import { hindiProfile } from './profiles/hindi';
-import { bengaliProfile } from './profiles/bengali';
+import { indonesianProfile } from './profiles/indonesian';
+import { italianProfile } from './profiles/italian';
+import { japaneseProfile } from './profiles/japanese';
+import { koreanProfile } from './profiles/korean';
+import { malayProfile } from './profiles/ms';
+import { polishProfile } from './profiles/polish';
+import { portugueseProfile } from './profiles/portuguese';
+import { quechuaProfile } from './profiles/quechua';
+import { russianProfile } from './profiles/russian';
+import { spanishProfile } from './profiles/spanish';
+import { swahiliProfile } from './profiles/swahili';
 import { thaiProfile } from './profiles/thai';
+import { turkishProfile } from './profiles/turkish';
+import { ukrainianProfile } from './profiles/ukrainian';
+import { vietnameseProfile } from './profiles/vietnamese';
 import type { LanguageProfile } from './profiles/types';
 
 // =============================================================================
@@ -83,27 +87,28 @@ import type { LanguageProfile } from './profiles/types';
  * @deprecated Import individual profiles for tree-shaking.
  */
 export const languageProfiles: Record<string, LanguageProfile> = {
-  en: englishProfile,
-  ja: japaneseProfile,
   ar: arabicProfile,
-  es: spanishProfile,
-  ko: koreanProfile,
+  bn: bengaliProfile,
   zh: chineseProfile,
-  tr: turkishProfile,
-  pt: portugueseProfile,
+  en: englishProfile,
   fr: frenchProfile,
   de: germanProfile,
-  id: indonesianProfile,
-  qu: quechuaProfile,
-  sw: swahiliProfile,
-  it: italianProfile,
-  vi: vietnameseProfile,
-  pl: polishProfile,
-  ru: russianProfile,
-  uk: ukrainianProfile,
   hi: hindiProfile,
-  bn: bengaliProfile,
+  id: indonesianProfile,
+  it: italianProfile,
+  ja: japaneseProfile,
+  ko: koreanProfile,
+  ms: malayProfile,
+  pl: polishProfile,
+  pt: portugueseProfile,
+  qu: quechuaProfile,
+  ru: russianProfile,
+  es: spanishProfile,
+  sw: swahiliProfile,
   th: thaiProfile,
+  tr: turkishProfile,
+  uk: ukrainianProfile,
+  vi: vietnameseProfile,
 };
 
 /**

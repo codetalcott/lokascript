@@ -213,6 +213,22 @@ cd packages/core && npx playwright test --grep "Grammar Transformation"
 4. Export from `packages/i18n/src/browser.ts`
 5. Add tests in `packages/i18n/src/grammar/grammar.test.ts`
 
+### Adding Semantic Language Support
+
+Use the CLI tool to scaffold a new language (generates all files + updates indexes):
+
+```bash
+cd packages/semantic
+npm run add-language -- --code=xx --name=LanguageName --native=NativeName \
+  --wordOrder=SVO --direction=ltr --marking=preposition --usesSpaces=true
+```
+
+Then fill in:
+
+1. Keyword translations in `src/generators/profiles/{code}.ts`
+2. Character classification in `src/tokenizers/{code}.ts` (for non-Latin scripts)
+3. Run tests: `npm test --prefix packages/semantic`
+
 ## Debugging Tools
 
 ### Compilation Metadata

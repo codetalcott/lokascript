@@ -124,49 +124,42 @@ Each parse result includes a confidence score (0-1):
 
 ## Adding a New Language
 
-1. **Create tokenizer** in `src/tokenizers/{lang}.ts`:
-   ```typescript
-   export class NewLanguageTokenizer extends BaseTokenizer {
-     readonly language = 'xx';
-     readonly keywords: KeywordMap = {
-       toggle: ['toggle_word', 'synonym'],
-       show: ['show_word'],
-       // ... all 45 commands
-     };
-   }
-   export const newLanguageTokenizer = new NewLanguageTokenizer();
-   ```
+**Recommended: Use the CLI tool** to scaffold all files and update indexes automatically:
 
-2. **Register tokenizer** in `src/tokenizers/index.ts`:
-   ```typescript
-   import { newLanguageTokenizer } from './new-language';
-   tokenizers.set('xx', newLanguageTokenizer);
-   export { newLanguageTokenizer } from './new-language';
-   ```
+```bash
+npm run add-language -- --code=xx --name=NewLanguage --native=NativeName \
+  --wordOrder=SVO --direction=ltr --marking=preposition --usesSpaces=true
+```
 
-3. **Add language profile** in `src/generators/language-profiles.ts`:
-   ```typescript
-   export const newLanguageProfile: LanguageProfile = {
-     code: 'xx',
-     name: 'New Language',
-     wordOrder: 'SVO', // or SOV, VSO
-     keywords: {
-       toggle: { primary: 'toggle_word', alternatives: ['synonym'] },
-       // ... all commands
-     },
-   };
-   ```
+This generates:
 
-4. **Add morphological normalizer** (if language has verb conjugation) in `src/tokenizers/morphology/`:
-   ```typescript
-   export class NewLanguageNormalizer implements MorphologicalNormalizer {
-     normalize(word: string): NormalizationResult { ... }
-   }
-   ```
+- `src/languages/{code}.ts` - Self-registering language module
+- `src/tokenizers/{code}.ts` - Tokenizer skeleton
+- `src/generators/profiles/{code}.ts` - Profile with keyword stubs
+- `src/patterns/{cmd}/{code}.ts` - Pattern files for 11 commands
+- Updates all index files automatically
 
-5. **Add tests** in `src/tokenizers/new-language.test.ts`
+**Then fill in:**
 
-6. **Update browser exports** in `src/browser.ts`
+1. **Keyword translations** in `src/generators/profiles/{code}.ts`
+2. **Character classification** in `src/tokenizers/{code}.ts` (for non-Latin scripts)
+3. **Morphological normalizer** (optional) in `src/tokenizers/morphology/` if language has verb conjugation
+4. **Run tests**: `npm test -- --run`
+
+### Profile-Derived Keywords
+
+Tokenizers can derive keywords from profiles (single source of truth):
+
+```typescript
+export class NewLanguageTokenizer extends BaseTokenizer {
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(newLanguageProfile, EXTRAS);
+  }
+}
+```
+
+See `src/tokenizers/thai.ts` for a working example.
 
 ## Important Files
 

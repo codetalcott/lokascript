@@ -1,7 +1,7 @@
 /**
  * All Languages Module
  *
- * Imports and registers all 13 supported languages.
+ * Imports and registers all 22 supported languages.
  * Use this for the full bundle with all language support.
  *
  * @example
@@ -10,50 +10,54 @@
  * // or
  * import '@hyperfixi/semantic/languages';
  * ```
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 // Import all language modules to trigger registration
+import './ar';
+import './bn';
+import './de';
 import './en';
 import './es';
-import './ja';
-import './ar';
-import './ko';
-import './zh';
-import './tr';
-import './pt';
 import './fr';
-import './de';
-import './id';
-import './qu';
-import './sw';
-import './it';
-import './vi';
-import './pl';
-import './ru';
-import './uk';
 import './hi';
-import './bn';
+import './id';
+import './it';
+import './ja';
+import './ko';
+import './ms';
+import './pl';
+import './pt';
+import './qu';
+import './ru';
+import './sw';
 import './th';
+import './tr';
+import './uk';
+import './vi';
+import './zh';
 
 // Re-export everything for convenience
+export * from './ar';
+export * from './bn';
+export * from './de';
 export * from './en';
 export * from './es';
-export * from './ja';
-export * from './ar';
-export * from './ko';
-export * from './zh';
-export * from './tr';
-export * from './pt';
 export * from './fr';
-export * from './de';
-export * from './id';
-export * from './qu';
-export * from './sw';
-export * from './it';
-export * from './vi';
-export * from './pl';
-export * from './ru';
-export * from './uk';
 export * from './hi';
-export * from './bn';
+export * from './id';
+export * from './it';
+export * from './ja';
+export * from './ko';
+export * from './ms';
+export * from './pl';
+export * from './pt';
+export * from './qu';
+export * from './ru';
+export * from './sw';
 export * from './th';
+export * from './tr';
+export * from './uk';
+export * from './vi';
+export * from './zh';

@@ -2,76 +2,86 @@
  * Hide Command Patterns
  *
  * Hand-crafted patterns for "hide" command across languages.
- * Used for visibility: hide #element
+ *
+ * @generated This file is auto-generated. Do not edit manually.
  */
 
 import type { LanguagePattern } from '../../types';
 
+import { getHidePatternsAr } from './ar';
+import { getHidePatternsBn } from './bn';
+import { getHidePatternsDe } from './de';
+import { getHidePatternsHi } from './hi';
+import { getHidePatternsIt } from './it';
 import { getHidePatternsJa } from './ja';
 import { getHidePatternsKo } from './ko';
-import { getHidePatternsAr } from './ar';
-import { getHidePatternsTr } from './tr';
-import { getHidePatternsZh } from './zh';
-import { getHidePatternsDe } from './de';
-import { getHidePatternsIt } from './it';
-import { getHidePatternsVi } from './vi';
+import { getHidePatternsMs } from './ms';
 import { getHidePatternsPl } from './pl';
 import { getHidePatternsRu } from './ru';
-import { getHidePatternsUk } from './uk';
-import { getHidePatternsHi } from './hi';
-import { getHidePatternsBn } from './bn';
 import { getHidePatternsTh } from './th';
+import { getHidePatternsTr } from './tr';
+import { getHidePatternsUk } from './uk';
+import { getHidePatternsVi } from './vi';
+import { getHidePatternsZh } from './zh';
 
 /**
  * Get hide patterns for a specific language.
  */
 export function getHidePatternsForLanguage(language: string): LanguagePattern[] {
   switch (language) {
+    case 'ar':
+      return getHidePatternsAr();
+    case 'bn':
+      return getHidePatternsBn();
+    case 'de':
+      return getHidePatternsDe();
+    case 'hi':
+      return getHidePatternsHi();
+    case 'it':
+      return getHidePatternsIt();
     case 'ja':
       return getHidePatternsJa();
     case 'ko':
       return getHidePatternsKo();
-    case 'ar':
-      return getHidePatternsAr();
-    case 'tr':
-      return getHidePatternsTr();
-    case 'zh':
-      return getHidePatternsZh();
-    case 'de':
-      return getHidePatternsDe();
-    case 'it':
-      return getHidePatternsIt();
-    case 'vi':
-      return getHidePatternsVi();
+    case 'ms':
+      return getHidePatternsMs();
     case 'pl':
       return getHidePatternsPl();
     case 'ru':
       return getHidePatternsRu();
-    case 'uk':
-      return getHidePatternsUk();
-    case 'hi':
-      return getHidePatternsHi();
-    case 'bn':
-      return getHidePatternsBn();
     case 'th':
       return getHidePatternsTh();
+    case 'tr':
+      return getHidePatternsTr();
+    case 'uk':
+      return getHidePatternsUk();
+    case 'vi':
+      return getHidePatternsVi();
+    case 'zh':
+      return getHidePatternsZh();
     default:
       return [];
   }
 }
 
 // Re-export language-specific getters for tree-shaking
+export { getHidePatternsAr } from './ar';
+export { getHidePatternsBn } from './bn';
+export { getHidePatternsDe } from './de';
+export { getHidePatternsHi } from './hi';
+export { getHidePatternsIt } from './it';
 export { getHidePatternsJa } from './ja';
 export { getHidePatternsKo } from './ko';
-export { getHidePatternsAr } from './ar';
-export { getHidePatternsTr } from './tr';
-export { getHidePatternsZh } from './zh';
-export { getHidePatternsDe } from './de';
-export { getHidePatternsIt } from './it';
-export { getHidePatternsVi } from './vi';
+export { getHidePatternsMs } from './ms';
 export { getHidePatternsPl } from './pl';
 export { getHidePatternsRu } from './ru';
-export { getHidePatternsUk } from './uk';
-export { getHidePatternsHi } from './hi';
-export { getHidePatternsBn } from './bn';
 export { getHidePatternsTh } from './th';
+export { getHidePatternsTr } from './tr';
+export { getHidePatternsUk } from './uk';
+export { getHidePatternsVi } from './vi';
+export { getHidePatternsZh } from './zh';
+
+/**
+ * Languages that have hand-crafted hide patterns.
+ */
+export const hidePatternLanguages = ['ar', 'bn', 'de', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'ru', 'th', 'tr', 'uk', 'vi', 'zh'];
