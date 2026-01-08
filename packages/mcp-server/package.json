@@ -11,8 +11,16 @@
     "build": "tsup src/index.ts --format esm --dts",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
+    "dev:watch": "tsx watch src/index.ts",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "service:install": "cp com.hyperfixi.mcp-server.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.hyperfixi.mcp-server.plist",
+    "service:uninstall": "launchctl unload ~/Library/LaunchAgents/com.hyperfixi.mcp-server.plist && rm ~/Library/LaunchAgents/com.hyperfixi.mcp-server.plist",
+    "service:start": "launchctl start com.hyperfixi.mcp-server",
+    "service:stop": "launchctl stop com.hyperfixi.mcp-server",
+    "service:restart": "launchctl stop com.hyperfixi.mcp-server && launchctl start com.hyperfixi.mcp-server",
+    "service:status": "launchctl list | grep hyperfixi || echo 'Not running'",
+    "service:logs": "tail -f logs/stdout.log logs/stderr.log"
   },
   "keywords": [
     "mcp",

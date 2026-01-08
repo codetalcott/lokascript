@@ -2,7 +2,7 @@
   "mcpServers": {
     "hyperfixi": {
       "command": "npx",
-      "args": ["tsx", "packages/mcp-server/src/index.ts"],
+      "args": ["tsx", "watch", "packages/mcp-server/src/index.ts"],
       "env": {}
     }
   }
