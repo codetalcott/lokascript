@@ -1,17 +1,23 @@
 /**
  * Database Connection Management
  *
- * Provides singleton connection to the hyperscript-lsp SQLite database.
+ * Provides singleton connection to the patterns-reference SQLite database.
  */
 
 import Database from 'better-sqlite3';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import type { ConnectionOptions } from '../types';
 
-// Default path relative to package root
+// Resolve __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Default path relative to this file's location (src/database/ -> data/)
 const DEFAULT_DB_PATH =
   process.env.LSP_DB_PATH ||
   process.env.HYPERSCRIPT_LSP_DB ||
-  '../../../hyperscript-lsp/data/hyperscript.db';
+  join(__dirname, '../../data/patterns.db');
 
 let dbInstance: InstanceType<typeof Database> | null = null;
 let currentDbPath: string | null = null;

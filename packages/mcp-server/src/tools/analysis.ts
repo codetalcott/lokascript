@@ -279,38 +279,66 @@ function simpleExplanation(
   audience: string,
   detail: string
 ): { content: Array<{ type: string; text: string }> } {
-  // Generate a simple explanation based on pattern matching
+  // Generate explanation based on pattern matching with matchAll for all occurrences
   const parts: string[] = [];
 
-  // Detect event handler
-  const eventMatch = code.match(/on\s+(\w+)/i);
-  if (eventMatch) {
+  // Detect event handler(s)
+  for (const eventMatch of code.matchAll(/on\s+(\w+)/gi)) {
     parts.push(`This code runs when a ${eventMatch[1]} event occurs.`);
   }
 
-  // Detect commands
-  const toggleMatch = code.match(/toggle\s+([.\w#-]+)/i);
-  if (toggleMatch) {
-    parts.push(`It toggles the ${toggleMatch[1]} class/attribute.`);
+  // Command patterns - use matchAll to find all occurrences
+  const commandPatterns: Array<{ pattern: RegExp; format: (m: RegExpMatchArray) => string }> = [
+    { pattern: /toggle\s+([.\w#@-]+)/gi, format: (m) => `It toggles ${m[1]}.` },
+    { pattern: /add\s+([.\w#@-]+)(?:\s+to\s+([^\s]+))?/gi, format: (m) => m[2] ? `It adds ${m[1]} to ${m[2]}.` : `It adds ${m[1]}.` },
+    { pattern: /remove\s+([.\w#@-]+)(?:\s+from\s+([^\s]+))?/gi, format: (m) => m[2] ? `It removes ${m[1]} from ${m[2]}.` : `It removes ${m[1]}.` },
+    { pattern: /set\s+([^\s]+)\s+to\s+([^\s]+)/gi, format: (m) => `It sets ${m[1]} to ${m[2]}.` },
+    { pattern: /put\s+([^\s]+)\s+into\s+([^\s]+)/gi, format: (m) => `It puts ${m[1]} into ${m[2]}.` },
+    { pattern: /fetch\s+([^\s]+)(?:\s+as\s+(\w+))?/gi, format: (m) => m[2] ? `It fetches from ${m[1]} as ${m[2]}.` : `It fetches from ${m[1]}.` },
+    { pattern: /wait\s+(\d+\s*(?:ms|s|seconds?|milliseconds?))/gi, format: (m) => `It waits ${m[1]}.` },
+    { pattern: /send\s+(\w+)/gi, format: (m) => `It sends a ${m[1]} event.` },
+    { pattern: /call\s+([^\s(]+)/gi, format: (m) => `It calls ${m[1]}.` },
+    { pattern: /show\s+([^\s]+)/gi, format: (m) => `It shows ${m[1]}.` },
+    { pattern: /hide\s+([^\s]+)/gi, format: (m) => `It hides ${m[1]}.` },
+    { pattern: /log\s+([^\s]+)/gi, format: (m) => `It logs ${m[1]}.` },
+    { pattern: /increment\s+([^\s]+)/gi, format: (m) => `It increments ${m[1]}.` },
+    { pattern: /decrement\s+([^\s]+)/gi, format: (m) => `It decrements ${m[1]}.` },
+  ];
+
+  for (const { pattern, format } of commandPatterns) {
+    for (const match of code.matchAll(pattern)) {
+      parts.push(format(match));
+    }
   }
 
-  const addMatch = code.match(/add\s+([.\w#-]+)/i);
-  if (addMatch) {
-    parts.push(`It adds ${addMatch[1]}.`);
+  // Detect control flow
+  if (/\bif\b/i.test(code)) {
+    parts.push('It includes conditional logic.');
   }
-
-  const removeMatch = code.match(/remove\s+([.\w#-]+)/i);
-  if (removeMatch) {
-    parts.push(`It removes ${removeMatch[1]}.`);
-  }
-
-  const fetchMatch = code.match(/fetch\s+([^\s]+)/i);
-  if (fetchMatch) {
-    parts.push(`It fetches data from ${fetchMatch[1]}.`);
+  if (/\brepeat\b|\bfor\s+each\b/i.test(code)) {
+    parts.push('It includes a loop.');
   }
 
   if (parts.length === 0) {
     parts.push('This is hyperscript code that adds interactivity to an element.');
+  }
+
+  // Adjust based on detail level
+  let overview = parts.join(' ');
+  if (detail === 'brief' && parts.length > 3) {
+    overview = parts.slice(0, 3).join(' ') + ' ...and more.';
+  } else if (detail === 'comprehensive') {
+    // Add more context for comprehensive
+    const commandCount = (code.match(/\bthen\b/gi) || []).length + 1;
+    if (commandCount > 1) {
+      overview = `This is a ${commandCount}-step script. ` + overview;
+    }
+  }
+
+  // Adjust language based on audience
+  if (audience === 'beginner') {
+    overview = overview.replace(/toggles/g, 'switches on/off');
+    overview = overview.replace(/fetches/g, 'retrieves data');
   }
 
   return {
@@ -319,7 +347,7 @@ function simpleExplanation(
         type: 'text',
         text: JSON.stringify(
           {
-            overview: parts.join(' '),
+            overview,
             audience,
             detail,
             code,

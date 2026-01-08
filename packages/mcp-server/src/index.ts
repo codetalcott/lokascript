@@ -70,7 +70,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 
   // Validation tools
-  if (name === 'validate_hyperscript' || name === 'suggest_command' || name === 'get_bundle_config') {
+  if (
+    name === 'validate_hyperscript' ||
+    name === 'suggest_command' ||
+    name === 'get_bundle_config' ||
+    name === 'parse_multilingual' ||
+    name === 'translate_to_english' ||
+    name === 'explain_in_language'
+  ) {
     return handleValidationTool(name, args as Record<string, unknown>);
   }
 

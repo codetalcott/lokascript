@@ -25,7 +25,9 @@
   "author": "HyperFixi Team",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.0"
+    "@modelcontextprotocol/sdk": "^1.25.0",
+    "@hyperfixi/semantic": "file:../semantic",
+    "@hyperfixi/patterns-reference": "file:../patterns-reference"
   },
   "peerDependencies": {
     "@hyperfixi/ast-toolkit": "*",

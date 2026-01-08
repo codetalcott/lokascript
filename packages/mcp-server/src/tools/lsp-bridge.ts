@@ -360,6 +360,43 @@ function getValidCommandsForLanguage(language: string): string[] {
   return englishCommands;
 }
 
+/**
+ * Calculate Levenshtein distance between two strings.
+ */
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * Find the closest matching command for a potentially misspelled word.
+ */
+function findClosestCommand(
+  word: string,
+  commands: string[]
+): { command: string; distance: number } | null {
+  let closest: { command: string; distance: number } | null = null;
+  for (const cmd of commands) {
+    const dist = levenshteinDistance(word, cmd);
+    if (dist <= 2 && (!closest || dist < closest.distance)) {
+      closest = { command: cmd, distance: dist };
+    }
+  }
+  return closest;
+}
+
 function runSimpleDiagnostics(code: string, language: string = 'en'): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   const lines = code.split('\n');
@@ -432,6 +469,36 @@ function runSimpleDiagnostics(code: string, language: string = 'en'): Diagnostic
         source: 'hyperfixi-mcp',
         message: 'Commands should be separated by "then"',
       });
+    }
+
+    // Check for potential command typos
+    const words = line.split(/\s+/);
+    for (const word of words) {
+      const lower = word.toLowerCase();
+      // Skip if it's a valid command, selector, string, number, or short word
+      if (
+        validCommands.includes(lower) ||
+        /^[.#@<"'`0-9]/.test(word) ||
+        word.length < 3 ||
+        /^(on|to|from|into|as|with|for|if|then|else|end|in|the|a|an|my|its|me|you|it)$/i.test(word)
+      ) {
+        continue;
+      }
+      // Check if it's close to a valid command (edit distance <= 2)
+      const closestCommand = findClosestCommand(lower, validCommands);
+      if (closestCommand && closestCommand.distance > 0) {
+        const idx = line.indexOf(word);
+        diagnostics.push({
+          range: {
+            start: { line: i, character: idx },
+            end: { line: i, character: idx + word.length },
+          },
+          severity: 2,
+          code: 'possible-typo',
+          source: 'hyperfixi-mcp',
+          message: `Unknown command "${word}". Did you mean "${closestCommand.command}"?`,
+        });
+      }
     }
   }
 
@@ -928,90 +995,90 @@ function extractSymbolsFromCode(code: string, language: string = 'en'): Document
   const defVariants = getKeywordVariants('def', language);
   const initVariants = getKeywordVariants('init', language);
 
-  // Build regex patterns for multilingual keywords
-  const onPattern = new RegExp(`\\b(${onVariants.join('|')})\\s+(\\w+(?:\\[.*?\\])?)`, 'i');
-  const behaviorPattern = new RegExp(`\\b(${behaviorVariants.join('|')})\\s+(\\w+)`, 'i');
-  const defPattern = new RegExp(`\\b(${defVariants.join('|')})\\s+(\\w+)`, 'i');
-  const initPattern = new RegExp(`\\b(${initVariants.join('|')})\\b`, 'i');
+  // Build regex patterns with global flag for multiple matches per line
+  const onPattern = new RegExp(`\\b(${onVariants.join('|')})\\s+(\\w+(?:\\[.*?\\])?)`, 'gi');
+  const behaviorPattern = new RegExp(`\\b(${behaviorVariants.join('|')})\\s+(\\w+)`, 'gi');
+  const defPattern = new RegExp(`\\b(${defVariants.join('|')})\\s+(\\w+)`, 'gi');
+  const initPattern = new RegExp(`\\b(${initVariants.join('|')})\\b`, 'gi');
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Event handlers: on click, on keydown, etc. (multilingual)
-    const eventMatch = line.match(onPattern);
-    if (eventMatch) {
+    // Event handlers: on click, on keydown, etc. (multilingual) - find ALL on same line
+    for (const eventMatch of line.matchAll(onPattern)) {
       const keyword = eventMatch[1];
       const eventName = eventMatch[2];
+      const matchIndex = eventMatch.index ?? 0;
       symbols.push({
         name: `${keyword} ${eventName}`,
         detail: 'Event Handler',
         kind: 24, // Event
         range: {
-          start: { line: i, character: 0 },
-          end: { line: i, character: line.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + eventMatch[0].length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf(keyword) },
-          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + eventName.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + eventMatch[0].length },
         },
       });
     }
 
-    // Behaviors: behavior Name (multilingual)
-    const behaviorMatch = line.match(behaviorPattern);
-    if (behaviorMatch) {
+    // Behaviors: behavior Name (multilingual) - find ALL on same line
+    for (const behaviorMatch of line.matchAll(behaviorPattern)) {
       const keyword = behaviorMatch[1];
       const name = behaviorMatch[2];
+      const matchIndex = behaviorMatch.index ?? 0;
       symbols.push({
         name: `${keyword} ${name}`,
         detail: 'Behavior Definition',
         kind: 5, // Class
         range: {
-          start: { line: i, character: 0 },
-          end: { line: i, character: line.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + behaviorMatch[0].length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf(keyword) },
-          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + name.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + behaviorMatch[0].length },
         },
       });
     }
 
-    // Functions: def name() (multilingual)
-    const defMatch = line.match(defPattern);
-    if (defMatch) {
+    // Functions: def name() (multilingual) - find ALL on same line
+    for (const defMatch of line.matchAll(defPattern)) {
       const keyword = defMatch[1];
       const name = defMatch[2];
+      const matchIndex = defMatch.index ?? 0;
       symbols.push({
         name: `${keyword} ${name}`,
         detail: 'Function Definition',
         kind: 12, // Function
         range: {
-          start: { line: i, character: 0 },
-          end: { line: i, character: line.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + defMatch[0].length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf(keyword) },
-          end: { line: i, character: line.indexOf(keyword) + keyword.length + 1 + name.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + defMatch[0].length },
         },
       });
     }
 
-    // Init blocks (multilingual)
-    const initMatch = line.match(initPattern);
-    if (initMatch) {
+    // Init blocks (multilingual) - find ALL on same line
+    for (const initMatch of line.matchAll(initPattern)) {
       const keyword = initMatch[1];
+      const matchIndex = initMatch.index ?? 0;
       symbols.push({
         name: keyword,
         detail: 'Initialization',
         kind: 9, // Constructor
         range: {
-          start: { line: i, character: 0 },
-          end: { line: i, character: line.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + keyword.length },
         },
         selectionRange: {
-          start: { line: i, character: line.indexOf(keyword) },
-          end: { line: i, character: line.indexOf(keyword) + keyword.length },
+          start: { line: i, character: matchIndex },
+          end: { line: i, character: matchIndex + keyword.length },
         },
       });
     }

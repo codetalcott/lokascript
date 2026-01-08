@@ -485,7 +485,8 @@ function validateHyperscript(
   }
 
   // Check for valid event handlers (multilingual)
-  const eventPattern = new RegExp(`(${eventKeywords.join('|')})\\s+(\\w+)`, 'gi');
+  // Only match at start of code, after newline, or after command separators (then, ;)
+  const eventPattern = new RegExp(`(?:^|\\n|;|\\bthen\\b)\\s*(${eventKeywords.join('|')})\\s+(\\w+)`, 'gim');
   const eventMatches = code.matchAll(eventPattern);
   const validEvents = [
     'click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout',
@@ -499,9 +500,15 @@ function validateHyperscript(
     'intersection', 'mutation',
     'every', // timer
   ];
+  // Target keywords that should not be confused with event types
+  const targetKeywords = ['me', 'you', 'it', 'my', 'its', 'the', 'this', 'that', 'body', 'window', 'document'];
   for (const match of eventMatches) {
     const event = match[2].toLowerCase();
-    if (!validEvents.includes(event) && !event.includes('.')) {
+    if (
+      !validEvents.includes(event) &&
+      !event.includes('.') &&
+      !targetKeywords.includes(event)
+    ) {
       warnings.push({
         message: `Unknown event type: ${event}`,
         suggestion: `Did you mean one of: ${validEvents.slice(0, 5).join(', ')}...?`,
