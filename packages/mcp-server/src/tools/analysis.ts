@@ -88,30 +88,42 @@ export async function handleAnalysisTool(
   name: string,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
+  // Phase 7: Validate required parameters first
+  const code = args.code as string;
+  if (!code || typeof code !== 'string') {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: 'Missing required parameter: code',
+              received: args,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  // Phase 7: Try to import ast-toolkit, but don't fail if unavailable
+  let astToolkit: any = null;
   try {
-    // Try to import ast-toolkit
-    let astToolkit: any;
-    try {
-      astToolkit = await import('@hyperfixi/ast-toolkit');
-    } catch {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              error: '@hyperfixi/ast-toolkit not available',
-              suggestion: 'Install with: npm install @hyperfixi/ast-toolkit',
-            }),
-          },
-        ],
-        isError: true,
-      };
-    }
+    astToolkit = await import('@hyperfixi/ast-toolkit');
+  } catch {
+    // ast-toolkit not available - will use fallback functions
+  }
 
-    const code = args.code as string;
-
+  try {
     switch (name) {
       case 'analyze_complexity': {
+        // Use fallback if ast-toolkit unavailable
+        if (!astToolkit) {
+          return simpleAnalysis(code, 'complexity');
+        }
         // Parse code to AST first
         const ast = await parseHyperscript(code);
         if (!ast) {
@@ -138,6 +150,10 @@ export async function handleAnalysisTool(
       }
 
       case 'analyze_metrics': {
+        // Use fallback if ast-toolkit unavailable
+        if (!astToolkit) {
+          return simpleAnalysis(code, 'metrics');
+        }
         const ast = await parseHyperscript(code);
         if (!ast) {
           return simpleAnalysis(code, 'metrics');
@@ -165,6 +181,10 @@ export async function handleAnalysisTool(
       case 'explain_code': {
         const audience = (args.audience as string) || 'intermediate';
         const detail = (args.detail as string) || 'detailed';
+        // Use fallback if ast-toolkit unavailable
+        if (!astToolkit) {
+          return simpleExplanation(code, audience, detail);
+        }
         const ast = await parseHyperscript(code);
         if (!ast) {
           return simpleExplanation(code, audience, detail);
@@ -176,6 +196,10 @@ export async function handleAnalysisTool(
       }
 
       case 'recognize_intent': {
+        // Phase 7: Use fallback if ast-toolkit unavailable
+        if (!astToolkit) {
+          return simpleIntentRecognition(code);
+        }
         const intent = astToolkit.recognizeIntent(code);
         return {
           content: [{ type: 'text', text: JSON.stringify(intent, null, 2) }],
@@ -193,7 +217,15 @@ export async function handleAnalysisTool(
       content: [
         {
           type: 'text',
-          text: `Error in ${name}: ${error instanceof Error ? error.message : String(error)}`,
+          text: JSON.stringify(
+            {
+              error: `Error in ${name}`,
+              message: error instanceof Error ? error.message : String(error),
+              code,
+            },
+            null,
+            2
+          ),
         },
       ],
       isError: true,
@@ -291,6 +323,84 @@ function simpleExplanation(
             audience,
             detail,
             code,
+          },
+          null,
+          2
+        ),
+      },
+    ],
+  };
+}
+
+/**
+ * Phase 7: Simple pattern-based intent recognition as fallback.
+ * Detects common hyperscript patterns without full AST analysis.
+ */
+function simpleIntentRecognition(
+  code: string
+): { content: Array<{ type: string; text: string }> } {
+  const intents: string[] = [];
+  const confidence: Record<string, number> = {};
+
+  // Event handling
+  if (/on\s+(click|submit|change|input|keydown|keyup|keypress|load|scroll|mouseenter|mouseleave|focus|blur)/i.test(code)) {
+    intents.push('event-handling');
+    confidence['event-handling'] = 0.9;
+  }
+
+  // DOM manipulation
+  if (/\b(toggle|add|remove|show|hide)\b/i.test(code)) {
+    intents.push('dom-manipulation');
+    confidence['dom-manipulation'] = 0.85;
+  }
+
+  // Data fetching
+  if (/\b(fetch|get|post)\b/i.test(code)) {
+    intents.push('data-fetching');
+    confidence['data-fetching'] = 0.85;
+  }
+
+  // Form handling
+  if (/\b(submit|validate|form|input)\b/i.test(code)) {
+    intents.push('form-handling');
+    confidence['form-handling'] = 0.7;
+  }
+
+  // Animation
+  if (/\b(transition|animate|settle|wait)\b/i.test(code)) {
+    intents.push('animation');
+    confidence['animation'] = 0.75;
+  }
+
+  // State management
+  if (/\b(set|put|increment|decrement)\b/i.test(code)) {
+    intents.push('state-management');
+    confidence['state-management'] = 0.8;
+  }
+
+  // Navigation
+  if (/\b(go\s+to|navigate|redirect)\b/i.test(code)) {
+    intents.push('navigation');
+    confidence['navigation'] = 0.8;
+  }
+
+  // Default if no patterns matched
+  if (intents.length === 0) {
+    intents.push('general-interactivity');
+    confidence['general-interactivity'] = 0.5;
+  }
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(
+          {
+            primaryIntent: intents[0],
+            allIntents: intents,
+            confidence,
+            code,
+            note: 'Pattern-based analysis (full intent recognition requires @hyperfixi/ast-toolkit)',
           },
           null,
           2

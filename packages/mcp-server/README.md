@@ -207,15 +207,44 @@ The MCP server supports hyperscript in 21+ languages:
 | Turkish | `tr` | `.active değiştir` |
 | And more... | | |
 
-## Optional Dependencies
+## Tool Dependencies & Fallback Behavior
 
-For full functionality, install these peer dependencies:
+Each tool has different package requirements. All tools work without optional packages by using built-in fallbacks:
+
+| Tool | Required Package | Fallback Behavior |
+|------|-----------------|-------------------|
+| `validate_hyperscript` | - | Full functionality (built-in) |
+| `suggest_command` | - | Full functionality (built-in) |
+| `get_bundle_config` | - | Full functionality (built-in) |
+| `parse_multilingual` | `@hyperfixi/semantic` | Returns error (no fallback) |
+| `translate_to_english` | `@hyperfixi/semantic` | Returns error (no fallback) |
+| `explain_in_language` | `@hyperfixi/semantic` | Returns error (no fallback) |
+| `analyze_complexity` | `@hyperfixi/ast-toolkit` | Simple regex-based metrics |
+| `analyze_metrics` | `@hyperfixi/ast-toolkit` | Simple regex-based metrics |
+| `explain_code` | `@hyperfixi/ast-toolkit` | Pattern-based explanation |
+| `recognize_intent` | `@hyperfixi/ast-toolkit` | Pattern-based intent detection |
+| `get_examples` | `@hyperfixi/patterns-reference` | Built-in example patterns |
+| `search_patterns` | `@hyperfixi/patterns-reference` | Built-in pattern search |
+| `translate_hyperscript` | `@hyperfixi/semantic` | Returns error (no fallback) |
+| `get_pattern_stats` | `@hyperfixi/patterns-reference` | Basic statistics |
+| `get_diagnostics` | `@hyperfixi/semantic` (optional) | Regex-based diagnostics |
+| `get_completions` | `@hyperfixi/semantic` (optional) | English-only completions |
+| `get_hover_info` | - | Built-in documentation |
+| `get_document_symbols` | - | Regex-based extraction |
+
+### Installation Options
+
+**Minimal (validation only):**
 
 ```bash
-npm install @hyperfixi/ast-toolkit @hyperfixi/patterns-reference @hyperfixi/semantic
+npm install @hyperfixi/mcp-server
 ```
 
-Without these, the server uses built-in fallbacks with reduced functionality.
+**Recommended (full features):**
+
+```bash
+npm install @hyperfixi/mcp-server @hyperfixi/semantic @hyperfixi/ast-toolkit @hyperfixi/patterns-reference
+```
 
 ## Development
 
