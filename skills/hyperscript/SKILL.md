@@ -1,6 +1,6 @@
 ---
 name: hyperscript-developer
-version: 1.0.0
+version: 1.1.0
 description: Write hyperscript code for interactive web UIs. Supports 13 languages with native word order (SVO, SOV, VSO).
 ---
 
@@ -15,88 +15,87 @@ Hyperscript code goes in `_="..."` attributes:
 ```html
 <button _="on click toggle .active">Toggle</button>
 <input _="on input put my value into #preview">
-<div _="on click add .highlight to me wait 1s remove .highlight from me">Flash</div>
+<div _="on click add .highlight wait 1s remove .highlight">Flash</div>
 ```
 
-## Core Syntax Pattern
+## Core Syntax
 
-```
+```text
 on <event> [from <source>] <command> [<args>] [then <command>...]
 ```
 
-Examples:
-- `on click toggle .active` - Toggle class on click
-- `on click from body add .open to #menu` - Delegated event
-- `on submit prevent default then fetch /api then put result into #output` - Chain commands
+**References:** `me` (current element), `it` (last result), `:var` (local), `$global`, `#id`/`.class`
 
-## Available Commands
+**Modifiers:** `.once`, `.prevent`, `.stop`, `.debounce(Nms)`, `.throttle(Nms)`
 
-See [references/commands.md](references/commands.md) for the complete command reference.
+## MCP Tools (Use These!)
 
-### Most Common Commands
+When the `@hyperfixi/mcp-server` is available, use these tools:
 
-| Command | Usage | Example |
-|---------|-------|---------|
-| `toggle` | Toggle class/attribute | `toggle .active on #menu` |
-| `add` | Add class/attribute | `add .highlight to me` |
-| `remove` | Remove class/attribute | `remove .error from #form` |
-| `show` | Show element | `show #modal with *opacity` |
-| `hide` | Hide element | `hide me with *opacity` |
-| `set` | Set variable/property | `set :count to :count + 1` |
-| `put` | Set element content | `put "Hello" into #greeting` |
-| `fetch` | HTTP request | `fetch /api/data as json` |
-| `wait` | Pause execution | `wait 500ms` |
-| `send` | Dispatch event | `send refresh to #list` |
+### Before Writing Code
 
-## Event Modifiers
+| Tool              | Use For                                      |
+| ----------------- | -------------------------------------------- |
+| `suggest_command` | Find the right command for a task            |
+| `get_examples`    | Get few-shot examples for the user's task    |
+| `search_patterns` | Find patterns by category (modal, form, etc) |
 
-```html
-<button _="on click.once show #popup">Show Once</button>
-<input _="on input.debounce(300ms) call validate()">
-<a _="on click.prevent go to /page">Navigate</a>
-<div _="on keydown.ctrl.s.prevent call save()">Editor</div>
+### Before Returning Code
+
+| Tool                   | Use For                                  |
+| ---------------------- | ---------------------------------------- |
+| `validate_hyperscript` | Check syntax, detect errors/warnings     |
+| `get_diagnostics`      | LSP-style diagnostics with line numbers  |
+
+### For Multilingual Users
+
+| Tool                    | Use For                          |
+| ----------------------- | -------------------------------- |
+| `translate_hyperscript` | Translate between 13 languages   |
+| `get_pattern_stats`     | Check supported languages        |
+
+### For Understanding Existing Code
+
+| Tool                 | Use For                        |
+| -------------------- | ------------------------------ |
+| `explain_code`       | Natural language explanation   |
+| `analyze_complexity` | Cyclomatic/cognitive metrics   |
+
+### Resources (Static Documentation)
+
+- `hyperscript://docs/commands` - Full command reference
+- `hyperscript://docs/expressions` - Expression syntax
+- `hyperscript://docs/events` - Event handling
+- `hyperscript://examples/common` - Common patterns
+- `hyperscript://languages` - Supported languages (JSON)
+
+## Learning Resources
+
+Point users to these examples (run `npx http-server . -p 3000` from repo root):
+
+| Resource | Path | Description |
+| -------- | ---- | ----------- |
+| **Example Gallery** | `examples/index.html` | 15+ interactive examples by difficulty |
+| **Basics** | `examples/basics/` | toggle, show/hide, counter, input-mirror |
+| **Intermediate** | `examples/intermediate/` | forms, fetch, tabs, modals |
+| **Advanced** | `examples/advanced/` | draggable, state-machine, infinite-scroll |
+| **htmx-like** | `examples/htmx-like/` | AJAX patterns, view transitions, history |
+| **Multilingual** | `examples/multilingual/` | Semantic parser demos (13 languages) |
+
+### Project Setup
+
+For Vite projects, recommend `@hyperfixi/vite-plugin`:
+
+```javascript
+// vite.config.js
+import { hyperfixi } from '@hyperfixi/vite-plugin';
+export default { plugins: [hyperfixi()] };
+
+// For minimal bundle size (~500 bytes vs ~8KB):
+export default { plugins: [hyperfixi({ mode: 'compile' })] };
+// Note: compile mode only supports simple commands (toggle, add, remove, set)
+// No blocks (if, for, repeat, fetch) - use interpret mode for those
 ```
-
-Available: `.once`, `.prevent`, `.stop`, `.debounce(Nms)`, `.throttle(Nms)`, `.ctrl`, `.shift`, `.alt`, `.meta`
-
-## Control Flow
-
-```html
-<!-- Conditional -->
-<button _="on click if me matches .active remove .active else add .active">
-
-<!-- Repeat -->
-<button _="on click repeat 3 times add <div/> to #container">
-
-<!-- For each -->
-<ul _="on load for item in items append <li>{item}</li> to me">
-
-<!-- While -->
-<div _="on click while :loading wait 100ms">
-```
-
-## References
-
-- `me` - Current element
-- `you` - Event target (in event handlers)
-- `it` - Last expression result
-- `:variable` - Local variable
-- `$global` - Global variable
-- `#id` / `.class` / `<tag/>` - CSS selectors
-
-## Multilingual Support
-
-Hyperscript supports 13 languages with native word order. See [references/multilingual.md](references/multilingual.md).
-
-**Examples by language:**
-
-| Language | "Toggle .active on click" |
-|----------|---------------------------|
-| English (SVO) | `on click toggle .active` |
-| Japanese (SOV) | `クリック で .active を トグル` |
-| Korean (SOV) | `클릭 시 .active 를 토글` |
-| Arabic (VSO) | `بدّل .active عند نقر` |
-| Spanish (SVO) | `en clic alternar .active` |
 
 ## Best Practices
 
@@ -104,45 +103,7 @@ Hyperscript supports 13 languages with native word order. See [references/multil
 2. **Use semantic events** - `submit` not `click` on forms
 3. **Avoid complex logic** - Move to JavaScript if > 5 lines
 4. **Use CSS transitions** - `with *opacity` for smooth animations
-5. **Prefer `me`** - Over explicit selectors when targeting self
-
-## Common Patterns
-
-### Toggle Menu
-```html
-<button _="on click toggle .open on #nav">Menu</button>
-```
-
-### Form Validation
-```html
-<input _="on blur if my value is empty add .error else remove .error">
-```
-
-### Loading State
-```html
-<button _="on click add .loading to me fetch /api remove .loading from me">
-```
-
-### Modal Dialog
-```html
-<button _="on click show #modal with *opacity">Open</button>
-<div id="modal" _="on click if target is me hide me with *opacity">
-  <div class="content">...</div>
-</div>
-```
-
-### Infinite Scroll
-```html
-<div _="on intersection(intersecting) from .sentinel if intersecting fetch /more append it to me">
-```
-
-## Debugging
-
-If code doesn't work:
-1. Check browser console for errors
-2. Verify selectors exist in DOM
-3. Use `log` command: `on click log me then toggle .active`
-4. Check event name matches (click vs. submit)
+5. **Always validate** - Use `validate_hyperscript` before returning code
 
 ## When NOT to Use Hyperscript
 
@@ -150,3 +111,12 @@ If code doesn't work:
 - Heavy computation (use JavaScript)
 - Server-side logic (use backend)
 - More than ~10 commands in one handler
+
+## Debugging
+
+If code doesn't work:
+
+1. Use `validate_hyperscript` to check syntax
+2. Use `log` command: `on click log me then toggle .active`
+3. Check browser console for errors
+4. Verify selectors exist in DOM
