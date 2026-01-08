@@ -44,6 +44,17 @@ export type {
   // LLM types
   LLMExample,
 
+  // Language documentation types
+  Command,
+  Expression,
+  ExpressionOperator,
+  Keyword,
+  Feature,
+  SpecialSymbol,
+  LanguageElement,
+  LanguageElementType,
+  LanguageDocsStats,
+
   // API types
   PatternsReference,
   SearchOptions,
@@ -110,6 +121,31 @@ export {
   updateQualityScore,
   getLLMStats,
 } from './api/llm';
+
+// Language Documentation
+export {
+  // Commands
+  getCommandByName,
+  getAllCommands,
+  searchCommands,
+  // Expressions
+  getExpressionByName,
+  getAllExpressions,
+  getExpressionsByCategory,
+  // Keywords
+  getKeywordByName,
+  getAllKeywords,
+  // Features
+  getFeatureByName,
+  getAllFeatures,
+  // Special Symbols
+  getSpecialSymbolByName,
+  getAllSpecialSymbols,
+  // Unified search
+  searchLanguageElements,
+  // Statistics
+  getLanguageDocsStats,
+} from './api/language-docs';
 
 // =============================================================================
 // Sync (placeholders - run via CLI scripts)

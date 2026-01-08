@@ -3,7 +3,9 @@
     "hyperfixi": {
       "command": "npx",
       "args": ["tsx", "watch", "packages/mcp-server/src/index.ts"],
-      "env": {}
+      "env": {
+        "LSP_DB_PATH": "/Users/williamtalcott/projects/hyperfixi/packages/patterns-reference/data/patterns.db"
+      }
     }
   }
 }

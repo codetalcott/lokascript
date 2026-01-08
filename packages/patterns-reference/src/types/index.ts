@@ -264,6 +264,122 @@ export interface DiscoveryResult {
 }
 
 // =============================================================================
+// Language Documentation Types (from hyperscript-lsp)
+// =============================================================================
+
+/**
+ * A hyperscript command definition.
+ */
+export interface Command {
+  id: string;
+  name: string;
+  description: string | null;
+  syntax: string | null;
+  purpose: string | null;
+  implicitTarget: string | null;
+  implicitResultTarget: string | null;
+  isBlocking: boolean;
+  hasBody: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * A hyperscript expression definition.
+ */
+export interface Expression {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  evaluatesToType: string | null;
+  precedence: number | null;
+  associativity: string | null;
+  operators: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * An operator for an expression.
+ */
+export interface ExpressionOperator {
+  id: string;
+  expressionId: string;
+  operator: string;
+}
+
+/**
+ * A hyperscript keyword definition.
+ */
+export interface Keyword {
+  id: string;
+  name: string;
+  description: string | null;
+  contextOfUse: string | null;
+  isOptional: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * A hyperscript feature (top-level construct like on, init, behavior).
+ */
+export interface Feature {
+  id: string;
+  name: string;
+  description: string | null;
+  syntax: string | null;
+  trigger: string | null;
+  structureDescription: string | null;
+  scopeImpact: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * A special symbol (me, it, my, you, your).
+ */
+export interface SpecialSymbol {
+  id: string;
+  name: string;
+  symbol: string;
+  symbolType: string;
+  description: string | null;
+  typicalValue: string | null;
+  scopeImplications: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Element type for searching across language elements.
+ */
+export type LanguageElementType = 'command' | 'expression' | 'keyword' | 'feature' | 'special_symbol';
+
+/**
+ * A language element (union of all documentation types).
+ */
+export type LanguageElement =
+  | { type: 'command'; element: Command }
+  | { type: 'expression'; element: Expression }
+  | { type: 'keyword'; element: Keyword }
+  | { type: 'feature'; element: Feature }
+  | { type: 'special_symbol'; element: SpecialSymbol };
+
+/**
+ * Statistics for language documentation.
+ */
+export interface LanguageDocsStats {
+  commands: number;
+  expressions: number;
+  keywords: number;
+  features: number;
+  specialSymbols: number;
+  expressionOperators: number;
+}
+
+// =============================================================================
 // Connection Types
 // =============================================================================
 

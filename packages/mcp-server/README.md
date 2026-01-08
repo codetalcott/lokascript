@@ -1,6 +1,6 @@
 # @hyperfixi/mcp-server
 
-MCP (Model Context Protocol) server for hyperscript development assistance. Provides 18 tools and 5 resources for code analysis, pattern lookup, validation, semantic parsing, and LSP-compatible features with full multilingual support.
+MCP (Model Context Protocol) server for hyperscript development assistance. Provides 22 tools and 5 resources for code analysis, pattern lookup, validation, semantic parsing, language documentation, and LSP-compatible features with full multilingual support.
 
 ## Installation
 
@@ -45,7 +45,7 @@ Or if installed globally:
 }
 ```
 
-## Available Tools (18)
+## Available Tools (22)
 
 ### Validation Tools
 
@@ -84,6 +84,15 @@ Or if installed globally:
 | `get_completions` | Context-aware code completions |
 | `get_hover_info` | Hover documentation |
 | `get_document_symbols` | Document outline symbols |
+
+### Language Documentation Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_command_docs` | Get documentation for a specific hyperscript command |
+| `get_expression_docs` | Get documentation for expression types |
+| `search_language_elements` | Search across all language elements (commands, expressions, keywords) |
+| `suggest_best_practices` | Analyze code and suggest improvements |
 
 ## Available Resources (5)
 
@@ -231,6 +240,10 @@ Each tool has different package requirements. All tools work without optional pa
 | `get_completions` | `@hyperfixi/semantic` (optional) | English-only completions |
 | `get_hover_info` | - | Built-in documentation |
 | `get_document_symbols` | - | Regex-based extraction |
+| `get_command_docs` | `@hyperfixi/patterns-reference` | Built-in command docs |
+| `get_expression_docs` | `@hyperfixi/patterns-reference` | Returns error (needs migration) |
+| `search_language_elements` | `@hyperfixi/patterns-reference` | Built-in search |
+| `suggest_best_practices` | - | Full functionality (built-in rules) |
 
 ### Installation Options
 

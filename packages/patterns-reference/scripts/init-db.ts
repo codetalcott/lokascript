@@ -94,7 +94,86 @@ CREATE TABLE IF NOT EXISTS pattern_tests (
   test_date TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+-- =============================================================================
+-- Language Documentation Tables (migrated from hyperscript-lsp)
+-- =============================================================================
+
+-- Commands documentation
+CREATE TABLE IF NOT EXISTS commands (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  syntax TEXT,
+  purpose TEXT,
+  implicit_target TEXT,
+  implicit_result_target TEXT,
+  is_blocking INTEGER DEFAULT 0,
+  has_body INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Expressions documentation
+CREATE TABLE IF NOT EXISTS expressions (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT NOT NULL,
+  evaluates_to_type TEXT,
+  precedence INTEGER,
+  associativity TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Expression operators
+CREATE TABLE IF NOT EXISTS expression_operators (
+  id TEXT PRIMARY KEY,
+  expression_id TEXT NOT NULL REFERENCES expressions(id),
+  operator TEXT NOT NULL
+);
+
+-- Keywords documentation
+CREATE TABLE IF NOT EXISTS keywords (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  context_of_use TEXT,
+  is_optional INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Features (top-level constructs like on, init, behavior)
+CREATE TABLE IF NOT EXISTS features (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  syntax TEXT,
+  trigger TEXT,
+  structure_description TEXT,
+  scope_impact TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Special symbols (me, it, my, you, your)
+CREATE TABLE IF NOT EXISTS special_symbols (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  symbol TEXT NOT NULL,
+  symbol_type TEXT NOT NULL,
+  description TEXT,
+  typical_value TEXT,
+  scope_implications TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================================================
 -- Indexes for performance
+-- =============================================================================
+
 CREATE INDEX IF NOT EXISTS idx_translations_language ON pattern_translations(language);
 CREATE INDEX IF NOT EXISTS idx_translations_example ON pattern_translations(code_example_id);
 CREATE INDEX IF NOT EXISTS idx_llm_language ON llm_examples(language);
@@ -102,6 +181,15 @@ CREATE INDEX IF NOT EXISTS idx_examples_feature ON code_examples(feature);
 CREATE INDEX IF NOT EXISTS idx_pattern_roles_role ON pattern_roles(role);
 CREATE INDEX IF NOT EXISTS idx_pattern_roles_example ON pattern_roles(code_example_id);
 CREATE INDEX IF NOT EXISTS idx_pattern_tests_example_lang ON pattern_tests(code_example_id, language);
+
+-- Language docs indexes
+CREATE INDEX IF NOT EXISTS idx_commands_name ON commands(name);
+CREATE INDEX IF NOT EXISTS idx_expressions_name ON expressions(name);
+CREATE INDEX IF NOT EXISTS idx_expressions_category ON expressions(category);
+CREATE INDEX IF NOT EXISTS idx_keywords_name ON keywords(name);
+CREATE INDEX IF NOT EXISTS idx_features_name ON features(name);
+CREATE INDEX IF NOT EXISTS idx_special_symbols_name ON special_symbols(name);
+CREATE INDEX IF NOT EXISTS idx_expression_operators_expr ON expression_operators(expression_id);
 `;
 
 // =============================================================================
