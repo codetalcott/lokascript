@@ -49,6 +49,25 @@ describe('validate_hyperscript', () => {
     expect(parsed.errors.some((e: any) => e.message.includes('single quotes'))).toBe(true);
   });
 
+  it('does not flag possessive apostrophes as unbalanced quotes', async () => {
+    const result = await handleValidationTool('validate_hyperscript', {
+      code: "on click set my parentElement's src to '/img/test.jpg'",
+    });
+
+    const parsed = JSON.parse(result.content[0].text);
+    // Should not have unbalanced quote errors - possessive 's is not a string delimiter
+    expect(parsed.errors.some((e: any) => e.message.includes('single quotes'))).toBe(false);
+  });
+
+  it('handles multiple possessives correctly', async () => {
+    const result = await handleValidationTool('validate_hyperscript', {
+      code: "take .active from my parentElement's children",
+    });
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.errors.some((e: any) => e.message.includes('single quotes'))).toBe(false);
+  });
+
   it('detects unbalanced double quotes', async () => {
     const result = await handleValidationTool('validate_hyperscript', {
       code: 'on click put "hello into #output',

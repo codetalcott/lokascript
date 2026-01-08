@@ -278,6 +278,7 @@ export async function handlePatternTool(
 // =============================================================================
 
 const BUILTIN_EXAMPLES = [
+  // Basic class manipulation
   {
     task: 'toggle a class on click',
     code: 'on click toggle .active',
@@ -294,6 +295,12 @@ const BUILTIN_EXAMPLES = [
     category: 'class-manipulation',
   },
   {
+    task: 'take active class from siblings',
+    code: "take .active from my parentElement's children",
+    category: 'class-manipulation',
+  },
+  // Visibility
+  {
     task: 'show a modal',
     code: 'on click show #modal with *opacity',
     category: 'visibility',
@@ -303,15 +310,11 @@ const BUILTIN_EXAMPLES = [
     code: 'on click hide me with *opacity',
     category: 'visibility',
   },
+  // Async operations
   {
     task: 'fetch data from API',
     code: 'on click fetch /api/data as json put it.name into #result',
     category: 'async',
-  },
-  {
-    task: 'form validation on blur',
-    code: 'on blur if my value is empty add .error else remove .error',
-    category: 'validation',
   },
   {
     task: 'loading state for button',
@@ -319,24 +322,83 @@ const BUILTIN_EXAMPLES = [
     category: 'async',
   },
   {
+    task: 'submit form with fetch',
+    code: 'on submit prevent default fetch /api { method: "POST", body: me as FormData }',
+    category: 'async',
+  },
+  // Validation
+  {
+    task: 'form validation on blur',
+    code: 'on blur if my value is empty add .error else remove .error',
+    category: 'validation',
+  },
+  // Loops
+  {
     task: 'countdown timer',
     code: 'on click repeat 10 times decrement #counter.textContent wait 1s',
     category: 'loops',
   },
+  {
+    task: 'iterate over elements',
+    code: 'on load for link in <a/> in me add .nav-link to link end',
+    category: 'loops',
+  },
+  // Events
   {
     task: 'toggle menu on click',
     code: 'on click toggle .open on #nav',
     category: 'class-manipulation',
   },
   {
-    task: 'submit form with fetch',
-    code: 'on submit prevent default fetch /api { method: "POST", body: me as FormData }',
-    category: 'async',
-  },
-  {
     task: 'debounced input handler',
     code: 'on input.debounce(300ms) put my value into #preview',
     category: 'events',
+  },
+  {
+    task: 'scroll event from window',
+    code: "on scroll from window if window.scrollY > 100 add .scrolled to <body/> else remove .scrolled from <body/> end",
+    category: 'events',
+  },
+  {
+    task: 'multiple events with or',
+    code: 'on load or mutation from <#tableBody/> set :count to the length of <tr/> in me',
+    category: 'events',
+  },
+  // Tell blocks
+  {
+    task: 'tell block for multiple commands',
+    code: 'tell #snackbar remove .hidden then add .visible then wait 3s then remove .visible then add .hidden end',
+    category: 'tell',
+  },
+  // Transition/Animation
+  {
+    task: 'animate style property',
+    code: "on scroll from window transition my *top to '-60px' over 300ms",
+    category: 'animation',
+  },
+  // Object creation
+  {
+    task: 'create date object',
+    code: 'make a Date then set my value to it.toISOString()',
+    category: 'objects',
+  },
+  // Content manipulation
+  {
+    task: 'append content to element',
+    code: 'append it to #results',
+    category: 'content',
+  },
+  // Conditional with otherwise
+  {
+    task: 'conditional with otherwise',
+    code: 'if I.checked tell #panel show end otherwise tell #panel hide end',
+    category: 'control-flow',
+  },
+  // Dynamic class with braces
+  {
+    task: 'dynamic class with special characters',
+    code: "on click add .{'hover:scale-105'} to me",
+    category: 'class-manipulation',
   },
 ];
 

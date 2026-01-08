@@ -107,6 +107,28 @@ describe('Template Literals', () => {
     });
   });
 
+  describe('Parenthesis Interpolation Syntax', () => {
+    it('should handle $(expr) as alias for ${expr}', async () => {
+      const result = await parseAndEvaluateExpression('`total: $(count + 10)`', context);
+      expect(result).toBe('total: 15');
+    });
+
+    it('should handle $(variable) syntax', async () => {
+      const result = await parseAndEvaluateExpression('`hello $(name)`', context);
+      expect(result).toBe('hello world');
+    });
+
+    it('should handle mixed $() and ${} in same template', async () => {
+      const result = await parseAndEvaluateExpression('`$(name) has ${count} items`', context);
+      expect(result).toBe('world has 5 items');
+    });
+
+    it('should handle property access in $()', async () => {
+      const result = await parseAndEvaluateExpression('`User: $(user.name)`', context);
+      expect(result).toBe('User: Alice');
+    });
+  });
+
   describe('Nested Template Literals', () => {
     it.skip('should handle escaped backticks', async () => {
       const result = await parseAndEvaluateExpression('`code: \\`hello\\``', context);

@@ -439,7 +439,6 @@ function validateHyperscript(
   }
 
   // Basic syntax checks
-  const lines = code.split('\n');
 
   // Check for common issues
   if (code.includes('onclick') || code.includes('onClick')) {
@@ -450,7 +449,12 @@ function validateHyperscript(
   }
 
   // Check for unbalanced quotes
-  const singleQuotes = (code.match(/'/g) || []).length;
+  // Exclude possessive apostrophes (word's) from single quote count
+  // Pattern: count quotes that are NOT part of possessive pattern (letter + 's + space/end/punctuation)
+  const possessivePattern = /\w's(?=\s|$|[.,;:!?)}\]])/g;
+  const possessiveCount = (code.match(possessivePattern) || []).length;
+  const allSingleQuotes = (code.match(/'/g) || []).length;
+  const singleQuotes = allSingleQuotes - possessiveCount;
   const doubleQuotes = (code.match(/"/g) || []).length;
   if (singleQuotes % 2 !== 0) {
     errors.push({ message: 'Unbalanced single quotes' });

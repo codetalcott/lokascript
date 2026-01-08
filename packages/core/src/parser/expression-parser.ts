@@ -2414,11 +2414,13 @@ async function evaluateTemplateLiteral(node: any, context: ExecutionContext): Pr
     }
   );
 
-  // Then handle ${expression} patterns
+  // Then handle ${expression} and $(expression) patterns
+  // Both syntaxes are supported: ${expr} (JavaScript-style) and $(expr) (Make/shell-style)
   template = await replaceAsyncBatch(
     template,
-    /\$\{([^}]+)\}/g,
-    async (_match: string, expr: string) => {
+    /\$(?:\{([^}]+)\}|\(([^)]+)\))/g,
+    async (_match: string, braceExpr: string, parenExpr: string) => {
+      const expr = braceExpr || parenExpr;
       try {
         // Recursively parse and evaluate the interpolated expression
         const result = await parseAndEvaluateExpression(expr, context);
