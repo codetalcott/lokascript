@@ -63,7 +63,7 @@ This directory contains the development roadmap and planning documents for Hyper
 
 1. ~~Complete htmx lifecycle events implementation~~ ✅
 2. Publish packages to npm registry
-3. Create documentation website
+3. Create documentation website - see **[docs-site-bundle-distribution-plan.md](./docs-site-bundle-distribution-plan.md)**
 
 ### Q4 2025 Goals  
 
