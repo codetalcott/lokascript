@@ -136,8 +136,8 @@ export const tr: Dictionary = {
   },
   
   logical: {
-    when: 'TODO',
-    where: 'TODO',
+    when: 'iken', // REVIEW: native speaker - could also be 'durumunda' (in case of) or 'olduğunda' (when it happens)
+    where: 'nerede', // REVIEW: native speaker - element filter context
     and: 've',
     or: 'veya',
     not: 'değil',

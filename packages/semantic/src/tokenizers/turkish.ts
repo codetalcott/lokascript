@@ -175,6 +175,8 @@ const TURKISH_KEYWORDS: Map<string, string> = new Map([
   ['herbir', 'for'],
   ['her', 'for'],
   ['iken', 'while'],
+  ['durumunda', 'when'],     // conditional "when"
+  ['nerede', 'where'],       // element filter "where"
   ['devam', 'continue'],
   ['devam_et', 'continue'],
   ['dur', 'halt'],

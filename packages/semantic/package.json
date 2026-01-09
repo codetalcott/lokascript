@@ -133,6 +133,9 @@
     },
     "./browser/core": {
       "default": "./dist/browser-core.core.global.js"
+    },
+    "./browser/en-tr": {
+      "default": "./dist/browser-en-tr.en-tr.global.js"
     }
   },
   "scripts": {

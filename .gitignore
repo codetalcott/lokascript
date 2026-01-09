@@ -224,3 +224,6 @@ clients/go-client/coverage.html
 # JavaScript/TypeScript specific
 clients/js-client/.rollup.cache/
 clients/js-client/.vitest/
+# Private/release artifacts
+dist-release/
+PUBLISHING_PLAN.md
