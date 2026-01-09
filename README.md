@@ -149,6 +149,22 @@ Then fill in keyword translations in `src/generators/profiles/{code}.ts`.
 
 This project is in early stages. If you're interested in contributing language support or have feedback, open an issue.
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
+
+### Repository Protection
+
+This repository uses branch protection rules and CI checks to maintain code quality:
+- Required code reviews and status checks on main branch
+- Automated CI pipeline with lint, typecheck, build, and test
+- Code owners review for critical paths
+
+For contributors: See [Repository Ruleset Quick Start](./docs/REPOSITORY_RULESET_QUICKSTART.md)  
+For maintainers: See [Repository Ruleset Documentation](./docs/REPOSITORY_RULESET.md)
+
+## Security
+
+See [SECURITY.md](./SECURITY.md) for our security policy and how to report vulnerabilities.
+
 ## License
 
 MIT

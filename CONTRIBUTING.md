@@ -2,6 +2,18 @@
 
 Thank you for your interest in contributing to HyperFixi! This document provides guidelines and technical information for contributors.
 
+## Repository Protection
+
+This repository uses branch protection rules to ensure code quality. Before contributing, please review:
+- **Quick Start**: [Repository Ruleset Quick Start](./docs/REPOSITORY_RULESET_QUICKSTART.md) - Setup guide for contributors
+- **Full Documentation**: [Repository Ruleset Documentation](./docs/REPOSITORY_RULESET.md) - Complete ruleset details
+- **Security**: [SECURITY.md](./SECURITY.md) - Security policy and best practices
+
+Key requirements:
+- All commits must be signed (GPG)
+- Pull requests require code review and passing CI checks
+- Main branch uses linear history (rebase, no merge commits)
+
 ## Build System Rationale
 
 HyperFixi uses **different build tools for different packages** based on their specific needs.
