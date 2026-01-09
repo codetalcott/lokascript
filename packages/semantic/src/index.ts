@@ -401,3 +401,14 @@ export {
   type LoadLanguageResult,
   type LanguageModule,
 } from './language-loader';
+
+// =============================================================================
+// Confidence Calculator (Translation Verification)
+// =============================================================================
+
+export {
+  calculateTranslationConfidence,
+  parseWithConfidence,
+  type ConfidenceResult,
+  type ParseWithConfidenceResult,
+} from './utils/confidence-calculator';

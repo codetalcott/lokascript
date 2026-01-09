@@ -2,16 +2,15 @@
  * Sync Translations Script
  *
  * Generates translations for all patterns in all supported languages
- * using the @hyperfixi/semantic language profiles.
+ * using grammar transformation for proper word order (SOV/VSO) and
+ * dynamic confidence calculation based on actual parsing success.
  *
- * Languages are automatically derived from @hyperfixi/semantic, so adding
- * new languages to the semantic package will automatically include them here.
- *
- * Usage: npx tsx scripts/sync-translations.ts [--db-path <path>] [--dry-run]
+ * Usage: npx tsx scripts/sync-translations.ts [--db-path <path>] [--dry-run] [--verbose]
  *
  * Options:
  *   --db-path <path>  Path to database file (default: ./data/patterns.db)
  *   --dry-run         Show what would be done without making changes
+ *   --verbose         Show detailed translation information
  */
 
 import Database from 'better-sqlite3';
@@ -20,8 +19,13 @@ import { resolve } from 'path';
 import {
   languageProfiles,
   getGeneratorLanguages,
+  calculateTranslationConfidence,
   type LanguageProfile,
 } from '@hyperfixi/semantic';
+import {
+  GrammarTransformer,
+  getProfile as getGrammarProfile,
+} from '@hyperfixi/i18n';
 
 // =============================================================================
 // Configuration
@@ -32,6 +36,7 @@ const DEFAULT_DB_PATH = resolve(__dirname, '../data/patterns.db');
 // Parse command line arguments
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+const verbose = args.includes('--verbose');
 const dbPathIndex = args.indexOf('--db-path');
 const dbPath = dbPathIndex >= 0 && args[dbPathIndex + 1] ? args[dbPathIndex + 1] : DEFAULT_DB_PATH;
 
@@ -47,8 +52,7 @@ const LANGUAGES: Record<string, { name: string; wordOrder: string }> = Object.fr
   ])
 );
 
-// Build KEYWORD_TRANSLATIONS from semantic profiles
-// Extract primary keyword for each command/keyword in the profile
+// Build KEYWORD_TRANSLATIONS from semantic profiles (fallback for non-grammar languages)
 const KEYWORD_TRANSLATIONS: Record<string, Record<string, string>> = Object.fromEntries(
   Object.entries(languageProfiles).map(([code, profile]: [string, LanguageProfile]) => {
     const keywords: Record<string, string> = {};
@@ -85,15 +89,20 @@ interface CodeExample {
   feature: string;
 }
 
-/**
- * Generate a translated version of hyperscript code for a given language.
- * This is a simplified translation that replaces keywords.
- */
-function translateHyperscript(code: string, language: string): string {
-  if (language === 'en') {
-    return code;
-  }
+// Singleton transformer instance
+let grammarTransformer: GrammarTransformer | null = null;
 
+function getGrammarTransformer(): GrammarTransformer {
+  if (!grammarTransformer) {
+    grammarTransformer = new GrammarTransformer();
+  }
+  return grammarTransformer;
+}
+
+/**
+ * Fallback keyword substitution for languages without grammar transformation.
+ */
+function keywordSubstitute(code: string, language: string): string {
   const translations = KEYWORD_TRANSLATIONS[language];
   if (!translations) {
     return code;
@@ -119,17 +128,60 @@ function translateHyperscript(code: string, language: string): string {
 }
 
 /**
- * Determine confidence level for a translation.
+ * Generate a translated version of hyperscript code for a given language.
+ * Uses GrammarTransformer for proper word order (SOV/VSO) when available,
+ * falls back to keyword substitution for unsupported languages.
  */
-function getConfidence(language: string): number {
-  // English is always 1.0 (canonical)
+function translateHyperscript(code: string, language: string): string {
+  if (language === 'en') {
+    return code;
+  }
+
+  // Check if language has grammar transformation support
+  const grammarProfile = getGrammarProfile(language);
+  if (grammarProfile) {
+    try {
+      const transformer = getGrammarTransformer();
+      const result = transformer.transform(code, 'en', language);
+      if (verbose) {
+        console.log(`  [grammar] ${language}: "${code}" -> "${result}"`);
+      }
+      return result;
+    } catch (error) {
+      // Fall back to keyword substitution if transformation fails
+      if (verbose) {
+        console.log(`  [fallback] ${language}: grammar transform failed, using keywords`);
+      }
+      return keywordSubstitute(code, language);
+    }
+  }
+
+  // Languages without grammar support use keyword substitution
+  return keywordSubstitute(code, language);
+}
+
+/**
+ * Calculate confidence dynamically based on actual parsing success.
+ * Uses the semantic parser's pattern matcher to verify the translation parses correctly.
+ */
+function getConfidence(language: string, translatedCode: string): number {
+  // English is always 1.0 (canonical source)
   if (language === 'en') return 1.0;
 
-  // Well-tested languages get higher confidence
-  if (['es', 'ja', 'ko', 'zh', 'ar'].includes(language)) return 0.85;
-
-  // Other languages are auto-generated
-  return 0.7;
+  try {
+    const result = calculateTranslationConfidence(translatedCode, language);
+    // Use actual confidence if parsing succeeded, minimum 0.5 otherwise
+    const confidence = result.parseSuccess ? result.confidence : 0.5;
+    if (verbose) {
+      console.log(`  [confidence] ${language}: ${confidence.toFixed(2)} (parse: ${result.parseSuccess})`);
+    }
+    return confidence;
+  } catch (error) {
+    if (verbose) {
+      console.log(`  [confidence] ${language}: 0.50 (error: ${error})`);
+    }
+    return 0.5; // Fallback for parse errors
+  }
 }
 
 // =============================================================================
@@ -137,10 +189,13 @@ function getConfidence(language: string): number {
 // =============================================================================
 
 async function syncTranslations() {
-  console.log('Syncing translations...');
+  console.log('Syncing translations with grammar transformation...');
   console.log(`Database path: ${dbPath}`);
   if (dryRun) {
     console.log('DRY RUN - no changes will be made\n');
+  }
+  if (verbose) {
+    console.log('VERBOSE - showing detailed translation info\n');
   }
 
   // Check database exists
@@ -174,13 +229,37 @@ async function syncTranslations() {
     let inserted = 0;
     let updated = 0;
     let skipped = 0;
+    let grammarUsed = 0;
+    let keywordUsed = 0;
 
     // Generate translations for each example and language
     for (const example of examples) {
+      if (verbose) {
+        console.log(`\nProcessing: ${example.title}`);
+        console.log(`  English: "${example.raw_code}"`);
+      }
+
       for (const [langCode, langInfo] of Object.entries(LANGUAGES)) {
         const translated = translateHyperscript(example.raw_code, langCode);
-        const confidence = getConfidence(langCode);
+        const confidence = getConfidence(langCode, translated);
         const verifiedParses = langCode === 'en' ? 1 : 0;
+
+        // Track which method was used
+        const hasGrammarProfile = getGrammarProfile(langCode) !== undefined;
+        if (langCode !== 'en') {
+          if (hasGrammarProfile) {
+            grammarUsed++;
+          } else {
+            keywordUsed++;
+          }
+        }
+
+        // Determine translation method
+        const translationMethod = langCode === 'en'
+          ? 'original'
+          : hasGrammarProfile
+            ? 'grammar-transform'
+            : 'keyword-substitute';
 
         // Check if translation exists
         const existing = checkExists.get(example.id, langCode) as { id: number } | undefined;
@@ -191,7 +270,7 @@ async function syncTranslations() {
               translated,
               langInfo.wordOrder,
               confidence,
-              'auto-generated',
+              translationMethod,
               example.id,
               langCode
             );
@@ -206,7 +285,7 @@ async function syncTranslations() {
               langInfo.wordOrder,
               confidence,
               verifiedParses,
-              'auto-generated'
+              translationMethod
             );
           }
           inserted++;
@@ -219,6 +298,8 @@ async function syncTranslations() {
     console.log(`  - Inserted: ${inserted}`);
     console.log(`  - Updated: ${updated}`);
     console.log(`  - Skipped: ${skipped}`);
+    console.log(`  - Grammar transforms: ${grammarUsed}`);
+    console.log(`  - Keyword substitutes: ${keywordUsed}`);
 
     // Print stats
     const stats = db
@@ -227,17 +308,22 @@ async function syncTranslations() {
       SELECT language, COUNT(*) as count, AVG(confidence) as avg_confidence
       FROM pattern_translations
       GROUP BY language
-      ORDER BY language
+      ORDER BY avg_confidence DESC
     `
       )
       .all() as { language: string; count: number; avg_confidence: number }[];
 
-    console.log('\nTranslations by language:');
+    console.log('\nTranslations by language (sorted by confidence):');
     for (const row of stats) {
+      const emoji = row.avg_confidence >= 0.8 ? '✓' : row.avg_confidence >= 0.6 ? '~' : '!';
       console.log(
-        `  ${row.language}: ${row.count} patterns (avg confidence: ${row.avg_confidence.toFixed(2)})`
+        `  ${emoji} ${row.language}: ${row.count} patterns (avg confidence: ${row.avg_confidence.toFixed(2)})`
       );
     }
+
+    // Calculate overall average
+    const overallAvg = stats.reduce((sum, row) => sum + row.avg_confidence, 0) / stats.length;
+    console.log(`\nOverall average confidence: ${overallAvg.toFixed(2)}`);
   } finally {
     db.close();
   }
