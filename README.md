@@ -292,33 +292,15 @@ for details.
 
 ## Documentation
 
-### Core Documentation
-
-- **[CLAUDE.md](CLAUDE.md)** - Complete project guide for Claude Code development
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and workflow
-- **[Development Plan](roadmap/plan.md)** - Dynamic context memory for development
-
-### Claude Code Integration
-
-- **[.claude/README.md](.claude/README.md)** - Hook configuration and customization guide
-- **[.claude/hooks.json](.claude/hooks.json)** - Active automated validation hooks
-- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - GitHub Copilot development guide
-
-### Test Infrastructure Documentation
-
-- **[TEST_IMPROVEMENTS_SUMMARY.md](packages/core/TEST_IMPROVEMENTS_SUMMARY.md)** - Session 11 test infrastructure improvements
-- **[CLAUDE_CODE_INTEGRATION.md](packages/core/CLAUDE_CODE_INTEGRATION.md)** - Complete guide for Claude Code test integration
-- **[INTEGRATION_RECOMMENDATIONS.md](packages/core/INTEGRATION_RECOMMENDATIONS.md)** - Analysis of integration patterns (hooks vs skills vs MCP)
-- **[PATTERN_TESTING_QUICKSTART.md](PATTERN_TESTING_QUICKSTART.md)** - Quick-start guide for pattern registry testing
-- **[SESSION_30_PATTERN_REGISTRY_VALIDATION.md](SESSION_30_PATTERN_REGISTRY_VALIDATION.md)** - Pattern registry validation summary (historical)
-- **[PATTERN_REGISTRY_CORRECTION_SUMMARY.md](PATTERN_REGISTRY_CORRECTION_SUMMARY.md)** - Pattern registry correction: honest metrics (77 patterns, 88% compatibility)
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
 
 ### Package Documentation
 
-Each package contains detailed README files:
-- Core package: [packages/core/README.md](packages/core/README.md)
-- Server integration: [packages/server-integration/README.md](packages/server-integration/README.md)
-- Internationalization: [packages/i18n/README.md](packages/i18n/README.md)
+- **[packages/core/](packages/core/)** - Core hyperscript implementation
+- **[packages/i18n/](packages/i18n/)** - Internationalization (13 languages)
+- **[packages/semantic/](packages/semantic/)** - Semantic-first multilingual parsing
+- **[packages/vite-plugin/](packages/vite-plugin/)** - Zero-config Vite integration
 
 ## License
 
@@ -354,15 +336,6 @@ MIT - see [LICENSE](./LICENSE) file for details.
 - [x] Analytics system with behavior tracking
 - [x] SSR support with server-side rendering
 - [x] Progressive enhancement with capability detection
-
-### ✅ Session 11: Test Infrastructure & Claude Code Integration (Complete)
-
-- [x] Visual test dashboard with auto-running tests
-- [x] Automated CLI feedback with structured output
-- [x] Hook integration for automatic validation
-- [x] Three-layer testing approach (visual, CLI, hooks)
-- [x] Browser bundle exports fixed and comprehensive
-- [x] 440+ tests with 100% pass rate
 
 ---
 

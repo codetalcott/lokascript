@@ -107,9 +107,11 @@ test-ast-check.js
 /tools/build/output/
 
 # Archive directories (development artifacts)
+/archive/
 /docs/archive/
 /tools/legacy/
 /tools/debug/
+/console-logs/
 
 # VitePress
 **/.vitepress/cache/
