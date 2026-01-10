@@ -72,11 +72,9 @@ Object.defineProperty(globalThis, 'performance', {
 // Mock Intl APIs for consistent testing
 // These need to work as constructors (called with `new`)
 class MockNumberFormat {
-  private locale: string;
   private options: Intl.NumberFormatOptions;
 
-  constructor(locale?: string, options?: Intl.NumberFormatOptions) {
-    this.locale = locale || 'en-US';
+  constructor(_locale?: string, options?: Intl.NumberFormatOptions) {
     this.options = options || {};
   }
 
@@ -109,11 +107,9 @@ class MockNumberFormat {
 }
 
 class MockDateTimeFormat {
-  private locale: string;
   private options: Intl.DateTimeFormatOptions;
 
-  constructor(locale?: string, options?: Intl.DateTimeFormatOptions) {
-    this.locale = locale || 'en-US';
+  constructor(_locale?: string, options?: Intl.DateTimeFormatOptions) {
     this.options = options || {};
   }
 
@@ -136,12 +132,8 @@ class MockDateTimeFormat {
 }
 
 class MockRelativeTimeFormat {
-  private locale: string;
-  private options: Intl.RelativeTimeFormatOptions;
-
-  constructor(locale?: string, options?: Intl.RelativeTimeFormatOptions) {
-    this.locale = locale || 'en-US';
-    this.options = options || {};
+  constructor(_locale?: string, _options?: Intl.RelativeTimeFormatOptions) {
+    // Parameters unused in mock - kept for API compatibility
   }
 
   format(value: number, unit: Intl.RelativeTimeFormatUnit): string {

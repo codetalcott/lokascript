@@ -17,7 +17,7 @@ import {
 describe('htmx lifecycle events', () => {
   let container: HTMLDivElement;
   let processor: HtmxAttributeProcessor;
-  let executeCallback: ReturnType<typeof vi.fn>;
+  let executeCallback: ReturnType<typeof vi.fn<(code: string, element: Element) => Promise<void>>>;
 
   beforeEach(() => {
     container = document.createElement('div');

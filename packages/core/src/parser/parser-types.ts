@@ -217,7 +217,7 @@ export interface ParserContext {
   createSelector(value: string): ASTNode;
 
   /** Create binary expression AST node */
-  createBinaryExpression(left: ASTNode, operator: string, right: ASTNode): ASTNode;
+  createBinaryExpression(operator: string, left: ASTNode, right: ASTNode): ASTNode;
 
   /** Create unary expression AST node */
   createUnaryExpression(operator: string, operand: ASTNode, prefix?: boolean): ASTNode;

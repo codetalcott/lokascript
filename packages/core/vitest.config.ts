@@ -68,11 +68,6 @@ export default defineConfig({
     
     // Parallel test execution
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-      },
-    },
   },
   
   // Resolve aliases for imports
