@@ -77,7 +77,9 @@ export type SemanticRole =
   | 'style'        // Visual/behavioral manner (with fade, smoothly)
   | 'manner'       // Insertion position (before, after)
   // Control flow roles
-  | 'loopType';    // Loop variant: forever, times, for, while, until, until-event
+  | 'loopType'     // Loop variant: forever, times, for, while, until, until-event
+  // Structural roles (for parser control)
+  | 'continues';   // Continuation marker (then-chains)
 
 /**
  * Word order patterns

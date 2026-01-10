@@ -363,5 +363,282 @@ export function getGrammarTransformedPatternsKo(): LanguagePattern[] {
         action: { default: { type: 'literal', value: 'hide' } },
       },
     },
+
+    // ==========================================================================
+    // THEN-CHAIN PATTERNS (with continuation marker)
+    // These patterns match the first command and signal continuation
+    // ==========================================================================
+
+    // Click + Wait then: "{duration} 를 클릭 대기 그러면"
+    {
+      id: 'grammar-ko-click-wait-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{duration} 를 클릭 대기 그러면',
+        tokens: [
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '대기', alternatives: ['대기하다', '기다리다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        duration: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'wait' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // Click + Toggle then: "{patient} 를 클릭 토글 그러면"
+    {
+      id: 'grammar-ko-click-toggle-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 토글 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '토글', alternatives: ['토글하다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'toggle' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // Click + Add then: "{patient} 를 클릭 추가 그러면"
+    {
+      id: 'grammar-ko-click-add-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 추가 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '추가', alternatives: ['추가하다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'add' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // Click + Remove then: "{patient} 를 클릭 제거 그러면"
+    {
+      id: 'grammar-ko-click-remove-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 제거 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '제거', alternatives: ['제거하다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'remove' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // Click + Show then: "{patient} 를 클릭 보이기 그러면"
+    {
+      id: 'grammar-ko-click-show-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 보이기 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '보이기', alternatives: ['보이다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'show' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // Click + Hide then: "{patient} 를 클릭 숨기기 그러면"
+    {
+      id: 'grammar-ko-click-hide-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 숨기기 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '숨기기', alternatives: ['숨기다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'hide' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // CONTINUATION PATTERNS (for body after then)
+    // These match commands that follow the "then" keyword
+    // ==========================================================================
+
+    // Remove continuation: "{patient} 를 제거"
+    {
+      id: 'grammar-ko-remove-continuation',
+      language: 'ko',
+      command: 'remove',
+      priority: 70,
+      template: {
+        format: '{patient} 를 제거',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '제거', alternatives: ['제거하다'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        action: { default: { type: 'literal', value: 'remove' } },
+      },
+    },
+
+    // Toggle continuation: "{patient} 를 토글"
+    {
+      id: 'grammar-ko-toggle-continuation',
+      language: 'ko',
+      command: 'toggle',
+      priority: 70,
+      template: {
+        format: '{patient} 를 토글',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '토글', alternatives: ['토글하다'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        action: { default: { type: 'literal', value: 'toggle' } },
+      },
+    },
+
+    // Add continuation: "{patient} 를 추가"
+    {
+      id: 'grammar-ko-add-continuation',
+      language: 'ko',
+      command: 'add',
+      priority: 70,
+      template: {
+        format: '{patient} 를 추가',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '추가', alternatives: ['추가하다'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        action: { default: { type: 'literal', value: 'add' } },
+      },
+    },
+
+    // Show continuation: "{patient} 를 보이기"
+    {
+      id: 'grammar-ko-show-continuation',
+      language: 'ko',
+      command: 'show',
+      priority: 70,
+      template: {
+        format: '{patient} 를 보이기',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '보이기', alternatives: ['보이다'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        action: { default: { type: 'literal', value: 'show' } },
+      },
+    },
+
+    // Hide continuation: "{patient} 를 숨기기"
+    {
+      id: 'grammar-ko-hide-continuation',
+      language: 'ko',
+      command: 'hide',
+      priority: 70,
+      template: {
+        format: '{patient} 를 숨기기',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '숨기기', alternatives: ['숨기다'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        action: { default: { type: 'literal', value: 'hide' } },
+      },
+    },
+
+    // Put into continuation: "{patient} 를 {destination} 에 넣다"
+    {
+      id: 'grammar-ko-put-continuation',
+      language: 'ko',
+      command: 'put',
+      priority: 72,
+      template: {
+        format: '{patient} 를 {destination} 에 넣다',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: '에' },
+          { type: 'literal', value: '넣다', alternatives: ['넣기'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { marker: '에' },
+        action: { default: { type: 'literal', value: 'put' } },
+      },
+    },
   ];
 }

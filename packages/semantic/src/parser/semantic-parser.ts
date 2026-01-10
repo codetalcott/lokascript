@@ -136,9 +136,9 @@ export class SemanticParserImpl implements ISemanticParser {
       const actionName = actionValue.value as string;
       const roles: Record<string, SemanticValue> = {};
 
-      // Copy relevant roles (excluding event and action which are structural)
+      // Copy relevant roles (excluding event, action, and continues which are structural)
       for (const [role, value] of match.captured) {
-        if (role !== 'event' && role !== 'action') {
+        if (role !== 'event' && role !== 'action' && role !== 'continues') {
           roles[role] = value;
         }
       }
@@ -152,7 +152,36 @@ export class SemanticParserImpl implements ISemanticParser {
         }
       );
 
-      body = [commandNode];
+      // Check if pattern has continuation marker (then-chains)
+      const continuesValue = match.captured.get('continues');
+      if (continuesValue && continuesValue.type === 'literal' && continuesValue.value === 'then') {
+        // Parse remaining tokens as additional commands
+        const commandPatterns = getPatternsForLanguage(language)
+          .filter(p => p.command !== 'on')
+          .sort((a, b) => b.priority - a.priority);
+
+        // Include grammar-transformed continuation patterns (these have specific command types)
+        // Continuation patterns have command !== 'on' and id includes 'continuation'
+        const grammarContinuationPatterns = getPatternsForLanguage(language)
+          .filter(p => p.id.startsWith('grammar-') && p.id.includes('-continuation'))
+          .sort((a, b) => b.priority - a.priority);
+
+        const remainingCommands = this.parseBodyWithGrammarPatterns(
+          tokens,
+          commandPatterns,
+          grammarContinuationPatterns,
+          language
+        );
+
+        if (remainingCommands.length > 0) {
+          // Combine first command with remaining commands
+          body = [commandNode, ...remainingCommands];
+        } else {
+          body = [commandNode];
+        }
+      } else {
+        body = [commandNode];
+      }
     } else {
       // Traditional parsing: parse remaining tokens as body commands
       const commandPatterns = getPatternsForLanguage(language)
@@ -214,6 +243,89 @@ export class SemanticParserImpl implements ISemanticParser {
     // If we saw 'then' chains and have multiple commands, wrap in CompoundSemanticNode
     if (hasThenChain && commands.length > 1) {
       return [createCompoundNode(commands, 'then', { sourceLanguage: language })];
+    }
+
+    return commands;
+  }
+
+  /**
+   * Parse body commands with support for grammar-transformed patterns.
+   * Used after a grammar-transformed pattern with continuation marker.
+   */
+  private parseBodyWithGrammarPatterns(
+    tokens: ReturnType<typeof tokenizeInternal>,
+    commandPatterns: LanguagePattern[],
+    grammarPatterns: LanguagePattern[],
+    language: string
+  ): SemanticNode[] {
+    const commands: SemanticNode[] = [];
+
+    while (!tokens.isAtEnd()) {
+      const current = tokens.peek();
+
+      // Check for 'then' keyword - skip it and continue parsing
+      if (current && this.isThenKeyword(current.value, language)) {
+        tokens.advance();
+        continue;
+      }
+
+      // Check for 'end' keyword - terminates block
+      if (current && this.isEndKeyword(current.value, language)) {
+        tokens.advance();
+        break;
+      }
+
+      let matched = false;
+
+      // Try grammar-transformed continuation patterns first
+      // These patterns have command set to the actual command type (e.g., 'remove', 'toggle')
+      if (grammarPatterns.length > 0) {
+        const grammarMatch = patternMatcher.matchBest(tokens, grammarPatterns);
+        if (grammarMatch) {
+          // Use the pattern's command field as the action
+          const actionName = grammarMatch.pattern.command;
+          const roles: Record<string, SemanticValue> = {};
+
+          // Copy relevant roles (excluding structural roles)
+          for (const [role, value] of grammarMatch.captured) {
+            if (role !== 'event' && role !== 'action' && role !== 'continues') {
+              roles[role] = value;
+            }
+          }
+
+          const commandNode = createCommandNode(
+            actionName as ActionType,
+            roles,
+            {
+              sourceLanguage: language,
+              patternId: grammarMatch.pattern.id,
+            }
+          );
+          commands.push(commandNode);
+          matched = true;
+
+          // Check if this pattern also has continuation
+          const continuesValue = grammarMatch.captured.get('continues');
+          if (continuesValue && continuesValue.type === 'literal' && continuesValue.value === 'then') {
+            // Continue parsing for more commands
+            continue;
+          }
+        }
+      }
+
+      // Try regular command patterns
+      if (!matched) {
+        const commandMatch = patternMatcher.matchBest(tokens, commandPatterns);
+        if (commandMatch) {
+          commands.push(this.buildCommand(commandMatch, language));
+          matched = true;
+        }
+      }
+
+      // Skip unrecognized token
+      if (!matched) {
+        tokens.advance();
+      }
     }
 
     return commands;
