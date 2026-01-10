@@ -83,7 +83,7 @@ test.describe('Cookbook Pattern Tests @cookbook', () => {
 
   test.describe('All Patterns Load Test', () => {
 
-    test('test-all-patterns.html loads all 75 patterns', async ({ page }) => {
+    test('test-all-patterns.html loads all 81 patterns', async ({ page }) => {
       await page.goto(`${BASE_URL}/cookbook/generated-tests/test-all-patterns.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 15000
@@ -92,7 +92,7 @@ test.describe('Cookbook Pattern Tests @cookbook', () => {
 
       // Count pattern divs
       const patternCount = await page.locator('.pattern').count();
-      expect(patternCount).toBe(75);
+      expect(patternCount).toBe(81);
     });
 
     test('test-all-patterns.html loads HyperFixi bundle', async ({ page }) => {
