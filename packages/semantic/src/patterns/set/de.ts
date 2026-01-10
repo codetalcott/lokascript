@@ -32,6 +32,25 @@ export function getSetPatternsDe(): LanguagePattern[] {
       },
     },
     {
+      id: 'set-de-festlegen-auf',
+      language: 'de',
+      command: 'set',
+      priority: 99,
+      template: {
+        format: 'festlegen auf {destination} {patient}',
+        tokens: [
+          { type: 'literal', value: 'festlegen', alternatives: ['einstellen', 'setzen'] },
+          { type: 'literal', value: 'auf', alternatives: ['an'] },
+          { type: 'role', role: 'destination', expectedTypes: ['property-path', 'selector', 'reference', 'expression'] },
+          { type: 'role', role: 'patient', expectedTypes: ['literal', 'expression', 'reference'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 2 },
+        patient: { position: 3 },
+      },
+    },
+    {
       id: 'set-de-equals',
       language: 'de',
       command: 'set',

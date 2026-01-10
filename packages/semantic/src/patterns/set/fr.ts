@@ -32,6 +32,25 @@ export function getSetPatternsFr(): LanguagePattern[] {
       },
     },
     {
+      id: 'set-fr-sur-direct',
+      language: 'fr',
+      command: 'set',
+      priority: 98,
+      template: {
+        format: 'définir sur {destination} {patient}',
+        tokens: [
+          { type: 'literal', value: 'définir', alternatives: ['definir', 'mettre', 'fixer'] },
+          { type: 'literal', value: 'sur', alternatives: ['à', 'en'] },
+          { type: 'role', role: 'destination', expectedTypes: ['property-path', 'selector', 'reference', 'expression'] },
+          { type: 'role', role: 'patient', expectedTypes: ['literal', 'expression', 'reference'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 2 },
+        patient: { position: 3 },
+      },
+    },
+    {
       id: 'set-fr-equals',
       language: 'fr',
       command: 'set',

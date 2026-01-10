@@ -10,9 +10,12 @@ import type { LanguagePattern } from '../../types';
 
 import { getEventHandlerPatternsAr } from './ar';
 import { getEventHandlerPatternsBn } from './bn';
+import { getEventHandlerPatternsDe } from './de';
 import { getEventHandlerPatternsEn } from './en';
 import { getEventHandlerPatternsEs } from './es';
+import { getEventHandlerPatternsFr } from './fr';
 import { getEventHandlerPatternsHi } from './hi';
+import { getEventHandlerPatternsId } from './id';
 import { getEventHandlerPatternsIt } from './it';
 import { getEventHandlerPatternsJa } from './ja';
 import { getEventHandlerPatternsKo } from './ko';
@@ -21,6 +24,7 @@ import { getEventHandlerPatternsPl } from './pl';
 import { getEventHandlerPatternsPt } from './pt';
 import { getEventHandlerPatternsQu } from './qu';
 import { getEventHandlerPatternsRu } from './ru';
+import { getEventHandlerPatternsSw } from './sw';
 import { getEventHandlerPatternsTh } from './th';
 import { getEventHandlerPatternsTl } from './tl';
 import { getEventHandlerPatternsTr } from './tr';
@@ -37,12 +41,18 @@ export function getEventHandlerPatternsForLanguage(language: string): LanguagePa
       return getEventHandlerPatternsAr();
     case 'bn':
       return getEventHandlerPatternsBn();
+    case 'de':
+      return getEventHandlerPatternsDe();
     case 'en':
       return getEventHandlerPatternsEn();
     case 'es':
       return getEventHandlerPatternsEs();
+    case 'fr':
+      return getEventHandlerPatternsFr();
     case 'hi':
       return getEventHandlerPatternsHi();
+    case 'id':
+      return getEventHandlerPatternsId();
     case 'it':
       return getEventHandlerPatternsIt();
     case 'ja':
@@ -59,6 +69,8 @@ export function getEventHandlerPatternsForLanguage(language: string): LanguagePa
       return getEventHandlerPatternsQu();
     case 'ru':
       return getEventHandlerPatternsRu();
+    case 'sw':
+      return getEventHandlerPatternsSw();
     case 'th':
       return getEventHandlerPatternsTh();
     case 'tl':
@@ -79,9 +91,12 @@ export function getEventHandlerPatternsForLanguage(language: string): LanguagePa
 // Re-export language-specific getters for tree-shaking
 export { getEventHandlerPatternsAr } from './ar';
 export { getEventHandlerPatternsBn } from './bn';
+export { getEventHandlerPatternsDe } from './de';
 export { getEventHandlerPatternsEn } from './en';
 export { getEventHandlerPatternsEs } from './es';
+export { getEventHandlerPatternsFr } from './fr';
 export { getEventHandlerPatternsHi } from './hi';
+export { getEventHandlerPatternsId } from './id';
 export { getEventHandlerPatternsIt } from './it';
 export { getEventHandlerPatternsJa } from './ja';
 export { getEventHandlerPatternsKo } from './ko';
@@ -90,6 +105,7 @@ export { getEventHandlerPatternsPl } from './pl';
 export { getEventHandlerPatternsPt } from './pt';
 export { getEventHandlerPatternsQu } from './qu';
 export { getEventHandlerPatternsRu } from './ru';
+export { getEventHandlerPatternsSw } from './sw';
 export { getEventHandlerPatternsTh } from './th';
 export { getEventHandlerPatternsTl } from './tl';
 export { getEventHandlerPatternsTr } from './tr';
@@ -100,4 +116,4 @@ export { getEventHandlerPatternsZh } from './zh';
 /**
  * Languages that have hand-crafted event-handler patterns.
  */
-export const eventhandlerPatternLanguages = ['ar', 'bn', 'en', 'es', 'hi', 'it', 'ja', 'ko', 'ms', 'pl', 'pt', 'qu', 'ru', 'th', 'tl', 'tr', 'uk', 'vi', 'zh'];
+export const eventhandlerPatternLanguages = ['ar', 'bn', 'de', 'en', 'es', 'fr', 'hi', 'id', 'it', 'ja', 'ko', 'ms', 'pl', 'pt', 'qu', 'ru', 'sw', 'th', 'tl', 'tr', 'uk', 'vi', 'zh'];

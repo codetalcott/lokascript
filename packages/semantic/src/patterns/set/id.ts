@@ -32,6 +32,25 @@ export function getSetPatternsId(): LanguagePattern[] {
       },
     },
     {
+      id: 'set-id-pada-direct',
+      language: 'id',
+      command: 'set',
+      priority: 98,
+      template: {
+        format: 'atur pada {destination} {patient}',
+        tokens: [
+          { type: 'literal', value: 'atur', alternatives: ['tetapkan', 'setel'] },
+          { type: 'literal', value: 'pada', alternatives: ['ke', 'di'] },
+          { type: 'role', role: 'destination', expectedTypes: ['property-path', 'selector', 'reference', 'expression'] },
+          { type: 'role', role: 'patient', expectedTypes: ['literal', 'expression', 'reference'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 2 },
+        patient: { position: 3 },
+      },
+    },
+    {
       id: 'set-id-equals',
       language: 'id',
       command: 'set',

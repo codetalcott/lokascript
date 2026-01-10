@@ -32,6 +32,25 @@ export function getSetPatternsPt(): LanguagePattern[] {
       },
     },
     {
+      id: 'set-pt-em-direct',
+      language: 'pt',
+      command: 'set',
+      priority: 98,
+      template: {
+        format: 'definir em {destination} {patient}',
+        tokens: [
+          { type: 'literal', value: 'definir', alternatives: ['estabelecer', 'colocar'] },
+          { type: 'literal', value: 'em', alternatives: ['para', 'a'] },
+          { type: 'role', role: 'destination', expectedTypes: ['property-path', 'selector', 'reference', 'expression'] },
+          { type: 'role', role: 'patient', expectedTypes: ['literal', 'expression', 'reference'] },
+        ],
+      },
+      extraction: {
+        destination: { position: 2 },
+        patient: { position: 3 },
+      },
+    },
+    {
       id: 'set-pt-equals',
       language: 'pt',
       command: 'set',
