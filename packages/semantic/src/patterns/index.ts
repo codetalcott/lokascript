@@ -49,6 +49,7 @@ export type { PatternStats } from './registry';
 export { getTogglePatternsForLanguage } from './toggle/index';
 export { getPutPatternsForLanguage } from './put/index';
 export { getEventHandlerPatternsForLanguage } from './event-handler/index';
+export { getGrammarTransformedPatternsForLanguage } from './grammar-transformed/index';
 
 // Event handler utilities
 export { eventNameTranslations, normalizeEventName } from './event-handler/shared';

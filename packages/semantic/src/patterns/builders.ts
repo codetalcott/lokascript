@@ -10,6 +10,7 @@ import type { LanguagePattern } from '../types';
 import { getTogglePatternsForLanguage } from './toggle/index';
 import { getPutPatternsForLanguage } from './put/index';
 import { getEventHandlerPatternsForLanguage } from './event-handler/index';
+import { getGrammarTransformedPatternsForLanguage } from './grammar-transformed/index';
 
 // Import new multilingual command patterns
 import { getAddPatternsForLanguage } from './add/index';
@@ -108,12 +109,15 @@ export function buildPatternsForLanguage(language: string): LanguagePattern[] {
   patterns.push(...getIncrementPatternsForLanguage(language));
   patterns.push(...getDecrementPatternsForLanguage(language));
 
-  // 3. English-only hand-crafted patterns
+  // 3. Grammar-transformed patterns (for SOV/VSO grammar output)
+  patterns.push(...getGrammarTransformedPatternsForLanguage(language));
+
+  // 4. English-only hand-crafted patterns
   if (language === 'en') {
     patterns.push(...getEnglishOnlyPatterns());
   }
 
-  // 4. Generated patterns for this language (per-language cache supports lazy loading)
+  // 5. Generated patterns for this language (per-language cache supports lazy loading)
   const langGeneratedPatterns = getGeneratedPatternsForLanguage(language);
   patterns.push(...langGeneratedPatterns);
 
