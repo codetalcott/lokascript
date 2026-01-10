@@ -160,8 +160,8 @@ export interface LLMExample {
 // Semantic Role Types
 // =============================================================================
 
-// SemanticRole is imported from @hyperfixi/semantic (which re-exports from @hyperfixi/i18n)
-// See packages/i18n/src/grammar/types.ts for the canonical definition and documentation
+// SemanticRole is imported from @hyperfixi/semantic
+// See packages/semantic/src/types/grammar-types.ts for the canonical definition
 import type { SemanticRole } from '@hyperfixi/semantic';
 export type { SemanticRole };
 
