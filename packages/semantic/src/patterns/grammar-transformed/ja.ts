@@ -1109,5 +1109,605 @@ export function getGrammarTransformedPatternsJa(): LanguagePattern[] {
         continues: { default: { type: 'literal', value: 'then' } },
       },
     },
+
+    // ==========================================================================
+    // EXCHANGE/SWAP PATTERNS
+    // ==========================================================================
+
+    // Click + Exchange: "{source} を クリック で 交換 {target} で"
+    {
+      id: 'grammar-ja-click-exchange',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を クリック で 交換 {destination} で',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '交換', alternatives: ['スワップ', '入れ替え'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'で' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'swap' } },
+      },
+    },
+
+    // ==========================================================================
+    // PUT BEFORE/AFTER PATTERNS
+    // ==========================================================================
+
+    // Click + Put before: "{content} 前に {target} を クリック で 置く"
+    {
+      id: 'grammar-ja-click-put-before',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} 前に {destination} を クリック で 置く',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '前に', alternatives: ['前'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '置く', alternatives: ['入れる', 'プット'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'put' } },
+        modifier: { default: { type: 'literal', value: 'before' } },
+      },
+    },
+
+    // Click + Put after: "{content} 後に {target} を クリック で 置く"
+    {
+      id: 'grammar-ja-click-put-after',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} 後に {destination} を クリック で 置く',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '後に', alternatives: ['後'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '置く', alternatives: ['入れる', 'プット'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'put' } },
+        modifier: { default: { type: 'literal', value: 'after' } },
+      },
+    },
+
+    // ==========================================================================
+    // POSSESSIVE PATTERNS
+    // ==========================================================================
+
+    // Click + Set possessive: "私の {property} を クリック で 設定 {value} に"
+    {
+      id: 'grammar-ja-click-set-possessive',
+      language: 'ja',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '私の {patient} を クリック で 設定 {goal} に',
+        tokens: [
+          { type: 'literal', value: '私の', alternatives: ['あなたの', 'その'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '設定', alternatives: ['セット'] },
+          { type: 'role', role: 'goal' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'set' } },
+      },
+    },
+
+    // ==========================================================================
+    // WAIT THEN REMOVE PATTERNS
+    // ==========================================================================
+
+    // Click + Wait then remove: "{duration} を クリック で 待つ それから 私 を 削除"
+    {
+      id: 'grammar-ja-click-wait-then-remove',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: '{duration} を クリック で 待つ それから 私 を 削除',
+        tokens: [
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '待つ', alternatives: ['ウェイト', '待機'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+          { type: 'literal', value: '私', alternatives: ['me'] },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: '削除', alternatives: ['取り除く', '消す'] },
+        ],
+      },
+      extraction: {
+        duration: { position: 0 },
+        patient: { default: { type: 'literal', value: 'me' } },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'wait' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // KEYDOWN/BLUR PATTERNS
+    // ==========================================================================
+
+    // Keydown + Blur: "私 を keydown[key=="Escape"] で ぼかし"
+    {
+      id: 'grammar-ja-keydown-blur',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を {event} で ぼかし',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'role', role: 'event' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: 'ぼかし', alternatives: ['ブラー', 'フォーカス解除'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { position: 1 },
+        action: { default: { type: 'literal', value: 'blur' } },
+      },
+    },
+
+    // ==========================================================================
+    // INPUT EVENT PATTERNS
+    // ==========================================================================
+
+    // Input + Put value: "私の 値 を {destination} に 置く 入力 で"
+    {
+      id: 'grammar-ja-input-put-value',
+      language: 'ja',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '私の 値 を {destination} に 置く 入力 で',
+        tokens: [
+          { type: 'literal', value: '私の', alternatives: ['あなたの', 'その'] },
+          { type: 'literal', value: '値', alternatives: ['価値'] },
+          { type: 'literal', value: 'を' },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'に' },
+          { type: 'literal', value: '置く', alternatives: ['入れる', 'プット'] },
+          { type: 'literal', value: '入力', alternatives: ['インプット'] },
+          { type: 'literal', value: 'で' },
+        ],
+      },
+      extraction: {
+        patient: { default: { type: 'literal', value: 'my value' } },
+        destination: { position: 0 },
+        event: { default: { type: 'literal', value: 'input' } },
+        action: { default: { type: 'literal', value: 'put' } },
+      },
+    },
+
+    // Input + Set: "{property} を 入力 で 設定 {value} に"
+    {
+      id: 'grammar-ja-input-set',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を 入力 で 設定 {goal} に',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: '入力', alternatives: ['インプット'] },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '設定', alternatives: ['セット'] },
+          { type: 'role', role: 'goal' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        event: { default: { type: 'literal', value: 'input' } },
+        action: { default: { type: 'literal', value: 'set' } },
+      },
+    },
+
+    // ==========================================================================
+    // SET PREVIOUS PATTERNS
+    // ==========================================================================
+
+    // Click + Set previous: "前 <input/>.value を クリック で 設定 "" に"
+    {
+      id: 'grammar-ja-click-set-previous',
+      language: 'ja',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '前 {patient} を クリック で 設定 {goal} に',
+        tokens: [
+          { type: 'literal', value: '前', alternatives: ['前の', '以前'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '設定', alternatives: ['セット'] },
+          { type: 'role', role: 'goal' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        modifier: { default: { type: 'literal', value: 'previous' } },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'set' } },
+      },
+    },
+
+    // ==========================================================================
+    // HIDE CLOSEST THEN PATTERNS
+    // ==========================================================================
+
+    // Click + Hide closest then: "最も近い .modal を クリック で 隠す それから"
+    {
+      id: 'grammar-ja-click-hide-closest-then',
+      language: 'ja',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '最も近い {patient} を クリック で 隠す それから',
+        tokens: [
+          { type: 'literal', value: '最も近い', alternatives: ['一番近い', '最寄りの'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '隠す', alternatives: ['ハイド', '非表示'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'hide' } },
+        modifier: { default: { type: 'literal', value: 'closest' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // LOAD EVENT PATTERNS
+    // ==========================================================================
+
+    // Load + Call: "{function} を 読み込み で 呼び出し"
+    {
+      id: 'grammar-ja-load-call',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を 読み込み で 呼び出し',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: '読み込み', alternatives: ['ロード'] },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '呼び出し', alternatives: ['コール', '実行'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'load' } },
+        action: { default: { type: 'literal', value: 'call' } },
+      },
+    },
+
+    // ==========================================================================
+    // STYLE PROPERTY SET PATTERNS
+    // ==========================================================================
+
+    // Click + Set my *opacity: "私の *opacity を クリック で 設定 0.5 に"
+    {
+      id: 'grammar-ja-click-set-my-style',
+      language: 'ja',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '私の {patient} を クリック で 設定 {goal} に',
+        tokens: [
+          { type: 'literal', value: '私の', alternatives: ['あなたの', 'その'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '設定', alternatives: ['セット'] },
+          { type: 'role', role: 'goal' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'set' } },
+      },
+    },
+
+    // ==========================================================================
+    // DEFAULT ON LOAD PATTERNS
+    // ==========================================================================
+
+    // Load + Default: "私の @data-count を 読み込み で 既定 "0" に"
+    {
+      id: 'grammar-ja-load-default',
+      language: 'ja',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '私の {patient} を 読み込み で 既定 {goal} に',
+        tokens: [
+          { type: 'literal', value: '私の', alternatives: ['あなたの', 'その'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: '読み込み', alternatives: ['ロード'] },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '既定', alternatives: ['デフォルト', '初期値'] },
+          { type: 'role', role: 'goal' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        event: { default: { type: 'literal', value: 'load' } },
+        action: { default: { type: 'literal', value: 'default' } },
+      },
+    },
+
+    // ==========================================================================
+    // TELL/SHOW PATTERNS
+    // ==========================================================================
+
+    // Click + Tell show: "#modal を クリック で 伝える 表示 に"
+    {
+      id: 'grammar-ja-click-tell-show',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を クリック で 伝える 表示 に',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '伝える', alternatives: ['テル', '告げる'] },
+          { type: 'literal', value: '表示', alternatives: ['ショー', '見せる'] },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { default: { type: 'literal', value: 'show' } },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'tell' } },
+      },
+    },
+
+    // ==========================================================================
+    // STOP EVENT THEN TOGGLE PATTERNS
+    // ==========================================================================
+
+    // Click + Stop event then toggle: "the イベント を クリック で 停止 それから .active を 切り替え"
+    {
+      id: 'grammar-ja-click-stop-then-toggle',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: 'the イベント を クリック で 停止 それから {patient} を 切り替え',
+        tokens: [
+          { type: 'literal', value: 'the' },
+          { type: 'literal', value: 'イベント', alternatives: ['event'] },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '停止', alternatives: ['ストップ', '止める'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: '切り替え', alternatives: ['トグル', '切替'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'halt' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // MAKE THEN PUT PATTERNS
+    // ==========================================================================
+
+    // Click + Make then put: "a <div.card/> を クリック で 作る それから それ を #container に 置く"
+    {
+      id: 'grammar-ja-click-make-then-put',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: 'a {patient} を クリック で 作る それから',
+        tokens: [
+          { type: 'literal', value: 'a' },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '作る', alternatives: ['メイク', '作成'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'make' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // WAIT THEN REMOVE PATTERNS (simpler)
+    // ==========================================================================
+
+    // Click + Wait duration then: "{duration} を クリック で 待つ それから"
+    {
+      id: 'grammar-ja-click-wait-duration-then',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: '{duration} を クリック で 待つ それから',
+        tokens: [
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '待つ', alternatives: ['ウェイト', '待機'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+        ],
+      },
+      extraction: {
+        duration: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'wait' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // REPEAT TIMES THEN PATTERNS
+    // ==========================================================================
+
+    // Click + Repeat times then: "3 times を クリック で 繰り返し それから"
+    {
+      id: 'grammar-ja-click-repeat-times-then',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: '{duration} times を クリック で 繰り返し それから',
+        tokens: [
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: 'times', alternatives: ['回'] },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '繰り返し', alternatives: ['リピート', '反復'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+        ],
+      },
+      extraction: {
+        duration: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'repeat' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // SEND PATTERNS
+    // ==========================================================================
+
+    // Click + Send: "{event} を クリック で 送る {target} に"
+    {
+      id: 'grammar-ja-click-send',
+      language: 'ja',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} を クリック で 送る {destination} に',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '送る', alternatives: ['センド', '送信'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'に' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'send' } },
+      },
+    },
+
+    // ==========================================================================
+    // ASYNC FETCH THEN PUT PATTERNS
+    // ==========================================================================
+
+    // Click + Async fetch then: "取得 {source} を クリック で 非同期 それから"
+    {
+      id: 'grammar-ja-click-async-fetch-then',
+      language: 'ja',
+      command: 'on',
+      priority: 86,
+      template: {
+        format: '取得 {source} を クリック で 非同期 それから',
+        tokens: [
+          { type: 'literal', value: '取得', alternatives: ['フェッチ', 'ゲット'] },
+          { type: 'role', role: 'source' },
+          { type: 'literal', value: 'を' },
+          { type: 'literal', value: 'クリック' },
+          { type: 'literal', value: 'で' },
+          { type: 'literal', value: '非同期', alternatives: ['アシンク', 'async'] },
+          { type: 'literal', value: 'それから', alternatives: ['次に', 'そして'] },
+        ],
+      },
+      extraction: {
+        source: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'fetch' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
   ];
 }

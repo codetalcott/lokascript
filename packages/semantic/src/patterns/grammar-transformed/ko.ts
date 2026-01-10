@@ -1146,5 +1146,166 @@ export function getGrammarTransformedPatternsKo(): LanguagePattern[] {
         action: { default: { type: 'literal', value: 'default' } },
       },
     },
+
+    // ==========================================================================
+    // EXCHANGE/SWAP PATTERNS
+    // ==========================================================================
+
+    // Click + Exchange: "{source} 를 클릭 교환 {target} 로"
+    {
+      id: 'grammar-ko-click-exchange',
+      language: 'ko',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} 를 클릭 교환 {destination} 로',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '교환', alternatives: ['교환하다', '바꾸다', '스왑'] },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: '로', alternatives: ['으로'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'swap' } },
+      },
+    },
+
+    // ==========================================================================
+    // MAKE/CREATE PATTERNS
+    // ==========================================================================
+
+    // Click + Make: "{target} 를 클릭 만들다"
+    {
+      id: 'grammar-ko-click-make',
+      language: 'ko',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} 를 클릭 만들다',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '만들다', alternatives: ['만들기', '생성'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'make' } },
+      },
+    },
+
+    // Click + Make then: "{target} 를 클릭 만들다 그러면"
+    {
+      id: 'grammar-ko-click-make-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} 를 클릭 만들다 그러면',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '만들다', alternatives: ['만들기', '생성'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'make' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // SUBMIT EVENT PATTERNS
+    // ==========================================================================
+
+    // Submit + Fetch: "{source} 를 제출 가져오기"
+    {
+      id: 'grammar-ko-submit-fetch',
+      language: 'ko',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{source} 를 제출 가져오기',
+        tokens: [
+          { type: 'role', role: 'source' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '제출' },
+          { type: 'literal', value: '가져오기', alternatives: ['가져오다', '패치'] },
+        ],
+      },
+      extraction: {
+        source: { position: 0 },
+        event: { default: { type: 'literal', value: 'submit' } },
+        action: { default: { type: 'literal', value: 'fetch' } },
+      },
+    },
+
+    // ==========================================================================
+    // BLUR PATTERNS
+    // ==========================================================================
+
+    // Keydown + Blur: "나 를 keydown[key=="Escape"] 블러"
+    {
+      id: 'grammar-ko-keydown-blur',
+      language: 'ko',
+      command: 'on',
+      priority: 76,
+      template: {
+        format: '{patient} 를 {event} 블러',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'role', role: 'event' },
+          { type: 'literal', value: '블러', alternatives: ['흐리게', '포커스해제'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { position: 1 },
+        action: { default: { type: 'literal', value: 'blur' } },
+      },
+    },
+
+    // ==========================================================================
+    // HIDE PATTERNS
+    // ==========================================================================
+
+    // Click + Hide closest then: "가장가까운 .modal 를 클릭 숨기다 그러면"
+    {
+      id: 'grammar-ko-click-hide-closest-then',
+      language: 'ko',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '가장가까운 {patient} 를 클릭 숨기다 그러면',
+        tokens: [
+          { type: 'literal', value: '가장가까운', alternatives: ['가장 가까운', '제일가까운'] },
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: '를', alternatives: ['을'] },
+          { type: 'literal', value: '클릭' },
+          { type: 'literal', value: '숨기다', alternatives: ['숨기기', '감추다'] },
+          { type: 'literal', value: '그러면', alternatives: ['그다음', '그리고'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'hide' } },
+        modifier: { default: { type: 'literal', value: 'closest' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
   ];
 }
