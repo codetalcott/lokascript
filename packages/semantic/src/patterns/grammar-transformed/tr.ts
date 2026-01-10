@@ -470,5 +470,417 @@ export function getGrammarTransformedPatternsTr(): LanguagePattern[] {
         action: { default: { type: 'literal', value: 'put' } },
       },
     },
+
+    // ==========================================================================
+    // PUT BEFORE/AFTER PATTERNS
+    // ==========================================================================
+
+    // Click + Put before: "{value} önce {target}i tıklamade koy"
+    {
+      id: 'grammar-tr-click-put-before',
+      language: 'tr',
+      command: 'on',
+      priority: 78,
+      template: {
+        format: '{patient} önce {destination} tıklamade koy',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'önce' },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'koy', alternatives: ['koymak', 'yerleştir'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'put' } },
+        position: { default: { type: 'literal', value: 'before' } },
+      },
+    },
+
+    // Click + Put after: "{value} sonra {target}i tıklamade koy"
+    {
+      id: 'grammar-tr-click-put-after',
+      language: 'tr',
+      command: 'on',
+      priority: 78,
+      template: {
+        format: '{patient} sonra {destination} tıklamade koy',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'sonra' },
+          { type: 'role', role: 'destination' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'koy', alternatives: ['koymak', 'yerleştir'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'put' } },
+        position: { default: { type: 'literal', value: 'after' } },
+      },
+    },
+
+    // ==========================================================================
+    // FETCH PATTERNS
+    // ==========================================================================
+
+    // Click + Fetch: "{source}i tıklamade getir"
+    {
+      id: 'grammar-tr-click-fetch',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{source} tıklamade getir',
+        tokens: [
+          { type: 'role', role: 'source' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'getir', alternatives: ['getirmek', 'al'] },
+        ],
+      },
+      extraction: {
+        source: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'fetch' } },
+      },
+    },
+
+    // Click + Fetch then: "{source}i tıklamade getir sonra"
+    {
+      id: 'grammar-tr-click-fetch-then',
+      language: 'tr',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{source} tıklamade getir sonra',
+        tokens: [
+          { type: 'role', role: 'source' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'getir', alternatives: ['getirmek', 'al'] },
+          { type: 'literal', value: 'sonra', alternatives: ['ardından'] },
+        ],
+      },
+      extraction: {
+        source: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'fetch' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // TRANSITION PATTERNS
+    // ==========================================================================
+
+    // Click + Transition: "{property}i tıklamade geçiş {value}e {duration}"
+    {
+      id: 'grammar-tr-click-transition',
+      language: 'tr',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '{patient} tıklamade geçiş {goal} {duration}',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'geçiş', alternatives: ['geçişyap', 'animasyon'] },
+          { type: 'role', role: 'goal' },
+          { type: 'role', role: 'duration' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        duration: { position: 2 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'transition' } },
+      },
+    },
+
+    // Click + Transition then: "{property}i tıklamade geçiş {value}e {duration} sonra"
+    {
+      id: 'grammar-tr-click-transition-then',
+      language: 'tr',
+      command: 'on',
+      priority: 87,
+      template: {
+        format: '{patient} tıklamade geçiş {goal} {duration} sonra',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'geçiş', alternatives: ['geçişyap', 'animasyon'] },
+          { type: 'role', role: 'goal' },
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: 'sonra', alternatives: ['ardından'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        duration: { position: 2 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'transition' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // SEND PATTERNS
+    // ==========================================================================
+
+    // Click + Send: "{message}i tıklamade gönder {target}e"
+    {
+      id: 'grammar-tr-click-send',
+      language: 'tr',
+      command: 'on',
+      priority: 77,
+      template: {
+        format: '{patient} tıklamade gönder {destination}',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'gönder', alternatives: ['göndermek', 'yolla'] },
+          { type: 'role', role: 'destination' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        destination: { position: 1 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'send' } },
+      },
+    },
+
+    // ==========================================================================
+    // TRIGGER PATTERNS
+    // ==========================================================================
+
+    // Load + Trigger: "{event}i yüklede tetikle"
+    {
+      id: 'grammar-tr-load-trigger',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} yüklede tetikle',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'yüklede', alternatives: ['yüklemede', 'yükleme'] },
+          { type: 'literal', value: 'tetikle', alternatives: ['tetiklemek', 'tetik'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'load' } },
+        action: { default: { type: 'literal', value: 'trigger' } },
+      },
+    },
+
+    // ==========================================================================
+    // FOCUS PATTERNS
+    // ==========================================================================
+
+    // Click + Focus: "{target}i tıklamade odaklan"
+    {
+      id: 'grammar-tr-click-focus',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} tıklamade odaklan',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'odaklan', alternatives: ['odakla', 'fokus'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'focus' } },
+      },
+    },
+
+    // ==========================================================================
+    // LOG PATTERNS
+    // ==========================================================================
+
+    // Click + Log: "{message}i tıklamade günlükle"
+    {
+      id: 'grammar-tr-click-log',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} tıklamade günlükle',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'günlükle', alternatives: ['günlük', 'kayıt'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'log' } },
+      },
+    },
+
+    // ==========================================================================
+    // GO/NAVIGATE PATTERNS
+    // ==========================================================================
+
+    // Click + Go back: "backi tıklamade git"
+    {
+      id: 'grammar-tr-click-go-back',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: 'back tıklamade git',
+        tokens: [
+          { type: 'literal', value: 'back' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'git', alternatives: ['gitmek', 'geç'] },
+        ],
+      },
+      extraction: {
+        destination: { default: { type: 'literal', value: 'back' } },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'go' } },
+      },
+    },
+
+    // ==========================================================================
+    // CALL PATTERNS
+    // ==========================================================================
+
+    // Click + Call: "{function}i tıklamade çağır"
+    {
+      id: 'grammar-tr-click-call',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} tıklamade çağır',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'çağır', alternatives: ['çağırmak', 'ara'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'call' } },
+      },
+    },
+
+    // ==========================================================================
+    // GET PATTERNS
+    // ==========================================================================
+
+    // Click + Get: "{target}i tıklamade al"
+    {
+      id: 'grammar-tr-click-get',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} tıklamade al',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'al', alternatives: ['almak', 'elde et'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'get' } },
+      },
+    },
+
+    // Click + Get then: "{target}i tıklamade al sonra"
+    {
+      id: 'grammar-tr-click-get-then',
+      language: 'tr',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{patient} tıklamade al sonra',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'al', alternatives: ['almak', 'elde et'] },
+          { type: 'literal', value: 'sonra', alternatives: ['ardından'] },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'get' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
+
+    // ==========================================================================
+    // DEFAULT PATTERNS (load event)
+    // ==========================================================================
+
+    // Load + Default: "{patient}i yüklede varsayılan {goal}e"
+    {
+      id: 'grammar-tr-load-default',
+      language: 'tr',
+      command: 'on',
+      priority: 75,
+      template: {
+        format: '{patient} yüklede varsayılan {goal}',
+        tokens: [
+          { type: 'role', role: 'patient' },
+          { type: 'literal', value: 'yüklede', alternatives: ['yüklemede', 'yükleme'] },
+          { type: 'literal', value: 'varsayılan', alternatives: ['varsayılı', 'default'] },
+          { type: 'role', role: 'goal' },
+        ],
+      },
+      extraction: {
+        patient: { position: 0 },
+        goal: { position: 1 },
+        event: { default: { type: 'literal', value: 'load' } },
+        action: { default: { type: 'literal', value: 'default' } },
+      },
+    },
+
+    // ==========================================================================
+    // WAIT PATTERNS
+    // ==========================================================================
+
+    // Click + Wait then: "{duration}i tıklamade bekle sonra"
+    {
+      id: 'grammar-tr-click-wait-duration-then',
+      language: 'tr',
+      command: 'on',
+      priority: 85,
+      template: {
+        format: '{duration} tıklamade bekle sonra',
+        tokens: [
+          { type: 'role', role: 'duration' },
+          { type: 'literal', value: 'tıklamade', alternatives: ['tıklamada'] },
+          { type: 'literal', value: 'bekle', alternatives: ['beklemek'] },
+          { type: 'literal', value: 'sonra', alternatives: ['ardından'] },
+        ],
+      },
+      extraction: {
+        duration: { position: 0 },
+        event: { default: { type: 'literal', value: 'click' } },
+        action: { default: { type: 'literal', value: 'wait' } },
+        continues: { default: { type: 'literal', value: 'then' } },
+      },
+    },
   ];
 }

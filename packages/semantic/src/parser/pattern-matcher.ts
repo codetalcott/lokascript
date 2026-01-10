@@ -192,12 +192,49 @@ export class PatternMatcher {
     'my': 'me',
     'your': 'you',
     'its': 'it',
-    // Japanese possessive particles (の)
-    '私の': 'me',
+    // Korean possessive pronouns
+    '내': 'me',      // nae (my)
+    '네': 'you',     // ne (your)
+    '그의': 'it',    // geu-ui (its/his)
+    // Japanese possessive particles
+    '私の': 'me',    // watashi no (my)
+    'あなたの': 'you', // anata no (your)
+    'その': 'it',    // sono (its)
+    // Turkish possessive pronouns
+    'benim': 'me',   // my
+    'senin': 'you',  // your
+    'onun': 'it',    // its
     // Spanish
     'mi': 'me',
     'tu': 'you',
     'su': 'it',
+    // French
+    'mon': 'me',
+    'ma': 'me',
+    'mes': 'me',
+    'ton': 'you',
+    'ta': 'you',
+    'tes': 'you',
+    'son': 'it',
+    'sa': 'it',
+    'ses': 'it',
+    // German
+    'mein': 'me',
+    'meine': 'me',
+    'meinen': 'me',
+    'dein': 'you',
+    'deine': 'you',
+    'deinen': 'you',
+    'sein': 'it',
+    'seine': 'it',
+    'seinen': 'it',
+    // Portuguese
+    'meu': 'me',
+    'minha': 'me',
+    'teu': 'you',
+    'tua': 'you',
+    'seu': 'it',
+    'sua': 'it',
   };
 
   /**
@@ -328,9 +365,11 @@ export class PatternMatcher {
       return null;
     }
 
-    // Property should be an identifier or keyword (not a structural keyword like 'into')
+    // Property should be an identifier, keyword (not structural), or selector (for style props)
+    // Examples: "my value", "my innerHTML", "my *background", "my *opacity"
     if (propertyToken.kind === 'identifier' ||
-        (propertyToken.kind === 'keyword' && !this.isStructuralKeyword(propertyToken.value))) {
+        (propertyToken.kind === 'keyword' && !this.isStructuralKeyword(propertyToken.value)) ||
+        (propertyToken.kind === 'selector' && propertyToken.value.startsWith('*'))) {
       tokens.advance();
 
       // Create property-path: my value -> { object: me, property: 'value' }
