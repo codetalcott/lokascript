@@ -3,6 +3,8 @@
  * Analyzes HTML/templates to determine which plugins are needed
  */
 
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import type { Plugin } from '../types';
 
 export interface AnalysisResult {
@@ -54,18 +56,83 @@ export class PluginAnalyzer {
   /**
    * Analyze a directory of files
    */
-  async analyzeDirectory(dir: string, extensions = ['.html', '.htm', '.tsx', '.jsx']): Promise<AnalysisResult> {
+  async analyzeDirectory(dir: string, extensions = ['.html', '.htm', '.tsx', '.jsx', '.vue', '.svelte']): Promise<AnalysisResult> {
     const result: AnalysisResult = {
       requiredPlugins: new Set(),
       attributePatterns: new Map(),
       usageStats: new Map()
     };
 
-    // In a real implementation, this would recursively scan the directory
-    // For now, we'll return a placeholder
-    console.log(`Would analyze directory: ${dir} for extensions: ${extensions}`);
+    const files = await this.getFilesRecursive(dir, extensions);
+
+    for (const file of files) {
+      try {
+        const content = await fs.readFile(file, 'utf-8');
+        const fileAnalysis = this.analyzeHTML(content);
+
+        // Merge required plugins
+        for (const plugin of fileAnalysis.requiredPlugins) {
+          result.requiredPlugins.add(plugin);
+        }
+
+        // Merge attribute patterns
+        for (const [cmd, patterns] of fileAnalysis.attributePatterns) {
+          const existing = result.attributePatterns.get(cmd) || [];
+          for (const pattern of patterns) {
+            if (!existing.includes(pattern)) {
+              existing.push(pattern);
+            }
+          }
+          result.attributePatterns.set(cmd, existing);
+        }
+
+        // Merge usage stats
+        for (const [plugin, count] of fileAnalysis.usageStats) {
+          result.usageStats.set(plugin, (result.usageStats.get(plugin) || 0) + count);
+        }
+      } catch (error) {
+        // Skip files that can't be read (permissions, encoding issues, etc.)
+        console.warn(`Could not analyze file ${file}:`, error);
+      }
+    }
 
     return result;
+  }
+
+  /**
+   * Recursively get all files matching the given extensions
+   */
+  private async getFilesRecursive(dir: string, extensions: string[]): Promise<string[]> {
+    const files: string[] = [];
+
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          // Skip node_modules and hidden directories
+          if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
+            continue;
+          }
+          // Recurse into subdirectory
+          const subFiles = await this.getFilesRecursive(fullPath, extensions);
+          files.push(...subFiles);
+        } else if (entry.isFile()) {
+          // Check if file has matching extension
+          const ext = path.extname(entry.name).toLowerCase();
+          if (extensions.includes(ext)) {
+            files.push(fullPath);
+          }
+        }
+      }
+    } catch (error) {
+      // Directory doesn't exist or can't be read
+      console.warn(`Could not read directory ${dir}:`, error);
+    }
+
+    return files;
   }
 
   /**

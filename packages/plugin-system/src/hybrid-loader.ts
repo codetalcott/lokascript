@@ -90,7 +90,9 @@ export class HybridPluginLoader {
       'worker': '[data-worker], [_*="worker "]',
       'intersection': '[data-intersect], [_*="on intersection"]',
       'animation': '[data-animate], [_*="animate "]',
-      'drag': '[data-draggable], [_*="on drag"]'
+      'drag': '[data-draggable], [_*="on drag"]',
+      'auto-fetch': '[data-fetch], [_*="fetch "]',
+      'reactive-state': '[data-state]',
     };
 
     const toLoad: string[] = [];
@@ -135,14 +137,30 @@ export class HybridPluginLoader {
    * Check if an element requires any optional plugins
    */
   private checkElementForPlugins(element: Element): void {
-    // Check for WebSocket usage
-    if (element.matches('[data-ws], [_*="ws "]') && 
-        !this.loadedOptional.has('websocket')) {
-      this.loadOptional('websocket').catch(console.error);
-    }
+    // Detection patterns for optional plugins
+    const pluginDetectors: Array<{ name: string; selector: string }> = [
+      { name: 'websocket', selector: '[data-ws], [_*="ws "], [_*="websocket"]' },
+      { name: 'worker', selector: '[data-worker], [_*="worker "]' },
+      { name: 'intersection', selector: '[data-intersect], [_*="on intersection"]' },
+      { name: 'animation', selector: '[data-animate], [_*="animate "]' },
+      { name: 'drag', selector: '[data-draggable], [_*="on drag"]' },
+      { name: 'auto-fetch', selector: '[data-fetch], [_*="fetch "]' },
+      { name: 'reactive-state', selector: '[data-state]' },
+    ];
 
-    // Check for other optional features
-    // ... similar checks for other plugins
+    for (const { name, selector } of pluginDetectors) {
+      // Skip if plugin not available or already loaded
+      if (!this.config.optionalPlugins.has(name) || this.loadedOptional.has(name)) {
+        continue;
+      }
+
+      // Check if element or its children match the selector
+      if (element.matches(selector) || element.querySelector(selector)) {
+        this.loadOptional(name).catch(err => {
+          console.warn(`Failed to load optional plugin '${name}':`, err);
+        });
+      }
+    }
   }
 
   /**

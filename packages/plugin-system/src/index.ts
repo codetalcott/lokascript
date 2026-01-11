@@ -26,6 +26,22 @@ export { HybridPluginLoader, createHybridLoader } from './hybrid-loader';
 export { PluginAnalyzer, optimizePluginsForBuild } from './compiler/analyzer';
 export { PluginBundleBuilder, buildBundles } from './compiler/bundle-builder';
 
+// Error handling
+export {
+  PluginSystemError,
+  PluginLoadError,
+  PluginExecutionError,
+  PluginDependencyError,
+  PluginRegistrationError,
+  PluginInitError,
+  PluginParseError,
+  ErrorCodes,
+  isPluginSystemError,
+  isPluginError,
+  wrapError,
+} from './errors';
+export type { ErrorCode } from './errors';
+
 // Default export is the optimized registry
 export default optimizedRegistry;
 
