@@ -501,6 +501,18 @@ Try these examples with errors:
       debounceTimer = setTimeout(runDiagnostics, 300);
     });
 
+    // Re-analyze when language changes
+    document.getElementById('language-select').addEventListener('change', () => {
+      runDiagnostics();
+    });
+
+    // Check if semantic bundle loaded
+    if (!window.HyperFixiSemantic) {
+      console.warn('HyperFixiSemantic not loaded - semantic analysis will be skipped');
+      document.getElementById('parse-status').textContent = 'Semantic bundle not loaded';
+      document.getElementById('parse-status').style.color = '#f39c12';
+    }
+
     function loadExample(key) {
       document.getElementById('code-input').value = examples[key] || '';
       runDiagnostics();
@@ -698,6 +710,9 @@ Try these examples with errors:
 
       document.getElementById('diagnostic-count').textContent = `${filteredDiagnostics.length} issue(s)`;
 
+      // Reset fix templates storage
+      currentFixTemplates = [];
+
       if (filteredDiagnostics.length === 0) {
         container.innerHTML = `
           <div class="no-issues">
@@ -720,37 +735,51 @@ Try these examples with errors:
         return;
       }
 
-      container.innerHTML = filteredDiagnostics.map((diag, idx) => `
-        <div class="diagnostic-item ${diag.severity}" onclick="toggleDiagnostic(${idx})">
-          <div class="diagnostic-header">
-            <span class="severity-icon">${getSeverityIcon(diag.severity)}</span>
-            <span class="diagnostic-message">${escapeHtml(diag.message)}</span>
-            ${diag.code ? `<span class="diagnostic-code">${escapeHtml(diag.code)}</span>` : ''}
-          </div>
-          <div class="diagnostic-details">
-            ${diag.source ? `<p style="color: #666; font-size: 0.8rem; margin-bottom: 0.5rem;">Source: ${escapeHtml(diag.source)}</p>` : ''}
-            ${diag.suggestion ? `<p style="color: #888; font-size: 0.85rem;">&#x1F4A1; ${escapeHtml(diag.suggestion)}</p>` : ''}
-            ${diag.fixes && diag.fixes.length > 0 ? `
-              <div style="margin-top: 0.75rem;">
-                <p style="color: #27ae60; font-size: 0.8rem; font-weight: 500; margin-bottom: 0.5rem;">Available Fixes:</p>
-                ${diag.fixes.map(fix => `
+      container.innerHTML = filteredDiagnostics.map((diag, idx) => {
+        let fixesHtml = '';
+        if (diag.fixes && diag.fixes.length > 0) {
+          fixesHtml = `
+            <div style="margin-top: 0.75rem;">
+              <p style="color: #27ae60; font-size: 0.8rem; font-weight: 500; margin-bottom: 0.5rem;">Available Fixes:</p>
+              ${diag.fixes.map(fix => {
+                let buttonHtml = '';
+                if (fix.edit) {
+                  const fixIndex = currentFixTemplates.length;
+                  currentFixTemplates.push(fix.edit.text);
+                  buttonHtml = `
+                    <div class="fix-template">${escapeHtml(fix.edit.text)}</div>
+                    <button class="apply-fix-btn" data-fix-index="${fixIndex}" onclick="applyFixByIndex(${fixIndex}); event.stopPropagation();">Apply Fix</button>
+                  `;
+                }
+                return `
                   <div class="fix-card">
                     <div class="fix-header">
                       <span class="fix-title">${escapeHtml(fix.title)}</span>
                       <span class="fix-kind ${fix.kind}">${fix.kind}</span>
                     </div>
                     ${fix.description ? `<p class="fix-description">${escapeHtml(fix.description)}</p>` : ''}
-                    ${fix.edit ? `
-                      <div class="fix-template">${escapeHtml(fix.edit.text)}</div>
-                      <button class="apply-fix-btn" onclick="applyFix('${escapeHtml(fix.edit.text)}'); event.stopPropagation();">Apply Fix</button>
-                    ` : ''}
+                    ${buttonHtml}
                   </div>
-                `).join('')}
-              </div>
-            ` : ''}
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+        return `
+          <div class="diagnostic-item ${diag.severity}" onclick="toggleDiagnostic(${idx})">
+            <div class="diagnostic-header">
+              <span class="severity-icon">${getSeverityIcon(diag.severity)}</span>
+              <span class="diagnostic-message">${escapeHtml(diag.message)}</span>
+              ${diag.code ? `<span class="diagnostic-code">${escapeHtml(diag.code)}</span>` : ''}
+            </div>
+            <div class="diagnostic-details">
+              ${diag.source ? `<p style="color: #666; font-size: 0.8rem; margin-bottom: 0.5rem;">Source: ${escapeHtml(diag.source)}</p>` : ''}
+              ${diag.suggestion ? `<p style="color: #888; font-size: 0.85rem;">&#x1F4A1; ${escapeHtml(diag.suggestion)}</p>` : ''}
+              ${fixesHtml}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function toggleDiagnostic(idx) {
@@ -769,7 +798,17 @@ Try these examples with errors:
 
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Store fix templates for apply buttons (avoids escaping issues)
+    let currentFixTemplates = [];
+
+    function applyFixByIndex(index) {
+      const template = currentFixTemplates[index];
+      if (template) {
+        applyFix(template);
+      }
     }
 
     function applyFix(template) {
