@@ -16,6 +16,9 @@ import type {
   ExecutionSignal,
 } from '../types/result';
 
+import type { RuntimeHooks } from '../types/hooks';
+import { HookRegistry } from '../types/hooks';
+
 import {
   ok,
   err,
@@ -26,6 +29,7 @@ import { BaseExpressionEvaluator } from '../core/base-expression-evaluator';
 // NOTE: ExpressionEvaluator import removed for tree-shaking.
 // Use ConfigurableExpressionEvaluator or ExpressionEvaluator explicitly in your bundle.
 import { CommandRegistryV2 as CommandRegistry } from './command-adapter';
+import { CleanupRegistry } from './cleanup-registry';
 import { getSharedGlobals } from '../core/context';
 import { debug } from '../utils/debug';
 
@@ -54,6 +58,19 @@ export interface RuntimeBaseOptions {
    * Accepts any class extending BaseExpressionEvaluator.
    */
   expressionEvaluator: BaseExpressionEvaluator;
+
+  /**
+   * Runtime hooks for command execution lifecycle.
+   * Allows registering beforeExecute, afterExecute, onError, and interceptCommand hooks.
+   */
+  hooks?: RuntimeHooks;
+
+  /**
+   * Enable automatic cleanup of event listeners and observers when elements
+   * are removed from the DOM. Uses MutationObserver to detect removals.
+   * Default: true
+   */
+  enableAutoCleanup?: boolean;
 }
 
 export class RuntimeBase {
@@ -64,12 +81,19 @@ export class RuntimeBase {
   public behaviorRegistry: Map<string, any>;
   public behaviorAPI: any;
   protected globalVariables: Map<string, any>;
+  /** Hook registry for runtime lifecycle hooks */
+  protected hookRegistry: HookRegistry;
+  /** Cleanup registry for tracking event listeners and observers */
+  protected cleanupRegistry: CleanupRegistry;
+  /** Auto-cleanup MutationObserver (if enabled) */
+  private autoCleanupObserver: MutationObserver | null = null;
 
   constructor(options: RuntimeBaseOptions) {
     this.options = {
       commandTimeout: 10000,
       enableErrorReporting: true,
       enableResultPattern: true, // Default on for ~12-18% performance improvement
+      enableAutoCleanup: true, // Default on to prevent memory leaks
       ...options
     };
 
@@ -77,6 +101,23 @@ export class RuntimeBase {
     this.expressionEvaluator = options.expressionEvaluator;
     this.behaviorRegistry = new Map();
     this.globalVariables = getSharedGlobals();
+
+    // Initialize hook registry
+    this.hookRegistry = new HookRegistry();
+    if (options.hooks) {
+      this.hookRegistry.register('default', options.hooks);
+    }
+
+    // Connect hook registry to command registry
+    this.registry.setHookRegistry(this.hookRegistry);
+
+    // Initialize cleanup registry
+    this.cleanupRegistry = new CleanupRegistry();
+
+    // Set up auto-cleanup if enabled and in browser environment
+    if (this.options.enableAutoCleanup) {
+      this.setupAutoCleanup();
+    }
 
     // Create behavior API
     this.behaviorAPI = {
@@ -90,6 +131,107 @@ export class RuntimeBase {
         return await this.installBehaviorOnElement(behaviorName, element, parameters);
       },
     };
+  }
+
+  /**
+   * Set up automatic cleanup when elements are removed from the DOM
+   */
+  private setupAutoCleanup(): void {
+    if (typeof MutationObserver === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    this.autoCleanupObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.removedNodes) {
+          if (node instanceof Element) {
+            const count = this.cleanupRegistry.cleanupElementTree(node);
+            if (count > 0) {
+              debug.runtime(`RuntimeBase: Auto-cleaned ${count} resources for removed element`);
+            }
+          }
+        }
+      }
+    });
+
+    // Start observing once document.body is available
+    if (document.body) {
+      this.autoCleanupObserver.observe(document.body, { childList: true, subtree: true });
+    } else {
+      // Wait for DOMContentLoaded if body not yet available
+      document.addEventListener('DOMContentLoaded', () => {
+        this.autoCleanupObserver?.observe(document.body, { childList: true, subtree: true });
+      }, { once: true });
+    }
+  }
+
+  /**
+   * Register runtime hooks
+   * @param name Unique identifier for this hook set
+   * @param hooks The hooks to register
+   */
+  registerHooks(name: string, hooks: RuntimeHooks): void {
+    this.hookRegistry.register(name, hooks);
+  }
+
+  /**
+   * Unregister runtime hooks
+   * @param name Identifier of the hook set to remove
+   */
+  unregisterHooks(name: string): boolean {
+    return this.hookRegistry.unregister(name);
+  }
+
+  /**
+   * Get all registered hook names
+   */
+  getRegisteredHooks(): string[] {
+    return this.hookRegistry.getRegisteredNames();
+  }
+
+  /**
+   * Clean up resources for an element (event listeners, observers, etc.)
+   * @param element The element to clean up
+   * @returns Number of cleanups performed
+   */
+  cleanup(element: Element): number {
+    return this.cleanupRegistry.cleanupElement(element);
+  }
+
+  /**
+   * Clean up resources for an element and all its descendants
+   * @param element The root element
+   * @returns Total number of cleanups performed
+   */
+  cleanupTree(element: Element): number {
+    return this.cleanupRegistry.cleanupElementTree(element);
+  }
+
+  /**
+   * Get cleanup statistics
+   */
+  getCleanupStats(): ReturnType<CleanupRegistry['getStats']> {
+    return this.cleanupRegistry.getStats();
+  }
+
+  /**
+   * Destroy the runtime, cleaning up all resources
+   */
+  destroy(): void {
+    // Stop auto-cleanup observer
+    if (this.autoCleanupObserver) {
+      this.autoCleanupObserver.disconnect();
+      this.autoCleanupObserver = null;
+    }
+
+    // Clean up all global resources
+    this.cleanupRegistry.cleanupAll();
+
+    // Clear registries
+    this.hookRegistry.clear();
+    this.behaviorRegistry.clear();
+
+    debug.runtime('RuntimeBase: Destroyed');
   }
 
   /**
@@ -873,12 +1015,24 @@ export class RuntimeBase {
         // Attach to global event source (window or document)
         for (const evt of eventNames) {
             globalTarget.addEventListener(evt, eventHandler);
+            // Register for cleanup - use first target element or register as global
+            if (targets.length > 0) {
+              this.cleanupRegistry.registerListener(targets[0], globalTarget, evt, eventHandler);
+            } else {
+              this.cleanupRegistry.registerGlobal(
+                () => globalTarget.removeEventListener(evt, eventHandler),
+                'listener',
+                `Global ${evt} listener`
+              );
+            }
         }
     } else {
         // Attach to HTMLElement targets
         for (const el of targets) {
             for (const evt of eventNames) {
                 el.addEventListener(evt, eventHandler);
+                // Register for cleanup
+                this.cleanupRegistry.registerListener(el, el, evt, eventHandler);
             }
         }
     }
@@ -929,6 +1083,9 @@ export class RuntimeBase {
           attributeOldValue: true,
           attributeFilter: [attr],
         });
+
+        // Register for cleanup
+        this.cleanupRegistry.registerObserver(targetElement, observer);
 
         debug.runtime(`RUNTIME BASE: MutationObserver attached to`, targetElement, `for attribute '${attr}'`);
       }
@@ -995,6 +1152,9 @@ export class RuntimeBase {
           subtree: true,        // Watch all descendants
           characterDataOldValue: true, // Track old text values
         });
+
+        // Register for cleanup
+        this.cleanupRegistry.registerObserver(watchedElement, observer);
 
         debug.runtime(`RUNTIME BASE: MutationObserver attached to`, watchedElement, `for content changes`);
       }

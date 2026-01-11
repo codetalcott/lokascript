@@ -13,6 +13,8 @@
 
 import type { ExecutionContext, TypedExecutionContext, ValidationResult } from '../types/core';
 import type { ASTNode } from '../types/base-types';
+import type { HookContext, RuntimeHooks } from '../types/hooks';
+import { HookRegistry } from '../types/hooks';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { debug } from '../utils/debug';
 
@@ -110,10 +112,35 @@ export class ContextBridge {
  */
 export class CommandAdapterV2 implements RuntimeCommand {
   private expressionEvaluator: ExpressionEvaluator;
+  private hookRegistry: HookRegistry | null;
 
-  constructor(private impl: CommandWithParseInput, sharedEvaluator?: ExpressionEvaluator) {
+  constructor(
+    private impl: CommandWithParseInput,
+    sharedEvaluator?: ExpressionEvaluator,
+    hookRegistry?: HookRegistry
+  ) {
     // Use shared evaluator if provided, otherwise create new (backward compat)
     this.expressionEvaluator = sharedEvaluator ?? new ExpressionEvaluator();
+    this.hookRegistry = hookRegistry ?? null;
+  }
+
+  /**
+   * Create a HookContext for the current execution
+   */
+  private createHookContext(
+    context: ExecutionContext,
+    args: unknown[],
+    modifiers: Record<string, unknown> = {}
+  ): HookContext {
+    return {
+      commandName: this.name,
+      element: context.me instanceof Element ? context.me : null,
+      args,
+      modifiers,
+      // Filter out null - context.event can be Event | null | undefined
+      event: context.event ?? undefined,
+      executionContext: context,
+    };
   }
 
   get name(): string {
@@ -134,10 +161,38 @@ export class CommandAdapterV2 implements RuntimeCommand {
    * This is the key method that enables tree-shaking. Instead of having
    * command-specific logic here (like V1), we delegate to the command's
    * parseInput() method.
+   *
+   * Hook invocation order:
+   * 1. beforeExecute hooks
+   * 2. interceptCommand check (if true, skip execution)
+   * 3. Command execution
+   * 4. afterExecute hooks (on success)
+   * 5. onError hooks (on failure)
    */
   async execute(context: ExecutionContext, ...args: unknown[]): Promise<unknown> {
+    // Extract modifiers for hook context
+    const rawInput = args[0] as any;
+    const modifiers: Record<string, unknown> =
+      rawInput && typeof rawInput === 'object' && 'modifiers' in rawInput
+        ? rawInput.modifiers || {}
+        : {};
+
+    // Create hook context
+    const hookCtx = this.createHookContext(context, args, modifiers);
+
     try {
       debug.command(`CommandAdapterV2: Executing '${this.name}' with args:`, args);
+
+      // HOOK: beforeExecute
+      if (this.hookRegistry) {
+        await this.hookRegistry.runBeforeExecute(hookCtx);
+      }
+
+      // HOOK: interceptCommand - check if any hook wants to skip execution
+      if (this.hookRegistry?.shouldIntercept(this.name, hookCtx)) {
+        debug.command(`CommandAdapterV2: '${this.name}' intercepted by hook`);
+        return undefined;
+      }
 
       // Store evaluator in locals for commands that need it during execute()
       if (!context.locals) {
@@ -154,10 +209,6 @@ export class CommandAdapterV2 implements RuntimeCommand {
       // Check if command has parseInput() method (V2 commands)
       if (this.impl.parseInput && typeof this.impl.parseInput === 'function') {
         debug.command(`CommandAdapterV2: '${this.name}' has parseInput(), calling it`);
-
-        // Command has parseInput() - use it to parse raw AST input
-        // The first arg should be the raw input object with { args, modifiers }
-        const rawInput = args[0] as any;
 
         if (rawInput && typeof rawInput === 'object' && ('args' in rawInput || 'modifiers' in rawInput)) {
           // Check when/where conditional modifiers before execution
@@ -212,9 +263,21 @@ export class CommandAdapterV2 implements RuntimeCommand {
       // Update original context with changes from typed context
       Object.assign(context, ContextBridge.fromTyped(typedContext, context));
 
+      // HOOK: afterExecute
+      if (this.hookRegistry) {
+        await this.hookRegistry.runAfterExecute(hookCtx, result);
+      }
+
       return result;
     } catch (error) {
       debug.command(`CommandAdapterV2: Error executing '${this.name}':`, error);
+
+      // HOOK: onError - allow hooks to transform the error
+      if (this.hookRegistry && error instanceof Error) {
+        const transformedError = await this.hookRegistry.runOnError(hookCtx, error);
+        throw transformedError;
+      }
+
       throw error;
     }
   }
@@ -240,14 +303,34 @@ export class CommandRegistryV2 {
   private adapters = new Map<string, CommandAdapterV2>();
   private implementations = new Map<string, CommandWithParseInput>();
   private sharedEvaluator?: ExpressionEvaluator;
+  private hookRegistry?: HookRegistry;
 
   /**
    * Create a command registry.
    * @param sharedEvaluator Optional shared evaluator for tree-shaking optimization.
    *                        If not provided, each adapter creates its own evaluator.
+   * @param hookRegistry Optional hook registry for runtime hooks.
    */
-  constructor(sharedEvaluator?: ExpressionEvaluator) {
+  constructor(sharedEvaluator?: ExpressionEvaluator, hookRegistry?: HookRegistry) {
     this.sharedEvaluator = sharedEvaluator;
+    this.hookRegistry = hookRegistry;
+  }
+
+  /**
+   * Set the hook registry (can be set after construction)
+   */
+  setHookRegistry(registry: HookRegistry): void {
+    this.hookRegistry = registry;
+    // Update existing adapters with the new hook registry
+    // Note: This requires re-registering adapters, so we just store for new registrations
+    debug.runtime(`CommandRegistryV2: Hook registry set`);
+  }
+
+  /**
+   * Get the hook registry
+   */
+  getHookRegistry(): HookRegistry | undefined {
+    return this.hookRegistry;
   }
 
   /**
@@ -261,7 +344,7 @@ export class CommandRegistryV2 {
     debug.runtime(`CommandRegistryV2: Registering command '${name}'`);
 
     this.implementations.set(name, impl);
-    const adapter = new CommandAdapterV2(impl, this.sharedEvaluator);
+    const adapter = new CommandAdapterV2(impl, this.sharedEvaluator, this.hookRegistry);
     this.adapters.set(name, adapter);
 
     // Register aliases (for consolidated commands)
@@ -339,12 +422,14 @@ export class CommandRegistryV2 {
  *
  * @param commands Array of command implementations to register
  * @param sharedEvaluator Optional shared evaluator for tree-shaking optimization
+ * @param hookRegistry Optional hook registry for runtime hooks
  */
 export function createCommandRegistryV2(
   commands: CommandWithParseInput[],
-  sharedEvaluator?: ExpressionEvaluator
+  sharedEvaluator?: ExpressionEvaluator,
+  hookRegistry?: HookRegistry
 ): CommandRegistryV2 {
-  const registry = new CommandRegistryV2(sharedEvaluator);
+  const registry = new CommandRegistryV2(sharedEvaluator, hookRegistry);
 
   for (const command of commands) {
     registry.register(command);

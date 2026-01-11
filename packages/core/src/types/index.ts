@@ -212,6 +212,26 @@ export {
 } from './error-codes';
 
 // ============================================================================
+// Runtime Hooks System
+// ============================================================================
+
+export type {
+  HookContext,
+  BeforeExecuteHook,
+  AfterExecuteHook,
+  OnErrorHook,
+  InterceptCommandHook,
+  RuntimeHooks,
+} from './hooks';
+
+export {
+  HookRegistry,
+  createHooks,
+  loggingHooks,
+  createTimingHooks,
+} from './hooks';
+
+// ============================================================================
 // CodeFix Types (LSP-compatible auto-fix suggestions)
 // ============================================================================
 

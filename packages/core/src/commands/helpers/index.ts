@@ -267,3 +267,21 @@ export type {
   LoopIterationContext,
   LoopResult,
 } from './loop-executor';
+
+// Error helpers (standardized command error creation)
+export {
+  missingArgument,
+  invalidTarget,
+  noTargetElements,
+  invalidClassName,
+  invalidAttributeName,
+  invalidSelector,
+  invalidUrl,
+  invalidContext,
+  operationFailed,
+  parseError,
+  executionError,
+  unsupportedFeature,
+  toError,
+  throwValidation,
+} from './error-helpers';
