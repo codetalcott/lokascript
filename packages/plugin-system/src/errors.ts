@@ -10,7 +10,7 @@ export class PluginSystemError extends Error {
   /** Error code for programmatic handling */
   readonly code: string;
   /** Original cause if this error wraps another */
-  readonly cause?: Error;
+  readonly cause: Error | undefined;
 
   constructor(message: string, code: string, cause?: Error) {
     super(message);
@@ -46,9 +46,9 @@ export class PluginExecutionError extends PluginSystemError {
   /** Name of the plugin that failed during execution */
   readonly pluginName: string;
   /** Element that was being processed (if applicable) */
-  readonly element?: Element;
+  readonly element: Element | undefined;
   /** The command or action that failed */
-  readonly action?: string;
+  readonly action: string | undefined;
 
   constructor(
     pluginName: string,
@@ -66,8 +66,8 @@ export class PluginExecutionError extends PluginSystemError {
     );
     this.name = 'PluginExecutionError';
     this.pluginName = pluginName;
-    this.element = options?.element;
-    this.action = options?.action;
+    this.element = options?.element ?? undefined;
+    this.action = options?.action ?? undefined;
   }
 }
 
@@ -152,9 +152,9 @@ export class PluginParseError extends PluginSystemError {
   /** The input that failed to parse */
   readonly input: string;
   /** Position in the input where parsing failed */
-  readonly position?: number;
+  readonly position: number | undefined;
   /** Expected token or pattern */
-  readonly expected?: string;
+  readonly expected: string | undefined;
 
   constructor(
     message: string,
@@ -168,8 +168,8 @@ export class PluginParseError extends PluginSystemError {
     super(message, 'PLUGIN_PARSE_ERROR', options?.cause);
     this.name = 'PluginParseError';
     this.input = options?.input || '';
-    this.position = options?.position;
-    this.expected = options?.expected;
+    this.position = options?.position ?? undefined;
+    this.expected = options?.expected ?? undefined;
   }
 }
 

@@ -10,8 +10,8 @@ import type {
   RuntimeContext,
   ExecutionContext,
 } from '../types';
-import { PluginExecutionError, wrapError } from '../errors';
-import { ParserBridge, tokenize, type ExtendedParseContext } from './parser-bridge';
+import { PluginExecutionError } from '../errors';
+import { ParserBridge, tokenize } from './parser-bridge';
 
 /**
  * Configuration for runtime bridge
@@ -323,17 +323,27 @@ export class RuntimeBridge {
         commandName,
       };
     } catch (error) {
-      const execError = error instanceof PluginExecutionError
-        ? error
-        : new PluginExecutionError(
-            commandName,
-            error instanceof Error ? error.message : String(error),
-            {
-              element,
-              cause: error instanceof Error ? error : undefined,
-              action: args.join(' '),
-            }
-          );
+      let execError: PluginExecutionError;
+      if (error instanceof PluginExecutionError) {
+        execError = error;
+      } else {
+        const errorOptions: {
+          element: Element;
+          action: string;
+          cause?: Error;
+        } = {
+          element,
+          action: args.join(' '),
+        };
+        if (error instanceof Error) {
+          errorOptions.cause = error;
+        }
+        execError = new PluginExecutionError(
+          commandName,
+          error instanceof Error ? error.message : String(error),
+          errorOptions
+        );
+      }
 
       this.config.onExecutionError(execError);
 
@@ -350,7 +360,7 @@ export class RuntimeBridge {
    * Execute plugin and handle cleanup registration
    */
   private async executeWithCleanup(plugin: CommandPlugin, ctx: RuntimeContext): Promise<void> {
-    const result = await plugin.execute(ctx);
+    await plugin.execute(ctx);
 
     // Register cleanup if returned
     if (typeof ctx.cleanup === 'function') {

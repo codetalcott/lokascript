@@ -270,11 +270,18 @@ export class ParserBridge {
         this.config.onParseError(error);
         throw error;
       }
-      throw new PluginParseError(`Failed to parse command '${commandName}'`, {
+      const parseErrorOptions: {
+        input: string;
+        position: number;
+        cause?: Error;
+      } = {
         input: context.input,
         position: context.position,
-        cause: error instanceof Error ? error : undefined,
-      });
+      };
+      if (error instanceof Error) {
+        parseErrorOptions.cause = error;
+      }
+      throw new PluginParseError(`Failed to parse command '${commandName}'`, parseErrorOptions);
     }
   }
 

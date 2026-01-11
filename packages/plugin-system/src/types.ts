@@ -10,6 +10,9 @@ import type {
   ExpressionNode
 } from '../../core/src/types/core';
 
+// Re-export types for use by integration modules
+export type { ExecutionContext, ASTNode, CommandNode, ExpressionNode };
+
 export type PluginType = 'command' | 'feature' | 'transform' | 'runtime';
 export type Requirement = 'allowed' | 'required' | 'denied' | 'exclusive';
 
