@@ -12,3 +12,12 @@ export {
   type ParserBridgeConfig,
   type PluginRegistration,
 } from './parser-bridge';
+
+// Runtime integration
+export {
+  RuntimeBridge,
+  createRuntimeBridge,
+  type RuntimeBridgeConfig,
+  type ExecutionResult,
+  type ParsedCommand,
+} from './runtime-bridge';

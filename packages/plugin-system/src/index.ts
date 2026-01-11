@@ -50,6 +50,11 @@ export {
   type ExtendedParseContext,
   type ParserBridgeConfig,
   type PluginRegistration,
+  RuntimeBridge,
+  createRuntimeBridge,
+  type RuntimeBridgeConfig,
+  type ExecutionResult,
+  type ParsedCommand,
 } from './integration';
 
 // Default export is the optimized registry
