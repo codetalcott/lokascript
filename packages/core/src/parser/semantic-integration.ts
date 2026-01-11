@@ -730,55 +730,137 @@ export class SemanticIntegrationAdapter {
 
       case 'expression':
       default: {
-        // Generic expressions
+        // Generic expressions - use proper expression parsing
         const exprValue = value as { type: 'expression'; raw: string };
         const rawStr = exprValue.raw || '';
 
-        // Check if this is a property chain (e.g., "it.data", "userData.name")
-        if (rawStr.includes('.')) {
-          const parts = rawStr.split('.');
-          // Build nested memberExpression: a.b.c -> memberExpr(memberExpr(a, b), c)
-          let result: ExpressionNode = {
-            type: 'identifier',
-            name: parts[0],
-            start: 0,
-            end: 0,
-            line: 1,
-            column: 0,
-          } as unknown as ExpressionNode;
+        // Use the expression parser to properly handle method calls, property access, etc.
+        return this.parseExpressionString(rawStr);
+      }
+    }
+  }
 
-          for (let i = 1; i < parts.length; i++) {
-            result = {
-              type: 'memberExpression',
-              object: result,
-              property: {
-                type: 'identifier',
-                name: parts[i],
-                start: 0,
-                end: 0,
-                line: 1,
-                column: 0,
-              },
-              start: 0,
-              end: 0,
-              line: 1,
-              column: 0,
-            } as unknown as ExpressionNode;
-          }
-          return result;
+  /**
+   * Parse an expression string into an ExpressionNode.
+   *
+   * Handles:
+   * - Simple identifiers: x, me, result
+   * - Property access: x.y, x.y.z
+   * - Method calls: foo(), x.y(), x.y(a, b)
+   * - Nested calls: x.y(a.b, c)
+   */
+  private parseExpressionString(input: string): ExpressionNode {
+    let pos = 0;
+
+    const skipWhitespace = () => {
+      while (pos < input.length && /\s/.test(input[pos])) pos++;
+    };
+
+    const parseIdentifier = (): string => {
+      skipWhitespace();
+      const start = pos;
+      while (pos < input.length && /[a-zA-Z0-9_$]/.test(input[pos])) pos++;
+      return input.slice(start, pos);
+    };
+
+    const parseArguments = (): ExpressionNode[] => {
+      const args: ExpressionNode[] = [];
+      pos++; // skip '('
+      skipWhitespace();
+
+      if (input[pos] !== ')') {
+        // Parse first argument
+        args.push(parseExpression());
+        skipWhitespace();
+
+        // Parse remaining arguments
+        while (input[pos] === ',') {
+          pos++; // skip ','
+          skipWhitespace();
+          args.push(parseExpression());
+          skipWhitespace();
         }
+      }
 
-        // Simple identifier
+      if (input[pos] === ')') pos++; // skip ')'
+      return args;
+    };
+
+    const parseExpression = (): ExpressionNode => {
+      skipWhitespace();
+
+      // Start with identifier
+      const name = parseIdentifier();
+      if (!name) {
+        // Fallback for unparseable content
         return {
           type: 'identifier',
-          name: rawStr,
+          name: input.trim(),
           start: 0,
           end: 0,
           line: 1,
           column: 0,
         } as unknown as ExpressionNode;
       }
-    }
+
+      let result: ExpressionNode = {
+        type: 'identifier',
+        name,
+        start: 0,
+        end: 0,
+        line: 1,
+        column: 0,
+      } as unknown as ExpressionNode;
+
+      // Handle postfix operations (property access and function calls)
+      while (pos < input.length) {
+        skipWhitespace();
+        const char = input[pos];
+
+        if (char === '.') {
+          // Property access
+          pos++; // skip '.'
+          const property = parseIdentifier();
+          if (property) {
+            result = {
+              type: 'memberExpression',
+              object: result,
+              property: {
+                type: 'identifier',
+                name: property,
+                start: 0,
+                end: 0,
+                line: 1,
+                column: 0,
+              },
+              computed: false,
+              start: 0,
+              end: 0,
+              line: 1,
+              column: 0,
+            } as unknown as ExpressionNode;
+          }
+        } else if (char === '(') {
+          // Function call
+          const args = parseArguments();
+          result = {
+            type: 'callExpression',
+            callee: result,
+            arguments: args,
+            start: 0,
+            end: 0,
+            line: 1,
+            column: 0,
+          } as unknown as ExpressionNode;
+        } else {
+          break;
+        }
+      }
+
+      return result;
+    };
+
+    return parseExpression();
   }
 
   /**

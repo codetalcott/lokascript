@@ -2853,11 +2853,8 @@ export class Parser {
       // Body-based commands that require traditional parsing:
       'js',   // js ... end with body content
       'tell', // tell <target> <commands> with body
-      // ⚠️ 'call'/'get' MUST use traditional parsing for method calls like me.insertBefore(a, b)
-      // The semantic parser incorrectly combines method names with parentheses as single tokens
-      // See commit f5f4de90 for details on the original fix
-      'call',
-      'get',
+      // ✅ 'call'/'get' now supported via parseExpressionString() in SemanticIntegrationAdapter
+      // which properly handles method calls like me.insertBefore(a, b)
     ];
 
     if (this.semanticAdapter && !skipSemanticParsing.includes(commandName.toLowerCase())) {
