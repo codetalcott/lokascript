@@ -342,3 +342,178 @@ describe('Confidence thresholds', () => {
     expect(HIGH_CONFIDENCE_THRESHOLD).toBe(0.8);
   });
 });
+
+// =============================================================================
+// Expression Parsing Tests (parseExpressionString)
+// =============================================================================
+
+describe('parseExpressionString (via expression type values)', () => {
+  /**
+   * These tests verify the internal parseExpressionString method by testing
+   * through the public interface. The adapter calls parseExpressionString
+   * when converting 'expression' type semantic values.
+   */
+
+  function createExpressionMockAnalyzer(expressionValue: string): SemanticAnalyzer {
+    return {
+      analyze: vi.fn(() => ({
+        confidence: 0.9,
+        command: {
+          name: 'call',
+          roles: new Map([
+            ['patient', { type: 'expression', raw: expressionValue }],
+          ]),
+        },
+        tokensConsumed: 1,
+      })),
+      supportsLanguage: () => true,
+      supportedLanguages: () => ['en'],
+    };
+  }
+
+  it('should parse simple identifiers', () => {
+    const analyzer = createExpressionMockAnalyzer('myVar');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call myVar');
+
+    expect(result.success).toBe(true);
+    expect(result.node?.args?.[0]).toMatchObject({
+      type: 'identifier',
+      name: 'myVar',
+    });
+  });
+
+  it('should parse property access: me.textContent', () => {
+    const analyzer = createExpressionMockAnalyzer('me.textContent');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('get me.textContent');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+    expect(expr.type).toBe('memberExpression');
+    expect(expr.object.name).toBe('me');
+    expect(expr.property.name).toBe('textContent');
+  });
+
+  it('should parse chained property access: obj.foo.bar', () => {
+    const analyzer = createExpressionMockAnalyzer('obj.foo.bar');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('get obj.foo.bar');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+    expect(expr.type).toBe('memberExpression');
+    expect(expr.property.name).toBe('bar');
+    expect(expr.object.type).toBe('memberExpression');
+    expect(expr.object.property.name).toBe('foo');
+    expect(expr.object.object.name).toBe('obj');
+  });
+
+  it('should parse method calls with no arguments: foo()', () => {
+    const analyzer = createExpressionMockAnalyzer('foo()');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call foo()');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+    expect(expr.type).toBe('callExpression');
+    expect(expr.callee.name).toBe('foo');
+    expect(expr.arguments).toHaveLength(0);
+  });
+
+  it('should parse method calls with arguments: me.insertBefore(a, b)', () => {
+    const analyzer = createExpressionMockAnalyzer('me.insertBefore(draggedItem, dropTarget)');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call me.insertBefore(draggedItem, dropTarget)');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+
+    // Should be a callExpression
+    expect(expr.type).toBe('callExpression');
+
+    // Callee should be memberExpression: me.insertBefore
+    expect(expr.callee.type).toBe('memberExpression');
+    expect(expr.callee.object.name).toBe('me');
+    expect(expr.callee.property.name).toBe('insertBefore');
+
+    // Should have 2 arguments
+    expect(expr.arguments).toHaveLength(2);
+    expect(expr.arguments[0].name).toBe('draggedItem');
+    expect(expr.arguments[1].name).toBe('dropTarget');
+  });
+
+  it('should parse nested property access in arguments: x.y(a.b, c)', () => {
+    const analyzer = createExpressionMockAnalyzer('x.y(a.b, c)');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call x.y(a.b, c)');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+
+    expect(expr.type).toBe('callExpression');
+    expect(expr.arguments).toHaveLength(2);
+
+    // First argument: a.b (memberExpression)
+    expect(expr.arguments[0].type).toBe('memberExpression');
+    expect(expr.arguments[0].object.name).toBe('a');
+    expect(expr.arguments[0].property.name).toBe('b');
+
+    // Second argument: c (identifier)
+    expect(expr.arguments[1].type).toBe('identifier');
+    expect(expr.arguments[1].name).toBe('c');
+  });
+
+  it('should parse chained method calls: obj.method().another()', () => {
+    const analyzer = createExpressionMockAnalyzer('obj.method().another()');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call obj.method().another()');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+
+    // Outermost: callExpression for .another()
+    expect(expr.type).toBe('callExpression');
+    expect(expr.callee.type).toBe('memberExpression');
+    expect(expr.callee.property.name).toBe('another');
+
+    // Inner: callExpression for .method()
+    const inner = expr.callee.object;
+    expect(inner.type).toBe('callExpression');
+    expect(inner.callee.type).toBe('memberExpression');
+    expect(inner.callee.property.name).toBe('method');
+    expect(inner.callee.object.name).toBe('obj');
+  });
+
+  it('should handle whitespace in expressions', () => {
+    const analyzer = createExpressionMockAnalyzer('  foo  .  bar  (  x  ,  y  )  ');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call foo.bar(x, y)');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+    expect(expr.type).toBe('callExpression');
+    expect(expr.callee.property.name).toBe('bar');
+    expect(expr.arguments).toHaveLength(2);
+  });
+
+  it('should fallback to identifier for empty/unparseable input', () => {
+    const analyzer = createExpressionMockAnalyzer('');
+    const adapter = new SemanticIntegrationAdapter({ analyzer, language: 'en' });
+
+    const result = adapter.trySemanticParse('call');
+
+    expect(result.success).toBe(true);
+    const expr = result.node?.args?.[0] as any;
+    expect(expr.type).toBe('identifier');
+    expect(expr.name).toBe('');
+  });
+});
