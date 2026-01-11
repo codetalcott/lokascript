@@ -661,6 +661,25 @@ registerCommandMapper({
 - Standard tokenization
 - Community contributions welcome
 
+## Language Editor
+
+A browser-based editor for viewing and editing language profiles is available at `editor/index.html`.
+
+```bash
+# From packages/semantic/editor:
+./serve.sh
+
+# Or from project root:
+npx http-server . -p 3000 -c-1
+# Then open: http://127.0.0.1:3000/packages/semantic/editor/
+```
+
+Features:
+- Edit keywords, role markers, references, possessive config
+- View patterns per language (read-only)
+- Live parse testing
+- Export as TypeScript for PRs
+
 ## License
 
 MIT

@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semantic Language Profile Editor</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5a6fd6;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --bg: #f5f5f5;
+      --card-bg: #fff;
+      --text: #333;
+      --text-muted: #666;
+      --border: #ddd;
+      --modified: #fff3cd;
+      --radius: 6px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Language Selector */
+    .language-select {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      cursor: pointer;
+    }
+
+    .language-select option {
+      color: var(--text);
+      background: var(--card-bg);
+    }
+
+    /* Pending Badge */
+    .pending-badge {
+      background: var(--warning);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Tab Navigation */
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group input.modified {
+      background: var(--modified);
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table th {
+      background: var(--bg);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .data-table tr:hover {
+      background: #fafafa;
+    }
+
+    .data-table input {
+      width: 100%;
+      padding: 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .data-table input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .data-table input.modified {
+      background: var(--modified);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Search */
+    .search-box {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+    }
+
+    /* Keywords Table */
+    .keyword-row.hidden {
+      display: none;
+    }
+
+    /* Alternatives Input */
+    .alternatives-input {
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    /* Verb Form Select */
+    .verb-form-select {
+      padding: 0.3rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    /* Patterns Panel */
+    .pattern-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pattern-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .pattern-id {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--primary);
+    }
+
+    .pattern-priority {
+      font-size: 0.75rem;
+      background: var(--bg);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .pattern-template {
+      font-family: monospace;
+      font-size: 0.9rem;
+      background: var(--card-bg);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .pattern-tokens {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .token {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    .token.literal {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .token.role {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    /* Test Panel */
+    .test-panel {
+      background: #fafafa;
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .test-input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .test-input-row input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-family: monospace;
+    }
+
+    .test-result {
+      font-family: monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      background: var(--card-bg);
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .test-result.success {
+      border-color: var(--success);
+    }
+
+    .test-result.error {
+      border-color: var(--danger);
+    }
+
+    /* Export Panel */
+    .export-preview {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      padding: 1rem;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    /* Scrollable table container */
+    .table-container {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    /* Command filter buttons */
+    .command-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .command-filter button {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .command-filter button.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Loading state */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1>Semantic Language Profile Editor</h1>
+    <div class="header-controls">
+      <select id="language-select" class="language-select"
+        _="on change call selectLanguage(my value)">
+        <option value="">Loading...</option>
+      </select>
+      <span id="pending-badge" class="pending-badge" style="display:none"
+        _="on pendingChanged(count) from window
+             if count > 0
+               show me then put count + ' pending' into me
+             else
+               hide me
+             end">
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="stat-keywords">-</div>
+        <div class="stat-label">Keywords</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-patterns">-</div>
+        <div class="stat-label">Patterns</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-references">-</div>
+        <div class="stat-label">References</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-markers">-</div>
+        <div class="stat-label">Role Markers</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="profile"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-profile">
+        Profile
+      </button>
+      <button class="tab-btn" data-tab="keywords"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-keywords">
+        Keywords
+      </button>
+      <button class="tab-btn" data-tab="markers"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-markers">
+        Markers
+      </button>
+      <button class="tab-btn" data-tab="references"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-references">
+        References
+      </button>
+      <button class="tab-btn" data-tab="possessive"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-possessive">
+        Possessive
+      </button>
+      <button class="tab-btn" data-tab="patterns"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-patterns">
+        Patterns
+      </button>
+      <button class="tab-btn" data-tab="export"
+        _="on click remove .active from .tab-btn then add .active to me
+           then remove .active from .tab-panel then add .active to #panel-export
+           then call generateExport()">
+        Export
+      </button>
+    </nav>
+
+    <!-- Profile Tab -->
+    <div id="panel-profile" class="tab-panel active">
+      <div class="section-header">
+        <h2 class="section-title">Basic Configuration</h2>
+      </div>
+      <div class="form-grid" id="profile-form">
+        <div class="form-group">
+          <label>Code</label>
+          <input type="text" id="profile-code" readonly>
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="profile-name"
+            _="on input call trackChange('name', my value) then add .modified to me">
+        </div>
+        <div class="form-group">
+          <label>Native Name</label>
+          <input type="text" id="profile-nativeName"
+            _="on input call trackChange('nativeName', my value) then add .modified to me">
+        </div>
+        <div class="form-group">
+          <label>Direction</label>
+          <select id="profile-direction"
+            _="on change call trackChange('direction', my value) then add .modified to me">
+            <option value="ltr">Left-to-Right (ltr)</option>
+            <option value="rtl">Right-to-Left (rtl)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Word Order</label>
+          <select id="profile-wordOrder"
+            _="on change call trackChange('wordOrder', my value) then add .modified to me">
+            <option value="SVO">Subject-Verb-Object (SVO)</option>
+            <option value="SOV">Subject-Object-Verb (SOV)</option>
+            <option value="VSO">Verb-Subject-Object (VSO)</option>
+            <option value="VOS">Verb-Object-Subject (VOS)</option>
+            <option value="OSV">Object-Subject-Verb (OSV)</option>
+            <option value="OVS">Object-Verb-Subject (OVS)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Marking Strategy</label>
+          <select id="profile-markingStrategy"
+            _="on change call trackChange('markingStrategy', my value) then add .modified to me">
+            <option value="preposition">Preposition</option>
+            <option value="postposition">Postposition</option>
+            <option value="particle">Particle</option>
+            <option value="case-suffix">Case Suffix</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Uses Spaces</label>
+          <select id="profile-usesSpaces"
+            _="on change call trackChange('usesSpaces', my value === 'true') then add .modified to me">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Default Verb Form</label>
+          <select id="profile-defaultVerbForm"
+            _="on change call trackChange('defaultVerbForm', my value) then add .modified to me">
+            <option value="infinitive">Infinitive</option>
+            <option value="imperative">Imperative</option>
+            <option value="base">Base</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top: 2rem;">
+        <h2 class="section-title">Verb Configuration</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Verb Position</label>
+          <select id="verb-position"
+            _="on change call trackChange('verb.position', my value) then add .modified to me">
+            <option value="start">Start</option>
+            <option value="end">End</option>
+            <option value="second">Second (V2)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subject Drop</label>
+          <select id="verb-subjectDrop"
+            _="on change call trackChange('verb.subjectDrop', my value === 'true') then add .modified to me">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keywords Tab -->
+    <div id="panel-keywords" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Command Keywords</h2>
+      </div>
+      <div class="search-box">
+        <input type="text" id="keyword-search" placeholder="Search keywords..."
+          _="on input
+               set :query to my value.toLowerCase() then
+               for row in .keyword-row
+                 if row's textContent.toLowerCase() contains :query
+                   remove .hidden from row
+                 else
+                   add .hidden to row
+                 end
+               end">
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 120px;">English Key</th>
+              <th style="width: 150px;">Primary</th>
+              <th>Alternatives (comma-separated)</th>
+              <th style="width: 100px;">Form</th>
+            </tr>
+          </thead>
+          <tbody id="keywords-body">
+            <tr><td colspan="4" class="loading">Select a language to view keywords</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Markers Tab -->
+    <div id="panel-markers" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Role Markers</h2>
+      </div>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        Role markers are grammatical particles or prepositions used to indicate semantic roles.
+      </p>
+      <table class="data-table" id="markers-table">
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Primary Marker</th>
+            <th>Alternatives (comma-separated)</th>
+            <th>Position</th>
+          </tr>
+        </thead>
+        <tbody id="markers-body">
+          <tr><td colspan="4" class="loading">Select a language to view markers</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- References Tab -->
+    <div id="panel-references" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Reference Translations</h2>
+      </div>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        How special references like "me", "it", "you" are translated in this language.
+      </p>
+      <div class="form-grid" id="references-form">
+        <div class="loading">Select a language to view references</div>
+      </div>
+    </div>
+
+    <!-- Possessive Tab -->
+    <div id="panel-possessive" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Possessive Configuration</h2>
+      </div>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        How "X's property" expressions are constructed in this language.
+      </p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Possessive Marker</label>
+          <input type="text" id="possessive-marker" placeholder="e.g., 's, の, de"
+            _="on input call trackChange('possessive.marker', my value) then add .modified to me">
+        </div>
+        <div class="form-group">
+          <label>Marker Position</label>
+          <select id="possessive-markerPosition"
+            _="on change call trackChange('possessive.markerPosition', my value) then add .modified to me">
+            <option value="after-object">After Object (X's Y)</option>
+            <option value="between">Between (X の Y)</option>
+            <option value="before-property">Before Property (Y de X)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Use Possessive Adjectives</label>
+          <select id="possessive-usePossessiveAdjectives"
+            _="on change call trackChange('possessive.usePossessiveAdjectives', my value === 'true') then add .modified to me">
+            <option value="false">No</option>
+            <option value="true">Yes (e.g., my, your, su)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top: 2rem;">
+        <h2 class="section-title">Special Possessive Forms</h2>
+      </div>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        Special forms for possessive pronouns (e.g., "me" becomes "my").
+      </p>
+      <div class="form-grid" id="possessive-forms">
+        <div class="loading">Select a language to view possessive forms</div>
+      </div>
+    </div>
+
+    <!-- Patterns Tab -->
+    <div id="panel-patterns" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Language Patterns</h2>
+        <span style="color: var(--text-muted); font-size: 0.85rem;">(Read-only)</span>
+      </div>
+
+      <div class="command-filter" id="command-filter">
+        <button class="active" data-command="all"
+          _="on click
+               remove .active from <button/> in #command-filter then
+               add .active to me then
+               call filterPatterns('all')">
+          All
+        </button>
+      </div>
+
+      <div id="patterns-list">
+        <div class="loading">Select a language to view patterns</div>
+      </div>
+
+      <!-- Test Panel -->
+      <div class="test-panel">
+        <h3 style="margin-bottom: 1rem; font-size: 1rem;">Live Parse Test</h3>
+        <div class="test-input-row">
+          <input type="text" id="test-input" placeholder="Enter hyperscript to parse..."
+            _="on keydown[key is 'Enter'] call runParseTest()">
+          <button class="btn btn-primary"
+            _="on click call runParseTest()">
+            Parse
+          </button>
+        </div>
+        <div id="test-result" class="test-result" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Export Tab -->
+    <div id="panel-export" class="tab-panel">
+      <div class="section-header">
+        <h2 class="section-title">Export Profile</h2>
+      </div>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">
+        Copy this TypeScript code and replace the content of
+        <code>packages/semantic/src/generators/profiles/{code}.ts</code>
+      </p>
+      <pre class="export-preview" id="export-code">// Select a language and make changes to generate export</pre>
+      <div class="export-actions">
+        <button class="btn btn-primary"
+          _="on click
+               call copyToClipboard(#export-code's textContent) then
+               put 'Copied!' into me then
+               wait 2s then
+               put 'Copy to Clipboard' into me">
+          Copy to Clipboard
+        </button>
+        <button class="btn btn-secondary"
+          _="on click call downloadExport()">
+          Download as .ts
+        </button>
+        <button class="btn btn-secondary"
+          _="on click call resetChanges()">
+          Reset All Changes
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Load hyperfixi for UI interactions -->
+  <script src="../../core/dist/hyperfixi-browser.js"
+    onerror="console.error('Failed to load hyperfixi-browser.js'); alert('Failed to load core bundle. Check path: ../../core/dist/hyperfixi-browser.js')"></script>
+
+  <!-- Load semantic bundle for profiles and parsing -->
+  <script src="../dist/browser.global.js"
+    onerror="console.error('Failed to load browser.global.js'); alert('Failed to load semantic bundle. Check path: ../dist/browser.global.js')"></script>
+
+  <script>
+    // Verify bundles loaded
+    window.addEventListener('load', () => {
+      if (typeof hyperfixi === 'undefined') {
+        console.warn('hyperfixi core not loaded - hyperscript UI will not work');
+      }
+      if (typeof HyperFixiSemantic === 'undefined') {
+        console.error('HyperFixiSemantic not loaded');
+      }
+    });
+  </script>
+
+  <script>
+    // ==========================================================================
+    // State
+    // ==========================================================================
+    const state = {
+      currentLanguage: null,
+      pendingChanges: new Map(),  // key: path, value: new value
+      originalProfile: null,
+    };
+
+    // Semantic roles for markers
+    const SEMANTIC_ROLES = ['destination', 'source', 'patient', 'style', 'instrument', 'manner'];
+
+    // Reference keys
+    const REFERENCE_KEYS = ['me', 'it', 'you', 'result', 'event', 'target', 'body'];
+
+    // Possessive special form keys
+    const POSSESSIVE_FORM_KEYS = ['me', 'it', 'you'];
+
+    // ==========================================================================
+    // Initialization
+    // ==========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, checking HyperFixiSemantic...');
+      console.log('HyperFixiSemantic:', typeof HyperFixiSemantic);
+
+      if (typeof HyperFixiSemantic === 'undefined') {
+        console.error('HyperFixiSemantic not loaded! Check script path.');
+        document.getElementById('language-select').innerHTML =
+          '<option value="">ERROR: Semantic bundle not loaded</option>';
+        return;
+      }
+
+      console.log('HyperFixiSemantic keys:', Object.keys(HyperFixiSemantic).slice(0, 10));
+      console.log('registeredLanguageProfiles:', HyperFixiSemantic.registeredLanguageProfiles);
+
+      populateLanguageSelector();
+      loadFromLocalStorage();
+    });
+
+    function populateLanguageSelector() {
+      const select = document.getElementById('language-select');
+
+      if (typeof HyperFixiSemantic === 'undefined') {
+        select.innerHTML = '<option value="">Semantic bundle not loaded</option>';
+        return;
+      }
+
+      const profiles = HyperFixiSemantic.registeredLanguageProfiles;
+      console.log('Profiles object:', profiles);
+      console.log('Profile keys:', profiles ? Object.keys(profiles) : 'null');
+
+      if (!profiles || Object.keys(profiles).length === 0) {
+        select.innerHTML = '<option value="">No profiles loaded</option>';
+        return;
+      }
+
+      let html = '<option value="">Select language...</option>';
+      for (const [code, profile] of Object.entries(profiles)) {
+        console.log(`Adding language: ${code}`, profile?.nativeName);
+        html += `<option value="${code}">${profile.nativeName || code} (${code})</option>`;
+      }
+      select.innerHTML = html;
+    }
+
+    // ==========================================================================
+    // Language Selection
+    // ==========================================================================
+    window.selectLanguage = function(code) {
+      if (!code) return;
+
+      const profiles = HyperFixiSemantic.registeredLanguageProfiles;
+      const profile = profiles[code];
+
+      if (!profile) {
+        alert(`Profile not found for ${code}`);
+        return;
+      }
+
+      state.currentLanguage = code;
+      state.originalProfile = JSON.parse(JSON.stringify(profile)); // Deep clone
+
+      // Apply pending changes if any
+      applyPendingChanges();
+
+      // Render all tabs
+      renderProfileTab(profile);
+      renderKeywordsTab(profile);
+      renderMarkersTab(profile);
+      renderReferencesTab(profile);
+      renderPossessiveTab(profile);
+      renderPatternsTab(code);
+      updateStats(profile, code);
+    };
+
+    function applyPendingChanges() {
+      // Re-apply any pending changes for this language
+      for (const [key, value] of state.pendingChanges) {
+        if (key.startsWith(state.currentLanguage + ':')) {
+          const path = key.split(':').slice(1).join(':');
+          // Will be applied when rendering
+        }
+      }
+    }
+
+    // ==========================================================================
+    // Profile Tab
+    // ==========================================================================
+    function renderProfileTab(profile) {
+      document.getElementById('profile-code').value = profile.code;
+      document.getElementById('profile-name').value = profile.name;
+      document.getElementById('profile-nativeName').value = profile.nativeName;
+      document.getElementById('profile-direction').value = profile.direction;
+      document.getElementById('profile-wordOrder').value = profile.wordOrder;
+      document.getElementById('profile-markingStrategy').value = profile.markingStrategy;
+      document.getElementById('profile-usesSpaces').value = profile.usesSpaces ? 'true' : 'false';
+      document.getElementById('profile-defaultVerbForm').value = profile.defaultVerbForm || 'infinitive';
+
+      // Verb config
+      if (profile.verb) {
+        document.getElementById('verb-position').value = profile.verb.position || 'start';
+        document.getElementById('verb-subjectDrop').value = profile.verb.subjectDrop ? 'true' : 'false';
+      }
+
+      // Remove modified class
+      document.querySelectorAll('#panel-profile .modified').forEach(el => el.classList.remove('modified'));
+    }
+
+    // ==========================================================================
+    // Keywords Tab
+    // ==========================================================================
+    function renderKeywordsTab(profile) {
+      const tbody = document.getElementById('keywords-body');
+      const keywords = profile.keywords || {};
+
+      let html = '';
+      const sortedKeys = Object.keys(keywords).sort();
+
+      for (const key of sortedKeys) {
+        const kw = keywords[key];
+        const primary = typeof kw === 'string' ? kw : kw.primary || '';
+        const alternatives = typeof kw === 'object' && kw.alternatives ? kw.alternatives.join(', ') : '';
+        const form = typeof kw === 'object' ? (kw.form || 'infinitive') : 'infinitive';
+
+        html += `
+          <tr class="keyword-row" data-key="${key}">
+            <td><code>${key}</code></td>
+            <td>
+              <input type="text" value="${escapeHtml(primary)}"
+                data-key="${key}" data-field="primary"
+                _="on input call trackKeywordChange('${key}', 'primary', my value) then add .modified to me">
+            </td>
+            <td>
+              <input type="text" class="alternatives-input" value="${escapeHtml(alternatives)}"
+                data-key="${key}" data-field="alternatives"
+                _="on input call trackKeywordChange('${key}', 'alternatives', my value) then add .modified to me">
+            </td>
+            <td>
+              <select class="verb-form-select" data-key="${key}" data-field="form"
+                _="on change call trackKeywordChange('${key}', 'form', my value) then add .modified to me">
+                <option value="infinitive" ${form === 'infinitive' ? 'selected' : ''}>infinitive</option>
+                <option value="imperative" ${form === 'imperative' ? 'selected' : ''}>imperative</option>
+                <option value="base" ${form === 'base' ? 'selected' : ''}>base</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }
+
+      tbody.innerHTML = html || '<tr><td colspan="4">No keywords defined</td></tr>';
+    }
+
+    window.trackKeywordChange = function(key, field, value) {
+      const path = `keywords.${key}.${field}`;
+      trackChange(path, value);
+    };
+
+    // ==========================================================================
+    // Markers Tab
+    // ==========================================================================
+    function renderMarkersTab(profile) {
+      const tbody = document.getElementById('markers-body');
+      const markers = profile.roleMarkers || {};
+
+      let html = '';
+      for (const role of SEMANTIC_ROLES) {
+        const marker = markers[role] || {};
+        const primary = marker.primary || '';
+        const alternatives = marker.alternatives ? marker.alternatives.join(', ') : '';
+        const position = marker.position || 'before';
+
+        html += `
+          <tr data-role="${role}">
+            <td><code>${role}</code></td>
+            <td>
+              <input type="text" value="${escapeHtml(primary)}"
+                _="on input call trackMarkerChange('${role}', 'primary', my value) then add .modified to me">
+            </td>
+            <td>
+              <input type="text" class="alternatives-input" value="${escapeHtml(alternatives)}"
+                _="on input call trackMarkerChange('${role}', 'alternatives', my value) then add .modified to me">
+            </td>
+            <td>
+              <select
+                _="on change call trackMarkerChange('${role}', 'position', my value) then add .modified to me">
+                <option value="before" ${position === 'before' ? 'selected' : ''}>before</option>
+                <option value="after" ${position === 'after' ? 'selected' : ''}>after</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }
+
+      tbody.innerHTML = html;
+    }
+
+    window.trackMarkerChange = function(role, field, value) {
+      const path = `roleMarkers.${role}.${field}`;
+      trackChange(path, value);
+    };
+
+    // ==========================================================================
+    // References Tab
+    // ==========================================================================
+    function renderReferencesTab(profile) {
+      const container = document.getElementById('references-form');
+      const refs = profile.references || {};
+
+      let html = '';
+      for (const key of REFERENCE_KEYS) {
+        const value = refs[key] || '';
+        html += `
+          <div class="form-group">
+            <label>${key}</label>
+            <input type="text" value="${escapeHtml(value)}"
+              _="on input call trackChange('references.${key}', my value) then add .modified to me">
+          </div>
+        `;
+      }
+
+      container.innerHTML = html || '<div>No references defined</div>';
+    }
+
+    // ==========================================================================
+    // Possessive Tab
+    // ==========================================================================
+    function renderPossessiveTab(profile) {
+      const poss = profile.possessive || {};
+
+      document.getElementById('possessive-marker').value = poss.marker || '';
+      document.getElementById('possessive-markerPosition').value = poss.markerPosition || 'after-object';
+      document.getElementById('possessive-usePossessiveAdjectives').value = poss.usePossessiveAdjectives ? 'true' : 'false';
+
+      // Special forms
+      const container = document.getElementById('possessive-forms');
+      const forms = poss.specialForms || {};
+
+      let html = '';
+      for (const key of POSSESSIVE_FORM_KEYS) {
+        const value = forms[key] || '';
+        html += `
+          <div class="form-group">
+            <label>${key} becomes</label>
+            <input type="text" value="${escapeHtml(value)}" placeholder="e.g., ${key === 'me' ? 'my' : key === 'you' ? 'your' : 'its'}"
+              _="on input call trackChange('possessive.specialForms.${key}', my value) then add .modified to me">
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ==========================================================================
+    // Patterns Tab
+    // ==========================================================================
+    function renderPatternsTab(langCode) {
+      const container = document.getElementById('patterns-list');
+      const filterContainer = document.getElementById('command-filter');
+
+      // Try to get patterns - this may not be exposed in browser bundle
+      let patterns = [];
+      try {
+        if (typeof HyperFixiSemantic.getPatternsForLanguage === 'function') {
+          patterns = HyperFixiSemantic.getPatternsForLanguage(langCode);
+        }
+      } catch (e) {
+        console.warn('getPatternsForLanguage not available:', e);
+      }
+
+      if (!patterns || patterns.length === 0) {
+        container.innerHTML = '<div class="loading">No patterns available (getPatternsForLanguage may not be exported)</div>';
+        return;
+      }
+
+      // Build command filter buttons
+      const commands = [...new Set(patterns.map(p => p.command))].sort();
+      let filterHtml = `
+        <button class="active" data-command="all"
+          _="on click
+               remove .active from <button/> in #command-filter then
+               add .active to me then
+               call filterPatterns('all')">
+          All (${patterns.length})
+        </button>
+      `;
+      for (const cmd of commands) {
+        const count = patterns.filter(p => p.command === cmd).length;
+        filterHtml += `
+          <button data-command="${cmd}"
+            _="on click
+                 remove .active from <button/> in #command-filter then
+                 add .active to me then
+                 call filterPatterns('${cmd}')">
+            ${cmd} (${count})
+          </button>
+        `;
+      }
+      filterContainer.innerHTML = filterHtml;
+
+      // Render patterns
+      let html = '';
+      for (const pattern of patterns.sort((a, b) => b.priority - a.priority)) {
+        html += renderPatternCard(pattern);
+      }
+      container.innerHTML = html;
+    }
+
+    function renderPatternCard(pattern) {
+      const tokens = pattern.template?.tokens || [];
+      let tokensHtml = '';
+      for (const token of tokens) {
+        if (token.type === 'literal') {
+          tokensHtml += `<span class="token literal">${escapeHtml(token.value)}</span>`;
+          if (token.alternatives) {
+            tokensHtml += `<span class="token literal" style="opacity:0.6">[${token.alternatives.join(', ')}]</span>`;
+          }
+        } else if (token.type === 'role') {
+          tokensHtml += `<span class="token role">{${token.role}}</span>`;
+        } else if (token.type === 'group') {
+          tokensHtml += `<span class="token" style="background:#fff3cd;">(group)</span>`;
+        }
+      }
+
+      return `
+        <div class="pattern-card" data-command="${pattern.command}">
+          <div class="pattern-header">
+            <span class="pattern-id">${pattern.id}</span>
+            <span class="pattern-priority">priority: ${pattern.priority}</span>
+          </div>
+          <div class="pattern-template">${escapeHtml(pattern.template?.format || '')}</div>
+          <div class="pattern-tokens">${tokensHtml}</div>
+        </div>
+      `;
+    }
+
+    window.filterPatterns = function(command) {
+      const cards = document.querySelectorAll('.pattern-card');
+      for (const card of cards) {
+        if (command === 'all' || card.dataset.command === command) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      }
+    };
+
+    // ==========================================================================
+    // Live Parse Test
+    // ==========================================================================
+    window.runParseTest = function() {
+      const input = document.getElementById('test-input').value;
+      const resultEl = document.getElementById('test-result');
+
+      if (!input.trim()) {
+        resultEl.style.display = 'none';
+        return;
+      }
+
+      if (!state.currentLanguage) {
+        resultEl.textContent = 'Error: Select a language first';
+        resultEl.className = 'test-result error';
+        resultEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const result = HyperFixiSemantic.parse(input, state.currentLanguage);
+
+        if (result) {
+          const output = {
+            action: result.action,
+            roles: {},
+            confidence: result.metadata?.confidence,
+            pattern: result.metadata?.patternId,
+          };
+
+          // Extract roles
+          for (const [key, value] of Object.entries(result)) {
+            if (key !== 'action' && key !== 'metadata' && key !== 'type' && value) {
+              output.roles[key] = formatSemanticValue(value);
+            }
+          }
+
+          resultEl.textContent = JSON.stringify(output, null, 2);
+          resultEl.className = 'test-result success';
+        } else {
+          resultEl.textContent = 'Parse failed: No result returned';
+          resultEl.className = 'test-result error';
+        }
+      } catch (e) {
+        resultEl.textContent = `Parse error: ${e.message}`;
+        resultEl.className = 'test-result error';
+      }
+
+      resultEl.style.display = 'block';
+    };
+
+    function formatSemanticValue(value) {
+      if (!value) return null;
+      if (typeof value === 'string') return value;
+      if (value.type === 'selector') return value.value;
+      if (value.type === 'literal') return value.value;
+      if (value.type === 'reference') return `@${value.value}`;
+      if (value.type === 'property-path') return `${value.object}.${value.property}`;
+      return JSON.stringify(value);
+    }
+
+    // ==========================================================================
+    // Change Tracking
+    // ==========================================================================
+    window.trackChange = function(path, value) {
+      if (!state.currentLanguage) return;
+
+      const key = `${state.currentLanguage}:${path}`;
+      state.pendingChanges.set(key, value);
+
+      saveToLocalStorage();
+      updatePendingBadge();
+    };
+
+    function updatePendingBadge() {
+      const count = state.pendingChanges.size;
+      window.dispatchEvent(new CustomEvent('pendingChanged', { detail: { count } }));
+    }
+
+    // ==========================================================================
+    // Export
+    // ==========================================================================
+    window.generateExport = function() {
+      if (!state.currentLanguage || !state.originalProfile) {
+        return;
+      }
+
+      // Build modified profile
+      const profile = JSON.parse(JSON.stringify(state.originalProfile));
+
+      // Apply pending changes
+      for (const [key, value] of state.pendingChanges) {
+        if (key.startsWith(state.currentLanguage + ':')) {
+          const path = key.split(':').slice(1).join(':');
+          setNestedValue(profile, path, value);
+        }
+      }
+
+      // Generate TypeScript
+      const code = generateTypeScript(profile);
+      document.getElementById('export-code').textContent = code;
+    };
+
+    function setNestedValue(obj, path, value) {
+      const parts = path.split('.');
+      let current = obj;
+
+      for (let i = 0; i < parts.length - 1; i++) {
+        const part = parts[i];
+        if (!current[part]) {
+          current[part] = {};
+        }
+        current = current[part];
+      }
+
+      const lastPart = parts[parts.length - 1];
+
+      // Handle alternatives (convert comma-separated to array)
+      if (lastPart === 'alternatives' && typeof value === 'string') {
+        current[lastPart] = value.split(',').map(s => s.trim()).filter(s => s);
+      } else {
+        current[lastPart] = value;
+      }
+    }
+
+    function generateTypeScript(profile) {
+      const lines = [];
+      lines.push('/**');
+      lines.push(` * ${profile.name} Language Profile`);
+      lines.push(' * Generated by Semantic Language Editor');
+      lines.push(' */');
+      lines.push('');
+      lines.push("import type { LanguageProfile } from './types';");
+      lines.push('');
+      lines.push(`export const ${profile.code === 'en' ? 'english' : profile.name.toLowerCase()}Profile: LanguageProfile = ${stringifyProfile(profile, 0)};`);
+
+      return lines.join('\n');
+    }
+
+    function stringifyProfile(obj, indent) {
+      const spaces = '  '.repeat(indent);
+      const innerSpaces = '  '.repeat(indent + 1);
+
+      if (obj === null) return 'null';
+      if (obj === undefined) return 'undefined';
+      if (typeof obj === 'string') return JSON.stringify(obj);
+      if (typeof obj === 'number') return String(obj);
+      if (typeof obj === 'boolean') return String(obj);
+
+      if (Array.isArray(obj)) {
+        if (obj.length === 0) return '[]';
+        if (obj.every(item => typeof item === 'string')) {
+          return '[' + obj.map(s => JSON.stringify(s)).join(', ') + ']';
+        }
+        const items = obj.map(item => innerSpaces + stringifyProfile(item, indent + 1));
+        return '[\n' + items.join(',\n') + '\n' + spaces + ']';
+      }
+
+      if (typeof obj === 'object') {
+        const entries = Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null);
+        if (entries.length === 0) return '{}';
+
+        const lines = entries.map(([key, value]) => {
+          const formattedKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : JSON.stringify(key);
+          return `${innerSpaces}${formattedKey}: ${stringifyProfile(value, indent + 1)}`;
+        });
+
+        return '{\n' + lines.join(',\n') + ',\n' + spaces + '}';
+      }
+
+      return String(obj);
+    }
+
+    window.copyToClipboard = async function(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    };
+
+    window.downloadExport = function() {
+      if (!state.currentLanguage) return;
+
+      const code = document.getElementById('export-code').textContent;
+      const blob = new Blob([code], { type: 'text/typescript' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${state.currentLanguage}.ts`;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    };
+
+    window.resetChanges = function() {
+      if (!confirm('Reset all pending changes?')) return;
+
+      state.pendingChanges.clear();
+      localStorage.removeItem('semantic-editor-pending');
+
+      if (state.currentLanguage) {
+        selectLanguage(state.currentLanguage);
+      }
+
+      updatePendingBadge();
+    };
+
+    // ==========================================================================
+    // Stats
+    // ==========================================================================
+    function updateStats(profile, langCode) {
+      const keywords = profile.keywords ? Object.keys(profile.keywords).length : 0;
+      const references = profile.references ? Object.keys(profile.references).length : 0;
+      const markers = profile.roleMarkers ? Object.keys(profile.roleMarkers).length : 0;
+
+      let patterns = 0;
+      try {
+        if (typeof HyperFixiSemantic.getPatternsForLanguage === 'function') {
+          patterns = HyperFixiSemantic.getPatternsForLanguage(langCode).length;
+        }
+      } catch (e) {}
+
+      document.getElementById('stat-keywords').textContent = keywords;
+      document.getElementById('stat-patterns').textContent = patterns;
+      document.getElementById('stat-references').textContent = references;
+      document.getElementById('stat-markers').textContent = markers;
+    }
+
+    // ==========================================================================
+    // Local Storage
+    // ==========================================================================
+    function saveToLocalStorage() {
+      const data = {};
+      for (const [key, value] of state.pendingChanges) {
+        data[key] = value;
+      }
+      localStorage.setItem('semantic-editor-pending', JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const data = JSON.parse(localStorage.getItem('semantic-editor-pending') || '{}');
+        for (const [key, value] of Object.entries(data)) {
+          state.pendingChanges.set(key, value);
+        }
+        updatePendingBadge();
+      } catch (e) {
+        console.warn('Failed to load from localStorage:', e);
+      }
+    }
+
+    // ==========================================================================
+    // Utilities
+    // ==========================================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

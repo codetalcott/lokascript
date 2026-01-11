@@ -30,6 +30,8 @@ import './patterns/index';
 // Import each language module directly to ensure side-effect registrations run.
 // Each module calls registerLanguage() and registerPatterns() at load time.
 // For minimal bundles, use language-specific entry points (e.g., browser-en.ts).
+
+// Priority languages (13 original)
 import { englishProfile as _en } from './languages/en';
 import { spanishProfile as _es } from './languages/es';
 import { japaneseProfile as _ja } from './languages/ja';
@@ -44,8 +46,22 @@ import { indonesianProfile as _id } from './languages/id';
 import { quechuaProfile as _qu } from './languages/qu';
 import { swahiliProfile as _sw } from './languages/sw';
 
+// Additional languages (10 more for full bundle)
+import { bengaliProfile as _bn } from './languages/bn';
+import { hindiProfile as _hi } from './languages/hi';
+import { italianProfile as _it } from './languages/it';
+import { malayProfile as _ms } from './languages/ms';
+import { polishProfile as _pl } from './languages/pl';
+import { russianProfile as _ru } from './languages/ru';
+import { tagalogProfile as _tl } from './languages/tl';
+import { thaiProfile as _th } from './languages/th';
+import { ukrainianProfile as _uk } from './languages/uk';
+import { vietnameseProfile as _vi } from './languages/vi';
+
 // Export the profiles to force bundler to keep them (prevents tree-shaking)
+// Full bundle: 23 languages
 export const registeredLanguageProfiles = {
+  // Priority languages
   en: _en,
   es: _es,
   ja: _ja,
@@ -59,6 +75,17 @@ export const registeredLanguageProfiles = {
   id: _id,
   qu: _qu,
   sw: _sw,
+  // Additional languages
+  bn: _bn,
+  hi: _hi,
+  it: _it,
+  ms: _ms,
+  pl: _pl,
+  ru: _ru,
+  tl: _tl,
+  th: _th,
+  uk: _uk,
+  vi: _vi,
 };
 
 // =============================================================================
@@ -133,6 +160,7 @@ import {
   tokenize as tokenizeInternal,
   getTokenizer,
   isLanguageSupported,
+  // Priority language tokenizers (13)
   englishTokenizer,
   japaneseTokenizer,
   koreanTokenizer,
@@ -146,6 +174,17 @@ import {
   indonesianTokenizer,
   quechuaTokenizer,
   swahiliTokenizer,
+  // Additional language tokenizers (10)
+  bengaliTokenizer,
+  hindiTokenizer,
+  italianTokenizer,
+  malayTokenizer,
+  polishTokenizer,
+  russianTokenizer,
+  tagalogTokenizer,
+  thaiTokenizer,
+  ukrainianTokenizer,
+  vietnameseTokenizer,
 } from './tokenizers';
 
 import type { LanguageToken } from './types';
@@ -166,7 +205,7 @@ export function tokenize(input: string, language: string): LanguageToken[] {
 export {
   getTokenizer,
   isLanguageSupported,
-  // All 13 language tokenizers
+  // All 23 language tokenizers
   englishTokenizer,
   japaneseTokenizer,
   koreanTokenizer,
@@ -180,7 +219,37 @@ export {
   indonesianTokenizer,
   quechuaTokenizer,
   swahiliTokenizer,
+  bengaliTokenizer,
+  hindiTokenizer,
+  italianTokenizer,
+  malayTokenizer,
+  polishTokenizer,
+  russianTokenizer,
+  tagalogTokenizer,
+  thaiTokenizer,
+  ukrainianTokenizer,
+  vietnameseTokenizer,
 };
+
+// =============================================================================
+// Registry (for language profile and pattern access)
+// =============================================================================
+
+export {
+  getProfile,
+  tryGetProfile,
+  getRegisteredLanguages,
+  getPatternsForLanguage,
+  getPatternsForLanguageAndCommand,
+} from './registry';
+
+export type {
+  LanguageProfile,
+  KeywordTranslation,
+  RoleMarker,
+  PossessiveConfig,
+  VerbConfig,
+} from './registry';
 
 // =============================================================================
 // Type Helpers (for constructing semantic nodes)
