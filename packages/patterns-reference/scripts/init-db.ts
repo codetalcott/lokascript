@@ -1066,6 +1066,67 @@ const SEED_EXAMPLES: SeedExample[] = [
     description: 'Trap focus within modal',
     feature: 'accessibility',
   },
+
+  // ==========================================================================
+  // HyperFixi Extensions - Possessive Dot Notation
+  // These patterns use HyperFixi-specific syntax that may not work in official _hyperscript
+  // ==========================================================================
+  {
+    id: 'set-text-possessive-dot',
+    title: 'Set Text (Possessive Dot)',
+    raw_code: 'on click set my.textContent to "Done!"',
+    description: 'Set text content using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'set-inner-html-possessive-dot',
+    title: 'Set innerHTML (Possessive Dot)',
+    raw_code: 'on click set my.innerHTML to "<strong>Updated!</strong>"',
+    description: 'Set innerHTML using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'get-value-possessive-dot',
+    title: 'Get Input Value (Possessive Dot)',
+    raw_code: 'on input put my.value into #preview',
+    description: 'Mirror input value using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'method-call-possessive-dot',
+    title: 'Method Call (Possessive Dot)',
+    raw_code: 'on input put my.value.toUpperCase() into #preview',
+    description: 'Call method on property using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'chained-access-possessive-dot',
+    title: 'Chained Property Access (Possessive Dot)',
+    raw_code: 'on click set my.parentElement.style.display to "none"',
+    description: 'Chained property access using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'optional-chaining-possessive',
+    title: 'Optional Chaining (Possessive)',
+    raw_code: 'on click log my?.dataset?.customValue',
+    description: 'Safe property access using optional chaining (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'get-attribute-possessive-dot',
+    title: 'Get Attribute (Possessive Dot)',
+    raw_code: 'on click put my.getAttribute("data-id") into #output',
+    description: 'Call getAttribute using possessive dot notation (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
+  {
+    id: 'its-value-possessive-dot',
+    title: 'Its Value (Possessive Dot)',
+    raw_code: 'on click fetch /api/data then put its.name into #result',
+    description: 'Access result property using its.property syntax (HyperFixi extension)',
+    feature: 'hyperfixi-extensions',
+  },
 ];
 
 // Language word orders
@@ -1168,6 +1229,55 @@ const SEED_LLM_EXAMPLES: Array<{
     language: 'en',
     prompt: 'Log a message to console on click',
     completion: 'on click log "Button clicked!"',
+  },
+  // HyperFixi Extensions - Possessive Dot Notation
+  {
+    code_example_id: 'set-text-possessive-dot',
+    language: 'en',
+    prompt: 'Set the text content of the current element to Done',
+    completion: 'on click set my.textContent to "Done!"',
+  },
+  {
+    code_example_id: 'set-inner-html-possessive-dot',
+    language: 'en',
+    prompt: 'Set the innerHTML of the current element',
+    completion: 'on click set my.innerHTML to "<strong>Updated!</strong>"',
+  },
+  {
+    code_example_id: 'get-value-possessive-dot',
+    language: 'en',
+    prompt: 'Mirror input value to another element as user types',
+    completion: 'on input put my.value into #preview',
+  },
+  {
+    code_example_id: 'method-call-possessive-dot',
+    language: 'en',
+    prompt: 'Convert input to uppercase and display in preview',
+    completion: 'on input put my.value.toUpperCase() into #preview',
+  },
+  {
+    code_example_id: 'chained-access-possessive-dot',
+    language: 'en',
+    prompt: 'Hide the parent element of the clicked button',
+    completion: 'on click set my.parentElement.style.display to "none"',
+  },
+  {
+    code_example_id: 'optional-chaining-possessive',
+    language: 'en',
+    prompt: 'Safely access a data attribute that might not exist',
+    completion: 'on click log my?.dataset?.customValue',
+  },
+  {
+    code_example_id: 'get-attribute-possessive-dot',
+    language: 'en',
+    prompt: 'Get a data attribute and put it into another element',
+    completion: 'on click put my.getAttribute("data-id") into #output',
+  },
+  {
+    code_example_id: 'its-value-possessive-dot',
+    language: 'en',
+    prompt: 'Fetch data and display a property from the response',
+    completion: 'on click fetch /api/data then put its.name into #result',
   },
 ];
 

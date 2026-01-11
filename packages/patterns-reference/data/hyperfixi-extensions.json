@@ -1,0 +1,92 @@
+{
+  "$schema": "./hyperfixi-extensions.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-11",
+  "description": "Tracks HyperFixi-specific syntax extensions that may not be available in official _hyperscript",
+  "extensions": [
+    {
+      "id": "possessive-dot-notation",
+      "name": "Possessive Dot Notation",
+      "description": "JavaScript-style dot notation with possessive pronouns (my.value, its.value, your.value)",
+      "status": "stable",
+      "addedVersion": "1.0.0",
+      "officialHyperscript": false,
+      "syntax": {
+        "hyperfixi": ["my.property", "its.property", "your.property", "my?.property"],
+        "standard": ["my property", "its property", "your property"],
+        "equivalent": ["me.property", "it.property", "you.property", "me?.property"]
+      },
+      "examples": [
+        {
+          "hyperfixi": "set my.textContent to \"Done!\"",
+          "standard": "set my textContent to \"Done!\"",
+          "description": "Set element text content"
+        },
+        {
+          "hyperfixi": "put my.value.toUpperCase() into #preview",
+          "standard": null,
+          "description": "Method chaining on property access"
+        },
+        {
+          "hyperfixi": "log my?.dataset?.customValue",
+          "standard": null,
+          "description": "Optional chaining for safe access"
+        }
+      ],
+      "testFile": "packages/core/src/parser/possessive-dot-notation.test.ts",
+      "documentationFile": "packages/core/docs/EXTENSIONS.md"
+    },
+    {
+      "id": "multilingual-keywords",
+      "name": "Multilingual Keyword Support",
+      "description": "Write hyperscript in 13 languages with automatic grammar transformation",
+      "status": "stable",
+      "addedVersion": "1.0.0",
+      "officialHyperscript": false,
+      "supportedLanguages": ["en", "es", "fr", "pt", "de", "ja", "ko", "zh", "ar", "tr", "id", "sw", "qu"],
+      "examples": [
+        {
+          "hyperfixi": "クリック で .active を 切り替え",
+          "standard": "on click toggle .active",
+          "description": "Japanese (SOV word order)"
+        },
+        {
+          "hyperfixi": "en clic alternar .active",
+          "standard": "on click toggle .active",
+          "description": "Spanish"
+        }
+      ],
+      "documentationFile": "packages/semantic/README.md"
+    },
+    {
+      "id": "enhanced-type-conversion",
+      "name": "Enhanced Type Conversion",
+      "description": "Extended 'as' keyword support for additional types",
+      "status": "stable",
+      "addedVersion": "1.0.0",
+      "officialHyperscript": "partial",
+      "additionalTypes": ["FormData", "JSON", "Object", "Date"],
+      "examples": [
+        {
+          "hyperfixi": "form as FormData",
+          "standard": null,
+          "description": "Convert form element to FormData"
+        },
+        {
+          "hyperfixi": "obj as JSON",
+          "standard": null,
+          "description": "Serialize object to JSON string"
+        }
+      ]
+    }
+  ],
+  "compatibilityNotes": {
+    "overallCompatibility": "~85%",
+    "testedAgainst": "hyperscript.org v0.9.x",
+    "knownDifferences": [
+      "HyperFixi extensions are additive - standard _hyperscript syntax always works",
+      "Some edge cases in event handling may differ",
+      "Behavior definitions have minor syntax variations"
+    ]
+  }
+}
