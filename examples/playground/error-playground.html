@@ -4,18 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperFixi Error Playground - Diagnostics & Auto-Fix</title>
+  <link rel="stylesheet" href="../gallery.css">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Error playground-specific layout - full viewport app */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-sans);
       background: #1a1a2e;
       color: #eee;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      max-width: none;
     }
 
     .header {
@@ -29,6 +28,8 @@
     .header h1 {
       font-size: 1.5rem;
       font-weight: 600;
+      color: white;
+      margin: 0;
     }
 
     .header-actions {
@@ -50,6 +51,8 @@
 
     .btn:hover {
       background: rgba(255,255,255,0.3);
+      transform: none;
+      box-shadow: none;
     }
 
     .btn.primary {
@@ -88,6 +91,7 @@
       color: #999;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      margin: 0;
     }
 
     select {
@@ -103,7 +107,7 @@
       flex: 1;
       background: #16162a;
       padding: 1rem;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       line-height: 1.6;
       resize: none;
@@ -144,12 +148,14 @@
 
     .filter-btn:hover {
       background: #333;
+      transform: none;
+      box-shadow: none;
     }
 
     .filter-btn.active {
       background: #444;
       color: #fff;
-      border-color: #667eea;
+      border-color: var(--accent-primary);
     }
 
     .filter-btn.error.active { border-color: #e74c3c; }
@@ -209,7 +215,7 @@
     }
 
     .diagnostic-code {
-      font-family: monospace;
+      font-family: var(--font-mono);
       font-size: 0.75rem;
       background: #333;
       padding: 0.2rem 0.5rem;
@@ -264,7 +270,7 @@
     }
 
     .fix-template {
-      font-family: monospace;
+      font-family: var(--font-mono);
       font-size: 0.8rem;
       background: #0d0d1a;
       padding: 0.5rem;
@@ -286,6 +292,8 @@
 
     .apply-fix-btn:hover {
       background: #2ecc71;
+      transform: none;
+      box-shadow: none;
     }
 
     .summary-panel {
@@ -353,6 +361,8 @@
     .example-btn:hover {
       background: #444;
       color: #fff;
+      transform: none;
+      box-shadow: none;
     }
 
     .confidence-bar {
@@ -545,25 +555,22 @@ Try these examples with errors:
 
       document.getElementById('parse-status').textContent = 'Analyzing...';
 
-      // Collect diagnostics from multiple sources
       diagnostics = [];
       let confidence = 0;
       let errorCount = 0;
       let warningCount = 0;
 
-      // 1. Try semantic parsing for confidence and role validation
+      // 1. Try semantic parsing
       if (window.HyperFixiSemantic) {
         try {
           const analyzer = HyperFixiSemantic.createSemanticAnalyzer();
           const result = analyzer.analyze(code, language);
           confidence = result.confidence;
 
-          // Add role-based diagnostics
           if (result.command && confidence >= 0.5) {
             const cmd = result.command.name;
             const roles = result.command.roles;
 
-            // Check for missing required roles
             const roleChecks = {
               'toggle': { required: ['patient'], message: 'toggle command missing target (class, attribute, or visibility)' },
               'add': { required: ['patient'], message: 'add command missing target to add' },
@@ -590,7 +597,6 @@ Try these examples with errors:
             }
           }
 
-          // Low confidence warning
           if (confidence > 0 && confidence < 0.5) {
             diagnostics.push({
               severity: 'info',
@@ -605,7 +611,6 @@ Try these examples with errors:
       }
 
       // 2. Basic syntax checks
-      // Unbalanced quotes
       const singleQuotes = (code.match(/'/g) || []).length - (code.match(/\w's(?=\s|$)/g) || []).length;
       const doubleQuotes = (code.match(/"/g) || []).length;
 
@@ -631,7 +636,6 @@ Try these examples with errors:
         errorCount++;
       }
 
-      // Unclosed blocks
       const ifCount = (code.match(/\bif\b/gi) || []).length;
       const endCount = (code.match(/\bend\b/gi) || []).length;
       if (ifCount > endCount) {
@@ -645,7 +649,6 @@ Try these examples with errors:
         errorCount++;
       }
 
-      // Check for onclick attribute
       if (code.includes('onclick') || code.includes('onClick')) {
         diagnostics.push({
           severity: 'error',
@@ -657,7 +660,6 @@ Try these examples with errors:
         errorCount++;
       }
 
-      // Update UI
       updateStats(errorCount, warningCount, confidence);
       renderDiagnostics();
 
@@ -665,7 +667,6 @@ Try these examples with errors:
     }
 
     function getFixesForCode(code) {
-      // Simulated CodeFix registry (matches error-fixes.ts)
       const fixes = {
         'MISSING.ARGUMENT': [
           { code: 'add-toggle-target', title: 'Add class or attribute to toggle', kind: 'quickfix', edit: { text: 'toggle .${1:classname}' } }
@@ -710,7 +711,6 @@ Try these examples with errors:
 
       document.getElementById('diagnostic-count').textContent = `${filteredDiagnostics.length} issue(s)`;
 
-      // Reset fix templates storage
       currentFixTemplates = [];
 
       if (filteredDiagnostics.length === 0) {
@@ -801,7 +801,6 @@ Try these examples with errors:
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    // Store fix templates for apply buttons (avoids escaping issues)
     let currentFixTemplates = [];
 
     function applyFixByIndex(index) {
@@ -815,7 +814,6 @@ Try these examples with errors:
       const editor = document.getElementById('code-input');
       const currentCode = editor.value;
 
-      // Simple fix application - replace placeholders with sensible defaults
       let fixedCode = template
         .replace(/\$\{1:([^}]+)\}/g, '$1')
         .replace(/\$\{2:([^}]+)\}/g, '$1')
@@ -823,11 +821,9 @@ Try these examples with errors:
         .replace(/\$\{selector\}/g, '#element')
         .replace(/\$\{command\}/g, currentCode);
 
-      // If it looks like a complete replacement, use it
       if (fixedCode.includes(' ')) {
         editor.value = fixedCode;
       } else {
-        // Otherwise append to current code
         editor.value = currentCode + ' ' + fixedCode;
       }
 

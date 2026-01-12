@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multilingual Hyperscript Demo - HyperFixi</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        /* Multilingual demo - uses gradient background */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             min-height: 100vh;
             padding: 40px 20px;
+            max-width: none;
         }
 
         .container {
@@ -25,7 +25,7 @@
             margin-bottom: 40px;
         }
 
-        h1 {
+        header h1 {
             font-size: 2.8rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
@@ -53,16 +53,18 @@
             transform: translateY(-2px);
         }
 
-        .language-selector {
+        /* Cards */
+        .language-selector,
+        .example-card {
             background: white;
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-section);
         }
 
         .language-selector h2 {
-            color: #333;
+            color: var(--text-light);
             margin-bottom: 15px;
             font-size: 1.3rem;
         }
@@ -75,7 +77,7 @@
 
         .lang-btn {
             padding: 12px 20px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border);
             border-radius: 8px;
             background: white;
             cursor: pointer;
@@ -87,13 +89,15 @@
         }
 
         .lang-btn:hover {
-            border-color: #667eea;
+            border-color: var(--accent-primary);
             background: #f8f9ff;
+            transform: none;
+            box-shadow: none;
         }
 
         .lang-btn.active {
-            border-color: #667eea;
-            background: #667eea;
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
             color: white;
         }
 
@@ -101,16 +105,8 @@
             font-size: 20px;
         }
 
-        .example-card {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
         .example-card h3 {
-            color: #333;
+            color: var(--text-light);
             margin-bottom: 20px;
             font-size: 1.5rem;
             display: flex;
@@ -154,7 +150,7 @@
 
         .code-content {
             padding: 15px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 14px;
             line-height: 1.6;
             color: #d4d4d4;
@@ -169,21 +165,21 @@
         .code-content .number { color: #b5cea8; }
 
         .demo-area {
-            background: #f8f9fa;
+            background: var(--panel-muted);
             border-radius: 8px;
             padding: 25px;
             text-align: center;
         }
 
         .demo-area h4 {
-            color: #666;
+            color: var(--text-muted);
             margin-bottom: 15px;
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* Counter Demo Styles */
+        /* Counter Demo */
         .counter-demo {
             display: flex;
             align-items: center;
@@ -194,7 +190,7 @@
         .counter-display {
             font-size: 48px;
             font-weight: bold;
-            color: #333;
+            color: var(--text-light);
             min-width: 80px;
         }
 
@@ -206,10 +202,11 @@
             font-size: 24px;
             cursor: pointer;
             transition: all 0.2s ease;
+            padding: 0;
         }
 
         .counter-btn.inc {
-            background: #28a745;
+            background: var(--success);
             color: white;
         }
 
@@ -223,7 +220,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        /* Toggle Demo Styles */
+        /* Toggle Demo */
         .toggle-demo {
             display: flex;
             justify-content: center;
@@ -232,7 +229,7 @@
         .toggle-box {
             width: 150px;
             height: 150px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -249,7 +246,7 @@
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         }
 
-        /* Input Mirror Demo Styles */
+        /* Input Mirror Demo */
         .mirror-demo {
             max-width: 400px;
             margin: 0 auto;
@@ -258,7 +255,7 @@
         .mirror-input {
             width: 100%;
             padding: 15px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border);
             border-radius: 8px;
             font-size: 16px;
             margin-bottom: 15px;
@@ -267,7 +264,7 @@
 
         .mirror-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-primary);
         }
 
         .mirror-output {
@@ -275,12 +272,12 @@
             background: #e8f4fd;
             border-radius: 8px;
             min-height: 50px;
-            color: #333;
+            color: var(--text-light);
             font-size: 16px;
         }
 
         .copy-btn {
-            background: #667eea;
+            background: var(--accent-primary);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -293,6 +290,8 @@
 
         .copy-btn:hover {
             background: #5568d3;
+            transform: none;
+            box-shadow: none;
         }
 
         .rtl-code {
@@ -302,7 +301,7 @@
 
         .info-note {
             background: #e8f4fd;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--accent-primary);
             padding: 15px;
             margin-top: 20px;
             border-radius: 0 8px 8px 0;
@@ -314,11 +313,11 @@
 <body>
     <div class="container">
         <header>
-            <a href="../index.html" class="back-link">← Back to Gallery</a>
-            <h1>🌍 Multilingual Hyperscript</h1>
+            <a href="../index.html" class="back-link">Back to Gallery</a>
+            <h1>Multilingual Hyperscript</h1>
             <p class="tagline">Write hyperscript in your native language</p>
             <a href="semantic-demo.html" style="display: inline-block; margin-top: 15px; padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">
-                ✨ Try the New Semantic Parser Demo →
+                Try the New Semantic Parser Demo
             </a>
         </header>
 
@@ -327,48 +326,48 @@
             <h2>Select Language / 选择语言 / 言語を選択</h2>
             <div class="language-grid">
                 <button class="lang-btn active" data-lang="en">
-                    <span class="flag">🇺🇸</span> English
+                    <span class="flag">&#x1F1FA;&#x1F1F8;</span> English
                 </button>
                 <button class="lang-btn" data-lang="es">
-                    <span class="flag">🇪🇸</span> Español
+                    <span class="flag">&#x1F1EA;&#x1F1F8;</span> Espanol
                 </button>
                 <button class="lang-btn" data-lang="ja">
-                    <span class="flag">🇯🇵</span> 日本語
+                    <span class="flag">&#x1F1EF;&#x1F1F5;</span> 日本語
                 </button>
                 <button class="lang-btn" data-lang="fr">
-                    <span class="flag">🇫🇷</span> Français
+                    <span class="flag">&#x1F1EB;&#x1F1F7;</span> Francais
                 </button>
                 <button class="lang-btn" data-lang="de">
-                    <span class="flag">🇩🇪</span> Deutsch
+                    <span class="flag">&#x1F1E9;&#x1F1EA;</span> Deutsch
                 </button>
                 <button class="lang-btn" data-lang="ar">
-                    <span class="flag">🇸🇦</span> العربية
+                    <span class="flag">&#x1F1F8;&#x1F1E6;</span> العربية
                 </button>
                 <button class="lang-btn" data-lang="ko">
-                    <span class="flag">🇰🇷</span> 한국어
+                    <span class="flag">&#x1F1F0;&#x1F1F7;</span> 한국어
                 </button>
                 <button class="lang-btn" data-lang="zh">
-                    <span class="flag">🇨🇳</span> 中文
+                    <span class="flag">&#x1F1E8;&#x1F1F3;</span> 中文
                 </button>
                 <button class="lang-btn" data-lang="tr">
-                    <span class="flag">🇹🇷</span> Türkçe
+                    <span class="flag">&#x1F1F9;&#x1F1F7;</span> Turkce
                 </button>
             </div>
         </div>
 
         <!-- Example 1: Counter -->
         <div class="example-card">
-            <h3>🔢 Counter Example</h3>
+            <h3>&#x1F522; Counter Example</h3>
             <div class="code-comparison">
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag">🇺🇸</span> English (Reference)
+                        <span class="flag">&#x1F1FA;&#x1F1F8;</span> English (Reference)
                     </div>
                     <div class="code-content" id="counter-en"><span class="keyword">on</span> <span class="event">click</span> <span class="command">increment</span> <span class="selector">#count</span></div>
                 </div>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag" id="counter-flag">🇺🇸</span>
+                        <span class="flag" id="counter-flag">&#x1F1FA;&#x1F1F8;</span>
                         <span id="counter-lang-name">English</span>
                         <button class="copy-btn" onclick="copyCode('counter')">Copy</button>
                     </div>
@@ -378,7 +377,7 @@
             <div class="demo-area">
                 <h4>Try It</h4>
                 <div class="counter-demo">
-                    <button class="counter-btn dec" _="on click decrement #count">−</button>
+                    <button class="counter-btn dec" _="on click decrement #count">-</button>
                     <div class="counter-display" id="count">0</div>
                     <button class="counter-btn inc" _="on click increment #count">+</button>
                 </div>
@@ -387,17 +386,17 @@
 
         <!-- Example 2: Toggle -->
         <div class="example-card">
-            <h3>🎭 Toggle Example</h3>
+            <h3>&#x1F3AD; Toggle Example</h3>
             <div class="code-comparison">
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag">🇺🇸</span> English (Reference)
+                        <span class="flag">&#x1F1FA;&#x1F1F8;</span> English (Reference)
                     </div>
                     <div class="code-content" id="toggle-en"><span class="keyword">on</span> <span class="event">click</span> <span class="command">toggle</span> <span class="selector">.active</span></div>
                 </div>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag" id="toggle-flag">🇺🇸</span>
+                        <span class="flag" id="toggle-flag">&#x1F1FA;&#x1F1F8;</span>
                         <span id="toggle-lang-name">English</span>
                         <button class="copy-btn" onclick="copyCode('toggle')">Copy</button>
                     </div>
@@ -416,17 +415,17 @@
 
         <!-- Example 3: Input Mirror -->
         <div class="example-card">
-            <h3>🪞 Input Mirror Example</h3>
+            <h3>&#x1FA9E; Input Mirror Example</h3>
             <div class="code-comparison">
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag">🇺🇸</span> English (Reference)
+                        <span class="flag">&#x1F1FA;&#x1F1F8;</span> English (Reference)
                     </div>
                     <div class="code-content" id="mirror-en"><span class="keyword">on</span> <span class="event">input</span> <span class="command">put</span> <span class="selector">my value</span> <span class="keyword">into</span> <span class="selector">#output</span></div>
                 </div>
                 <div class="code-block">
                     <div class="code-header">
-                        <span class="flag" id="mirror-flag">🇺🇸</span>
+                        <span class="flag" id="mirror-flag">&#x1F1FA;&#x1F1F8;</span>
                         <span id="mirror-lang-name">English</span>
                         <button class="copy-btn" onclick="copyCode('mirror')">Copy</button>
                     </div>
@@ -444,7 +443,7 @@
 
         <!-- Grammar Transformation Demo - LIVE -->
         <div class="example-card" id="grammar-demo">
-            <h3>🧠 Live Grammar Transformation</h3>
+            <h3>&#x1F9E0; Live Grammar Transformation</h3>
             <p style="color: #666; margin-bottom: 20px;">
                 Beyond word-by-word translation, HyperFixi adapts code to natural grammar patterns.
                 SOV languages (Japanese, Korean) reorder elements; VSO languages (Arabic) place verbs first.
@@ -511,15 +510,15 @@
     <script>
         // Language configurations
         const languages = {
-            en: { name: 'English', flag: '🇺🇸', rtl: false },
-            es: { name: 'Español', flag: '🇪🇸', rtl: false },
-            ja: { name: '日本語', flag: '🇯🇵', rtl: false },
-            fr: { name: 'Français', flag: '🇫🇷', rtl: false },
-            de: { name: 'Deutsch', flag: '🇩🇪', rtl: false },
-            ar: { name: 'العربية', flag: '🇸🇦', rtl: true },
-            ko: { name: '한국어', flag: '🇰🇷', rtl: false },
-            zh: { name: '中文', flag: '🇨🇳', rtl: false },
-            tr: { name: 'Türkçe', flag: '🇹🇷', rtl: false }
+            en: { name: 'English', flag: '\u{1F1FA}\u{1F1F8}', rtl: false },
+            es: { name: 'Espanol', flag: '\u{1F1EA}\u{1F1F8}', rtl: false },
+            ja: { name: '\u65E5\u672C\u8A9E', flag: '\u{1F1EF}\u{1F1F5}', rtl: false },
+            fr: { name: 'Francais', flag: '\u{1F1EB}\u{1F1F7}', rtl: false },
+            de: { name: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}', rtl: false },
+            ar: { name: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', flag: '\u{1F1F8}\u{1F1E6}', rtl: true },
+            ko: { name: '\uD55C\uAD6D\uC5B4', flag: '\u{1F1F0}\u{1F1F7}', rtl: false },
+            zh: { name: '\u4E2D\u6587', flag: '\u{1F1E8}\u{1F1F3}', rtl: false },
+            tr: { name: 'Turkce', flag: '\u{1F1F9}\u{1F1F7}', rtl: false }
         };
 
         // Keyword providers from i18n bundle
@@ -616,9 +615,9 @@
             if (!window.HyperFixiI18n) {
                 console.warn('HyperFixi i18n bundle not loaded');
             } else {
-                console.log('✓ HyperFixi i18n loaded');
-                console.log('✓ GrammarTransformer available:', !!window.HyperFixiI18n.GrammarTransformer);
-                console.log('✓ Profiles available:', window.HyperFixiI18n.getSupportedLocales?.() || 'N/A');
+                console.log('HyperFixi i18n loaded');
+                console.log('GrammarTransformer available:', !!window.HyperFixiI18n.GrammarTransformer);
+                console.log('Profiles available:', window.HyperFixiI18n.getSupportedLocales?.() || 'N/A');
             }
 
             // Initialize grammar transformation demo
@@ -631,16 +630,16 @@
 
         // Grammar transformation languages with their word order types
         const grammarLanguages = [
-            { code: 'en', name: 'English', flag: '🇺🇸', wordOrder: 'SVO', color: '#667eea' },
-            { code: 'ja', name: '日本語', flag: '🇯🇵', wordOrder: 'SOV', color: '#e91e63' },
-            { code: 'ko', name: '한국어', flag: '🇰🇷', wordOrder: 'SOV', color: '#e91e63' },
-            { code: 'zh', name: '中文', flag: '🇨🇳', wordOrder: 'SVO*', color: '#667eea' },
-            { code: 'ar', name: 'العربية', flag: '🇸🇦', wordOrder: 'VSO', color: '#28a745', rtl: true },
-            { code: 'tr', name: 'Türkçe', flag: '🇹🇷', wordOrder: 'SOV', color: '#e91e63' },
-            { code: 'es', name: 'Español', flag: '🇪🇸', wordOrder: 'SVO', color: '#667eea' },
-            { code: 'id', name: 'Indonesian', flag: '🇮🇩', wordOrder: 'SVO', color: '#667eea' },
-            { code: 'qu', name: 'Quechua', flag: '🏔️', wordOrder: 'SOV', color: '#e91e63' },
-            { code: 'sw', name: 'Kiswahili', flag: '🌍', wordOrder: 'SVO', color: '#667eea' },
+            { code: 'en', name: 'English', flag: '\u{1F1FA}\u{1F1F8}', wordOrder: 'SVO', color: '#667eea' },
+            { code: 'ja', name: '\u65E5\u672C\u8A9E', flag: '\u{1F1EF}\u{1F1F5}', wordOrder: 'SOV', color: '#e91e63' },
+            { code: 'ko', name: '\uD55C\uAD6D\uC5B4', flag: '\u{1F1F0}\u{1F1F7}', wordOrder: 'SOV', color: '#e91e63' },
+            { code: 'zh', name: '\u4E2D\u6587', flag: '\u{1F1E8}\u{1F1F3}', wordOrder: 'SVO*', color: '#667eea' },
+            { code: 'ar', name: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', flag: '\u{1F1F8}\u{1F1E6}', wordOrder: 'VSO', color: '#28a745', rtl: true },
+            { code: 'tr', name: 'Turkce', flag: '\u{1F1F9}\u{1F1F7}', wordOrder: 'SOV', color: '#e91e63' },
+            { code: 'es', name: 'Espanol', flag: '\u{1F1EA}\u{1F1F8}', wordOrder: 'SVO', color: '#667eea' },
+            { code: 'id', name: 'Indonesian', flag: '\u{1F1EE}\u{1F1E9}', wordOrder: 'SVO', color: '#667eea' },
+            { code: 'qu', name: 'Quechua', flag: '\u{1F3D4}', wordOrder: 'SOV', color: '#e91e63' },
+            { code: 'sw', name: 'Kiswahili', flag: '\u{1F30D}', wordOrder: 'SVO', color: '#667eea' },
         ];
 
         function initGrammarDemo() {
@@ -718,7 +717,7 @@
                         <div style="padding: 12px; font-family: Monaco, Menlo, monospace; font-size: 14px; color: #d4d4d4; ${rtlStyle}">
                             ${escapeHtml(transformed)}
                         </div>
-                        ${error ? `<div style="padding: 8px 12px; background: #3d3d3d; color: #ffc107; font-size: 12px;">⚠️ ${escapeHtml(error)}</div>` : ''}
+                        ${error ? `<div style="padding: 8px 12px; background: #3d3d3d; color: #ffc107; font-size: 12px;">Warning: ${escapeHtml(error)}</div>` : ''}
                     </div>
                 `;
             }

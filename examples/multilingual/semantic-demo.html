@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Semantic-First Multilingual Parsing - HyperFixi</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        /* Semantic demo - dark themed app */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             padding: 40px 20px;
             color: #e0e0e0;
+            max-width: none;
         }
 
         .container {
@@ -28,7 +28,7 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -42,7 +42,7 @@
 
         .back-link {
             display: inline-block;
-            color: #667eea;
+            color: var(--accent-primary);
             text-decoration: none;
             padding: 10px 20px;
             background: rgba(102, 126, 234, 0.1);
@@ -105,12 +105,12 @@
             background: #2d2d3d;
             color: #fff;
             font-size: 15px;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: var(--font-mono);
         }
 
         .input-group input:focus, .input-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-primary);
         }
 
         .input-group select {
@@ -156,14 +156,14 @@
             font-weight: 600;
         }
 
-        .badge-svo { background: #667eea; color: white; }
+        .badge-svo { background: var(--accent-primary); color: white; }
         .badge-sov { background: #e91e63; color: white; }
-        .badge-vso { background: #28a745; color: white; }
+        .badge-vso { background: var(--success); color: white; }
         .badge-explicit { background: #ff9800; color: black; }
 
         .result-content {
             padding: 15px;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: var(--font-mono);
             font-size: 14px;
             color: #d4d4d4;
             line-height: 1.6;
@@ -180,7 +180,7 @@
             border-radius: 8px;
             padding: 15px;
             margin-top: 15px;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: var(--font-mono);
             font-size: 13px;
             overflow-x: auto;
         }
@@ -211,7 +211,9 @@
         .example-btn:hover {
             background: #3d3d4d;
             color: #fff;
-            border-color: #667eea;
+            border-color: var(--accent-primary);
+            transform: none;
+            box-shadow: none;
         }
 
         /* Architecture diagram */
@@ -233,12 +235,12 @@
         }
 
         .arch-box.highlight {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             color: white;
         }
 
         .arch-arrow {
-            color: #667eea;
+            color: var(--accent-primary);
             font-size: 24px;
         }
 
@@ -272,14 +274,14 @@
         /* Info box */
         .info-box {
             background: rgba(102, 126, 234, 0.1);
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--accent-primary);
             padding: 15px 20px;
             border-radius: 0 8px 8px 0;
             margin-top: 20px;
         }
 
         .info-box strong {
-            color: #667eea;
+            color: var(--accent-primary);
         }
 
         @media (max-width: 768px) {
@@ -298,7 +300,7 @@
 <body>
     <div class="container">
         <header>
-            <a href="index.html" class="back-link">← Back to Multilingual Demo</a>
+            <a href="index.html" class="back-link">Back to Multilingual Demo</a>
             <h1>Semantic-First Parser</h1>
             <p class="tagline">Native-feeling syntax in every language, not translated English</p>
         </header>
@@ -312,27 +314,27 @@
             </p>
             <div class="architecture">
                 <div class="arch-box">
-                    <div style="font-size: 24px; margin-bottom: 8px;">🇯🇵 🇸🇦 🇪🇸</div>
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#x1F1EF;&#x1F1F5; &#x1F1F8;&#x1F1E6; &#x1F1EA;&#x1F1F8;</div>
                     <div>Native Input</div>
                 </div>
-                <div class="arch-arrow">→</div>
+                <div class="arch-arrow">&#x2192;</div>
                 <div class="arch-box">
-                    <div style="font-size: 24px; margin-bottom: 8px;">🔤</div>
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#x1F524;</div>
                     <div>Tokenizer</div>
                 </div>
-                <div class="arch-arrow">→</div>
+                <div class="arch-arrow">&#x2192;</div>
                 <div class="arch-box">
-                    <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#x1F3AF;</div>
                     <div>Pattern Match</div>
                 </div>
-                <div class="arch-arrow">→</div>
+                <div class="arch-arrow">&#x2192;</div>
                 <div class="arch-box highlight">
-                    <div style="font-size: 24px; margin-bottom: 8px;">💎</div>
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#x1F48E;</div>
                     <div>Semantic AST</div>
                 </div>
-                <div class="arch-arrow">→</div>
+                <div class="arch-arrow">&#x2192;</div>
                 <div class="arch-box">
-                    <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#x26A1;</div>
                     <div>Runtime</div>
                 </div>
             </div>
@@ -340,26 +342,26 @@
 
         <!-- Live Parser Demo -->
         <div class="card">
-            <h2>🔄 Bidirectional Parser Demo</h2>
+            <h2>&#x1F504; Bidirectional Parser Demo</h2>
             <p>
                 Enter hyperscript in <strong>any supported language</strong>. The parser extracts semantic meaning
                 and can render to any other language. Try typing in Japanese, Arabic, or Spanish!
             </p>
 
             <div class="examples-row">
-                <button class="example-btn" onclick="setExample('toggle .active on #button', 'en')">🇺🇸 toggle .active</button>
-                <button class="example-btn" onclick="setExample('#button の .active を 切り替え', 'ja')">🇯🇵 切り替え</button>
-                <button class="example-btn" onclick="setExample('بدّل .active على #button', 'ar')">🇸🇦 بدّل</button>
-                <button class="example-btn" onclick="setExample('alternar .active en #button', 'es')">🇪🇸 alternar</button>
-                <button class="example-btn" onclick="setExample('.active 를 토글', 'ko')">🇰🇷 토글</button>
-                <button class="example-btn" onclick="setExample('切换 .active 在 #button', 'zh')">🇨🇳 切换</button>
-                <button class="example-btn" onclick="setExample('.active değiştir', 'tr')">🇹🇷 değiştir</button>
-                <button class="example-btn" onclick="setExample('basculer .active sur #button', 'fr')">🇫🇷 basculer</button>
-                <button class="example-btn" onclick="setExample('umschalten .active auf #button', 'de')">🇩🇪 umschalten</button>
-                <button class="example-btn" onclick="setExample('alternar .active em #button', 'pt')">🇧🇷 alternar</button>
-                <button class="example-btn" onclick="setExample('alihkan .active pada #button', 'id')">🇮🇩 alihkan</button>
-                <button class="example-btn" onclick="setExample('tikray .active', 'qu')">🇵🇪 tikray</button>
-                <button class="example-btn" onclick="setExample('badilisha .active kwenye #button', 'sw')">🇰🇪 badilisha</button>
+                <button class="example-btn" onclick="setExample('toggle .active on #button', 'en')">&#x1F1FA;&#x1F1F8; toggle .active</button>
+                <button class="example-btn" onclick="setExample('#button の .active を 切り替え', 'ja')">&#x1F1EF;&#x1F1F5; 切り替え</button>
+                <button class="example-btn" onclick="setExample('بدّل .active على #button', 'ar')">&#x1F1F8;&#x1F1E6; بدّل</button>
+                <button class="example-btn" onclick="setExample('alternar .active en #button', 'es')">&#x1F1EA;&#x1F1F8; alternar</button>
+                <button class="example-btn" onclick="setExample('.active 를 토글', 'ko')">&#x1F1F0;&#x1F1F7; 토글</button>
+                <button class="example-btn" onclick="setExample('切换 .active 在 #button', 'zh')">&#x1F1E8;&#x1F1F3; 切换</button>
+                <button class="example-btn" onclick="setExample('.active değiştir', 'tr')">&#x1F1F9;&#x1F1F7; değiştir</button>
+                <button class="example-btn" onclick="setExample('basculer .active sur #button', 'fr')">&#x1F1EB;&#x1F1F7; basculer</button>
+                <button class="example-btn" onclick="setExample('umschalten .active auf #button', 'de')">&#x1F1E9;&#x1F1EA; umschalten</button>
+                <button class="example-btn" onclick="setExample('alternar .active em #button', 'pt')">&#x1F1E7;&#x1F1F7; alternar</button>
+                <button class="example-btn" onclick="setExample('alihkan .active pada #button', 'id')">&#x1F1EE;&#x1F1E9; alihkan</button>
+                <button class="example-btn" onclick="setExample('tikray .active', 'qu')">&#x1F1F5;&#x1F1EA; tikray</button>
+                <button class="example-btn" onclick="setExample('badilisha .active kwenye #button', 'sw')">&#x1F1F0;&#x1F1EA; badilisha</button>
             </div>
 
             <div class="input-section">
@@ -370,19 +372,19 @@
                 <div class="input-group">
                     <label>Source Language</label>
                     <select id="source-lang">
-                        <option value="en">🇺🇸 English</option>
-                        <option value="ja">🇯🇵 Japanese</option>
-                        <option value="ar">🇸🇦 Arabic</option>
-                        <option value="es">🇪🇸 Spanish</option>
-                        <option value="ko">🇰🇷 Korean</option>
-                        <option value="tr">🇹🇷 Turkish</option>
-                        <option value="zh">🇨🇳 Chinese</option>
-                        <option value="pt">🇧🇷 Portuguese</option>
-                        <option value="fr">🇫🇷 French</option>
-                        <option value="de">🇩🇪 German</option>
-                        <option value="id">🇮🇩 Indonesian</option>
-                        <option value="qu">🇵🇪 Quechua</option>
-                        <option value="sw">🇰🇪 Swahili</option>
+                        <option value="en">&#x1F1FA;&#x1F1F8; English</option>
+                        <option value="ja">&#x1F1EF;&#x1F1F5; Japanese</option>
+                        <option value="ar">&#x1F1F8;&#x1F1E6; Arabic</option>
+                        <option value="es">&#x1F1EA;&#x1F1F8; Spanish</option>
+                        <option value="ko">&#x1F1F0;&#x1F1F7; Korean</option>
+                        <option value="tr">&#x1F1F9;&#x1F1F7; Turkish</option>
+                        <option value="zh">&#x1F1E8;&#x1F1F3; Chinese</option>
+                        <option value="pt">&#x1F1E7;&#x1F1F7; Portuguese</option>
+                        <option value="fr">&#x1F1EB;&#x1F1F7; French</option>
+                        <option value="de">&#x1F1E9;&#x1F1EA; German</option>
+                        <option value="id">&#x1F1EE;&#x1F1E9; Indonesian</option>
+                        <option value="qu">&#x1F1F5;&#x1F1EA; Quechua</option>
+                        <option value="sw">&#x1F1F0;&#x1F1EA; Swahili</option>
                     </select>
                 </div>
             </div>
@@ -402,7 +404,7 @@
 
         <!-- Explicit Mode -->
         <div class="card">
-            <h2>🔍 Explicit Mode</h2>
+            <h2>&#x1F50D; Explicit Mode</h2>
             <p>
                 A universal syntax that makes semantic roles visible. Perfect for learning, debugging,
                 and documentation. Same in all languages!
@@ -433,7 +435,7 @@
 
         <!-- Pattern Examples -->
         <div class="card">
-            <h2>📝 Native Patterns by Language</h2>
+            <h2>&#x1F4DD; Native Patterns by Language</h2>
             <p>
                 Each language has patterns that feel natural to native speakers, not just translated keywords.
             </p>
@@ -449,79 +451,79 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>🇺🇸 English</td>
+                        <td>&#x1F1FA;&#x1F1F8; English</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>toggle .active on #button</code></td>
                         <td>Verb first, optional target</td>
                     </tr>
                     <tr>
-                        <td>🇯🇵 Japanese</td>
+                        <td>&#x1F1EF;&#x1F1F5; Japanese</td>
                         <td><span class="badge badge-sov">SOV</span></td>
                         <td><code>#button の .active を 切り替え</code></td>
                         <td>Object before verb, particles mark roles</td>
                     </tr>
                     <tr>
-                        <td>🇸🇦 Arabic</td>
+                        <td>&#x1F1F8;&#x1F1E6; Arabic</td>
                         <td><span class="badge badge-vso">VSO</span></td>
                         <td><code>بدّل .active على #button</code></td>
                         <td>Verb first, RTL text</td>
                     </tr>
                     <tr>
-                        <td>🇪🇸 Spanish</td>
+                        <td>&#x1F1EA;&#x1F1F8; Spanish</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>alternar .active en #button</code></td>
                         <td>Similar to English structure</td>
                     </tr>
                     <tr>
-                        <td>🇰🇷 Korean</td>
+                        <td>&#x1F1F0;&#x1F1F7; Korean</td>
                         <td><span class="badge badge-sov">SOV</span></td>
                         <td><code>.active 를 토글</code></td>
                         <td>Object-marker + verb at end</td>
                     </tr>
                     <tr>
-                        <td>🇹🇷 Turkish</td>
+                        <td>&#x1F1F9;&#x1F1F7; Turkish</td>
                         <td><span class="badge badge-sov">SOV</span></td>
                         <td><code>.active değiştir</code></td>
                         <td>Agglutinative, verb at end</td>
                     </tr>
                     <tr>
-                        <td>🇨🇳 Chinese</td>
+                        <td>&#x1F1E8;&#x1F1F3; Chinese</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>切换 .active 在 #button</code></td>
                         <td>Similar to English, no inflection</td>
                     </tr>
                     <tr>
-                        <td>🇧🇷 Portuguese</td>
+                        <td>&#x1F1E7;&#x1F1F7; Portuguese</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>alternar .active em #button</code></td>
                         <td>Romance language, like Spanish</td>
                     </tr>
                     <tr>
-                        <td>🇫🇷 French</td>
+                        <td>&#x1F1EB;&#x1F1F7; French</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>basculer .active sur #button</code></td>
                         <td>Romance language structure</td>
                     </tr>
                     <tr>
-                        <td>🇩🇪 German</td>
+                        <td>&#x1F1E9;&#x1F1EA; German</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>umschalten .active auf #button</code></td>
                         <td>Germanic, compound-friendly</td>
                     </tr>
                     <tr>
-                        <td>🇮🇩 Indonesian</td>
+                        <td>&#x1F1EE;&#x1F1E9; Indonesian</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>alihkan .active pada #button</code></td>
                         <td>Simple structure, no conjugation</td>
                     </tr>
                     <tr>
-                        <td>🇵🇪 Quechua</td>
+                        <td>&#x1F1F5;&#x1F1EA; Quechua</td>
                         <td><span class="badge badge-sov">SOV</span></td>
                         <td><code>.active tikray</code></td>
                         <td>Agglutinative Andean language</td>
                     </tr>
                     <tr>
-                        <td>🇰🇪 Swahili</td>
+                        <td>&#x1F1F0;&#x1F1EA; Swahili</td>
                         <td><span class="badge badge-svo">SVO</span></td>
                         <td><code>badilisha .active kwenye #button</code></td>
                         <td>Bantu language, noun class system</td>
@@ -553,19 +555,19 @@
         }
 
         const languages = {
-            en: { name: 'English', flag: '🇺🇸', wordOrder: 'SVO', rtl: false },
-            ja: { name: '日本語', flag: '🇯🇵', wordOrder: 'SOV', rtl: false },
-            ar: { name: 'العربية', flag: '🇸🇦', wordOrder: 'VSO', rtl: true },
-            es: { name: 'Español', flag: '🇪🇸', wordOrder: 'SVO', rtl: false },
-            ko: { name: '한국어', flag: '🇰🇷', wordOrder: 'SOV', rtl: false },
-            tr: { name: 'Türkçe', flag: '🇹🇷', wordOrder: 'SOV', rtl: false },
-            zh: { name: '中文', flag: '🇨🇳', wordOrder: 'SVO', rtl: false },
-            pt: { name: 'Português', flag: '🇧🇷', wordOrder: 'SVO', rtl: false },
-            fr: { name: 'Français', flag: '🇫🇷', wordOrder: 'SVO', rtl: false },
-            de: { name: 'Deutsch', flag: '🇩🇪', wordOrder: 'SVO', rtl: false },
-            id: { name: 'Indonesia', flag: '🇮🇩', wordOrder: 'SVO', rtl: false },
-            qu: { name: 'Runasimi', flag: '🇵🇪', wordOrder: 'SOV', rtl: false },
-            sw: { name: 'Kiswahili', flag: '🇰🇪', wordOrder: 'SVO', rtl: false },
+            en: { name: 'English', flag: '\u{1F1FA}\u{1F1F8}', wordOrder: 'SVO', rtl: false },
+            ja: { name: '\u65E5\u672C\u8A9E', flag: '\u{1F1EF}\u{1F1F5}', wordOrder: 'SOV', rtl: false },
+            ar: { name: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', flag: '\u{1F1F8}\u{1F1E6}', wordOrder: 'VSO', rtl: true },
+            es: { name: 'Espanol', flag: '\u{1F1EA}\u{1F1F8}', wordOrder: 'SVO', rtl: false },
+            ko: { name: '\uD55C\uAD6D\uC5B4', flag: '\u{1F1F0}\u{1F1F7}', wordOrder: 'SOV', rtl: false },
+            tr: { name: 'Turkce', flag: '\u{1F1F9}\u{1F1F7}', wordOrder: 'SOV', rtl: false },
+            zh: { name: '\u4E2D\u6587', flag: '\u{1F1E8}\u{1F1F3}', wordOrder: 'SVO', rtl: false },
+            pt: { name: 'Portugues', flag: '\u{1F1E7}\u{1F1F7}', wordOrder: 'SVO', rtl: false },
+            fr: { name: 'Francais', flag: '\u{1F1EB}\u{1F1F7}', wordOrder: 'SVO', rtl: false },
+            de: { name: 'Deutsch', flag: '\u{1F1E9}\u{1F1EA}', wordOrder: 'SVO', rtl: false },
+            id: { name: 'Indonesia', flag: '\u{1F1EE}\u{1F1E9}', wordOrder: 'SVO', rtl: false },
+            qu: { name: 'Runasimi', flag: '\u{1F1F5}\u{1F1EA}', wordOrder: 'SOV', rtl: false },
+            sw: { name: 'Kiswahili', flag: '\u{1F1F0}\u{1F1EA}', wordOrder: 'SVO', rtl: false },
         };
 
         function updateParserDemo() {
@@ -663,7 +665,7 @@ ${rolesHtml}  },
                 translationsHtml += `
                     <div class="result-card">
                         <div class="result-header">
-                            <span class="flag">🔧</span>
+                            <span class="flag">&#x1F527;</span>
                             <span class="lang-name">Explicit Mode</span>
                             <span class="badge badge-explicit">Universal</span>
                         </div>

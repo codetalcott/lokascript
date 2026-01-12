@@ -4,83 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>04: Infinite Scroll - HyperFixi Examples</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .breadcrumb {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .description {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .demo {
-            background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 30px;
-            margin: 30px 0;
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            font-weight: 600;
-            margin: 10px 5px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
+        /* Example-specific styles */
         .scroll-container {
             max-height: 600px;
             overflow-y: auto;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--border);
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
@@ -93,7 +23,7 @@
         }
 
         .content-item {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            background: linear-gradient(135deg, var(--tag-default-bg) 0%, #bbdefb 100%);
             padding: 20px;
             margin: 10px 0;
             border-radius: 8px;
@@ -119,7 +49,7 @@
         }
 
         .item-number {
-            background: #667eea;
+            background: var(--accent-primary);
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -127,26 +57,26 @@
         }
 
         .item-timestamp {
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
         .item-title {
             font-weight: bold;
-            color: #1976d2;
+            color: var(--tag-default-color);
             font-size: 18px;
             margin: 10px 0;
         }
 
         .item-description {
-            color: #666;
+            color: var(--text-muted);
             line-height: 1.6;
         }
 
         .loading-indicator {
             text-align: center;
             padding: 30px;
-            color: #667eea;
+            color: var(--accent-primary);
             font-size: 18px;
             display: none;
         }
@@ -159,8 +89,8 @@
             display: inline-block;
             width: 40px;
             height: 40px;
-            border: 4px solid #e0e0e0;
-            border-top-color: #667eea;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 10px;
@@ -173,7 +103,7 @@
         .end-message {
             text-align: center;
             padding: 30px;
-            color: #999;
+            color: var(--text-muted);
             font-size: 16px;
             display: none;
         }
@@ -183,7 +113,7 @@
         }
 
         .stats {
-            background: #f8f9fa;
+            background: var(--panel-muted);
             padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
@@ -199,81 +129,23 @@
         .stat-value {
             font-size: 32px;
             font-weight: bold;
-            color: #667eea;
+            color: var(--accent-primary);
         }
 
         .stat-label {
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
             margin-top: 5px;
         }
-
-        .code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-        }
-
-        .keyword {
-            color: #c678dd;
-        }
-
-        .string {
-            color: #98c379;
-        }
-
-        .comment {
-            color: #5c6370;
-        }
-
-        .explanation {
-            margin: 20px 0;
-            line-height: 1.8;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            margin: 5px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .nav-buttons a {
-            background: #f0f0f0;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .nav-buttons a:hover {
-            background: #e0e0e0;
-        }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container">
         <div class="breadcrumb">
             <a href="../index.html">← Back to Gallery</a> / <strong>Advanced</strong> / 04: Infinite Scroll
         </div>
 
-        <h1>♾️ Infinite Scroll</h1>
+        <h1>Infinite Scroll</h1>
 
         <div class="description">
             <strong>Load content dynamically as users scroll</strong><br>
@@ -489,7 +361,7 @@
                 </div>
 
                 <div id="end-message" class="end-message">
-                    🎉 You've reached the end! No more items to load.
+                    You've reached the end! No more items to load.
                 </div>
             </div>
 
@@ -504,7 +376,7 @@
                       put '1' into #total-loads
                       remove .show from #end-message
                       set #scroll-container.scrollTop to 0">
-                🔄 Reset Demo
+                Reset Demo
             </button>
         </div>
 

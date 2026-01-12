@@ -4,35 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multilingual Sync - HyperFixi Experiments</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* Example-specific styles for Multilingual Sync */
+        body.example-page {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
+            max-width: 1400px;
             padding: 40px 20px;
             color: white;
         }
 
-        .container { max-width: 1400px; margin: 0 auto; }
-
         header { text-align: center; margin-bottom: 40px; }
 
-        .back-link {
-            display: inline-block;
-            color: #a0aec0;
-            text-decoration: none;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover { background: rgba(255,255,255,0.2); color: white; }
-
-        h1 {
+        header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             background: linear-gradient(135deg, #22c55e, #3b82f6);
@@ -97,6 +81,7 @@
             cursor: pointer;
             transition: all 0.2s;
             font-weight: bold;
+            padding: 0;
         }
 
         .shared-btn.inc { background: #22c55e; color: white; }
@@ -171,7 +156,7 @@
             min-height: 150px;
             max-height: 200px;
             overflow-y: auto;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: var(--font-mono);
             font-size: 13px;
         }
 
@@ -209,10 +194,23 @@
 
         .info-box h3 { color: #60a5fa; margin-bottom: 10px; }
         .info-box p { color: #a0aec0; line-height: 1.6; }
+
+        .back-link {
+            display: inline-block;
+            color: #a0aec0;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover { background: rgba(255,255,255,0.2); color: white; }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container" style="background: transparent; box-shadow: none;">
         <header>
             <a href="../index.html" class="back-link">← Back to Gallery</a>
             <h1>Multilingual Sync</h1>

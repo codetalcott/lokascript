@@ -4,58 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced 02: Draggable Elements - HyperFixi Examples</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .breadcrumb {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .description {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .demo {
-            background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 30px;
-            margin: 30px 0;
-        }
-
+        /* Example-specific styles */
         .draggable-container {
             position: relative;
             min-height: 450px;
-            background: #f8f9fa;
-            border: 2px dashed #ccc;
+            background: var(--panel-muted);
+            border: 2px dashed var(--border);
             border-radius: 8px;
             padding: 20px;
         }
@@ -63,9 +19,9 @@
         .draggable-item {
             position: absolute;
             width: 220px;
-            background: white;
+            background: var(--panel);
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-card);
             cursor: move;
             user-select: none;
             transition: box-shadow 0.2s ease;
@@ -77,7 +33,7 @@
         }
 
         .titlebar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             color: white;
             padding: 12px;
             border-radius: 8px 8px 0 0;
@@ -87,7 +43,7 @@
 
         .content {
             padding: 15px;
-            color: #333;
+            color: var(--text);
         }
 
         #item1 {
@@ -106,78 +62,17 @@
         }
 
         .instructions {
-            background: #e3f2fd;
+            background: var(--tag-default-bg);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            color: #1976d2;
+            color: var(--tag-default-color);
             font-weight: 500;
-        }
-
-        .code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .keyword {
-            color: #c678dd;
-        }
-
-        .string {
-            color: #98c379;
-        }
-
-        .comment {
-            color: #5c6370;
-            font-style: italic;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #fce4ec;
-            color: #c2185b;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            margin: 5px;
-            font-weight: 600;
-        }
-
-        .tag.feature {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .nav-buttons a {
-            background: #f0f0f0;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-        }
-
-        .nav-buttons a:hover {
-            background: #e0e0e0;
         }
 
         .success-badge {
             display: inline-block;
-            background: #28a745;
+            background: var(--success);
             color: white;
             padding: 6px 14px;
             border-radius: 20px;
@@ -195,13 +90,13 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container">
         <div class="breadcrumb">
             <a href="../index.html">← Back to Gallery</a> / <strong>Advanced</strong> / 02: Draggable Elements
         </div>
 
-        <h1>🖱️ Draggable Elements <span class="success-badge">PURE HYPERSCRIPT</span></h1>
+        <h1>Draggable Elements <span class="success-badge">PURE HYPERSCRIPT</span></h1>
 
         <div class="description">
             <strong>Reusable behavior with parameters and custom events</strong><br>
@@ -210,8 +105,8 @@
         </div>
 
         <div>
-            <span class="tag">behavior</span>
-            <span class="tag">install</span>
+            <span class="tag advanced">behavior</span>
+            <span class="tag advanced">install</span>
             <span class="tag feature">measure</span>
             <span class="tag feature">custom events</span>
             <span class="tag feature">halt event</span>
@@ -220,7 +115,7 @@
         <!-- Demo -->
         <div class="demo">
             <div class="instructions">
-                📝 Instructions: <strong>Drag the boxes</strong> by their title bars. Notice the shadow effect during dragging!
+                Instructions: <strong>Drag the boxes</strong> by their title bars. Notice the shadow effect during dragging!
             </div>
 
             <div class="draggable-container">
@@ -228,7 +123,7 @@
                      _="install Draggable(dragHandle: .titlebar in me)
                         on draggable:start add .dragging
                         on draggable:end remove .dragging">
-                    <div class="titlebar">📦 Draggable Item 1</div>
+                    <div class="titlebar">Draggable Item 1</div>
                     <div class="content">Drag me by the title bar!</div>
                 </div>
 
@@ -236,7 +131,7 @@
                      _="install Draggable(dragHandle: .titlebar in me)
                         on draggable:start add .dragging
                         on draggable:end remove .dragging">
-                    <div class="titlebar">📦 Draggable Item 2</div>
+                    <div class="titlebar">Draggable Item 2</div>
                     <div class="content">I'm draggable too!</div>
                 </div>
 
@@ -244,7 +139,7 @@
                      _="install Draggable(dragHandle: .titlebar in me)
                         on draggable:start add .dragging
                         on draggable:end remove .dragging">
-                    <div class="titlebar">📦 Draggable Item 3</div>
+                    <div class="titlebar">Draggable Item 3</div>
                     <div class="content">Move me around!</div>
                 </div>
             </div>
@@ -290,7 +185,7 @@
         on draggable:start add .dragging
         on draggable:end remove .dragging"</span>&gt;
 
-  &lt;div class=<span class="string">"titlebar"</span>&gt;📦 Draggable Item&lt;/div&gt;
+  &lt;div class=<span class="string">"titlebar"</span>&gt;Draggable Item&lt;/div&gt;
   &lt;div class=<span class="string">"content"</span>&gt;Drag me!&lt;/div&gt;
 &lt;/div&gt;
         </div>
@@ -334,7 +229,7 @@
         </div>
 
         <div class="note">
-            ⚠️ <strong>Note about behaviors:</strong> The <code>behavior</code> feature requires full hyperscript implementation.
+            <strong>Note about behaviors:</strong> The <code>behavior</code> feature requires full hyperscript implementation.
             If dragging doesn't work yet, it indicates the behavior system needs implementation. The behavior code above is defined
             in a <code>&lt;script type="text/hyperscript"&gt;</code> tag at the bottom of this page.
         </div>

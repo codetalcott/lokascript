@@ -3,22 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>htmx-like: Partial Template Validation</title>
+  <title>06: Partial Validation - HyperFixi htmx-like Examples</title>
+  <link rel="stylesheet" href="../gallery.css">
   <style>
-    body { font-family: system-ui, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; }
-    .demo-box { border: 1px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 8px; }
-    .demo-box h3 { margin-top: 0; }
-    button { padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; }
-    button:hover { background: #f0f0f0; }
-    .info { background: #f0f9ff; padding: 15px; border-radius: 4px; margin: 10px 0; border-left: 4px solid #0891b2; }
-    .warning { background: #fef3c7; border-left-color: #f59e0b; }
-    .error { background: #fee2e2; border-left-color: #dc2626; }
-    #swap-target { min-height: 100px; background: #f9fafb; padding: 15px; border-radius: 4px; }
-    #validation-log {
-      background: #1e1e1e;
-      color: #d4d4d4;
+    /* Example-specific styles */
+    .info.warning {
+      background: #fef3c7;
+      border-left-color: #f59e0b;
+    }
+    .info.error {
+      background: #fee2e2;
+      border-left-color: #dc2626;
+    }
+    #swap-target {
+      min-height: 100px;
+      background: var(--panel-muted);
       padding: 15px;
-      font-family: 'Monaco', 'Menlo', monospace;
+      border-radius: 4px;
+    }
+    #validation-log {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 15px;
+      font-family: var(--font-mono);
       font-size: 13px;
       max-height: 300px;
       overflow-y: auto;
@@ -30,125 +37,178 @@
     .log-warning { color: #facc15; }
     .log-info { color: #60a5fa; }
     .log-success { color: #4ade80; }
-    .config-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-    .config-option { padding: 10px; background: #f5f5f5; border-radius: 4px; }
-    .config-option label { display: block; margin-bottom: 5px; font-weight: 500; }
-    select, input[type="text"] { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-    .button-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-    .button-group button { flex: 1; min-width: 150px; }
-    code { background: #e5e7eb; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    .config-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .config-option {
+      padding: 10px;
+      background: var(--panel-muted);
+      border-radius: 4px;
+    }
+    .config-option label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--panel);
+      color: var(--text);
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .button-group button {
+      flex: 1;
+      min-width: 150px;
+    }
+    textarea {
+      width: 100%;
+      font-family: var(--font-mono);
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--panel);
+      color: var(--text);
+    }
   </style>
 </head>
-<body>
-  <h1>Partial Template Validation</h1>
+<body class="example-page">
+  <div class="page-container">
+    <div class="breadcrumb">
+      <a href="../index.html">← Back to Gallery</a> / <strong>htmx-like</strong> / 06: Partial Validation
+    </div>
 
-  <div class="info">
-    <strong>Purpose:</strong> Demonstrates development-time validation that catches common errors when
-    partial templates accidentally contain layout elements (<code>&lt;html&gt;</code>, <code>&lt;body&gt;</code>)
-    or duplicate semantic landmarks (<code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>).
-    <br><br>
-    <strong>Open your browser's DevTools console</strong> to see styled warnings when swapping problematic content.
-  </div>
+    <h1>Partial Template Validation</h1>
 
-  <h2>Configuration</h2>
-  <div class="demo-box">
-    <div class="config-panel">
-      <div class="config-option">
-        <label>Strictness Level</label>
-        <select id="strictness-select">
-          <option value="relaxed">Relaxed (critical only)</option>
-          <option value="standard" selected>Standard (critical + structural)</option>
-          <option value="strict">Strict (all warnings)</option>
-        </select>
+    <div class="description">
+      <strong>Purpose:</strong> Demonstrates development-time validation that catches common errors when
+      partial templates accidentally contain layout elements (<code>&lt;html&gt;</code>, <code>&lt;body&gt;</code>)
+      or duplicate semantic landmarks (<code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>).
+      <br><br>
+      <strong>Open your browser's DevTools console</strong> to see styled warnings when swapping problematic content.
+    </div>
+
+    <div>
+      <span class="tag htmx">validation</span>
+      <span class="tag">partial templates</span>
+      <span class="tag">developer tools</span>
+    </div>
+
+    <h2>Configuration</h2>
+    <div class="demo">
+      <div class="config-panel">
+        <div class="config-option">
+          <label>Strictness Level</label>
+          <select id="strictness-select">
+            <option value="relaxed">Relaxed (critical only)</option>
+            <option value="standard" selected>Standard (critical + structural)</option>
+            <option value="strict">Strict (all warnings)</option>
+          </select>
+        </div>
+        <div class="config-option">
+          <label>Show Warnings</label>
+          <select id="warnings-select">
+            <option value="true" selected>Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="config-option">
+          <label>Additional Critical Elements</label>
+          <input type="text" id="critical-elements" placeholder="e.g., app-shell, app-layout">
+        </div>
       </div>
-      <div class="config-option">
-        <label>Show Warnings</label>
-        <select id="warnings-select">
-          <option value="true" selected>Enabled</option>
-          <option value="false">Disabled</option>
-        </select>
-      </div>
-      <div class="config-option">
-        <label>Additional Critical Elements</label>
-        <input type="text" id="critical-elements" placeholder="e.g., app-shell, app-layout">
+      <button onclick="applyConfig()" style="margin-top: 15px;">Apply Configuration</button>
+    </div>
+
+    <h2>Swap Target</h2>
+    <div class="demo">
+      <div id="swap-target">
+        <p>This is the swap target. Content will be swapped here.</p>
+        <p>Current time: <span id="current-time"></span></p>
       </div>
     </div>
-    <button onclick="applyConfig()" style="margin-top: 15px;">Apply Configuration</button>
-  </div>
 
-  <h2>Swap Target</h2>
-  <div class="demo-box">
-    <div id="swap-target">
-      <p>This is the swap target. Content will be swapped here.</p>
-      <p>Current time: <span id="current-time"></span></p>
+    <h2>Test Scenarios</h2>
+
+    <div class="demo">
+      <h3>Critical Issues (Always Detected)</h3>
+      <p class="description info error">These represent serious errors where a server returns a full page instead of a partial.</p>
+      <div class="button-group">
+        <button onclick="swapWithHtml()">
+          Swap with &lt;html&gt; (Full Page)
+        </button>
+        <button onclick="swapWithBody()">
+          Swap with &lt;body&gt;
+        </button>
+        <button onclick="swapWithHead()">
+          Swap with &lt;head&gt;
+        </button>
+        <button onclick="swapWithDoctype()">
+          Swap with DOCTYPE
+        </button>
+      </div>
     </div>
-  </div>
 
-  <h2>Test Scenarios</h2>
-
-  <div class="demo-box">
-    <h3>Critical Issues (Always Detected)</h3>
-    <p class="info error">These represent serious errors where a server returns a full page instead of a partial.</p>
-    <div class="button-group">
-      <button onclick="swapWithHtml()">
-        Swap with &lt;html&gt; (Full Page)
-      </button>
-      <button onclick="swapWithBody()">
-        Swap with &lt;body&gt;
-      </button>
-      <button onclick="swapWithHead()">
-        Swap with &lt;head&gt;
-      </button>
-      <button onclick="swapWithDoctype()">
-        Swap with DOCTYPE
-      </button>
+    <div class="demo">
+      <h3>Structural Issues (Standard/Strict Mode)</h3>
+      <p class="description info warning">These may cause duplicate semantic landmarks, affecting accessibility.</p>
+      <div class="button-group">
+        <button onclick="swapWithHeader()">
+          Swap with &lt;header&gt;
+        </button>
+        <button onclick="swapWithFooter()">
+          Swap with &lt;footer&gt;
+        </button>
+        <button onclick="swapWithMain()">
+          Swap with &lt;main&gt;
+        </button>
+        <button onclick="swapWithNav()">
+          Swap with &lt;nav&gt;
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="demo-box">
-    <h3>Structural Issues (Standard/Strict Mode)</h3>
-    <p class="info warning">These may cause duplicate semantic landmarks, affecting accessibility.</p>
-    <div class="button-group">
-      <button onclick="swapWithHeader()">
-        Swap with &lt;header&gt;
-      </button>
-      <button onclick="swapWithFooter()">
-        Swap with &lt;footer&gt;
-      </button>
-      <button onclick="swapWithMain()">
-        Swap with &lt;main&gt;
-      </button>
-      <button onclick="swapWithNav()">
-        Swap with &lt;nav&gt;
-      </button>
+    <div class="demo">
+      <h3>Valid Partial Content</h3>
+      <p class="description">These are valid partial templates that should pass validation.</p>
+      <div class="button-group">
+        <button onclick="swapValidContent()">
+          Swap Valid Content
+        </button>
+        <button onclick="swapArticle()">
+          Swap &lt;article&gt;
+        </button>
+        <button onclick="swapForm()">
+          Swap &lt;form&gt;
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="demo-box">
-    <h3>Valid Partial Content</h3>
-    <p class="info">These are valid partial templates that should pass validation.</p>
-    <div class="button-group">
-      <button onclick="swapValidContent()">
-        Swap Valid Content
-      </button>
-      <button onclick="swapArticle()">
-        Swap &lt;article&gt;
-      </button>
-      <button onclick="swapForm()">
-        Swap &lt;form&gt;
-      </button>
+    <h2>Validation Log</h2>
+    <div id="validation-log">Waiting for swap operations...</div>
+    <button onclick="clearLog()" class="secondary" style="margin-top: 10px;">Clear Log</button>
+
+    <h2>Manual Validation API</h2>
+    <div class="demo">
+      <p>You can also validate HTML content manually without swapping:</p>
+      <textarea id="manual-html" rows="4" placeholder="Enter HTML to validate, e.g.: <html><body>content</body></html>"></textarea>
+      <button onclick="validateManual()" style="margin-top: 10px;">Validate HTML</button>
     </div>
-  </div>
 
-  <h2>Validation Log</h2>
-  <div id="validation-log">Waiting for swap operations...</div>
-  <button onclick="clearLog()" style="margin-top: 10px;">Clear Log</button>
-
-  <h2>Manual Validation API</h2>
-  <div class="demo-box">
-    <p>You can also validate HTML content manually without swapping:</p>
-    <textarea id="manual-html" rows="4" style="width: 100%; font-family: monospace; padding: 10px;" placeholder="Enter HTML to validate, e.g.: <html><body>content</body></html>"></textarea>
-    <button onclick="validateManual()" style="margin-top: 10px;">Validate HTML</button>
+    <!-- Navigation -->
+    <div class="nav-buttons">
+      <a href="05-boosted-links.html">← Previous: Boosted Links</a>
+      <a href="../index.html">Back to Gallery →</a>
+    </div>
   </div>
 
   <script src="../../packages/core/dist/hyperfixi-browser.js"></script>

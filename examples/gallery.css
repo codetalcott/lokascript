@@ -1,0 +1,774 @@
+/**
+ * HyperFixi Examples Gallery - Shared Stylesheet
+ *
+ * Based on patterns-browser design system with gallery-specific accents.
+ * Supports dark mode via prefers-color-scheme and .dark-mode class.
+ */
+
+/* =============================================================================
+   CSS Reset
+   ============================================================================= */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* =============================================================================
+   Light Theme (default)
+   ============================================================================= */
+
+:root {
+  /* Text colors */
+  --text: #121210;
+  --text-muted: #666;
+  --text-light: #333;
+
+  /* Background colors */
+  --background: #f5f5f5;
+  --panel: white;
+  --panel-muted: #f8f9fa;
+
+  /* Gallery-specific accents (purple gradient aesthetic) */
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Section accent colors */
+  --section-landing: #ff5722;
+  --section-landing-dark: #e64a19;
+  --section-htmx: #4caf50;
+  --section-htmx-dark: #2e7d32;
+  --section-behaviors: #9c27b0;
+  --section-behaviors-dark: #7b1fa2;
+  --section-multilingual: #667eea;
+  --section-experiments: #f97316;
+
+  /* Borders */
+  --border: #e0e0e0;
+  --border-light: #f0f0f0;
+
+  /* Shadows */
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-card-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --shadow-section: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+  /* Tag/chip colors */
+  --tag-default-bg: #e3f2fd;
+  --tag-default-color: #1976d2;
+  --tag-advanced-bg: #fce4ec;
+  --tag-advanced-color: #c2185b;
+  --tag-feature-bg: #f3e5f5;
+  --tag-feature-color: #7b1fa2;
+  --tag-htmx-bg: #e8f5e9;
+  --tag-htmx-color: #2e7d32;
+  --tag-experiment-bg: #fff3e0;
+  --tag-experiment-color: #e65100;
+  --tag-landing-bg: #fbe9e7;
+  --tag-landing-color: #bf360c;
+
+  /* Syntax highlighting (code blocks) */
+  --code-bg: #282c34;
+  --code-text: #abb2bf;
+  --syntax-keyword: #c678dd;
+  --syntax-string: #98c379;
+  --syntax-comment: #5c6370;
+  --syntax-number: #d19a66;
+  --syntax-function: #61afef;
+
+  /* Success state */
+  --success: #28a745;
+  --success-bg: #d4edda;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Courier New', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 20px;
+  --spacing-lg: 30px;
+  --spacing-xl: 40px;
+}
+
+/* =============================================================================
+   Dark Theme
+   ============================================================================= */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f8fafb;
+    --text-muted: #a0a0a0;
+    --text-light: #e0e0e0;
+    --background: #1a1a1a;
+    --panel: #252525;
+    --panel-muted: #2a2a2a;
+    --border: #404040;
+    --border-light: #333;
+    --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --shadow-section: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+    /* Tag colors - darker backgrounds */
+    --tag-default-bg: #1e3a5f;
+    --tag-default-color: #90caf9;
+    --tag-advanced-bg: #4a1533;
+    --tag-advanced-color: #f8bbd9;
+    --tag-feature-bg: #4a1a6b;
+    --tag-feature-color: #e1bee7;
+    --tag-htmx-bg: #1b4332;
+    --tag-htmx-color: #a5d6a7;
+    --tag-experiment-bg: #5c2e0a;
+    --tag-experiment-color: #ffcc80;
+    --tag-landing-bg: #4a1c10;
+    --tag-landing-color: #ffab91;
+  }
+}
+
+html.dark-mode {
+  --text: #f8fafb;
+  --text-muted: #a0a0a0;
+  --text-light: #e0e0e0;
+  --background: #1a1a1a;
+  --panel: #252525;
+  --panel-muted: #2a2a2a;
+  --border: #404040;
+  --border-light: #333;
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 25px rgba(0, 0, 0, 0.4);
+  --shadow-section: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+  /* Tag colors - darker backgrounds */
+  --tag-default-bg: #1e3a5f;
+  --tag-default-color: #90caf9;
+  --tag-advanced-bg: #4a1533;
+  --tag-advanced-color: #f8bbd9;
+  --tag-feature-bg: #4a1a6b;
+  --tag-feature-color: #e1bee7;
+  --tag-htmx-bg: #1b4332;
+  --tag-htmx-color: #a5d6a7;
+  --tag-experiment-bg: #5c2e0a;
+  --tag-experiment-color: #ffcc80;
+  --tag-landing-bg: #4a1c10;
+  --tag-landing-color: #ffab91;
+}
+
+/* =============================================================================
+   Base Styles
+   ============================================================================= */
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Gallery index page - gradient background */
+body.gallery-index {
+  background: var(--accent-gradient);
+  padding: var(--spacing-xl) var(--spacing-md);
+}
+
+/* Example pages - simple background */
+body.example-page {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: var(--spacing-md);
+}
+
+/* =============================================================================
+   Layout
+   ============================================================================= */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.container-narrow {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* =============================================================================
+   Header (Gallery Index)
+   ============================================================================= */
+
+header {
+  text-align: center;
+  color: white;
+  margin-bottom: 50px;
+}
+
+header h1 {
+  font-size: 3.5rem;
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tagline {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* =============================================================================
+   Badges
+   ============================================================================= */
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin: var(--spacing-xs);
+  backdrop-filter: blur(10px);
+}
+
+.badge.success {
+  background: var(--success);
+  color: white;
+  font-weight: bold;
+}
+
+/* =============================================================================
+   Stats (Gallery Index)
+   ============================================================================= */
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  margin: var(--spacing-lg) 0;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: rgba(255, 255, 255, 0.2);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+/* =============================================================================
+   Sections (Gallery Index)
+   ============================================================================= */
+
+.section {
+  background: var(--panel);
+  border-radius: 12px;
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-section);
+}
+
+.section h2 {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-sm);
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-description {
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.section-description a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.section-description a:hover {
+  text-decoration: underline;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+/* Section accent borders */
+.section.section-landing {
+  border-left: 4px solid var(--section-landing);
+}
+
+.section.section-multilingual {
+  border-left: 4px solid var(--section-multilingual);
+}
+
+.section.section-behaviors {
+  border-left: 4px solid var(--section-behaviors);
+}
+
+.section.section-htmx {
+  border-left: 4px solid var(--section-htmx);
+}
+
+.section.section-experiments {
+  border-left: 4px solid var(--section-experiments);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.05) 0%, rgba(234, 88, 12, 0.08) 100%);
+}
+
+/* =============================================================================
+   Example Grid & Cards (Gallery Index)
+   ============================================================================= */
+
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.example-card {
+  background: var(--panel-muted);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.example-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--accent-primary);
+}
+
+.example-header {
+  background: var(--accent-gradient);
+  color: white;
+  padding: var(--spacing-md);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Section-specific header colors */
+.example-header.header-landing {
+  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+}
+
+.example-header.header-htmx {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+}
+
+.example-header.header-htmx-blue {
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+}
+
+.example-header.header-htmx-pink {
+  background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+}
+
+.example-header.header-htmx-indigo {
+  background: linear-gradient(135deg, #3f51b5 0%, #303f9f 100%);
+}
+
+.example-header.header-htmx-amber {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+
+.example-header.header-behaviors {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+}
+
+.example-header.header-multilingual-amber {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.example-header.header-multilingual-pink {
+  background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
+}
+
+.example-header.header-multilingual-purple {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+}
+
+.example-header.header-multilingual-red {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.example-header.header-multilingual-green {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.example-header.header-experiment-dark {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+}
+
+.example-header.header-experiment-slate {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.example-header.header-experiment-purple {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+}
+
+.example-header.header-experiment-blue {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+}
+
+.example-body {
+  padding: var(--spacing-md);
+}
+
+.example-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-light);
+}
+
+.example-description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+/* =============================================================================
+   Tags/Chips
+   ============================================================================= */
+
+.example-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background: var(--tag-default-bg);
+  color: var(--tag-default-color);
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tag.advanced {
+  background: var(--tag-advanced-bg);
+  color: var(--tag-advanced-color);
+}
+
+.tag.feature {
+  background: var(--tag-feature-bg);
+  color: var(--tag-feature-color);
+}
+
+.tag.htmx {
+  background: var(--tag-htmx-bg);
+  color: var(--tag-htmx-color);
+}
+
+.tag.experiment {
+  background: var(--tag-experiment-bg);
+  color: var(--tag-experiment-color);
+}
+
+.tag.landing {
+  background: var(--tag-landing-bg);
+  color: var(--tag-landing-color);
+}
+
+/* =============================================================================
+   Footer (Gallery Index)
+   ============================================================================= */
+
+footer {
+  text-align: center;
+  color: white;
+  margin-top: 60px;
+  opacity: 0.9;
+}
+
+footer a {
+  color: white;
+  text-decoration: underline;
+}
+
+/* =============================================================================
+   Example Page Styles
+   ============================================================================= */
+
+/* Page container */
+.page-container {
+  background: var(--panel);
+  padding: var(--spacing-xl);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.9rem;
+}
+
+.breadcrumb a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Page title */
+.page-container h1 {
+  color: var(--text-light);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Description box */
+.description {
+  background: var(--panel-muted);
+  border-left: 4px solid var(--accent-primary);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+/* Demo area */
+.demo {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  text-align: center;
+}
+
+/* Output box */
+#output,
+.output {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--tag-default-bg);
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--tag-default-color);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =============================================================================
+   Buttons
+   ============================================================================= */
+
+button,
+.btn {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(0);
+}
+
+button.secondary,
+.btn.secondary {
+  background: var(--border-light);
+  color: var(--text-light);
+}
+
+button.secondary:hover,
+.btn.secondary:hover {
+  background: var(--border);
+  box-shadow: none;
+}
+
+/* =============================================================================
+   Code Blocks
+   ============================================================================= */
+
+.code {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  margin: var(--spacing-md) 0;
+  line-height: 1.5;
+}
+
+/* Syntax highlighting */
+.keyword {
+  color: var(--syntax-keyword);
+}
+
+.string {
+  color: var(--syntax-string);
+}
+
+.comment {
+  color: var(--syntax-comment);
+}
+
+.number {
+  color: var(--syntax-number);
+}
+
+.function {
+  color: var(--syntax-function);
+}
+
+/* Inline code */
+code {
+  font-family: var(--font-mono);
+  background: var(--panel-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* =============================================================================
+   Explanations
+   ============================================================================= */
+
+.explanation {
+  margin: var(--spacing-md) 0;
+  line-height: 1.8;
+}
+
+.explanation h3 {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-light);
+}
+
+.explanation ul {
+  margin-left: var(--spacing-md);
+}
+
+.explanation li {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* =============================================================================
+   Navigation Buttons (Example Pages)
+   ============================================================================= */
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 2px solid var(--border);
+}
+
+.nav-buttons a {
+  background: var(--border-light);
+  color: var(--text-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.nav-buttons a:hover {
+  background: var(--border);
+}
+
+/* =============================================================================
+   Responsive
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 2.5rem;
+  }
+
+  .stats {
+    gap: var(--spacing-md);
+  }
+
+  .stat {
+    padding: 15px 20px;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: var(--spacing-md);
+  }
+
+  .example-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.example-page {
+    margin: var(--spacing-md) auto;
+    padding: var(--spacing-sm);
+  }
+
+  .page-container {
+    padding: var(--spacing-md);
+  }
+}
+
+/* =============================================================================
+   Utilities
+   ============================================================================= */
+
+.text-center {
+  text-align: center;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }

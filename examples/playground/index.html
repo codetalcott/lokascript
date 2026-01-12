@@ -4,22 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HyperFixi Interactive Translation Playground</title>
+  <link rel="stylesheet" href="../gallery.css">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Playground-specific layout - full viewport app */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-sans);
       background: #1a1a2e;
       color: #eee;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      max-width: none;
     }
 
     .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--accent-gradient);
       padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
@@ -29,6 +28,8 @@
     .header h1 {
       font-size: 1.5rem;
       font-weight: 600;
+      margin: 0;
+      color: white;
     }
 
     .header-actions {
@@ -50,6 +51,8 @@
 
     .btn:hover {
       background: rgba(255,255,255,0.3);
+      transform: none;
+      box-shadow: none;
     }
 
     .playground {
@@ -80,6 +83,7 @@
       color: #999;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      margin: 0;
     }
 
     select {
@@ -95,7 +99,7 @@
       flex: 1;
       background: #16162a;
       padding: 1rem;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       line-height: 1.6;
       resize: none;
@@ -171,7 +175,7 @@
 
     .transformed-code {
       padding: 1rem;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-family: var(--font-mono);
       font-size: 13px;
       line-height: 1.5;
       color: #e0e0ff;
@@ -194,7 +198,7 @@
 
     .console-output {
       padding: 1rem;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       color: #888;
       white-space: pre-wrap;
@@ -236,7 +240,7 @@
     }
 
     .btn-primary {
-      background: #667eea;
+      background: var(--accent-primary);
       color: white;
     }
 
@@ -261,11 +265,13 @@
 
     .demo-current code {
       color: #4caf50;
-      font-family: 'Monaco', 'Menlo', monospace;
+      font-family: var(--font-mono);
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      background: transparent;
+      padding: 0;
     }
 
     .demo-elements {
@@ -276,14 +282,13 @@
     }
 
     .demo-btn {
-      background: #667eea;
+      background: var(--accent-primary);
       border: none;
       color: white;
       padding: 0.75rem 1.5rem;
       border-radius: 6px;
       cursor: pointer;
       font-size: 1rem;
-      /* Animation-friendly transitions */
       transition: all 0.3s ease, opacity 0.5s ease, transform 0.3s ease;
     }
 
@@ -292,7 +297,6 @@
       transform: translateY(-1px);
     }
 
-    /* Animation state classes */
     .demo-btn.active {
       background: #4caf50;
     }
@@ -311,7 +315,6 @@
       50% { transform: scale(1.1); }
     }
 
-    /* Fade/visibility states - hyperscript can manipulate these */
     .demo-elements [style*="opacity: 0"],
     .demo-elements .faded {
       opacity: 0;
@@ -405,7 +408,6 @@
   <header class="header">
     <h1>HyperFixi Translation Playground</h1>
     <div class="header-actions">
-      <!-- Hybrid: hyperfixi handles UI feedback, JS builds the URL -->
       <button class="btn" id="share-btn" title="Copy shareable link"
               _="on click call buildShareUrl() then copy it then call logToConsole('Copied to clipboard!', 'success') then set my textContent to 'Copied!' then wait 2s then set my textContent to 'Share'">Share</button>
     </div>
@@ -416,7 +418,6 @@
     <div class="editor-panel">
       <div class="panel-header">
         <h2>Source</h2>
-        <!-- Hybrid: hyperfixi handles event + log, calls JS for complex logic -->
         <select id="source-lang"
                 _="on change
                      call updateTransformations()
@@ -438,7 +439,6 @@
           <option value="qu">Runasimi</option>
         </select>
       </div>
-      <!-- Hybrid: hyperfixi handles the event, calls JS for complex translation logic -->
       <textarea
         id="code-editor"
         class="code-editor"
@@ -477,7 +477,6 @@ Examples:
         <div class="demo-header">
           <h3>Live Demo</h3>
           <div class="demo-controls">
-            <!-- Hybrid: hyperfixi handles click, calls JS for complex hyperscript application -->
             <button class="btn btn-primary" id="run-btn" title="Apply source code to demo button"
                     _="on click call runHyperscript()">Apply</button>
             <button class="btn" id="reset-btn" title="Reset demo state"
@@ -491,7 +490,6 @@ Examples:
         <div class="demo-elements">
           <button class="demo-btn" id="demo-btn">Click Me</button>
           <div class="demo-output" id="count">0</div>
-          <!-- Pure hyperfixi: simple input mirroring -->
           <input class="demo-input" id="demo-input" placeholder="Type here..."
                  _="on input put my value into #output">
           <div class="demo-output" id="output"></div>
@@ -503,7 +501,6 @@ Examples:
     <div class="console-panel">
       <div class="panel-header">
         <h2>Console</h2>
-        <!-- Pure hyperfixi: clear console with simple put command -->
         <button class="btn" id="clear-console" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"
                 _='on click put "<span class=info>[info]</span> Console cleared" into #console-output'>Clear</button>
       </div>
@@ -517,33 +514,10 @@ Examples:
 
   <!-- Load HyperFixi bundles -->
   <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
-    <script src="../debug-panel.js"></script>
+  <script src="../debug-panel.js"></script>
   <script src="../../packages/i18n/dist/hyperfixi-i18n.min.js"></script>
 
   <script>
-    /**
-     * HyperFixi Translation Playground - Hybrid Implementation
-     *
-     * This page demonstrates a hybrid approach where:
-     *
-     * HYPERFIXI HANDLES (via _= attributes in HTML):
-     * - Share button: click → build URL → copy to clipboard → update text → wait → restore
-     * - Code editor: input → call updateTransformations/updateSemanticAnalysis
-     * - Source language: change → call updates + log language change
-     * - Run/Reset buttons: click → call JS functions
-     * - Demo input: input → put value into output (pure hyperfixi)
-     * - Clear console: click → put message into console (pure hyperfixi)
-     *
-     * JAVASCRIPT HANDLES (complex logic):
-     * - buildShareUrl(): URL encoding with btoa/JSON
-     * - updateTransformations(): Iteration, template generation, HyperFixiI18n.translate()
-     * - updateSemanticAnalysis(): HyperFixiI18n.parseStatement(), dynamic HTML
-     * - runHyperscript(): Programmatic hyperfixi.run() API
-     * - resetDemo(): Complex state cleanup
-     * - loadFromUrl(): URL hash parsing, atob/JSON decoding
-     * - logToConsole(): DOM manipulation with escaping
-     */
-
     // Language metadata
     const LANGUAGES = {
       en: { name: 'English', flag: '🇺🇸', wordOrder: 'SVO' },
@@ -667,8 +641,7 @@ Examples:
       }
     }
 
-    // Build shareable URL (called from hyperfixi via `call buildShareUrl()`)
-    // Hyperfixi's built-in `copy` command handles the clipboard
+    // Build shareable URL
     function buildShareUrl() {
       const code = codeEditor.value;
       const lang = sourceLang.value;
@@ -676,7 +649,7 @@ Examples:
       return `${location.origin}${location.pathname}#${data}`;
     }
 
-    // Get language name by code (called from hyperfixi)
+    // Get language name by code
     function getLanguageName(code) {
       return LANGUAGES[code]?.name || code;
     }
@@ -723,19 +696,15 @@ Examples:
 
           // Clear any previous hyperscript by replacing the button
           const newBtn = btn.cloneNode(true);
-          // IMPORTANT: Remove _= attribute BEFORE inserting to prevent MutationObserver double-registration
           newBtn.removeAttribute('_');
           btn.parentNode.replaceChild(newBtn, btn);
           window.demoBtn = newBtn;
 
-          // Use the programmatic API to set up the event handler
-          // This creates a context with the button as 'me' and runs the hyperscript
+          // Use the programmatic API
           const context = window.hyperfixi.createContext(newBtn);
 
           window.hyperfixi.run(englishCode, context).then(() => {
-            // Set attribute AFTER run() for display purposes only (won't trigger MutationObserver re-processing)
             newBtn.setAttribute('_', englishCode);
-            // Update the "current code" display
             document.getElementById('current-code').textContent = englishCode;
             logToConsole('Hyperscript applied! Click the button to test.', 'success');
           }).catch(err => {
@@ -751,26 +720,20 @@ Examples:
       }
     }
 
-    // NOTE: Event listeners for code-editor, source-lang, run-btn, reset-btn,
-    // clear-console, and demo-input are now handled by hyperfixi attributes (_=)
-    // See the HTML elements above for the hyperscript implementations.
-
     // Demo elements references
     const demoBtn = document.getElementById('demo-btn');
     const countOutput = document.getElementById('count');
     const demoOutput = document.getElementById('output');
     const demoInput = document.getElementById('demo-input');
 
-    // Expose for debugging and for hyperscript to find after reset
     window.demoBtn = demoBtn;
 
-    // Reset function to clear demo state
+    // Reset function
     function resetDemo() {
       const currentBtn = window.demoBtn || document.getElementById('demo-btn');
       countOutput.textContent = '0';
       demoOutput.textContent = '';
       demoInput.value = '';
-      // Remove all animation/state classes
       currentBtn.classList.remove('active', 'highlight', 'faded', 'pulse');
       currentBtn.style.display = '';
       currentBtn.style.opacity = '';
@@ -778,12 +741,9 @@ Examples:
       countOutput.style.display = '';
       countOutput.style.opacity = '';
       currentBtn.removeAttribute('_');
-      // Remove any existing hyperscript event listeners by replacing the element
       const newBtn = currentBtn.cloneNode(true);
       currentBtn.parentNode.replaceChild(newBtn, currentBtn);
-      // Update reference
       window.demoBtn = newBtn;
-      // Clear the current code display
       document.getElementById('current-code').textContent = 'none';
       currentDemoScript = null;
       logToConsole('Demo reset. Click Apply to run hyperscript.', 'info');

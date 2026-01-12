@@ -4,81 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>05: Boosted Links - HyperFixi htmx-like Examples</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .breadcrumb {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .description {
-            background: #fff8e1;
-            border-left: 4px solid #ffc107;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .demo {
-            background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 30px;
-            margin: 30px 0;
-        }
-
-        button {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            color: #333;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            font-weight: 600;
-            margin: 10px 5px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
+        /* Example-specific styles */
         .nav-container {
-            background: #263238;
+            background: var(--code-bg);
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
@@ -100,13 +30,13 @@
         }
 
         .nav-container a.active {
-            background: #ffc107;
-            color: #333;
+            background: var(--accent-primary);
+            color: white;
         }
 
         .content-area {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
+            background: var(--panel-muted);
+            border: 2px solid var(--border);
             border-radius: 8px;
             padding: 30px;
             margin: 20px 0;
@@ -118,11 +48,11 @@
         }
 
         .content-area.hx-boosting {
-            border-color: #ffc107;
+            border-color: var(--accent-primary);
         }
 
         .card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             color: white;
             padding: 25px;
             border-radius: 12px;
@@ -138,70 +68,6 @@
             opacity: 0.9;
         }
 
-        .code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-            font-size: 13px;
-        }
-
-        .keyword {
-            color: #c678dd;
-        }
-
-        .string {
-            color: #98c379;
-        }
-
-        .comment {
-            color: #5c6370;
-        }
-
-        .explanation {
-            margin: 20px 0;
-            line-height: 1.8;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #fff8e1;
-            color: #f57c00;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            margin: 5px;
-        }
-
-        .tag.htmx {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .nav-buttons a {
-            background: #f0f0f0;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .nav-buttons a:hover {
-            background: #e0e0e0;
-        }
-
         .note {
             background: #e3f2fd;
             border-left: 4px solid #2196f3;
@@ -211,18 +77,18 @@
         }
 
         .url-display {
-            background: #263238;
+            background: var(--code-bg);
             color: #4fc3f7;
             padding: 12px 20px;
             border-radius: 8px;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-mono);
             margin: 15px 0;
             word-break: break-all;
         }
 
         .url-display::before {
-            content: "📍 URL: ";
-            color: #aaa;
+            content: "URL: ";
+            color: var(--text-muted);
         }
 
         .feature-list {
@@ -233,20 +99,20 @@
         }
 
         .feature-item {
-            background: #f8f9fa;
+            background: var(--panel-muted);
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid var(--accent-primary);
         }
 
         .feature-item h4 {
             margin: 0 0 5px 0;
-            color: #333;
+            color: var(--text);
         }
 
         .feature-item p {
             margin: 0;
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
@@ -257,25 +123,27 @@
         input[type="text"], input[type="search"] {
             padding: 12px 16px;
             font-size: 16px;
-            border: 2px solid #ddd;
+            border: 2px solid var(--border);
             border-radius: 8px;
             margin: 5px;
             width: 300px;
+            background: var(--panel);
+            color: var(--text);
         }
 
         input:focus {
-            border-color: #ffc107;
+            border-color: var(--accent-primary);
             outline: none;
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container">
         <div class="breadcrumb">
             <a href="../index.html">← Back to Gallery</a> / <strong>htmx-like</strong> / 05: Boosted Links
         </div>
 
-        <h1>🚀 Boosted Links & Forms</h1>
+        <h1>Boosted Links & Forms</h1>
 
         <div class="description">
             <strong>Automatic AJAX navigation for links and forms</strong><br>
@@ -408,13 +276,13 @@
                    end"
             >
                 <input type="search" id="search-input" placeholder="Search..." style="width: 250px;">
-                <button type="submit" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <button type="submit">
                     Search
                 </button>
             </form>
 
             <div id="search-results" class="content-area">
-                <p style="color: #666; text-align: center;">Enter a search term and submit</p>
+                <p style="color: var(--text-muted); text-align: center;">Enter a search term and submit</p>
             </div>
         </div>
 
@@ -424,27 +292,27 @@
 
             <div class="feature-list">
                 <div class="feature-item">
-                    <h4>🔗 Link Interception</h4>
+                    <h4>Link Interception</h4>
                     <p>Catches clicks on links and fetches via AJAX</p>
                 </div>
                 <div class="feature-item">
-                    <h4>📝 Form Handling</h4>
+                    <h4>Form Handling</h4>
                     <p>Submits forms via AJAX (GET or POST)</p>
                 </div>
                 <div class="feature-item">
-                    <h4>🔄 History Management</h4>
+                    <h4>History Management</h4>
                     <p>Updates URL with pushState</p>
                 </div>
                 <div class="feature-item">
-                    <h4>✨ View Transitions</h4>
+                    <h4>View Transitions</h4>
                     <p>Optional smooth CSS animations</p>
                 </div>
                 <div class="feature-item">
-                    <h4>🎯 Smart Detection</h4>
+                    <h4>Smart Detection</h4>
                     <p>Skips external links, downloads, new tabs</p>
                 </div>
                 <div class="feature-item">
-                    <h4>⌨️ Modifier Keys</h4>
+                    <h4>Modifier Keys</h4>
                     <p>Respects Ctrl/Cmd+click for new tab</p>
                 </div>
             </div>
@@ -529,17 +397,17 @@
 
             <h3>htmx Comparison:</h3>
             <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
-                <tr style="background: #fff8e1;">
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">htmx</th>
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">HyperFixi</th>
+                <tr style="background: var(--panel-muted);">
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">htmx</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">HyperFixi</th>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>&lt;body hx-boost="true"&gt;</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">Manual per-link or behavior pattern</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>&lt;body hx-boost="true"&gt;</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Manual per-link or behavior pattern</td>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">Automatic link interception</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">Explicit control per link/form</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Automatic link interception</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Explicit control per link/form</td>
                 </tr>
             </table>
 
@@ -564,7 +432,7 @@
         <!-- Navigation -->
         <div class="nav-buttons">
             <a href="04-multi-target-swaps.html">← Previous: Multi-Target Swaps</a>
-            <a href="../index.html">Back to Gallery →</a>
+            <a href="06-partial-validation.html">Next: Partial Validation →</a>
         </div>
     </div>
 

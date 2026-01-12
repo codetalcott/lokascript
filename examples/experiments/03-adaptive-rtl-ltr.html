@@ -4,36 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adaptive RTL/LTR - HyperFixi Experiments</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* Example-specific styles for Adaptive RTL/LTR */
+        body.example-page {
             background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            min-height: 100vh;
+            max-width: 1200px;
             padding: 40px 20px;
             color: white;
             transition: direction 0.3s;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
-
         header { text-align: center; margin-bottom: 40px; }
 
-        .back-link {
-            display: inline-block;
-            color: #a0aec0;
-            text-decoration: none;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover { background: rgba(255,255,255,0.2); color: white; }
-
-        h1 {
+        header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
             background: linear-gradient(135deg, #818cf8, #c084fc);
@@ -163,6 +147,7 @@
             font-size: 22px;
             cursor: pointer;
             transition: all 0.2s;
+            padding: 0;
         }
 
         .counter-btn.inc { background: #22c55e; color: white; }
@@ -210,7 +195,7 @@
 
         .code-content {
             padding: 20px;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: var(--font-mono);
             font-size: 14px;
             color: #d4d4d4;
             line-height: 1.8;
@@ -288,10 +273,23 @@
         @keyframes slide-in {
             from { opacity: 0; transform: translateY(10px); }
         }
+
+        .back-link {
+            display: inline-block;
+            color: #a0aec0;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover { background: rgba(255,255,255,0.2); color: white; }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container" style="background: transparent; box-shadow: none;">
         <header>
             <a href="../index.html" class="back-link">← Back to Gallery</a>
             <h1>Adaptive RTL/LTR UI</h1>

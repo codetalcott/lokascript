@@ -4,87 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>04: Multi-Target Swaps - HyperFixi htmx-like Examples</title>
+    <link rel="stylesheet" href="../gallery.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .breadcrumb {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .description {
-            background: #e8eaf6;
-            border-left: 4px solid #3f51b5;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .demo {
-            background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 30px;
-            margin: 30px 0;
-        }
-
-        button {
-            background: linear-gradient(135deg, #3f51b5 0%, #303f9f 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            font-weight: 600;
-            margin: 10px 5px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button.secondary {
-            background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
-        }
-
-        button.secondary:hover {
-            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
-        }
-
+        /* Example-specific styles */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -99,8 +21,8 @@
         }
 
         .panel {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
+            background: var(--panel-muted);
+            border: 2px solid var(--border);
             border-radius: 8px;
             padding: 20px;
             min-height: 150px;
@@ -108,14 +30,14 @@
 
         .panel h4 {
             margin: 0 0 15px 0;
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--accent-gradient);
             color: white;
             padding: 15px;
             border-radius: 8px;
@@ -150,76 +72,12 @@
             font-weight: bold;
         }
 
-        .code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-            font-size: 13px;
-        }
-
-        .keyword {
-            color: #c678dd;
-        }
-
-        .string {
-            color: #98c379;
-        }
-
-        .comment {
-            color: #5c6370;
-        }
-
         .tag-name {
             color: #e06c75;
         }
 
         .attr-name {
             color: #d19a66;
-        }
-
-        .explanation {
-            margin: 20px 0;
-            line-height: 1.8;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #e8eaf6;
-            color: #303f9f;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            margin: 5px;
-        }
-
-        .tag.htmx {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .nav-buttons a {
-            background: #f0f0f0;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .nav-buttons a:hover {
-            background: #e0e0e0;
         }
 
         .note {
@@ -231,8 +89,8 @@
         }
 
         .partial-demo {
-            background: #f5f5f5;
-            border: 2px dashed #ccc;
+            background: var(--panel-muted);
+            border: 2px dashed var(--border);
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
@@ -240,7 +98,7 @@
 
         .partial-demo h4 {
             margin: 0 0 15px 0;
-            color: #666;
+            color: var(--text-muted);
         }
 
         .response-preview {
@@ -249,7 +107,7 @@
             padding: 15px;
             border-radius: 8px;
             margin: 15px 0;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-mono);
             font-size: 13px;
             overflow-x: auto;
         }
@@ -266,15 +124,24 @@
             font-size: 12px;
             font-weight: bold;
         }
+
+        /* Button variant for this demo */
+        button.secondary {
+            background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4);
+        }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="example-page">
+    <div class="page-container">
         <div class="breadcrumb">
             <a href="../index.html">← Back to Gallery</a> / <strong>htmx-like</strong> / 04: Multi-Target Swaps
         </div>
 
-        <h1>🎯 Multi-Target Swaps</h1>
+        <h1>Multi-Target Swaps</h1>
 
         <div class="description">
             <strong>Update multiple elements from a single response</strong><br>
@@ -319,7 +186,7 @@
 
             <div class="dashboard">
                 <div class="panel">
-                    <h4>📄 Main Content</h4>
+                    <h4>Main Content</h4>
                     <div id="main-content">
                         <div class="card">
                             <h3>Welcome</h3>
@@ -328,7 +195,7 @@
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>📊 Statistics</h4>
+                    <h4>Statistics</h4>
                     <div id="stats-content">
                         <div class="card stats">
                             <h3>Stats</h3>
@@ -337,7 +204,7 @@
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>📁 Sidebar</h4>
+                    <h4>Sidebar</h4>
                     <div id="sidebar-content">
                         <div class="card sidebar">
                             <h3>Sidebar</h3>
@@ -346,7 +213,7 @@
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>🔔 Notifications</h4>
+                    <h4>Notifications</h4>
                     <div id="notifications-content">
                         <div class="card notification">
                             <h3>No new notifications</h3>
@@ -392,7 +259,7 @@
 
             <div class="dashboard">
                 <div class="panel">
-                    <h4>📄 Main (partial)</h4>
+                    <h4>Main (partial)</h4>
                     <div id="partial-main">
                         <div class="card">
                             <h3>Waiting for partial...</h3>
@@ -401,7 +268,7 @@
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>🔢 Counter (partial)</h4>
+                    <h4>Counter (partial)</h4>
                     <div id="partial-counter">
                         <div class="card stats">
                             <h3>Counter</h3>
@@ -410,9 +277,9 @@
                     </div>
                 </div>
                 <div class="panel" style="grid-column: span 2;">
-                    <h4>⚠️ Alerts (beforeEnd strategy)</h4>
+                    <h4>Alerts (beforeEnd strategy)</h4>
                     <div id="partial-alert">
-                        <p style="color: #666;">Alerts will append here...</p>
+                        <p style="color: var(--text-muted);">Alerts will append here...</p>
                     </div>
                 </div>
             </div>
@@ -458,36 +325,36 @@
 
             <div class="dashboard">
                 <div class="panel">
-                    <h4>👥 Users</h4>
+                    <h4>Users</h4>
                     <div id="dash-users">
                         <div class="card stats">
-                            <h3>👥 Active Users</h3>
+                            <h3>Active Users</h3>
                             <div class="stat-value">---</div>
                         </div>
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>💰 Revenue</h4>
+                    <h4>Revenue</h4>
                     <div id="dash-revenue">
                         <div class="card" style="background: linear-gradient(135deg, #4caf50, #2e7d32)">
-                            <h3>💰 Revenue</h3>
+                            <h3>Revenue</h3>
                             <div class="stat-value">$---</div>
                         </div>
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>📦 Orders</h4>
+                    <h4>Orders</h4>
                     <div id="dash-orders">
                         <div class="card" style="background: linear-gradient(135deg, #ff9800, #f57c00)">
-                            <h3>📦 Orders</h3>
+                            <h3>Orders</h3>
                             <div class="stat-value">---</div>
                         </div>
                     </div>
                 </div>
                 <div class="panel">
-                    <h4>📋 Activity Log</h4>
+                    <h4>Activity Log</h4>
                     <div id="dash-activity" style="max-height: 150px; overflow-y: auto;">
-                        <p style="color: #666;">Activity will appear here...</p>
+                        <p style="color: var(--text-muted);">Activity will appear here...</p>
                     </div>
                 </div>
             </div>
@@ -551,33 +418,33 @@
 
             <h3>hx-partial Attributes:</h3>
             <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
-                <tr style="background: #e8eaf6;">
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Attribute</th>
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Description</th>
+                <tr style="background: var(--panel-muted);">
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">Attribute</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">Description</th>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>target</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">CSS selector for target element (required)</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>target</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">CSS selector for target element (required)</td>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>strategy</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">Swap strategy (morph, innerHTML, beforeEnd, etc.)</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>strategy</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Swap strategy (morph, innerHTML, beforeEnd, etc.)</td>
                 </tr>
             </table>
 
             <h3>htmx Comparison:</h3>
             <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
-                <tr style="background: #e8f5e9;">
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">htmx</th>
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">HyperFixi</th>
+                <tr style="background: var(--tag-htmx-bg);">
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">htmx</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">HyperFixi</th>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>hx-swap-oob="true"</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>&lt;hx-partial target="#id"&gt;</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>hx-swap-oob="true"</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>&lt;hx-partial target="#id"&gt;</code></td>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>&lt;div id="x" hx-swap-oob="true"&gt;</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><code>&lt;hx-partial target="#x"&gt;</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>&lt;div id="x" hx-swap-oob="true"&gt;</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>&lt;hx-partial target="#x"&gt;</code></td>
                 </tr>
             </table>
 
