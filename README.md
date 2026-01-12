@@ -10,7 +10,7 @@ This is an experiment in finding a path toward multiple hyperscript dialects—e
 
 Hyperscript's readability is its key selling point. But that readability assumes you think in English. This project asks: what if `on click toggle .active` could feel equally natural in Japanese, Arabic, or Korean?
 
-English is also treated as a dialect—the semantic parser enables more flexible syntax than the original grammar requires.
+One approach to internationalization would be to treat English hyperscript as the canonical language and others as translations from it. We're trying something different by parsing all languages into a common semantic representation. We think this can unlock hyperscript's strength for speakers of almost any language.
 
 ### Why Multilingual Hyperscript?
 
