@@ -43,29 +43,29 @@ describe('Enhanced Object Expression', () => {
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects large objects, tests expect acceptance
+    test.skip('accepts large objects (aspirational permissive validation)', async () => {
       const largeFieldArray = Array.from({ length: 1001 }, (_, i) =>
         createStaticField(`field${i}`, i)
       );
       const result = await objectExpression.validate!(largeFieldArray);
-      // Validation is now permissive - large objects are accepted
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects duplicate keys, tests expect acceptance
+    test.skip('accepts duplicate keys (aspirational permissive validation)', async () => {
       const result = await objectExpression.validate!([
         createStaticField('foo', true),
         createStaticField('foo', false),
       ]);
-      // Validation is now permissive - duplicates are handled at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects non-string keys, tests expect acceptance
+    test.skip('accepts non-string static key (aspirational permissive validation)', async () => {
       const result = await objectExpression.validate!([
-        createField(123, 'value', false), // Non-string static key - now accepted
+        createField(123, 'value', false),
       ]);
-      // Validation is now permissive - type coercion happens at runtime
       expect(result.isValid).toBe(true);
     });
   });

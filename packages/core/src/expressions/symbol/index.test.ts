@@ -31,31 +31,30 @@ describe('Enhanced Symbol Expression', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects these, tests expect acceptance
+    test.skip('accepts empty string name (aspirational permissive validation)', async () => {
       const result = await symbolExpression.validate(['']);
-      // Validation is now permissive - empty names are handled at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects these, tests expect acceptance
+    test.skip('accepts non-string input (aspirational permissive validation)', async () => {
       const result = await symbolExpression.validate([42]);
-      // Validation is now permissive - type coercion happens at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects these, tests expect acceptance
+    test.skip('accepts reserved keyword me (aspirational permissive validation)', async () => {
       const result = await symbolExpression.validate(['me']);
-      // Validation is now permissive - reserved keywords are handled at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects these, tests expect acceptance
+    test.skip('accepts dot notation and underscore prefixes (aspirational permissive validation)', async () => {
       const dotResult = await symbolExpression.validate(['obj.prop']);
-      // Validation is now permissive - pattern issues are handled at runtime
       expect(dotResult.isValid).toBe(true);
 
       const underscoreResult = await symbolExpression.validate(['__internal']);
-      // Validation is now permissive - underscore prefixes are accepted
       expect(underscoreResult.isValid).toBe(true);
     });
   });

@@ -31,22 +31,22 @@ describe('Enhanced In Expression', () => {
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects undefined, tests expect acceptance
+    test.skip('accepts undefined search value (aspirational permissive validation)', async () => {
       const result = await inExpression.validate!([undefined, [1, 2, 3]]);
-      // Validation is now permissive - undefined is handled at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects null container, tests expect acceptance
+    test.skip('accepts null container (aspirational permissive validation)', async () => {
       const result = await inExpression.validate!([1, null]);
-      // Validation is now permissive - null is handled at runtime
       expect(result.isValid).toBe(true);
     });
 
-    test.skip('accepts)', async () => {
+    // Aspirational: validation currently rejects large arrays, tests expect acceptance
+    test.skip('accepts large search array (aspirational permissive validation)', async () => {
       const largeSearchArray = new Array(101).fill(0).map((_, i) => i);
       const result = await inExpression.validate!([largeSearchArray, [1, 2, 3]]);
-      // Validation is now permissive - large arrays are accepted
       expect(result.isValid).toBe(true);
     });
   });

@@ -38,10 +38,10 @@ describe('Enhanced Array Expressions', () => {
         expect(result.isValid).toBe(true);
       });
 
-      test.skip('accepts)', async () => {
+      // Aspirational: validation currently rejects large arrays, tests expect acceptance
+      test.skip('accepts large arrays (aspirational permissive validation)', async () => {
         const largeArray = new Array(10001).fill(0);
         const result = await arrayLiteralExpression.validate(largeArray);
-        // Validation is now permissive - large arrays are accepted
         expect(result.isValid).toBe(true);
       });
 
@@ -137,9 +137,9 @@ describe('Enhanced Array Expressions', () => {
         expect(result.errors).toHaveLength(0);
       });
 
-      test.skip('accepts)', async () => {
+      // Aspirational: validation currently rejects null targets, tests expect acceptance
+      test.skip('accepts null target (aspirational permissive validation)', async () => {
         const result = await arrayIndexExpression.validate([null, 0]);
-        // Validation is now permissive - null targets are handled at runtime
         expect(result.isValid).toBe(true);
       });
 
@@ -148,9 +148,9 @@ describe('Enhanced Array Expressions', () => {
         expect(result.isValid).toBe(true);
       });
 
-      test.skip('accepts)', async () => {
+      // Aspirational: validation currently rejects invalid ranges, tests expect acceptance
+      test.skip('accepts invalid range (aspirational permissive validation)', async () => {
         const result = await arrayIndexExpression.validate([[1, 2, 3], { start: 3, end: 1 }]);
-        // Validation is now permissive - range issues are handled at runtime
         expect(result.isValid).toBe(true);
       });
     });
