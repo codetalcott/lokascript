@@ -60,8 +60,8 @@ describe('RemoveCommand (Standalone V2)', () => {
       expect(command.metadata.examples.length).toBeGreaterThan(0);
     });
 
-    it.skip('should have DOM category and side effects', () => {
-      expect(command.metadata.category).toBe('DOM');
+    it('should have DOM category and side effects', () => {
+      expect(command.metadata.category).toBe('dom');
       expect(command.metadata.sideEffects).toContain('dom-mutation');
     });
   });

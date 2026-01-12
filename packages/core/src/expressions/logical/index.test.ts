@@ -161,6 +161,7 @@ describe('Logical Expressions', () => {
         expect(await logicalExpressions.and.evaluate(context, false, false)).toBe(false);
       });
 
+      // Test expectations don't match JS short-circuit semantics ('hello' && 'world' = 'world', not true)
       it.skip('should handle truthy/falsy values', async () => {
         expect(await logicalExpressions.and.evaluate(context, 'hello', 'world')).toBe(true);
         expect(await logicalExpressions.and.evaluate(context, 'hello', '')).toBe(false);
@@ -187,6 +188,7 @@ describe('Logical Expressions', () => {
         expect(await logicalExpressions.or.evaluate(context, false, false)).toBe(false);
       });
 
+      // Test expectations don't match JS short-circuit semantics ('hello' || '' = 'hello', not true)
       it.skip('should handle truthy/falsy values', async () => {
         expect(await logicalExpressions.or.evaluate(context, 'hello', '')).toBe(true);
         expect(await logicalExpressions.or.evaluate(context, '', 'world')).toBe(true);
@@ -211,7 +213,7 @@ describe('Logical Expressions', () => {
         expect(await logicalExpressions.not.evaluate(context, false)).toBe(true);
       });
 
-      it.skip('should handle truthy/falsy values', async () => {
+      it('should handle truthy/falsy values', async () => {
         expect(await logicalExpressions.not.evaluate(context, 'hello')).toBe(false);
         expect(await logicalExpressions.not.evaluate(context, '')).toBe(true);
         expect(await logicalExpressions.not.evaluate(context, 1)).toBe(false);

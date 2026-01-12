@@ -53,7 +53,7 @@ describe('Enhanced Special Expressions', () => {
     });
 
     describe('Simple String Literals', () => {
-      it.skip('should handle simple string literals', async () => {
+      it('should handle simple string literals', async () => {
         const result = await expression.evaluate(context, {
           value: 'hello world',
         });
@@ -61,11 +61,11 @@ describe('Enhanced Special Expressions', () => {
         expect(result.success).toBe(true);
         if (result.success) {
           expect(result.value!).toBe('hello world');
-          expect(result.type).toBe('String');
+          expect(result.type).toBe('string');
         }
       });
 
-      it.skip('should handle empty strings', async () => {
+      it('should handle empty strings', async () => {
         const result = await expression.evaluate(context, {
           value: '',
         });
@@ -73,7 +73,7 @@ describe('Enhanced Special Expressions', () => {
         expect(result.success).toBe(true);
         if (result.success) {
           expect(result.value!).toBe('');
-          expect(result.type).toBe('String');
+          expect(result.type).toBe('string');
         }
       });
 
