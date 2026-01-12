@@ -4,6 +4,8 @@ DOM scripting in Japanese, Korean, Arabic, Spanish—23 languages total.
 
 A multilingual extension of [_hyperscript](https://hyperscript.org) by Carson Gross et al.
 
+**[Live Demo](https://hyperscript-css-dev.fly.dev)** | [Experiments](https://hyperscript-css-dev.fly.dev/experiments/) | [Playground](https://hyperscript-css-dev.fly.dev/playground/)
+
 ## About This Project
 
 This is an experiment in finding a path toward multiple hyperscript dialects—each supporting native idiomatic patterns for different languages. It's not intended to replace _hyperscript, but to explore what multilingual scripting could look like.
@@ -122,6 +124,14 @@ packages/
 The `mcp-server` package exposes HyperFixi tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
 
 ## Examples Gallery
+
+**Live:** [hyperscript-css-dev.fly.dev](https://hyperscript-css-dev.fly.dev)
+
+- [Experiments Gallery](https://hyperscript-css-dev.fly.dev/experiments/) - Animation, state management, progressive enhancement demos
+- [Playground](https://hyperscript-css-dev.fly.dev/playground/) - Interactive code editor
+- [Multilingual Showcase](https://hyperscript-css-dev.fly.dev/experiments/multilingual/) - 13-language demo with live translation
+
+**Local:**
 
 ```bash
 # Start local server
