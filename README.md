@@ -123,6 +123,78 @@ packages/
 
 The `mcp-server` package exposes HyperFixi tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
 
+## Examples Gallery
+
+```bash
+# Start local server
+npx http-server . -p 3000 -c-1
+
+# Then visit:
+# http://127.0.0.1:3000/examples/           # Gallery index
+# http://127.0.0.1:3000/examples/multilingual/  # Multilingual demos
+```
+
+## Pattern Registry
+
+The pattern registry documents all supported hyperscript patterns and their implementation status:
+
+```bash
+# View pattern coverage
+node scripts/analysis/verify-patterns-coverage.mjs
+
+# Analyze all patterns
+node scripts/analysis/analyze-all-patterns.mjs
+```
+
+Registry location: [scripts/analysis/patterns-registry.mjs](scripts/analysis/patterns-registry.mjs)
+
+## Language-Specific Bundles
+
+### Semantic Parser (Regional Bundles)
+
+Load only the languages you need:
+
+```bash
+cd packages/semantic
+
+# Preview size estimate
+node scripts/generate-bundle.mjs --estimate ja ko zh
+
+# Generate bundle for specific languages
+node scripts/generate-bundle.mjs --auto es pt fr
+
+# Use predefined groups: western, east-asian, priority
+node scripts/generate-bundle.mjs --group western
+```
+
+Pre-built regional bundles in `packages/semantic/dist/`:
+
+| Bundle | Size | Languages |
+|--------|------|-----------|
+| `browser-en.en.global.js` | 20 KB | English only |
+| `browser-western.western.global.js` | 30 KB | en, es, pt, fr, de |
+| `browser-east-asian.east-asian.global.js` | 24 KB | ja, zh, ko |
+| `browser.global.js` | 61 KB | All 13 languages |
+
+### Core (Custom Command Bundles)
+
+Generate bundles with only the commands you need:
+
+```bash
+cd packages/core
+
+# Generate from command line
+npm run generate:bundle -- --commands toggle,add,remove --output dist/my-bundle.ts
+
+# Include blocks and positional expressions
+npm run generate:bundle -- --commands toggle,set --blocks if,repeat --positional --output dist/my-bundle.ts
+
+# Build with Rollup
+npx rollup -c rollup.browser-custom.config.mjs
+```
+
+See [packages/core/bundle-configs/README.md](packages/core/bundle-configs/README.md) for full options.
+
 ## Development
 
 ```bash
