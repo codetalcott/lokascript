@@ -7,7 +7,6 @@ import { z } from 'zod';
 import type {
   TypedContextImplementation,
   ContextMetadata,
-  EnhancedContextBase
 } from '../../core/src/types/context-types.js';
 import type {
   ValidationResult,
@@ -242,14 +241,17 @@ export class TypedAnalyticsContextImplementation {
       // Validate input using enhanced pattern
       const validation = this.validate(input);
       if (!validation.isValid) {
-        const firstError = validation.errors[0];
-        return {
-          success: false,
-          error: {
-            ...firstError,
-            suggestions: validation.suggestions
-          }
+        const firstError = validation.errors[0] ?? {
+          type: 'validation-error' as const,
+          message: 'Validation failed',
+          suggestions: [],
         };
+        const error: ValidationError = {
+          type: firstError.type,
+          message: firstError.message,
+          suggestions: validation.suggestions,
+        };
+        return { success: false, error };
       }
 
       // Initialize analytics configuration

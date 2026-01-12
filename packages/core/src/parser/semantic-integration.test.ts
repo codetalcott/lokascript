@@ -361,7 +361,7 @@ describe('parseExpressionString (via expression type values)', () => {
         command: {
           name: 'call',
           roles: new Map([
-            ['patient', { type: 'expression', raw: expressionValue }],
+            ['patient', { type: 'expression', value: expressionValue, raw: expressionValue }],
           ]),
         },
         tokensConsumed: 1,

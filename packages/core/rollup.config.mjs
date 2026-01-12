@@ -2,7 +2,15 @@ import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 
-const commonPlugins = [nodeResolve(), typescript()];
+const commonPlugins = [
+  nodeResolve(),
+  typescript({
+    exclude: ['**/*.test.ts', '**/*.spec.ts', '**/test-helpers/**', '**/__test-utils__/**'],
+    // Disable declaration generation in rollup - it's handled by tsc separately
+    declaration: false,
+    declarationMap: false,
+  }),
+];
 
 export default [
   // Main entry point
