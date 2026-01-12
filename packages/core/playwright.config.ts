@@ -11,16 +11,55 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html'], ['list']],
+
+  // Exclude debug tests from normal runs (use --project=debug to run them)
+  testIgnore: ['**/debug/**'],
+
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     navigationTimeout: 30000,
+    ...devices['Desktop Chrome'],
   },
 
+  // Tiered test projects for different scenarios
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      // Fast critical path tests (~10s) - run on every change
+      name: 'smoke',
+      grep: /@smoke/,
+      timeout: 10000,
+    },
+    {
+      // Integration tests (~60s) - run before commits
+      name: 'integration',
+      grep: /@integration/,
+      timeout: 30000,
+    },
+    {
+      // Full test suite - all tests except @skip
+      name: 'full',
+      grepInvert: /@skip/,
+      timeout: 60000,
+    },
+    {
+      // Comprehensive feature coverage (existing tag)
+      name: 'comprehensive',
+      grep: /@comprehensive/,
+      timeout: 60000,
+    },
+    {
+      // Cookbook pattern validation (existing tag)
+      name: 'cookbook',
+      grep: /@cookbook/,
+      timeout: 60000,
+    },
+    {
+      // Debug/diagnostic tests - only run explicitly
+      name: 'debug',
+      testDir: './src/compatibility/browser-tests/debug',
+      testIgnore: [],
+      timeout: 120000,
     },
   ],
 

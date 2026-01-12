@@ -16,7 +16,7 @@ test('Sortable diagnostic - check if behavior is working', async ({ page }) => {
   });
 
   // Navigate to test page
-  await page.goto('http://127.0.0.1:3000/test-sortable-minimal.html');
+  await page.goto('http://127.0.0.1:3000/packages/core/sortable-behavior-final.html');
 
   // Wait for page to load
   await page.waitForLoadState('networkidle');

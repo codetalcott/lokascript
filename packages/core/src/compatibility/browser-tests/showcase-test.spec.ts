@@ -26,7 +26,7 @@ test.describe('Multilingual Showcase Page', () => {
     expect(options.join(' ')).toContain('한국어');
   });
 
-  test('counter demo works in English', async ({ page }) => {
+  test('counter demo works in English @smoke', async ({ page }) => {
     // Find counter value
     const counterValue = page.locator('#counter-value');
     await expect(counterValue).toHaveText('0');
@@ -46,7 +46,7 @@ test.describe('Multilingual Showcase Page', () => {
     await expect(counterValue).toHaveText('0');
   });
 
-  test('toggle class demo works in English', async ({ page }) => {
+  test('toggle class demo works in English @smoke', async ({ page }) => {
     const toggleBtn = page.locator('#toggle-demo-toggle');
 
     // Initially should not have .active

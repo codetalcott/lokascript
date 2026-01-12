@@ -62,7 +62,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       expect(blocks).toContain('fetch');
     });
 
-    test('has parse and execute functions', async ({ page }) => {
+    test('has parse and execute functions @smoke', async ({ page }) => {
       const hasApi = await page.evaluate(() => {
         const h = (window as any).hyperfixi;
         return typeof h.parse === 'function' && typeof h.execute === 'function';
@@ -72,7 +72,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Simple Commands', () => {
-    test('toggle adds/removes class', async ({ page }) => {
+    test('toggle adds/removes class @smoke', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = '<button id="btn" _="on click toggle .active">Toggle</button>';
         (window as any).hyperfixi.init();
@@ -101,7 +101,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#target')).not.toHaveClass('active');
     });
 
-    test('put content into element', async ({ page }) => {
+    test('put content into element @smoke', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click put 'Hello World' into #target">Put</button>
@@ -141,7 +141,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Expression Parser', () => {
-    test('arithmetic with operator precedence', async ({ page }) => {
+    test('arithmetic with operator precedence @smoke', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click set :a to 10 then set :b to 5 then set :result to :a + :b * 2 then put :result into #out">Test</button>
@@ -236,7 +236,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Block Commands', () => {
-    test('repeat N times', async ({ page }) => {
+    test('repeat N times @smoke', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -273,7 +273,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('ABC');
     });
 
-    test('if/else conditional', async ({ page }) => {
+    test('if/else conditional @smoke', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" class="active" _="on click
