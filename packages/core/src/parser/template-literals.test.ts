@@ -146,11 +146,12 @@ describe('Template Literals', () => {
       expect(() => tokenize('`unclosed template')).toThrow('Unterminated template literal');
     });
 
-    it.skip('should handle invalid variable references', async () => {
+    it('should handle invalid variable references', async () => {
       const result = await parseAndEvaluateExpression('`hello ${nonexistent}`', context);
       expect(result).toBe('hello undefined');
     });
 
+    // Aspirational: Parser gracefully handles errors instead of throwing
     it.skip('should handle syntax errors in interpolation expressions', async () => {
       await expect(parseAndEvaluateExpression('`result: ${1 + }`', context)).rejects.toThrow();
     });

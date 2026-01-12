@@ -50,6 +50,7 @@ export class ErrorHandler {
     const error: EnhancedParseError = {
       name: 'ParseError',
       message: enhancedMessage,
+      position: currentToken.start,
       line: currentToken.line,
       column: currentToken.column,
       context,
