@@ -30,6 +30,7 @@
  * - process partials tests
  */
 import { test, expect } from '@playwright/test';
+import { waitForHyperfixi } from './test-utils';
 
 const BASE_URL = 'http://127.0.0.1:3000';
 
@@ -43,7 +44,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Get initial content
       const initialText = await page.textContent('#morph-target h3');
@@ -64,7 +65,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Type into the morph comparison input
       const morphInput = page.locator('#compare-morph input[type="text"]');
@@ -89,7 +90,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Type into the innerHTML comparison input
       const innerHTMLInput = page.locator('#compare-innerhtml input[type="text"]');
@@ -114,7 +115,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Count initial items in strategies list
       const initialItems = await page.locator('#strategies-list .card').count();
@@ -143,7 +144,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // First add an item at end
       await page.click('button:has-text("beforeEnd (append)")');
@@ -164,7 +165,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Should have 3 cards initially
       let cardCount = await page.locator('#delete-container .card').count();
@@ -192,7 +193,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Get initial content
       const initialText = await page.textContent('#vt-target h3');
@@ -213,7 +214,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Click swap without transition
       await page.click('button:has-text("Swap without Transition")');
@@ -230,7 +231,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Initial state - Home active
       let activeBtnText = await page.$eval('.page-nav button.active', el => el.textContent);
@@ -254,7 +255,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(300);
+      await waitForHyperfixi(page);
 
       // Support check should show either supported or not supported
       const statusText = await page.textContent('#support-status');
@@ -279,7 +280,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Get URL before click
       const urlBefore = await page.evaluate(() => window.location.href);
@@ -337,7 +338,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Initial content
       let content = await page.textContent('#history-content h3');
@@ -357,7 +358,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Home should be active initially
       let activeCount = await page.locator('.page-nav button.active').count();
@@ -384,7 +385,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Click filter button (uses replace url)
       await page.click('button:has-text("Apply Filter (replace)")');
@@ -404,7 +405,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Get initial content
       const initialMain = await page.textContent('#main-content h3');
@@ -434,7 +435,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Get initial partial content
       const initialPartial = await page.textContent('#partial-main h3');
@@ -458,7 +459,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Click process partials multiple times
       await page.click('button:has-text("Process Partials Response")');
@@ -477,7 +478,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Initial stats show ---
       const initialUsers = await page.textContent('#dash-users .stat-value');
@@ -502,7 +503,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Initial content
       let content = await page.textContent('#boosted-content h3');
@@ -526,7 +527,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Home should be active initially
       let activeLink = await page.$eval('#boosted-nav a.active', el => el.textContent);
@@ -551,7 +552,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Type search query
       await page.fill('#search-input', 'test query');
@@ -576,7 +577,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Submit empty form
       await page.click('#search-form button[type="submit"]');
@@ -593,7 +594,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Type and submit search (use term without spaces to avoid encoding issues)
       await page.fill('#search-input', 'mysearch');
@@ -628,7 +629,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
           waitUntil: 'domcontentloaded',
           timeout: 10000
         });
-        await page.waitForTimeout(500);
+        await waitForHyperfixi(page);
       }
 
       // Should have no JavaScript errors
@@ -649,7 +650,7 @@ test.describe('htmx-like Examples Live Tests @comprehensive', () => {
           waitUntil: 'domcontentloaded',
           timeout: 10000
         });
-        await page.waitForTimeout(500);
+        await waitForHyperfixi(page);
 
         // Check that HyperFixi is loaded
         const hyperFixiLoaded = await page.evaluate(() => {

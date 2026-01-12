@@ -10,6 +10,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { createErrorCollector } from './test-utils';
 
 test.describe('Error Playground', () => {
   test.beforeEach(async ({ page, baseURL }) => {
@@ -28,14 +29,13 @@ test.describe('Error Playground', () => {
 
   test.describe('Basic Functionality', () => {
     test('page loads without errors', async ({ page }) => {
-      const errors: string[] = [];
-      page.on('pageerror', (err) => errors.push(err.message));
+      const errorCollector = createErrorCollector(page);
+      errorCollector.attach();
 
-      await page.waitForTimeout(500);
+      // Allow any initialization errors to surface
+      await page.waitForTimeout(200);
 
-      const criticalErrors = errors.filter(
-        (e) => !e.includes('net::') && !e.includes('favicon')
-      );
+      const criticalErrors = errorCollector.getCriticalErrors();
       expect(criticalErrors).toHaveLength(0);
     });
 

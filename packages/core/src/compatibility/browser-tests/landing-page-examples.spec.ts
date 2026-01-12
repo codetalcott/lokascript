@@ -5,6 +5,7 @@
  * HyperFixi bundles can handle them correctly.
  */
 import { test, expect } from '@playwright/test';
+import { waitForHyperfixi, createErrorCollector } from './test-utils';
 
 const BASE_URL = 'http://127.0.0.1:3000';
 
@@ -35,20 +36,17 @@ test.describe('Landing Page Examples @comprehensive', () => {
      */
 
     test('page loads without errors', async ({ page }) => {
-      const pageErrors: string[] = [];
-      page.on('pageerror', err => pageErrors.push(err.message));
+      const errorCollector = createErrorCollector(page);
+      errorCollector.attach();
 
       await page.goto(`${BASE_URL}/examples/landing-page/color-cycling.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Should have no critical page errors
-      const criticalErrors = pageErrors.filter(e =>
-        !e.includes('ResizeObserver') &&
-        !e.includes('Script error')
-      );
+      const criticalErrors = errorCollector.getCriticalErrors();
       expect(criticalErrors).toEqual([]);
     });
 
@@ -57,7 +55,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(300);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       await expect(colorBox).toBeVisible();
@@ -71,14 +69,14 @@ test.describe('Landing Page Examples @comprehensive', () => {
     });
 
     test('pointerdown triggers color cycling', async ({ page }) => {
-      const pageErrors: string[] = [];
-      page.on('pageerror', err => pageErrors.push(err.message));
+      const errorCollector = createErrorCollector(page);
+      errorCollector.attach();
 
       await page.goto(`${BASE_URL}/examples/landing-page/color-cycling.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -111,23 +109,20 @@ test.describe('Landing Page Examples @comprehensive', () => {
         expect(statusText).toContain('Ready');
 
         // Verify no page errors during cycling
-        const criticalErrors = pageErrors.filter(e =>
-          !e.includes('ResizeObserver') &&
-          !e.includes('Script error')
-        );
+        const criticalErrors = errorCollector.getCriticalErrors();
         expect(criticalErrors).toEqual([]);
       }
     });
 
     test('longer hold produces color changes', async ({ page }) => {
-      const pageErrors: string[] = [];
-      page.on('pageerror', err => pageErrors.push(err.message));
+      const errorCollector = createErrorCollector(page);
+      errorCollector.attach();
 
       await page.goto(`${BASE_URL}/examples/landing-page/color-cycling.html`, {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -159,10 +154,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         expect(statusText).toContain('Ready');
 
         // Verify no errors during the hold
-        const criticalErrors = pageErrors.filter(e =>
-          !e.includes('ResizeObserver') &&
-          !e.includes('Script error')
-        );
+        const criticalErrors = errorCollector.getCriticalErrors();
         expect(criticalErrors).toEqual([]);
       }
     });
@@ -172,7 +164,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -209,7 +201,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Check that HyperFixi processed the element
       const hasHyperscript = await page.evaluate(() => {
@@ -239,7 +231,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -272,7 +264,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -310,7 +302,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const colorBox = page.locator('#color-box');
       const box = await colorBox.boundingBox();
@@ -356,7 +348,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const criticalErrors = pageErrors.filter(e =>
         !e.includes('ResizeObserver') &&
@@ -370,7 +362,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       // Check initial state
       const eventLog = page.locator('#event-log');
@@ -431,7 +423,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const criticalErrors = pageErrors.filter(e =>
         !e.includes('ResizeObserver') &&
@@ -473,7 +465,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const fetchResult = page.locator('#fetch-result');
 
@@ -493,7 +485,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const fetchResult = page.locator('#fetch-result');
 
@@ -531,7 +523,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const criticalErrors = pageErrors.filter(e =>
         !e.includes('ResizeObserver') &&
@@ -608,7 +600,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const result = page.locator('#browser-result');
 
@@ -639,7 +631,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const criticalErrors = pageErrors.filter(e =>
         !e.includes('ResizeObserver') &&
@@ -843,7 +835,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const criticalErrors = pageErrors.filter(e =>
         !e.includes('ResizeObserver') &&
@@ -860,7 +852,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const copyButton = page.locator('button.copy-btn').first();
 
@@ -890,7 +882,7 @@ test.describe('Landing Page Examples @comprehensive', () => {
         waitUntil: 'domcontentloaded',
         timeout: 10000
       });
-      await page.waitForTimeout(500);
+      await waitForHyperfixi(page);
 
       const copyButton = page.locator('button.copy-btn').first();
 
