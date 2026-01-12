@@ -54,7 +54,16 @@ describe('Language Profiles', () => {
     expect(locales).toContain('qu');
     expect(locales).toContain('sw');
     expect(locales).toContain('bn');
-    expect(locales.length).toBe(14);
+    // New languages added
+    expect(locales).toContain('it');
+    expect(locales).toContain('ru');
+    expect(locales).toContain('uk');
+    expect(locales).toContain('vi');
+    expect(locales).toContain('hi');
+    expect(locales).toContain('tl');
+    expect(locales).toContain('th');
+    expect(locales).toContain('pl');
+    expect(locales.length).toBe(22);
   });
 
   it('should return undefined for unknown locales', () => {

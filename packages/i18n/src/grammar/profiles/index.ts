@@ -527,6 +527,261 @@ export const bengaliProfile: LanguageProfile = {
 };
 
 // =============================================================================
+// Italian (SVO, Romance)
+// =============================================================================
+
+export const italianProfile: LanguageProfile = {
+  code: 'it',
+  name: 'Italiano',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'fusional',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'su', role: 'event', position: 'preposition', required: true },
+    { form: 'in', role: 'destination', position: 'preposition', required: false },
+    { form: 'a', role: 'destination', position: 'preposition', required: false },
+    { form: 'da', role: 'source', position: 'preposition', required: false },
+    { form: 'di', role: 'source', position: 'preposition', required: false },
+    { form: 'con', role: 'style', position: 'preposition', required: false },
+    { form: 'come', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
+// Russian (SVO, Slavic)
+// =============================================================================
+
+export const russianProfile: LanguageProfile = {
+  code: 'ru',
+  name: 'Русский',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'fusional',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'при', role: 'event', position: 'preposition', required: true },
+    { form: 'в', role: 'destination', position: 'preposition', required: false },
+    { form: 'на', role: 'destination', position: 'preposition', required: false },
+    { form: 'к', role: 'destination', position: 'preposition', required: false },
+    { form: 'из', role: 'source', position: 'preposition', required: false },
+    { form: 'от', role: 'source', position: 'preposition', required: false },
+    { form: 'с', role: 'source', position: 'preposition', required: false },
+    { form: 'с', role: 'style', position: 'preposition', required: false },
+    { form: 'со', role: 'style', position: 'preposition', required: false },
+    { form: 'как', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
+// Ukrainian (SVO, Slavic)
+// =============================================================================
+
+export const ukrainianProfile: LanguageProfile = {
+  code: 'uk',
+  name: 'Українська',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'fusional',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'при', role: 'event', position: 'preposition', required: true },
+    { form: 'в', role: 'destination', position: 'preposition', required: false },
+    { form: 'на', role: 'destination', position: 'preposition', required: false },
+    { form: 'до', role: 'destination', position: 'preposition', required: false },
+    { form: 'з', role: 'source', position: 'preposition', required: false },
+    { form: 'від', role: 'source', position: 'preposition', required: false },
+    { form: 'із', role: 'source', position: 'preposition', required: false },
+    { form: 'з', role: 'style', position: 'preposition', required: false },
+    { form: 'із', role: 'style', position: 'preposition', required: false },
+    { form: 'як', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
+// Vietnamese (SVO, Isolating)
+// =============================================================================
+
+export const vietnameseProfile: LanguageProfile = {
+  code: 'vi',
+  name: 'Tiếng Việt',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'isolating',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'khi', role: 'event', position: 'preposition', required: true },
+    { form: 'vào', role: 'destination', position: 'preposition', required: false },
+    { form: 'cho', role: 'destination', position: 'preposition', required: false },
+    { form: 'đến', role: 'destination', position: 'preposition', required: false },
+    { form: 'từ', role: 'source', position: 'preposition', required: false },
+    { form: 'khỏi', role: 'source', position: 'preposition', required: false },
+    { form: 'với', role: 'style', position: 'preposition', required: false },
+    { form: 'như', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
+// Hindi (SOV, Postpositions)
+// =============================================================================
+
+export const hindiProfile: LanguageProfile = {
+  code: 'hi',
+  name: 'हिन्दी',
+
+  wordOrder: 'SOV',
+  adpositionType: 'postposition',
+  morphology: 'fusional',
+  direction: 'ltr',
+
+  // Hindi: Object comes before verb, postpositions follow nouns
+  // "on click increment #count" → "#count को क्लिक पर बढ़ाएं"
+  canonicalOrder: ['patient', 'event', 'action'],
+
+  markers: [
+    { form: 'को', role: 'patient', position: 'postposition', required: true },
+    { form: 'में', role: 'destination', position: 'postposition', required: true },
+    { form: 'पर', role: 'destination', position: 'postposition', required: false },
+    { form: 'पर', role: 'event', position: 'postposition', required: true },
+    { form: 'से', role: 'source', position: 'postposition', required: true },
+    { form: 'से', role: 'style', position: 'postposition', required: false },
+    { form: 'साथ', role: 'style', position: 'postposition', required: false },
+    { form: 'के रूप में', role: 'method', position: 'postposition', required: false },
+  ],
+
+  rules: [
+    {
+      name: 'event-handler',
+      description: 'Transform event handlers to Hindi SOV order',
+      priority: 100,
+      match: {
+        commands: ['on'],
+        requiredRoles: ['event', 'action'],
+        optionalRoles: ['patient'],
+      },
+      transform: {
+        // #count को क्लिक पर बढ़ाएं
+        roleOrder: ['patient', 'event', 'action'],
+        insertMarkers: true,
+      },
+    },
+  ],
+};
+
+// =============================================================================
+// Tagalog (VSO, Prepositions)
+// =============================================================================
+
+export const tagalogProfile: LanguageProfile = {
+  code: 'tl',
+  name: 'Tagalog',
+
+  wordOrder: 'VSO',
+  adpositionType: 'preposition',
+  morphology: 'agglutinative',
+  direction: 'ltr',
+
+  // Tagalog VSO: Verb first, then subject, then object
+  canonicalOrder: ['action', 'agent', 'patient', 'destination', 'source'],
+
+  markers: [
+    { form: 'kapag', role: 'event', position: 'preposition', required: true },
+    { form: 'sa', role: 'destination', position: 'preposition', required: false },
+    { form: 'mula sa', role: 'source', position: 'preposition', required: false },
+    { form: 'nang', role: 'style', position: 'preposition', required: false },
+    { form: 'bilang', role: 'method', position: 'preposition', required: false },
+  ],
+
+  rules: [
+    {
+      name: 'event-handler-vso',
+      description: 'VSO event handler: VERB TARGET kapag EVENT',
+      priority: 100,
+      match: {
+        commands: ['on'],
+        requiredRoles: ['event', 'action'],
+      },
+      transform: {
+        // palitan #count kapag click (toggle #count on click)
+        roleOrder: ['action', 'patient', 'event'],
+        insertMarkers: true,
+      },
+    },
+  ],
+};
+
+// =============================================================================
+// Thai (SVO, Isolating, No Spaces)
+// =============================================================================
+
+export const thaiProfile: LanguageProfile = {
+  code: 'th',
+  name: 'ไทย',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'isolating',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'เมื่อ', role: 'event', position: 'preposition', required: true },
+    { form: 'ใน', role: 'destination', position: 'preposition', required: false },
+    { form: 'ไปยัง', role: 'destination', position: 'preposition', required: false },
+    { form: 'จาก', role: 'source', position: 'preposition', required: false },
+    { form: 'ด้วย', role: 'style', position: 'preposition', required: false },
+    { form: 'เป็น', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
+// Polish (SVO, Fusional, Imperative)
+// =============================================================================
+
+export const polishProfile: LanguageProfile = {
+  code: 'pl',
+  name: 'Polski',
+
+  wordOrder: 'SVO',
+  adpositionType: 'preposition',
+  morphology: 'fusional',
+  direction: 'ltr',
+
+  canonicalOrder: ['event', 'action', 'patient', 'destination'],
+
+  markers: [
+    { form: 'gdy', role: 'event', position: 'preposition', required: true },
+    { form: 'przy', role: 'event', position: 'preposition', required: false },
+    { form: 'do', role: 'destination', position: 'preposition', required: false },
+    { form: 'w', role: 'destination', position: 'preposition', required: false },
+    { form: 'na', role: 'destination', position: 'preposition', required: false },
+    { form: 'z', role: 'source', position: 'preposition', required: false },
+    { form: 'od', role: 'source', position: 'preposition', required: false },
+    { form: 'ze', role: 'source', position: 'preposition', required: false },
+    { form: 'z', role: 'style', position: 'preposition', required: false },
+    { form: 'ze', role: 'style', position: 'preposition', required: false },
+    { form: 'jako', role: 'method', position: 'preposition', required: false },
+  ],
+};
+
+// =============================================================================
 // Profile Registry
 // =============================================================================
 
@@ -545,6 +800,15 @@ export const profiles: Record<string, LanguageProfile> = {
   qu: quechuaProfile,
   sw: swahiliProfile,
   bn: bengaliProfile,
+  // New profiles
+  it: italianProfile,
+  ru: russianProfile,
+  uk: ukrainianProfile,
+  vi: vietnameseProfile,
+  hi: hindiProfile,
+  tl: tagalogProfile,
+  th: thaiProfile,
+  pl: polishProfile,
 };
 
 export function getProfile(locale: string): LanguageProfile | undefined {

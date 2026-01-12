@@ -35,9 +35,7 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 ### Language Support
 
-**Semantic parsing** (23 languages): Arabic, Bengali, Chinese, English, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Malay, Polish, Portuguese, Quechua, Russian, Spanish, Swahili, Tagalog, Thai, Turkish, Ukrainian, Vietnamese
-
-**Grammar transformation** (13 languages): Arabic, Chinese, English, French, German, Indonesian, Japanese, Korean, Portuguese, Quechua, Spanish, Swahili, Turkish
+**23 languages**: Arabic, Bengali, Chinese, English, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Malay, Polish, Portuguese, Quechua, Russian, Spanish, Swahili, Tagalog, Thai, Turkish, Ukrainian, Vietnamese
 
 ### Bundle Sizes
 
