@@ -1,10 +1,16 @@
 # HyperFixi
 
-Multilingual hyperscript for developers who don't think in English.
+Multilingual hyperscript for developers who think in *insert your language here*.
 
-## About This Repo
+Built on the ideas of [_hyperscript](https://hyperscript.org) by Carson Gross and the Big Sky Software team.
 
-Hyperscript is an English dialect for DOM scripting. Its readability—the key selling point—becomes a barrier for developers who don't think in English.
+## About This Project
+
+This is an experiment in finding a path toward multiple hyperscript dialects—each supporting native idiomatic patterns for different languages. It's not intended to replace _hyperscript, but to explore what multilingual scripting could look like.
+
+Hyperscript's readability is its key selling point. But that readability assumes you think in English. This project asks: what if `on click toggle .active` could feel equally natural in Japanese, Arabic, or Korean?
+
+English is also treated as a dialect—the semantic parser enables more flexible syntax than the original grammar requires.
 
 ### Why Multilingual Hyperscript?
 
@@ -35,13 +41,15 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 ### Bundle Sizes
 
+The full bundle is large because it includes 23 language tokenizers, grammar transformation, and the complete AST parser. Most projects should use the hybrid bundle or vite-plugin for automatic tree-shaking.
+
 | Bundle | Size | Use Case |
 | ------ | ---- | -------- |
 | hyperfixi-lite.js | 8 KB | Minimal (8 commands, regex parser) |
-| hyperfixi-hybrid-complete.js | 28 KB | Most projects (~85% hyperscript coverage) |
-| hyperfixi-browser.js | 912 KB | Full bundle with all features |
-| Semantic (English only) | 84 KB | Single-language semantic parsing |
-| Semantic (all 23 languages) | 260 KB | Full multilingual support |
+| hyperfixi-hybrid-complete.js | 28 KB | Recommended (~85% coverage) |
+| hyperfixi-browser.js | 912 KB | Everything (rarely needed) |
+| Semantic (English only) | 84 KB | Single-language parsing |
+| Semantic (all 23 languages) | 260 KB | Full multilingual |
 
 ## Quick Start
 
@@ -111,6 +119,10 @@ packages/
 └── mcp-server/     # Model Context Protocol server for LLM integration
 ```
 
+### MCP Server
+
+The `mcp-server` package exposes HyperFixi tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
+
 ## Development
 
 ```bash
@@ -139,10 +151,17 @@ npm run add-language -- --code=xx --name=LanguageName --native=NativeName \
 
 Then fill in keyword translations in `src/generators/profiles/{code}.ts`.
 
-## Known Limitations
+## About This Experiment
 
-- TypeScript: 3 minor type errors in test files
-- Official hyperscript compatibility: ~85% (complex behaviors may differ)
+This project exists because LLM agents made it possible. I could not have built a 23-language semantic parser alone—the linguistic knowledge required is beyond any individual. Ongoing maintenance will continue with LLM assistance.
+
+The codebase is complex. The semantic role mapping, grammar transformations, and language-specific tokenizers add significant machinery compared to original hyperscript. Whether this complexity is worth the accessibility gains is an open question.
+
+**Current gaps:**
+
+- Compatibility with official _hyperscript is partial (behaviors, some edge cases)
+- Bundle sizes are large for full multilingual support
+- Language idioms are approximations, not yet verified by native speakers
 
 ## Contributing
 
