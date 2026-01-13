@@ -1140,6 +1140,20 @@ export class Parser {
   }
 
   private parsePrimary(): ASTNode {
+    // Handle CSS property syntax: *display, *opacity, *visibility
+    // Must check before binary operator error case
+    if (this.check('*')) {
+      const nextToken = this.peek(1);
+      // If * is followed by an identifier, it's a CSS property
+      if (nextToken && isIdentifierLike(nextToken)) {
+        this.advance(); // consume '*'
+        const propertyName = this.advance().value; // consume property name
+        // Return a selector node with *property syntax
+        // This will be recognized by toggle command's detectExpressionType
+        return this.createSelector('*' + propertyName);
+      }
+    }
+
     // Check for binary operators that cannot start an expression
     if (this.check('*') || this.check('/') || this.check('%') || this.check('mod')) {
       const token = this.peek();

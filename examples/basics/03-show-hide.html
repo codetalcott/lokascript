@@ -71,21 +71,22 @@
 
         <div class="description">
             <strong>Control element visibility</strong><br>
-            Two approaches: built-in commands or class-based toggling.
+            Two approaches: display property commands (<code>show</code>/<code>hide</code>/<code>toggle *display</code>) or class-based toggling.
         </div>
 
         <div>
             <span class="tag">show</span>
             <span class="tag">hide</span>
             <span class="tag">toggle</span>
+            <span class="tag">*display</span>
         </div>
 
-        <!-- Demo 1: Show/Hide Commands -->
+        <!-- Demo 1: Show/Hide/Toggle Display -->
         <div class="demo">
-            <h2>Demo 1: Show/Hide Commands</h2>
+            <h2>Demo 1: Display Property Commands</h2>
             <p class="demo-note">
-                The <code>show</code> and <code>hide</code> commands manipulate the display style directly.
-                Use these when you only need show or hide (not toggle).
+                The <code>show</code>, <code>hide</code>, and <code>toggle *display</code> commands all manipulate
+                the display style directly. They work together consistently.
             </p>
             <div>
                 <button _="on click show #content1">
@@ -94,11 +95,14 @@
                 <button class="secondary" _="on click hide #content1">
                     Hide
                 </button>
+                <button class="success" _="on click toggle *display on #content1">
+                    Toggle
+                </button>
             </div>
 
             <div id="content1" class="content-box">
                 <h3>Visible Content</h3>
-                <p>This uses the <code>show</code> and <code>hide</code> commands.</p>
+                <p>This uses <code>show</code>, <code>hide</code>, and <code>toggle *display</code>.</p>
             </div>
         </div>
 
@@ -106,8 +110,8 @@
         <div class="demo">
             <h2>Demo 2: Class-based Toggle</h2>
             <p class="demo-note">
-                For toggling, use a CSS class. All three buttons work on the same <code>.hidden</code> class,
-                so they stay in sync.
+                Class-based visibility allows CSS transitions and custom styling. All three buttons
+                manipulate the same <code>.hidden</code> class, so they stay in sync.
             </p>
             <div>
                 <button _="on click remove .hidden from #content2">
@@ -130,11 +134,12 @@
         <!-- Code Explanation -->
         <h2>The Code</h2>
 
-        <h3>Approach 1: Show/Hide Commands</h3>
+        <h3>Approach 1: Display Property Commands</h3>
         <div class="code">
-<span class="comment">&lt;!-- Direct visibility commands --&gt;</span>
+<span class="comment">&lt;!-- Direct visibility commands (all work on inline display style) --&gt;</span>
 &lt;button <span class="keyword">_</span>=<span class="string">"on click show #content"</span>&gt;Show&lt;/button&gt;
 &lt;button <span class="keyword">_</span>=<span class="string">"on click hide #content"</span>&gt;Hide&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle *display on #content"</span>&gt;Toggle&lt;/button&gt;
         </div>
 
         <h3>Approach 2: Class-based (with Toggle)</h3>
@@ -151,14 +156,14 @@
         <div class="explanation">
             <h3>When to use each approach:</h3>
             <ul>
-                <li><strong>Show/Hide commands:</strong> Simple cases where you only need show or hide</li>
-                <li><strong>Class-based:</strong> When you need toggle, or want CSS transitions</li>
+                <li><strong>Display property (<code>show</code>/<code>hide</code>/<code>toggle *display</code>):</strong> Quick visibility control, all work together</li>
+                <li><strong>Class-based (<code>toggle .hidden</code>):</strong> When you want CSS transitions or need to style the hidden state</li>
             </ul>
 
-            <h3>Why class-based for toggle?</h3>
+            <h3>Don't mix approaches:</h3>
             <p>
-                The <code>show</code>/<code>hide</code> commands and <code>toggle .hidden</code> use different mechanisms
-                (inline styles vs CSS class). Mixing them causes inconsistent state. Use one approach consistently.
+                <code>show</code>/<code>hide</code>/<code>toggle *display</code> use inline styles, while <code>toggle .hidden</code> uses a CSS class.
+                Mixing them causes inconsistent state. Pick one approach and stick with it.
             </p>
 
             <h3>Common patterns:</h3>

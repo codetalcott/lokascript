@@ -221,6 +221,33 @@ export function isIdSelectorNode(node: ASTNode): boolean {
 }
 
 /**
+ * Check if an AST node is a CSS property selector
+ *
+ * CSS property selectors (e.g., *display, *opacity) should have their value
+ * extracted directly rather than evaluated as a DOM query.
+ *
+ * @param node - AST node to check
+ * @returns true if node is a CSS property selector
+ */
+export function isCSSPropertySelectorNode(node: ASTNode): boolean {
+  if (!node || typeof node !== 'object') {
+    return false;
+  }
+
+  const anyNode = node as Record<string, unknown>;
+  const nodeType = anyNode.type;
+
+  // Check if it's a selector-type node
+  if (nodeType !== 'selector' && nodeType !== 'cssSelector' && nodeType !== 'cssProperty') {
+    return false;
+  }
+
+  // Extract the value and check if it starts with '*'
+  const value = extractSelectorValue(node);
+  return typeof value === 'string' && value.startsWith('*');
+}
+
+/**
  * Check if an AST node represents a bare smart element tag identifier
  *
  * e.g., "toggle details" where 'details' is an identifier node
@@ -305,6 +332,15 @@ export async function evaluateFirstArg(
   // Class selector nodes should be extracted directly to get the class name
   // rather than evaluated (which would query the DOM)
   if (isClassSelectorNode(firstArg)) {
+    return {
+      value: extractSelectorValue(firstArg),
+      extractedFromNode: true,
+    };
+  }
+
+  // CSS property selector nodes should be extracted directly to get the property syntax
+  // rather than evaluated (which would try to use it as a DOM query)
+  if (isCSSPropertySelectorNode(firstArg)) {
     return {
       value: extractSelectorValue(firstArg),
       extractedFromNode: true,
