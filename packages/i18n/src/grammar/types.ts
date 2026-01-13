@@ -112,6 +112,19 @@ export interface GrammaticalMarker {
   alternatives?: string[];   // Alternative forms (e.g., 을/를 in Korean)
 }
 
+/**
+ * Metadata for preserving line structure during translation.
+ * Tracks indentation and blank lines so output maintains the same format.
+ */
+export interface LineMetadata {
+  /** Trimmed line content (empty string for blank lines) */
+  content: string;
+  /** Leading whitespace (tabs/spaces) from original line */
+  originalIndent: string;
+  /** True if the line was empty or whitespace-only */
+  isBlank: boolean;
+}
+
 // =============================================================================
 // Language Profile
 // =============================================================================

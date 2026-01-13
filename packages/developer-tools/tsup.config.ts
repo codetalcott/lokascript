@@ -3,7 +3,9 @@ import { defineConfig } from 'tsup';
 const EXTERNAL_DEPS = [
   '@hyperfixi/core',
   '@hyperfixi/ast-toolkit',
+  '@hyperfixi/i18n',
   '@hyperfixi/template-integration',
+  'prismjs',
   'commander',
   'inquirer',
   'chalk',
@@ -32,6 +34,8 @@ export default defineConfig({
     generator: 'src/generator.ts',
     'dev-server': 'src/dev-server.ts',
     cli: 'src/cli.ts',
+    'prism-hyperfixi/index': 'src/prism-hyperfixi/index.ts',
+    'prism-hyperfixi/browser': 'src/prism-hyperfixi/browser.ts',
   },
   format: ['cjs', 'esm'],
   dts: true,

@@ -34,7 +34,19 @@
       "types": "./dist/generator.d.ts",
       "import": "./dist/generator.mjs",
       "require": "./dist/generator.js"
-    }
+    },
+    "./prism-hyperfixi": {
+      "types": "./dist/prism-hyperfixi/index.d.ts",
+      "import": "./dist/prism-hyperfixi/index.mjs",
+      "require": "./dist/prism-hyperfixi/index.js"
+    },
+    "./prism-hyperfixi/browser": {
+      "types": "./dist/prism-hyperfixi/browser.d.ts",
+      "import": "./dist/prism-hyperfixi/browser.mjs",
+      "require": "./dist/prism-hyperfixi/browser.js"
+    },
+    "./prism-hyperfixi/themes/light.css": "./src/prism-hyperfixi/themes/light.css",
+    "./prism-hyperfixi/themes/dark.css": "./src/prism-hyperfixi/themes/dark.css"
   },
   "scripts": {
     "build": "tsup",
@@ -54,13 +66,17 @@
     "code-generation",
     "analyzer",
     "scaffolding",
-    "hyperfixi"
+    "hyperfixi",
+    "prism",
+    "syntax-highlighting",
+    "i18n"
   ],
   "author": "HyperFixi Team",
   "license": "MIT",
   "dependencies": {
     "@hyperfixi/ast-toolkit": "*",
     "@hyperfixi/core": "*",
+    "@hyperfixi/i18n": "*",
     "@hyperfixi/template-integration": "*",
     "boxen": "^7.1.0",
     "chalk": "^5.3.0",
@@ -90,6 +106,14 @@
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^4.0.0"
+  },
+  "peerDependencies": {
+    "prismjs": "^1.29.0"
+  },
+  "peerDependenciesMeta": {
+    "prismjs": {
+      "optional": true
+    }
   },
   "files": [
     "dist",

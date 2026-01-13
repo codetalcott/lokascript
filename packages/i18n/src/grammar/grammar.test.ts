@@ -782,3 +782,160 @@ describe('Word Order Integration Tests', () => {
     });
   });
 });
+
+// =============================================================================
+// Line Structure Preservation Tests
+// =============================================================================
+
+describe('Line Structure Preservation', () => {
+  describe('Indentation Preservation', () => {
+    it('should preserve indentation in multi-line statements', () => {
+      const input = `on click
+    toggle .active on me
+    wait 1 second`;
+
+      const transformer = new GrammarTransformer('en', 'es');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(3);
+      // First line has no indentation
+      expect(lines[0]).not.toMatch(/^\s/);
+      // Subsequent lines should have indentation
+      expect(lines[1]).toMatch(/^\s{4}/);
+      expect(lines[2]).toMatch(/^\s{4}/);
+    });
+
+    it('should normalize mixed tab/space indentation', () => {
+      const input = `on click
+\ttoggle .active
+        wait 1 second`;
+
+      const transformer = new GrammarTransformer('en', 'ja');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(3);
+      // Both indented lines should use consistent 4-space indentation
+      const indent1 = lines[1].match(/^\s*/)?.[0] || '';
+      const indent2 = lines[2].match(/^\s*/)?.[0] || '';
+      // Tabs normalized to spaces
+      expect(indent1).not.toContain('\t');
+      expect(indent2).not.toContain('\t');
+    });
+
+    it('should handle deeply nested indentation', () => {
+      const input = `on click
+    if something
+        toggle .active
+        wait 1 second`;
+
+      const transformer = new GrammarTransformer('en', 'ko');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(4);
+      // Check relative indentation is preserved
+      const indent1 = (lines[1].match(/^\s*/)?.[0] || '').length;
+      const indent2 = (lines[2].match(/^\s*/)?.[0] || '').length;
+      const indent3 = (lines[3].match(/^\s*/)?.[0] || '').length;
+      expect(indent2).toBeGreaterThan(indent1);
+      expect(indent3).toBe(indent2); // Same level as line above
+    });
+  });
+
+  describe('Blank Line Preservation', () => {
+    it('should preserve blank lines between statements', () => {
+      const input = `on click
+    toggle .active
+
+    wait 1 second`;
+
+      const transformer = new GrammarTransformer('en', 'zh');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(4);
+      expect(lines[2]).toBe(''); // Blank line preserved
+    });
+
+    it('should preserve multiple consecutive blank lines', () => {
+      const input = `on click
+
+
+    toggle .active`;
+
+      const transformer = new GrammarTransformer('en', 'ar');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(4);
+      expect(lines[1]).toBe('');
+      expect(lines[2]).toBe('');
+    });
+
+    it('should handle blank lines with only whitespace', () => {
+      const input = `on click
+    toggle .active
+
+    wait 1 second`;
+
+      const transformer = new GrammarTransformer('en', 'tr');
+      const result = transformer.transform(input);
+
+      const lines = result.split('\n');
+      expect(lines.length).toBe(4);
+      // Line with only whitespace should become empty
+      expect(lines[2]).toBe('');
+    });
+  });
+
+  describe('Single-line Backward Compatibility', () => {
+    it('should not change behavior for single-line input', () => {
+      const input = 'on click toggle .active';
+      const transformer = new GrammarTransformer('en', 'es');
+      const result = transformer.transform(input);
+
+      // Should not contain newlines
+      expect(result).not.toContain('\n');
+    });
+
+    it('should handle then-chains on single line', () => {
+      const input = 'on click toggle .active then wait 1 second';
+      const transformer = new GrammarTransformer('en', 'ja');
+      const result = transformer.transform(input);
+
+      // Should not contain newlines
+      expect(result).not.toContain('\n');
+      // Should still have the translated "then" keyword
+      expect(result.split(' ').length).toBeGreaterThan(3);
+    });
+  });
+
+  describe('Multi-language Structure Preservation', () => {
+    const languages = ['es', 'ja', 'ko', 'zh', 'ar', 'tr', 'id', 'qu', 'sw'];
+
+    for (const lang of languages) {
+      it(`should preserve structure when translating to ${lang}`, () => {
+        const input = `on click
+    toggle .active
+
+    wait 1 second
+    remove .active`;
+
+        const transformer = new GrammarTransformer('en', lang);
+        const result = transformer.transform(input);
+
+        const lines = result.split('\n');
+        expect(lines.length).toBe(5);
+        // Verify blank line is preserved
+        expect(lines[2]).toBe('');
+        // Verify non-blank lines have content
+        expect(lines[0].trim().length).toBeGreaterThan(0);
+        expect(lines[1].trim().length).toBeGreaterThan(0);
+        expect(lines[3].trim().length).toBeGreaterThan(0);
+        expect(lines[4].trim().length).toBeGreaterThan(0);
+      });
+    }
+  });
+});

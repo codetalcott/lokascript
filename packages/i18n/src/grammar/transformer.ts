@@ -12,6 +12,7 @@ import type {
   ParsedElement,
   SemanticRole,
   GrammarRule,
+  LineMetadata,
 } from './types';
 import { reorderRoles, insertMarkers, joinTokens } from './types';
 import { getProfile, profiles } from './profiles';
@@ -92,6 +93,165 @@ function splitCompoundStatement(input: string, sourceLocale: string): string[] {
   }
 
   return parts;
+}
+
+// =============================================================================
+// Line Structure Preservation
+// =============================================================================
+
+/**
+ * Result of splitting with preserved line metadata.
+ */
+interface SplitWithMetadataResult {
+  /** The processed parts (commands/statements) */
+  parts: string[];
+  /** Metadata for each original line (for reconstruction) */
+  lineMetadata: LineMetadata[];
+  /** Mapping from parts back to their original line indices */
+  partToLineIndex: number[];
+}
+
+/**
+ * Split a compound statement while preserving line structure metadata.
+ * This tracks indentation and blank lines for reconstruction.
+ */
+function splitCompoundStatementWithMetadata(
+  input: string,
+  sourceLocale: string
+): SplitWithMetadataResult {
+  const rawLines = input.split('\n');
+  const lineMetadata: LineMetadata[] = [];
+  const parts: string[] = [];
+  const partToLineIndex: number[] = [];
+
+  for (let lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
+    const rawLine = rawLines[lineIndex];
+
+    // Capture leading whitespace
+    const indentMatch = rawLine.match(/^(\s*)/);
+    const originalIndent = indentMatch ? indentMatch[1] : '';
+    const trimmed = rawLine.trim();
+
+    lineMetadata.push({
+      content: trimmed,
+      originalIndent,
+      isBlank: trimmed.length === 0,
+    });
+
+    if (trimmed.length > 0) {
+      // Process non-empty lines for "then" and command boundaries
+      const lineParts = splitOnThen(trimmed, sourceLocale);
+      for (const part of lineParts) {
+        const commandParts = splitOnCommandBoundaries(part, sourceLocale);
+        for (const cmdPart of commandParts) {
+          parts.push(cmdPart);
+          partToLineIndex.push(lineIndex);
+        }
+      }
+    }
+  }
+
+  return { parts, lineMetadata, partToLineIndex };
+}
+
+/**
+ * Normalize indentation to consistent 4-space levels.
+ * Preserves relative indentation structure while standardizing spacing.
+ */
+function normalizeIndentation(lineMetadata: LineMetadata[]): string[] {
+  // Find non-blank lines with indentation
+  const indentedLines = lineMetadata.filter(
+    m => !m.isBlank && m.originalIndent.length > 0
+  );
+
+  if (indentedLines.length === 0) {
+    // No indented lines, return empty strings
+    return lineMetadata.map(() => '');
+  }
+
+  // Find minimum non-zero indent (the base unit)
+  const indentLengths = indentedLines.map(m => {
+    // Convert tabs to 4 spaces for consistent measurement
+    const normalized = m.originalIndent.replace(/\t/g, '    ');
+    return normalized.length;
+  });
+  const minIndent = Math.min(...indentLengths);
+  const baseUnit = minIndent > 0 ? minIndent : 4;
+
+  // Normalize each line's indentation
+  return lineMetadata.map(meta => {
+    if (meta.isBlank) {
+      return ''; // Blank lines get no indentation
+    }
+    if (meta.originalIndent.length === 0) {
+      return ''; // No original indent
+    }
+
+    // Convert tabs and calculate level
+    const normalized = meta.originalIndent.replace(/\t/g, '    ');
+    const level = Math.round(normalized.length / baseUnit);
+    return '    '.repeat(level); // 4 spaces per level
+  });
+}
+
+/**
+ * Reconstruct output with preserved line structure.
+ * Maps transformed parts back to their original lines with proper indentation.
+ */
+function reconstructWithLineStructure(
+  transformedParts: string[],
+  lineMetadata: LineMetadata[],
+  partToLineIndex: number[],
+  targetThen: string
+): string {
+  // If there's only one non-blank line, simple case
+  const nonBlankCount = lineMetadata.filter(m => !m.isBlank).length;
+  if (nonBlankCount <= 1 && transformedParts.length <= 1) {
+    const normalizedIndents = normalizeIndentation(lineMetadata);
+    const result: string[] = [];
+
+    for (let i = 0; i < lineMetadata.length; i++) {
+      if (lineMetadata[i].isBlank) {
+        result.push('');
+      } else if (transformedParts.length > 0) {
+        result.push(normalizedIndents[i] + transformedParts[0]);
+      }
+    }
+    return result.join('\n');
+  }
+
+  // Normalize indentation
+  const normalizedIndents = normalizeIndentation(lineMetadata);
+
+  // Group transformed parts by their original line
+  const partsPerLine: Map<number, string[]> = new Map();
+  for (let i = 0; i < transformedParts.length; i++) {
+    const lineIdx = partToLineIndex[i];
+    if (!partsPerLine.has(lineIdx)) {
+      partsPerLine.set(lineIdx, []);
+    }
+    partsPerLine.get(lineIdx)!.push(transformedParts[i]);
+  }
+
+  // Build result lines
+  const result: string[] = [];
+  for (let i = 0; i < lineMetadata.length; i++) {
+    const meta = lineMetadata[i];
+    const indent = normalizedIndents[i];
+
+    if (meta.isBlank) {
+      result.push('');
+    } else {
+      const lineParts = partsPerLine.get(i) || [];
+      if (lineParts.length > 0) {
+        // Join multiple parts on same line with "then"
+        const lineContent = lineParts.join(` ${targetThen} `);
+        result.push(indent + lineContent);
+      }
+    }
+  }
+
+  return result.join('\n');
 }
 
 /**
@@ -871,14 +1031,34 @@ export class GrammarTransformer {
    * Transform a hyperscript statement from source to target language.
    * Handles compound statements with "then" by splitting, transforming each part,
    * and rejoining with the target language's "then" keyword.
+   *
+   * For multi-line input, preserves line structure (indentation, blank lines).
    */
   transform(input: string): string {
-    // Split compound statements at "then" boundaries
+    const targetThen = getTargetThenKeyword(this.targetProfile.code);
+
+    // Check if input has multi-line structure worth preserving
+    const hasMultiLineStructure = input.includes('\n');
+
+    if (hasMultiLineStructure) {
+      // Multi-line case - preserve structure (indentation, blank lines)
+      const { parts, lineMetadata, partToLineIndex } =
+        splitCompoundStatementWithMetadata(input, this.sourceProfile.code);
+
+      const transformedParts = parts.map(part => this.transformSingle(part));
+
+      return reconstructWithLineStructure(
+        transformedParts,
+        lineMetadata,
+        partToLineIndex,
+        targetThen
+      );
+    }
+
+    // Single-line case - use existing logic
     const parts = splitCompoundStatement(input, this.sourceProfile.code);
 
-    // If we have multiple parts, transform each and rejoin
     if (parts.length > 1) {
-      const targetThen = getTargetThenKeyword(this.targetProfile.code);
       const transformedParts = parts.map(part => this.transformSingle(part));
       return transformedParts.join(` ${targetThen} `);
     }

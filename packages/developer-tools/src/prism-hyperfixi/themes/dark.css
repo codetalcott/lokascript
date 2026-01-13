@@ -1,0 +1,76 @@
+/**
+ * prism-hyperfixi Dark Theme
+ *
+ * Designed to work with Prism's dark themes (Tomorrow Night, Okaidia, etc).
+ * Add this CSS after your main Prism CSS.
+ */
+
+/* Commands - bold, bright blue */
+.token.hs-command {
+  color: #66d9ef;
+  font-weight: bold;
+}
+
+/* Modifiers - muted gray */
+.token.hs-modifier {
+  color: #a8a8a8;
+}
+
+/* Events - orange/amber */
+.token.hs-event {
+  color: #fd971f;
+}
+
+/* Logical keywords - purple/violet */
+.token.hs-logical {
+  color: #ae81ff;
+}
+
+/* Temporal keywords - cyan */
+.token.hs-temporal {
+  color: #66cccc;
+}
+
+/* Values - green */
+.token.hs-value {
+  color: #a6e22e;
+}
+
+/* Attributes - blue */
+.token.hs-attribute {
+  color: #6699cc;
+}
+
+/* Expressions - pink/magenta */
+.token.hs-expression {
+  color: #f92672;
+}
+
+/* Selectors - teal */
+.token.hs-selector {
+  color: #2aa198;
+}
+
+/* Bold alias (used with commands) */
+.token.bold {
+  font-weight: bold;
+}
+
+/* RTL support for Arabic */
+code[data-language="ar"],
+pre[data-language="ar"] code,
+.language-hyperscript[data-lang="ar"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Language indicator (optional) - dark theme version */
+pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  font-size: 0.75em;
+  color: #666;
+  text-transform: uppercase;
+}
