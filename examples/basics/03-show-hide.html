@@ -30,6 +30,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
+        .content-box.blue {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            color: #00796b;
+        }
+
         .content-box h3 {
             margin: 0 0 10px 0;
             font-size: 24px;
@@ -45,6 +50,15 @@
             display: none !important;
         }
 
+        .demo-note {
+            background: var(--color-bg, #f5f5f5);
+            border-left: 3px solid var(--color-accent, #6366f1);
+            padding: 12px 16px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: var(--color-text-secondary, #666);
+        }
+
     </style>
 </head>
 <body class="example-page">
@@ -56,9 +70,8 @@
         <h1>Show/Hide Elements</h1>
 
         <div class="description">
-            <strong>Control element visibility with simple commands</strong><br>
-            Learn how to show and hide elements using hyperscript's built-in visibility commands.
-            Perfect for creating interactive UIs, modals, dropdowns, and more!
+            <strong>Control element visibility</strong><br>
+            Two approaches: built-in commands or class-based toggling.
         </div>
 
         <div>
@@ -67,115 +80,98 @@
             <span class="tag">toggle</span>
         </div>
 
-        <!-- Demo -->
+        <!-- Demo 1: Show/Hide Commands -->
         <div class="demo">
-            <h2>Demo</h2>
+            <h2>Demo 1: Show/Hide Commands</h2>
+            <p class="demo-note">
+                The <code>show</code> and <code>hide</code> commands manipulate the display style directly.
+                Use these when you only need show or hide (not toggle).
+            </p>
             <div>
-                <button _="on click remove .hidden from #content">
+                <button _="on click show #content1">
                     Show
                 </button>
-                <button class="secondary" _="on click add .hidden to #content">
+                <button class="secondary" _="on click hide #content1">
                     Hide
                 </button>
-                <button class="success" _="on click toggle .hidden on #content">
+            </div>
+
+            <div id="content1" class="content-box">
+                <h3>Visible Content</h3>
+                <p>This uses the <code>show</code> and <code>hide</code> commands.</p>
+            </div>
+        </div>
+
+        <!-- Demo 2: Class-based Toggle -->
+        <div class="demo">
+            <h2>Demo 2: Class-based Toggle</h2>
+            <p class="demo-note">
+                For toggling, use a CSS class. All three buttons work on the same <code>.hidden</code> class,
+                so they stay in sync.
+            </p>
+            <div>
+                <button _="on click remove .hidden from #content2">
+                    Show
+                </button>
+                <button class="secondary" _="on click add .hidden to #content2">
+                    Hide
+                </button>
+                <button class="success" _="on click toggle .hidden on #content2">
                     Toggle
                 </button>
             </div>
 
-            <div id="content" class="content-box">
-                <h3>Hidden Content</h3>
-                <p>
-                    This content can be shown, hidden, or toggled using the buttons above.
-                    Use the buttons above to control this element's visibility.
-                </p>
+            <div id="content2" class="content-box blue">
+                <h3>Toggleable Content</h3>
+                <p>This uses class manipulation: <code>add</code>, <code>remove</code>, and <code>toggle</code>.</p>
             </div>
         </div>
 
         <!-- Code Explanation -->
         <h2>The Code</h2>
+
+        <h3>Approach 1: Show/Hide Commands</h3>
         <div class="code">
-<span class="comment">&lt;!-- Show button (removes hidden class) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click remove .hidden from #content"</span>&gt;
-  Show
-&lt;/button&gt;
+<span class="comment">&lt;!-- Direct visibility commands --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click show #content"</span>&gt;Show&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click hide #content"</span>&gt;Hide&lt;/button&gt;
+        </div>
 
-<span class="comment">&lt;!-- Hide button (adds hidden class) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click add .hidden to #content"</span>&gt;
-  Hide
-&lt;/button&gt;
+        <h3>Approach 2: Class-based (with Toggle)</h3>
+        <div class="code">
+<span class="comment">&lt;!-- Class manipulation for consistent toggling --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click remove .hidden from #content"</span>&gt;Show&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click add .hidden to #content"</span>&gt;Hide&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .hidden on #content"</span>&gt;Toggle&lt;/button&gt;
 
-<span class="comment">&lt;!-- Toggle button (toggles hidden class) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .hidden on #content"</span>&gt;
-  Toggle
-&lt;/button&gt;
-
-&lt;div <span class="keyword">id</span>=<span class="string">"content"</span> <span class="keyword">class</span>=<span class="string">"content-box"</span>&gt;
-  Content to show/hide
-&lt;/div&gt;
+<span class="comment">&lt;!-- CSS --&gt;</span>
+.hidden { display: none; }
         </div>
 
         <div class="explanation">
-            <h3>How it works:</h3>
+            <h3>When to use each approach:</h3>
             <ul>
-                <li><code>remove .hidden from #content</code> - Shows the element by removing the hidden class</li>
-                <li><code>add .hidden to #content</code> - Hides the element by adding the hidden class</li>
-                <li><code>toggle .hidden on #content</code> - Toggles visibility by adding/removing the hidden class</li>
+                <li><strong>Show/Hide commands:</strong> Simple cases where you only need show or hide</li>
+                <li><strong>Class-based:</strong> When you need toggle, or want CSS transitions</li>
             </ul>
 
-            <h3>Key Concepts:</h3>
-            <ul>
-                <li><strong>Class-based visibility:</strong> Using a CSS class keeps all buttons working consistently</li>
-                <li><strong>CSS Selectors:</strong> Target any element using standard CSS selectors</li>
-                <li><strong>Declarative:</strong> No need to manage display state manually</li>
-                <li><strong>Animation-Ready:</strong> Combine with transitions for smooth effects</li>
-            </ul>
+            <h3>Why class-based for toggle?</h3>
+            <p>
+                The <code>show</code>/<code>hide</code> commands and <code>toggle .hidden</code> use different mechanisms
+                (inline styles vs CSS class). Mixing them causes inconsistent state. Use one approach consistently.
+            </p>
 
-            <h3>Common Use Cases:</h3>
-            <ul>
-                <li><strong>Modals:</strong> Show/hide dialog boxes</li>
-                <li><strong>Dropdowns:</strong> Toggle menu visibility</li>
-                <li><strong>Accordions:</strong> Expand/collapse sections</li>
-                <li><strong>Notifications:</strong> Display and dismiss alerts</li>
-                <li><strong>Loading States:</strong> Show/hide loading indicators</li>
-            </ul>
-
-            <h3>Toggle Command Syntax:</h3>
-            <p>The toggle command supports CSS classes and attributes:</p>
+            <h3>Common patterns:</h3>
             <div class="code">
-<span class="comment">&lt;!-- Toggle CSS classes (recommended for visibility) --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .active on #element"</span>&gt;Toggle Class&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .hidden on #element"</span>&gt;Toggle Hidden&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .visible on #element"</span>&gt;Toggle Visible&lt;/button&gt;
+<span class="comment">&lt;!-- Chain commands --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click hide #loading then show #content"</span>&gt;Load&lt;/button&gt;
 
-<span class="comment">&lt;!-- Toggle attributes --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle @disabled on #submit-btn"</span>&gt;Enable/Disable&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle [@disabled=\"true\"] on #submit-btn"</span>&gt;Toggle Value&lt;/button&gt;
+<span class="comment">&lt;!-- Toggle with duration --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .highlight on #item for 2s"</span>&gt;Flash&lt;/button&gt;
+
+<span class="comment">&lt;!-- Target multiple elements --&gt;</span>
+&lt;button <span class="keyword">_</span>=<span class="string">"on click show .panel"</span>&gt;Show All Panels&lt;/button&gt;
             </div>
-
-            <h3>Advanced Patterns:</h3>
-            <p>You can also show/hide multiple elements at once:</p>
-            <div class="code">
-<span class="comment">&lt;!-- Show all items with class 'item' --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click show .item"</span>&gt;Show All&lt;/button&gt;
-
-<span class="comment">&lt;!-- Hide all except the first --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click hide .item then show .item:first-child"</span>&gt;
-  Show Only First
-&lt;/button&gt;
-
-<span class="comment">&lt;!-- Toggle for a duration --&gt;</span>
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle .active on #element for 2s"</span>&gt;
-  Flash Active
-&lt;/button&gt;
-            </div>
-
-            <h3>Try it yourself:</h3>
-            <ul>
-                <li>Add more elements and control them independently</li>
-                <li>Use class selectors (<code>.className</code>) to show/hide groups</li>
-                <li>Combine with <code>wait 2s</code> for timed visibility changes</li>
-                <li>Chain commands: <code>hide #loading then show #content</code></li>
-            </ul>
         </div>
 
         <!-- Navigation -->
