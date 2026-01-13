@@ -282,6 +282,22 @@ export class RuntimeBase {
           return await this.executeEventHandler(node as EventHandlerNode, context);
         }
 
+        case 'event': {
+          // Handle EventNode from hybrid parser (different structure from EventHandlerNode)
+          // EventNode has: event, filter, modifiers, body
+          // EventHandlerNode expects: event, events, commands, target, args, selector
+          const eventNode = node as any;
+          const adaptedNode = {
+            type: 'eventHandler',
+            event: eventNode.event,
+            events: [eventNode.event],
+            commands: eventNode.body || [],
+            target: eventNode.filter,
+            modifiers: eventNode.modifiers || {},
+          };
+          return await this.executeEventHandler(adaptedNode as EventHandlerNode, context);
+        }
+
         case 'behavior': {
           return await this.executeBehaviorDefinition(node as any, context);
         }
@@ -295,6 +311,7 @@ export class RuntimeBase {
           return await this.executeBlock(node as any, context);
         }
 
+        case 'sequence':
         case 'CommandSequence': {
           // Use Result-based execution when enabled
           if (this.options.enableResultPattern) {
