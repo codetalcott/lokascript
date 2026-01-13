@@ -1,0 +1,40 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: '70...100'
+
+  status:
+    # Project coverage - informational only (doesn't block PRs)
+    project:
+      default:
+        target: auto
+        threshold: 5%
+        informational: true
+    # Patch coverage - informational for now, can enforce later
+    patch:
+      default:
+        target: 60%
+        threshold: 5%
+        informational: true
+
+flags:
+  core:
+    paths:
+      - packages/core/src/**
+    carryforward: true
+  semantic:
+    paths:
+      - packages/semantic/src/**
+    carryforward: true
+  i18n:
+    paths:
+      - packages/i18n/src/**
+    carryforward: true
+
+comment:
+  layout: 'header, diff, flags, components'
+  behavior: default
+  require_changes: true

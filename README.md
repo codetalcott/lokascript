@@ -1,14 +1,19 @@
 # HyperFixi
 
+[![CI](https://github.com/hyperfixi/hyperfixi/actions/workflows/ci.yml/badge.svg)](https://github.com/hyperfixi/hyperfixi/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/hyperfixi/hyperfixi/graph/badge.svg)](https://codecov.io/gh/hyperfixi/hyperfixi)
+[![npm version](https://img.shields.io/npm/v/@hyperfixi/core.svg)](https://www.npmjs.com/package/@hyperfixi/core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 DOM scripting in Japanese, Korean, Arabic, Spanish—23 languages total.
 
-A multilingual extension of [_hyperscript](https://hyperscript.org) by Carson Gross et al.
+A multilingual extension of [\_hyperscript](https://hyperscript.org) by Carson Gross et al.
 
 **[Live Demo](https://hyperscript-css-dev.fly.dev)** | [Experiments](https://hyperscript-css-dev.fly.dev/experiments/) | [Playground](https://hyperscript-css-dev.fly.dev/playground/)
 
 ## About This Project
 
-This is an experiment in finding a path toward multiple hyperscript dialects—each supporting native idiomatic patterns for different languages. It's not intended to replace _hyperscript, but to explore what multilingual scripting could look like.
+This is an experiment in finding a path toward multiple hyperscript dialects—each supporting native idiomatic patterns for different languages. It's not intended to replace \_hyperscript, but to explore what multilingual scripting could look like.
 
 Hyperscript's readability is its key selling point. But that readability assumes you think in English. This project asks: what if `on click toggle .active` could feel equally natural in Japanese, Arabic, or Korean?
 
@@ -28,12 +33,12 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 ## Current Status
 
-| Package | Tests | Status |
-| ------- | ----- | ------ |
-| [@hyperfixi/core](./packages/core) | 3316 passing | Stable |
-| [@hyperfixi/semantic](./packages/semantic) | 1984 passing | Stable |
-| [@hyperfixi/i18n](./packages/i18n) | 309 passing | Stable |
-| [@hyperfixi/vite-plugin](./packages/vite-plugin) | 163 passing | Stable |
+| Package                                          | Tests        | Status |
+| ------------------------------------------------ | ------------ | ------ |
+| [@hyperfixi/core](./packages/core)               | 3316 passing | Stable |
+| [@hyperfixi/semantic](./packages/semantic)       | 1984 passing | Stable |
+| [@hyperfixi/i18n](./packages/i18n)               | 309 passing  | Stable |
+| [@hyperfixi/vite-plugin](./packages/vite-plugin) | 163 passing  | Stable |
 
 ### Language Support
 
@@ -43,13 +48,13 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 The full bundle is large because it includes 23 language tokenizers, grammar transformation, and the complete AST parser. Most projects should use the hybrid bundle or vite-plugin for automatic tree-shaking.
 
-| Bundle | Size | Use Case |
-| ------ | ---- | -------- |
-| hyperfixi-lite.js | 8 KB | Minimal (8 commands, regex parser) |
-| hyperfixi-hybrid-complete.js | 28 KB | Recommended (~85% coverage) |
-| hyperfixi-browser.js | 912 KB | Everything (rarely needed) |
-| Semantic (English only) | 84 KB | Single-language parsing |
-| Semantic (all 23 languages) | 260 KB | Full multilingual |
+| Bundle                       | Size   | Use Case                           |
+| ---------------------------- | ------ | ---------------------------------- |
+| hyperfixi-lite.js            | 8 KB   | Minimal (8 commands, regex parser) |
+| hyperfixi-hybrid-complete.js | 28 KB  | Recommended (~85% coverage)        |
+| hyperfixi-browser.js         | 912 KB | Everything (rarely needed)         |
+| Semantic (English only)      | 84 KB  | Single-language parsing            |
+| Semantic (all 23 languages)  | 260 KB | Full multilingual                  |
 
 ## Quick Start
 
@@ -71,7 +76,7 @@ npm install @hyperfixi/vite-plugin
 import { hyperfixi } from '@hyperfixi/vite-plugin';
 
 export default {
-  plugins: [hyperfixi()]
+  plugins: [hyperfixi()],
 };
 ```
 
@@ -86,9 +91,9 @@ const ml = new MultilingualHyperscript();
 await ml.initialize();
 
 // Parse from any supported language
-await ml.parse('#button の .active を 切り替え', 'ja');  // Japanese
-await ml.parse('토글 .active', 'ko');                    // Korean
-await ml.parse('alternar .active', 'es');                // Spanish
+await ml.parse('#button の .active を 切り替え', 'ja'); // Japanese
+await ml.parse('토글 .active', 'ko'); // Korean
+await ml.parse('alternar .active', 'es'); // Spanish
 
 // Translate between languages
 const arabic = await ml.translate('toggle .active', 'en', 'ar');
@@ -177,12 +182,12 @@ node scripts/generate-bundle.mjs --group western
 
 Pre-built regional bundles in `packages/semantic/dist/`:
 
-| Bundle | Size | Languages |
-|--------|------|-----------|
-| `browser-en.en.global.js` | 20 KB | English only |
-| `browser-western.western.global.js` | 30 KB | en, es, pt, fr, de |
-| `browser-east-asian.east-asian.global.js` | 24 KB | ja, zh, ko |
-| `browser.global.js` | 61 KB | All 13 languages |
+| Bundle                                    | Size  | Languages          |
+| ----------------------------------------- | ----- | ------------------ |
+| `browser-en.en.global.js`                 | 20 KB | English only       |
+| `browser-western.western.global.js`       | 30 KB | en, es, pt, fr, de |
+| `browser-east-asian.east-asian.global.js` | 24 KB | ja, zh, ko         |
+| `browser.global.js`                       | 61 KB | All 13 languages   |
 
 ### Core (Custom Command Bundles)
 
@@ -239,7 +244,7 @@ The codebase is complex. The semantic role mapping, grammar transformations, and
 
 **Current gaps:**
 
-- Compatibility is one-way: official _hyperscript code should work in HyperFixi, but HyperFixi's extended syntax (multilingual, flexible grammar) won't work in official _hyperscript
+- Compatibility is one-way: official \_hyperscript code should work in HyperFixi, but HyperFixi's extended syntax (multilingual, flexible grammar) won't work in official \_hyperscript
 - Bundle sizes are large for full multilingual support
 - Language idioms are approximations, not yet verified by native speakers
 

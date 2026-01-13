@@ -1,0 +1,314 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  # ============================================
+  # Job 1: Lint & Typecheck (fast, parallel)
+  # ============================================
+  lint-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --workspaces --if-present
+
+      - name: Typecheck core
+        run: npm run typecheck --prefix packages/core
+
+      - name: Typecheck semantic
+        run: npm run typecheck --prefix packages/semantic
+
+      - name: Typecheck i18n
+        run: npm run typecheck --prefix packages/i18n
+
+      - name: Typecheck vite-plugin
+        run: npm run typecheck --prefix packages/vite-plugin
+
+  # ============================================
+  # Job 2: Unit Tests (Vitest) - Matrix
+  # ============================================
+  unit-tests:
+    name: Unit Tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test core
+        run: npm test --prefix packages/core -- --run
+
+      - name: Test semantic
+        run: npm test --prefix packages/semantic -- --run
+
+      - name: Test i18n
+        run: npm test --prefix packages/i18n -- --run
+
+      - name: Test vite-plugin
+        run: npm test --prefix packages/vite-plugin -- --run
+
+  # ============================================
+  # Job 3: Coverage Report (Node 20 only)
+  # ============================================
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate coverage - core
+        run: npm run test:coverage --prefix packages/core
+
+      - name: Generate coverage - semantic
+        run: npm test --prefix packages/semantic -- --run --coverage
+
+      - name: Generate coverage - i18n
+        run: npm run test:coverage --prefix packages/i18n
+
+      - name: Upload core coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: packages/core/coverage/lcov.info
+          flags: core
+          name: core-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload semantic coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: packages/semantic/coverage/lcov.info
+          flags: semantic
+          name: semantic-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload i18n coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: packages/i18n/coverage/lcov.info
+          flags: i18n
+          name: i18n-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  # ============================================
+  # Job 4: Browser Tests (Playwright)
+  # ============================================
+  browser-tests:
+    name: Browser Tests
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Build browser bundles
+        run: npm run build:browser --prefix packages/core
+
+      - name: Run Playwright tests
+        run: npx playwright test --project=integration
+        working-directory: packages/core
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: packages/core/playwright-report/
+          retention-days: 7
+
+  # ============================================
+  # Job 5: Bundle Size Analysis
+  # ============================================
+  bundle-size:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all browser bundles
+        run: |
+          npm run build:browser --prefix packages/core
+          npm run build --prefix packages/semantic
+          npm run build --prefix packages/i18n
+
+      - name: Analyze bundle sizes
+        run: |
+          echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Core Bundles" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for file in packages/core/dist/hyperfixi-*.js; do
+            if [[ -f "$file" && ! "$file" == *.map ]]; then
+              filename=$(basename "$file")
+              size=$(wc -c < "$file" | tr -d ' ')
+              gzip_size=$(gzip -c "$file" | wc -c | tr -d ' ')
+              size_kb=$((size / 1024))
+              gzip_kb=$((gzip_size / 1024))
+              echo "| $filename | ${size_kb} KB | ${gzip_kb} KB |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Semantic Bundles" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          for file in packages/semantic/dist/browser*.js; do
+            if [[ -f "$file" && ! "$file" == *.map ]]; then
+              filename=$(basename "$file")
+              size=$(wc -c < "$file" | tr -d ' ')
+              gzip_size=$(gzip -c "$file" | wc -c | tr -d ' ')
+              size_kb=$((size / 1024))
+              gzip_kb=$((gzip_size / 1024))
+              echo "| $filename | ${size_kb} KB | ${gzip_kb} KB |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Check size limits
+        run: |
+          # Set size limits (in bytes, gzipped)
+          MAX_HYBRID_COMPLETE=15000   # 15KB gzipped
+          MAX_BROWSER_FULL=150000     # 150KB gzipped
+
+          hybrid_file="packages/core/dist/hyperfixi-hybrid-complete.js"
+          browser_file="packages/core/dist/hyperfixi-browser.js"
+
+          if [[ -f "$hybrid_file" ]]; then
+            hybrid_size=$(gzip -c "$hybrid_file" | wc -c | tr -d ' ')
+            echo "hybrid-complete gzipped: $hybrid_size bytes"
+
+            if [[ "$hybrid_size" -gt "$MAX_HYBRID_COMPLETE" ]]; then
+              echo "::warning::hybrid-complete ($hybrid_size bytes) exceeds ${MAX_HYBRID_COMPLETE} bytes limit"
+            fi
+          fi
+
+          if [[ -f "$browser_file" ]]; then
+            browser_size=$(gzip -c "$browser_file" | wc -c | tr -d ' ')
+            echo "browser.js gzipped: $browser_size bytes"
+
+            if [[ "$browser_size" -gt "$MAX_BROWSER_FULL" ]]; then
+              echo "::warning::browser.js ($browser_size bytes) exceeds ${MAX_BROWSER_FULL} bytes limit"
+            fi
+          fi
+
+  # ============================================
+  # Job 6: Build Verification
+  # ============================================
+  build:
+    name: Build All Packages
+    runs-on: ubuntu-latest
+    needs: [unit-tests, browser-tests]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: |
+            packages/core/dist/
+            packages/semantic/dist/
+            packages/i18n/dist/
+            packages/vite-plugin/dist/
+          retention-days: 7

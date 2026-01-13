@@ -14,33 +14,46 @@ import {
 } from '../types/context-types';
 import type { ValidationResult, ValidationError, EvaluationType } from '../types/base-types';
 import type { LLMDocumentation } from '../types/command-types';
-// Try to import from @hyperfixi/patterns-reference (preferred)
-// Falls back to deprecated llm-examples-query for backward compatibility
-let findRelevantExamples: (
+
+// Import local module as fallback (always available)
+import * as localExamplesModule from './llm-examples-query';
+
+// Type definitions for example functions
+type FindRelevantExamplesFn = (
   prompt: string,
   language?: string,
   limit?: number
-) => Array<{ id: number; prompt: string; completion: string; language: string; qualityScore: number }>;
-let trackExampleUsage: (ids: number[]) => void;
-let buildFewShotContext: (prompt: string, language?: string, numExamples?: number) => string;
-let isDatabaseAvailable: () => boolean;
+) => Array<{
+  id: number;
+  prompt: string;
+  completion: string;
+  language: string;
+  qualityScore: number;
+}>;
+type TrackExampleUsageFn = (ids: number[]) => void;
+type BuildFewShotContextFn = (prompt: string, language?: string, numExamples?: number) => string;
+type IsDatabaseAvailableFn = () => boolean;
 
-// Attempt to load from patterns-reference first
+// Start with local module (fallback), will be replaced if patterns-reference is available
+let findRelevantExamples: FindRelevantExamplesFn = localExamplesModule.findRelevantExamples;
+let trackExampleUsage: TrackExampleUsageFn = localExamplesModule.trackExampleUsage;
+let buildFewShotContext: BuildFewShotContextFn = localExamplesModule.buildFewShotContext;
+let isDatabaseAvailable: IsDatabaseAvailableFn = localExamplesModule.isDatabaseAvailable;
+
+// Try to load from @hyperfixi/patterns-reference (preferred) at runtime
+// This is an optional peer dependency that provides enhanced example database
 try {
+  // Dynamic import attempt for patterns-reference
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const patternsRef = require('@hyperfixi/patterns-reference');
-  findRelevantExamples = patternsRef.findRelevantExamples;
-  trackExampleUsage = patternsRef.trackExampleUsage;
-  buildFewShotContext = patternsRef.buildFewShotContextSync;
-  isDatabaseAvailable = patternsRef.isDatabaseAvailable;
+  if (patternsRef) {
+    findRelevantExamples = patternsRef.findRelevantExamples ?? findRelevantExamples;
+    trackExampleUsage = patternsRef.trackExampleUsage ?? trackExampleUsage;
+    buildFewShotContext = patternsRef.buildFewShotContextSync ?? buildFewShotContext;
+    isDatabaseAvailable = patternsRef.isDatabaseAvailable ?? isDatabaseAvailable;
+  }
 } catch {
-  // Fall back to deprecated local module
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const legacyModule = require('./llm-examples-query');
-  findRelevantExamples = legacyModule.findRelevantExamples;
-  trackExampleUsage = legacyModule.trackExampleUsage;
-  buildFewShotContext = legacyModule.buildFewShotContext;
-  isDatabaseAvailable = legacyModule.isDatabaseAvailable;
+  // patterns-reference not available, using local fallback (already set)
 }
 
 export type LLMExampleRecord = {
@@ -382,7 +395,11 @@ export class TypedLLMGenerationContextImplementation extends ContextBase<
    * Get few-shot context for external LLM integration.
    * Can be used to enhance prompts sent to external LLM APIs.
    */
-  public getFewShotContext(prompt: string, language: string = 'en', numExamples: number = 3): string {
+  public getFewShotContext(
+    prompt: string,
+    language: string = 'en',
+    numExamples: number = 3
+  ): string {
     return buildFewShotContext(prompt, language, numExamples);
   }
 
