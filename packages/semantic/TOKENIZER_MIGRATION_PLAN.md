@@ -148,25 +148,23 @@ export class JapaneseTokenizer extends BaseTokenizer {
    }
    ```
 
-3. **Replace keyword lookups** with `this.profileKeywords`:
+3. **Replace keyword lookups** with O(1) helpers:
 
    ```typescript
-   // Before
+   // Before (hardcoded map)
    const normalized = HARDCODED_KEYWORDS.get(word);
 
-   // After
-   for (const entry of this.profileKeywords) {
-     if (word === entry.native) return entry.normalized;
-   }
+   // After (O(1) Map lookup)
+   const entry = this.lookupKeyword(word);
+   if (entry) return entry.normalized;
    ```
 
 4. **Update classifyToken()**:
 
    ```typescript
    classifyToken(token: string): TokenKind {
-     for (const entry of this.profileKeywords) {
-       if (token.toLowerCase() === entry.native.toLowerCase()) return 'keyword';
-     }
+     // O(1) Map lookup instead of O(n) array search
+     if (this.isKeyword(token)) return 'keyword';
      // ... rest unchanged
    }
    ```
@@ -270,10 +268,51 @@ Run the benchmark: `npx tsx scripts/benchmark-tokenizer-lookup.ts`
 
 ---
 
+## CI Integration
+
+GitHub Actions workflow at `.github/workflows/semantic.yml` provides:
+
+### Test Job (on push/PR)
+
+- TypeScript type checking
+- Full test suite (2118+ tests)
+
+### Benchmark Job (main branch only)
+
+- Runs comprehensive benchmarks across all 23 languages
+- Saves results to cache for future comparisons
+- Uploads results as artifacts (30-day retention)
+
+### Benchmark-PR Job (on pull requests)
+
+- Compares against baseline from main branch
+- **Fails build if >20% regression detected**
+- Posts warning comment on PR if regression found
+
+### Running Benchmarks Locally
+
+```bash
+# Run all benchmarks (human-readable output)
+npm run benchmark
+
+# Output as JSON (for tooling)
+npm run benchmark:json
+
+# Save results as new baseline
+npm run benchmark:save
+
+# Compare against saved baseline (CI mode)
+npm run benchmark:ci
+```
+
+---
+
 ## Related Files
 
 - `src/tokenizers/base.ts`: `initializeKeywordsFromProfile()`, `lookupKeyword()`, `isKeyword()`
 - `src/generators/profiles/*.ts`: Language profiles with keywords
 - `test/tokenizers-profile-derived.test.ts`: Validation test
 - `scripts/add-language.ts`: Updated to generate profile-derived tokenizers
-- `scripts/benchmark-tokenizer-lookup.ts`: Performance benchmark
+- `scripts/benchmark-tokenizer-lookup.ts`: Single-language lookup benchmark
+- `scripts/benchmark-all.ts`: Comprehensive benchmark for all 23 languages (CI-ready)
+- `.github/workflows/semantic.yml`: CI workflow with test and benchmark jobs
