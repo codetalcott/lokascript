@@ -38,6 +38,15 @@ export const arabicProfile: LanguageProfile = {
       it: 'له', // "for it" / "its"
       you: 'لك', // "for you" / "yours"
     },
+    keywords: {
+      // "my" / "mine"
+      لي: 'me',
+      // "your" / "yours"
+      لك: 'you',
+      // "its/his/her"
+      له: 'it', // his/its (masculine)
+      لها: 'it', // her/its (feminine)
+    },
   },
   roleMarkers: {
     destination: { primary: 'على', alternatives: ['في', 'إلى', 'ب'], position: 'before' },

@@ -15,12 +15,19 @@ import type {
   LanguageToken,
 } from '../types';
 import { createSelector, createLiteral, createReference, createPropertyPath } from '../types';
+import { isTypeCompatible } from './utils/type-validation';
+import { getPossessiveReference } from './utils/possessive-keywords';
+import type { LanguageProfile } from '../generators/profiles/types';
+import { tryGetProfile } from '../registry';
 
 // =============================================================================
 // Pattern Matcher
 // =============================================================================
 
 export class PatternMatcher {
+  /** Current language profile for the pattern being matched */
+  private currentProfile: LanguageProfile | undefined;
+
   /**
    * Try to match a single pattern against the token stream.
    * Returns the match result or null if no match.
@@ -28,6 +35,9 @@ export class PatternMatcher {
   matchPattern(tokens: TokenStream, pattern: LanguagePattern): PatternMatchResult | null {
     const mark = tokens.mark();
     const captured = new Map<SemanticRole, SemanticValue>();
+
+    // Get language profile for possessive keyword lookup
+    this.currentProfile = tryGetProfile(pattern.language);
 
     // Reset match counters for this pattern
     this.stemMatchCount = 0;
@@ -179,59 +189,6 @@ export class PatternMatcher {
   }
 
   /**
-   * Possessive keywords that indicate property access on an implicit object.
-   * Maps possessive keyword to the reference it represents.
-   */
-  private static readonly POSSESSIVE_KEYWORDS: Record<string, string> = {
-    my: 'me',
-    your: 'you',
-    its: 'it',
-    // Korean possessive pronouns
-    내: 'me', // nae (my)
-    네: 'you', // ne (your)
-    그의: 'it', // geu-ui (its/his)
-    // Japanese possessive particles
-    私の: 'me', // watashi no (my)
-    あなたの: 'you', // anata no (your)
-    その: 'it', // sono (its)
-    // Turkish possessive pronouns
-    benim: 'me', // my
-    senin: 'you', // your
-    onun: 'it', // its
-    // Spanish
-    mi: 'me',
-    tu: 'you',
-    su: 'it',
-    // French
-    mon: 'me',
-    ma: 'me',
-    mes: 'me',
-    ton: 'you',
-    ta: 'you',
-    tes: 'you',
-    son: 'it',
-    sa: 'it',
-    ses: 'it',
-    // German
-    mein: 'me',
-    meine: 'me',
-    meinen: 'me',
-    dein: 'you',
-    deine: 'you',
-    deinen: 'you',
-    sein: 'it',
-    seine: 'it',
-    seinen: 'it',
-    // Portuguese
-    meu: 'me',
-    minha: 'me',
-    teu: 'you',
-    tua: 'you',
-    seu: 'it',
-    sua: 'it',
-  };
-
-  /**
    * Match a role pattern token (captures a semantic value).
    * Handles multi-token expressions like:
    * - 'my value' (possessive keyword + property)
@@ -287,7 +244,7 @@ export class PatternMatcher {
     if (possessiveSelectorValue) {
       if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
         // property-path is compatible with selector, reference, and expression
-        if (!this.isTypeCompatible(possessiveSelectorValue.type, patternToken.expectedTypes)) {
+        if (!isTypeCompatible(possessiveSelectorValue.type, patternToken.expectedTypes)) {
           return patternToken.optional || false;
         }
       }
@@ -315,7 +272,7 @@ export class PatternMatcher {
     const selectorPropertyValue = this.tryMatchSelectorPropertyExpression(tokens);
     if (selectorPropertyValue) {
       if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
-        if (!this.isTypeCompatible(selectorPropertyValue.type, patternToken.expectedTypes)) {
+        if (!isTypeCompatible(selectorPropertyValue.type, patternToken.expectedTypes)) {
           return patternToken.optional || false;
         }
       }
@@ -349,8 +306,11 @@ export class PatternMatcher {
     const token = tokens.peek();
     if (!token) return null;
 
+    // Use profile-based possessive keyword lookup
+    if (!this.currentProfile) return null;
+
     const tokenLower = (token.normalized || token.value).toLowerCase();
-    const baseRef = PatternMatcher.POSSESSIVE_KEYWORDS[tokenLower];
+    const baseRef = getPossessiveReference(this.currentProfile, tokenLower);
 
     if (!baseRef) return null;
 
@@ -381,26 +341,6 @@ export class PatternMatcher {
     // Not a valid property, revert
     tokens.reset(mark);
     return null;
-  }
-
-  /**
-   * Check if a value type is compatible with expected types.
-   * property-path is compatible with selector, reference, and expression.
-   * expression is compatible with any type.
-   */
-  private isTypeCompatible(actualType: string, expectedTypes: string[]): boolean {
-    // Direct match
-    if (expectedTypes.includes(actualType)) return true;
-
-    // expression is always compatible
-    if (expectedTypes.includes('expression')) return true;
-
-    // property-path is compatible with selector, reference, and expression
-    if (actualType === 'property-path') {
-      return expectedTypes.some(t => ['selector', 'reference', 'expression'].includes(t));
-    }
-
-    return false;
   }
 
   /**

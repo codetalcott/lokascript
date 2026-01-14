@@ -39,12 +39,12 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('API Surface', () => {
-    test('exposes correct version', async ({ page }) => {
+    test('exposes correct version @quick', async ({ page }) => {
       const version = await page.evaluate(() => (window as any).hyperfixi.version);
       expect(version).toBe('1.0.0-hybrid-complete');
     });
 
-    test('exposes expected commands list', async ({ page }) => {
+    test('exposes expected commands list @quick', async ({ page }) => {
       const commands = await page.evaluate(() => (window as any).hyperfixi.commands);
       expect(commands).toContain('toggle');
       expect(commands).toContain('add');
@@ -56,7 +56,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       expect(commands.length).toBeGreaterThanOrEqual(21);
     });
 
-    test('exposes block commands', async ({ page }) => {
+    test('exposes block commands @quick', async ({ page }) => {
       const blocks = await page.evaluate(() => (window as any).hyperfixi.blocks);
       expect(blocks).toContain('if');
       expect(blocks).toContain('repeat');
@@ -88,7 +88,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(btn).not.toHaveClass('active');
     });
 
-    test('add/remove class to target', async ({ page }) => {
+    test('add/remove class to target @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="add-btn" _="on click add .active to #target">Add</button>
@@ -117,7 +117,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#target')).toHaveText('Hello World');
     });
 
-    test('increment/decrement works', async ({ page }) => {
+    test('increment/decrement works @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="inc" _="on click set :count to 0 then increment :count then put :count into #result">Inc</button>
@@ -158,7 +158,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#out')).toHaveText('20');
     });
 
-    test('comparison operators', async ({ page }) => {
+    test('comparison operators @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -177,7 +177,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('greater');
     });
 
-    test('boolean logic (and/or)', async ({ page }) => {
+    test('boolean logic (and/or) @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -194,7 +194,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('in range');
     });
 
-    test('property access via possessive', async ({ page }) => {
+    test('property access via possessive @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <input id="inp" type="text" value="Hello">
@@ -208,7 +208,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('Hello');
     });
 
-    test('function calls on strings', async ({ page }) => {
+    test('function calls on strings @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -258,7 +258,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('5');
     });
 
-    test('for each loop', async ({ page }) => {
+    test('for each loop @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -295,7 +295,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('has active');
     });
 
-    test('unless block', async ({ page }) => {
+    test('unless block @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -312,7 +312,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('small');
     });
 
-    test('while loop', async ({ page }) => {
+    test('while loop @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click
@@ -334,7 +334,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Event Modifiers', () => {
-    test('.once only fires once', async ({ page }) => {
+    test('.once only fires once @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <button id="btn" _="on click.once set $count to ($count + 1) then put $count into #result">Click</button>
@@ -370,7 +370,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Positional Expressions', () => {
-    test('first/last of selector', async ({ page }) => {
+    test('first/last of selector @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `
           <ul>
@@ -394,7 +394,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('Init Event', () => {
-    test('init runs on load', async ({ page }) => {
+    test('init runs on load @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML = `<div id="target" _="init put 'Initialized' into me">Loading...</div>`;
         (window as any).hyperfixi.init();
@@ -423,7 +423,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
   });
 
   test.describe('i18n Aliases', () => {
-    test('built-in command aliases work', async ({ page }) => {
+    test('built-in command aliases work @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML =
           '<button id="btn" _="on click flip .active">Toggle via alias</button>';
@@ -488,7 +488,7 @@ test.describe('HyperFixi Hybrid Complete Bundle', () => {
       await expect(page.locator('#result')).toHaveText('6');
     });
 
-    test('handles chained commands with then', async ({ page }) => {
+    test('handles chained commands with then @quick', async ({ page }) => {
       await page.evaluate(() => {
         document.body.innerHTML =
           '<button id="btn" _="on click add .a then add .b then add .c">Chain</button>';

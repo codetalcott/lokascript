@@ -36,6 +36,27 @@ export const hindiProfile: LanguageProfile = {
     markerPosition: 'between',
     // In Hindi: मेरा value (mera value) = "my value"
     // Or with का: X का Y = "X's Y"
+    keywords: {
+      // "my" forms (masculine/feminine/oblique)
+      मेरा: 'me', // mera (m)
+      मेरी: 'me', // meri (f)
+      मेरे: 'me', // mere (pl/obl)
+      // "your" forms (informal)
+      तेरा: 'you', // tera (m)
+      तेरी: 'you', // teri (f)
+      तेरे: 'you', // tere (pl/obl)
+      // "your" forms (formal)
+      आपका: 'you', // aapka (m)
+      आपकी: 'you', // aapki (f)
+      आपके: 'you', // aapke (pl/obl)
+      // "its/his/her" forms
+      उसका: 'it', // uska (m)
+      उसकी: 'it', // uski (f)
+      उसके: 'it', // uske (pl/obl)
+      इसका: 'it', // iska (m) - proximal
+      इसकी: 'it', // iski (f)
+      इसके: 'it', // iske (pl/obl)
+    },
   },
   roleMarkers: {
     patient: { primary: 'को', position: 'after' },

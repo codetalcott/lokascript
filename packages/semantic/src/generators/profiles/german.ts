@@ -40,6 +40,17 @@ export const germanProfile: LanguageProfile = {
       it: 'sein', // "its"
       you: 'dein', // "your"
     },
+    keywords: {
+      mein: 'me',
+      meine: 'me',
+      meinen: 'me',
+      dein: 'you',
+      deine: 'you',
+      deinen: 'you',
+      sein: 'it',
+      seine: 'it',
+      seinen: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'auf', alternatives: ['zu', 'in'], position: 'before' },

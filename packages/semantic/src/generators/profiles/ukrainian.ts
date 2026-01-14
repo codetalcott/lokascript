@@ -40,6 +40,21 @@ export const ukrainianProfile: LanguageProfile = {
       it: 'його',
       you: 'твій',
     },
+    keywords: {
+      // "my" variants (masculine/feminine/neuter/plural)
+      мій: 'me',
+      моя: 'me',
+      моє: 'me',
+      мої: 'me',
+      // "your" variants
+      твій: 'you',
+      твоя: 'you',
+      твоє: 'you',
+      твої: 'you',
+      // "its/his/her" forms
+      його: 'it', // his/its
+      її: 'it', // her/its (feminine)
+    },
   },
   roleMarkers: {
     destination: { primary: 'в', alternatives: ['на', 'до'], position: 'before' },

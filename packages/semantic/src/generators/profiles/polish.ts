@@ -42,6 +42,19 @@ export const polishProfile: LanguageProfile = {
       it: 'jego', // "its"
       you: 'twój', // "your"
     },
+    keywords: {
+      // "my" variants (masculine/feminine/neuter)
+      mój: 'me',
+      moja: 'me',
+      moje: 'me',
+      // "your" variants
+      twój: 'you',
+      twoja: 'you',
+      twoje: 'you',
+      // "its/his/her" forms
+      jego: 'it', // his/its
+      jej: 'it', // her/its (feminine)
+    },
   },
   roleMarkers: {
     destination: { primary: 'do', alternatives: ['w', 'na'], position: 'before' },

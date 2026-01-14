@@ -36,6 +36,11 @@ export const japaneseProfile: LanguageProfile = {
     marker: 'の',
     markerPosition: 'between',
     // In Japanese: 自分の value (jibun no value) = "my value"
+    keywords: {
+      私の: 'me', // watashi no (my)
+      あなたの: 'you', // anata no (your)
+      その: 'it', // sono (its)
+    },
   },
   roleMarkers: {
     patient: { primary: 'を', position: 'after' },

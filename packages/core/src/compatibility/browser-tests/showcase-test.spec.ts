@@ -11,7 +11,7 @@ test.describe('Multilingual Showcase Page', () => {
     );
   });
 
-  test('loads with all 13 languages in dropdown', async ({ page }) => {
+  test('loads with all 13 languages in dropdown @quick', async ({ page }) => {
     // Check dropdown exists
     const dropdown = page.locator('#language');
     await expect(dropdown).toBeVisible();
@@ -62,7 +62,7 @@ test.describe('Multilingual Showcase Page', () => {
     await expect(toggleBtn).not.toHaveClass(/active/);
   });
 
-  test('input mirror demo works in English', async ({ page }) => {
+  test('input mirror demo works in English @quick', async ({ page }) => {
     const input = page.locator('#mirror-demo-mirror');
     const output = page.locator('#mirror-output');
 

@@ -37,6 +37,11 @@ export const englishProfile: LanguageProfile = {
       it: 'its',
       you: 'your',
     },
+    keywords: {
+      my: 'me',
+      your: 'you',
+      its: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'on', alternatives: ['to', 'from'], position: 'before' },

@@ -41,6 +41,23 @@ export const italianProfile: LanguageProfile = {
       it: 'suo', // "its"
       you: 'tuo', // "your"
     },
+    keywords: {
+      // "my" variants (masculine/feminine singular/plural)
+      mio: 'me',
+      mia: 'me',
+      miei: 'me',
+      mie: 'me',
+      // "your" variants
+      tuo: 'you',
+      tua: 'you',
+      tuoi: 'you',
+      tue: 'you',
+      // "its/his/her" variants
+      suo: 'it',
+      sua: 'it',
+      suoi: 'it',
+      sue: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'in', alternatives: ['su', 'a'], position: 'before' },

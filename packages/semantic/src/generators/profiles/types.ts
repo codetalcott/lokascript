@@ -53,6 +53,12 @@ export interface PossessiveConfig {
   readonly specialForms?: Record<string, string>;
   /** Whether to use possessive adjectives instead of marker (e.g., Spanish mi/tu/su) */
   readonly usePossessiveAdjectives?: boolean;
+  /**
+   * Possessive keywords mapped to their corresponding reference.
+   * Used by pattern-matcher to recognize possessive expressions.
+   * Example: { my: 'me', your: 'you', its: 'it' }
+   */
+  readonly keywords?: Record<string, string>;
 }
 
 /**

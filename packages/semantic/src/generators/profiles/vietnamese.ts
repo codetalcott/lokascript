@@ -39,6 +39,15 @@ export const vietnameseProfile: LanguageProfile = {
       it: 'của nó', // "its"
       you: 'của bạn', // "your"
     },
+    keywords: {
+      // Multi-word possessive phrases
+      // Note: These may require tokenizer support for multi-word recognition
+      'của tôi': 'me', // my
+      'của bạn': 'you', // your (informal)
+      'của anh': 'you', // your (male speaker, formal)
+      'của chị': 'you', // your (female speaker, formal)
+      'của nó': 'it', // its
+    },
   },
   roleMarkers: {
     destination: { primary: 'vào', alternatives: ['cho', 'đến'], position: 'before' },

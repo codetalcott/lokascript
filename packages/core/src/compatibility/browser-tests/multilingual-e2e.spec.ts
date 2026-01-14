@@ -26,7 +26,7 @@ test.describe('Multilingual Bundle E2E', () => {
     );
   });
 
-  test('bundles load correctly', async ({ page }) => {
+  test('bundles load correctly @quick', async ({ page }) => {
     const bundles = await page.evaluate(() => ({
       semantic: typeof (window as any).HyperFixiSemantic !== 'undefined',
       multilingual: typeof (window as any).hyperfixi !== 'undefined',
@@ -55,7 +55,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('English Execution', () => {
-    test('toggle command adds class', async ({ page }) => {
+    test('toggle command adds class @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('toggle .active', 'en', { me: el });
@@ -76,7 +76,7 @@ test.describe('Multilingual Bundle E2E', () => {
       expect(result).toBe(false);
     });
 
-    test('add command adds class', async ({ page }) => {
+    test('add command adds class @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('add .highlight', 'en', { me: el });
@@ -124,7 +124,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('Japanese Execution', () => {
-    test('toggle in Japanese (SOV order)', async ({ page }) => {
+    test('toggle in Japanese (SOV order) @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('.active を トグル', 'ja', { me: el });
@@ -161,7 +161,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('Korean Execution', () => {
-    test('toggle in Korean (SOV order)', async ({ page }) => {
+    test('toggle in Korean (SOV order) @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('.active 를 토글', 'ko', { me: el });
@@ -187,7 +187,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('Spanish Execution', () => {
-    test('toggle in Spanish', async ({ page }) => {
+    test('toggle in Spanish @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('alternar .active', 'es', { me: el });
@@ -213,7 +213,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('Arabic Execution', () => {
-    test('toggle in Arabic', async ({ page }) => {
+    test('toggle in Arabic @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         const el = document.getElementById('test-element')!;
         await (window as any).hyperfixi.execute('بدّل .active', 'ar', { me: el });
@@ -229,7 +229,7 @@ test.describe('Multilingual Bundle E2E', () => {
   // =============================================================================
 
   test.describe('Translation', () => {
-    test('translate from English to Japanese', async ({ page }) => {
+    test('translate from English to Japanese @quick', async ({ page }) => {
       const result = await page.evaluate(async () => {
         return await (window as any).hyperfixi.translate('toggle .active', 'en', 'ja');
       });

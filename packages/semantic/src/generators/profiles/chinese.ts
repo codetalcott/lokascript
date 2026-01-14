@@ -32,6 +32,14 @@ export const chineseProfile: LanguageProfile = {
     marker: '的', // Possessive particle (de)
     markerPosition: 'between',
     // Chinese: 我的 value (wǒ de value) = "my value"
+    keywords: {
+      // Compound possessive forms (pronoun + 的)
+      我的: 'me', // wǒ de (my)
+      你的: 'you', // nǐ de (your)
+      它的: 'it', // tā de (its)
+      他的: 'it', // tā de (his)
+      她的: 'it', // tā de (her)
+    },
   },
   roleMarkers: {
     destination: { primary: '在', alternatives: ['到', '于'], position: 'before' },

@@ -37,6 +37,19 @@ export const indonesianProfile: LanguageProfile = {
       it: 'nya', // Suffix: "valueny" = "its value"
       you: 'anda', // "value anda" = "your value"
     },
+    keywords: {
+      // "my" - formal and informal
+      saya: 'me', // formal
+      aku: 'me', // informal
+      ku: 'me', // clitic
+      // "your" - formal and informal
+      anda: 'you', // formal
+      kamu: 'you', // informal
+      mu: 'you', // clitic
+      // "its/his/her"
+      nya: 'it', // third person clitic (suffix form: -nya)
+      dia: 'it', // third person pronoun
+    },
   },
   roleMarkers: {
     destination: { primary: 'pada', alternatives: ['ke', 'di'], position: 'before' },

@@ -33,6 +33,16 @@ export const bengaliProfile: LanguageProfile = {
   possessive: {
     marker: 'র',
     markerPosition: 'between',
+    keywords: {
+      // "my" - আমার (amar)
+      আমার: 'me',
+      // "your" - তোমার (tomar, informal), আপনার (apnar, formal)
+      তোমার: 'you',
+      আপনার: 'you',
+      // "its/his/her" - তার (tar), এর (er)
+      তার: 'it',
+      এর: 'it',
+    },
   },
   roleMarkers: {
     patient: { primary: 'কে', position: 'after' },

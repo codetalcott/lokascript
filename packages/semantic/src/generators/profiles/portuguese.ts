@@ -37,6 +37,14 @@ export const portugueseProfile: LanguageProfile = {
       it: 'seu', // "its"
       you: 'teu', // "your" (or "seu" in formal)
     },
+    keywords: {
+      meu: 'me',
+      minha: 'me',
+      teu: 'you',
+      tua: 'you',
+      seu: 'it',
+      sua: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'em', alternatives: ['para', 'a'], position: 'before' },

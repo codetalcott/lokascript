@@ -28,6 +28,24 @@ export const malayProfile: LanguageProfile = {
     target: 'sasaran',
     body: 'badan',
   },
+  possessive: {
+    marker: '', // Malay often uses suffix or juxtaposition
+    markerPosition: 'after-object',
+    keywords: {
+      // Full pronoun forms (also serve as possessives)
+      saya: 'me', // my (formal)
+      aku: 'me', // my (informal)
+      awak: 'you', // your (informal, Malaysian)
+      kamu: 'you', // your (informal)
+      anda: 'you', // your (formal)
+      dia: 'it', // his/her/its
+      ia: 'it', // its
+      // Suffix forms (attached to nouns)
+      '-ku': 'me', // my (suffix)
+      '-mu': 'you', // your (suffix)
+      '-nya': 'it', // his/her/its (suffix)
+    },
+  },
   roleMarkers: {
     destination: { primary: 'ke', alternatives: ['pada'], position: 'before' },
     source: { primary: 'dari', position: 'before' },

@@ -32,6 +32,18 @@ export const thaiProfile: LanguageProfile = {
   possessive: {
     marker: 'ของ',
     markerPosition: 'between',
+    keywords: {
+      // Thai uses ของ (khong) + pronoun, but also full possessive phrases
+      // "my" - ของฉัน (khong chan), ของผม (khong phom, male speaker)
+      ของฉัน: 'me',
+      ของผม: 'me',
+      // "your" - ของคุณ (khong khun)
+      ของคุณ: 'you',
+      // "its/his/her" - ของมัน (khong man)
+      ของมัน: 'it',
+      ของเขา: 'it', // his
+      ของเธอ: 'it', // her
+    },
   },
   roleMarkers: {
     patient: { primary: '', position: 'before' }, // Thai is isolating - no case markers

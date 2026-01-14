@@ -32,6 +32,16 @@ export const quechuaProfile: LanguageProfile = {
     marker: '-pa', // Genitive suffix
     markerPosition: 'after-object',
     // Quechua: ñuqapa value = "my value"
+    keywords: {
+      // Genitive forms (pronoun + -pa suffix)
+      // "my" - ñuqapa, ñuqaypa
+      ñuqapa: 'me',
+      ñuqaypa: 'me',
+      // "your" - qampa
+      qampa: 'you',
+      // "its/his/her" - paypa
+      paypa: 'it',
+    },
   },
   roleMarkers: {
     patient: { primary: '-ta', position: 'after' },

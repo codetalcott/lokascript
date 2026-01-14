@@ -28,6 +28,22 @@ export const tagalogProfile: LanguageProfile = {
     target: 'target', // "target"
     body: 'body',
   },
+  possessive: {
+    marker: 'ng', // Linker used in possessive constructions
+    markerPosition: 'between',
+    keywords: {
+      // Tagalog uses postposed possessive pronouns
+      // "my" - ko (clitic), akin (emphatic)
+      ko: 'me',
+      akin: 'me',
+      // "your" - mo (clitic), iyo (emphatic)
+      mo: 'you',
+      iyo: 'you',
+      // "its/his/her" - niya (clitic), kaniya (emphatic)
+      niya: 'it',
+      kaniya: 'it',
+    },
+  },
   roleMarkers: {
     destination: { primary: 'sa', position: 'before' }, // "to/into"
     source: { primary: 'mula_sa', position: 'before' }, // "from"

@@ -38,6 +38,11 @@ export const turkishProfile: LanguageProfile = {
       it: 'onun', // "its"
       you: 'senin', // "your"
     },
+    keywords: {
+      benim: 'me', // my
+      senin: 'you', // your
+      onun: 'it', // its
+    },
   },
   roleMarkers: {
     patient: { primary: 'i', alternatives: ['ı', 'u', 'ü'], position: 'after' }, // Accusative

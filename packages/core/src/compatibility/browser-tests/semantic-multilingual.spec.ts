@@ -19,14 +19,14 @@ test.describe('Semantic Multilingual Parser', () => {
     });
   });
 
-  test('bundle loads and exposes HyperFixiSemantic global', async ({ page }) => {
+  test('bundle loads and exposes HyperFixiSemantic global @quick', async ({ page }) => {
     const hasGlobal = await page.evaluate(() => {
       return typeof (window as any).HyperFixiSemantic !== 'undefined';
     });
     expect(hasGlobal).toBe(true);
   });
 
-  test('exposes parse function', async ({ page }) => {
+  test('exposes parse function @quick', async ({ page }) => {
     const hasParseFunction = await page.evaluate(() => {
       return typeof (window as any).HyperFixiSemantic.parse === 'function';
     });
@@ -47,7 +47,7 @@ test.describe('Semantic Multilingual Parser', () => {
     expect(hasAnalyzerFunction).toBe(true);
   });
 
-  test('reports supported languages', async ({ page }) => {
+  test('reports supported languages @quick', async ({ page }) => {
     const languages = await page.evaluate(() => {
       return (window as any).HyperFixiSemantic.getSupportedLanguages();
     });
@@ -69,7 +69,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('English Parsing', () => {
-    test('parses "toggle .active on #button"', async ({ page }) => {
+    test('parses "toggle .active on #button" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('toggle .active on #button', 'en');
@@ -87,7 +87,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Japanese Parsing (SOV)', () => {
-    test('parses ".active を 切り替え"', async ({ page }) => {
+    test('parses ".active を 切り替え" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('.active を 切り替え', 'ja');
@@ -105,7 +105,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Arabic Parsing (VSO)', () => {
-    test('parses "بدّل .active"', async ({ page }) => {
+    test('parses "بدّل .active" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('بدّل .active', 'ar');
@@ -123,7 +123,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Spanish Parsing (SVO)', () => {
-    test('parses "alternar .active"', async ({ page }) => {
+    test('parses "alternar .active" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('alternar .active', 'es');
@@ -147,7 +147,7 @@ test.describe('Semantic Multilingual Parser', () => {
   test.describe('Korean Parsing (SOV)', () => {
     // Note: Korean uses SOV word order with particles
     // ".active 를 토글" = "toggle .active" (Object-marker Verb)
-    test('parses ".active 를 토글" (SOV with object marker)', async ({ page }) => {
+    test('parses ".active 를 토글" (SOV with object marker) @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('.active 를 토글', 'ko');
@@ -165,7 +165,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Turkish Parsing (SOV)', () => {
-    test('parses "değiştir .active"', async ({ page }) => {
+    test('parses "değiştir .active" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('değiştir .active', 'tr');
@@ -183,7 +183,7 @@ test.describe('Semantic Multilingual Parser', () => {
   });
 
   test.describe('Chinese Parsing (SVO)', () => {
-    test('parses "切换 .active"', async ({ page }) => {
+    test('parses "切换 .active" @quick', async ({ page }) => {
       const result = await page.evaluate(() => {
         const S = (window as any).HyperFixiSemantic;
         return S.canParse('切换 .active', 'zh');

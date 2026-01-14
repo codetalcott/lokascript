@@ -37,6 +37,11 @@ export const koreanProfile: LanguageProfile = {
       it: '그것의', // "its"
       you: '네', // Contracted form of 너의 (your)
     },
+    keywords: {
+      내: 'me', // nae (my)
+      네: 'you', // ne (your)
+      그의: 'it', // geu-ui (its/his)
+    },
   },
   roleMarkers: {
     patient: { primary: '을', alternatives: ['를'], position: 'after' },

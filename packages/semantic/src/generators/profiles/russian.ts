@@ -40,6 +40,21 @@ export const russianProfile: LanguageProfile = {
       it: 'его',
       you: 'твой',
     },
+    keywords: {
+      // "my" variants (masculine/feminine/neuter/plural)
+      мой: 'me',
+      моя: 'me',
+      моё: 'me',
+      мои: 'me',
+      // "your" variants
+      твой: 'you',
+      твоя: 'you',
+      твоё: 'you',
+      твои: 'you',
+      // "its/his/her" forms
+      его: 'it', // his/its
+      её: 'it', // her/its (feminine)
+    },
   },
   roleMarkers: {
     destination: { primary: 'в', alternatives: ['на', 'к'], position: 'before' },

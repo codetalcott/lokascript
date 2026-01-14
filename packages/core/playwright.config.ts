@@ -25,10 +25,16 @@ export default defineConfig({
   // Tiered test projects for different scenarios
   projects: [
     {
-      // Fast critical path tests (~10s) - run on every change
+      // Fast critical path tests (~3s) - run on every change
       name: 'smoke',
       grep: /@smoke/,
       timeout: 10000,
+    },
+    {
+      // Quick validation tests (~10-15s) - broader coverage than smoke
+      name: 'quick',
+      grep: /@quick|@smoke/,
+      timeout: 15000,
     },
     {
       // Integration tests (~60s) - run before commits

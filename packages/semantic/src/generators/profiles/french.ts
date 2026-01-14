@@ -39,6 +39,17 @@ export const frenchProfile: LanguageProfile = {
       it: 'sa', // "its" (feminine; "son" for masculine)
       you: 'ta', // "your" (feminine; "ton" for masculine)
     },
+    keywords: {
+      mon: 'me',
+      ma: 'me',
+      mes: 'me',
+      ton: 'you',
+      ta: 'you',
+      tes: 'you',
+      son: 'it',
+      sa: 'it',
+      ses: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'sur', alternatives: ['à', 'dans'], position: 'before' },

@@ -37,6 +37,23 @@ export const swahiliProfile: LanguageProfile = {
       it: 'yake', // "its"
       you: 'yako', // "your"
     },
+    keywords: {
+      // "my" variants (noun class dependent)
+      wangu: 'me', // M-Wa class (people)
+      yangu: 'me', // N class (general)
+      langu: 'me', // Ji-Ma class
+      changu: 'me', // Ki-Vi class
+      // "your" variants
+      wako: 'you',
+      yako: 'you',
+      lako: 'you',
+      chako: 'you',
+      // "its/his/her" variants
+      wake: 'it',
+      yake: 'it',
+      lake: 'it',
+      chake: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'kwenye', alternatives: ['kwa'], position: 'before' },

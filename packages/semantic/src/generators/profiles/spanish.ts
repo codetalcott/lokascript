@@ -40,6 +40,11 @@ export const spanishProfile: LanguageProfile = {
       it: 'su', // "its"
       you: 'tu', // "your"
     },
+    keywords: {
+      mi: 'me',
+      tu: 'you',
+      su: 'it',
+    },
   },
   roleMarkers: {
     destination: { primary: 'en', alternatives: ['sobre', 'a'], position: 'before' },
