@@ -20,8 +20,10 @@ import {
   isDigit,
   isUrlStart,
   type CreateTokenOptions,
+  type KeywordEntry,
 } from './base';
 import { SpanishMorphologicalNormalizer } from './morphology/spanish-normalizer';
+import { spanishProfile } from '../generators/profiles/spanish';
 
 // =============================================================================
 // Spanish Character Classification
@@ -70,151 +72,105 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// Spanish Keywords
+// Spanish Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Spanish command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Multi-word phrases
+ * - Additional synonyms
+ * - Accent variations
  */
-const SPANISH_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['alternar', 'toggle'],
-  ['cambiar', 'toggle'],
-  ['toggle', 'toggle'],
-  ['conmutar', 'toggle'],
-  ['añadir', 'add'],
-  ['agregar', 'add'],
-  ['quitar', 'remove'],
-  ['eliminar', 'remove'],
-  ['borrar', 'remove'],
-  ['remover', 'remove'],
-  ['sacar', 'remove'],
-  // Commands - Content operations
-  ['poner', 'put'],
-  ['pon', 'put'],
-  ['colocar', 'put'],
-  ['anteponer', 'prepend'],
-  ['tomar', 'take'],
-  ['hacer', 'make'],
-  ['crear', 'make'],
-  ['clonar', 'clone'],
-  ['copiar', 'clone'],
-  // Commands - Variable operations
-  ['establecer', 'set'],
-  ['fijar', 'set'],
-  ['obtener', 'get'],
-  ['incrementar', 'increment'],
-  ['aumentar', 'increment'],
-  ['decrementar', 'decrement'],
-  ['disminuir', 'decrement'],
-  ['registrar', 'log'],
-  ['imprimir', 'log'],
-  // Commands - Visibility
-  ['mostrar', 'show'],
-  ['enseñar', 'show'],
-  ['ocultar', 'hide'],
-  ['esconder', 'hide'],
-  ['transición', 'transition'],
-  ['animar', 'transition'],
-  // Commands - Events
-  ['en', 'on'],
-  ['cuando', 'on'],
-  ['al', 'on'],
-  ['disparar', 'trigger'],
-  ['activar', 'trigger'],
-  ['enviar', 'send'],
-  // Commands - DOM focus
-  ['enfocar', 'focus'],
-  ['desenfocar', 'blur'],
-  // Commands - Navigation
-  ['ir', 'go'],
-  ['navegar', 'go'],
-  // Commands - Async
-  ['esperar', 'wait'],
-  ['buscar', 'fetch'],
-  ['estabilizar', 'settle'],
-  // Commands - Control flow
-  ['si', 'if'],
-  ['sino', 'else'],
-  ['repetir', 'repeat'],
-  ['para', 'for'],
-  ['mientras', 'while'],
-  ['continuar', 'continue'],
-  ['detener', 'halt'],
-  ['parar', 'halt'],
-  ['lanzar', 'throw'],
-  ['arrojar', 'throw'],
-  ['llamar', 'call'],
-  ['devolver', 'return'],
-  ['retornar', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['asíncrono', 'async'],
-  ['asincrono', 'async'],
-  ['decir', 'tell'],
-  ['predeterminar', 'default'],
-  ['iniciar', 'init'],
-  ['inicializar', 'init'],
-  ['comportamiento', 'behavior'],
-  ['instalar', 'install'],
-  ['medir', 'measure'],
-  ['hasta', 'until'],
-  ['evento', 'event'],
-  // Modifiers
-  ['dentro de', 'into'],
-  ['antes', 'before'],
-  ['después', 'after'],
-  ['despues', 'after'],
-  // Control flow helpers
-  ['entonces', 'then'],
-  ['de lo contrario', 'else'],
-  ['fin', 'end'],
-  ['hasta que', 'until'],
-  // Events (for event name recognition)
-  ['clic', 'click'],
-  ['click', 'click'],
-  ['hacer clic', 'click'], // Multi-word: "to make click" → click
-  ['entrada', 'input'],
-  ['cambio', 'change'],
-  ['envío', 'submit'],
-  ['envio', 'submit'],
-  ['tecla abajo', 'keydown'],
-  ['tecla arriba', 'keyup'],
-  ['ratón encima', 'mouseover'],
-  ['ratón fuera', 'mouseout'],
-  ['enfoque', 'focus'],
-  ['desenfoque', 'blur'],
-  ['carga', 'load'],
-  ['desplazamiento', 'scroll'],
-  // References
-  ['yo', 'me'],
-  ['mí', 'me'],
-  ['mi', 'me'],
-  ['ello', 'it'],
-  ['resultado', 'result'],
-  ['evento', 'event'],
-  ['objetivo', 'target'],
-  ['destino', 'target'],
+const SPANISH_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'verdadero', normalized: 'true' },
+  { native: 'falso', normalized: 'false' },
+  { native: 'nulo', normalized: 'null' },
+  { native: 'indefinido', normalized: 'undefined' },
+
   // Positional
-  ['primero', 'first'],
-  ['primera', 'first'],
-  ['último', 'last'],
-  ['ultima', 'last'],
-  ['siguiente', 'next'],
-  ['anterior', 'previous'],
-  // Boolean
-  ['verdadero', 'true'],
-  ['falso', 'false'],
+  { native: 'primero', normalized: 'first' },
+  { native: 'primera', normalized: 'first' },
+  { native: 'último', normalized: 'last' },
+  { native: 'ultima', normalized: 'last' },
+  { native: 'siguiente', normalized: 'next' },
+  { native: 'anterior', normalized: 'previous' },
+  { native: 'cercano', normalized: 'closest' },
+  { native: 'padre', normalized: 'parent' },
+
+  // Events
+  { native: 'clic', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'hacer clic', normalized: 'click' },
+  { native: 'entrada', normalized: 'input' },
+  { native: 'cambio', normalized: 'change' },
+  { native: 'envío', normalized: 'submit' },
+  { native: 'envio', normalized: 'submit' },
+  { native: 'tecla abajo', normalized: 'keydown' },
+  { native: 'tecla arriba', normalized: 'keyup' },
+  { native: 'ratón encima', normalized: 'mouseover' },
+  { native: 'raton encima', normalized: 'mouseover' },
+  { native: 'ratón fuera', normalized: 'mouseout' },
+  { native: 'raton fuera', normalized: 'mouseout' },
+  { native: 'enfoque', normalized: 'focus' },
+  { native: 'desenfoque', normalized: 'blur' },
+  { native: 'carga', normalized: 'load' },
+  { native: 'desplazamiento', normalized: 'scroll' },
+
+  // References
+  { native: 'yo', normalized: 'me' },
+  { native: 'mí', normalized: 'me' },
+  { native: 'mi', normalized: 'me' },
+  { native: 'ello', normalized: 'it' },
+  { native: 'resultado', normalized: 'result' },
+  { native: 'objetivo', normalized: 'target' },
+  { native: 'destino', normalized: 'target' },
+
   // Time units
-  ['segundo', 's'],
-  ['segundos', 's'],
-  ['milisegundo', 'ms'],
-  ['milisegundos', 'ms'],
-  ['minuto', 'm'],
-  ['minutos', 'm'],
-  ['hora', 'h'],
-  ['horas', 'h'],
-]);
+  { native: 'segundo', normalized: 's' },
+  { native: 'segundos', normalized: 's' },
+  { native: 'milisegundo', normalized: 'ms' },
+  { native: 'milisegundos', normalized: 'ms' },
+  { native: 'minuto', normalized: 'm' },
+  { native: 'minutos', normalized: 'm' },
+  { native: 'hora', normalized: 'h' },
+  { native: 'horas', normalized: 'h' },
+
+  // Multi-word phrases
+  { native: 'de lo contrario', normalized: 'else' },
+  { native: 'hasta que', normalized: 'until' },
+  { native: 'antes de', normalized: 'before' },
+  { native: 'después de', normalized: 'after' },
+  { native: 'despues de', normalized: 'after' },
+  { native: 'dentro de', normalized: 'into' },
+  { native: 'fuera de', normalized: 'out' },
+
+  // Accent variations not in profile
+  { native: 'asincrono', normalized: 'async' },
+  { native: 'despues', normalized: 'after' },
+
+  // Command overrides (ensure correct mapping when profile has multiple meanings)
+  { native: 'añadir', normalized: 'add' }, // Profile may have this as 'append'
+
+  // Synonyms not in profile
+  { native: 'toggle', normalized: 'toggle' },
+  { native: 'borrar', normalized: 'remove' },
+  { native: 'pon', normalized: 'put' },
+  { native: 'crear', normalized: 'make' },
+
+  // Logical/conditional
+  { native: 'y', normalized: 'and' },
+  { native: 'o', normalized: 'or' },
+  { native: 'no', normalized: 'not' },
+  { native: 'es', normalized: 'is' },
+  { native: 'existe', normalized: 'exists' },
+  { native: 'vacío', normalized: 'empty' },
+  { native: 'vacio', normalized: 'empty' },
+];
 
 // =============================================================================
 // Spanish Tokenizer Implementation
@@ -226,6 +182,12 @@ export class SpanishTokenizer extends BaseTokenizer {
 
   /** Morphological normalizer for Spanish verb conjugations */
   private morphNormalizer = new SpanishMorphologicalNormalizer();
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(spanishProfile, SPANISH_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -326,7 +288,10 @@ export class SpanishTokenizer extends BaseTokenizer {
     const lower = token.toLowerCase();
 
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (SPANISH_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords (case-insensitive)
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -337,28 +302,18 @@ export class SpanishTokenizer extends BaseTokenizer {
 
   /**
    * Try to match multi-word phrases that function as single units.
+   * Multi-word phrases are included in profileKeywords and sorted longest-first,
+   * so they'll be matched before their constituent words.
    */
   private tryMultiWordPhrase(input: string, pos: number): LanguageToken | null {
-    const multiWordPhrases = [
-      'de lo contrario',
-      'hasta que',
-      'antes de',
-      'después de',
-      'despues de',
-      'dentro de',
-      'fuera de',
-      'tecla abajo',
-      'tecla arriba',
-      'ratón encima',
-      'raton encima',
-      'ratón fuera',
-      'raton fuera',
-      'hacer clic', // "to make click" → click event
-    ];
+    // Check against multi-word entries in profileKeywords (sorted longest-first)
+    for (const entry of this.profileKeywords) {
+      // Only check multi-word phrases (contain space)
+      if (!entry.native.includes(' ')) continue;
 
-    for (const phrase of multiWordPhrases) {
+      const phrase = entry.native;
       const candidate = input.slice(pos, pos + phrase.length).toLowerCase();
-      if (candidate === phrase) {
+      if (candidate === phrase.toLowerCase()) {
         // Check word boundary
         const nextPos = pos + phrase.length;
         if (
@@ -366,12 +321,11 @@ export class SpanishTokenizer extends BaseTokenizer {
           isWhitespace(input[nextPos]) ||
           !isSpanishLetter(input[nextPos])
         ) {
-          const normalized = SPANISH_KEYWORDS.get(phrase);
           return createToken(
             input.slice(pos, pos + phrase.length),
-            normalized ? 'keyword' : 'particle',
+            'keyword',
             createPosition(pos, nextPos),
-            normalized
+            entry.normalized
           );
         }
       }
@@ -399,16 +353,16 @@ export class SpanishTokenizer extends BaseTokenizer {
 
     const lower = word.toLowerCase();
 
-    // Check if this is a known keyword (exact match)
-    const normalized = SPANISH_KEYWORDS.get(lower);
-
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
-    }
-
-    // Check if it's a preposition
+    // Check if it's a preposition first
     if (PREPOSITIONS.has(lower)) {
       return createToken(word, 'particle', createPosition(startPos, pos));
+    }
+
+    // Check if this is a known keyword (exact match via profile keywords)
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     // Try morphological normalization for conjugated/reflexive forms
@@ -416,16 +370,15 @@ export class SpanishTokenizer extends BaseTokenizer {
 
     if (morphResult.stem !== lower && morphResult.confidence >= 0.7) {
       // Check if the stem (infinitive) is a known keyword
-      const stemNormalized = SPANISH_KEYWORDS.get(morphResult.stem);
-
-      if (stemNormalized) {
-        const tokenOptions: CreateTokenOptions = {
-          normalized: stemNormalized,
-          stem: morphResult.stem,
-          stemConfidence: morphResult.confidence,
-        };
-
-        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+      for (const entry of this.profileKeywords) {
+        if (morphResult.stem === entry.native.toLowerCase()) {
+          const tokenOptions: CreateTokenOptions = {
+            normalized: entry.normalized,
+            stem: morphResult.stem,
+            stemConfidence: morphResult.confidence,
+          };
+          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+        }
       }
     }
 

@@ -22,8 +22,10 @@ import {
   isDigit,
   isUrlStart,
   type CreateTokenOptions,
+  type KeywordEntry,
 } from './base';
 import { TurkishMorphologicalNormalizer } from './morphology/turkish-normalizer';
+import { turkishProfile } from '../generators/profiles/turkish';
 
 // =============================================================================
 // Turkish Character Classification
@@ -105,213 +107,141 @@ const CASE_SUFFIXES = new Set([
 ]);
 
 // =============================================================================
-// Turkish Keywords
+// Turkish Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Turkish command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Diacritic-free variants
+ * - Additional synonyms
  */
-const TURKISH_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['değiştir', 'toggle'],
-  ['değistir', 'toggle'], // without diacritics
-  ['ekle', 'add'],
-  ['kaldır', 'remove'],
-  ['kaldir', 'remove'], // without diacritics
-  ['sil', 'remove'],
-  // Commands - Content operations
-  ['koy', 'put'],
-  ['yerleştir', 'put'],
-  ['yerlestir', 'put'], // without diacritics
-  ['sonunaekle', 'append'],
-  ['sona_ekle', 'append'],
-  ['basaekle', 'prepend'],
-  ['başa_ekle', 'prepend'],
-  ['basa_ekle', 'prepend'], // without diacritics
-  ['al', 'get'], // common colloquial form for "get" (test case)
-  ['yap', 'set'], // common colloquial form for "set" (test case)
-  ['oluştur', 'make'],
-  ['olustur', 'make'], // without diacritics
-  ['kopyala', 'clone'],
-  ['klonla', 'clone'],
-  // Commands - Variable operations
-  ['ayarla', 'set'],
-  ['belirle', 'set'],
-  ['getir', 'get'],
-  ['elde_et', 'get'],
-  ['artır', 'increment'],
-  ['artir', 'increment'], // without diacritics
-  ['azalt', 'decrement'],
-  ['kaydet', 'log'],
-  ['yazdır', 'log'],
-  ['yazdir', 'log'], // without diacritics
-  // Commands - Visibility
-  ['göster', 'show'],
-  ['goster', 'show'], // without diacritics
-  ['gizle', 'hide'],
-  ['sakla', 'hide'],
-  ['geçiş', 'transition'],
-  ['gecis', 'transition'], // without diacritics
-  ['animasyon', 'transition'],
-  // Commands - Events
-  ['üzerinde', 'on'],
-  ['uzerinde', 'on'], // without diacritics
-  ['olduğunda', 'on'],
-  ['oldugunda', 'on'], // without diacritics
-  ['tetikle', 'trigger'],
-  ['ateşle', 'trigger'],
-  ['atesle', 'trigger'], // without diacritics
-  ['gönder', 'send'],
-  ['gonder', 'send'], // without diacritics
-  // Commands - DOM focus
-  ['odakla', 'focus'],
-  ['odaklan', 'focus'],
-  ['bulanıklaştır', 'blur'],
-  ['bulaniklastir', 'blur'], // without diacritics
-  ['odak_kaldır', 'blur'],
-  ['odak_kaldir', 'blur'], // without diacritics
-  // Commands - Navigation
-  ['git', 'go'],
-  ['yönlendir', 'go'],
-  ['yonlendir', 'go'], // without diacritics
-  // Commands - Async
-  ['bekle', 'wait'],
-  ['getir', 'fetch'],
-  ['çek', 'fetch'],
-  ['cek', 'fetch'], // without diacritics
-  ['yerleş', 'settle'],
-  ['yerles', 'settle'], // without diacritics
-  ['istikrar', 'settle'],
-  ['sabitlen', 'settle'], // profile primary
-  // Commands - Control flow
-  ['eğer', 'if'],
-  ['eger', 'if'], // without diacritics
-  ['yoksa', 'else'],
-  ['değilse', 'else'],
-  ['degilse', 'else'], // without diacritics
-  ['tekrarla', 'repeat'],
-  ['herbir', 'for'],
-  ['her', 'for'],
-  ['iken', 'while'],
-  ['durumunda', 'when'], // conditional "when"
-  ['nerede', 'where'], // element filter "where"
-  ['devam', 'continue'],
-  ['devam_et', 'continue'],
-  ['dur', 'halt'],
-  ['durdur', 'halt'],
-  ['fırlat', 'throw'],
-  ['firlat', 'throw'], // without diacritics
-  ['at', 'throw'],
-  ['çağır', 'call'],
-  ['cagir', 'call'], // without diacritics
-  ['dön', 'return'],
-  ['don', 'return'], // without diacritics
-  ['döndür', 'return'],
-  ['dondur', 'return'], // without diacritics
-  // Commands - Advanced
-  ['js', 'js'],
-  ['javascript', 'js'],
-  ['asenkron', 'async'],
-  ['eşzamansız', 'async'],
-  ['eszamansiz', 'async'], // without diacritics
-  ['söyle', 'tell'],
-  ['soyle', 'tell'], // without diacritics
-  ['varsayılan', 'default'],
-  ['varsayilan', 'default'], // without diacritics
-  ['başlat', 'init'],
-  ['baslat', 'init'], // without diacritics
-  ['başla', 'init'],
-  ['basla', 'init'], // without diacritics
-  ['davranış', 'behavior'],
-  ['davranis', 'behavior'], // without diacritics
-  ['yükle', 'install'],
-  ['yukle', 'install'], // without diacritics
-  ['ölç', 'measure'],
-  ['olc', 'measure'], // without diacritics
-  ['kadar', 'until'],
-  ['olay', 'event'],
-  ['-den', 'from'],
-  ['-dan', 'from'],
-  // Modifiers
-  ['içine', 'into'],
-  ['icine', 'into'], // without diacritics
-  ['önce', 'before'],
-  ['once', 'before'], // without diacritics
-  ['sonra', 'after'],
-  // Control flow helpers
-  ['sonra', 'then'],
-  ['o_zaman', 'then'],
-  ['son', 'end'],
-  ['bitir', 'end'],
-  ['kadar', 'until'],
-
-  // Events (for event name recognition)
-  ['tıklama', 'click'],
-  ['tiklama', 'click'], // without diacritics
-  ['tık', 'click'],
-  ['tik', 'click'], // without diacritics
-  ['giriş', 'input'],
-  ['giris', 'input'], // without diacritics
-  ['değişim', 'change'],
-  ['degisim', 'change'], // without diacritics
-  ['gönder', 'submit'],
-  ['gonder', 'submit'], // without diacritics
-  ['odak', 'focus'],
-  ['bulanık', 'blur'],
-  ['bulanik', 'blur'], // without diacritics
-  ['fare üzerinde', 'mouseover'],
-  ['fare uzerinde', 'mouseover'], // without diacritics
-  ['fare dışında', 'mouseout'],
-  ['fare disinda', 'mouseout'], // without diacritics
-  ['yükle', 'load'],
-  ['yukle', 'load'], // without diacritics
-  ['kaydır', 'scroll'],
-  ['kaydir', 'scroll'], // without diacritics
-  ['tuş_bas', 'keydown'],
-  ['tus_bas', 'keydown'], // without diacritics
-  ['tuş_bırak', 'keyup'],
-  ['tus_birak', 'keyup'], // without diacritics
-
-  // References
-  ['ben', 'me'],
-  ['benim', 'my'],
-  ['o', 'it'],
-  ['onun', 'its'],
-  ['sonuç', 'result'],
-  ['sonuc', 'result'], // without diacritics
-  ['olay', 'event'],
-  ['hedef', 'target'],
+const TURKISH_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'doğru', normalized: 'true' },
+  { native: 'dogru', normalized: 'true' },
+  { native: 'yanlış', normalized: 'false' },
+  { native: 'yanlis', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'boş', normalized: 'null' },
+  { native: 'bos', normalized: 'null' },
+  { native: 'tanımsız', normalized: 'undefined' },
+  { native: 'tanimsiz', normalized: 'undefined' },
 
   // Positional
-  ['ilk', 'first'],
-  ['son', 'last'],
-  ['sonraki', 'next'],
-  ['önceki', 'previous'],
-  ['onceki', 'previous'], // without diacritics
+  { native: 'ilk', normalized: 'first' },
+  { native: 'son', normalized: 'last' },
+  { native: 'sonraki', normalized: 'next' },
+  { native: 'önceki', normalized: 'previous' },
+  { native: 'onceki', normalized: 'previous' },
+  { native: 'en_yakın', normalized: 'closest' },
+  { native: 'en_yakin', normalized: 'closest' },
+  { native: 'ebeveyn', normalized: 'parent' },
+
+  // Events
+  { native: 'tıklama', normalized: 'click' },
+  { native: 'tiklama', normalized: 'click' },
+  { native: 'tık', normalized: 'click' },
+  { native: 'tik', normalized: 'click' },
+  { native: 'giriş', normalized: 'input' },
+  { native: 'giris', normalized: 'input' },
+  { native: 'değişim', normalized: 'change' },
+  { native: 'degisim', normalized: 'change' },
+  { native: 'odak', normalized: 'focus' },
+  { native: 'bulanık', normalized: 'blur' },
+  { native: 'bulanik', normalized: 'blur' },
+  { native: 'fare üzerinde', normalized: 'mouseover' },
+  { native: 'fare uzerinde', normalized: 'mouseover' },
+  { native: 'fare dışında', normalized: 'mouseout' },
+  { native: 'fare disinda', normalized: 'mouseout' },
+  { native: 'kaydır', normalized: 'scroll' },
+  { native: 'kaydir', normalized: 'scroll' },
+  { native: 'tuş_bas', normalized: 'keydown' },
+  { native: 'tus_bas', normalized: 'keydown' },
+  { native: 'tuş_bırak', normalized: 'keyup' },
+  { native: 'tus_birak', normalized: 'keyup' },
+
+  // References
+  { native: 'ben', normalized: 'me' },
+  { native: 'benim', normalized: 'my' },
+  { native: 'o', normalized: 'it' },
+  { native: 'onun', normalized: 'its' },
+  { native: 'sonuç', normalized: 'result' },
+  { native: 'sonuc', normalized: 'result' },
+  { native: 'olay', normalized: 'event' },
+  { native: 'hedef', normalized: 'target' },
 
   // Time units
-  ['saniye', 's'],
-  ['milisaniye', 'ms'],
-  ['dakika', 'm'],
-  ['saat', 'h'],
-
-  // Boolean
-  ['doğru', 'true'],
-  ['dogru', 'true'], // without diacritics
-  ['yanlış', 'false'],
-  ['yanlis', 'false'], // without diacritics
+  { native: 'saniye', normalized: 's' },
+  { native: 'milisaniye', normalized: 'ms' },
+  { native: 'dakika', normalized: 'm' },
+  { native: 'saat', normalized: 'h' },
 
   // Logical
-  ['ve', 'and'],
-  ['veya', 'or'],
-  ['değil', 'not'],
-  ['degil', 'not'], // without diacritics
+  { native: 've', normalized: 'and' },
+  { native: 'veya', normalized: 'or' },
+  { native: 'değil', normalized: 'not' },
+  { native: 'degil', normalized: 'not' },
 
-  // Modifiers (postpositions)
-  ['ile', 'with'],
-  ['için', 'for'],
-  ['icin', 'for'], // without diacritics
-]);
+  // Event triggers (on)
+  { native: 'üzerinde', normalized: 'on' },
+  { native: 'uzerinde', normalized: 'on' },
+  { native: 'olduğunda', normalized: 'on' },
+  { native: 'oldugunda', normalized: 'on' },
+
+  // Command overrides (ensure correct mapping when profile has multiple meanings)
+  { native: 'ekle', normalized: 'add' }, // Profile may have this as 'append'
+  { native: 'değiştir', normalized: 'toggle' }, // Profile has this as 'swap'
+
+  // Diacritic-free variants of commands
+  { native: 'değistir', normalized: 'toggle' },
+  { native: 'kaldir', normalized: 'remove' },
+  { native: 'yerlestir', normalized: 'put' },
+  { native: 'olustur', normalized: 'make' },
+  { native: 'artir', normalized: 'increment' },
+  { native: 'yazdir', normalized: 'log' },
+  { native: 'goster', normalized: 'show' },
+  { native: 'gecis', normalized: 'transition' },
+  { native: 'atesle', normalized: 'trigger' },
+  { native: 'gonder', normalized: 'send' },
+  { native: 'bulaniklastir', normalized: 'blur' },
+  { native: 'odak_kaldir', normalized: 'blur' },
+  { native: 'yonlendir', normalized: 'go' },
+  { native: 'cek', normalized: 'fetch' },
+  { native: 'yerles', normalized: 'settle' },
+  { native: 'eger', normalized: 'if' },
+  { native: 'degilse', normalized: 'else' },
+  { native: 'firlat', normalized: 'throw' },
+  { native: 'cagir', normalized: 'call' },
+  { native: 'don', normalized: 'return' },
+  { native: 'dondur', normalized: 'return' },
+  { native: 'eszamansiz', normalized: 'async' },
+  { native: 'soyle', normalized: 'tell' },
+  { native: 'varsayilan', normalized: 'default' },
+  { native: 'baslat', normalized: 'init' },
+  { native: 'basla', normalized: 'init' },
+  { native: 'davranis', normalized: 'behavior' },
+  { native: 'yukle', normalized: 'install' },
+  { native: 'olc', normalized: 'measure' },
+  { native: 'icine', normalized: 'into' },
+  { native: 'once', normalized: 'before' },
+  { native: 'icin', normalized: 'for' },
+
+  // Colloquial forms
+  { native: 'al', normalized: 'get' },
+  { native: 'yap', normalized: 'set' },
+
+  // Control flow helpers
+  { native: 'o_zaman', normalized: 'then' },
+  { native: 'bitir', normalized: 'end' },
+
+  // Case suffix modifiers
+  { native: '-den', normalized: 'from' },
+  { native: '-dan', normalized: 'from' },
+];
 
 // =============================================================================
 // Turkish Tokenizer Implementation
@@ -323,6 +253,11 @@ export class TurkishTokenizer extends BaseTokenizer {
 
   /** Morphological normalizer for Turkish verb conjugations */
   private morphNormalizer = new TurkishMorphologicalNormalizer();
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(turkishProfile, TURKISH_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -404,7 +339,10 @@ export class TurkishTokenizer extends BaseTokenizer {
     const lower = token.toLowerCase();
     if (POSTPOSITIONS.has(lower)) return 'particle';
     if (CASE_SUFFIXES.has(lower)) return 'particle';
-    if (TURKISH_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -429,11 +367,11 @@ export class TurkishTokenizer extends BaseTokenizer {
 
     const lowerWord = word.toLowerCase();
 
-    // Check if this is a known keyword (exact match)
-    const normalized = TURKISH_KEYWORDS.get(lowerWord);
-
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check if this is a known keyword (exact match via profile keywords)
+    for (const entry of this.profileKeywords) {
+      if (lowerWord === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     // Check if it's a postposition
@@ -446,16 +384,15 @@ export class TurkishTokenizer extends BaseTokenizer {
 
     if (morphResult.stem !== lowerWord && morphResult.confidence >= 0.7) {
       // Check if the stem is a known keyword
-      const stemNormalized = TURKISH_KEYWORDS.get(morphResult.stem);
-
-      if (stemNormalized) {
-        const tokenOptions: CreateTokenOptions = {
-          normalized: stemNormalized,
-          stem: morphResult.stem,
-          stemConfidence: morphResult.confidence,
-        };
-
-        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+      for (const entry of this.profileKeywords) {
+        if (morphResult.stem === entry.native.toLowerCase()) {
+          const tokenOptions: CreateTokenOptions = {
+            normalized: entry.normalized,
+            stem: morphResult.stem,
+            stemConfidence: morphResult.confidence,
+          };
+          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+        }
       }
     }
 

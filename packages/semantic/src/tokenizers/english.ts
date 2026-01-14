@@ -18,215 +18,133 @@ import {
   isDigit,
   isUrlStart,
   isPossessiveMarker,
+  type KeywordEntry,
 } from './base';
+import { englishProfile } from '../generators/profiles/english';
 
 // =============================================================================
-// English Keywords
+// English Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * English hyperscript keywords that should be recognized.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Event names
+ * - Positional words
+ * - Prepositions/modifiers
+ * - Articles
+ * - Synonyms with normalized forms
+ * - Swap strategies
+ * - British spelling aliases
  */
-const ENGLISH_KEYWORDS = new Set([
-  // Commands - Class/Attribute operations
-  'toggle',
-  'add',
-  'remove',
-  // Commands - Content operations
-  'put',
-  'append',
-  'prepend',
-  'take',
-  'make',
-  'clone',
-  'swap',
-  'morph',
-  // Swap strategies
-  'delete',
-  'innerHTML',
-  'outerHTML',
-  'beforebegin',
-  'afterend',
-  'beforeend',
-  'afterbegin',
-  // Commands - Variable operations
-  'set',
-  'get',
-  'increment',
-  'decrement',
-  'log',
-  // Commands - Visibility
-  'show',
-  'hide',
-  'transition',
-  // Commands - Events
-  'on',
-  'trigger',
-  'send',
-  // Commands - DOM focus
-  'focus',
-  'blur',
-  // Commands - Navigation
-  'go',
-  // Commands - Async
-  'wait',
-  'fetch',
-  'settle',
-  'install',
-  'measure',
-  // Commands - Control flow
-  'if',
-  'else',
-  'repeat',
-  'for',
-  'while',
-  'continue',
-  'halt',
-  'throw',
-  'call',
-  'return',
-  // Commands - Advanced
-  'js',
-  'async',
-  'tell',
-  'default',
-  'init',
-  'behavior',
-  // Event handling
-  'every',
-  'when',
-  'upon',
-  // Control flow helpers
-  'then',
-  'end',
-  'unless',
-  'until',
-  'forever',
-  'times',
-  // Prepositions/modifiers
-  'into',
-  'in',
-  'to',
-  'from',
-  'at',
-  'by',
-  'with',
-  'without',
-  'before',
-  'after',
-  'of',
-  'as',
-  // Logical
-  'and',
-  'or',
-  'not',
-  'is',
-  'exists',
-  'empty',
-  // References
-  'me',
-  'my',
-  'you',
-  'your',
-  'it',
-  'its',
-  'the',
-  'a',
-  'an',
-  'result',
-  'event',
-  'target',
-  'body',
+const ENGLISH_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'true', normalized: 'true' },
+  { native: 'false', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'undefined', normalized: 'undefined' },
+
   // Positional
-  'first',
-  'last',
-  'next',
-  'previous',
-  'closest',
-  // Misc
-  'true',
-  'false',
-  'null',
-  'undefined',
-  // Command synonyms (developer-friendly alternatives)
-  'flip',
-  'switch',
-  'increase',
-  'decrease',
-  'display',
-  'reveal',
-  'conceal',
-  // British spelling aliases
-  'colour',
-  'grey',
-  'centre',
-  'behaviour',
-  'initialise',
-  'favourite',
-]);
+  { native: 'first', normalized: 'first' },
+  { native: 'last', normalized: 'last' },
+  { native: 'next', normalized: 'next' },
+  { native: 'previous', normalized: 'previous' },
+  { native: 'closest', normalized: 'closest' },
 
-/**
- * English command synonyms - maps alternative terms to standard commands.
- * Used for beginner-friendly syntax.
- */
-const ENGLISH_SYNONYMS: Record<string, string> = {
-  // Toggle synonyms
-  flip: 'toggle',
-  switch: 'toggle',
-  // Increment/Decrement synonyms
-  increase: 'increment',
-  decrease: 'decrement',
-  // Show/Hide synonyms
-  display: 'show',
-  reveal: 'show',
-  conceal: 'hide',
-  // British spelling aliases
-  colour: 'color',
-  grey: 'gray',
-  centre: 'center',
-  behaviour: 'behavior',
-  initialise: 'initialize',
-  favourite: 'favorite',
-};
+  // Events
+  { native: 'click', normalized: 'click' },
+  { native: 'dblclick', normalized: 'dblclick' },
+  { native: 'mousedown', normalized: 'mousedown' },
+  { native: 'mouseup', normalized: 'mouseup' },
+  { native: 'mouseover', normalized: 'mouseover' },
+  { native: 'mouseout', normalized: 'mouseout' },
+  { native: 'mouseenter', normalized: 'mouseenter' },
+  { native: 'mouseleave', normalized: 'mouseleave' },
+  { native: 'mousemove', normalized: 'mousemove' },
+  { native: 'keydown', normalized: 'keydown' },
+  { native: 'keyup', normalized: 'keyup' },
+  { native: 'keypress', normalized: 'keypress' },
+  { native: 'input', normalized: 'input' },
+  { native: 'change', normalized: 'change' },
+  { native: 'submit', normalized: 'submit' },
+  { native: 'reset', normalized: 'reset' },
+  { native: 'load', normalized: 'load' },
+  { native: 'unload', normalized: 'unload' },
+  { native: 'scroll', normalized: 'scroll' },
+  { native: 'resize', normalized: 'resize' },
+  { native: 'dragstart', normalized: 'dragstart' },
+  { native: 'drag', normalized: 'drag' },
+  { native: 'dragend', normalized: 'dragend' },
+  { native: 'dragenter', normalized: 'dragenter' },
+  { native: 'dragleave', normalized: 'dragleave' },
+  { native: 'dragover', normalized: 'dragover' },
+  { native: 'drop', normalized: 'drop' },
+  { native: 'touchstart', normalized: 'touchstart' },
+  { native: 'touchmove', normalized: 'touchmove' },
+  { native: 'touchend', normalized: 'touchend' },
+  { native: 'touchcancel', normalized: 'touchcancel' },
 
-/**
- * English event names.
- */
-const ENGLISH_EVENTS = new Set([
-  'click',
-  'dblclick',
-  'mousedown',
-  'mouseup',
-  'mouseover',
-  'mouseout',
-  'mouseenter',
-  'mouseleave',
-  'mousemove',
-  'keydown',
-  'keyup',
-  'keypress',
-  'input',
-  'change',
-  'submit',
-  'reset',
-  'focus',
-  'blur',
-  'load',
-  'unload',
-  'scroll',
-  'resize',
-  'dragstart',
-  'drag',
-  'dragend',
-  'dragenter',
-  'dragleave',
-  'dragover',
-  'drop',
-  'touchstart',
-  'touchmove',
-  'touchend',
-  'touchcancel',
-]);
+  // Prepositions/modifiers not in profile
+  { native: 'in', normalized: 'in' },
+  { native: 'to', normalized: 'to' },
+  { native: 'at', normalized: 'at' },
+  { native: 'by', normalized: 'by' },
+  { native: 'with', normalized: 'with' },
+  { native: 'without', normalized: 'without' },
+  { native: 'of', normalized: 'of' },
+  { native: 'as', normalized: 'as' },
+
+  // Event handling keywords
+  { native: 'every', normalized: 'every' },
+  { native: 'upon', normalized: 'upon' },
+
+  // Control flow helpers not in profile
+  { native: 'unless', normalized: 'unless' },
+  { native: 'forever', normalized: 'forever' },
+  { native: 'times', normalized: 'times' },
+
+  // Logical
+  { native: 'and', normalized: 'and' },
+  { native: 'or', normalized: 'or' },
+  { native: 'not', normalized: 'not' },
+  { native: 'is', normalized: 'is' },
+  { native: 'exists', normalized: 'exists' },
+  { native: 'empty', normalized: 'empty' },
+
+  // References not in profile
+  { native: 'my', normalized: 'my' },
+  { native: 'your', normalized: 'your' },
+  { native: 'its', normalized: 'its' },
+  { native: 'the', normalized: 'the' },
+  { native: 'a', normalized: 'a' },
+  { native: 'an', normalized: 'an' },
+
+  // Swap strategies
+  { native: 'delete', normalized: 'delete' },
+  { native: 'innerHTML', normalized: 'innerHTML' },
+  { native: 'outerHTML', normalized: 'outerHTML' },
+  { native: 'beforebegin', normalized: 'beforebegin' },
+  { native: 'afterend', normalized: 'afterend' },
+  { native: 'beforeend', normalized: 'beforeend' },
+  { native: 'afterbegin', normalized: 'afterbegin' },
+
+  // Command synonyms with normalized forms
+  { native: 'flip', normalized: 'toggle' },
+  { native: 'switch', normalized: 'toggle' },
+  { native: 'increase', normalized: 'increment' },
+  { native: 'decrease', normalized: 'decrement' },
+  { native: 'display', normalized: 'show' },
+  { native: 'reveal', normalized: 'show' },
+  { native: 'conceal', normalized: 'hide' },
+
+  // British spelling aliases
+  { native: 'colour', normalized: 'color' },
+  { native: 'grey', normalized: 'gray' },
+  { native: 'centre', normalized: 'center' },
+  { native: 'behaviour', normalized: 'behavior' },
+  { native: 'initialise', normalized: 'initialize' },
+  { native: 'favourite', normalized: 'favorite' },
+];
 
 // =============================================================================
 // English Tokenizer Implementation
@@ -235,6 +153,12 @@ const ENGLISH_EVENTS = new Set([
 export class EnglishTokenizer extends BaseTokenizer {
   readonly language = 'en';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(englishProfile, ENGLISH_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -371,8 +295,10 @@ export class EnglishTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
 
-    if (ENGLISH_KEYWORDS.has(lower)) return 'keyword';
-    if (ENGLISH_EVENTS.has(lower)) return 'keyword';
+    // Check profile keywords (case-insensitive)
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -416,7 +342,15 @@ export class EnglishTokenizer extends BaseTokenizer {
 
     const kind = this.classifyToken(word);
     const lower = word.toLowerCase();
-    const normalized = ENGLISH_SYNONYMS[lower];
+
+    // Find normalized form from profile keywords (for synonyms like flip→toggle)
+    let normalized: string | undefined;
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase() && entry.normalized !== entry.native) {
+        normalized = entry.normalized;
+        break;
+      }
+    }
 
     // Check for natural class syntax: "{identifier} class" → ".{identifier}"
     // This allows "toggle the active class" to work like "toggle the .active"

@@ -20,7 +20,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { portugueseProfile } from '../generators/profiles/portuguese';
 
 // =============================================================================
 // Portuguese Character Classification
@@ -68,148 +70,80 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// Portuguese Keywords
+// Portuguese Extras (keywords not in profile)
 // =============================================================================
 
-const PORTUGUESE_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['alternar', 'toggle'],
-  ['trocar', 'toggle'],
-  ['adicionar', 'add'],
-  ['acrescentar', 'add'],
-  ['remover', 'remove'],
-  ['eliminar', 'remove'],
-  ['apagar', 'remove'],
-  // Commands - Content operations
-  ['colocar', 'put'],
-  ['pôr', 'put'],
-  ['por', 'put'],
-  ['anexar', 'append'],
-  ['preceder', 'prepend'],
-  ['pegar', 'take'],
-  ['fazer', 'make'],
-  ['criar', 'make'],
-  ['clonar', 'clone'],
-  ['copiar', 'clone'],
-  // Commands - Variable operations
-  ['definir', 'set'],
-  ['configurar', 'set'],
-  ['obter', 'get'],
-  ['incrementar', 'increment'],
-  ['aumentar', 'increment'],
-  ['decrementar', 'decrement'],
-  ['diminuir', 'decrement'],
-  ['registrar', 'log'],
-  ['imprimir', 'log'],
-  // Commands - Visibility
-  ['mostrar', 'show'],
-  ['exibir', 'show'],
-  ['ocultar', 'hide'],
-  ['esconder', 'hide'],
-  ['transição', 'transition'],
-  ['transicao', 'transition'],
-  ['animar', 'transition'],
-  // Commands - Events
-  ['em', 'on'],
-  ['quando', 'on'],
-  ['ao', 'on'],
-  ['disparar', 'trigger'],
-  ['ativar', 'trigger'],
-  ['enviar', 'send'],
-  // Commands - DOM focus
-  ['focar', 'focus'],
-  ['foco', 'focus'],
-  ['desfocar', 'blur'],
-  // Commands - Navigation
-  ['ir', 'go'],
-  ['navegar', 'go'],
-  // Commands - Async
-  ['esperar', 'wait'],
-  ['aguardar', 'wait'],
-  ['buscar', 'fetch'],
-  ['estabilizar', 'settle'],
-  // Commands - Control flow
-  ['se', 'if'],
-  ['senão', 'else'],
-  ['senao', 'else'],
-  ['repetir', 'repeat'],
-  ['para', 'for'],
-  ['enquanto', 'while'],
-  ['continuar', 'continue'],
-  ['parar', 'halt'],
-  ['lançar', 'throw'],
-  ['lancar', 'throw'],
-  ['chamar', 'call'],
-  ['retornar', 'return'],
-  ['devolver', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['assíncrono', 'async'],
-  ['assincrono', 'async'],
-  ['dizer', 'tell'],
-  ['padrão', 'default'],
-  ['padrao', 'default'],
-  ['iniciar', 'init'],
-  ['inicializar', 'init'],
-  ['comportamento', 'behavior'],
-  ['instalar', 'install'],
-  ['medir', 'measure'],
-  ['até', 'until'],
-  ['ate', 'until'],
-  ['evento', 'event'],
-  // Modifiers
-  ['dentro de', 'into'],
-  ['antes', 'before'],
-  ['depois', 'after'],
-  // Control flow helpers
-  ['então', 'then'],
-  ['entao', 'then'],
-  ['fim', 'end'],
-  ['até que', 'until'],
-  // Events
-  ['clique', 'click'],
-  ['click', 'click'],
-  ['entrada', 'input'],
-  ['mudança', 'change'],
-  ['mudanca', 'change'],
-  ['envio', 'submit'],
-  ['tecla baixo', 'keydown'],
-  ['tecla cima', 'keyup'],
-  ['mouse sobre', 'mouseover'],
-  ['mouse fora', 'mouseout'],
-  ['foco', 'focus'],
-  ['desfoque', 'blur'],
-  ['carregar', 'load'],
-  ['rolagem', 'scroll'],
-  // References
-  ['eu', 'me'],
-  ['meu', 'my'],
-  ['ele', 'it'],
-  ['isso', 'it'],
-  ['resultado', 'result'],
-  ['evento', 'event'],
-  ['alvo', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Accent-free variants for accessibility
+ */
+const PORTUGUESE_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'verdadeiro', normalized: 'true' },
+  { native: 'falso', normalized: 'false' },
+  { native: 'nulo', normalized: 'null' },
+  { native: 'indefinido', normalized: 'undefined' },
+
   // Positional
-  ['primeiro', 'first'],
-  ['primeira', 'first'],
-  ['último', 'last'],
-  ['ultima', 'last'],
-  ['próximo', 'next'],
-  ['proximo', 'next'],
-  ['anterior', 'previous'],
-  // Boolean
-  ['verdadeiro', 'true'],
-  ['falso', 'false'],
+  { native: 'primeiro', normalized: 'first' },
+  { native: 'primeira', normalized: 'first' },
+  { native: 'último', normalized: 'last' },
+  { native: 'ultima', normalized: 'last' },
+  { native: 'próximo', normalized: 'next' },
+  { native: 'proximo', normalized: 'next' },
+  { native: 'anterior', normalized: 'previous' },
+  { native: 'mais próximo', normalized: 'closest' },
+  { native: 'mais proximo', normalized: 'closest' },
+  { native: 'pai', normalized: 'parent' },
+
+  // Events
+  { native: 'clique', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'entrada', normalized: 'input' },
+  { native: 'mudança', normalized: 'change' },
+  { native: 'mudanca', normalized: 'change' },
+  { native: 'envio', normalized: 'submit' },
+  { native: 'tecla baixo', normalized: 'keydown' },
+  { native: 'tecla cima', normalized: 'keyup' },
+  { native: 'mouse sobre', normalized: 'mouseover' },
+  { native: 'mouse fora', normalized: 'mouseout' },
+  { native: 'foco', normalized: 'focus' },
+  { native: 'desfoque', normalized: 'blur' },
+  { native: 'carregar', normalized: 'load' },
+  { native: 'rolagem', normalized: 'scroll' },
+
+  // Additional references
+  { native: 'meu', normalized: 'my' },
+  { native: 'minha', normalized: 'my' },
+  { native: 'isso', normalized: 'it' },
+
   // Time units
-  ['segundo', 's'],
-  ['segundos', 's'],
-  ['milissegundo', 'ms'],
-  ['milissegundos', 'ms'],
-  ['minuto', 'm'],
-  ['minutos', 'm'],
-  ['hora', 'h'],
-  ['horas', 'h'],
-]);
+  { native: 'segundo', normalized: 's' },
+  { native: 'segundos', normalized: 's' },
+  { native: 'milissegundo', normalized: 'ms' },
+  { native: 'milissegundos', normalized: 'ms' },
+  { native: 'minuto', normalized: 'm' },
+  { native: 'minutos', normalized: 'm' },
+  { native: 'hora', normalized: 'h' },
+  { native: 'horas', normalized: 'h' },
+
+  // Accent-free variants (for user convenience)
+  { native: 'senao', normalized: 'else' },
+  { native: 'transicao', normalized: 'transition' },
+  { native: 'ate', normalized: 'until' },
+  { native: 'entao', normalized: 'then' },
+  { native: 'lancar', normalized: 'throw' },
+  { native: 'assincrono', normalized: 'async' },
+  { native: 'padrao', normalized: 'default' },
+  { native: 'até que', normalized: 'until' },
+
+  // Multi-word phrases
+  { native: 'dentro de', normalized: 'into' },
+];
 
 // =============================================================================
 // Portuguese Tokenizer Implementation
@@ -218,6 +152,11 @@ const PORTUGUESE_KEYWORDS: Map<string, string> = new Map([
 export class PortugueseTokenizer extends BaseTokenizer {
   readonly language = 'pt';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(portugueseProfile, PORTUGUESE_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -300,7 +239,10 @@ export class PortugueseTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (PORTUGUESE_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -318,10 +260,12 @@ export class PortugueseTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = PORTUGUESE_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     if (PREPOSITIONS.has(lower)) {

@@ -23,7 +23,9 @@ import {
   isDigit,
   isAsciiIdentifierChar,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { chineseProfile } from '../generators/profiles/chinese';
 
 // =============================================================================
 // Chinese Character Classification
@@ -80,177 +82,108 @@ const PARTICLES = new Set([
 const MULTI_CHAR_PARTICLES = ['然后', '接着', '并且', '或者', '如果', '那么', '否则'];
 
 // =============================================================================
-// Chinese Keywords
+// Chinese Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Chinese command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Additional synonyms
  */
-const CHINESE_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['切换', 'toggle'],
-  ['添加', 'add'],
-  ['加', 'add'],
-  ['移除', 'remove'],
-  ['删除', 'remove'],
-  ['去掉', 'remove'],
-  // Commands - Content operations
-  ['放置', 'put'],
-  ['放', 'put'],
-  ['放入', 'put'],
-  ['追加', 'append'],
-  ['附加', 'append'],
-  ['前置', 'prepend'],
-  ['预置', 'prepend'],
-  ['拿取', 'take'],
-  ['取', 'take'],
-  ['制作', 'make'],
-  ['创建', 'make'],
-  ['复制', 'clone'],
-  ['克隆', 'clone'],
-  // Commands - Variable operations
-  ['设置', 'set'],
-  ['设定', 'set'],
-  ['获取', 'get'],
-  ['取得', 'get'],
-  ['获得', 'get'],
-  ['增加', 'increment'],
-  ['减少', 'decrement'],
-  ['日志', 'log'],
-  ['记录', 'log'],
-  ['打印', 'log'],
-  // Commands - Visibility
-  ['显示', 'show'],
-  ['展示', 'show'],
-  ['隐藏', 'hide'],
-  ['过渡', 'transition'],
-  ['动画', 'transition'],
-  // Commands - Events
-  ['当', 'on'],
-  ['在', 'on'],
-  ['触发', 'trigger'],
-  ['激发', 'trigger'],
-  ['发送', 'send'],
-  // Commands - DOM focus
-  ['聚焦', 'focus'],
-  ['对焦', 'focus'],
-  ['失焦', 'blur'],
-  ['模糊', 'blur'],
-  // Commands - Navigation
-  ['前往', 'go'],
-  ['跳转', 'go'],
-  ['导航', 'go'],
-  // Commands - Async
-  ['等待', 'wait'],
-  ['抓取', 'fetch'],
-  ['获取数据', 'fetch'],
-  ['稳定', 'settle'],
-  ['安定', 'settle'],
-  // Commands - Control flow
-  ['如果', 'if'],
-  ['若', 'if'],
-  ['否则', 'else'],
-  ['不然', 'else'],
-  ['重复', 'repeat'],
-  ['循环', 'repeat'],
-  ['遍历', 'for'],
-  ['每个', 'for'],
-  ['为每', 'for'],
-  ['当', 'while'],
-  ['继续', 'continue'],
-  ['停止', 'halt'],
-  ['中止', 'halt'],
-  ['抛出', 'throw'],
-  ['抛', 'throw'],
-  ['调用', 'call'],
-  ['呼叫', 'call'],
-  ['返回', 'return'],
-  ['回', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['javascript', 'js'],
-  ['脚本', 'js'],
-  ['异步', 'async'],
-  ['告诉', 'tell'],
-  ['通知', 'tell'],
-  ['默认', 'default'],
-  ['缺省', 'default'],
-  ['初始化', 'init'],
-  ['初始', 'init'],
-  ['行为', 'behavior'],
-  ['动作', 'behavior'],
-  ['安装', 'install'],
-  ['测量', 'measure'],
-  ['直到', 'until'],
-  ['事件', 'event'],
-  ['从', 'from'],
-  // Modifiers
-  ['到里面', 'into'],
-  ['进入', 'into'], // profile primary
-  ['里', 'into'],
-  ['之前', 'before'],
-  ['前', 'before'],
-  ['之后', 'after'],
-  ['后', 'after'],
-  // Control flow helpers
-  ['那么', 'then'],
-  ['然后', 'then'],
-  ['结束', 'end'],
-  ['完', 'end'],
-  ['直到', 'until'],
-
-  // Events (for event name recognition)
-  ['点击', 'click'],
-  ['双击', 'dblclick'],
-  ['输入', 'input'],
-  ['变更', 'change'],
-  ['改变', 'change'],
-  ['提交', 'submit'],
-  ['按键', 'keydown'],
-  ['释放键', 'keyup'],
-  ['鼠标移入', 'mouseover'],
-  ['鼠标移出', 'mouseout'],
-  ['获得焦点', 'focus'],
-  ['失去焦点', 'blur'],
-  ['加载', 'load'],
-  ['滚动', 'scroll'],
-
-  // References
-  ['我', 'me'],
-  ['我的', 'my'],
-  ['它', 'it'],
-  ['它的', 'its'],
-  ['结果', 'result'],
-  ['事件', 'event'],
-  ['目标', 'target'],
+const CHINESE_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: '真', normalized: 'true' },
+  { native: '假', normalized: 'false' },
+  { native: '空', normalized: 'null' },
+  { native: '未定义', normalized: 'undefined' },
 
   // Positional
-  ['第一个', 'first'],
-  ['首个', 'first'],
-  ['最后一个', 'last'],
-  ['末个', 'last'],
-  ['下一个', 'next'],
-  ['上一个', 'previous'],
+  { native: '第一个', normalized: 'first' },
+  { native: '首个', normalized: 'first' },
+  { native: '最后一个', normalized: 'last' },
+  { native: '末个', normalized: 'last' },
+  { native: '下一个', normalized: 'next' },
+  { native: '上一个', normalized: 'previous' },
+  { native: '最近的', normalized: 'closest' },
+  { native: '父级', normalized: 'parent' },
 
-  // Logical
-  ['和', 'and'],
-  ['并且', 'and'],
-  ['或者', 'or'],
-  ['或', 'or'],
-  ['不', 'not'],
-  ['非', 'not'],
-  ['是', 'is'],
+  // Events
+  { native: '点击', normalized: 'click' },
+  { native: '双击', normalized: 'dblclick' },
+  { native: '输入', normalized: 'input' },
+  { native: '变更', normalized: 'change' },
+  { native: '改变', normalized: 'change' },
+  { native: '提交', normalized: 'submit' },
+  { native: '按键', normalized: 'keydown' },
+  { native: '释放键', normalized: 'keyup' },
+  { native: '鼠标移入', normalized: 'mouseover' },
+  { native: '鼠标移出', normalized: 'mouseout' },
+  { native: '获得焦点', normalized: 'focus' },
+  { native: '失去焦点', normalized: 'blur' },
+  { native: '加载', normalized: 'load' },
+  { native: '滚动', normalized: 'scroll' },
+
+  // Additional references
+  { native: '我的', normalized: 'my' },
+  { native: '它的', normalized: 'its' },
 
   // Time units
-  ['秒', 's'],
-  ['毫秒', 'ms'],
-  ['分钟', 'm'],
-  ['小时', 'h'],
+  { native: '秒', normalized: 's' },
+  { native: '毫秒', normalized: 'ms' },
+  { native: '分钟', normalized: 'm' },
+  { native: '小时', normalized: 'h' },
 
-  // Boolean
-  ['真', 'true'],
-  ['假', 'false'],
-]);
+  // Logical operators
+  { native: '和', normalized: 'and' },
+  { native: '或者', normalized: 'or' },
+  { native: '或', normalized: 'or' },
+  { native: '不', normalized: 'not' },
+  { native: '非', normalized: 'not' },
+  { native: '是', normalized: 'is' },
+
+  // Additional synonyms not in profile
+  { native: '若', normalized: 'if' },
+  { native: '不然', normalized: 'else' },
+  { native: '循环', normalized: 'repeat' },
+  { native: '遍历', normalized: 'for' },
+  { native: '每个', normalized: 'for' },
+  { native: '为每', normalized: 'for' },
+  { native: '中止', normalized: 'halt' },
+  { native: '抛', normalized: 'throw' },
+  { native: '呼叫', normalized: 'call' },
+  { native: '回', normalized: 'return' },
+  { native: '脚本', normalized: 'js' },
+  { native: '通知', normalized: 'tell' },
+  { native: '缺省', normalized: 'default' },
+  { native: '初始', normalized: 'init' },
+  { native: '动作', normalized: 'behavior' },
+  { native: '激发', normalized: 'trigger' },
+  { native: '对焦', normalized: 'focus' },
+  { native: '模糊', normalized: 'blur' },
+  { native: '跳转', normalized: 'go' },
+  { native: '导航', normalized: 'go' },
+  { native: '抓取', normalized: 'fetch' },
+  { native: '获取数据', normalized: 'fetch' },
+  { native: '安定', normalized: 'settle' },
+  { native: '拿取', normalized: 'take' },
+  { native: '取', normalized: 'take' },
+  { native: '创建', normalized: 'make' },
+  { native: '克隆', normalized: 'clone' },
+  { native: '记录', normalized: 'log' },
+  { native: '打印', normalized: 'log' },
+  { native: '动画', normalized: 'transition' },
+
+  // Modifiers
+  { native: '到里面', normalized: 'into' },
+  { native: '里', normalized: 'into' },
+  { native: '前', normalized: 'before' },
+  { native: '后', normalized: 'after' },
+  { native: '那么', normalized: 'then' },
+  { native: '完', normalized: 'end' },
+];
 
 // =============================================================================
 // Chinese Tokenizer Implementation
@@ -259,6 +192,11 @@ const CHINESE_KEYWORDS: Map<string, string> = new Map([
 export class ChineseTokenizer extends BaseTokenizer {
   readonly language = 'zh';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(chineseProfile, CHINESE_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -363,7 +301,10 @@ export class ChineseTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
-    if (CHINESE_KEYWORDS.has(token)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token === entry.native) return 'keyword';
+    }
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -399,32 +340,31 @@ export class ChineseTokenizer extends BaseTokenizer {
    * Extract a Chinese word.
    * Uses greedy matching to find the longest known keyword.
    * Chinese doesn't have inflection, so we don't need morphological normalization.
+   * profileKeywords is already sorted longest-first, enabling greedy matching.
    */
   private extractChineseWord(input: string, startPos: number): LanguageToken | null {
-    // First, try to find the longest matching keyword starting at this position
-    const maxKeywordLen = 5; // Longest Chinese keyword (e.g., 鼠标移入)
-    for (let len = Math.min(maxKeywordLen, input.length - startPos); len >= 1; len--) {
-      const candidate = input.slice(startPos, startPos + len);
+    // profileKeywords is sorted longest-first, so iterate through for greedy match
+    for (const entry of this.profileKeywords) {
+      const keyword = entry.native;
+      const candidate = input.slice(startPos, startPos + keyword.length);
 
-      // Check all chars are Chinese
-      let allChinese = true;
-      for (let i = 0; i < candidate.length; i++) {
-        if (!isChinese(candidate[i])) {
-          allChinese = false;
-          break;
+      if (candidate === keyword) {
+        // Check all chars are Chinese (to avoid matching partial ASCII)
+        let allChinese = true;
+        for (let i = 0; i < keyword.length; i++) {
+          if (!isChinese(keyword[i])) {
+            allChinese = false;
+            break;
+          }
         }
-      }
-      if (!allChinese) continue;
-
-      // Check if it's a keyword (exact match)
-      const normalized = CHINESE_KEYWORDS.get(candidate);
-      if (normalized) {
-        return createToken(
-          candidate,
-          'keyword',
-          createPosition(startPos, startPos + len),
-          normalized
-        );
+        if (allChinese) {
+          return createToken(
+            candidate,
+            'keyword',
+            createPosition(startPos, startPos + keyword.length),
+            entry.normalized
+          );
+        }
       }
     }
 

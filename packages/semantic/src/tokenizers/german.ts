@@ -21,7 +21,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { germanProfile } from '../generators/profiles/german';
 
 // =============================================================================
 // German Character Classification
@@ -75,166 +77,87 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// German Keywords
+// German Extras (keywords not in profile)
 // =============================================================================
 
-const GERMAN_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['umschalten', 'toggle'],
-  ['wechseln', 'toggle'],
-  ['hinzufügen', 'add'],
-  ['hinzufugen', 'add'],
-  ['hinzufgen', 'add'],
-  ['entfernen', 'remove'],
-  ['löschen', 'remove'],
-  ['loschen', 'remove'],
-  // Commands - Content operations
-  ['setzen', 'put'],
-  ['stellen', 'put'],
-  ['platzieren', 'put'],
-  ['anhängen', 'append'],
-  ['anhangen', 'append'],
-  ['voranstellen', 'prepend'],
-  ['nehmen', 'take'],
-  ['machen', 'make'],
-  ['erstellen', 'make'],
-  ['erzeugen', 'make'],
-  ['klonen', 'clone'],
-  ['kopieren', 'clone'],
-  ['verwandeln', 'morph'],
-  ['transformieren', 'morph'],
-  // Commands - Variable operations
-  ['festlegen', 'set'],
-  ['definieren', 'set'],
-  ['holen', 'get'],
-  ['bekommen', 'get'],
-  ['erhöhen', 'increment'],
-  ['erhohen', 'increment'],
-  ['erhöhe', 'increment'], // first person imperative (test case)
-  ['erhohe', 'increment'], // without umlaut
-  ['verringern', 'decrement'],
-  ['vermindern', 'decrement'],
-  ['verringere', 'decrement'], // first person imperative (test case)
-  ['protokollieren', 'log'],
-  ['ausgeben', 'log'],
-  // Commands - Visibility
-  ['zeigen', 'show'],
-  ['anzeigen', 'show'],
-  ['verbergen', 'hide'],
-  ['verstecken', 'hide'],
-  ['übergang', 'transition'],
-  ['ubergang', 'transition'],
-  ['animieren', 'transition'],
-  // Commands - Events
-  ['bei', 'on'],
-  ['wenn', 'on'],
-  ['auf', 'on'],
-  ['auslösen', 'trigger'],
-  ['auslosen', 'trigger'],
-  ['senden', 'send'],
-  ['schicken', 'send'],
-  // Commands - DOM focus
-  ['fokussieren', 'focus'],
-  ['defokussieren', 'blur'],
-  ['entfokussieren', 'blur'],
-  // Commands - Navigation
-  ['gehen', 'go'],
-  ['navigieren', 'go'],
-  // Commands - Async
-  ['warten', 'wait'],
-  ['abrufen', 'fetch'],
-  ['laden', 'fetch'],
-  ['stabilisieren', 'settle'],
-  // Commands - Control flow
-  ['wenn', 'if'],
-  ['falls', 'if'],
-  ['sonst', 'else'],
-  ['ansonsten', 'else'],
-  ['wiederholen', 'repeat'],
-  ['für', 'for'],
-  ['solange', 'while'],
-  ['während', 'while'],
-  ['fortfahren', 'continue'],
-  ['weiter', 'continue'],
-  ['anhalten', 'halt'],
-  ['stoppen', 'halt'],
-  ['werfen', 'throw'],
-  ['aufrufen', 'call'],
-  ['zurückgeben', 'return'],
-  ['zuruckgeben', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['javascript', 'js'],
-  ['asynchron', 'async'],
-  ['sagen', 'tell'],
-  ['standard', 'default'],
-  ['initialisieren', 'init'],
-  ['verhalten', 'behavior'],
-  ['installieren', 'install'],
-  ['messen', 'measure'],
-  ['bis', 'until'],
-  ['Ereignis', 'event'],
-  ['ereignis', 'event'],
-  // Modifiers
-  ['hinein', 'into'],
-  ['vor', 'before'],
-  ['nach', 'after'],
-  // Control flow helpers
-  ['dann', 'then'],
-  ['danach', 'then'],
-  ['anschließend', 'then'],
-  ['anschliessend', 'then'],
-  ['ende', 'end'],
-  ['beenden', 'end'],
-  ['fertig', 'end'],
-  ['bis', 'until'],
-  // Events
-  ['klick', 'click'],
-  ['click', 'click'],
-  ['eingabe', 'input'],
-  ['änderung', 'change'],
-  ['anderung', 'change'],
-  ['absenden', 'submit'],
-  ['taste unten', 'keydown'],
-  ['taste oben', 'keyup'],
-  ['maus drüber', 'mouseover'],
-  ['maus weg', 'mouseout'],
-  ['fokus', 'focus'],
-  ['unschärfe', 'blur'],
-  ['unscharfe', 'blur'],
-  ['laden', 'load'],
-  ['scrollen', 'scroll'],
-  // References
-  ['ich', 'me'],
-  ['mein', 'my'],
-  ['meine', 'my'],
-  ['es', 'it'],
-  ['ergebnis', 'result'],
-  ['ereignis', 'event'],
-  ['ziel', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Umlaut-free variants for accessibility
+ * - Verb conjugation variants (imperatives)
+ */
+const GERMAN_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'wahr', normalized: 'true' },
+  { native: 'falsch', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'undefiniert', normalized: 'undefined' },
+
   // Positional
-  ['erste', 'first'],
-  ['erster', 'first'],
-  ['erstes', 'first'],
-  ['letzte', 'last'],
-  ['letzter', 'last'],
-  ['letztes', 'last'],
-  ['nächste', 'next'],
-  ['nachste', 'next'],
-  ['vorherige', 'previous'],
-  // Boolean
-  ['wahr', 'true'],
-  ['falsch', 'false'],
+  { native: 'erste', normalized: 'first' },
+  { native: 'erster', normalized: 'first' },
+  { native: 'erstes', normalized: 'first' },
+  { native: 'letzte', normalized: 'last' },
+  { native: 'letzter', normalized: 'last' },
+  { native: 'letztes', normalized: 'last' },
+  { native: 'nächste', normalized: 'next' },
+  { native: 'nachste', normalized: 'next' },
+  { native: 'vorherige', normalized: 'previous' },
+  { native: 'nächste', normalized: 'closest' },
+  { native: 'eltern', normalized: 'parent' },
+
+  // Events
+  { native: 'klick', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'eingabe', normalized: 'input' },
+  { native: 'änderung', normalized: 'change' },
+  { native: 'anderung', normalized: 'change' },
+  { native: 'absenden', normalized: 'submit' },
+  { native: 'taste unten', normalized: 'keydown' },
+  { native: 'taste oben', normalized: 'keyup' },
+  { native: 'maus drüber', normalized: 'mouseover' },
+  { native: 'maus druber', normalized: 'mouseover' },
+  { native: 'maus weg', normalized: 'mouseout' },
+  { native: 'fokus', normalized: 'focus' },
+  { native: 'unschärfe', normalized: 'blur' },
+  { native: 'unscharfe', normalized: 'blur' },
+  { native: 'scrollen', normalized: 'scroll' },
+
+  // Additional references
+  { native: 'meine', normalized: 'my' },
+  { native: 'meinen', normalized: 'my' },
+  { native: 'ergebnis', normalized: 'result' },
+  { native: 'ziel', normalized: 'target' },
+
   // Time units
-  ['sekunde', 's'],
-  ['sekunden', 's'],
-  ['millisekunde', 'ms'],
-  ['millisekunden', 'ms'],
-  ['minute', 'm'],
-  ['minuten', 'm'],
-  ['stunde', 'h'],
-  ['stunden', 'h'],
-]);
+  { native: 'sekunde', normalized: 's' },
+  { native: 'sekunden', normalized: 's' },
+  { native: 'millisekunde', normalized: 'ms' },
+  { native: 'millisekunden', normalized: 'ms' },
+  { native: 'minute', normalized: 'm' },
+  { native: 'minuten', normalized: 'm' },
+  { native: 'stunde', normalized: 'h' },
+  { native: 'stunden', normalized: 'h' },
+
+  // Umlaut-free variants (for user convenience)
+  { native: 'hinzufugen', normalized: 'add' },
+  { native: 'hinzufgen', normalized: 'add' },
+  { native: 'loschen', normalized: 'remove' },
+  { native: 'anhangen', normalized: 'append' },
+  { native: 'erhohen', normalized: 'increment' },
+  { native: 'ubergang', normalized: 'transition' },
+  { native: 'auslosen', normalized: 'trigger' },
+  { native: 'zuruckgeben', normalized: 'return' },
+  { native: 'anschliessend', normalized: 'then' },
+
+  // Verb conjugation variants (imperatives for test cases)
+  { native: 'erhöhe', normalized: 'increment' },
+  { native: 'erhohe', normalized: 'increment' },
+  { native: 'verringere', normalized: 'decrement' },
+];
 
 // =============================================================================
 // German Tokenizer Implementation
@@ -243,6 +166,11 @@ const GERMAN_KEYWORDS: Map<string, string> = new Map([
 export class GermanTokenizer extends BaseTokenizer {
   readonly language = 'de';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(germanProfile, GERMAN_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -325,7 +253,10 @@ export class GermanTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (GERMAN_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -343,10 +274,12 @@ export class GermanTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = GERMAN_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     if (PREPOSITIONS.has(lower)) {

@@ -21,7 +21,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { indonesianProfile } from '../generators/profiles/indonesian';
 
 // =============================================================================
 // Indonesian Character Classification
@@ -65,163 +67,65 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// Indonesian Keywords
+// Indonesian Extras (keywords not in profile)
 // =============================================================================
 
-const INDONESIAN_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['alihkan', 'toggle'],
-  ['ganti', 'toggle'],
-  ['tukar', 'toggle'],
-  ['tambah', 'add'],
-  ['tambahkan', 'add'],
-  ['hapus', 'remove'],
-  ['buang', 'remove'],
-  ['hilangkan', 'remove'],
-  // Commands - Content operations
-  ['taruh', 'put'],
-  ['letakkan', 'put'],
-  ['masukkan', 'put'],
-  ['sisipkan', 'append'],
-  ['tambahkan', 'append'],
-  ['awali', 'prepend'],
-  ['ambil', 'take'],
-  ['buat', 'make'],
-  ['bikin', 'make'],
-  ['ciptakan', 'make'],
-  ['klon', 'clone'],
-  ['salin', 'clone'],
-  ['tiru', 'clone'],
-  ['ubah', 'morph'],
-  ['transformasi', 'morph'],
-  // Commands - Variable operations
-  ['atur', 'set'],
-  ['tetapkan', 'set'],
-  ['dapatkan', 'get'],
-  ['peroleh', 'get'],
-  ['tingkatkan', 'increment'],
-  ['naikkan', 'increment'],
-  ['turunkan', 'decrement'],
-  ['kurangi', 'decrement'],
-  ['catat', 'log'],
-  ['rekam', 'log'],
-  ['cetak', 'log'],
-  // Commands - Visibility
-  ['tampilkan', 'show'],
-  ['perlihatkan', 'show'],
-  ['sembunyikan', 'hide'],
-  ['tutup', 'hide'],
-  ['transisi', 'transition'],
-  ['animasikan', 'transition'],
-  // Commands - Events
-  ['pada', 'on'],
-  ['saat', 'on'],
-  ['ketika', 'on'],
-  ['picu', 'trigger'],
-  ['jalankan', 'trigger'],
-  ['kirim', 'send'],
-  ['kirimkan', 'send'],
-  // Commands - DOM focus
-  ['fokus', 'focus'],
-  ['fokuskan', 'focus'],
-  ['hilangkan fokus', 'blur'],
-  ['blur', 'blur'],
-  // Commands - Navigation
-  ['pergi', 'go'],
-  ['pindah', 'go'],
-  ['navigasi', 'go'],
-  // Commands - Async
-  ['tunggu', 'wait'],
-  ['ambil', 'fetch'],
-  ['muat', 'fetch'],
-  ['stabilkan', 'settle'],
-  // Commands - Control flow
-  ['jika', 'if'],
-  ['kalau', 'if'],
-  ['bila', 'if'],
-  ['selainnya', 'else'],
-  ['jika tidak', 'else'],
-  ['ulangi', 'repeat'],
-  ['untuk', 'for'],
-  ['selama', 'while'],
-  ['lanjutkan', 'continue'],
-  ['terus', 'continue'],
-  ['hentikan', 'halt'],
-  ['berhenti', 'halt'],
-  ['lempar', 'throw'],
-  ['panggil', 'call'],
-  ['kembalikan', 'return'],
-  ['kembali', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['javascript', 'js'],
-  ['asinkron', 'async'],
-  ['katakan', 'tell'],
-  ['beritahu', 'tell'],
-  ['bawaan', 'default'],
-  ['inisialisasi', 'init'],
-  ['mulai', 'init'],
-  ['perilaku', 'behavior'],
-  ['pasang', 'install'],
-  ['ukur', 'measure'],
-  ['sampai', 'until'],
-  ['peristiwa', 'event'],
-  ['dari', 'from'],
-  // Modifiers
-  ['ke dalam', 'into'],
-  ['sebelum', 'before'],
-  ['sesudah', 'after'],
-  ['setelah', 'after'],
-  // Control flow helpers
-  ['maka', 'then'],
-  ['lalu', 'then'],
-  ['kemudian', 'then'],
-  ['akhir', 'end'],
-  ['selesai', 'end'],
-  ['tamat', 'end'],
-  ['sampai', 'until'],
-  // Events
-  ['klik', 'click'],
-  ['click', 'click'],
-  ['masukan', 'input'],
-  ['input', 'input'],
-  ['perubahan', 'change'],
-  ['kirim', 'submit'],
-  ['tombol turun', 'keydown'],
-  ['tombol naik', 'keyup'],
-  ['mouse masuk', 'mouseover'],
-  ['mouse keluar', 'mouseout'],
-  ['fokus', 'focus'],
-  ['blur', 'blur'],
-  ['muat', 'load'],
-  ['gulir', 'scroll'],
-  // References
-  ['aku', 'me'],
-  ['saya', 'me'],
-  ['ini', 'me'],
-  ['milikku', 'my'],
-  ['itu', 'it'],
-  ['dia', 'it'],
-  ['hasil', 'result'],
-  ['peristiwa', 'event'],
-  ['kejadian', 'event'],
-  ['target', 'target'],
-  ['sasaran', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Additional synonyms
+ */
+const INDONESIAN_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'benar', normalized: 'true' },
+  { native: 'salah', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'kosong', normalized: 'null' },
+  { native: 'tidak terdefinisi', normalized: 'undefined' },
+
   // Positional
-  ['pertama', 'first'],
-  ['terakhir', 'last'],
-  ['selanjutnya', 'next'],
-  ['berikutnya', 'next'],
-  ['sebelumnya', 'previous'],
-  // Boolean
-  ['benar', 'true'],
-  ['salah', 'false'],
+  { native: 'pertama', normalized: 'first' },
+  { native: 'terakhir', normalized: 'last' },
+  { native: 'selanjutnya', normalized: 'next' },
+  { native: 'berikutnya', normalized: 'next' },
+  { native: 'sebelumnya', normalized: 'previous' },
+  { native: 'terdekat', normalized: 'closest' },
+  { native: 'induk', normalized: 'parent' },
+
+  // Events
+  { native: 'klik', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'masukan', normalized: 'input' },
+  { native: 'input', normalized: 'input' },
+  { native: 'perubahan', normalized: 'change' },
+  { native: 'tombol turun', normalized: 'keydown' },
+  { native: 'tombol naik', normalized: 'keyup' },
+  { native: 'mouse masuk', normalized: 'mouseover' },
+  { native: 'mouse keluar', normalized: 'mouseout' },
+  { native: 'gulir', normalized: 'scroll' },
+
+  // Additional references
+  { native: 'aku', normalized: 'me' },
+  { native: 'ini', normalized: 'me' },
+  { native: 'milikku', normalized: 'my' },
+  { native: 'dia', normalized: 'it' },
+  { native: 'kejadian', normalized: 'event' },
+  { native: 'sasaran', normalized: 'target' },
+
   // Time units
-  ['detik', 's'],
-  ['milidetik', 'ms'],
-  ['menit', 'm'],
-  ['jam', 'h'],
-]);
+  { native: 'detik', normalized: 's' },
+  { native: 'milidetik', normalized: 'ms' },
+  { native: 'menit', normalized: 'm' },
+  { native: 'jam', normalized: 'h' },
+
+  // Additional synonyms and multi-word phrases
+  { native: 'jika tidak', normalized: 'else' },
+  { native: 'hilangkan fokus', normalized: 'blur' },
+  { native: 'maka', normalized: 'then' },
+];
 
 // =============================================================================
 // Indonesian Tokenizer Implementation
@@ -230,6 +134,11 @@ const INDONESIAN_KEYWORDS: Map<string, string> = new Map([
 export class IndonesianTokenizer extends BaseTokenizer {
   readonly language = 'id';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(indonesianProfile, INDONESIAN_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -312,7 +221,10 @@ export class IndonesianTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (INDONESIAN_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -330,10 +242,12 @@ export class IndonesianTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = INDONESIAN_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     if (PREPOSITIONS.has(lower)) {

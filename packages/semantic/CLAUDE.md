@@ -86,12 +86,12 @@ npm run typecheck --prefix packages/semantic
 
 ### Word Order Patterns
 
-| Pattern | Languages | Example |
-|---------|-----------|---------|
-| **SVO** | English, Chinese, Spanish, Portuguese, French, Indonesian, Swahili | `toggle .active on #button` |
-| **SOV** | Japanese, Korean, Turkish, Quechua | `#button で .active を トグル` |
-| **VSO** | Arabic | `بدّل .active على #button` |
-| **V2** | German | `schalte .active auf #button um` |
+| Pattern | Languages                                                          | Example                          |
+| ------- | ------------------------------------------------------------------ | -------------------------------- |
+| **SVO** | English, Chinese, Spanish, Portuguese, French, Indonesian, Swahili | `toggle .active on #button`      |
+| **SOV** | Japanese, Korean, Turkish, Quechua                                 | `#button で .active を トグル`   |
+| **VSO** | Arabic                                                             | `بدّل .active على #button`       |
+| **V2**  | German                                                             | `schalte .active auf #button um` |
 
 ### Tokenizers vs Normalizers
 
@@ -118,6 +118,7 @@ Commands are parsed into semantic roles, not positional arguments:
 ### Confidence Scoring
 
 Each parse result includes a confidence score (0-1):
+
 - `>= 0.7`: High confidence, use semantic result
 - `0.5-0.7`: Medium confidence, may need fallback
 - `< 0.5`: Low confidence, use traditional parser
@@ -151,6 +152,12 @@ This generates:
 Tokenizers can derive keywords from profiles (single source of truth):
 
 ```typescript
+const EXTRAS: KeywordEntry[] = [
+  { native: 'true_word', normalized: 'true' },
+  { native: 'false_word', normalized: 'false' },
+  // ... literals, positional, events not in profile
+];
+
 export class NewLanguageTokenizer extends BaseTokenizer {
   constructor() {
     super();
@@ -159,22 +166,49 @@ export class NewLanguageTokenizer extends BaseTokenizer {
 }
 ```
 
-See `src/tokenizers/thai.ts` for a working example.
+See `src/tokenizers/thai.ts`, `src/tokenizers/ms.ts`, or `src/tokenizers/tl.ts` for working examples.
+
+### Marker Templates (Shared Profile Components)
+
+Language profiles can use shared marker templates from `src/generators/profiles/marker-templates.ts`:
+
+```typescript
+import {
+  SVO_PREPOSITION_MARKERS,
+  SOV_PARTICLE_MARKERS,
+  ROMANCE_POSSESSIVE_BASE,
+  createRomancePossessive,
+} from './marker-templates';
+
+// Use shared markers in profile
+export const myProfile: LanguageProfile = {
+  roleMarkers: { ...SVO_PREPOSITION_MARKERS, destination: { primary: 'to', position: 'before' } },
+  possessive: createRomancePossessive('de'), // Spanish/Portuguese/Italian style
+};
+```
+
+Available templates:
+
+- **Role Markers**: `SVO_PREPOSITION_MARKERS`, `SOV_PARTICLE_MARKERS`, `KOREAN_PARTICLE_MARKERS`, `TURKISH_SUFFIX_MARKERS`, `ARABIC_PREPOSITION_MARKERS`
+- **Verb Configs**: `SVO_VERB_CONFIG`, `SVO_PRODROP_VERB_CONFIG`, `SOV_VERB_CONFIG`, `VSO_VERB_CONFIG`
+- **Possessive Configs**: `ENGLISH_POSSESSIVE`, `ROMANCE_POSSESSIVE_BASE`, `JAPANESE_POSSESSIVE`, `KOREAN_POSSESSIVE`, `GERMAN_POSSESSIVE`
 
 ## Important Files
 
-| File | Purpose |
-|------|---------|
-| `src/types.ts` | ActionType union (45 actions), SemanticNode types (command, event-handler, conditional, compound, loop) |
-| `src/generators/command-schemas.ts` | Schema definitions for all commands |
-| `src/generators/language-profiles.ts` | Keyword translations (13 languages) |
-| `src/parser/semantic-parser.ts` | Main parsing logic |
-| `src/parser/pattern-matcher.ts` | Pattern matching engine |
-| `src/tokenizers/base.ts` | BaseTokenizer class |
-| `src/core-bridge.ts` | SemanticIntegrationAdapter for core package |
-| `src/ast-builder/index.ts` | ASTBuilder class, buildAST(), node type interfaces |
-| `src/ast-builder/value-converters.ts` | SemanticValue → ExpressionNode conversion |
-| `src/ast-builder/command-mappers.ts` | 46 command-specific AST mappers |
+| File                                          | Purpose                                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/types.ts`                                | ActionType union (45 actions), SemanticNode types (command, event-handler, conditional, compound, loop) |
+| `src/generators/command-schemas.ts`           | Schema definitions for all commands                                                                     |
+| `src/generators/language-profiles.ts`         | Keyword translations (13 languages)                                                                     |
+| `src/generators/profiles/marker-templates.ts` | Shared role markers, verb configs, possessive templates                                                 |
+| `src/patterns/builders.ts`                    | Pattern registry and `buildPatternsForLanguage()`                                                       |
+| `src/parser/semantic-parser.ts`               | Main parsing logic                                                                                      |
+| `src/parser/pattern-matcher.ts`               | Pattern matching engine                                                                                 |
+| `src/tokenizers/base.ts`                      | BaseTokenizer class with `initializeKeywordsFromProfile()`                                              |
+| `src/core-bridge.ts`                          | SemanticIntegrationAdapter for core package                                                             |
+| `src/ast-builder/index.ts`                    | ASTBuilder class, buildAST(), node type interfaces                                                      |
+| `src/ast-builder/value-converters.ts`         | SemanticValue → ExpressionNode conversion                                                               |
+| `src/ast-builder/command-mappers.ts`          | 46 command-specific AST mappers                                                                         |
 
 ## Browser Usage
 
@@ -186,11 +220,7 @@ See `src/tokenizers/thai.ts` for a working example.
   const jaResult = HyperFixiSemantic.parse('トグル .active', 'ja');
 
   // Translate between languages
-  const japanese = HyperFixiSemantic.translate(
-    'toggle .active on #button',
-    'en',
-    'ja'
-  );
+  const japanese = HyperFixiSemantic.translate('toggle .active on #button', 'en', 'ja');
 
   // Get all translations
   const all = HyperFixiSemantic.getAllTranslations('toggle .active', 'en');
@@ -201,11 +231,13 @@ See `src/tokenizers/thai.ts` for a working example.
 ## Testing Patterns
 
 ### Unit Tests (Vitest)
+
 ```bash
 npm test --prefix packages/semantic -- --run
 ```
 
 ### Browser Tests (Playwright)
+
 Browser tests are in `packages/core/src/compatibility/browser-tests/semantic-multilingual.spec.ts`
 
 ```bash
@@ -213,6 +245,7 @@ npx playwright test packages/core/src/compatibility/browser-tests/semantic-multi
 ```
 
 ### Live Demo
+
 ```bash
 npx http-server . -p 3000 -c-1
 # Open: http://127.0.0.1:3000/examples/multilingual/semantic-demo.html
@@ -252,13 +285,13 @@ const ast = buildAST(node);
 
 The AST builder handles all semantic node kinds:
 
-| SemanticNode Kind | AST Output | Description |
-|-------------------|------------|-------------|
-| `command` | `CommandNode` | Simple commands (toggle, add, put, etc.) |
-| `event-handler` | `EventHandlerNode` | Event handlers with body commands |
-| `conditional` | `CommandNode` (name: 'if') | If/else with condition and branch blocks |
-| `compound` | `CommandSequenceNode` | Chained commands (then/and/async) |
-| `loop` | `CommandNode` (name: 'repeat') | Loops (forever, times, for, while, until) |
+| SemanticNode Kind | AST Output                     | Description                               |
+| ----------------- | ------------------------------ | ----------------------------------------- |
+| `command`         | `CommandNode`                  | Simple commands (toggle, add, put, etc.)  |
+| `event-handler`   | `EventHandlerNode`             | Event handlers with body commands         |
+| `conditional`     | `CommandNode` (name: 'if')     | If/else with condition and branch blocks  |
+| `compound`        | `CommandSequenceNode`          | Chained commands (then/and/async)         |
+| `loop`            | `CommandNode` (name: 'repeat') | Loops (forever, times, for, while, until) |
 
 ### Runtime-Compatible Output
 
@@ -286,8 +319,8 @@ import { createEventHandler } from '@hyperfixi/semantic';
 const handler = createEventHandler(
   new Map([['event', { type: 'literal', value: 'click' }]]),
   bodyCommands,
-  undefined,  // eventModifiers
-  ['clientX', 'clientY']  // parameterNames
+  undefined, // eventModifiers
+  ['clientX', 'clientY'] // parameterNames
 );
 
 const ast = buildAST(handler);
@@ -307,8 +340,8 @@ const loop = createLoopNode(
   'times',
   new Map([['quantity', { type: 'literal', value: 5 }]]),
   bodyCommands,
-  'item',  // loopVariable (for 'for' loops)
-  'index'  // indexVariable (optional)
+  'item', // loopVariable (for 'for' loops)
+  'index' // indexVariable (optional)
 );
 ```
 
@@ -336,10 +369,10 @@ registerCommandMapper({
 
 `src/ast-builder/value-converters.ts` converts SemanticValue → ExpressionNode:
 
-| SemanticValue | ExpressionNode |
-|---------------|----------------|
-| `{ type: 'selector' }` | `{ type: 'selector' }` |
-| `{ type: 'literal' }` | `{ type: 'literal' }` |
-| `{ type: 'reference' }` | `{ type: 'contextReference' }` |
-| `{ type: 'property-path' }` | `{ type: 'propertyAccess' }` |
-| `{ type: 'expression' }` | Parsed via `@hyperfixi/expression-parser` |
+| SemanticValue               | ExpressionNode                            |
+| --------------------------- | ----------------------------------------- |
+| `{ type: 'selector' }`      | `{ type: 'selector' }`                    |
+| `{ type: 'literal' }`       | `{ type: 'literal' }`                     |
+| `{ type: 'reference' }`     | `{ type: 'contextReference' }`            |
+| `{ type: 'property-path' }` | `{ type: 'propertyAccess' }`              |
+| `{ type: 'expression' }`    | Parsed via `@hyperfixi/expression-parser` |

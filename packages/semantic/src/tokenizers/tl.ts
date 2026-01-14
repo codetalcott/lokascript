@@ -5,9 +5,13 @@
  * Word order: VSO
  * Direction: ltr
  * Uses spaces: true
+ *
+ * This tokenizer derives keywords from the Tagalog profile (single source of truth)
+ * with extras for literals, positional words, and event names.
  */
 
 import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { KeywordEntry } from './base';
 import {
   BaseTokenizer,
   TokenStreamImpl,
@@ -20,18 +24,41 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
 } from './base';
+import { tagalogProfile } from '../generators/profiles/tl';
 
 // =============================================================================
-// Tagalog Keywords
+// Tagalog-Specific Keywords (not in profile)
 // =============================================================================
 
-// TODO: Add keywords from profile - these map native words to English commands
-const TL_KEYWORDS: Map<string, string> = new Map([
-  // Commands - copy from profile.keywords
-  // ['native_word', 'toggle'],
-  // ['native_word', 'add'],
-  // etc.
-]);
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words (first, last, next, etc.)
+ * - Event names (click, change, submit, etc.)
+ */
+const TAGALOG_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'totoo', normalized: 'true' },
+  { native: 'mali', normalized: 'false' },
+  { native: 'wala', normalized: 'null' },
+  { native: 'hindi_tinukoy', normalized: 'undefined' },
+
+  // Positional
+  { native: 'una', normalized: 'first' },
+  { native: 'huli', normalized: 'last' },
+  { native: 'susunod', normalized: 'next' },
+  { native: 'nakaraan', normalized: 'previous' },
+  { native: 'pinakamalapit', normalized: 'closest' },
+  { native: 'magulang', normalized: 'parent' },
+
+  // Events
+  { native: 'pindot', normalized: 'click' },
+  { native: 'pagbabago', normalized: 'change' },
+  { native: 'isumite', normalized: 'submit' },
+  { native: 'input', normalized: 'input' },
+  { native: 'karga', normalized: 'load' },
+  { native: 'mag_scroll', normalized: 'scroll' },
+];
 
 // =============================================================================
 // Tagalog Tokenizer Implementation
@@ -40,6 +67,12 @@ const TL_KEYWORDS: Map<string, string> = new Map([
 export class TagalogTokenizer extends BaseTokenizer {
   readonly language = 'tl';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(tagalogProfile, TAGALOG_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -97,20 +130,12 @@ export class TagalogTokenizer extends BaseTokenizer {
 
       // Variable references (:name)
       if (input[pos] === ':') {
-        const startPos = pos;
-        pos++;
-        let varName = '';
-        while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-          varName += input[pos];
-          pos++;
-        }
-        if (varName) {
-          tokens.push(
-            createToken(':' + varName, 'identifier', createPosition(startPos, pos), ':' + varName)
-          );
+        const varToken = this.tryVariableRef(input, pos);
+        if (varToken) {
+          tokens.push(varToken);
+          pos = varToken.position.end;
           continue;
         }
-        pos = startPos;
       }
 
       // Operators and punctuation
@@ -120,17 +145,27 @@ export class TagalogTokenizer extends BaseTokenizer {
         continue;
       }
 
-      // Words/identifiers
+      // Words/identifiers - try profile keyword matching first
       if (isAsciiIdentifierChar(input[pos])) {
         const startPos = pos;
+
+        // Try to match keywords from profile (longest first)
+        const keywordToken = this.tryProfileKeyword(input, pos);
+        if (keywordToken) {
+          tokens.push(keywordToken);
+          pos = keywordToken.position.end;
+          continue;
+        }
+
+        // Unknown word - read until non-identifier
         let word = '';
         while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
           word += input[pos];
           pos++;
         }
-        const kind = this.classifyToken(word);
-        const normalized = TL_KEYWORDS.get(word.toLowerCase());
-        tokens.push(createToken(word, kind, createPosition(startPos, pos), normalized));
+        if (word) {
+          tokens.push(createToken(word, 'identifier', createPosition(startPos, pos)));
+        }
         continue;
       }
 
@@ -142,7 +177,14 @@ export class TagalogTokenizer extends BaseTokenizer {
   }
 
   classifyToken(token: string): TokenKind {
-    if (TL_KEYWORDS.has(token.toLowerCase())) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token.toLowerCase() === entry.native.toLowerCase()) return 'keyword';
+    }
+    if (token.startsWith('.') || token.startsWith('#') || token.startsWith('[')) return 'selector';
+    if (token.startsWith(':')) return 'identifier';
+    if (token.startsWith('"') || token.startsWith("'")) return 'literal';
+    if (/^-?\d/.test(token)) return 'literal';
     return 'identifier';
   }
 }

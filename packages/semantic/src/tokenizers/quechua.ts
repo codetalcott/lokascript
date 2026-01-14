@@ -21,7 +21,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { quechuaProfile } from '../generators/profiles/quechua';
 
 // =============================================================================
 // Quechua Character Classification
@@ -53,150 +55,93 @@ const SUFFIXES = new Set([
 ]);
 
 // =============================================================================
-// Quechua Keywords
+// Quechua Extras (keywords not in profile)
 // =============================================================================
 
-const QUECHUA_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ["t'ikray", 'toggle'],
-  ['tikray', 'toggle'],
-  ['kutichiy', 'toggle'],
-  ['yapay', 'add'],
-  ['yapaykuy', 'add'],
-  ['qichuy', 'remove'],
-  ['hurquy', 'remove'],
-  ['anchuchiy', 'remove'],
-  // Commands - Content operations
-  ['churay', 'put'],
-  ['tiyachiy', 'put'],
-  ['qatichiy', 'append'],
-  ['ñawpachiy', 'prepend'],
-  ['nawpachiy', 'prepend'],
-  ['hapiy', 'take'],
-  ['ruray', 'make'],
-  ['kamay', 'make'],
-  ['kikinchay', 'clone'],
-  ['qillqay', 'clone'],
-  ["t'inkuy", 'swap'],
-  ['tinkuy', 'swap'],
-  // Note: tikray maps to toggle (lines 61-62), use different words for morph
-  ['tukuchiy', 'morph'], // "to transform completely"
-  // Commands - Variable operations
-  ['churay', 'set'],
-  ['kamaykuy', 'set'],
-  ['taripay', 'get'],
-  ['yapachiy', 'increment'],
-  ['pisiyachiy', 'decrement'],
-  ['qillqakuy', 'log'],
-  ['willakuy', 'log'],
-  // Commands - Visibility
-  ['rikuchiy', 'show'],
-  ['qawachiy', 'show'],
-  ['pakay', 'hide'],
-  ['pakakuy', 'hide'],
-  // Note: tikray maps to toggle (lines 61-62), use different words for transition
-  ['muyuy', 'transition'], // "to move smoothly"
-  ['kuyuchiy', 'transition'],
-  // Commands - Events
-  ['chaypim', 'on'],
-  ['kaypi', 'on'],
-  ['qallarichiy', 'trigger'],
-  ['kachay', 'send'],
-  ['apachiy', 'send'],
-  // Commands - DOM focus
-  ['qhawachiy', 'focus'],
-  ['mana qhawachiy', 'blur'],
-  // Commands - Navigation
-  ['riy', 'go'],
-  ['puriy', 'go'],
-  // Commands - Async
-  ['suyay', 'wait'],
-  ['apamuy', 'fetch'],
-  ['taripakaramuy', 'fetch'],
-  ['tiyakuy', 'settle'],
-  // Commands - Control flow
-  ['sichus', 'if'],
-  ['manachus', 'else'],
-  ['hukniraq', 'else'],
-  ['kutipay', 'repeat'],
-  ['muyu', 'repeat'],
-  ['sapankaq', 'for'],
-  ['kaykamaqa', 'while'],
-  ['qatipay', 'continue'],
-  ['sayay', 'halt'],
-  ['tukuy', 'halt'],
-  ['chanqay', 'throw'],
-  ['waqyay', 'call'],
-  ['kutichiy', 'return'],
-  ['kutimuy', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['mana waqtalla', 'async'],
-  ['niy', 'tell'],
-  ['willakuy', 'tell'],
-  ['qallariy', 'default'],
-  ['qallarichiy', 'init'],
-  ['ruwana', 'behavior'],
-  ['tupuy', 'measure'],
-  ['ruwakuq', 'event'],
-  ['-manta', 'from'],
-  // Modifiers
-  ['ukuman', 'into'],
-  ['ñawpaq', 'before'],
-  ['nawpaq', 'before'],
-  ['qhipa', 'after'],
-  // Control flow helpers
-  ['chayqa', 'then'],
-  ['chaymanta', 'then'],
-  ['chaymantataq', 'then'],
-  ['hinaspa', 'then'],
-  ['tukuy', 'end'],
-  ['tukukuy', 'end'],
-  ['puchukay', 'end'],
-  ['kaykama', 'until'],
-  // Events
-  ['llikllay', 'click'],
-  ['click', 'click'],
-  ['yaykuy', 'input'],
-  ['tikray', 'change'],
-  ['apachiy', 'submit'],
-  ['llave uray', 'keydown'],
-  ['llave hawa', 'keyup'],
-  ['mausiri yayku', 'mouseover'],
-  ['mausiri lluqsi', 'mouseout'],
-  ['qhaway', 'focus'],
-  ['mana qhaway', 'blur'],
-  ['kargay', 'load'],
-  ['muyuy', 'scroll'],
-  // References
-  ['ñuqa', 'me'],
-  ['nuqa', 'me'],
-  ['ñuqap', 'my'],
-  ['nuqap', 'my'],
-  ['chay', 'it'],
-  ['chaymi', 'it'],
-  ['lluqsiy', 'result'],
-  ['ruway', 'event'],
-  ['maypi', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Additional synonyms
+ */
+const QUECHUA_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'arí', normalized: 'true' },
+  { native: 'ari', normalized: 'true' },
+  { native: 'manan', normalized: 'false' },
+  { native: 'mana', normalized: 'false' },
+  { native: "ch'usaq", normalized: 'null' },
+  { native: 'chusaq', normalized: 'null' },
+  { native: 'mana riqsisqa', normalized: 'undefined' },
+
   // Positional
-  ['ñawpaq', 'first'],
-  ['nawpaq', 'first'],
-  ['qhipa', 'last'],
-  ['hamuq', 'next'],
-  ['ñawpaq kaq', 'previous'],
-  // Boolean
-  ['arí', 'true'],
-  ['ari', 'true'],
-  ['manan', 'false'],
-  ['mana', 'false'],
+  { native: 'ñawpaq', normalized: 'first' },
+  { native: 'nawpaq', normalized: 'first' },
+  { native: 'qhipa', normalized: 'last' },
+  { native: 'hamuq', normalized: 'next' },
+  { native: 'ñawpaq kaq', normalized: 'previous' },
+  { native: 'aswan qayllaqa', normalized: 'closest' },
+  { native: 'tayta', normalized: 'parent' },
+
+  // Events
+  { native: 'llikllay', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'yaykuy', normalized: 'input' },
+  { native: 'llave uray', normalized: 'keydown' },
+  { native: 'llave hawa', normalized: 'keyup' },
+  { native: 'mausiri yayku', normalized: 'mouseover' },
+  { native: 'mausiri lluqsi', normalized: 'mouseout' },
+  { native: 'qhaway', normalized: 'focus' },
+  { native: 'mana qhaway', normalized: 'blur' },
+  { native: 'kargay', normalized: 'load' },
+  { native: 'muyuy', normalized: 'scroll' },
+
+  // References
+  { native: 'ñuqa', normalized: 'me' },
+  { native: 'nuqa', normalized: 'me' },
+  { native: 'ñuqap', normalized: 'my' },
+  { native: 'nuqap', normalized: 'my' },
+  { native: 'chay', normalized: 'it' },
+  { native: 'chaymi', normalized: 'it' },
+  { native: 'lluqsiy', normalized: 'result' },
+  { native: 'ruway', normalized: 'event' },
+  { native: 'maypi', normalized: 'target' },
+
   // Time units
-  ['sikundu', 'seconds'],
-  ['segundu', 's'],
-  ['waranqa sikundu', 'ms'],
-  ['minutu', 'm'],
-  ['ura', 'h'],
-  ['hora', 'h'],
-]);
+  { native: 'sikundu', normalized: 's' },
+  { native: 'segundu', normalized: 's' },
+  { native: 'waranqa sikundu', normalized: 'ms' },
+  { native: 'minutu', normalized: 'm' },
+  { native: 'ura', normalized: 'h' },
+  { native: 'hora', normalized: 'h' },
+
+  // Event triggers (on)
+  { native: 'chaypim', normalized: 'on' },
+  { native: 'kaypi', normalized: 'on' },
+
+  // Control flow helpers
+  { native: 'chayqa', normalized: 'then' },
+  { native: 'chaymanta', normalized: 'then' },
+  { native: 'chaymantataq', normalized: 'then' },
+  { native: 'hinaspa', normalized: 'then' },
+  { native: 'tukukuy', normalized: 'end' },
+  { native: 'puchukay', normalized: 'end' },
+  { native: 'kaykama', normalized: 'until' },
+
+  // Command overrides
+  { native: 'yapay', normalized: 'add' }, // Profile may have this as 'append'
+  { native: "t'ikray", normalized: 'toggle' },
+  { native: 'tikray', normalized: 'toggle' },
+
+  // DOM focus
+  { native: 'qhawachiy', normalized: 'focus' },
+  { native: 'mana qhawachiy', normalized: 'blur' },
+
+  // Suffix modifiers
+  { native: '-manta', normalized: 'from' },
+];
 
 // =============================================================================
 // Quechua Tokenizer Implementation
@@ -205,6 +150,11 @@ const QUECHUA_KEYWORDS: Map<string, string> = new Map([
 export class QuechuaTokenizer extends BaseTokenizer {
   readonly language = 'qu';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(quechuaProfile, QUECHUA_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -297,7 +247,10 @@ export class QuechuaTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (SUFFIXES.has(lower)) return 'particle';
-    if (QUECHUA_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -329,10 +282,12 @@ export class QuechuaTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = QUECHUA_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     return createToken(word, 'identifier', createPosition(startPos, pos));

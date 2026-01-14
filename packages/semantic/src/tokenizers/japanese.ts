@@ -22,8 +22,10 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type CreateTokenOptions,
+  type KeywordEntry,
 } from './base';
 import { JapaneseMorphologicalNormalizer } from './morphology/japanese-normalizer';
+import { japaneseProfile } from '../generators/profiles/japanese';
 
 // =============================================================================
 // Japanese Character Classification
@@ -97,197 +99,71 @@ const SINGLE_CHAR_PARTICLES = new Set(['を', 'に', 'で', 'へ', 'と', 'の',
 const MULTI_CHAR_PARTICLES = ['から', 'まで', 'より'];
 
 // =============================================================================
-// Japanese Keywords
+// Japanese Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Japanese command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Attached particle forms (native idioms)
+ * - Conditional event forms
+ * - Time units
  */
-const JAPANESE_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['切り替え', 'toggle'],
-  ['切り替える', 'toggle'],
-  ['トグル', 'toggle'],
-  ['トグルする', 'toggle'],
-  ['追加', 'add'],
-  ['追加する', 'add'],
-  ['加える', 'add'],
-  ['削除', 'remove'],
-  ['削除する', 'remove'],
-  ['取り除く', 'remove'],
-  // Commands - Content operations
-  ['置く', 'put'],
-  ['入れる', 'put'],
-  ['末尾追加', 'append'],
-  ['末尾に追加', 'append'],
-  ['アペンド', 'append'],
-  ['先頭追加', 'prepend'],
-  ['先頭に追加', 'prepend'],
-  ['プリペンド', 'prepend'],
-  ['取る', 'take'],
-  ['作る', 'make'],
-  ['作成', 'make'],
-  ['複製', 'clone'],
-  ['クローン', 'clone'],
-  // Commands - Variable operations
-  ['セット', 'set'],
-  ['セットする', 'set'],
-  ['設定', 'set'],
-  ['設定する', 'set'],
-  ['取得', 'get'],
-  ['取得する', 'get'],
-  ['ゲット', 'get'],
-  ['増加', 'increment'],
-  ['増加する', 'increment'],
-  ['増やす', 'increment'],
-  ['インクリメント', 'increment'],
-  ['減少', 'decrement'],
-  ['減少する', 'decrement'],
-  ['減らす', 'decrement'],
-  ['デクリメント', 'decrement'],
-  ['記録', 'log'],
-  ['ログ', 'log'],
-  ['出力', 'log'],
-  // Commands - Visibility
-  ['表示', 'show'],
-  ['表示する', 'show'],
-  ['見せる', 'show'],
-  ['隠す', 'hide'],
-  ['非表示', 'hide'],
-  ['非表示にする', 'hide'],
-  ['遷移', 'transition'],
-  ['トランジション', 'transition'],
-  ['アニメーション', 'transition'],
-  // Commands - Events
-  ['で', 'on'],
-  ['時', 'on'],
-  ['とき', 'on'],
-  ['トリガー', 'trigger'],
-  ['発火', 'trigger'],
-  ['引き金', 'trigger'],
-  ['送る', 'send'],
-  ['送信', 'send'],
-  ['送信する', 'send'],
-  // Commands - DOM focus
-  ['フォーカス', 'focus'],
-  ['集中', 'focus'],
-  ['ぼかし', 'blur'],
-  ['フォーカス解除', 'blur'],
-  // Commands - Navigation
-  ['移動', 'go'],
-  ['行く', 'go'],
-  ['ナビゲート', 'go'],
-  // Commands - Async
-  ['待つ', 'wait'],
-  ['待機', 'wait'],
-  ['フェッチ', 'fetch'],
-  ['安定', 'settle'],
-  ['落ち着く', 'settle'],
-  // Commands - Control flow
-  ['もし', 'if'],
-  ['条件', 'if'],
-  ['そうでなければ', 'else'],
-  ['それ以外', 'else'],
-  ['繰り返し', 'repeat'],
-  ['繰り返す', 'repeat'],
-  ['リピート', 'repeat'],
-  ['ために', 'for'],
-  ['各', 'for'],
-  ['の間', 'while'],
-  ['間', 'while'],
-  ['続ける', 'continue'],
-  ['継続', 'continue'],
-  ['停止', 'halt'],
-  ['止める', 'halt'],
-  ['ハルト', 'halt'],
-  ['投げる', 'throw'],
-  ['スロー', 'throw'],
-  ['呼び出し', 'call'],
-  ['コール', 'call'],
-  ['呼ぶ', 'call'],
-  ['呼び出す', 'call'],
-  ['戻る', 'return'],
-  ['返す', 'return'],
-  ['リターン', 'return'],
-  // Commands - Advanced
-  ['JS実行', 'js'],
-  ['js', 'js'],
-  ['非同期', 'async'],
-  ['アシンク', 'async'],
-  ['伝える', 'tell'],
-  ['テル', 'tell'],
-  ['既定', 'default'],
-  ['デフォルト', 'default'],
-  ['初期化', 'init'],
-  ['イニット', 'init'],
-  ['振る舞い', 'behavior'],
-  ['ビヘイビア', 'behavior'],
-  ['インストール', 'install'],
-  ['インストールする', 'install'],
-  ['設置', 'install'],
-  ['測定', 'measure'],
-  ['測定する', 'measure'],
-  ['計測', 'measure'],
-  ['イベント', 'event'],
-  // Attached particle forms (native idioms - particle + verb without space)
-  ['を切り替え', 'toggle'],
-  ['を切り替える', 'toggle'],
-  ['をトグル', 'toggle'],
-  ['を増加', 'increment'],
-  ['を増やす', 'increment'],
-  ['を減少', 'decrement'],
-  ['を減らす', 'decrement'],
-  ['を追加', 'add'],
-  ['を削除', 'remove'],
-  ['を表示', 'show'],
-  ['を隠す', 'hide'],
-  ['を非表示', 'hide'],
-  // Conditional event forms (native idioms)
-  ['したら', 'on'], // conditional marker as event keyword
-  ['すると', 'on'],
-  ['時に', 'on'], // temporal suffix
-  // Modifiers
-  ['へ', 'into'],
-  ['前に', 'before'],
-  ['後に', 'after'],
-  ['後', 'after'],
-  // Control flow helpers
-  ['ならば', 'then'],
-  ['なら', 'then'],
-  ['終わり', 'end'],
-  ['まで', 'until'],
-  // Events (for event name recognition)
-  ['クリック', 'click'],
-  ['入力', 'input'],
-  ['変更', 'change'],
-  ['送信', 'submit'],
-  ['フォーカス', 'focus'],
-  ['キーダウン', 'keydown'],
-  ['キーアップ', 'keyup'],
-  ['マウスオーバー', 'mouseover'],
-  ['マウスアウト', 'mouseout'],
-  ['ブラー', 'blur'],
-  ['ロード', 'load'],
-  ['スクロール', 'scroll'],
-  // References
-  ['私', 'me'],
-  ['私の', 'my'],
-  ['それ', 'it'],
-  ['その', 'its'],
-  ['結果', 'result'],
-  ['イベント', 'event'],
-  ['ターゲット', 'target'],
+const JAPANESE_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: '真', normalized: 'true' },
+  { native: '偽', normalized: 'false' },
+  { native: 'ヌル', normalized: 'null' },
+  { native: '未定義', normalized: 'undefined' },
+
   // Positional
-  ['最初', 'first'],
-  ['最後', 'last'],
-  ['次', 'next'],
-  ['前', 'previous'],
+  { native: '最初', normalized: 'first' },
+  { native: '最後', normalized: 'last' },
+  { native: '次', normalized: 'next' },
+  { native: '前', normalized: 'previous' },
+  { native: '最も近い', normalized: 'closest' },
+  { native: '親', normalized: 'parent' },
+
+  // Events
+  { native: 'クリック', normalized: 'click' },
+  { native: '変更', normalized: 'change' },
+  { native: '送信', normalized: 'submit' },
+  { native: '入力', normalized: 'input' },
+  { native: 'ロード', normalized: 'load' },
+  { native: 'スクロール', normalized: 'scroll' },
+  { native: 'キーダウン', normalized: 'keydown' },
+  { native: 'キーアップ', normalized: 'keyup' },
+  { native: 'マウスオーバー', normalized: 'mouseover' },
+  { native: 'マウスアウト', normalized: 'mouseout' },
+  { native: 'ブラー', normalized: 'blur' },
+
+  // References (additional forms)
+  { native: '私', normalized: 'me' },
+  { native: '私の', normalized: 'my' },
+  { native: 'その', normalized: 'its' },
+
+  // Note: Attached particle forms (を切り替え, を追加, etc.) are intentionally NOT included
+  // because they would cause ambiguous parsing. The separate particle + verb pattern
+  // (を + 切り替え) is preferred for consistent semantic analysis.
+
+  // Conditional event forms
+  { native: 'したら', normalized: 'on' },
+  { native: 'すると', normalized: 'on' },
+  { native: '時に', normalized: 'on' },
+
+  // Control flow helpers
+  { native: 'もし', normalized: 'if' }, // Starts with particle も, needs explicit entry
+  { native: 'ならば', normalized: 'then' },
+  { native: 'なら', normalized: 'then' },
+
   // Time units
-  ['秒', 's'],
-  ['ミリ秒', 'ms'],
-  ['分', 'm'],
-  ['時間', 'h'],
-]);
+  { native: '秒', normalized: 's' },
+  { native: 'ミリ秒', normalized: 'ms' },
+  { native: '分', normalized: 'm' },
+  { native: '時間', normalized: 'h' },
+];
 
 // =============================================================================
 // Japanese Tokenizer Implementation
@@ -299,6 +175,12 @@ export class JapaneseTokenizer extends BaseTokenizer {
 
   /** Morphological normalizer for Japanese verb conjugations */
   private morphNormalizer = new JapaneseMorphologicalNormalizer();
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(japaneseProfile, JAPANESE_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -367,8 +249,17 @@ export class JapaneseTokenizer extends BaseTokenizer {
         continue;
       }
 
-      // Try single-character particle
+      // Check if this starts a multi-character keyword (before single-char particle check)
+      // This prevents splitting keywords like もし (if) into も (particle) + し (identifier)
       if (SINGLE_CHAR_PARTICLES.has(input[pos])) {
+        const keywordToken = this.tryProfileKeyword(input, pos);
+        // Only accept keywords longer than 1 char (e.g., もし but not を/で/に which are role markers)
+        if (keywordToken && keywordToken.value.length > 1) {
+          tokens.push(keywordToken);
+          pos = keywordToken.position.end;
+          continue;
+        }
+        // Not a multi-char keyword, treat as particle
         tokens.push(createToken(input[pos], 'particle', createPosition(pos, pos + 1)));
         pos++;
         continue;
@@ -403,7 +294,10 @@ export class JapaneseTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
-    if (JAPANESE_KEYWORDS.has(token)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token === entry.native) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'") || token.startsWith('「')) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -464,12 +358,11 @@ export class JapaneseTokenizer extends BaseTokenizer {
 
     if (!word) return null;
 
-    // Check if this is a known keyword (exact match)
-    const normalized = JAPANESE_KEYWORDS.get(word);
-
-    if (normalized) {
-      // Exact match found in keyword map
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check if this is a known keyword (exact match via profile keywords)
+    for (const entry of this.profileKeywords) {
+      if (word === entry.native) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     // Try morphological normalization for conjugated forms
@@ -477,17 +370,16 @@ export class JapaneseTokenizer extends BaseTokenizer {
 
     if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
       // Check if the stem is a known keyword
-      const stemNormalized = JAPANESE_KEYWORDS.get(morphResult.stem);
-
-      if (stemNormalized) {
-        // Found via morphological normalization
-        const tokenOptions: CreateTokenOptions = {
-          normalized: stemNormalized,
-          stem: morphResult.stem,
-          stemConfidence: morphResult.confidence,
-        };
-
-        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+      for (const entry of this.profileKeywords) {
+        if (morphResult.stem === entry.native) {
+          // Found via morphological normalization
+          const tokenOptions: CreateTokenOptions = {
+            normalized: entry.normalized,
+            stem: morphResult.stem,
+            stemConfidence: morphResult.confidence,
+          };
+          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+        }
       }
     }
 

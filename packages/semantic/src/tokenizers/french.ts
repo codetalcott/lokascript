@@ -20,7 +20,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { frenchProfile } from '../generators/profiles/french';
 
 // =============================================================================
 // French Character Classification
@@ -64,168 +66,100 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// French Keywords
+// French Extras (keywords not in profile)
 // =============================================================================
 
-const FRENCH_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['basculer', 'toggle'],
-  ['permuter', 'toggle'],
-  ['alterner', 'toggle'],
-  ['ajouter', 'add'],
-  ['supprimer', 'remove'],
-  ['enlever', 'remove'],
-  ['retirer', 'remove'],
-  // Commands - Content operations
-  ['mettre', 'put'],
-  ['placer', 'put'],
-  ['annexer', 'append'],
-  ['préfixer', 'prepend'],
-  ['prefixer', 'prepend'],
-  ['prendre', 'take'],
-  ['faire', 'make'],
-  ['créer', 'make'],
-  ['creer', 'make'],
-  ['cloner', 'clone'],
-  ['copier', 'clone'],
-  ['transformer', 'morph'],
-  ['transmuter', 'morph'],
-  // Commands - Variable operations
-  ['définir', 'set'],
-  ['definir', 'set'],
-  ['établir', 'set'],
-  ['etablir', 'set'],
-  ['obtenir', 'get'],
-  ['incrémenter', 'increment'],
-  ['incrementer', 'increment'],
-  ['augmenter', 'increment'],
-  ['décrémenter', 'decrement'],
-  ['decrementer', 'decrement'],
-  ['diminuer', 'decrement'],
-  ['enregistrer', 'log'],
-  ['journaliser', 'log'],
-  ['afficher', 'log'],
-  // Commands - Visibility
-  ['montrer', 'show'],
-  ['afficher', 'show'],
-  ['cacher', 'hide'],
-  ['masquer', 'hide'],
-  ['transition', 'transition'],
-  ['animer', 'transition'],
-  // Commands - Events
-  ['sur', 'on'],
-  ['quand', 'on'],
-  ['lors', 'on'],
-  ['déclencher', 'trigger'],
-  ['declencher', 'trigger'],
-  ['envoyer', 'send'],
-  // Commands - DOM focus
-  ['focaliser', 'focus'],
-  ['concentrer', 'focus'],
-  ['défocaliser', 'blur'],
-  ['defocaliser', 'blur'],
-  // Commands - Navigation
-  ['aller', 'go'],
-  ['naviguer', 'go'],
-  // Commands - Async
-  ['attendre', 'wait'],
-  ['chercher', 'fetch'],
-  ['récupérer', 'fetch'],
-  ['recuperer', 'fetch'],
-  ['stabiliser', 'settle'],
-  // Commands - Control flow
-  ['si', 'if'],
-  ['sinon', 'else'],
-  ['répéter', 'repeat'],
-  ['repeter', 'repeat'],
-  ['pour', 'for'],
-  ['tant que', 'while'],
-  ['pendant', 'while'],
-  ['continuer', 'continue'],
-  ['arrêter', 'halt'],
-  ['arreter', 'halt'],
-  ['stopper', 'halt'],
-  ['lancer', 'throw'],
-  ['appeler', 'call'],
-  ['retourner', 'return'],
-  ['renvoyer', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['asynchrone', 'async'],
-  ['dire', 'tell'],
-  ['défaut', 'default'],
-  ['defaut', 'default'],
-  ['initialiser', 'init'],
-  ['comportement', 'behavior'],
-  ['installer', 'install'],
-  ['mesurer', 'measure'],
-  ["jusqu'à", 'until'],
-  ['jusqua', 'until'],
-  ['événement', 'event'],
-  ['evenement', 'event'],
-  // Modifiers
-  ['dans', 'into'],
-  ['avant', 'before'],
-  ['après', 'after'],
-  ['apres', 'after'],
-  // Control flow helpers
-  ['alors', 'then'],
-  ['puis', 'then'],
-  ['ensuite', 'then'],
-  ['fin', 'end'],
-  ['terminer', 'end'],
-  ['finir', 'end'],
-  // Events
-  ['clic', 'click'],
-  ['click', 'click'],
-  ['entrée', 'input'],
-  ['entree', 'input'],
-  ['changement', 'change'],
-  ['soumission', 'submit'],
-  ['touche bas', 'keydown'],
-  ['touche haut', 'keyup'],
-  ['souris dessus', 'mouseover'],
-  ['souris dehors', 'mouseout'],
-  ['focus', 'focus'],
-  ['flou', 'blur'],
-  ['chargement', 'load'],
-  ['défilement', 'scroll'],
-  ['defilement', 'scroll'],
-  // References
-  ['moi', 'me'],
-  ['je', 'me'],
-  ['mon', 'my'],
-  ['il', 'it'],
-  ['ça', 'it'],
-  ['ca', 'it'],
-  ['résultat', 'result'],
-  ['resultat', 'result'],
-  ['événement', 'event'],
-  ['evenement', 'event'],
-  ['cible', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Accent-free variants for accessibility
+ */
+const FRENCH_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'vrai', normalized: 'true' },
+  { native: 'faux', normalized: 'false' },
+  { native: 'nul', normalized: 'null' },
+  { native: 'indéfini', normalized: 'undefined' },
+  { native: 'indefini', normalized: 'undefined' },
+
   // Positional
-  ['premier', 'first'],
-  ['première', 'first'],
-  ['premiere', 'first'],
-  ['dernier', 'last'],
-  ['dernière', 'last'],
-  ['derniere', 'last'],
-  ['suivant', 'next'],
-  ['précédent', 'previous'],
-  ['precedent', 'previous'],
-  // Boolean
-  ['vrai', 'true'],
-  ['faux', 'false'],
+  { native: 'premier', normalized: 'first' },
+  { native: 'première', normalized: 'first' },
+  { native: 'premiere', normalized: 'first' },
+  { native: 'dernier', normalized: 'last' },
+  { native: 'dernière', normalized: 'last' },
+  { native: 'derniere', normalized: 'last' },
+  { native: 'suivant', normalized: 'next' },
+  { native: 'précédent', normalized: 'previous' },
+  { native: 'precedent', normalized: 'previous' },
+  { native: 'plus proche', normalized: 'closest' },
+  { native: 'parent', normalized: 'parent' },
+
+  // Events
+  { native: 'clic', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'entrée', normalized: 'input' },
+  { native: 'entree', normalized: 'input' },
+  { native: 'changement', normalized: 'change' },
+  { native: 'soumission', normalized: 'submit' },
+  { native: 'touche bas', normalized: 'keydown' },
+  { native: 'touche haut', normalized: 'keyup' },
+  { native: 'souris dessus', normalized: 'mouseover' },
+  { native: 'souris dehors', normalized: 'mouseout' },
+  { native: 'focus', normalized: 'focus' },
+  { native: 'flou', normalized: 'blur' },
+  { native: 'chargement', normalized: 'load' },
+  { native: 'défilement', normalized: 'scroll' },
+  { native: 'defilement', normalized: 'scroll' },
+
+  // Additional references
+  { native: 'je', normalized: 'me' },
+  { native: 'mon', normalized: 'my' },
+  { native: 'ma', normalized: 'my' },
+  { native: 'mes', normalized: 'my' },
+  { native: 'ça', normalized: 'it' },
+  { native: 'ca', normalized: 'it' },
+  { native: 'resultat', normalized: 'result' },
+  { native: 'evenement', normalized: 'event' },
+
   // Time units
-  ['seconde', 's'],
-  ['secondes', 's'],
-  ['milliseconde', 'ms'],
-  ['millisecondes', 'ms'],
-  ['minute', 'm'],
-  ['minutes', 'm'],
-  ['heure', 'h'],
-  ['heures', 'h'],
-]);
+  { native: 'seconde', normalized: 's' },
+  { native: 'secondes', normalized: 's' },
+  { native: 'milliseconde', normalized: 'ms' },
+  { native: 'millisecondes', normalized: 'ms' },
+  { native: 'minute', normalized: 'm' },
+  { native: 'minutes', normalized: 'm' },
+  { native: 'heure', normalized: 'h' },
+  { native: 'heures', normalized: 'h' },
+
+  // Accent-free variants (for user convenience)
+  { native: 'prefixer', normalized: 'prepend' },
+  { native: 'creer', normalized: 'make' },
+  { native: 'definir', normalized: 'set' },
+  { native: 'etablir', normalized: 'set' },
+  { native: 'incrementer', normalized: 'increment' },
+  { native: 'decrementer', normalized: 'decrement' },
+  { native: 'declencher', normalized: 'trigger' },
+  { native: 'defocaliser', normalized: 'blur' },
+  { native: 'recuperer', normalized: 'fetch' },
+  { native: 'repeter', normalized: 'repeat' },
+  { native: 'arreter', normalized: 'halt' },
+  { native: 'defaut', normalized: 'default' },
+  { native: 'jusqua', normalized: 'until' },
+  { native: 'apres', normalized: 'after' },
+
+  // Additional log synonyms
+  { native: 'journaliser', normalized: 'log' },
+
+  // Additional morph synonym
+  { native: 'transmuter', normalized: 'morph' },
+
+  // Multi-word phrases
+  { native: 'tant que', normalized: 'while' },
+];
 
 // =============================================================================
 // French Tokenizer Implementation
@@ -234,6 +168,11 @@ const FRENCH_KEYWORDS: Map<string, string> = new Map([
 export class FrenchTokenizer extends BaseTokenizer {
   readonly language = 'fr';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(frenchProfile, FRENCH_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -316,7 +255,10 @@ export class FrenchTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (FRENCH_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -334,10 +276,12 @@ export class FrenchTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = FRENCH_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     if (PREPOSITIONS.has(lower)) {

@@ -585,6 +585,7 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
    * - profile.roleMarkers (into, from, with, etc.)
    *
    * Results are sorted longest-first for greedy matching (important for non-space languages).
+   * Extras take precedence over profile entries when there are duplicates.
    *
    * @param profile - Language profile containing keyword translations
    * @param extras - Additional keyword entries to include (literals, positional, events)
@@ -593,13 +594,14 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
     profile: TokenizerProfile,
     extras: KeywordEntry[] = []
   ): void {
-    const entries: KeywordEntry[] = [];
+    // Use a Map to deduplicate, with extras taking precedence
+    const keywordMap = new Map<string, KeywordEntry>();
 
     // Extract from keywords (command translations)
     if (profile.keywords) {
       for (const [normalized, translation] of Object.entries(profile.keywords)) {
         // Primary translation
-        entries.push({
+        keywordMap.set(translation.primary, {
           native: translation.primary,
           normalized: translation.normalized || normalized,
         });
@@ -607,7 +609,7 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
         // Alternative forms
         if (translation.alternatives) {
           for (const alt of translation.alternatives) {
-            entries.push({
+            keywordMap.set(alt, {
               native: alt,
               normalized: translation.normalized || normalized,
             });
@@ -619,7 +621,7 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
     // Extract from references (me, it, you, etc.)
     if (profile.references) {
       for (const [normalized, native] of Object.entries(profile.references)) {
-        entries.push({ native, normalized });
+        keywordMap.set(native, { native, normalized });
       }
     }
 
@@ -627,21 +629,25 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
     if (profile.roleMarkers) {
       for (const [role, marker] of Object.entries(profile.roleMarkers)) {
         if (marker.primary) {
-          entries.push({ native: marker.primary, normalized: role });
+          keywordMap.set(marker.primary, { native: marker.primary, normalized: role });
         }
         if (marker.alternatives) {
           for (const alt of marker.alternatives) {
-            entries.push({ native: alt, normalized: role });
+            keywordMap.set(alt, { native: alt, normalized: role });
           }
         }
       }
     }
 
-    // Add extra entries (literals, positional, events)
-    entries.push(...extras);
+    // Add extra entries (literals, positional, events) - these OVERRIDE profile entries
+    for (const extra of extras) {
+      keywordMap.set(extra.native, extra);
+    }
 
-    // Sort longest-first for greedy matching
-    this.profileKeywords = entries.sort((a, b) => b.native.length - a.native.length);
+    // Convert to array and sort longest-first for greedy matching
+    this.profileKeywords = Array.from(keywordMap.values()).sort(
+      (a, b) => b.native.length - a.native.length
+    );
   }
 
   /**

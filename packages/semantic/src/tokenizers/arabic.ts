@@ -22,8 +22,10 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type CreateTokenOptions,
+  type KeywordEntry,
 } from './base';
 import { ArabicMorphologicalNormalizer } from './morphology/arabic-normalizer';
+import { arabicProfile } from '../generators/profiles/arabic';
 
 // =============================================================================
 // Arabic Character Classification
@@ -90,176 +92,116 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// Arabic Keywords
+// Arabic Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Arabic command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Temporal conjunctions
+ * - Additional synonyms and spelling variants
  */
-const ARABIC_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['بدّل', 'toggle'],
-  ['بدل', 'toggle'],
-  ['غيّر', 'toggle'],
-  ['غير', 'toggle'],
-  ['أضف', 'add'],
-  ['اضف', 'add'],
-  ['زِد', 'add'],
-  ['أزل', 'remove'],
-  ['ازل', 'remove'],
-  ['احذف', 'remove'],
-  ['امسح', 'remove'],
-  // Commands - Content operations
-  ['ضع', 'put'],
-  ['اضع', 'put'],
-  ['يضع', 'put'],
-  ['اجعل', 'put'],
-  ['ألحق', 'append'],
-  ['سبق', 'prepend'],
-  ['خذ', 'take'],
-  ['اصنع', 'make'],
-  ['أنشئ', 'make'],
-  ['استنسخ', 'clone'],
-  ['انسخ', 'clone'],
-  // Commands - Variable operations
-  ['اضبط', 'set'],
-  ['عيّن', 'set'],
-  ['عين', 'set'],
-  ['حدد', 'set'],
-  ['احصل', 'get'],
-  ['زِد', 'increment'],
-  ['زد', 'increment'],
-  ['ارفع', 'increment'],
-  ['أنقص', 'decrement'],
-  ['انقص', 'decrement'],
-  ['قلل', 'decrement'],
-  ['سجّل', 'log'],
-  ['سجل', 'log'],
-  // Commands - Visibility
-  ['أظهر', 'show'],
-  ['اظهر', 'show'],
-  ['اعرض', 'show'],
-  ['أخفِ', 'hide'],
-  ['اخفِ', 'hide'],
-  ['اخف', 'hide'],
-  ['اخفي', 'hide'],
-  ['انتقال', 'transition'],
-  ['انتقل', 'transition'],
-  // Commands - Events
-  ['على', 'on'],
-  ['عند', 'on'],
-  ['لدى', 'on'],
-  ['حين', 'on'],
-  // Native idiom temporal conjunctions (higher priority)
-  ['عندما', 'on'], // when (temporal conjunction) - most natural
-  ['حينما', 'on'], // when (alternative)
-  ['لمّا', 'on'], // when (past emphasis)
-  ['لما', 'on'], // when (without shadda)
-  ['تشغيل', 'trigger'],
-  ['شغّل', 'trigger'],
-  ['شغل', 'trigger'],
-  ['أطلق', 'trigger'],
-  ['فعّل', 'trigger'],
-  ['أرسل', 'send'],
-  ['ارسل', 'send'],
-  // Commands - DOM focus
-  ['تركيز', 'focus'],
-  ['ركز', 'focus'],
-  ['ضبابية', 'blur'],
-  ['شوش', 'blur'],
-  // Commands - Navigation
-  ['اذهب', 'go'],
-  // Commands - Async
-  ['انتظر', 'wait'],
-  ['احضر', 'fetch'],
-  ['جلب', 'fetch'],
-  ['استقر', 'settle'],
-  // Commands - Control flow
-  ['إذا', 'if'],
-  ['اذا', 'if'],
-  ['لو', 'if'],
-  ['وإلا', 'else'],
-  ['والا', 'else'],
-  ['كرر', 'repeat'],
-  ['لكل', 'for'],
-  ['بينما', 'while'],
-  ['واصل', 'continue'],
-  ['أوقف', 'halt'],
-  ['توقف', 'halt'],
-  ['ارم', 'throw'],
-  ['ارمِ', 'throw'],
-  ['استدع', 'call'],
-  ['اتصل', 'call'],
-  ['نادِ', 'call'],
-  ['ارجع', 'return'],
-  ['عُد', 'return'],
-  // Commands - Advanced
-  ['جافاسكربت', 'js'],
-  ['js', 'js'],
-  ['متزامن', 'async'],
-  ['أخبر', 'tell'],
-  ['افتراضي', 'default'],
-  ['تهيئة', 'init'],
-  ['بدء', 'init'],
-  ['سلوك', 'behavior'],
-  ['تثبيت', 'install'],
-  ['ثبّت', 'install'],
-  ['قياس', 'measure'],
-  ['قس', 'measure'],
-  ['حتى', 'until'],
-  ['حدث', 'event'],
-  // Modifiers
-  ['في', 'into'],
-  ['إلى', 'into'],
-  ['قبل', 'before'],
-  ['بعد', 'after'],
-  // Control flow helpers
-  ['إذن', 'then'],
-  ['فإن', 'then'],
-  ['نهاية', 'end'],
-  ['حتى', 'until'],
-  // Events (for event name recognition)
-  ['النقر', 'click'],
-  ['نقر', 'click'],
-  ['الإدخال', 'input'],
-  ['إدخال', 'input'],
-  ['التغيير', 'change'],
-  ['تغيير', 'change'],
-  ['الإرسال', 'submit'],
-  ['إرسال', 'submit'],
-  ['التركيز', 'focus'],
-  ['تركيز', 'focus'],
-  ['فقدان التركيز', 'blur'],
-  ['ضغط', 'keydown'],
-  ['رفع', 'keyup'],
-  ['تمرير الفأرة', 'mouseover'],
-  ['مغادرة الفأرة', 'mouseout'],
-  ['تحميل', 'load'],
-  ['تمرير', 'scroll'],
-  // References
-  ['أنا', 'me'],
-  ['هو', 'it'],
-  ['هي', 'it'],
-  ['النتيجة', 'result'],
-  ['الحدث', 'event'],
-  ['الهدف', 'target'],
+const ARABIC_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'صحيح', normalized: 'true' },
+  { native: 'خطأ', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'فارغ', normalized: 'null' },
+  { native: 'غير معرف', normalized: 'undefined' },
+
   // Positional
-  ['الأول', 'first'],
-  ['الأخير', 'last'],
-  ['التالي', 'next'],
-  ['السابق', 'previous'],
+  { native: 'الأول', normalized: 'first' },
+  { native: 'أول', normalized: 'first' },
+  { native: 'الأخير', normalized: 'last' },
+  { native: 'آخر', normalized: 'last' },
+  { native: 'التالي', normalized: 'next' },
+  { native: 'السابق', normalized: 'previous' },
+  { native: 'الأقرب', normalized: 'closest' },
+  { native: 'الأب', normalized: 'parent' },
+
+  // Events
+  { native: 'النقر', normalized: 'click' },
+  { native: 'نقر', normalized: 'click' },
+  { native: 'الإدخال', normalized: 'input' },
+  { native: 'إدخال', normalized: 'input' },
+  { native: 'التغيير', normalized: 'change' },
+  { native: 'تغيير', normalized: 'change' },
+  { native: 'الإرسال', normalized: 'submit' },
+  { native: 'إرسال', normalized: 'submit' },
+  { native: 'التركيز', normalized: 'focus' },
+  { native: 'فقدان التركيز', normalized: 'blur' },
+  { native: 'ضغط', normalized: 'keydown' },
+  { native: 'رفع', normalized: 'keyup' },
+  { native: 'تمرير الفأرة', normalized: 'mouseover' },
+  { native: 'مغادرة الفأرة', normalized: 'mouseout' },
+  { native: 'تحميل', normalized: 'load' },
+  { native: 'تمرير', normalized: 'scroll' },
+
+  // References
+  { native: 'أنا', normalized: 'me' },
+  { native: 'هو', normalized: 'it' },
+  { native: 'هي', normalized: 'it' },
+  { native: 'النتيجة', normalized: 'result' },
+  { native: 'الحدث', normalized: 'event' },
+  { native: 'الهدف', normalized: 'target' },
+
   // Time units
-  ['ثانية', 's'],
-  ['ثواني', 's'],
-  ['ملي ثانية', 'ms'],
-  ['دقيقة', 'm'],
-  ['دقائق', 'm'],
-  ['ساعة', 'h'],
-  ['ساعات', 'h'],
-  // Boolean
-  ['صحيح', 'true'],
-  ['خطأ', 'false'],
-]);
+  { native: 'ثانية', normalized: 's' },
+  { native: 'ثواني', normalized: 's' },
+  { native: 'ملي ثانية', normalized: 'ms' },
+  { native: 'دقيقة', normalized: 'm' },
+  { native: 'دقائق', normalized: 'm' },
+  { native: 'ساعة', normalized: 'h' },
+  { native: 'ساعات', normalized: 'h' },
+
+  // Temporal conjunctions (for "on" event)
+  { native: 'عندما', normalized: 'on' },
+  { native: 'حينما', normalized: 'on' },
+  { native: 'لمّا', normalized: 'on' },
+  { native: 'لما', normalized: 'on' },
+  { native: 'حين', normalized: 'on' },
+  { native: 'لدى', normalized: 'on' },
+
+  // Additional spelling variants (without diacritics)
+  { native: 'بدل', normalized: 'toggle' },
+  { native: 'غير', normalized: 'toggle' },
+  { native: 'اضف', normalized: 'add' },
+  { native: 'ازل', normalized: 'remove' },
+  { native: 'اضع', normalized: 'put' },
+  { native: 'يضع', normalized: 'put' },
+  { native: 'اجعل', normalized: 'put' },
+  { native: 'عين', normalized: 'set' },
+  { native: 'زد', normalized: 'increment' },
+  { native: 'ارفع', normalized: 'increment' },
+  { native: 'انقص', normalized: 'decrement' },
+  { native: 'قلل', normalized: 'decrement' },
+  { native: 'سجل', normalized: 'log' },
+  { native: 'اظهر', normalized: 'show' },
+  { native: 'اعرض', normalized: 'show' },
+  { native: 'اخف', normalized: 'hide' },
+  { native: 'اخفي', normalized: 'hide' },
+  { native: 'شغل', normalized: 'trigger' },
+  { native: 'ارسل', normalized: 'send' },
+  { native: 'ركز', normalized: 'focus' },
+  { native: 'شوش', normalized: 'blur' },
+  { native: 'اذا', normalized: 'if' },
+  { native: 'لو', normalized: 'if' },
+  { native: 'والا', normalized: 'else' },
+  { native: 'توقف', normalized: 'halt' },
+  { native: 'انسخ', normalized: 'clone' },
+
+  // Control flow helpers
+  { native: 'إذن', normalized: 'then' },
+  { native: 'فإن', normalized: 'then' },
+  { native: 'نهاية', normalized: 'end' },
+
+  // Modifiers
+  { native: 'قبل', normalized: 'before' },
+  { native: 'بعد', normalized: 'after' },
+];
 
 // =============================================================================
 // Arabic Tokenizer Implementation
@@ -271,6 +213,11 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   /** Morphological normalizer for Arabic prefix/suffix stripping */
   private morphNormalizer = new ArabicMorphologicalNormalizer();
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(arabicProfile, ARABIC_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -377,7 +324,10 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PREPOSITIONS.has(token)) return 'particle';
-    if (ARABIC_KEYWORDS.has(token)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token === entry.native) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -475,11 +425,11 @@ export class ArabicTokenizer extends BaseTokenizer {
 
     if (!word) return null;
 
-    // Check if this is a known keyword (exact match)
-    const normalized = ARABIC_KEYWORDS.get(word);
-
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check if this is a known keyword (exact match via profile keywords)
+    for (const entry of this.profileKeywords) {
+      if (word === entry.native) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     // Check if it's a preposition
@@ -492,16 +442,15 @@ export class ArabicTokenizer extends BaseTokenizer {
 
     if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
       // Check if the stem is a known keyword
-      const stemNormalized = ARABIC_KEYWORDS.get(morphResult.stem);
-
-      if (stemNormalized) {
-        const tokenOptions: CreateTokenOptions = {
-          normalized: stemNormalized,
-          stem: morphResult.stem,
-          stemConfidence: morphResult.confidence,
-        };
-
-        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+      for (const entry of this.profileKeywords) {
+        if (morphResult.stem === entry.native) {
+          const tokenOptions: CreateTokenOptions = {
+            normalized: entry.normalized,
+            stem: morphResult.stem,
+            stemConfidence: morphResult.confidence,
+          };
+          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+        }
       }
     }
 

@@ -2,6 +2,7 @@
  * Pattern Builders
  *
  * Functions for building and generating patterns for specific languages.
+ * Uses a registry-based approach for maintainability and extensibility.
  */
 
 import type { LanguagePattern } from '../types';
@@ -12,7 +13,7 @@ import { getPutPatternsForLanguage } from './put/index';
 import { getEventHandlerPatternsForLanguage } from './event-handler/index';
 import { getGrammarTransformedPatternsForLanguage } from './grammar-transformed/index';
 
-// Import new multilingual command patterns
+// Import multilingual command patterns
 import { getAddPatternsForLanguage } from './add/index';
 import { getRemovePatternsForLanguage } from './remove/index';
 import { getShowPatternsForLanguage } from './show/index';
@@ -30,6 +31,56 @@ import { generatePatternsForLanguage } from '../generators/pattern-generator';
 
 // Import registry functions for lazy loading support
 import { getRegisteredLanguages, tryGetProfile } from '../registry';
+
+// =============================================================================
+// Pattern Loader Registry
+// =============================================================================
+
+/**
+ * Type for pattern loader functions.
+ * Each loader returns patterns for a specific command/category for a given language.
+ */
+type PatternLoader = (language: string) => LanguagePattern[];
+
+/**
+ * Registry of all pattern loaders.
+ * This replaces individual push() calls with a unified registry approach.
+ * Order matters: hand-crafted patterns should come before generated patterns.
+ */
+const PATTERN_LOADERS: PatternLoader[] = [
+  // Hand-crafted core patterns
+  getTogglePatternsForLanguage,
+  getPutPatternsForLanguage,
+  getEventHandlerPatternsForLanguage,
+
+  // Multilingual command patterns
+  getAddPatternsForLanguage,
+  getRemovePatternsForLanguage,
+  getShowPatternsForLanguage,
+  getHidePatternsForLanguage,
+  getSetPatternsForLanguage,
+  getGetPatternsForLanguage,
+  getIncrementPatternsForLanguage,
+  getDecrementPatternsForLanguage,
+
+  // Grammar-transformed patterns (for SOV/VSO grammar output)
+  getGrammarTransformedPatternsForLanguage,
+];
+
+/**
+ * Register a custom pattern loader.
+ * Useful for plugins or extensions that add new command patterns.
+ */
+export function registerPatternLoader(loader: PatternLoader): void {
+  PATTERN_LOADERS.push(loader);
+}
+
+/**
+ * Get the current pattern loaders (for testing/introspection).
+ */
+export function getPatternLoaders(): readonly PatternLoader[] {
+  return PATTERN_LOADERS;
+}
 
 // Lazy cache for generated patterns PER LANGUAGE
 // Using per-language cache instead of global cache to support lazy loading
@@ -90,36 +141,19 @@ export function clearGeneratedPatternsCache(language?: string): void {
 /**
  * Build patterns for a specific language.
  * This is the core function for tree-shakeable pattern loading.
+ * Uses the PATTERN_LOADERS registry for maintainability.
  */
 export function buildPatternsForLanguage(language: string): LanguagePattern[] {
-  const patterns: LanguagePattern[] = [];
+  // Collect patterns from all registered loaders
+  const patterns = PATTERN_LOADERS.flatMap(loader => loader(language));
 
-  // 1. Hand-crafted patterns for this language
-  patterns.push(...getTogglePatternsForLanguage(language));
-  patterns.push(...getPutPatternsForLanguage(language));
-  patterns.push(...getEventHandlerPatternsForLanguage(language));
-
-  // 2. New multilingual command patterns (ja, ko, ar, tr, zh, de, etc.)
-  patterns.push(...getAddPatternsForLanguage(language));
-  patterns.push(...getRemovePatternsForLanguage(language));
-  patterns.push(...getShowPatternsForLanguage(language));
-  patterns.push(...getHidePatternsForLanguage(language));
-  patterns.push(...getSetPatternsForLanguage(language));
-  patterns.push(...getGetPatternsForLanguage(language));
-  patterns.push(...getIncrementPatternsForLanguage(language));
-  patterns.push(...getDecrementPatternsForLanguage(language));
-
-  // 3. Grammar-transformed patterns (for SOV/VSO grammar output)
-  patterns.push(...getGrammarTransformedPatternsForLanguage(language));
-
-  // 4. English-only hand-crafted patterns
+  // Add English-only hand-crafted patterns
   if (language === 'en') {
     patterns.push(...getEnglishOnlyPatterns());
   }
 
-  // 5. Generated patterns for this language (per-language cache supports lazy loading)
-  const langGeneratedPatterns = getGeneratedPatternsForLanguage(language);
-  patterns.push(...langGeneratedPatterns);
+  // Add generated patterns for this language (per-language cache supports lazy loading)
+  patterns.push(...getGeneratedPatternsForLanguage(language));
 
   return patterns;
 }

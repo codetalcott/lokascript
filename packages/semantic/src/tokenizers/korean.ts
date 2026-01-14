@@ -22,8 +22,10 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type CreateTokenOptions,
+  type KeywordEntry,
 } from './base';
 import { KoreanMorphologicalNormalizer } from './morphology/korean-normalizer';
+import { koreanProfile } from '../generators/profiles/korean';
 
 // =============================================================================
 // Korean Character Classification
@@ -114,165 +116,105 @@ const SINGLE_CHAR_PARTICLES = new Set([
 const MULTI_CHAR_PARTICLES = ['에서', '으로', '부터', '까지', '처럼', '보다'];
 
 // =============================================================================
-// Korean Keywords
+// Korean Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Korean command keywords mapped to their English equivalents.
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Attached particle forms (native idioms)
+ * - Conditional event forms
+ * - Time units
  */
-const KOREAN_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['토글', 'toggle'],
-  ['전환', 'toggle'],
-  ['추가', 'add'],
-  ['제거', 'remove'],
-  ['삭제', 'remove'],
-  // Commands - Content operations
-  ['넣다', 'put'],
-  ['넣기', 'put'],
-  ['놓기', 'put'],
-  ['가져오다', 'take'],
-  ['만들다', 'make'],
-  ['복사', 'clone'],
-  // Commands - Variable operations
-  ['설정', 'set'],
-  ['얻다', 'get'],
-  ['가져오기', 'get'], // nominalized form - common for "get" (test case)
-  ['패치', 'fetch'], // Korean transliteration for fetch
-  ['증가', 'increment'],
-  ['감소', 'decrement'],
-  ['로그', 'log'],
-  // Commands - Visibility
-  ['보이다', 'show'],
-  ['보이기', 'show'], // nominalized form (test case)
-  ['표시', 'show'],
-  ['숨기다', 'hide'],
-  ['숨기기', 'hide'], // nominalized form
-  ['전환', 'transition'],
-  // Commands - Events (standard markers)
-  ['에', 'on'],
-  ['시', 'on'],
-  ['때', 'on'],
-  // Conditional event markers (native idioms - parallel to Japanese したら)
-  ['하면', 'on'], // conditional marker (if/when)
-  ['으면', 'on'], // conditional marker (vowel harmony variant)
-  ['면', 'on'], // bare conditional suffix
-  ['할때', 'on'], // temporal marker (when it happens)
-  ['할 때', 'on'], // temporal marker with space
-  ['을때', 'on'], // temporal marker (vowel harmony variant)
-  ['을 때', 'on'], // temporal marker with space
-  ['하니까', 'on'], // causal marker (because/since)
-  ['니까', 'on'], // bare causal suffix
-  ['트리거', 'trigger'],
-  ['보내다', 'send'],
-  // Commands - DOM focus
-  ['포커스', 'focus'],
-  ['블러', 'blur'],
-  // Commands - Navigation
-  ['이동', 'go'],
-  // Commands - Async
-  ['대기', 'wait'],
-  ['안정', 'settle'],
-  // Commands - Control flow
-  ['만약', 'if'],
-  ['아니면', 'else'],
-  ['반복', 'repeat'],
-  ['동안', 'while'],
-  ['동안', 'for'],
-  ['계속', 'continue'],
-  ['정지', 'halt'],
-  ['던지다', 'throw'],
-  ['호출', 'call'],
-  ['반환', 'return'],
-  // Commands - Advanced
-  ['JS실행', 'js'],
-  ['js', 'js'],
-  ['비동기', 'async'],
-  ['말하다', 'tell'],
-  ['기본값', 'default'],
-  ['초기화', 'init'],
-  ['동작', 'behavior'],
-  ['설치', 'install'],
-  ['설치하다', 'install'],
-  ['측정', 'measure'],
-  ['측정하다', 'measure'],
-  ['이벤트', 'event'],
-  ['에서', 'from'],
-  // Modifiers
-  ['으로', 'into'],
-  ['전에', 'before'],
-  ['후에', 'after'],
-  // Control flow helpers
-  ['그러면', 'then'],
-  ['그렇지않으면', 'otherwise'],
-  ['끝', 'end'],
-  ['까지', 'until'],
-  ['중단', 'break'],
-  // Events (for event name recognition)
-  ['클릭', 'click'],
-  ['더블클릭', 'dblclick'],
-  ['입력', 'input'],
-  ['변경', 'change'],
-  ['제출', 'submit'],
-  ['포커스', 'focus'],
-  ['블러', 'blur'],
-  ['키다운', 'keydown'],
-  ['키업', 'keyup'],
-  ['마우스오버', 'mouseover'],
-  ['마우스아웃', 'mouseout'],
-  ['로드', 'load'],
-  ['스크롤', 'scroll'],
-  // References
-  ['나', 'me'],
-  ['내', 'my'],
-  ['그것', 'it'],
-  ['그것의', 'its'],
-  ['결과', 'result'],
-  ['이벤트', 'event'],
-  ['대상', 'target'],
+const KOREAN_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: '참', normalized: 'true' },
+  { native: '거짓', normalized: 'false' },
+  { native: '널', normalized: 'null' },
+  { native: '미정의', normalized: 'undefined' },
+
   // Positional
-  ['첫번째', 'first'],
-  ['마지막', 'last'],
-  ['다음', 'next'],
-  ['이전', 'previous'],
+  { native: '첫번째', normalized: 'first' },
+  { native: '마지막', normalized: 'last' },
+  { native: '다음', normalized: 'next' },
+  { native: '이전', normalized: 'previous' },
+  { native: '가장가까운', normalized: 'closest' },
+  { native: '부모', normalized: 'parent' },
+
+  // Events
+  { native: '클릭', normalized: 'click' },
+  { native: '더블클릭', normalized: 'dblclick' },
+  { native: '변경', normalized: 'change' },
+  { native: '제출', normalized: 'submit' },
+  { native: '입력', normalized: 'input' },
+  { native: '로드', normalized: 'load' },
+  { native: '스크롤', normalized: 'scroll' },
+  { native: '키다운', normalized: 'keydown' },
+  { native: '키업', normalized: 'keyup' },
+  { native: '마우스오버', normalized: 'mouseover' },
+  { native: '마우스아웃', normalized: 'mouseout' },
+
+  // References (additional forms)
+  { native: '내', normalized: 'my' },
+  { native: '그것의', normalized: 'its' },
+
+  // Conditional event forms (native idioms)
+  { native: '하면', normalized: 'on' },
+  { native: '으면', normalized: 'on' },
+  { native: '면', normalized: 'on' },
+  { native: '할때', normalized: 'on' },
+  { native: '할 때', normalized: 'on' },
+  { native: '을때', normalized: 'on' },
+  { native: '을 때', normalized: 'on' },
+  { native: '하니까', normalized: 'on' },
+  { native: '니까', normalized: 'on' },
+
+  // Control flow helpers
+  { native: '그러면', normalized: 'then' },
+  { native: '그렇지않으면', normalized: 'otherwise' },
+  { native: '중단', normalized: 'break' },
+
   // Logical
-  ['그리고', 'and'],
-  ['또는', 'or'],
-  ['아니', 'not'],
-  ['이다', 'is'],
-  // Time units
-  ['초', 's'],
-  ['밀리초', 'ms'],
-  ['분', 'm'],
-  ['시간', 'h'],
-  // Values
-  ['참', 'true'],
-  ['거짓', 'false'],
+  { native: '그리고', normalized: 'and' },
+  { native: '또는', normalized: 'or' },
+  { native: '아니', normalized: 'not' },
+  { native: '이다', normalized: 'is' },
+
+  // Command overrides (ensure correct mapping when profile has multiple meanings)
+  { native: '추가', normalized: 'add' }, // Profile may have this as 'append'
+
   // Attached particle forms (native idioms - particle + verb without space)
-  // These allow natural writing like ".active를토글" or "#count를증가"
   // Object particle 를 (after vowel)
-  ['를토글', 'toggle'],
-  ['를전환', 'toggle'],
-  ['를추가', 'add'],
-  ['를제거', 'remove'],
-  ['를삭제', 'remove'],
-  ['를증가', 'increment'],
-  ['를감소', 'decrement'],
-  ['를표시', 'show'],
-  ['를숨기다', 'hide'],
-  ['를설정', 'set'],
+  { native: '를토글', normalized: 'toggle' },
+  { native: '를전환', normalized: 'toggle' },
+  { native: '를추가', normalized: 'add' },
+  { native: '를제거', normalized: 'remove' },
+  { native: '를삭제', normalized: 'remove' },
+  { native: '를증가', normalized: 'increment' },
+  { native: '를감소', normalized: 'decrement' },
+  { native: '를표시', normalized: 'show' },
+  { native: '를숨기다', normalized: 'hide' },
+  { native: '를설정', normalized: 'set' },
   // Object particle 을 (after consonant)
-  ['을토글', 'toggle'],
-  ['을전환', 'toggle'],
-  ['을추가', 'add'],
-  ['을제거', 'remove'],
-  ['을삭제', 'remove'],
-  ['을증가', 'increment'],
-  ['을감소', 'decrement'],
-  ['을표시', 'show'],
-  ['을숨기다', 'hide'],
-  ['을설정', 'set'],
-]);
+  { native: '을토글', normalized: 'toggle' },
+  { native: '을전환', normalized: 'toggle' },
+  { native: '을추가', normalized: 'add' },
+  { native: '을제거', normalized: 'remove' },
+  { native: '을삭제', normalized: 'remove' },
+  { native: '을증가', normalized: 'increment' },
+  { native: '을감소', normalized: 'decrement' },
+  { native: '을표시', normalized: 'show' },
+  { native: '을숨기다', normalized: 'hide' },
+  { native: '을설정', normalized: 'set' },
+
+  // Time units
+  { native: '초', normalized: 's' },
+  { native: '밀리초', normalized: 'ms' },
+  { native: '분', normalized: 'm' },
+  { native: '시간', normalized: 'h' },
+];
 
 // =============================================================================
 // Korean Tokenizer Implementation
@@ -284,6 +226,12 @@ export class KoreanTokenizer extends BaseTokenizer {
 
   /** Morphological normalizer for Korean verb conjugations */
   private morphNormalizer = new KoreanMorphologicalNormalizer();
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(koreanProfile, KOREAN_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -389,7 +337,10 @@ export class KoreanTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
-    if (KOREAN_KEYWORDS.has(token)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token === entry.native) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -431,33 +382,35 @@ export class KoreanTokenizer extends BaseTokenizer {
       }
       if (!allKorean) continue;
 
-      // Check if it's a keyword (exact match or stem match)
-      const normalized = KOREAN_KEYWORDS.get(candidate);
-      if (normalized) {
-        return createToken(
-          candidate,
-          'keyword',
-          createPosition(startPos, startPos + len),
-          normalized
-        );
+      // Check if it's a keyword (exact match via profile keywords)
+      for (const entry of this.profileKeywords) {
+        if (candidate === entry.native) {
+          return createToken(
+            candidate,
+            'keyword',
+            createPosition(startPos, startPos + len),
+            entry.normalized
+          );
+        }
       }
 
       // Try morphological normalization for conjugated forms
       const morphResult = this.morphNormalizer.normalize(candidate);
       if (morphResult.stem !== candidate && morphResult.confidence >= 0.7) {
-        const stemNormalized = KOREAN_KEYWORDS.get(morphResult.stem);
-        if (stemNormalized) {
-          const tokenOptions: CreateTokenOptions = {
-            normalized: stemNormalized,
-            stem: morphResult.stem,
-            stemConfidence: morphResult.confidence,
-          };
-          return createToken(
-            candidate,
-            'keyword',
-            createPosition(startPos, startPos + len),
-            tokenOptions
-          );
+        for (const entry of this.profileKeywords) {
+          if (morphResult.stem === entry.native) {
+            const tokenOptions: CreateTokenOptions = {
+              normalized: entry.normalized,
+              stem: morphResult.stem,
+              stemConfidence: morphResult.confidence,
+            };
+            return createToken(
+              candidate,
+              'keyword',
+              createPosition(startPos, startPos + len),
+              tokenOptions
+            );
+          }
         }
       }
     }
@@ -512,11 +465,11 @@ export class KoreanTokenizer extends BaseTokenizer {
 
     if (!word) return null;
 
-    // Check if this is a known keyword (exact match)
-    const normalized = KOREAN_KEYWORDS.get(word);
-
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check if this is a known keyword (exact match via profile keywords)
+    for (const entry of this.profileKeywords) {
+      if (word === entry.native) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     // Try morphological normalization for conjugated forms
@@ -524,16 +477,15 @@ export class KoreanTokenizer extends BaseTokenizer {
 
     if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
       // Check if the stem is a known keyword
-      const stemNormalized = KOREAN_KEYWORDS.get(morphResult.stem);
-
-      if (stemNormalized) {
-        const tokenOptions: CreateTokenOptions = {
-          normalized: stemNormalized,
-          stem: morphResult.stem,
-          stemConfidence: morphResult.confidence,
-        };
-
-        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+      for (const entry of this.profileKeywords) {
+        if (morphResult.stem === entry.native) {
+          const tokenOptions: CreateTokenOptions = {
+            normalized: entry.normalized,
+            stem: morphResult.stem,
+            stemConfidence: morphResult.confidence,
+          };
+          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
+        }
       }
     }
 

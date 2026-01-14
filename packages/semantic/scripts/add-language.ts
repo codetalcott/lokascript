@@ -168,9 +168,13 @@ function generateTokenizer(config: LanguageConfig): string {
  * Word order: ${wordOrder}
  * Direction: ${direction}
  * Uses spaces: ${usesSpaces}
+ *
+ * This tokenizer derives keywords from the ${name} profile (single source of truth)
+ * with extras for literals, positional words, and event names.
  */
 
 import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { KeywordEntry } from './base';
 import {
   BaseTokenizer,
   TokenStreamImpl,
@@ -183,18 +187,43 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
 } from './base';
+import { ${varName}Profile } from '../generators/profiles/${code}';
 
 // =============================================================================
-// ${name} Keywords
+// ${name}-Specific Keywords (not in profile)
 // =============================================================================
 
-// TODO: Add keywords from profile - these map native words to English commands
-const ${upperCode}_KEYWORDS: Map<string, string> = new Map([
-  // Commands - copy from profile.keywords
-  // ['native_word', 'toggle'],
-  // ['native_word', 'add'],
-  // etc.
-]);
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words (first, last, next, etc.)
+ * - Event names (click, change, submit, etc.)
+ *
+ * TODO: Fill in with ${name} translations
+ */
+const ${upperCode}_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  // { native: 'TODO', normalized: 'true' },
+  // { native: 'TODO', normalized: 'false' },
+  // { native: 'TODO', normalized: 'null' },
+  // { native: 'TODO', normalized: 'undefined' },
+
+  // Positional
+  // { native: 'TODO', normalized: 'first' },
+  // { native: 'TODO', normalized: 'last' },
+  // { native: 'TODO', normalized: 'next' },
+  // { native: 'TODO', normalized: 'previous' },
+  // { native: 'TODO', normalized: 'closest' },
+  // { native: 'TODO', normalized: 'parent' },
+
+  // Events
+  // { native: 'TODO', normalized: 'click' },
+  // { native: 'TODO', normalized: 'change' },
+  // { native: 'TODO', normalized: 'submit' },
+  // { native: 'TODO', normalized: 'input' },
+  // { native: 'TODO', normalized: 'load' },
+  // { native: 'TODO', normalized: 'scroll' },
+];
 
 // =============================================================================
 // ${name} Tokenizer Implementation
@@ -203,6 +232,12 @@ const ${upperCode}_KEYWORDS: Map<string, string> = new Map([
 export class ${className}Tokenizer extends BaseTokenizer {
   readonly language = '${code}';
   readonly direction = '${direction}' as const;
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(${varName}Profile, ${upperCode}_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -257,20 +292,12 @@ export class ${className}Tokenizer extends BaseTokenizer {
 
       // Variable references (:name)
       if (input[pos] === ':') {
-        const startPos = pos;
-        pos++;
-        let varName = '';
-        while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-          varName += input[pos];
-          pos++;
-        }
-        if (varName) {
-          tokens.push(
-            createToken(':' + varName, 'identifier', createPosition(startPos, pos), ':' + varName)
-          );
+        const varToken = this.tryVariableRef(input, pos);
+        if (varToken) {
+          tokens.push(varToken);
+          pos = varToken.position.end;
           continue;
         }
-        pos = startPos;
       }
 
       // Operators and punctuation
@@ -280,17 +307,27 @@ export class ${className}Tokenizer extends BaseTokenizer {
         continue;
       }
 
-      // Words/identifiers
+      // Words/identifiers - try profile keyword matching first
       if (isAsciiIdentifierChar(input[pos])) {
         const startPos = pos;
+
+        // Try to match keywords from profile (longest first)
+        const keywordToken = this.tryProfileKeyword(input, pos);
+        if (keywordToken) {
+          tokens.push(keywordToken);
+          pos = keywordToken.position.end;
+          continue;
+        }
+
+        // Unknown word - read until non-identifier
         let word = '';
         while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
           word += input[pos];
           pos++;
         }
-        const kind = this.classifyToken(word);
-        const normalized = ${upperCode}_KEYWORDS.get(word.toLowerCase());
-        tokens.push(createToken(word, kind, createPosition(startPos, pos), normalized));
+        if (word) {
+          tokens.push(createToken(word, 'identifier', createPosition(startPos, pos)));
+        }
         continue;
       }
 
@@ -302,7 +339,14 @@ export class ${className}Tokenizer extends BaseTokenizer {
   }
 
   classifyToken(token: string): TokenKind {
-    if (${upperCode}_KEYWORDS.has(token.toLowerCase())) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token.toLowerCase() === entry.native.toLowerCase()) return 'keyword';
+    }
+    if (token.startsWith('.') || token.startsWith('#') || token.startsWith('[')) return 'selector';
+    if (token.startsWith(':')) return 'identifier';
+    if (token.startsWith('"') || token.startsWith("'")) return 'literal';
+    if (/^-?\\d/.test(token)) return 'literal';
     return 'identifier';
   }
 }

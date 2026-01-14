@@ -5,9 +5,13 @@
  * Word order: SVO
  * Direction: ltr
  * Uses spaces: true
+ *
+ * This tokenizer derives keywords from the Malay profile (single source of truth)
+ * with extras for literals, positional words, and event names.
  */
 
 import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { KeywordEntry } from './base';
 import {
   BaseTokenizer,
   TokenStreamImpl,
@@ -20,18 +24,41 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
 } from './base';
+import { malayProfile } from '../generators/profiles/ms';
 
 // =============================================================================
-// Malay Keywords
+// Malay-Specific Keywords (not in profile)
 // =============================================================================
 
-// TODO: Add keywords from profile - these map native words to English commands
-const MALAY_KEYWORDS: Map<string, string> = new Map([
-  // Commands - copy from profile.keywords
-  // ['togol', 'toggle'],
-  // ['tambah', 'add'],
-  // etc.
-]);
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words (first, last, next, etc.)
+ * - Event names (click, change, submit, etc.)
+ */
+const MALAY_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'benar', normalized: 'true' },
+  { native: 'salah', normalized: 'false' },
+  { native: 'kosong', normalized: 'null' },
+  { native: 'tak_tentu', normalized: 'undefined' },
+
+  // Positional
+  { native: 'pertama', normalized: 'first' },
+  { native: 'terakhir', normalized: 'last' },
+  { native: 'seterusnya', normalized: 'next' },
+  { native: 'sebelumnya', normalized: 'previous' },
+  { native: 'terdekat', normalized: 'closest' },
+  { native: 'induk', normalized: 'parent' },
+
+  // Events
+  { native: 'klik', normalized: 'click' },
+  { native: 'berubah', normalized: 'change' },
+  { native: 'hantar', normalized: 'submit' },
+  { native: 'input', normalized: 'input' },
+  { native: 'muat', normalized: 'load' },
+  { native: 'tatal', normalized: 'scroll' },
+];
 
 // =============================================================================
 // Malay Tokenizer Implementation
@@ -40,6 +67,12 @@ const MALAY_KEYWORDS: Map<string, string> = new Map([
 export class MalayTokenizer extends BaseTokenizer {
   readonly language = 'ms';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    // Initialize keywords from profile + extras (single source of truth)
+    this.initializeKeywordsFromProfile(malayProfile, MALAY_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -97,20 +130,12 @@ export class MalayTokenizer extends BaseTokenizer {
 
       // Variable references (:name)
       if (input[pos] === ':') {
-        const startPos = pos;
-        pos++;
-        let varName = '';
-        while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-          varName += input[pos];
-          pos++;
-        }
-        if (varName) {
-          tokens.push(
-            createToken(':' + varName, 'identifier', createPosition(startPos, pos), ':' + varName)
-          );
+        const varToken = this.tryVariableRef(input, pos);
+        if (varToken) {
+          tokens.push(varToken);
+          pos = varToken.position.end;
           continue;
         }
-        pos = startPos;
       }
 
       // Operators and punctuation
@@ -120,17 +145,27 @@ export class MalayTokenizer extends BaseTokenizer {
         continue;
       }
 
-      // Words/identifiers
+      // Words/identifiers - try profile keyword matching first
       if (isAsciiIdentifierChar(input[pos])) {
         const startPos = pos;
+
+        // Try to match keywords from profile (longest first)
+        const keywordToken = this.tryProfileKeyword(input, pos);
+        if (keywordToken) {
+          tokens.push(keywordToken);
+          pos = keywordToken.position.end;
+          continue;
+        }
+
+        // Unknown word - read until non-identifier
         let word = '';
         while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
           word += input[pos];
           pos++;
         }
-        const kind = this.classifyToken(word);
-        const normalized = MALAY_KEYWORDS.get(word.toLowerCase());
-        tokens.push(createToken(word, kind, createPosition(startPos, pos), normalized));
+        if (word) {
+          tokens.push(createToken(word, 'identifier', createPosition(startPos, pos)));
+        }
         continue;
       }
 
@@ -142,7 +177,14 @@ export class MalayTokenizer extends BaseTokenizer {
   }
 
   classifyToken(token: string): TokenKind {
-    if (MALAY_KEYWORDS.has(token.toLowerCase())) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (token.toLowerCase() === entry.native.toLowerCase()) return 'keyword';
+    }
+    if (token.startsWith('.') || token.startsWith('#') || token.startsWith('[')) return 'selector';
+    if (token.startsWith(':')) return 'identifier';
+    if (token.startsWith('"') || token.startsWith("'")) return 'literal';
+    if (/^-?\d/.test(token)) return 'literal';
     return 'identifier';
   }
 }

@@ -21,7 +21,9 @@ import {
   isQuote,
   isDigit,
   isUrlStart,
+  type KeywordEntry,
 } from './base';
+import { swahiliProfile } from '../generators/profiles/swahili';
 
 // =============================================================================
 // Swahili Character Classification
@@ -63,149 +65,64 @@ const PREPOSITIONS = new Set([
 ]);
 
 // =============================================================================
-// Swahili Keywords
+// Swahili Extras (keywords not in profile)
 // =============================================================================
 
-const SWAHILI_KEYWORDS: Map<string, string> = new Map([
-  // Commands - Class/Attribute operations
-  ['badilisha', 'toggle'],
-  ['geuza', 'toggle'],
-  ['ongeza', 'add'],
-  ['weka', 'add'],
-  ['ondoa', 'remove'],
-  ['futa', 'remove'],
-  ['toa', 'remove'],
-  // Commands - Content operations
-  ['weka', 'put'],
-  ['tia', 'put'],
-  ['ambatanisha', 'append'],
-  ['tanguliza', 'prepend'],
-  ['chukua', 'take'],
-  ['tengeneza', 'make'],
-  ['unda', 'make'],
-  ['nakili', 'clone'],
-  ['rudufu', 'clone'],
-  ['geuza', 'morph'],
-  ['badilisha', 'swap'],
-  // Commands - Variable operations
-  ['weka', 'set'],
-  ['seti', 'set'],
-  ['pata', 'get'],
-  ['pokea', 'get'],
-  ['ongeza', 'increment'],
-  ['punguza', 'decrement'],
-  ['andika', 'log'],
-  ['rekodi', 'log'],
-  // Commands - Visibility
-  ['onyesha', 'show'],
-  ['ficha', 'hide'],
-  ['mficho', 'hide'],
-  ['hamisha', 'transition'],
-  ['animisha', 'transition'],
-  // Commands - Events
-  ['wakati', 'on'],
-  ['kwenye', 'on'],
-  ['unapo', 'on'],
-  ['chochea', 'trigger'],
-  ['anzisha', 'trigger'],
-  ['tuma', 'send'],
-  ['peleka', 'send'],
-  // Commands - DOM focus
-  ['lenga', 'focus'],
-  ['angazia', 'focus'],
-  ['ondoa lenga', 'blur'],
-  ['blur', 'blur'],
-  // Commands - Navigation
-  ['nenda', 'go'],
-  ['enda', 'go'],
-  ['elekea', 'go'],
-  // Commands - Async
-  ['subiri', 'wait'],
-  ['ngoja', 'wait'],
-  ['leta', 'fetch'],
-  ['pakia', 'fetch'],
-  ['tulia', 'settle'],
-  ['imarika', 'settle'],
-  // Commands - Control flow
-  ['kama', 'if'],
-  ['ikiwa', 'if'],
-  ['vinginevyo', 'else'],
-  ['sivyo', 'else'],
-  ['rudia', 'repeat'],
-  ['kwa', 'for'],
-  ['wakati', 'while'],
-  ['endelea', 'continue'],
-  ['simama', 'halt'],
-  ['acha', 'halt'],
-  ['tupa', 'throw'],
-  ['ita', 'call'],
-  ['piga simu', 'call'],
-  ['rudisha', 'return'],
-  ['rejea', 'return'],
-  // Commands - Advanced
-  ['js', 'js'],
-  ['javascript', 'js'],
-  ['isiyo sawia', 'async'],
-  ['sema', 'tell'],
-  ['ambia', 'tell'],
-  ['chaguo-msingi', 'default'],
-  ['anzisha', 'init'],
-  ['anza', 'init'],
-  ['tabia', 'behavior'],
-  ['pima', 'measure'],
-  ['hadi', 'until'],
-  ['tukio', 'event'],
-  ['kutoka', 'from'],
-  // Modifiers
-  ['ndani', 'into'],
-  ['kabla', 'before'],
-  ['baada', 'after'],
-  // Control flow helpers
-  ['basi', 'then'],
-  ['kisha', 'then'],
-  ['halafu', 'then'],
-  ['baadaye', 'then'],
-  ['mwisho', 'end'],
-  ['maliza', 'end'],
-  ['tamati', 'end'],
-  ['hadi', 'until'],
-  ['mpaka', 'until'],
-  // Events
-  ['bonyeza', 'click'],
-  ['click', 'click'],
-  ['ingiza', 'input'],
-  ['badiliko', 'change'],
-  ['wasilisha', 'submit'],
-  ['funguo chini', 'keydown'],
-  ['funguo juu', 'keyup'],
-  ['kipanya juu', 'mouseover'],
-  ['kipanya nje', 'mouseout'],
-  ['lenga', 'focus'],
-  ['ukungu', 'blur'],
-  ['pakia', 'load'],
-  ['sogeza', 'scroll'],
-  // References
-  ['mimi', 'me'],
-  ['yangu', 'my'],
-  ['hiyo', 'it'],
-  ['yenyewe', 'it'],
-  ['matokeo', 'result'],
-  ['tukio', 'event'],
-  ['lengo', 'target'],
+/**
+ * Extra keywords not covered by the profile:
+ * - Literals (true, false, null, undefined)
+ * - Positional words
+ * - Event names
+ * - Time units
+ * - Noun class possessive variants
+ */
+const SWAHILI_EXTRAS: KeywordEntry[] = [
+  // Values/Literals
+  { native: 'kweli', normalized: 'true' },
+  { native: 'uongo', normalized: 'false' },
+  { native: 'null', normalized: 'null' },
+  { native: 'tupu', normalized: 'null' },
+  { native: 'haijafafanuliwa', normalized: 'undefined' },
+
   // Positional
-  ['kwanza', 'first'],
-  ['mwisho', 'last'],
-  ['inayofuata', 'next'],
-  ['iliyopita', 'previous'],
-  // Boolean
-  ['kweli', 'true'],
-  ['uongo', 'false'],
+  { native: 'kwanza', normalized: 'first' },
+  { native: 'mwisho', normalized: 'last' },
+  { native: 'inayofuata', normalized: 'next' },
+  { native: 'iliyopita', normalized: 'previous' },
+  { native: 'karibu zaidi', normalized: 'closest' },
+  { native: 'mzazi', normalized: 'parent' },
+
+  // Events
+  { native: 'bonyeza', normalized: 'click' },
+  { native: 'click', normalized: 'click' },
+  { native: 'ingiza', normalized: 'input' },
+  { native: 'badiliko', normalized: 'change' },
+  { native: 'wasilisha', normalized: 'submit' },
+  { native: 'funguo chini', normalized: 'keydown' },
+  { native: 'funguo juu', normalized: 'keyup' },
+  { native: 'kipanya juu', normalized: 'mouseover' },
+  { native: 'kipanya nje', normalized: 'mouseout' },
+  { native: 'ukungu', normalized: 'blur' },
+  { native: 'sogeza', normalized: 'scroll' },
+
+  // Additional references
+  { native: 'yenyewe', normalized: 'it' },
+  { native: 'wangu', normalized: 'my' },
+  { native: 'langu', normalized: 'my' },
+  { native: 'changu', normalized: 'my' },
+
   // Time units
-  ['sekunde', 's'],
-  ['milisekunde', 'ms'],
-  ['dakika', 'm'],
-  ['saa', 'h'],
-]);
+  { native: 'sekunde', normalized: 's' },
+  { native: 'milisekunde', normalized: 'ms' },
+  { native: 'dakika', normalized: 'm' },
+  { native: 'saa', normalized: 'h' },
+
+  // Additional synonyms and multi-word phrases
+  { native: 'ondoa lenga', normalized: 'blur' },
+  { native: 'piga simu', normalized: 'call' },
+  { native: 'basi', normalized: 'then' },
+  { native: 'mpaka', normalized: 'until' },
+];
 
 // =============================================================================
 // Swahili Tokenizer Implementation
@@ -214,6 +131,11 @@ const SWAHILI_KEYWORDS: Map<string, string> = new Map([
 export class SwahiliTokenizer extends BaseTokenizer {
   readonly language = 'sw';
   readonly direction = 'ltr' as const;
+
+  constructor() {
+    super();
+    this.initializeKeywordsFromProfile(swahiliProfile, SWAHILI_EXTRAS);
+  }
 
   tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
@@ -296,7 +218,10 @@ export class SwahiliTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    if (SWAHILI_KEYWORDS.has(lower)) return 'keyword';
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) return 'keyword';
+    }
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -314,10 +239,12 @@ export class SwahiliTokenizer extends BaseTokenizer {
     if (!word) return null;
 
     const lower = word.toLowerCase();
-    const normalized = SWAHILI_KEYWORDS.get(lower);
 
-    if (normalized) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), normalized);
+    // Check profile keywords
+    for (const entry of this.profileKeywords) {
+      if (lower === entry.native.toLowerCase()) {
+        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
+      }
     }
 
     if (PREPOSITIONS.has(lower)) {
