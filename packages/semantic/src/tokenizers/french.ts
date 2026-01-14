@@ -22,6 +22,7 @@ import {
   isDigit,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { frenchProfile } from '../generators/profiles/french';
 
@@ -158,6 +159,25 @@ const FRENCH_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
+// French Time Units
+// =============================================================================
+
+/**
+ * French time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ */
+const FRENCH_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'millisecondes', suffix: 'ms', length: 13, caseInsensitive: true },
+  { pattern: 'milliseconde', suffix: 'ms', length: 12, caseInsensitive: true },
+  { pattern: 'secondes', suffix: 's', length: 8, caseInsensitive: true },
+  { pattern: 'seconde', suffix: 's', length: 7, caseInsensitive: true },
+  { pattern: 'minutes', suffix: 'm', length: 7, caseInsensitive: true },
+  { pattern: 'minute', suffix: 'm', length: 6, caseInsensitive: true },
+  { pattern: 'heures', suffix: 'h', length: 6, caseInsensitive: true },
+  { pattern: 'heure', suffix: 'h', length: 5, caseInsensitive: true },
+];
+
+// =============================================================================
 // French Tokenizer Implementation
 // =============================================================================
 
@@ -284,48 +304,14 @@ export class FrenchTokenizer extends BaseTokenizer {
     return createToken(word, 'identifier', createPosition(startPos, pos));
   }
 
+  /**
+   * Extract a number, including French time unit suffixes.
+   */
   private extractNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    if (input[pos] === '-' || input[pos] === '+') {
-      number += input[pos++];
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('millisecondes') || remaining.startsWith('milliseconde')) {
-      number += 'ms';
-      pos = unitPos + (remaining.startsWith('millisecondes') ? 13 : 12);
-    } else if (remaining.startsWith('secondes') || remaining.startsWith('seconde')) {
-      number += 's';
-      pos = unitPos + (remaining.startsWith('secondes') ? 8 : 7);
-    } else if (remaining.startsWith('minutes') || remaining.startsWith('minute')) {
-      number += 'm';
-      pos = unitPos + (remaining.startsWith('minutes') ? 7 : 6);
-    } else if (remaining.startsWith('heures') || remaining.startsWith('heure')) {
-      number += 'h';
-      pos = unitPos + (remaining.startsWith('heures') ? 6 : 5);
-    }
-
-    if (!number || number === '-' || number === '+') return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, FRENCH_TIME_UNITS, {
+      allowSign: true,
+      skipWhitespace: true,
+    });
   }
 }
 

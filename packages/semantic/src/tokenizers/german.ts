@@ -23,6 +23,7 @@ import {
   isDigit,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { germanProfile } from '../generators/profiles/german';
 
@@ -156,6 +157,25 @@ const GERMAN_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
+// German Time Units
+// =============================================================================
+
+/**
+ * German time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ */
+const GERMAN_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'millisekunden', suffix: 'ms', length: 13, caseInsensitive: true },
+  { pattern: 'millisekunde', suffix: 'ms', length: 12, caseInsensitive: true },
+  { pattern: 'sekunden', suffix: 's', length: 8, caseInsensitive: true },
+  { pattern: 'sekunde', suffix: 's', length: 7, caseInsensitive: true },
+  { pattern: 'minuten', suffix: 'm', length: 7, caseInsensitive: true },
+  { pattern: 'minute', suffix: 'm', length: 6, caseInsensitive: true },
+  { pattern: 'stunden', suffix: 'h', length: 7, caseInsensitive: true },
+  { pattern: 'stunde', suffix: 'h', length: 6, caseInsensitive: true },
+];
+
+// =============================================================================
 // German Tokenizer Implementation
 // =============================================================================
 
@@ -282,48 +302,14 @@ export class GermanTokenizer extends BaseTokenizer {
     return createToken(word, 'identifier', createPosition(startPos, pos));
   }
 
+  /**
+   * Extract a number, including German time unit suffixes.
+   */
   private extractNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    if (input[pos] === '-' || input[pos] === '+') {
-      number += input[pos++];
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('millisekunden') || remaining.startsWith('millisekunde')) {
-      number += 'ms';
-      pos = unitPos + (remaining.startsWith('millisekunden') ? 13 : 12);
-    } else if (remaining.startsWith('sekunden') || remaining.startsWith('sekunde')) {
-      number += 's';
-      pos = unitPos + (remaining.startsWith('sekunden') ? 8 : 7);
-    } else if (remaining.startsWith('minuten') || remaining.startsWith('minute')) {
-      number += 'm';
-      pos = unitPos + (remaining.startsWith('minuten') ? 7 : 6);
-    } else if (remaining.startsWith('stunden') || remaining.startsWith('stunde')) {
-      number += 'h';
-      pos = unitPos + (remaining.startsWith('stunden') ? 7 : 6);
-    }
-
-    if (!number || number === '-' || number === '+') return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, GERMAN_TIME_UNITS, {
+      allowSign: true,
+      skipWhitespace: true,
+    });
   }
 }
 

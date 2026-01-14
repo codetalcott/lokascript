@@ -103,7 +103,25 @@ export {
   extractNumber,
   isUrlStart,
   extractUrl,
+  // Character classification utilities
+  isWhitespace,
+  isSelectorStart,
+  isQuote,
+  isDigit,
+  isAsciiLetter,
+  isAsciiIdentifierChar,
+  // Factory functions for custom tokenizers
+  createUnicodeRangeClassifier,
+  combineClassifiers,
+  createLatinCharClassifiers,
 } from './base';
 
-// Types for profile-derived keyword initialization
-export type { KeywordEntry, TokenizerProfile } from './base';
+// Types for profile-derived keyword initialization and custom tokenizers
+export type {
+  KeywordEntry,
+  TokenizerProfile,
+  TimeUnitMapping,
+  UnicodeRange,
+  LatinCharClassifiers,
+  CreateTokenOptions,
+} from './base';

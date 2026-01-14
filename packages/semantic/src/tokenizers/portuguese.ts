@@ -22,6 +22,7 @@ import {
   isDigit,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { portugueseProfile } from '../generators/profiles/portuguese';
 
@@ -133,6 +134,25 @@ const PORTUGUESE_EXTRAS: KeywordEntry[] = [
 
   // Multi-word phrases
   { native: 'dentro de', normalized: 'into' },
+];
+
+// =============================================================================
+// Portuguese Time Units
+// =============================================================================
+
+/**
+ * Portuguese time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ */
+const PORTUGUESE_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'milissegundos', suffix: 'ms', length: 13, caseInsensitive: true },
+  { pattern: 'milissegundo', suffix: 'ms', length: 12, caseInsensitive: true },
+  { pattern: 'segundos', suffix: 's', length: 8, caseInsensitive: true },
+  { pattern: 'segundo', suffix: 's', length: 7, caseInsensitive: true },
+  { pattern: 'minutos', suffix: 'm', length: 7, caseInsensitive: true },
+  { pattern: 'minuto', suffix: 'm', length: 6, caseInsensitive: true },
+  { pattern: 'horas', suffix: 'h', length: 5, caseInsensitive: true },
+  { pattern: 'hora', suffix: 'h', length: 4, caseInsensitive: true },
 ];
 
 // =============================================================================
@@ -262,48 +282,14 @@ export class PortugueseTokenizer extends BaseTokenizer {
     return createToken(word, 'identifier', createPosition(startPos, pos));
   }
 
+  /**
+   * Extract a number, including Portuguese time unit suffixes.
+   */
   private extractNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    if (input[pos] === '-' || input[pos] === '+') {
-      number += input[pos++];
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('milissegundos') || remaining.startsWith('milissegundo')) {
-      number += 'ms';
-      pos = unitPos + (remaining.startsWith('milissegundos') ? 13 : 12);
-    } else if (remaining.startsWith('segundos') || remaining.startsWith('segundo')) {
-      number += 's';
-      pos = unitPos + (remaining.startsWith('segundos') ? 8 : 7);
-    } else if (remaining.startsWith('minutos') || remaining.startsWith('minuto')) {
-      number += 'm';
-      pos = unitPos + (remaining.startsWith('minutos') ? 7 : 6);
-    } else if (remaining.startsWith('horas') || remaining.startsWith('hora')) {
-      number += 'h';
-      pos = unitPos + (remaining.startsWith('horas') ? 5 : 4);
-    }
-
-    if (!number || number === '-' || number === '+') return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, PORTUGUESE_TIME_UNITS, {
+      allowSign: true,
+      skipWhitespace: true,
+    });
   }
 }
 

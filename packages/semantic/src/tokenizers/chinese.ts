@@ -25,6 +25,7 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { chineseProfile } from '../generators/profiles/chinese';
 
@@ -178,6 +179,23 @@ const CHINESE_EXTRAS: KeywordEntry[] = [
   { native: '后', normalized: 'after' },
   { native: '那么', normalized: 'then' },
   { native: '完', normalized: 'end' },
+];
+
+// =============================================================================
+// Chinese Time Units
+// =============================================================================
+
+/**
+ * Chinese time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ * Chinese time units attach directly without whitespace.
+ */
+const CHINESE_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: '毫秒', suffix: 'ms', length: 2 },
+  { pattern: '分钟', suffix: 'm', length: 2 },
+  { pattern: '小时', suffix: 'h', length: 2 },
+  { pattern: '秒', suffix: 's', length: 1 },
+  { pattern: '分', suffix: 'm', length: 1 },
 ];
 
 // =============================================================================
@@ -439,67 +457,13 @@ export class ChineseTokenizer extends BaseTokenizer {
 
   /**
    * Extract a number, including Chinese time unit suffixes.
+   * Chinese time units attach directly without whitespace.
    */
   private extractChineseNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Check for time units (Chinese or standard)
-    if (pos < input.length) {
-      const remaining = input.slice(pos);
-      // Chinese time units
-      if (remaining.startsWith('毫秒')) {
-        number += 'ms';
-        pos += 2;
-      } else if (remaining.startsWith('秒')) {
-        number += 's';
-        pos += 1;
-      } else if (remaining.startsWith('分钟')) {
-        number += 'm';
-        pos += 2;
-      } else if (remaining.startsWith('分')) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining.startsWith('小时')) {
-        number += 'h';
-        pos += 2;
-      }
-      // Standard time units (s, ms, m, h)
-      else if (remaining.startsWith('ms')) {
-        number += 'ms';
-        pos += 2;
-      } else if (remaining[0] === 's' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 's';
-        pos += 1;
-      } else if (
-        remaining[0] === 'm' &&
-        remaining[1] !== 's' &&
-        !isAsciiIdentifierChar(remaining[1] || '')
-      ) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining[0] === 'h' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 'h';
-        pos += 1;
-      }
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, CHINESE_TIME_UNITS, {
+      allowSign: false,
+      skipWhitespace: false,
+    });
   }
 }
 

@@ -23,6 +23,7 @@ import {
   isDigit,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { TurkishMorphologicalNormalizer } from './morphology/turkish-normalizer';
 import { turkishProfile } from '../generators/profiles/turkish';
@@ -228,6 +229,24 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
+// Turkish Time Units
+// =============================================================================
+
+/**
+ * Turkish time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ * Includes abbreviations (dk, sa) commonly used in Turkish.
+ */
+const TURKISH_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'milisaniye', suffix: 'ms', length: 10, caseInsensitive: true },
+  { pattern: 'dakika', suffix: 'm', length: 6, caseInsensitive: true },
+  { pattern: 'saniye', suffix: 's', length: 6, caseInsensitive: true },
+  { pattern: 'saat', suffix: 'h', length: 4, caseInsensitive: true },
+  { pattern: 'dk', suffix: 'm', length: 2, checkBoundary: true }, // Common abbreviation for dakika
+  { pattern: 'sa', suffix: 'h', length: 2, checkBoundary: true }, // Common abbreviation for saat
+];
+
+// =============================================================================
 // Turkish Tokenizer Implementation
 // =============================================================================
 
@@ -371,59 +390,10 @@ export class TurkishTokenizer extends BaseTokenizer {
    * Extract a number, including Turkish time unit suffixes.
    */
   private extractTurkishNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Skip any whitespace before time unit
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    // Check for Turkish time units
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('milisaniye')) {
-      number += 'ms';
-      pos = unitPos + 10;
-    } else if (remaining.startsWith('saniye')) {
-      number += 's';
-      pos = unitPos + 6;
-    } else if (remaining.startsWith('dakika')) {
-      number += 'm';
-      pos = unitPos + 6;
-    } else if (remaining.startsWith('saat')) {
-      number += 'h';
-      pos = unitPos + 4;
-    } else if (remaining.startsWith('ms')) {
-      number += 'ms';
-      pos = unitPos + 2;
-    } else if (remaining.startsWith('s') && !isTurkishLetter(remaining[1] || '')) {
-      number += 's';
-      pos = unitPos + 1;
-    } else if (remaining.startsWith('dk')) {
-      number += 'm';
-      pos = unitPos + 2;
-    } else if (remaining.startsWith('sa') && !isTurkishLetter(remaining[2] || '')) {
-      number += 'h';
-      pos = unitPos + 2;
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, TURKISH_TIME_UNITS, {
+      allowSign: false,
+      skipWhitespace: true,
+    });
   }
 }
 

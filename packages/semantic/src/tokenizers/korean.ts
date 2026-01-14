@@ -24,6 +24,7 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { KoreanMorphologicalNormalizer } from './morphology/korean-normalizer';
 import { koreanProfile } from '../generators/profiles/korean';
@@ -202,6 +203,22 @@ const KOREAN_EXTRAS: KeywordEntry[] = [
   { native: '밀리초', normalized: 'ms' },
   { native: '분', normalized: 'm' },
   { native: '시간', normalized: 'h' },
+];
+
+// =============================================================================
+// Korean Time Units
+// =============================================================================
+
+/**
+ * Korean time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ * Korean time units attach directly without whitespace.
+ */
+const KOREAN_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: '밀리초', suffix: 'ms', length: 3 },
+  { pattern: '시간', suffix: 'h', length: 2 },
+  { pattern: '초', suffix: 's', length: 1 },
+  { pattern: '분', suffix: 'm', length: 1 },
 ];
 
 // =============================================================================
@@ -453,64 +470,13 @@ export class KoreanTokenizer extends BaseTokenizer {
 
   /**
    * Extract a number, including Korean time unit suffixes.
+   * Korean time units attach directly without whitespace.
    */
   private extractKoreanNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Check for time units (Korean or standard)
-    if (pos < input.length) {
-      const remaining = input.slice(pos);
-      // Korean time units
-      if (remaining.startsWith('밀리초')) {
-        number += 'ms';
-        pos += 3;
-      } else if (remaining.startsWith('초')) {
-        number += 's';
-        pos += 1;
-      } else if (remaining.startsWith('분')) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining.startsWith('시간')) {
-        number += 'h';
-        pos += 2;
-      }
-      // Standard time units (s, ms, m, h)
-      else if (remaining.startsWith('ms')) {
-        number += 'ms';
-        pos += 2;
-      } else if (remaining[0] === 's' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 's';
-        pos += 1;
-      } else if (
-        remaining[0] === 'm' &&
-        remaining[1] !== 's' &&
-        !isAsciiIdentifierChar(remaining[1] || '')
-      ) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining[0] === 'h' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 'h';
-        pos += 1;
-      }
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, KOREAN_TIME_UNITS, {
+      allowSign: false,
+      skipWhitespace: false,
+    });
   }
 }
 

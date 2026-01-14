@@ -23,6 +23,7 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { ArabicMorphologicalNormalizer } from './morphology/arabic-normalizer';
 import { arabicProfile } from '../generators/profiles/arabic';
@@ -196,6 +197,26 @@ const ARABIC_EXTRAS: KeywordEntry[] = [
   // Modifiers
   { native: 'قبل', normalized: 'before' },
   { native: 'بعد', normalized: 'after' },
+];
+
+// =============================================================================
+// Arabic Time Units
+// =============================================================================
+
+/**
+ * Arabic time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ * Arabic allows space between number and unit (ملي ثانية = millisecond).
+ */
+const ARABIC_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'ملي ثانية', suffix: 'ms', length: 9, caseInsensitive: false },
+  { pattern: 'ملي_ثانية', suffix: 'ms', length: 8, caseInsensitive: false },
+  { pattern: 'دقائق', suffix: 'm', length: 5, caseInsensitive: false },
+  { pattern: 'دقيقة', suffix: 'm', length: 5, caseInsensitive: false },
+  { pattern: 'ثواني', suffix: 's', length: 5, caseInsensitive: false },
+  { pattern: 'ثانية', suffix: 's', length: 5, caseInsensitive: false },
+  { pattern: 'ساعات', suffix: 'h', length: 5, caseInsensitive: false },
+  { pattern: 'ساعة', suffix: 'h', length: 4, caseInsensitive: false },
 ];
 
 // =============================================================================
@@ -454,49 +475,13 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   /**
    * Extract a number, including Arabic time unit suffixes.
+   * Arabic allows space between number and unit.
    */
   private extractArabicNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Skip any whitespace before time unit
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    // Check for Arabic time units
-    const remaining = input.slice(unitPos);
-    if (remaining.startsWith('ملي ثانية') || remaining.startsWith('ملي_ثانية')) {
-      number += 'ms';
-      pos = unitPos + (remaining.startsWith('ملي ثانية') ? 9 : 8);
-    } else if (remaining.startsWith('ثانية') || remaining.startsWith('ثواني')) {
-      number += 's';
-      pos = unitPos + (remaining.startsWith('ثانية') ? 5 : 5);
-    } else if (remaining.startsWith('دقيقة') || remaining.startsWith('دقائق')) {
-      number += 'm';
-      pos = unitPos + 5;
-    } else if (remaining.startsWith('ساعة') || remaining.startsWith('ساعات')) {
-      number += 'h';
-      pos = unitPos + (remaining.startsWith('ساعة') ? 4 : 5);
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, ARABIC_TIME_UNITS, {
+      allowSign: false,
+      skipWhitespace: true,
+    });
   }
 }
 

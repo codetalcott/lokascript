@@ -24,6 +24,7 @@ import {
   isAsciiIdentifierChar,
   isUrlStart,
   type KeywordEntry,
+  type TimeUnitMapping,
 } from './base';
 import { JapaneseMorphologicalNormalizer } from './morphology/japanese-normalizer';
 import { japaneseProfile } from '../generators/profiles/japanese';
@@ -145,6 +146,22 @@ const JAPANESE_EXTRAS: KeywordEntry[] = [
   { native: 'ミリ秒', normalized: 'ms' },
   { native: '分', normalized: 'm' },
   { native: '時間', normalized: 'h' },
+];
+
+// =============================================================================
+// Japanese Time Units
+// =============================================================================
+
+/**
+ * Japanese time unit patterns for number parsing.
+ * Sorted by length (longest first) to ensure correct matching.
+ * Japanese time units attach directly without whitespace.
+ */
+const JAPANESE_TIME_UNITS: readonly TimeUnitMapping[] = [
+  { pattern: 'ミリ秒', suffix: 'ms', length: 3 },
+  { pattern: '時間', suffix: 'h', length: 2 },
+  { pattern: '秒', suffix: 's', length: 1 },
+  { pattern: '分', suffix: 'm', length: 1 },
 ];
 
 // =============================================================================
@@ -357,64 +374,13 @@ export class JapaneseTokenizer extends BaseTokenizer {
 
   /**
    * Extract a number, including Japanese time unit suffixes.
+   * Japanese time units attach directly without whitespace.
    */
   private extractJapaneseNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Check for time units (Japanese or standard)
-    if (pos < input.length) {
-      const remaining = input.slice(pos);
-      // Japanese time units
-      if (remaining.startsWith('ミリ秒')) {
-        number += 'ms';
-        pos += 3;
-      } else if (remaining.startsWith('秒')) {
-        number += 's';
-        pos += 1;
-      } else if (remaining.startsWith('分')) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining.startsWith('時間')) {
-        number += 'h';
-        pos += 2;
-      }
-      // Standard time units (s, ms, m, h)
-      else if (remaining.startsWith('ms')) {
-        number += 'ms';
-        pos += 2;
-      } else if (remaining[0] === 's' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 's';
-        pos += 1;
-      } else if (
-        remaining[0] === 'm' &&
-        remaining[1] !== 's' &&
-        !isAsciiIdentifierChar(remaining[1] || '')
-      ) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining[0] === 'h' && !isAsciiIdentifierChar(remaining[1] || '')) {
-        number += 'h';
-        pos += 1;
-      }
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
+    return this.tryNumberWithTimeUnits(input, startPos, JAPANESE_TIME_UNITS, {
+      allowSign: false,
+      skipWhitespace: false,
+    });
   }
 }
 
