@@ -193,10 +193,8 @@ export class BengaliTokenizer extends BaseTokenizer {
           pos++;
         }
 
-        // Check if it's a keyword
-        const keywordEntry = this.profileKeywords.find(
-          k => k.native === word || k.native.toLowerCase() === word.toLowerCase()
-        );
+        // Check if it's a keyword (O(1) Map lookup)
+        const keywordEntry = this.lookupKeyword(word);
         if (keywordEntry) {
           tokens.push(
             createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized)
@@ -218,10 +216,8 @@ export class BengaliTokenizer extends BaseTokenizer {
           pos++;
         }
 
-        // Check if it's a known keyword
-        const keywordEntry = this.profileKeywords.find(
-          k => k.native.toLowerCase() === word.toLowerCase()
-        );
+        // Check if it's a known keyword (O(1) Map lookup)
+        const keywordEntry = this.lookupKeyword(word);
         const kind: TokenKind = keywordEntry ? 'keyword' : 'identifier';
         tokens.push(
           createToken(
@@ -244,11 +240,8 @@ export class BengaliTokenizer extends BaseTokenizer {
   }
 
   classifyToken(value: string): TokenKind {
-    if (
-      this.profileKeywords.some(
-        k => k.native === value || k.native.toLowerCase() === value.toLowerCase()
-      )
-    ) {
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(value)) {
       return 'keyword';
     }
     if (SINGLE_POSTPOSITIONS.has(value)) return 'particle';

@@ -229,9 +229,51 @@ For each migrated tokenizer:
 
 ---
 
+## O(1) Keyword Lookup Optimization
+
+After migration, an optimization was added to `BaseTokenizer` providing O(1) keyword lookups:
+
+### New Helper Methods
+
+```typescript
+// O(1) lookup - returns KeywordEntry or undefined
+const entry = this.lookupKeyword(word);
+
+// O(1) existence check - returns boolean
+if (this.isKeyword(word)) { ... }
+```
+
+### Performance Benchmark Results
+
+| Language    | Keywords | Array.find() | Map.get() | Speedup        |
+| ----------- | -------- | ------------ | --------- | -------------- |
+| Japanese    | 172      | 0.035ms      | 0.0003ms  | **113x**       |
+| Spanish     | 155      | 0.004ms      | 0.0001ms  | **30x**        |
+| Vietnamese  | 135      | 0.024ms      | 0.0002ms  | **114x**       |
+| Hindi       | 118      | 0.021ms      | 0.0003ms  | **77x**        |
+| Russian     | 172      | 0.028ms      | 0.0003ms  | **86x**        |
+| **Average** | 150      | -            | -         | **84x faster** |
+
+### Migration Example
+
+```typescript
+// Before (O(n) linear search)
+const keywordEntry = this.profileKeywords.find(
+  k => k.native === word || k.native.toLowerCase() === word.toLowerCase()
+);
+
+// After (O(1) hash lookup)
+const keywordEntry = this.lookupKeyword(word);
+```
+
+Run the benchmark: `npx tsx scripts/benchmark-tokenizer-lookup.ts`
+
+---
+
 ## Related Files
 
-- `src/tokenizers/base.ts`: `initializeKeywordsFromProfile()` method
+- `src/tokenizers/base.ts`: `initializeKeywordsFromProfile()`, `lookupKeyword()`, `isKeyword()`
 - `src/generators/profiles/*.ts`: Language profiles with keywords
 - `test/tokenizers-profile-derived.test.ts`: Validation test
 - `scripts/add-language.ts`: Updated to generate profile-derived tokenizers
+- `scripts/benchmark-tokenizer-lookup.ts`: Performance benchmark
