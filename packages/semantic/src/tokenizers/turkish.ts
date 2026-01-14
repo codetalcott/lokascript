@@ -339,10 +339,8 @@ export class TurkishTokenizer extends BaseTokenizer {
     const lower = token.toLowerCase();
     if (POSTPOSITIONS.has(lower)) return 'particle';
     if (CASE_SUFFIXES.has(lower)) return 'particle';
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(lower)) return 'keyword';
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -367,11 +365,10 @@ export class TurkishTokenizer extends BaseTokenizer {
 
     const lowerWord = word.toLowerCase();
 
-    // Check if this is a known keyword (exact match via profile keywords)
-    for (const entry of this.profileKeywords) {
-      if (lowerWord === entry.native.toLowerCase()) {
-        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
-      }
+    // O(1) Map lookup instead of O(n) array search
+    const keywordEntry = this.lookupKeyword(lowerWord);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     // Check if it's a postposition
@@ -383,16 +380,15 @@ export class TurkishTokenizer extends BaseTokenizer {
     const morphResult = this.morphNormalizer.normalize(lowerWord);
 
     if (morphResult.stem !== lowerWord && morphResult.confidence >= 0.7) {
-      // Check if the stem is a known keyword
-      for (const entry of this.profileKeywords) {
-        if (morphResult.stem === entry.native.toLowerCase()) {
-          const tokenOptions: CreateTokenOptions = {
-            normalized: entry.normalized,
-            stem: morphResult.stem,
-            stemConfidence: morphResult.confidence,
-          };
-          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
-        }
+      // O(1) Map lookup for stem
+      const stemEntry = this.lookupKeyword(morphResult.stem);
+      if (stemEntry) {
+        const tokenOptions: CreateTokenOptions = {
+          normalized: stemEntry.normalized,
+          stem: morphResult.stem,
+          stemConfidence: morphResult.confidence,
+        };
+        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
       }
     }
 

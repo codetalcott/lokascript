@@ -177,10 +177,8 @@ export class MalayTokenizer extends BaseTokenizer {
   }
 
   classifyToken(token: string): TokenKind {
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (token.toLowerCase() === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(token)) return 'keyword';
     if (token.startsWith('.') || token.startsWith('#') || token.startsWith('[')) return 'selector';
     if (token.startsWith(':')) return 'identifier';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';

@@ -344,10 +344,8 @@ export class ItalianTokenizer extends BaseTokenizer {
     const lower = token.toLowerCase();
 
     if (PREPOSITIONS.has(lower)) return 'particle';
-    // Check profile keywords (case-insensitive)
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(lower)) return 'keyword';
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -414,27 +412,25 @@ export class ItalianTokenizer extends BaseTokenizer {
       return createToken(word, 'particle', createPosition(startPos, pos));
     }
 
-    // Check if this is a known keyword (exact match via profile keywords)
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) {
-        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
-      }
+    // O(1) Map lookup instead of O(n) array search
+    const keywordEntry = this.lookupKeyword(lower);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     // Try morphological normalization for conjugated/reflexive forms
     const morphResult = this.morphNormalizer.normalize(lower);
 
     if (morphResult.stem !== lower && morphResult.confidence >= 0.7) {
-      // Check if the stem (infinitive) is a known keyword
-      for (const entry of this.profileKeywords) {
-        if (morphResult.stem === entry.native.toLowerCase()) {
-          const tokenOptions: CreateTokenOptions = {
-            normalized: entry.normalized,
-            stem: morphResult.stem,
-            stemConfidence: morphResult.confidence,
-          };
-          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
-        }
+      // O(1) Map lookup for stem
+      const stemEntry = this.lookupKeyword(morphResult.stem);
+      if (stemEntry) {
+        const tokenOptions: CreateTokenOptions = {
+          normalized: stemEntry.normalized,
+          stem: morphResult.stem,
+          stemConfidence: morphResult.confidence,
+        };
+        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
       }
     }
 

@@ -148,7 +148,12 @@
     "add-language": "npx tsx scripts/add-language.ts",
     "update-keywords": "npx tsx scripts/update-keywords.ts",
     "generate:indexes": "npx tsx scripts/generate-indexes.ts",
-    "prebuild": "npm run generate:indexes"
+    "prebuild": "npm run generate:indexes",
+    "benchmark": "npx tsx scripts/benchmark-all.ts",
+    "benchmark:json": "npx tsx scripts/benchmark-all.ts --json",
+    "benchmark:save": "npx tsx scripts/benchmark-all.ts --save",
+    "benchmark:ci": "npx tsx scripts/benchmark-all.ts --save --compare",
+    "benchmark:lookup": "npx tsx scripts/benchmark-tokenizer-lookup.ts"
   },
   "sideEffects": [
     "./src/languages/*.ts",

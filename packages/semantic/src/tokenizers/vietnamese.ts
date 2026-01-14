@@ -276,10 +276,8 @@ export class VietnameseTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    // Check profile keywords (case-insensitive)
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(lower)) return 'keyword';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -342,11 +340,10 @@ export class VietnameseTokenizer extends BaseTokenizer {
       return createToken(word, 'particle', createPosition(startPos, pos));
     }
 
-    // Check if this is a known keyword (exact match via profile keywords)
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) {
-        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
-      }
+    // O(1) Map lookup for exact keyword match
+    const keywordEntry = this.lookupKeyword(lower);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     // Return as identifier

@@ -253,10 +253,8 @@ export class GermanTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
     if (PREPOSITIONS.has(lower)) return 'particle';
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(lower)) return 'keyword';
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -275,11 +273,10 @@ export class GermanTokenizer extends BaseTokenizer {
 
     const lower = word.toLowerCase();
 
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) {
-        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
-      }
+    // O(1) Map lookup instead of O(n) array search
+    const keywordEntry = this.lookupKeyword(lower);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     if (PREPOSITIONS.has(lower)) {

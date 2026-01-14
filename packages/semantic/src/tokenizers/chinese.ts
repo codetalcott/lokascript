@@ -301,10 +301,8 @@ export class ChineseTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (token === entry.native) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(token)) return 'keyword';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||

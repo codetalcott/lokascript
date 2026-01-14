@@ -220,10 +220,8 @@ export class ThaiTokenizer extends BaseTokenizer {
   }
 
   classifyToken(value: string): TokenKind {
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (value === entry.native) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(value)) return 'keyword';
     if (value.startsWith('.') || value.startsWith('#') || value.startsWith('[')) return 'selector';
     if (value.startsWith(':')) return 'identifier';
     if (value.startsWith('"') || value.startsWith("'")) return 'literal';

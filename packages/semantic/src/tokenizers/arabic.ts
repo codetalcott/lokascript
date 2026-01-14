@@ -324,10 +324,8 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   classifyToken(token: string): TokenKind {
     if (PREPOSITIONS.has(token)) return 'particle';
-    // Check profile keywords
-    for (const entry of this.profileKeywords) {
-      if (token === entry.native) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(token)) return 'keyword';
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -425,11 +423,10 @@ export class ArabicTokenizer extends BaseTokenizer {
 
     if (!word) return null;
 
-    // Check if this is a known keyword (exact match via profile keywords)
-    for (const entry of this.profileKeywords) {
-      if (word === entry.native) {
-        return createToken(word, 'keyword', createPosition(startPos, pos), entry.normalized);
-      }
+    // O(1) Map lookup instead of O(n) array search
+    const keywordEntry = this.lookupKeyword(word);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     // Check if it's a preposition
@@ -441,16 +438,15 @@ export class ArabicTokenizer extends BaseTokenizer {
     const morphResult = this.morphNormalizer.normalize(word);
 
     if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
-      // Check if the stem is a known keyword
-      for (const entry of this.profileKeywords) {
-        if (morphResult.stem === entry.native) {
-          const tokenOptions: CreateTokenOptions = {
-            normalized: entry.normalized,
-            stem: morphResult.stem,
-            stemConfidence: morphResult.confidence,
-          };
-          return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
-        }
+      // O(1) Map lookup for stem
+      const stemEntry = this.lookupKeyword(morphResult.stem);
+      if (stemEntry) {
+        const tokenOptions: CreateTokenOptions = {
+          normalized: stemEntry.normalized,
+          stem: morphResult.stem,
+          stemConfidence: morphResult.confidence,
+        };
+        return createToken(word, 'keyword', createPosition(startPos, pos), tokenOptions);
       }
     }
 

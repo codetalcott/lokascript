@@ -293,12 +293,8 @@ export class EnglishTokenizer extends BaseTokenizer {
   }
 
   classifyToken(token: string): TokenKind {
-    const lower = token.toLowerCase();
-
-    // Check profile keywords (case-insensitive)
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase()) return 'keyword';
-    }
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(token)) return 'keyword';
     if (token.startsWith('#') || token.startsWith('.') || token.startsWith('[')) return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
@@ -341,16 +337,13 @@ export class EnglishTokenizer extends BaseTokenizer {
     }
 
     const kind = this.classifyToken(word);
-    const lower = word.toLowerCase();
 
-    // Find normalized form from profile keywords (for synonyms like flip→toggle)
-    let normalized: string | undefined;
-    for (const entry of this.profileKeywords) {
-      if (lower === entry.native.toLowerCase() && entry.normalized !== entry.native) {
-        normalized = entry.normalized;
-        break;
-      }
-    }
+    // O(1) Map lookup for normalized form (for synonyms like flip→toggle)
+    const keywordEntry = this.lookupKeyword(word);
+    const normalized =
+      keywordEntry && keywordEntry.normalized !== keywordEntry.native
+        ? keywordEntry.normalized
+        : undefined;
 
     // Check for natural class syntax: "{identifier} class" → ".{identifier}"
     // This allows "toggle the active class" to work like "toggle the .active"

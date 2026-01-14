@@ -123,6 +123,9 @@ test-ast-check.js
 # Test outputs
 test-results/
 
+# Benchmark results (stored via CI cache, not in repo)
+packages/semantic/benchmarks/
+
 # Test result files (session artifacts)
 *-test-results*.txt
 *test-output*.txt
