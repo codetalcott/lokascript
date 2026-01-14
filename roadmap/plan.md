@@ -3,7 +3,7 @@
 ## Philosophy: Simplicity First
 
 This plan abandons complex runtime architectures in favor of **simplicity and
-compatibility**. Our goal is to create a drop-in replacement for _hyperscript
+compatibility**. Our goal is to create a drop-in replacement for \_hyperscript
 that works exactly like the original, with modern TypeScript benefits.
 
 **Core Principle**: Make hyperscript work perfectly, not reinvent it.
@@ -12,7 +12,8 @@ that works exactly like the original, with modern TypeScript benefits.
 
 **HyperFixi is now a complete, production-ready hyperscript ecosystem with server-side integration, advanced tooling, and comprehensive internationalization!**
 
-### ✅ **Client-Side System** (Phase 1-3 Complete) + 🔧 **TypeScript In Progress**
+### ✅ **Client-Side System** (Phase 1-3 Complete) + 🔧 **TypeScript Nearly Complete**
+
 - ✅ **Expression System**: 388/388 tests passing + 147 advanced expressions (535 total)
 - ✅ **Core Infrastructure**: Tokenizer + Parser + API structure complete
 - ✅ **DOM Commands**: All 6 essential commands (142/142 tests) ✅
@@ -20,9 +21,9 @@ that works exactly like the original, with modern TypeScript benefits.
 - ✅ **Advanced Commands**: 11 specialized commands (268/268 tests) ✅
 - ✅ **Feature System**: All 9 official features (400+ tests) ✅
 - ✅ **Extension System**: Tailwind CSS Extension (37+ tests) ✅
-- ✅ **Browser Compatibility**: 100% feature + extension compatibility with official _hyperscript
+- ✅ **Browser Compatibility**: 100% feature + extension compatibility with official \_hyperscript
 - ✅ **Official Test Suite**: ~85% compatibility (major improvement achieved)
-- 🔧 **TypeScript System**: **917 errors remaining** - Type system consolidation in progress
+- 🔧 **TypeScript System**: **10 errors remaining** (down from 917) - Nearly complete
 - ✅ **Local Variables Feature** (Sessions 15-16): Complete `:variable` syntax implementation
   - ✅ Parser support for `:variable` prefix (9/9 tests, 100%)
   - ✅ Runtime execution with scope isolation (10/10 tests, 100%)
@@ -73,12 +74,14 @@ that works exactly like the original, with modern TypeScript benefits.
   - 📄 Documentation: [PHASE_7_COMPLETE.md](../packages/core/PHASE_7_COMPLETE.md), [PHASE_6_COMPLETE.md](../packages/core/PHASE_6_COMPLETE.md), [TREE_SHAKING_COMPLETE.md](tree-shaking/TREE_SHAKING_COMPLETE.md)
 
 ### ✅ **Server-Side Integration** (Phase 4 Complete)
+
 - ✅ **HTTP Service API**: Complete REST API with compilation, validation, and batch processing
 - ✅ **Multi-Language Clients**: Python (Django/Flask/FastAPI), Go (Gin), JavaScript (Express/Elysia)
 - ✅ **Template Integration**: Server-side {{variable}} substitution and compilation
 - ✅ **Production Caching**: LRU cache with TTL and intelligent invalidation
 
 ### ✅ **Advanced Ecosystem** (Phase 5 Complete)
+
 - ✅ **Internationalization**: 12 languages including Turkish, Indonesian, Quechua, and Swahili
 - ✅ **Smart Bundling**: AI-driven bundling with usage analysis and optimization
 - ✅ **Developer Tools**: CLI, visual builder, code analysis, and scaffolding
@@ -87,6 +90,19 @@ that works exactly like the original, with modern TypeScript benefits.
 - ✅ **Analytics System**: Behavior tracking and performance instrumentation
 - ✅ **SSR Support**: Server-side rendering with behavior injection
 - ✅ **Progressive Enhancement**: Capability detection and enhancement levels
+
+### 🔧 **Semantic Package Refactoring** (In Progress)
+
+- ✅ **O(1) Keyword Lookups**: Migrated all tokenizers from O(n) startsWith chains to Map-based lookups
+- ✅ **Profile-Derived Patterns**: Tokenizers now derive keywords from language profiles (single source of truth)
+- ✅ **BaseTokenizer Utilities**: Extracted shared utilities to base class:
+  - ✅ `tryNumberWithTimeUnits()` - Shared time unit extraction (9 tokenizers migrated)
+  - ✅ `tryParticleMatch()` - Particle matching for agglutinative languages
+  - ✅ `tryMorphologicalMatch()` - Morphological normalization
+  - ✅ Character classification utilities (`createUnicodeRangeClassifier`, `combineClassifiers`)
+- 🔧 **Remaining Migration**: 9 tokenizers still use old extractNumber pattern (vi, hi, id, qu, bn, uk, sw, ru, pl)
+- ✅ **Test Coverage**: 2186 semantic tests passing, new base-utilities.test.ts added
+- ✅ **TypeScript**: 0 errors in semantic package
 
 ## Implementation Plan: Get the Basics Right (4-6 weeks)
 
@@ -211,15 +227,17 @@ that works exactly like the original, with modern TypeScript benefits.
 **Status**: Successfully implemented complete server-side architecture with TypeScript service and Python client
 
 ### ✅ **Server-Side Foundation**
+
 - **HTTP Service API**: Express.js REST API with /compile, /validate, /batch endpoints (75 tests passing)
 - **Template Parser**: Server-context parser handling {{variable}} substitution (12 tests)
 - **Compilation Cache**: LRU cache with TTL and option-based invalidation (15 tests)
 - **HyperScript Compiler**: Full hyperscript to JavaScript compilation with metadata analysis (25 tests)
 
 ### ✅ **Python Client Library** (`clients/python-client/`)
+
 - **Core Client**: Async/sync HTTP client with comprehensive error handling and retry logic
 - **FastAPI Integration**: Middleware, dependencies, template rendering, and API routes
-- **Django Integration**: Middleware, template tags, filters, and management commands  
+- **Django Integration**: Middleware, template tags, filters, and management commands
 - **Flask Integration**: Extension, Jinja2 filters, WSGI middleware, and CLI commands
 - **CLI Tool**: Full command-line interface supporting all server operations
 - **Type System**: Complete Pydantic models with type safety and validation
@@ -231,7 +249,7 @@ production-ready template processing
 
 **Current Status**: Server-side template variables implemented, but client-side template interpolation needs completion
 
-### **Recent Discovery**: Official _hyperscript Template Architecture
+### **Recent Discovery**: Official \_hyperscript Template Architecture
 
 Analysis of `~/projects/_hyperscript/src/template.js` reveals a sophisticated
 two-phase system:
@@ -277,7 +295,7 @@ two-phase system:
 
 ### 🎯 **Phase 4 Implementation Plan**
 
-Based on official _hyperscript template architecture analysis, focus on
+Based on official \_hyperscript template architecture analysis, focus on
 completing core template functionality first:
 
 #### **Week 1: @set Directive Implementation**
@@ -351,6 +369,7 @@ like the color template example
 **Goal**: Expand client library support to Go and JavaScript/Node.js ecosystems
 
 **Priority Order**:
+
 1. **Go Client Library** (`clients/go-client/`)
    - HTTP client with proper error handling and retries
    - Gin middleware for automatic compilation
@@ -426,10 +445,12 @@ precedence - a developer experience improvement!
 
 ### Functional Completeness ✅ **SOLID FOUNDATION ACHIEVED**
 
-- ✅ **Internal Tests**: Expression System 100% complete (388/388 passing)  
+- ✅ **Internal Tests**: Expression System 100% complete (388/388 passing)
+- ✅ **Core Package**: 3493 tests passing (130 test files)
+- ✅ **Semantic Package**: 2186 tests passing (37 test files)
 - ✅ **Enhanced TypeScript System**: Complete enhanced typing implementation with 440+ tests
   - **Enhanced Commands**: All DOM manipulation, content, animation, and navigation commands
-  - **Enhanced Expressions**: All reference, logical, conversion, positional, property, and mathematical expressions  
+  - **Enhanced Expressions**: All reference, logical, conversion, positional, property, and mathematical expressions
   - **Enhanced Features**: Template directives (@if/@else/@repeat) with TypeScript integration
   - **Performance System**: Comprehensive benchmarking and production monitoring (36 performance tests)
 - ✅ **Command Tests**: Phase 2 COMPLETE! All 6 core commands implemented and
@@ -438,7 +459,7 @@ precedence - a developer experience improvement!
   - TOGGLE: 22/22 tests ✅ | SHOW: 21/21 tests ✅ | HIDE: 17/17 tests ✅
 - ✅ **Event Tests**: Phase 3 COMPLETE! ON Feature (18/18) + SEND Command
   (45/45) ✅
-- ⚡ **Official _hyperscript Compatibility**: 73% (134/183 tests passing)
+- ⚡ **Official \_hyperscript Compatibility**: 73% (134/183 tests passing)
   - **Strong Areas**: Math (9/9), Logic (7/7), Basic Comparisons (25/43),
     Boolean (2/2)
   - **Improvement Areas**: String templates, English operators, type checking,
@@ -448,13 +469,13 @@ precedence - a developer experience improvement!
 ### Quality & Performance
 
 - [ ] **Bundle Size**: <15KB total (much smaller than original 50KB+)
-- [ ] **API Compatibility**: 100% backward compatible with _hyperscript
+- [ ] **API Compatibility**: 100% backward compatible with \_hyperscript
 - [ ] **Zero Build Step**: Drop-in replacement requiring no compilation
 - [ ] **Error Messages**: Clear, helpful error descriptions
 
 ## Reference Resources
 
-### Local _hyperscript Repository: `~/projects/_hyperscript/`
+### Local \_hyperscript Repository: `~/projects/_hyperscript/`
 
 #### Core Implementation
 
@@ -544,7 +565,7 @@ precedence - a developer experience improvement!
 ## Success Definition
 
 **Simple Success**: A hyperscript implementation that passes 70%+ of the
-official test suite, works as a drop-in replacement for _hyperscript, and
+official test suite, works as a drop-in replacement for \_hyperscript, and
 maintains the original's simplicity while providing modern TypeScript benefits.
 
 **No complex architectures, no bleeding-edge performance optimizations** - just
