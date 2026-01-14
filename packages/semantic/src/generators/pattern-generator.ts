@@ -72,8 +72,9 @@ export function generatePattern(
   // Build tokens based on word order
   const tokens = buildTokens(schema, profile, keyword);
 
-  // Build extraction rules
-  const extraction = buildExtractionRules(schema, profile);
+  // Build extraction rules with defaults for optional roles
+  // This ensures defaults are applied even when optional groups don't match
+  const extraction = buildExtractionRulesWithDefaults(schema, profile);
 
   // Build template format string (for documentation)
   const format = buildFormatString(schema, profile, keyword);

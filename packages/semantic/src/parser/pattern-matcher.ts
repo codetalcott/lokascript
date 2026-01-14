@@ -40,14 +40,18 @@ export class PatternMatcher {
       return null;
     }
 
-    // Apply extraction rules to fill in any missing roles
+    // Calculate confidence BEFORE applying defaults
+    // This ensures defaulted roles don't artificially inflate confidence
+    const confidence = this.calculateConfidence(pattern, captured);
+
+    // Apply extraction rules to fill in any missing roles with defaults
     this.applyExtractionRules(pattern, captured);
 
     return {
       pattern,
       captured,
       consumedTokens: tokens.position() - mark.position,
-      confidence: this.calculateConfidence(pattern, captured),
+      confidence,
     };
   }
 
@@ -709,10 +713,19 @@ export class PatternMatcher {
   ): boolean {
     const mark = tokens.mark();
 
+    // Track which roles were captured before this group
+    const capturedBefore = new Set(captured.keys());
+
     const success = this.matchTokenSequence(tokens, patternToken.tokens, captured);
 
     if (!success) {
       tokens.reset(mark);
+      // Clear any roles that were partially captured during the failed group match
+      for (const role of captured.keys()) {
+        if (!capturedBefore.has(role)) {
+          captured.delete(role);
+        }
+      }
       return patternToken.optional || false;
     }
 
