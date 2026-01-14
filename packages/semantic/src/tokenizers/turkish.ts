@@ -16,6 +16,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -31,23 +32,7 @@ import { turkishProfile } from '../generators/profiles/turkish';
 // Turkish Character Classification
 // =============================================================================
 
-/**
- * Turkish special characters.
- */
-const TURKISH_SPECIAL_CHARS = 'çÇğĞıİöÖşŞüÜ';
-
-/**
- * Check if character is a Turkish letter.
- */
-function isTurkishLetter(char: string): boolean {
-  const code = char.charCodeAt(0);
-  // Basic Latin letters
-  if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) {
-    return true;
-  }
-  // Turkish special characters
-  return TURKISH_SPECIAL_CHARS.includes(char);
-}
+const { isLetter: isTurkishLetter } = createLatinCharClassifiers(/[a-zA-ZçÇğĞıİöÖşŞüÜ]/);
 
 // =============================================================================
 // Turkish Particles and Postpositions

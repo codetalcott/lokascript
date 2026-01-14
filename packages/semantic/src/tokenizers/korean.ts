@@ -15,6 +15,8 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
+  combineClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -31,30 +33,17 @@ import { koreanProfile } from '../generators/profiles/korean';
 // Korean Character Classification
 // =============================================================================
 
-/**
- * Check if character is a Korean syllable block (Hangul).
- * Korean syllables are in the range U+AC00 to U+D7A3.
- */
-function isHangul(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return code >= 0xac00 && code <= 0xd7a3;
-}
+/** Check if character is a Korean syllable block (U+AC00-U+D7A3). */
+const isHangul = createUnicodeRangeClassifier([[0xac00, 0xd7a3]]);
 
-/**
- * Check if character is a Hangul Jamo (individual letter).
- * Jamo range: U+1100 to U+11FF, U+3130 to U+318F
- */
-function isJamo(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (code >= 0x1100 && code <= 0x11ff) || (code >= 0x3130 && code <= 0x318f);
-}
+/** Check if character is a Hangul Jamo (U+1100-U+11FF, U+3130-U+318F). */
+const isJamo = createUnicodeRangeClassifier([
+  [0x1100, 0x11ff], // Hangul Jamo
+  [0x3130, 0x318f], // Hangul Compatibility Jamo
+]);
 
-/**
- * Check if character is Korean (Hangul syllable or Jamo).
- */
-function isKorean(char: string): boolean {
-  return isHangul(char) || isJamo(char);
-}
+/** Check if character is Korean (Hangul syllable or Jamo). */
+const isKorean = combineClassifiers(isHangul, isJamo);
 
 // =============================================================================
 // Korean Particles (조사)

@@ -15,6 +15,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -28,13 +29,8 @@ import { frenchProfile } from '../generators/profiles/french';
 // French Character Classification
 // =============================================================================
 
-function isFrenchLetter(char: string): boolean {
-  return /[a-zA-ZàâäéèêëîïôùûüçœæÀÂÄÉÈÊËÎÏÔÙÛÜÇŒÆ]/.test(char);
-}
-
-function isFrenchIdentifierChar(char: string): boolean {
-  return isFrenchLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isFrenchLetter, isIdentifierChar: isFrenchIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-ZàâäéèêëîïôùûüçœæÀÂÄÉÈÊËÎÏÔÙÛÜÇŒÆ]/);
 
 // =============================================================================
 // French Prepositions
@@ -330,24 +326,6 @@ export class FrenchTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

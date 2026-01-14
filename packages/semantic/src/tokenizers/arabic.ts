@@ -15,6 +15,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -31,19 +32,14 @@ import { arabicProfile } from '../generators/profiles/arabic';
 // Arabic Character Classification
 // =============================================================================
 
-/**
- * Check if character is Arabic.
- */
-function isArabic(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 0x0600 && code <= 0x06ff) || // Arabic
-    (code >= 0x0750 && code <= 0x077f) || // Arabic Supplement
-    (code >= 0x08a0 && code <= 0x08ff) || // Arabic Extended-A
-    (code >= 0xfb50 && code <= 0xfdff) || // Arabic Presentation Forms-A
-    (code >= 0xfe70 && code <= 0xfeff)
-  ); // Arabic Presentation Forms-B
-}
+/** Check if character is Arabic (includes all Arabic Unicode blocks). */
+const isArabic = createUnicodeRangeClassifier([
+  [0x0600, 0x06ff], // Arabic
+  [0x0750, 0x077f], // Arabic Supplement
+  [0x08a0, 0x08ff], // Arabic Extended-A
+  [0xfb50, 0xfdff], // Arabic Presentation Forms-A
+  [0xfe70, 0xfeff], // Arabic Presentation Forms-B
+]);
 
 // =============================================================================
 // Arabic Prefixes and Prepositions

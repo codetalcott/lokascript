@@ -15,6 +15,8 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
+  combineClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -31,39 +33,20 @@ import { japaneseProfile } from '../generators/profiles/japanese';
 // Japanese Character Classification
 // =============================================================================
 
-/**
- * Check if character is hiragana.
- */
-function isHiragana(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return code >= 0x3040 && code <= 0x309f;
-}
+/** Check if character is hiragana (U+3040-U+309F). */
+const isHiragana = createUnicodeRangeClassifier([[0x3040, 0x309f]]);
 
-/**
- * Check if character is katakana.
- */
-function isKatakana(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return code >= 0x30a0 && code <= 0x30ff;
-}
+/** Check if character is katakana (U+30A0-U+30FF). */
+const isKatakana = createUnicodeRangeClassifier([[0x30a0, 0x30ff]]);
 
-/**
- * Check if character is kanji (CJK Unified Ideographs).
- */
-function isKanji(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 0x4e00 && code <= 0x9fff) || // CJK Unified Ideographs
-    (code >= 0x3400 && code <= 0x4dbf)
-  ); // CJK Unified Ideographs Extension A
-}
+/** Check if character is kanji (CJK Unified Ideographs + Extension A). */
+const isKanji = createUnicodeRangeClassifier([
+  [0x4e00, 0x9fff], // CJK Unified Ideographs
+  [0x3400, 0x4dbf], // CJK Unified Ideographs Extension A
+]);
 
-/**
- * Check if character is Japanese (hiragana, katakana, or kanji).
- */
-function isJapanese(char: string): boolean {
-  return isHiragana(char) || isKatakana(char) || isKanji(char);
-}
+/** Check if character is Japanese (hiragana, katakana, or kanji). */
+const isJapanese = combineClassifiers(isHiragana, isKatakana, isKanji);
 
 // =============================================================================
 // Japanese Particles

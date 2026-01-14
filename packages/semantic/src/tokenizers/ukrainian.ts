@@ -17,6 +17,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -30,14 +31,8 @@ import { ukrainianProfile } from '../generators/profiles/ukrainian';
 // Ukrainian Character Classification
 // =============================================================================
 
-function isUkrainianLetter(char: string): boolean {
-  // Ukrainian Cyrillic: а-яА-Я plus unique і, ї, є, ґ, ь, '
-  return /[a-zA-Zа-яА-ЯіІїЇєЄґҐьЬ']/.test(char);
-}
-
-function isUkrainianIdentifierChar(char: string): boolean {
-  return isUkrainianLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isUkrainianLetter, isIdentifierChar: isUkrainianIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-Zа-яА-ЯіІїЇєЄґҐьЬ']/);
 
 // =============================================================================
 // Ukrainian Prepositions
@@ -360,24 +355,6 @@ export class UkrainianTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

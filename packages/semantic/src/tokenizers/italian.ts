@@ -14,6 +14,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,19 +30,8 @@ import { italianProfile } from '../generators/profiles/italian';
 // Italian Character Classification
 // =============================================================================
 
-/**
- * Check if character is an Italian letter (including accented).
- */
-function isItalianLetter(char: string): boolean {
-  return /[a-zA-ZàèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]/.test(char);
-}
-
-/**
- * Check if character is part of an Italian identifier.
- */
-function isItalianIdentifierChar(char: string): boolean {
-  return isItalianLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isItalianLetter, isIdentifierChar: isItalianIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-ZàèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]/);
 
 // =============================================================================
 // Italian Prepositions
@@ -488,30 +478,6 @@ export class ItalianTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  /**
-   * Try to extract an operator token.
-   */
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    // Two-character operators
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    // Single-character operators
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    // Punctuation
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

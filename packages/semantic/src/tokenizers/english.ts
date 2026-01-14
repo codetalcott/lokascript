@@ -400,30 +400,6 @@ export class EnglishTokenizer extends BaseTokenizer {
 
     return null;
   }
-
-  /**
-   * Try to extract an operator token.
-   */
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    // Two-character operators
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    // Single-character operators
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    // Punctuation
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
-  }
 }
 
 /**

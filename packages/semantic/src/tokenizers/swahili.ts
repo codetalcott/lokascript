@@ -16,6 +16,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,13 +30,8 @@ import { swahiliProfile } from '../generators/profiles/swahili';
 // Swahili Character Classification
 // =============================================================================
 
-function isSwahiliLetter(char: string): boolean {
-  return /[a-zA-Z]/.test(char);
-}
-
-function isSwahiliIdentifierChar(char: string): boolean {
-  return isSwahiliLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isSwahiliLetter, isIdentifierChar: isSwahiliIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-Z]/);
 
 // =============================================================================
 // Swahili Prepositions
@@ -293,24 +289,6 @@ export class SwahiliTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

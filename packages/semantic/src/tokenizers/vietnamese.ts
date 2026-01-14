@@ -25,6 +25,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -38,29 +39,11 @@ import { vietnameseProfile } from '../generators/profiles/vietnamese';
 // Vietnamese Character Classification
 // =============================================================================
 
-/**
- * Check if character is a Vietnamese letter (including diacritics).
- * Vietnamese uses Latin alphabet plus: ă â đ ê ô ơ ư
- * Plus tone marks on vowels: à á ả ã ạ etc.
- */
-function isVietnameseLetter(char: string): boolean {
-  // Base Latin letters
-  if (/[a-zA-Z]/.test(char)) return true;
-
-  // Vietnamese-specific letters and diacritics
-  // Lowercase: ă â đ ê ô ơ ư and all tone variants
-  // Uppercase: Ă Â Đ Ê Ô Ơ Ư and all tone variants
-  return /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]/.test(
-    char
+// Vietnamese letters include Latin alphabet plus special characters and tone marks
+const { isLetter: isVietnameseLetter, isIdentifierChar: isVietnameseIdentifierChar } =
+  createLatinCharClassifiers(
+    /[a-zA-ZàáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]/
   );
-}
-
-/**
- * Check if character is part of a Vietnamese identifier.
- */
-function isVietnameseIdentifierChar(char: string): boolean {
-  return isVietnameseLetter(char) || /[0-9_-]/.test(char);
-}
 
 // =============================================================================
 // Vietnamese Prepositions
@@ -410,29 +393,6 @@ export class VietnameseTokenizer extends BaseTokenizer {
     if (!number) return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  /**
-   * Try to extract an operator.
-   */
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const char = input[pos];
-    const next = input[pos + 1];
-
-    // Two-character operators
-    if (next) {
-      const twoChar = char + next;
-      if (['==', '!=', '<=', '>=', '&&', '||'].includes(twoChar)) {
-        return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-      }
-    }
-
-    // Single-character operators
-    if ('+-*/<>=!&|'.includes(char)) {
-      return createToken(char, 'operator', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

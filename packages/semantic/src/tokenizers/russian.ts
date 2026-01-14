@@ -17,6 +17,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -30,13 +31,8 @@ import { russianProfile } from '../generators/profiles/russian';
 // Russian Character Classification
 // =============================================================================
 
-function isRussianLetter(char: string): boolean {
-  return /[a-zA-Zа-яА-ЯёЁ]/.test(char);
-}
-
-function isRussianIdentifierChar(char: string): boolean {
-  return isRussianLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isRussianLetter, isIdentifierChar: isRussianIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-Zа-яА-ЯёЁ]/);
 
 // =============================================================================
 // Russian Prepositions
@@ -365,24 +361,6 @@ export class RussianTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

@@ -15,6 +15,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,14 +30,8 @@ import { bengaliProfile } from '../generators/profiles/bengali';
 // Bengali Character Classification
 // =============================================================================
 
-/**
- * Check if character is in the Bengali script range.
- * Bengali: U+0980-U+09FF
- */
-function isBengali(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return code >= 0x0980 && code <= 0x09ff;
-}
+/** Check if character is in the Bengali script range (U+0980-U+09FF). */
+const isBengali = createUnicodeRangeClassifier([[0x0980, 0x09ff]]);
 
 // =============================================================================
 // Bengali Postpositions

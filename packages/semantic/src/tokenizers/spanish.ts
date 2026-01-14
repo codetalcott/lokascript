@@ -14,6 +14,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,19 +30,8 @@ import { spanishProfile } from '../generators/profiles/spanish';
 // Spanish Character Classification
 // =============================================================================
 
-/**
- * Check if character is a Spanish letter (including accented).
- */
-function isSpanishLetter(char: string): boolean {
-  return /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/.test(char);
-}
-
-/**
- * Check if character is part of a Spanish identifier.
- */
-function isSpanishIdentifierChar(char: string): boolean {
-  return isSpanishLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isSpanishLetter, isIdentifierChar: isSpanishIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/);
 
 // =============================================================================
 // Spanish Prepositions
@@ -432,30 +422,6 @@ export class SpanishTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  /**
-   * Try to extract an operator token.
-   */
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    // Two-character operators
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    // Single-character operators
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    // Punctuation
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

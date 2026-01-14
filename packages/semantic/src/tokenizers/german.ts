@@ -16,6 +16,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,13 +30,8 @@ import { germanProfile } from '../generators/profiles/german';
 // German Character Classification
 // =============================================================================
 
-function isGermanLetter(char: string): boolean {
-  return /[a-zA-ZäöüÄÖÜß]/.test(char);
-}
-
-function isGermanIdentifierChar(char: string): boolean {
-  return isGermanLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isGermanLetter, isIdentifierChar: isGermanIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-ZäöüÄÖÜß]/);
 
 // =============================================================================
 // German Prepositions
@@ -328,24 +324,6 @@ export class GermanTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

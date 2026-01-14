@@ -17,6 +17,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -31,20 +32,14 @@ import { chineseProfile } from '../generators/profiles/chinese';
 // Chinese Character Classification
 // =============================================================================
 
-/**
- * Check if character is a CJK character (Chinese).
- * Covers CJK Unified Ideographs and common extensions.
- */
-function isChinese(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 0x4e00 && code <= 0x9fff) || // CJK Unified Ideographs
-    (code >= 0x3400 && code <= 0x4dbf) || // CJK Unified Ideographs Extension A
-    (code >= 0x20000 && code <= 0x2a6df) || // CJK Unified Ideographs Extension B
-    (code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
-    (code >= 0x2f800 && code <= 0x2fa1f) // CJK Compatibility Ideographs Supplement
-  );
-}
+/** Check if character is a CJK character (Chinese). */
+const isChinese = createUnicodeRangeClassifier([
+  [0x4e00, 0x9fff], // CJK Unified Ideographs
+  [0x3400, 0x4dbf], // CJK Unified Ideographs Extension A
+  [0x20000, 0x2a6df], // CJK Unified Ideographs Extension B
+  [0xf900, 0xfaff], // CJK Compatibility Ideographs
+  [0x2f800, 0x2fa1f], // CJK Compatibility Ideographs Supplement
+]);
 
 // =============================================================================
 // Chinese Particles/Prepositions

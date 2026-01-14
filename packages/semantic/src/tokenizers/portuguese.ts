@@ -15,6 +15,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createLatinCharClassifiers,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -28,19 +29,8 @@ import { portugueseProfile } from '../generators/profiles/portuguese';
 // Portuguese Character Classification
 // =============================================================================
 
-/**
- * Check if character is a Portuguese letter (including accented).
- */
-function isPortugueseLetter(char: string): boolean {
-  return /[a-zA-ZáàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ]/.test(char);
-}
-
-/**
- * Check if character is part of a Portuguese identifier.
- */
-function isPortugueseIdentifierChar(char: string): boolean {
-  return isPortugueseLetter(char) || /[0-9_-]/.test(char);
-}
+const { isLetter: isPortugueseLetter, isIdentifierChar: isPortugueseIdentifierChar } =
+  createLatinCharClassifiers(/[a-zA-ZáàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ]/);
 
 // =============================================================================
 // Portuguese Prepositions
@@ -314,24 +304,6 @@ export class PortugueseTokenizer extends BaseTokenizer {
     if (!number || number === '-' || number === '+') return null;
 
     return createToken(number, 'literal', createPosition(startPos, pos));
-  }
-
-  private tryOperator(input: string, pos: number): LanguageToken | null {
-    const twoChar = input.slice(pos, pos + 2);
-    if (['==', '!=', '<=', '>=', '&&', '||', '->'].includes(twoChar)) {
-      return createToken(twoChar, 'operator', createPosition(pos, pos + 2));
-    }
-
-    const oneChar = input[pos];
-    if (['<', '>', '!', '+', '-', '*', '/', '='].includes(oneChar)) {
-      return createToken(oneChar, 'operator', createPosition(pos, pos + 1));
-    }
-
-    if (['(', ')', '{', '}', ',', ';', ':'].includes(oneChar)) {
-      return createToken(oneChar, 'punctuation', createPosition(pos, pos + 1));
-    }
-
-    return null;
   }
 }
 

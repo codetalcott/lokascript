@@ -19,6 +19,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -32,14 +33,8 @@ import { thaiProfile } from '../generators/profiles/thai';
 // Thai Character Classification
 // =============================================================================
 
-/**
- * Check if character is in the Thai script range.
- * Thai: U+0E00-U+0E7F
- */
-function isThai(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return code >= 0x0e00 && code <= 0x0e7f;
-}
+/** Check if character is in the Thai script range (U+0E00-U+0E7F). */
+const isThai = createUnicodeRangeClassifier([[0x0e00, 0x0e7f]]);
 
 // =============================================================================
 // Thai-Specific Keywords (not in profile)

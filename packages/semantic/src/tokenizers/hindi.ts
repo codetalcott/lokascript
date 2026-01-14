@@ -15,6 +15,7 @@ import {
   TokenStreamImpl,
   createToken,
   createPosition,
+  createUnicodeRangeClassifier,
   isWhitespace,
   isSelectorStart,
   isQuote,
@@ -29,22 +30,14 @@ import { hindiProfile } from '../generators/profiles/hindi';
 // Hindi Character Classification
 // =============================================================================
 
-/**
- * Check if character is in the Devanagari script range.
- * Devanagari: U+0900-U+097F
- * Devanagari Extended: U+A8E0-U+A8FF
- */
-function isDevanagari(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (code >= 0x0900 && code <= 0x097f) || (code >= 0xa8e0 && code <= 0xa8ff);
-}
+/** Check if character is in the Devanagari script range (U+0900-U+097F, U+A8E0-U+A8FF). */
+const isDevanagari = createUnicodeRangeClassifier([
+  [0x0900, 0x097f], // Devanagari
+  [0xa8e0, 0xa8ff], // Devanagari Extended
+]);
 
-/**
- * Check if character is Hindi (Devanagari or common punctuation).
- */
-function isHindi(char: string): boolean {
-  return isDevanagari(char);
-}
+/** Check if character is Hindi (Devanagari). */
+const isHindi = isDevanagari;
 
 // =============================================================================
 // Hindi Postpositions
