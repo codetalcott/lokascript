@@ -353,14 +353,14 @@ describe.skip('Enhanced Expression Performance Benchmarks', () => {
           const meResult = await meExpression.evaluate(context);
           // @ts-ignore - Test uses legacy signature
           const valueResult = await myExpression.evaluate(context, 'testValue');
-          // @ts-ignore - Test uses legacy signature
-          const addResult = await addExpression.evaluate(
+          // Test suite skipped: uses legacy signature
+          const addResult = await (addExpression as any).evaluate(
             context,
             valueResult.success ? valueResult.value : 0,
             10
           );
-          // @ts-ignore - Test uses legacy signature
-          const finalResult = await equalsExpression.evaluate(
+          // Test suite skipped: uses legacy signature
+          const finalResult = await (equalsExpression as any).evaluate(
             context,
             addResult.success ? addResult.value : 0,
             52
@@ -389,10 +389,10 @@ describe.skip('Enhanced Expression Performance Benchmarks', () => {
         'integration',
         async () => {
           // Access non-existent property and handle gracefully
-          // @ts-ignore - Test uses legacy signature
-          const valueResult = await myExpression.evaluate(context, 'nonExistentProperty');
-          // @ts-ignore - Test uses legacy signature
-          const comparisonResult = await equalsExpression.evaluate(
+          // Test suite skipped: uses legacy signature
+          const valueResult = await (myExpression as any).evaluate(context, 'nonExistentProperty');
+          // Test suite skipped: uses legacy signature
+          const comparisonResult = await (equalsExpression as any).evaluate(
             context,
             valueResult.success ? valueResult.value : null,
             null

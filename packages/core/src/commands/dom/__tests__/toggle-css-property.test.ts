@@ -39,18 +39,12 @@ describe('ToggleCommand - CSS Property Syntax', () => {
   // Mock context
   const createMockContext = (me: HTMLElement): ExecutionContext => ({
     me,
-    you: undefined,
-    it: undefined,
-    detail: undefined,
+    you: null,
+    it: null,
     event: undefined,
     result: undefined,
-    body: document.body,
-    locals: {},
-    getLocal: vi.fn(),
-    setLocal: vi.fn(),
-    hasLocal: vi.fn(),
-    root: document.body,
-    target: me,
+    locals: new Map(),
+    globals: new Map(),
   });
 
   beforeEach(() => {

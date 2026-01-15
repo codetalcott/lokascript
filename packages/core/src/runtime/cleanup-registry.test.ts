@@ -107,7 +107,7 @@ describe('CleanupRegistry', () => {
       vi.useFakeTimers();
 
       const intervalId = setInterval(callback, 100);
-      registry.registerInterval(element, intervalId);
+      registry.registerInterval(element, intervalId as unknown as ReturnType<typeof setInterval>);
       registry.cleanupElement(element);
 
       vi.advanceTimersByTime(500);
@@ -135,7 +135,7 @@ describe('CleanupRegistry', () => {
       vi.useFakeTimers();
 
       const timeoutId = setTimeout(callback, 100);
-      registry.registerTimeout(element, timeoutId);
+      registry.registerTimeout(element, timeoutId as unknown as ReturnType<typeof setTimeout>);
       registry.cleanupElement(element);
 
       vi.advanceTimersByTime(500);
@@ -383,7 +383,7 @@ describe('CleanupRegistry', () => {
       const target = document.createElement('button');
       const observer = new MutationObserver(vi.fn());
 
-      registry.registerListener(element, target, 'click', vi.fn());
+      registry.registerListener(element, target, 'click', vi.fn() as EventListener);
       registry.registerObserver(element, observer);
       registry.registerCustom(element, vi.fn());
       registry.registerGlobal(vi.fn(), 'interval');

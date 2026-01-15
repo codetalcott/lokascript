@@ -362,8 +362,8 @@ describe.skip('Enhanced Command Performance Benchmarks', () => {
       const successResult = await benchmark.benchmark(
         'PutCommand.success-path',
         'integration',
-        // @ts-ignore - Test uses legacy signature, commands expect (input, context)
-        () => putCommand.execute(context, 'content', 'into'),
+        // Test suite skipped: uses legacy signature, commands expect (input, context)
+        () => (putCommand as any).execute(context, 'content', 'into'),
         {
           iterations: 300,
           complexity: 'medium',
@@ -374,9 +374,9 @@ describe.skip('Enhanced Command Performance Benchmarks', () => {
       const errorResult = await benchmark.benchmark(
         'PutCommand.error-path',
         'integration',
-        // @ts-ignore - Test uses legacy signature, commands expect (input, context)
+        // Test suite skipped: uses legacy signature, commands expect (input, context)
         () =>
-          putCommand.execute(
+          (putCommand as any).execute(
             context,
             'content',
             'invalid-position' as unknown as 'before' | 'after'

@@ -8,6 +8,8 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   SemanticIntegrationAdapter,
   SemanticAnalyzer,
+  SemanticRole,
+  SemanticValue,
   DEFAULT_CONFIDENCE_THRESHOLD,
   HIGH_CONFIDENCE_THRESHOLD,
   shouldUseSemanticResult,
@@ -357,8 +359,11 @@ describe('parseExpressionString (via expression type values)', () => {
         command: {
           name: 'call',
           roles: new Map([
-            ['patient', { type: 'expression', value: expressionValue, raw: expressionValue }],
-          ]),
+            [
+              'patient' as const,
+              { type: 'expression' as const, value: expressionValue, raw: expressionValue },
+            ],
+          ]) as ReadonlyMap<SemanticRole, SemanticValue>,
         },
         tokensConsumed: 1,
       })),
