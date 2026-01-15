@@ -1,0 +1,62 @@
+# Commands Without Dedicated Unit Tests
+
+## Advanced
+- js
+
+## Animation
+- measure
+- settle
+- take
+- transition
+
+## Behaviors
+- install
+
+## Content
+- append
+
+## Control Flow
+- break
+- continue
+- exit
+- halt
+- return
+- throw
+- unless
+
+## Data
+- bind
+- decrement
+- default
+- get
+- increment
+- persist
+
+## DOM
+- make
+- process-partials (helper)
+- toggle (partial - only CSS property tests)
+
+## Events
+- send
+- trigger
+
+## Execution
+- call
+- pseudo-command
+
+## Navigation
+- go
+- push-url
+- replace-url
+
+## Templates
+- render
+
+## Utility
+- beep
+- copy
+- pick
+- tell
+
+Total: ~35 commands needing tests
