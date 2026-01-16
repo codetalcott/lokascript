@@ -5,6 +5,117 @@ All notable changes to HyperFixi will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-16
+
+### Changed
+
+#### API v2 Release and Code Quality Improvements
+
+**Breaking Changes**: Removed all deprecated API methods. See [roadmap/api-v2-implementation-plan.md](roadmap/api-v2-implementation-plan.md) for migration guide.
+
+**Major API Changes**:
+
+- Removed deprecated methods: `evalHyperScript()`, `evalHyperScriptAsync()`, `evalHyperScriptSmart()`, `compileMultilingual()`, `run()`, `createChildContext()`, `isValidHyperscript()`
+- Unified API around v2 methods: `compile()`, `compileSync()`, `eval()`, `validate()`, `createContext()`
+- Updated browser type definitions in `@hyperfixi/types-browser`
+
+**Code Quality Improvements** (Post-v2.0.0 Cleanup):
+
+This release includes comprehensive internal refactoring to improve code quality, maintainability, and type safety. All changes are internal with **zero breaking changes** to the public API.
+
+### Refactored
+
+#### Phase 1: Quick Wins
+
+- **Removed Dead Code**: Deleted unused `HyperscriptParseError` class
+- **Fixed Version**: Updated hardcoded version from '0.1.0' to '2.0.0'
+- **Added Constants**: Extracted magic strings to `DEFAULT_EVENT_TYPE` and `DEFAULT_LANGUAGE` constants
+
+#### Phase 2: Debug Logging Cleanup
+
+- **Error Logging Helper**: Created focused `logCompileError()` helper function
+- **Reduced Debug Verbosity**: Consolidated debug calls from 9 to 2 in event handler setup
+- **Improved Debug Output**: Better structured debug information with object logging
+
+#### Phase 3: Module Extraction
+
+- **Created DOM Processor Module**: Extracted DOM processing logic into `packages/core/src/api/dom-processor.ts` (~350 lines)
+- **Separation of Concerns**: Separated API layer (compilation/execution) from DOM layer (element processing)
+- **Dependency Injection**: Used `initializeDOMProcessor()` pattern to avoid circular dependencies
+- **Functions Extracted**:
+  - `process()` - DOM element processing
+  - `detectLanguage()` - Language detection from element attributes
+  - `processHyperscriptAttribute()` - Attribute processing
+  - `setupEventHandler()` - Event handler setup
+  - `extractEventInfo()` - Event information extraction
+  - `createHyperscriptContext()` - Context creation
+  - `logCompileError()` - Error logging
+
+#### Phase 4: Type Safety Improvements
+
+- **Added Type Guards**: Created proper type guard functions for safer type narrowing
+  - `isExecutionContext()` - Type guard for ExecutionContext
+  - `hasMe()` - Type guard for partial context with 'me' property
+  - `isEventHandlerAST()` - Type guard for EventHandler AST nodes
+  - `isFeatureAST()` - Type guard for Feature AST nodes
+- **Removed Unsafe Casts**: Replaced 8+ unsafe type casts with proper type guards
+- **Fixed Language Narrowing**: Removed unsafe `as 'en'` cast in language configuration
+- **Documented Necessary Casts**: Added clear documentation for remaining necessary type casts due to package interface compatibility
+
+### Improved
+
+#### Code Organization
+
+- **Reduced File Size**: Extracted ~350 lines from `hyperscript-api.ts` into dedicated module
+- **Better Modularity**: Clear separation between API and DOM processing concerns
+- **Improved Maintainability**: Focused modules with single responsibilities
+
+#### Type Safety
+
+- **Better TypeScript Support**: Improved type checking with proper type guards
+- **Clearer Intent**: Type guards make code intentions explicit
+- **Enhanced IDE Support**: Better autocomplete and type inference
+
+#### Developer Experience
+
+- **Reduced Console Noise**: Consolidated debug logging
+- **Better Error Messages**: Improved error logging with structured output
+- **Clearer Code**: Removed magic strings and unclear type casts
+
+### Technical Details
+
+#### Files Modified
+
+- `packages/core/src/api/hyperscript-api.ts` - Main API refactoring
+- `packages/core/src/api/dom-processor.ts` - New DOM processing module (created)
+- `roadmap/api-cleanup-plan.md` - Cleanup implementation plan
+
+#### Test Results
+
+- ✅ All 3,923 tests passing (149 test files)
+- ✅ TypeScript compilation successful with no errors
+- ✅ Browser bundle builds successfully (20.1s)
+- ✅ Bundle size maintained (no increase)
+
+#### Commits
+
+- Phase 1: `refactor: Phase 1 cleanup - remove dead code, fix version, add constants`
+- Phase 2: `refactor: reduce debug logging verbosity in hyperscript-api (Phase 2)`
+- Phase 3: `refactor: extract DOM processing into separate module (Phase 3)`
+- Phase 4: `refactor: improve type safety by replacing unsafe casts with type guards (Phase 4)`
+
+### Migration Notes
+
+**For Users**: No changes required - all refactoring is internal only.
+
+**For Contributors**:
+
+- DOM processing code moved to `packages/core/src/api/dom-processor.ts`
+- Use provided type guards instead of type casts when working with AST nodes or contexts
+- Constants `DEFAULT_EVENT_TYPE` and `DEFAULT_LANGUAGE` available for reuse
+
+---
+
 ## [1.1.0] - 2025-11-13
 
 ### Added
@@ -16,9 +127,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Local variables provide scope isolation, preventing variable naming conflicts and making code more maintainable. Variables prefixed with `:` are only accessible within their execution context and don't pollute the global namespace.
 
 **Core Features**:
+
 - **Parser Support**: Full recognition of `:variable` syntax in all contexts
 - **Scope Isolation**: Local variables only check `context.locals`, never global scope
-- **Arithmetic Operations**: Complete support for INCREMENT, DECREMENT, and all math operators (+, -, *, /)
+- **Arithmetic Operations**: Complete support for INCREMENT, DECREMENT, and all math operators (+, -, \*, /)
 - **Expression Integration**: Works seamlessly in all expression contexts
 - **Type Conversions**: Full support with `as` keyword and type casting
 
@@ -52,12 +164,14 @@ end
 ```
 
 **Documentation**:
+
 - Complete user guide: `docs/LOCAL_VARIABLES_GUIDE.md`
 - 30+ practical code examples
 - Best practices and common patterns
 - Migration guide from global to local variables
 
 **Test Coverage**:
+
 - 9 parser tests (100% passing)
 - 10 evaluator tests (100% passing)
 - 7 integration tests (100% passing)
@@ -66,12 +180,14 @@ end
 #### Bug Fixes
 
 **REPEAT Command**: Fixed `context.it` assignment in loops
+
 - **Issue**: `repeat N times` loops had `it` undefined in all iterations
 - **Fix**: Now correctly sets `it` to 1, 2, 3, ... (1-indexed)
 - **Impact**: Fixes patterns like `set :idx to it` in loops
-- **Compatibility**: Matches official _hyperscript behavior
+- **Compatibility**: Matches official \_hyperscript behavior
 
 **Example**:
+
 ```hyperscript
 <!-- Before: it was undefined -->
 repeat 3 times
@@ -89,6 +205,7 @@ end
 #### Expression Evaluator
 
 **Scope-Aware Variable Lookup**:
+
 - Added `scope` parameter to `evaluateIdentifier()` method
 - Implements explicit scope checking:
   - `scope: 'local'` → Only checks `context.locals`
@@ -100,11 +217,13 @@ end
 #### Runtime Execution
 
 **INCREMENT/DECREMENT Scope Extraction**:
+
 - Added scope metadata extraction from identifier AST nodes
 - Runtime correctly passes `scope: 'local'` to command implementations
 - Enables local variable support in arithmetic commands
 
 **Example**:
+
 ```hyperscript
 set :counter to 10
 increment :counter by 5  <!-- scope: 'local' passed to INCREMENT -->
@@ -116,12 +235,14 @@ put :counter  <!-- displays: 15 -->
 #### Architecture Improvements
 
 **Complete Scope Propagation Chain**:
+
 1. **Parser** (`parsePrimary`): Creates `{ name: 'x', scope: 'local' }`
 2. **Runtime** (`executeCommand`): Extracts scope from AST nodes
 3. **Commands** (INCREMENT, SET): Receive scope parameter
 4. **Evaluator** (`evaluateIdentifier`): Uses scope for variable lookup
 
 **Zero Breaking Changes**:
+
 - Fully backward compatible with existing code
 - Global variables work exactly as before
 - No changes to existing command behavior
@@ -159,6 +280,7 @@ end
 ```
 
 **Benefits**:
+
 - ✅ No global namespace pollution
 - ✅ No naming conflicts between handlers
 - ✅ Clearer intent (: prefix shows local scope)
@@ -193,7 +315,7 @@ Complete HyperScript/HyperFixi ecosystem with:
 - ✅ Server-Side Integration
 - ✅ Advanced Tooling (CLI, bundling, testing)
 - ✅ Internationalization (12 languages)
-- ✅ Browser Compatibility (~85% with official _hyperscript)
+- ✅ Browser Compatibility (~85% with official \_hyperscript)
 
 See [roadmap/plan.md](roadmap/plan.md) for complete feature list.
 
