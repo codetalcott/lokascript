@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PickCommand } from '../pick';
 import type { ExecutionContext, TypedExecutionContext } from '../../../types/core';
-import type { ASTNode } from '../../../types/base-types';
+import type { ASTNode, ExpressionNode } from '../../../types/base-types';
 
 // ========== Test Utilities ==========
 
@@ -65,7 +65,10 @@ describe('PickCommand', () => {
 
     it('should have correct syntax', () => {
       expect(command.metadata.syntax.length).toBeGreaterThan(0);
-      expect(command.metadata.syntax.some((s: string) => s.includes('pick'))).toBe(true);
+      expect(
+        Array.isArray(command.metadata.syntax) &&
+          command.metadata.syntax.some((s: string) => s.includes('pick'))
+      ).toBe(true);
     });
   });
 
@@ -99,7 +102,7 @@ describe('PickCommand', () => {
       const input = await command.parseInput(
         {
           args: [],
-          modifiers: { from: { type: 'variable', name: 'colors' } },
+          modifiers: { from: { type: 'expression', name: 'colors' } as ExpressionNode },
         },
         evaluator,
         context
@@ -117,7 +120,7 @@ describe('PickCommand', () => {
         command.parseInput(
           {
             args: [],
-            modifiers: { from: { type: 'variable', name: 'notArray' } },
+            modifiers: { from: { type: 'expression', name: 'notArray' } as ExpressionNode },
           },
           evaluator,
           context
@@ -133,7 +136,7 @@ describe('PickCommand', () => {
         command.parseInput(
           {
             args: [],
-            modifiers: { from: { type: 'variable', name: 'emptyArray' } },
+            modifiers: { from: { type: 'expression', name: 'emptyArray' } as ExpressionNode },
           },
           evaluator,
           context
@@ -333,7 +336,7 @@ describe('PickCommand', () => {
       const input = await command.parseInput(
         {
           args: [],
-          modifiers: { from: { type: 'variable', name: 'numbers' } },
+          modifiers: { from: { type: 'expression', name: 'numbers' } as ExpressionNode },
         },
         evaluator,
         context

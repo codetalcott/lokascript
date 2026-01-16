@@ -22,8 +22,8 @@
  * - Single command system (no V1/V2 confusion)
  */
 
-import { RuntimeBase } from './runtime-base';
-import { CommandRegistryV2 } from './command-adapter';
+import { RuntimeBase, type RuntimeBaseOptions } from './runtime-base';
+import { CommandRegistryV2, type CommandWithParseInput } from './command-adapter';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 // LazyExpressionEvaluator is dynamically imported only when lazyLoad=true
 // This allows tree-shaking to eliminate it in browser builds where lazyLoad=false
@@ -263,7 +263,10 @@ export class Runtime extends RuntimeBase {
     const expressionEvaluator = new ExpressionEvaluator();
 
     // Initialize RuntimeBase with registry and evaluator
-    const baseOptions: any = {
+    const baseOptions: Partial<RuntimeBaseOptions> & {
+      registry: CommandRegistryV2;
+      expressionEvaluator: ExpressionEvaluator;
+    } = {
       registry: registry as unknown as CommandRegistryV2,
       expressionEvaluator,
     };
@@ -313,7 +316,7 @@ export function createRuntime(options: RuntimeOptions = {}): Runtime {
  * ```
  */
 export function createMinimalRuntime(
-  commands: any[],
+  commands: CommandWithParseInput[],
   options: Omit<RuntimeOptions, 'registry'> = {}
 ): Runtime {
   const registry = new CommandRegistryV2();

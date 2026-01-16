@@ -14,7 +14,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PutCommand, createPutCommand, type PutCommandInput } from './put';
 import type { TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import type { ASTNode } from '../../types/base-types';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
 
 // =============================================================================
 // Test Helpers
@@ -33,8 +33,9 @@ function createMockContext(element?: HTMLElement): TypedExecutionContext {
   const mockElement = element || createMockElement();
   return {
     me: mockElement,
+    you: null,
     locals: new Map(),
-    target: null,
+    globals: new Map(),
     result: undefined,
     halted: false,
     it: undefined,
@@ -230,7 +231,7 @@ describe('PutCommand', () => {
       const context = createMockContext(createMockElement('target'));
 
       const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
-      const targetNode = { type: 'selector', value: '#target' } as ASTNode;
+      const targetNode = { type: 'expression', value: '#target' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [contentNode], modifiers: { into: targetNode } },
@@ -248,7 +249,7 @@ describe('PutCommand', () => {
       const context = createMockContext(createMockElement('target'));
 
       const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
-      const targetNode = { type: 'selector', value: '#target' } as ASTNode;
+      const targetNode = { type: 'expression', value: '#target' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [contentNode], modifiers: { before: targetNode } },
@@ -264,7 +265,7 @@ describe('PutCommand', () => {
       const context = createMockContext(createMockElement('target'));
 
       const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
-      const targetNode = { type: 'selector', value: '#target' } as ASTNode;
+      const targetNode = { type: 'expression', value: '#target' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [contentNode], modifiers: { after: targetNode } },
@@ -542,7 +543,6 @@ describe('PutCommand', () => {
   describe('Execution - Variable Assignment', () => {
     it('should assign value to variable in context.locals', async () => {
       const context = createMockContext();
-      context.locals = new Map();
 
       const input: PutCommandInput = {
         value: 42,

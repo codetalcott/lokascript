@@ -49,9 +49,9 @@ export function parseTriggerCommand(
 
   // First, parse the event name (may include colons)
   let eventName = '';
-  let eventStart = ctx.peek().start || 0;
-  let eventLine = ctx.peek().line || 1;
-  let eventColumn = ctx.peek().column || 1;
+  const eventStart = ctx.peek().start || 0;
+  const eventLine = ctx.peek().line || 1;
+  const eventColumn = ctx.peek().column || 1;
 
   // Check if first token is an identifier (event name)
   // Phase 4: Using predicate method - checkIdentifierLike() covers IDENTIFIER and KEYWORD

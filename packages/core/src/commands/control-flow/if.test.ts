@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConditionalCommand, createConditionalCommand, type ConditionalCommandInput } from './if';
 import type { TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import type { ASTNode } from '../../types/base-types';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
 
 // =============================================================================
 // Test Helpers
@@ -22,8 +22,9 @@ import type { ASTNode } from '../../types/base-types';
 function createMockContext(): TypedExecutionContext {
   return {
     me: null,
+    you: null,
     locals: new Map([['_runtimeExecute', vi.fn(async () => 'executed')]]),
-    target: null,
+    globals: new Map(),
     result: undefined,
     halted: false,
     it: undefined,
@@ -36,11 +37,11 @@ function createMockEvaluator(returnValue: any = true): ExpressionEvaluator {
   } as unknown as ExpressionEvaluator;
 }
 
-function createMockBlock(commands: any[] = []): ASTNode {
+function createMockBlock(commands: any[] = []): ExpressionNode {
   return {
-    type: 'block',
+    type: 'expression',
     commands,
-  } as ASTNode;
+  } as ExpressionNode;
 }
 
 // =============================================================================
@@ -366,8 +367,8 @@ describe('ConditionalCommand', () => {
     it('should handle array of commands', async () => {
       const context = createMockContext();
 
-      const cmd1 = { execute: vi.fn(async () => 'cmd1') };
-      const cmd2 = { execute: vi.fn(async () => 'cmd2') };
+      const cmd1 = { type: 'command', execute: vi.fn(async () => 'cmd1') } as ASTNode;
+      const cmd2 = { type: 'command', execute: vi.fn(async () => 'cmd2') } as ASTNode;
 
       const input: ConditionalCommandInput = {
         mode: 'if',

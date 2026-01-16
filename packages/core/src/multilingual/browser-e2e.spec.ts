@@ -203,7 +203,7 @@ test.describe('Multilingual Hyperscript Execution', () => {
         await ml.parse('invalid syntax ###', 'en');
         return { success: false, error: null };
       } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
       }
     });
 

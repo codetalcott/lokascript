@@ -14,7 +14,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { FetchCommand, createFetchCommand, type FetchCommandInput } from './fetch';
 import type { TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import type { ASTNode } from '../../types/base-types';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
 
 // =============================================================================
 // Test Setup & Mocks
@@ -77,8 +77,9 @@ function createMockContext(element: HTMLElement | null = null): TypedExecutionCo
 
   return {
     me: mockElement,
+    you: null,
     locals: new Map(),
-    target: mockElement,
+    globals: new Map(),
     result: undefined,
     halted: false,
     it: undefined,
@@ -105,7 +106,7 @@ describe('FetchCommand', () => {
 
     // Mock fetch
     mockFetch = vi.fn();
-    global.fetch = mockFetch;
+    global.fetch = mockFetch as unknown as typeof global.fetch;
 
     // Mock AbortController
     global.AbortController = class {
@@ -207,7 +208,7 @@ describe('FetchCommand', () => {
     it('should parse "json" response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'json' } as ASTNode;
+      const asNode = { type: 'expression', name: 'json' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -222,7 +223,7 @@ describe('FetchCommand', () => {
     it('should parse "html" response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'html' } as ASTNode;
+      const asNode = { type: 'expression', name: 'html' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -237,7 +238,7 @@ describe('FetchCommand', () => {
     it('should parse "blob" response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'blob' } as ASTNode;
+      const asNode = { type: 'expression', name: 'blob' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -252,7 +253,7 @@ describe('FetchCommand', () => {
     it('should parse "arrayBuffer" response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'arraybuffer' } as ASTNode;
+      const asNode = { type: 'expression', name: 'arraybuffer' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -267,7 +268,7 @@ describe('FetchCommand', () => {
     it('should parse "response" response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'response' } as ASTNode;
+      const asNode = { type: 'expression', name: 'response' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -282,7 +283,7 @@ describe('FetchCommand', () => {
     it('should throw error for invalid response type', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'invalid' } as ASTNode;
+      const asNode = { type: 'expression', name: 'invalid' } as ExpressionNode;
       const context = createMockContext();
 
       await expect(
@@ -293,7 +294,7 @@ describe('FetchCommand', () => {
     it('should be case-insensitive for response types', async () => {
       const evaluator = createMockEvaluator('https://example.com');
       const urlNode = { type: 'string' } as ASTNode;
-      const asNode = { type: 'identifier', name: 'JSON' } as ASTNode;
+      const asNode = { type: 'expression', name: 'JSON' } as ExpressionNode;
       const context = createMockContext();
 
       const input = await command.parseInput(
@@ -320,7 +321,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [urlNode], modifiers: { with: withNode } },
@@ -343,7 +344,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [urlNode], modifiers: { with: withNode } },
@@ -367,7 +368,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [urlNode], modifiers: { with: withNode } },
@@ -390,7 +391,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [urlNode], modifiers: { with: withNode } },
@@ -413,7 +414,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [urlNode], modifiers: { with: withNode } },
@@ -436,7 +437,7 @@ describe('FetchCommand', () => {
         }),
       } as unknown as ExpressionEvaluator;
 
-      const withNode = { type: 'object' } as ASTNode;
+      const withNode = { type: 'expression' } as ExpressionNode;
 
       await expect(
         command.parseInput(

@@ -52,9 +52,12 @@ describe('HistoryCommand (push-url)', () => {
     mockReplaceState = vi.fn();
     mockDispatchEvent = vi.fn();
 
-    global.window.history.pushState = mockPushState;
-    global.window.history.replaceState = mockReplaceState;
-    global.window.dispatchEvent = mockDispatchEvent;
+    global.window.history.pushState =
+      mockPushState as unknown as typeof global.window.history.pushState;
+    global.window.history.replaceState =
+      mockReplaceState as unknown as typeof global.window.history.replaceState;
+    global.window.dispatchEvent =
+      mockDispatchEvent as unknown as typeof global.window.dispatchEvent;
   });
 
   describe('metadata', () => {

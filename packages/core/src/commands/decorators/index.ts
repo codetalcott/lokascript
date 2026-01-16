@@ -72,6 +72,15 @@ export interface DecoratedCommand {
   readonly metadata: CommandMetadata;
 }
 
+/**
+ * Type for class constructors with symbol properties
+ */
+type ClassWithSymbols = {
+  [COMMAND_NAME]?: string;
+  [COMMAND_CATEGORY]?: CommandCategory;
+  [COMMAND_METADATA]?: CommandMetadata;
+};
+
 // ============================================================================
 // @command Decorator
 // ============================================================================
@@ -90,13 +99,14 @@ export interface DecoratedCommand {
  * ```
  */
 export function command(config: CommandConfig) {
-  return function <T extends new (...args: any[]) => object>(
+  return function <T extends new (...args: unknown[]) => object>(
     target: T,
     context: ClassDecoratorContext
   ): T | void {
     // Store config on class for later use
-    (target as any)[COMMAND_NAME] = config.name;
-    (target as any)[COMMAND_CATEGORY] = config.category;
+    const targetWithSymbols = target as T & ClassWithSymbols;
+    targetWithSymbols[COMMAND_NAME] = config.name;
+    targetWithSymbols[COMMAND_CATEGORY] = config.category;
 
     // Add name property to prototype
     Object.defineProperty(target.prototype, 'name', {
@@ -135,12 +145,13 @@ export function command(config: CommandConfig) {
  * ```
  */
 export function meta(config: MetaConfig) {
-  return function <T extends new (...args: any[]) => object>(
+  return function <T extends new (...args: unknown[]) => object>(
     target: T,
     context: ClassDecoratorContext
   ): T | void {
     // Build full metadata (category comes from @command decorator)
-    const category = (target as any)[COMMAND_CATEGORY] as CommandCategory | undefined;
+    const targetWithSymbols = target as T & ClassWithSymbols;
+    const category = targetWithSymbols[COMMAND_CATEGORY];
 
     if (!category) {
       throw new Error(
@@ -164,7 +175,7 @@ export function meta(config: MetaConfig) {
     };
 
     // Store on class
-    (target as any)[COMMAND_METADATA] = fullMetadata;
+    targetWithSymbols[COMMAND_METADATA] = fullMetadata;
 
     // Add static metadata property
     Object.defineProperty(target, 'metadata', {
@@ -195,28 +206,31 @@ export function meta(config: MetaConfig) {
 /**
  * Get command name from a decorated class
  */
-export function getCommandName<T extends new (...args: any[]) => object>(
+export function getCommandName<T extends new (...args: unknown[]) => object>(
   target: T
 ): string | undefined {
-  return (target as any)[COMMAND_NAME];
+  const targetWithSymbols = target as T & ClassWithSymbols;
+  return targetWithSymbols[COMMAND_NAME];
 }
 
 /**
  * Get command category from a decorated class
  */
-export function getCommandCategory<T extends new (...args: any[]) => object>(
+export function getCommandCategory<T extends new (...args: unknown[]) => object>(
   target: T
 ): CommandCategory | undefined {
-  return (target as any)[COMMAND_CATEGORY];
+  const targetWithSymbols = target as T & ClassWithSymbols;
+  return targetWithSymbols[COMMAND_CATEGORY];
 }
 
 /**
  * Get command metadata from a decorated class
  */
-export function getCommandMetadata<T extends new (...args: any[]) => object>(
+export function getCommandMetadata<T extends new (...args: unknown[]) => object>(
   target: T
 ): CommandMetadata | undefined {
-  return (target as any)[COMMAND_METADATA];
+  const targetWithSymbols = target as T & ClassWithSymbols;
+  return targetWithSymbols[COMMAND_METADATA];
 }
 
 /**

@@ -1882,7 +1882,7 @@ export class Parser {
 
     // Check for parameter syntax: (param1, param2, ...)
     // This is used for custom events like "on addHistory(action)"
-    let eventParams: string[] = [];
+    const eventParams: string[] = [];
     if (this.match('(')) {
       // Parse parameter names
       if (!this.check(')')) {

@@ -49,7 +49,7 @@ import {
  * Serializes a JavaScript value to an ArrayBuffer in binary tree format.
  */
 export function serialize(value: unknown, options: BinaryTreeOptions = {}): ArrayBuffer {
-  let cursor = createWriteCursor(options);
+  const cursor = createWriteCursor(options);
 
   // Serialize the root value
   const { cursor: finalCursor, offset: rootOffset } = serializeValue(

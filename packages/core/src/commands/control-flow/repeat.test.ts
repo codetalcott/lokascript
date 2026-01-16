@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RepeatCommand, createRepeatCommand, type RepeatCommandInput } from './repeat';
 import type { TypedExecutionContext } from '../../types/core';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
-import type { ASTNode } from '../../types/base-types';
+import type { ASTNode, ExpressionNode } from '../../types/base-types';
 
 // =============================================================================
 // Test Helpers
@@ -24,8 +24,9 @@ import type { ASTNode } from '../../types/base-types';
 function createMockContext(): TypedExecutionContext {
   return {
     me: null,
+    you: null,
     locals: new Map([['_runtimeExecute', vi.fn(async () => 'executed')]]),
-    target: null,
+    globals: new Map(),
     result: undefined,
     halted: false,
     it: undefined,
@@ -105,7 +106,7 @@ describe('RepeatCommand', () => {
       const forNode = { type: 'identifier', name: 'for' } as ASTNode;
       const varNode = { type: 'identifier', name: 'item', value: 'item' } as ASTNode;
       const collectionNode = { type: 'array' } as ASTNode;
-      const indexNode = { type: 'identifier', name: 'i' } as ASTNode;
+      const indexNode = { type: 'expression', name: 'i' } as ExpressionNode;
 
       const input = await command.parseInput(
         { args: [forNode, varNode, collectionNode], modifiers: { index: indexNode } },

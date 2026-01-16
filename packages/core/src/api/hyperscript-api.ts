@@ -10,6 +10,7 @@ import { createContext, createChildContext } from '../core/context';
 import type { ASTNode, ExecutionContext, ParseError } from '../types/base-types';
 import type { RuntimeHooks } from '../types/hooks';
 import type { SemanticAnalyzerInterface } from '../parser/types';
+import type { Token } from '../types/core';
 import { debug } from '../utils/debug';
 import {
   createSemanticAnalyzer,
@@ -17,6 +18,37 @@ import {
   type SemanticAnalyzer,
 } from '@hyperfixi/semantic';
 import { registerHistorySwap, registerBoosted } from '../behaviors';
+
+// =============================================================================
+// Type Augmentations
+// =============================================================================
+
+/**
+ * Augment globalThis with hyperscript runtime
+ */
+declare global {
+  interface Window {
+    _hyperscript?: {
+      runtime?: Runtime;
+      behaviors?: Runtime['behaviorAPI'];
+    };
+  }
+}
+
+/**
+ * Custom error class for parse errors with line/column information
+ */
+class HyperscriptParseError extends Error {
+  line?: number;
+  column?: number;
+
+  constructor(message: string, line?: number, column?: number) {
+    super(message);
+    this.name = 'HyperscriptParseError';
+    this.line = line;
+    this.column = column;
+  }
+}
 
 // Singleton semantic analyzer instance (lazy-initialized)
 let semanticAnalyzerInstance: SemanticAnalyzer | null = null;
@@ -214,10 +246,13 @@ function getDefaultRuntime(): Runtime {
     // Expose default runtime globally for behavior registration/lookup
     // This allows behaviors defined in <script type="text/hyperscript"> to be found by install command
     if (typeof globalThis !== 'undefined') {
-      (globalThis as any)._hyperscript = (globalThis as any)._hyperscript || {};
-      (globalThis as any)._hyperscript.runtime = _defaultRuntime;
+      const globalWithHyperscript = globalThis as typeof globalThis & {
+        _hyperscript?: { runtime?: Runtime; behaviors?: Runtime['behaviorAPI'] };
+      };
+      globalWithHyperscript._hyperscript = globalWithHyperscript._hyperscript || {};
+      globalWithHyperscript._hyperscript.runtime = _defaultRuntime;
       // Create a behaviors object with both Map-like has() and install() methods
-      (globalThis as any)._hyperscript.behaviors = _defaultRuntime!.behaviorAPI;
+      globalWithHyperscript._hyperscript.behaviors = _defaultRuntime!.behaviorAPI;
     }
   }
   return _defaultRuntime;
@@ -304,11 +339,11 @@ function parse(code: string): ASTNode {
 
   // Throw error with details if parsing failed
   const errorMsg = result.error?.message || 'Unknown parse error';
-  const error = new Error(`Parse error: ${errorMsg}`);
-  if (result.error) {
-    (error as any).line = result.error.line;
-    (error as any).column = result.error.column;
-  }
+  const error = new HyperscriptParseError(
+    `Parse error: ${errorMsg}`,
+    result.error?.line,
+    result.error?.column
+  );
   throw error;
 }
 
@@ -521,7 +556,8 @@ async function run(code: string, context?: ExecutionContext | Element): Promise<
     executionContext = context;
   } else {
     // Partial context object - create proper context with element
-    executionContext = createContext((context as any).me as HTMLElement);
+    const partialContext = context as unknown as { me?: HTMLElement };
+    executionContext = createContext(partialContext.me);
   }
 
   debug.runtime('HyperFixi Enhanced Evaluate:', {
@@ -860,7 +896,7 @@ function processHyperscriptAttributeSync(element: Element, hyperscriptCode: stri
         const tokens = tokenize(hyperscriptCode);
         console.error(
           `🔍 Tokens generated:`,
-          tokens.map((t: any) => `${t.type}:"${t.value}"`).join(', ')
+          tokens.map((t: Token) => `${t.kind}:"${t.value}"`).join(', ')
         );
         console.error(`🔍 Token count: ${tokens.length}`);
       } catch (tokenError) {

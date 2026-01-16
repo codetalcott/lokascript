@@ -23,7 +23,8 @@ function createMockContext(): TypedExecutionContext {
   return {
     me: null,
     locals: new Map(),
-    target: null,
+    globals: new Map(),
+    you: null,
     result: undefined,
     halted: false,
     it: undefined,

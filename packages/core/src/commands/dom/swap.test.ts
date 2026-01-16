@@ -39,8 +39,9 @@ function createMockContext(elements: HTMLElement[] = []): TypedExecutionContext 
   const mockElement = elements[0] || createMockElement();
   return {
     me: mockElement,
+    you: null,
     locals: new Map(),
-    target: null,
+    globals: new Map(),
     result: undefined,
     halted: false,
     it: undefined,

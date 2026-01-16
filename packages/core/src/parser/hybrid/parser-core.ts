@@ -67,9 +67,9 @@ export class HybridParser {
     while (this.peek().value === '.') {
       this.advance();
       const mod = this.advance().value.toLowerCase();
-      if (mod === 'once') modifiers.once = true as true;
-      else if (mod === 'prevent') modifiers.prevent = true as true;
-      else if (mod === 'stop') modifiers.stop = true as true;
+      if (mod === 'once') modifiers.once = true as const;
+      else if (mod === 'prevent') modifiers.prevent = true as const;
+      else if (mod === 'stop') modifiers.stop = true as const;
       else if (mod === 'debounce' || mod === 'throttle') {
         if (this.peek().value === '(') {
           this.advance();
