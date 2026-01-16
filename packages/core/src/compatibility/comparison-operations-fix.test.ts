@@ -10,7 +10,7 @@ import { createMockHyperscriptContext } from '../test-setup';
 
 // Compatibility wrapper for our tests
 const evalHyperScript = async (code: string, context?: any) => {
-  return await hyperscript.run(code, context);
+  return await hyperscript.eval(code, context);
 };
 
 describe('Comparison Operations Fix', () => {

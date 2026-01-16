@@ -68,11 +68,11 @@ describe('End-to-End Hyperscript Integration', () => {
       expect(target.style.display).toBe('block');
 
       // Execute hide command
-      await hyperscript.run('hide me', context);
+      await hyperscript.eval('hide me', context);
       expect(target.style.display).toBe('none');
 
       // Execute show command
-      await hyperscript.run('show me', context);
+      await hyperscript.eval('show me', context);
       expect(target.style.display).toBe('block');
     });
 
@@ -84,11 +84,11 @@ describe('End-to-End Hyperscript Integration', () => {
       expect(target.style.display).toBe('block');
 
       // Hide by ID selector
-      await hyperscript.run('hide "#target-element"', context);
+      await hyperscript.eval('hide "#target-element"', context);
       expect(target.style.display).toBe('none');
 
       // Show by class selector
-      await hyperscript.run('show ".target"', context);
+      await hyperscript.eval('show ".target"', context);
       expect(target.style.display).toBe('block');
     });
 
@@ -98,11 +98,11 @@ describe('End-to-End Hyperscript Integration', () => {
       expect(target.classList.contains('active')).toBe(false);
 
       // Add class
-      await hyperscript.run('add ".active"', context);
+      await hyperscript.eval('add ".active"', context);
       expect(target.classList.contains('active')).toBe(true);
 
       // Remove class
-      await hyperscript.run('remove ".active"', context);
+      await hyperscript.eval('remove ".active"', context);
       expect(target.classList.contains('active')).toBe(false);
     });
 
@@ -112,7 +112,7 @@ describe('End-to-End Hyperscript Integration', () => {
       expect(target.textContent).toBe('Target content');
 
       // Change text content
-      await hyperscript.run('put "New content" into me', context);
+      await hyperscript.eval('put "New content" into me', context);
       expect(target.textContent).toBe('New content');
     });
 
@@ -122,7 +122,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const startTime = Date.now();
 
       // Wait for 100ms
-      await hyperscript.run('wait 100', context);
+      await hyperscript.eval('wait 100', context);
 
       const endTime = Date.now();
       const elapsed = endTime - startTime;
@@ -142,7 +142,7 @@ describe('End-to-End Hyperscript Integration', () => {
 
       button.addEventListener('click', async () => {
         clickExecuted = true;
-        await hyperscript.run('add ".clicked"', context);
+        await hyperscript.eval('add ".clicked"', context);
       });
 
       // Simulate click
@@ -163,7 +163,7 @@ describe('End-to-End Hyperscript Integration', () => {
 
       input.addEventListener('input', async () => {
         inputChanged = true;
-        await hyperscript.run('add ".modified"', context);
+        await hyperscript.eval('add ".modified"', context);
       });
 
       // Simulate input change
@@ -186,7 +186,7 @@ describe('End-to-End Hyperscript Integration', () => {
       input.addEventListener('keydown', async e => {
         if (e.key === 'Enter') {
           keyPressed = true;
-          await hyperscript.run('add ".enter-pressed"', context);
+          await hyperscript.eval('add ".enter-pressed"', context);
         }
       });
 
@@ -213,11 +213,11 @@ describe('End-to-End Hyperscript Integration', () => {
       target.style.display = 'block';
 
       // Hide 'me' (current context element)
-      await hyperscript.run('hide me', context);
+      await hyperscript.eval('hide me', context);
       expect(target.style.display).toBe('none');
 
       // Show 'me' again
-      await hyperscript.run('show me', context);
+      await hyperscript.eval('show me', context);
       expect(target.style.display).toBe('block');
     });
 
@@ -229,7 +229,7 @@ describe('End-to-End Hyperscript Integration', () => {
       context.variables!.set('testVar', 'test value');
 
       // Test that we can access context variables through evaluation
-      const result = await hyperscript.run('testVar', context);
+      const result = await hyperscript.eval('testVar', context);
       expect(result).toBe('test value');
     });
 
@@ -237,7 +237,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const parentContext = hyperscript.createContext();
       parentContext.globals?.set('globalVar', 'global-value');
 
-      const childContext = hyperscript.createChildContext(parentContext, button);
+      const childContext = hyperscript.createContext(button, parentContext);
       childContext.locals?.set('localVar', 'local-value');
 
       // Verify globals are shared
@@ -254,13 +254,13 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Test sequential execution by calling multiple commands
-      await hyperscript.run('add ".step1"', context);
+      await hyperscript.eval('add ".step1"', context);
       expect(button.classList.contains('step1')).toBe(true);
 
-      await hyperscript.run('add ".step2"', context);
+      await hyperscript.eval('add ".step2"', context);
       expect(button.classList.contains('step2')).toBe(true);
 
-      await hyperscript.run('put "Updated text" into me', context);
+      await hyperscript.eval('put "Updated text" into me', context);
       expect(button.textContent).toBe('Updated text');
     });
 
@@ -268,10 +268,10 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Test basic arithmetic (using expression evaluator)
-      const result = await hyperscript.run('5 + 3', context);
+      const result = await hyperscript.eval('5 + 3', context);
       expect(result).toBe(8);
 
-      const result2 = await hyperscript.run('10 * 2', context);
+      const result2 = await hyperscript.eval('10 * 2', context);
       expect(result2).toBe(20);
     });
 
@@ -284,10 +284,10 @@ describe('End-to-End Hyperscript Integration', () => {
       context.variables!.set('message', 'Hello');
 
       // Test variable evaluation
-      const counterResult = await hyperscript.run('counter', context);
+      const counterResult = await hyperscript.eval('counter', context);
       expect(counterResult).toBe(1);
 
-      const messageResult = await hyperscript.run('message', context);
+      const messageResult = await hyperscript.eval('message', context);
       expect(messageResult).toBe('Hello');
     });
   });
@@ -297,7 +297,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(null);
 
       // Try to manipulate null context element
-      await expect(hyperscript.run('hide me', context)).rejects.toThrow(
+      await expect(hyperscript.eval('hide me', context)).rejects.toThrow(
         'Context element "me" is null'
       );
     });
@@ -306,7 +306,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Try invalid syntax - should fail at compilation
-      await expect(hyperscript.run('invalidCommand me', context)).rejects.toThrow(
+      await expect(hyperscript.eval('invalidCommand me', context)).rejects.toThrow(
         'Compilation failed'
       );
     });
@@ -315,7 +315,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Try invalid syntax
-      await expect(hyperscript.run('invalid @@ syntax', context)).rejects.toThrow(
+      await expect(hyperscript.eval('invalid @@ syntax', context)).rejects.toThrow(
         'Compilation failed'
       );
     });
@@ -324,7 +324,7 @@ describe('End-to-End Hyperscript Integration', () => {
       const context = hyperscript.createContext(button);
 
       // Try to access undefined variable - should return undefined/name
-      const result = await hyperscript.run('undefinedVariable', context);
+      const result = await hyperscript.eval('undefinedVariable', context);
       expect(result).toBe('undefinedVariable'); // Parser returns identifier name if not found
     });
   });
@@ -338,8 +338,8 @@ describe('End-to-End Hyperscript Integration', () => {
 
       // Execute multiple commands
       for (let i = 0; i < 100; i++) {
-        await hyperscript.run('add ".test"', context);
-        await hyperscript.run('remove ".test"', context);
+        await hyperscript.eval('add ".test"', context);
+        await hyperscript.eval('remove ".test"', context);
       }
 
       const endTime = performance.now();
@@ -355,7 +355,7 @@ describe('End-to-End Hyperscript Integration', () => {
       // Execute rapid sequence of commands
       const promises = [];
       for (let i = 0; i < 10; i++) {
-        promises.push(hyperscript.run(`add ".batch${i}"`, context));
+        promises.push(hyperscript.eval(`add ".batch${i}"`, context));
       }
 
       await Promise.all(promises);
@@ -390,14 +390,14 @@ describe('End-to-End Hyperscript Integration', () => {
       // Set up modal functionality with sequential commands
       openBtn.addEventListener('click', async () => {
         const context = hyperscript.createContext(openBtn);
-        await hyperscript.run('show "#modal"', context);
-        await hyperscript.run('add ".active"', { ...context, me: modal });
+        await hyperscript.eval('show "#modal"', context);
+        await hyperscript.eval('add ".active"', { ...context, me: modal });
       });
 
       closeBtn.addEventListener('click', async () => {
         const context = hyperscript.createContext(closeBtn);
-        await hyperscript.run('hide "#modal"', context);
-        await hyperscript.run('remove ".active"', { ...context, me: modal });
+        await hyperscript.eval('hide "#modal"', context);
+        await hyperscript.eval('remove ".active"', { ...context, me: modal });
       });
 
       // Test modal opening
@@ -432,15 +432,15 @@ describe('End-to-End Hyperscript Integration', () => {
         const statusContext = hyperscript.createContext(statusDiv);
 
         // Update button state
-        await hyperscript.run('add ".loading"', btnContext);
-        await hyperscript.run('put "Working..." into me', statusContext);
+        await hyperscript.eval('add ".loading"', btnContext);
+        await hyperscript.eval('put "Working..." into me', statusContext);
 
         // Simulate work with wait
-        await hyperscript.run('wait 100', btnContext);
+        await hyperscript.eval('wait 100', btnContext);
 
         // Reset state
-        await hyperscript.run('remove ".loading"', btnContext);
-        await hyperscript.run('put "Complete!" into me', statusContext);
+        await hyperscript.eval('remove ".loading"', btnContext);
+        await hyperscript.eval('put "Complete!" into me', statusContext);
       });
 
       // Test the workflow
@@ -469,10 +469,10 @@ describe('End-to-End Hyperscript Integration', () => {
         const context = hyperscript.createContext(feedback);
 
         if (input.value.length > 0) {
-          await hyperscript.run('show me', context);
-          await hyperscript.run('put "Typing..." into me', context);
+          await hyperscript.eval('show me', context);
+          await hyperscript.eval('put "Typing..." into me', context);
         } else {
-          await hyperscript.run('hide me', context);
+          await hyperscript.eval('hide me', context);
         }
       });
 

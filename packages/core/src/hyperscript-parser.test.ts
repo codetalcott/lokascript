@@ -320,16 +320,15 @@ describe('HyperscriptParser', () => {
   });
 
   describe('_hyperscript API integration', () => {
-    it('should work with the _hyperscript.parse() method', async () => {
+    it('should work with the _hyperscript.compileSync() method', async () => {
       const { _hyperscript } = await import('./api/hyperscript-api');
 
-      const ast = _hyperscript.parse('log "test"');
+      const result = _hyperscript.compileSync('log "test"');
 
-      expect(ast.type).toBe('program');
-      expect((ast as { features?: unknown[] }).features).toHaveLength(1);
-      expect(
-        (((ast as { features?: unknown[] }).features as unknown[])[0] as any).body[0].name
-      ).toBe('log');
+      expect(result.ok).toBe(true);
+      expect(result.ast).toBeDefined();
+      expect(result.ast!.type).toBe('command');
+      expect((result.ast as any).name).toBe('log');
     });
   });
 });

@@ -28,12 +28,6 @@ describe('Hyperscript Public API', () => {
       expect(typeof hyperscript.createContext).toBe('function');
       expect(typeof hyperscript.version).toBe('string');
       expect(typeof hyperscript.createRuntime).toBe('function');
-      // Deprecated but still present
-      expect(typeof hyperscript.run).toBe('function');
-      expect(typeof hyperscript.evaluate).toBe('function');
-      expect(typeof hyperscript.createChildContext).toBe('function');
-      expect(typeof hyperscript.isValidHyperscript).toBe('function');
-      expect(typeof hyperscript.parse).toBe('function');
     });
 
     it('should have a version string', () => {
@@ -144,51 +138,6 @@ describe('Hyperscript Public API', () => {
     });
   });
 
-  describe('run() method - combined compile and execute', () => {
-    it('should compile and execute in one call', async () => {
-      const result = await hyperscript.run('10 * 2');
-      expect(result).toBe(20);
-    });
-
-    it.skip('should use provided context', async () => {
-      const context = hyperscript.createContext(mockElement);
-      context.variables?.set('x', 5);
-
-      const result = await hyperscript.run('x + 15', context);
-      expect(result).toBe(20);
-    });
-
-    it('should handle both compilation and execution errors', async () => {
-      await expect(hyperscript.run('invalid @@ syntax')).rejects.toThrow('Compilation failed');
-    });
-  });
-
-  describe('evaluate() method - alias for run()', () => {
-    it('should work identically to run() method', async () => {
-      const runResult = await hyperscript.run('7 * 6');
-      const evaluateResult = await hyperscript.evaluate('7 * 6');
-      expect(evaluateResult).toBe(runResult);
-      expect(evaluateResult).toBe(42);
-    });
-
-    it('should compile and execute hyperscript expressions', async () => {
-      const result = await hyperscript.evaluate('15 + 27');
-      expect(result).toBe(42);
-    });
-
-    it.skip('should handle complex hyperscript syntax', async () => {
-      const context = hyperscript.createContext(mockElement);
-      context.variables?.set('value', 10);
-
-      const result = await hyperscript.evaluate('value * 2 + 2', context);
-      expect(result).toBe(22);
-    });
-
-    it('should handle errors the same as run()', async () => {
-      await expect(hyperscript.evaluate('invalid @@ syntax')).rejects.toThrow('Compilation failed');
-    });
-  });
-
   describe('Context Management', () => {
     it('should create context with optional element', () => {
       const context1 = hyperscript.createContext();
@@ -204,7 +153,7 @@ describe('Hyperscript Public API', () => {
       const parent = hyperscript.createContext(mockElement);
       parent.globals.set('parentVar', 'value');
 
-      const child = hyperscript.createChildContext(parent);
+      const child = hyperscript.createContext(null, parent);
       expect(child.parent).toBe(parent);
       expect(child.globals).toBe(parent.globals); // Shared globals
       expect(child.locals).not.toBe(parent.locals); // Separate locals
@@ -214,26 +163,12 @@ describe('Hyperscript Public API', () => {
       const parent = hyperscript.createContext();
       parent.globals.set('globalVar', 42);
 
-      const child = hyperscript.createChildContext(parent, mockElement);
+      const child = hyperscript.createContext(mockElement, parent);
       child.locals.set('localVar', 'child');
 
       expect(child.globals.get('globalVar')).toBe(42);
       expect(child.locals.get('localVar')).toBe('child');
       expect(parent.locals.has('localVar')).toBe(false);
-    });
-  });
-
-  describe('Validation Utilities', () => {
-    it('should validate correct hyperscript syntax', () => {
-      expect(hyperscript.isValidHyperscript('42')).toBe(true);
-      expect(hyperscript.isValidHyperscript('5 + 3')).toBe(true);
-      expect(hyperscript.isValidHyperscript('if x > 0 then result = 1')).toBe(true);
-    });
-
-    it('should reject invalid hyperscript syntax', () => {
-      expect(hyperscript.isValidHyperscript('')).toBe(false);
-      expect(hyperscript.isValidHyperscript('invalid @@ syntax')).toBe(false);
-      expect(hyperscript.isValidHyperscript('5 +')).toBe(false);
     });
   });
 
@@ -246,12 +181,6 @@ describe('Hyperscript Public API', () => {
 
       expect(runtime).toBeDefined();
       expect(typeof runtime.execute).toBe('function');
-    });
-
-    it.skip('should provide access to low-level parse function', () => {
-      const result = hyperscript.parse('42');
-      expect(result.success).toBe(true);
-      expect((result.node as any)?.type).toBe('literal');
     });
   });
 
@@ -279,187 +208,26 @@ describe('Hyperscript Public API', () => {
   describe('Integration with Existing Components', () => {
     it('should integrate with expression evaluator', async () => {
       const context = hyperscript.createContext(mockElement);
-      const result = await hyperscript.run('me.tagName', context);
+      const result = await hyperscript.eval('me.tagName', context);
       expect(String(result).toLowerCase()).toBe('div'); // Happy-DOM returns lowercase
     });
 
     it('should handle assignments and variable scoping', async () => {
       const context = hyperscript.createContext();
-      await hyperscript.run('x = 42', context);
+      await hyperscript.eval('x = 42', context);
 
       expect(context.variables?.get('x')).toBe(42);
 
-      const result = await hyperscript.run('x + 8', context);
+      const result = await hyperscript.eval('x + 8', context);
       expect(result).toBe(50);
     });
   });
 
   // ==========================================================================
-  // NEW TESTS: compileMultilingual()
+  // NEW TESTS: process()
   // ==========================================================================
 
-  describe('compileMultilingual() method', () => {
-    describe('basic functionality', () => {
-      it('should compile English input successfully', async () => {
-        const result = await hyperscript.compileMultilingual('toggle .active');
-
-        expect(result.success).toBe(true);
-        expect(result.ast).toBeDefined();
-        expect(result.errors).toEqual([]);
-      });
-
-      it('should compile Japanese input', async () => {
-        const result = await hyperscript.compileMultilingual('.active を トグル', {
-          language: 'ja',
-        });
-
-        expect(result.success).toBe(true);
-        expect(result.ast).toBeDefined();
-        expect(result.language).toBe('ja');
-        // usedDirectPath may be true or false depending on bridge availability
-        expect(result).toHaveProperty('usedDirectPath');
-      });
-
-      it('should compile Korean input correctly', async () => {
-        const result = await hyperscript.compileMultilingual('.active 를 토글', {
-          language: 'ko',
-        });
-
-        expect(result.success).toBe(true);
-        expect(result.ast).toBeDefined();
-      });
-
-      it('should compile Spanish input correctly', async () => {
-        const result = await hyperscript.compileMultilingual('alternar .active', {
-          language: 'es',
-        });
-
-        expect(result.success).toBe(true);
-        expect(result.ast).toBeDefined();
-      });
-
-      it('should compile simple expressions in any language', async () => {
-        const result = await hyperscript.compileMultilingual('5 + 3');
-
-        expect(result.success).toBe(true);
-        expect(result.ast).toBeDefined();
-      });
-    });
-
-    describe('options handling', () => {
-      it('should respect disableSemanticParsing option', async () => {
-        const result = await hyperscript.compileMultilingual('toggle .active', {
-          disableSemanticParsing: true,
-        });
-
-        expect(result.success).toBe(true);
-        // Should use traditional path when semantic is disabled
-      });
-
-      it('should use provided language hint', async () => {
-        const result = await hyperscript.compileMultilingual('toggle .active', {
-          language: 'en',
-        });
-
-        expect(result.success).toBe(true);
-        expect(result.language).toBe('en');
-      });
-
-      it('should default to English when no language specified', async () => {
-        const result = await hyperscript.compileMultilingual('toggle .active');
-
-        expect(result.success).toBe(true);
-        // Default language should be 'en'
-      });
-    });
-
-    describe('metadata', () => {
-      it('should include usedDirectPath property', async () => {
-        const result = await hyperscript.compileMultilingual('.active を トグル', {
-          language: 'ja',
-        });
-
-        // usedDirectPath is always present in the result
-        expect(result).toHaveProperty('usedDirectPath');
-        expect(typeof result.usedDirectPath).toBe('boolean');
-      });
-
-      it('should include language property', async () => {
-        const result = await hyperscript.compileMultilingual('toggle .active', {
-          language: 'en',
-        });
-
-        expect(result.language).toBe('en');
-      });
-
-      it('should include confidence for non-English when available', async () => {
-        const result = await hyperscript.compileMultilingual('.active を トグル', {
-          language: 'ja',
-        });
-
-        // Confidence may be present for non-English (depends on bridge)
-        // Either way, result should have standard compilation fields
-        expect(result).toHaveProperty('success');
-        expect(result).toHaveProperty('ast');
-        expect(result).toHaveProperty('errors');
-      });
-
-      it('should include compilation time in result', async () => {
-        const result = await hyperscript.compileMultilingual('42');
-
-        expect(result.compilationTime).toBeTypeOf('number');
-        expect(result.compilationTime).toBeGreaterThanOrEqual(0);
-      });
-    });
-
-    describe('error handling', () => {
-      it('should handle invalid syntax gracefully', async () => {
-        const result = await hyperscript.compileMultilingual('invalid @@ syntax');
-
-        expect(result.success).toBe(false);
-        expect(result.errors.length).toBeGreaterThan(0);
-      });
-
-      it('should throw on null input', async () => {
-        await expect(hyperscript.compileMultilingual(null as unknown as string)).rejects.toThrow();
-      });
-
-      it('should throw on undefined input', async () => {
-        await expect(
-          hyperscript.compileMultilingual(undefined as unknown as string)
-        ).rejects.toThrow();
-      });
-    });
-
-    describe('edge cases', () => {
-      it('should handle empty string input', async () => {
-        const result = await hyperscript.compileMultilingual('');
-
-        // Empty input should either fail or return minimal result
-        expect(result).toBeDefined();
-      });
-
-      it('should handle whitespace-only input', async () => {
-        const result = await hyperscript.compileMultilingual('   ');
-
-        expect(result).toBeDefined();
-      });
-
-      it('should handle very long input', async () => {
-        const longCode = 'toggle .class' + ' then toggle .class'.repeat(50);
-        const result = await hyperscript.compileMultilingual(longCode);
-
-        expect(result).toBeDefined();
-        expect(result.compilationTime).toBeTypeOf('number');
-      });
-    });
-  });
-
-  // ==========================================================================
-  // NEW TESTS: processNode() / process()
-  // ==========================================================================
-
-  describe('processNode() method', () => {
+  describe('process() method', () => {
     let container: HTMLElement;
 
     beforeEach(() => {
@@ -479,7 +247,7 @@ describe('Hyperscript Public API', () => {
         container.appendChild(button);
 
         // Should not throw
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should process child elements with hyperscript', () => {
@@ -488,14 +256,14 @@ describe('Hyperscript Public API', () => {
           <button id="btn2" _="on click toggle .highlight">Button 2</button>
         `;
 
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should handle elements without hyperscript attributes', () => {
         container.innerHTML = `<button>No hyperscript</button>`;
 
         // Should not throw even when no hyperscript attributes present
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should handle deeply nested structures', () => {
@@ -509,7 +277,7 @@ describe('Hyperscript Public API', () => {
           </div>
         `;
 
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
     });
 
@@ -521,20 +289,20 @@ describe('Hyperscript Public API', () => {
         container.appendChild(button);
 
         // Should process without error (language detection happens internally)
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should detect language from lang attribute on parent', () => {
         container.setAttribute('lang', 'es');
         container.innerHTML = `<button _="alternar .active">Spanish Button</button>`;
 
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should default to English when no language specified', () => {
         container.innerHTML = `<button _="on click toggle .active">Button</button>`;
 
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
     });
 
@@ -547,7 +315,7 @@ describe('Hyperscript Public API', () => {
         `;
 
         // Should not throw - should log error but continue
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should handle malformed attributes gracefully', () => {
@@ -555,7 +323,7 @@ describe('Hyperscript Public API', () => {
         button.setAttribute('_', ''); // Empty attribute
         container.appendChild(button);
 
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
     });
 
@@ -564,8 +332,8 @@ describe('Hyperscript Public API', () => {
         container.innerHTML = `<button _="on click toggle .active">Button</button>`;
 
         // Process twice - should not cause issues
-        hyperscript.processNode(container);
-        expect(() => hyperscript.processNode(container)).not.toThrow();
+        hyperscript.process(container);
+        expect(() => hyperscript.process(container)).not.toThrow();
       });
 
       it('should handle detached DOM elements', () => {
@@ -573,27 +341,8 @@ describe('Hyperscript Public API', () => {
         detached.innerHTML = `<button _="on click toggle .active">Detached</button>`;
 
         // Processing detached element should not throw
-        expect(() => hyperscript.processNode(detached)).not.toThrow();
+        expect(() => hyperscript.process(detached)).not.toThrow();
       });
-    });
-  });
-
-  describe('process() alias', () => {
-    it('should behave identically to processNode()', () => {
-      const container = document.createElement('div');
-      container.innerHTML = `<button _="on click toggle .active">Button</button>`;
-      document.body.appendChild(container);
-
-      // Both methods should work the same
-      expect(() => hyperscript.process(container)).not.toThrow();
-
-      document.body.innerHTML = '';
-    });
-
-    it('should be the same function reference pattern', () => {
-      // Verify both are callable and accept same parameters
-      expect(typeof hyperscript.process).toBe('function');
-      expect(typeof hyperscript.processNode).toBe('function');
     });
   });
 
