@@ -5,11 +5,19 @@ Complete API documentation for HyperFixi.
 ## Table of Contents
 
 - [Main API](#main-api)
+  - [API v2 Methods (Recommended)](#api-v2-methods-recommended)
+  - [Legacy Methods (Deprecated)](#legacy-methods-deprecated)
 - [HTML Integration](#html-integration)
 - [Types](#types)
 - [Context Management](#context-management)
 - [Runtime Configuration](#runtime-configuration)
 - [Error Handling](#error-handling)
+
+---
+
+> **API v2 Notice:** HyperFixi now provides a cleaner API with structured results. The new methods (`compileSync`, `compileAsync`, `eval`, `validate`) are recommended for all new code. Legacy methods (`compile`, `run`, `evaluate`) remain functional but will show deprecation warnings.
+
+---
 
 ## Main API
 
@@ -21,9 +29,138 @@ The main HyperFixi API object providing all core functionality.
 import { hyperscript } from 'hyperfixi';
 ```
 
-#### Methods
+### API v2 Methods (Recommended)
 
-##### `compile(code: string): CompilationResult`
+#### `compileSync(code: string, options?: NewCompileOptions): CompileResult`
+
+Synchronously compiles hyperscript code with structured results.
+
+```typescript
+const result = hyperscript.compileSync('toggle .active on me');
+
+if (result.ok) {
+  console.log('AST:', result.ast);
+  console.log('Parser used:', result.meta.parser);
+  console.log('Time:', result.meta.timeMs, 'ms');
+} else {
+  console.error('Errors:', result.errors);
+}
+```
+
+**Parameters:**
+
+- `code: string` - The hyperscript code to compile
+- `options?: NewCompileOptions` - Optional compilation settings
+
+**Returns:** [`CompileResult`](#compileresult-v2)
+
+---
+
+#### `compileAsync(code: string, options?: NewCompileOptions): Promise<CompileResult>`
+
+Asynchronously compiles hyperscript code. Use when compilation may involve async operations (e.g., loading language modules).
+
+```typescript
+const result = await hyperscript.compileAsync('toggle .active', { language: 'ja' });
+
+if (result.ok) {
+  console.log('Confidence:', result.meta.confidence);
+}
+```
+
+**Parameters:**
+
+- `code: string` - The hyperscript code to compile
+- `options?: NewCompileOptions` - Optional compilation settings
+
+**Returns:** `Promise<CompileResult>`
+
+---
+
+#### `eval(code: string, context?: ExecutionContext | Element, options?: NewCompileOptions): Promise<unknown>`
+
+Compiles and executes hyperscript code in one call. Recommended for most use cases.
+
+```typescript
+// Simple expression
+const sum = await hyperscript.eval('5 + 3');
+
+// With element context
+const button = document.getElementById('btn');
+await hyperscript.eval('add .active to me', button);
+
+// With full context
+const ctx = hyperscript.createContext(element);
+await hyperscript.eval('toggle .visible', ctx);
+```
+
+**Parameters:**
+
+- `code: string` - The hyperscript code to compile and execute
+- `context?: ExecutionContext | Element` - Execution context or element (optional)
+- `options?: NewCompileOptions` - Optional compilation settings
+
+**Returns:** `Promise<unknown>` - The result of execution
+
+**Throws:** `Error` if compilation or execution fails
+
+---
+
+#### `validate(code: string, options?: NewCompileOptions): Promise<ValidateResult>`
+
+Validates hyperscript syntax without executing.
+
+```typescript
+const result = await hyperscript.validate('toggle .active on me');
+
+if (result.valid) {
+  console.log('Syntax is valid');
+} else {
+  result.errors?.forEach(err => {
+    console.error(`Line ${err.line}: ${err.message}`);
+  });
+}
+```
+
+**Parameters:**
+
+- `code: string` - The hyperscript code to validate
+- `options?: NewCompileOptions` - Optional validation settings
+
+**Returns:** `Promise<ValidateResult>`
+
+---
+
+#### `createContext(element?: HTMLElement | null, parent?: ExecutionContext): ExecutionContext`
+
+Creates a new execution context, optionally inheriting from a parent.
+
+```typescript
+// Basic context
+const ctx = hyperscript.createContext(element);
+
+// Child context inheriting from parent
+const parentCtx = hyperscript.createContext();
+parentCtx.globals?.set('theme', 'dark');
+
+const childCtx = hyperscript.createContext(element, parentCtx);
+// childCtx inherits parent's globals
+```
+
+**Parameters:**
+
+- `element?: HTMLElement | null` - Element to bind as 'me' (optional)
+- `parent?: ExecutionContext` - Parent context to inherit from (optional)
+
+**Returns:** [`ExecutionContext`](#executioncontext)
+
+---
+
+### Legacy Methods (Deprecated)
+
+> **Note:** These methods still work but will show deprecation warnings. Migrate to API v2 methods for new code.
+
+#### `compile(code: string): CompilationResult` _(Deprecated)_
 
 Compiles hyperscript code into an Abstract Syntax Tree (AST).
 
@@ -41,13 +178,14 @@ if (result.success) {
 ```
 
 **Parameters:**
+
 - `code: string` - The hyperscript code to compile
 
-**Returns:** [`CompilationResult`](#compilationresult)
+**Returns:** [`CompilationResult`](#compilationresult-legacy)
 
 ---
 
-##### `execute(ast: ASTNode, context?: ExecutionContext): Promise<any>`
+#### `execute(ast: ASTNode, context?: ExecutionContext): Promise<any>`
 
 Executes a compiled AST with the given context.
 
@@ -61,6 +199,7 @@ if (compiled.success) {
 ```
 
 **Parameters:**
+
 - `ast: ASTNode` - The compiled AST to execute
 - `context?: ExecutionContext` - Execution context (optional)
 
@@ -68,7 +207,9 @@ if (compiled.success) {
 
 ---
 
-##### `run(code: string, context?: ExecutionContext): Promise<any>`
+#### `run(code: string, context?: ExecutionContext): Promise<any>` _(Deprecated)_
+
+> **Use `eval()` instead.** This method will show a deprecation warning.
 
 Compiles and executes hyperscript code in one operation.
 
@@ -82,6 +223,7 @@ await hyperscript.run('hide me', context);
 ```
 
 **Parameters:**
+
 - `code: string` - The hyperscript code to compile and execute
 - `context?: ExecutionContext` - Execution context (optional)
 
@@ -91,52 +233,9 @@ await hyperscript.run('hide me', context);
 
 ---
 
-##### `createContext(element?: HTMLElement | null): ExecutionContext`
+#### `isValidHyperscript(code: string): boolean` _(Deprecated)_
 
-Creates a new execution context.
-
-```typescript
-// Context without element
-const context = hyperscript.createContext();
-
-// Context with element
-const button = document.getElementById('myButton');
-const context = hyperscript.createContext(button);
-
-// Access context properties
-console.log(context.me);        // The element (or null)
-console.log(context.variables); // Variable storage
-```
-
-**Parameters:**
-- `element?: HTMLElement | null` - Element to bind as 'me' (optional)
-
-**Returns:** [`ExecutionContext`](#executioncontext)
-
----
-
-##### `createChildContext(parent: ExecutionContext, element?: HTMLElement | null): ExecutionContext`
-
-Creates a child context that inherits from a parent context.
-
-```typescript
-const parent = hyperscript.createContext();
-parent.globals?.set('theme', 'dark');
-
-const child = hyperscript.createChildContext(parent, element);
-// Child inherits parent's globals but has separate locals
-console.log(child.globals?.get('theme')); // 'dark'
-```
-
-**Parameters:**
-- `parent: ExecutionContext` - Parent context to inherit from
-- `element?: HTMLElement | null` - Element to bind as 'me' (optional)
-
-**Returns:** [`ExecutionContext`](#executioncontext)
-
----
-
-##### `isValidHyperscript(code: string): boolean`
+> **Use `validate()` instead.** This method will show a deprecation warning.
 
 Validates hyperscript syntax without executing.
 
@@ -149,6 +248,7 @@ if (hyperscript.isValidHyperscript('hide me')) {
 ```
 
 **Parameters:**
+
 - `code: string` - The hyperscript code to validate
 
 **Returns:** `boolean` - True if syntax is valid
@@ -163,11 +263,12 @@ Creates a custom runtime instance with specific options.
 const customRuntime = hyperscript.createRuntime({
   enableAsyncCommands: true,
   commandTimeout: 5000,
-  enableErrorReporting: false
+  enableErrorReporting: false,
 });
 ```
 
 **Parameters:**
+
 - `options?: RuntimeOptions` - Runtime configuration (optional)
 
 **Returns:** [`Runtime`](#runtime)
@@ -199,17 +300,84 @@ console.log('HyperFixi version:', hyperscript.version);
 
 ## Types
 
-### `CompilationResult`
+### API v2 Types
+
+#### `CompileResult` (v2)
+
+Result of compiling hyperscript code with the new API.
+
+```typescript
+interface CompileResult {
+  ok: boolean; // Whether compilation succeeded
+  ast?: ASTNode; // Compiled AST (if ok is true)
+  errors?: CompileError[]; // Compilation errors (if ok is false)
+  meta: {
+    parser: 'semantic' | 'traditional'; // Which parser was used
+    confidence?: number; // Confidence score (0-1, semantic only)
+    language: string; // Language code used
+    timeMs: number; // Compilation time in milliseconds
+    directPath?: boolean; // Whether direct path was taken
+  };
+}
+```
+
+---
+
+#### `CompileError`
+
+Information about a compilation error.
+
+```typescript
+interface CompileError {
+  message: string; // Human-readable error message
+  line: number; // Line number (1-indexed)
+  column: number; // Column number (1-indexed)
+  suggestion?: string; // Optional fix suggestion
+}
+```
+
+---
+
+#### `NewCompileOptions`
+
+Options for the v2 compilation methods.
+
+```typescript
+interface NewCompileOptions {
+  language?: string; // Language code (e.g., 'en', 'ja', 'es')
+  confidenceThreshold?: number; // Min confidence for semantic parsing (0-1)
+  traditional?: boolean; // Force traditional parser
+}
+```
+
+---
+
+#### `ValidateResult`
+
+Result of syntax validation.
+
+```typescript
+interface ValidateResult {
+  valid: boolean; // Whether syntax is valid
+  errors?: CompileError[]; // Validation errors (if invalid)
+}
+```
+
+---
+
+### Legacy Types
+
+#### `CompilationResult` _(Legacy)_
 
 Result of compiling hyperscript code.
 
 ```typescript
 interface CompilationResult {
-  success: boolean;           // Whether compilation succeeded
-  ast?: ASTNode;             // Compiled AST (if successful)
-  errors: ParseError[];      // Compilation errors
-  tokens: Token[];           // Tokenized input
-  compilationTime: number;   // Time taken in milliseconds
+  success: boolean; // Whether compilation succeeded
+  ast?: ASTNode; // Compiled AST (if successful)
+  errors: ParseError[]; // Compilation errors
+  tokens: Token[]; // Tokenized input
+  compilationTime: number; // Time taken in milliseconds
 }
 ```
 
@@ -219,17 +387,17 @@ Context for executing hyperscript expressions.
 
 ```typescript
 interface ExecutionContext {
-  me: HTMLElement | null;          // Current element
-  it: any;                        // Result of previous operation
-  you: HTMLElement | null;        // Target element
-  result: any;                    // Explicit result storage
-  locals?: Map<string, any>;      // Local variable scope
-  globals?: Map<string, any>;     // Global variable scope
-  variables?: Map<string, any>;   // General variables storage
+  me: HTMLElement | null; // Current element
+  it: any; // Result of previous operation
+  you: HTMLElement | null; // Target element
+  result: any; // Explicit result storage
+  locals?: Map<string, any>; // Local variable scope
+  globals?: Map<string, any>; // Global variable scope
+  variables?: Map<string, any>; // General variables storage
   events?: Map<string, EventHandler>; // Event handlers
-  event?: Event;                  // Current DOM event
-  parent?: ExecutionContext;      // Parent context
-  flags?: ExecutionFlags;         // Execution state flags
+  event?: Event; // Current DOM event
+  parent?: ExecutionContext; // Parent context
+  flags?: ExecutionFlags; // Execution state flags
 }
 ```
 
@@ -239,8 +407,8 @@ Configuration options for the runtime.
 
 ```typescript
 interface RuntimeOptions {
-  enableAsyncCommands?: boolean;  // Enable async command execution
-  commandTimeout?: number;        // Command timeout in milliseconds
+  enableAsyncCommands?: boolean; // Enable async command execution
+  commandTimeout?: number; // Command timeout in milliseconds
   enableErrorReporting?: boolean; // Enable error logging
 }
 ```
@@ -251,10 +419,10 @@ Result of parsing hyperscript code.
 
 ```typescript
 interface ParseResult<T = ASTNode> {
-  success: boolean;      // Whether parsing succeeded
-  node?: T;             // Parsed AST node
-  error?: ParseError;   // Parse error (if failed)
-  tokens: Token[];      // Tokenized input
+  success: boolean; // Whether parsing succeeded
+  node?: T; // Parsed AST node
+  error?: ParseError; // Parse error (if failed)
+  tokens: Token[]; // Tokenized input
 }
 ```
 
@@ -264,12 +432,12 @@ Information about a parsing error.
 
 ```typescript
 interface ParseError {
-  message: string;       // Error message
-  position: number;      // Character position in input
-  line: number;         // Line number
-  column: number;       // Column number
-  expected?: string[];  // Expected tokens (if applicable)
-  actual?: string;      // Actual token found
+  message: string; // Error message
+  position: number; // Character position in input
+  line: number; // Line number
+  column: number; // Column number
+  expected?: string[]; // Expected tokens (if applicable)
+  actual?: string; // Actual token found
 }
 ```
 
@@ -283,10 +451,10 @@ Context variables provide the execution environment:
 const context = hyperscript.createContext(element);
 
 // Special context variables
-context.me;          // Current element
-context.it;          // Previous result
-context.you;         // Target element
-context.result;      // Explicit result
+context.me; // Current element
+context.it; // Previous result
+context.you; // Target element
+context.result; // Explicit result
 
 // Custom variables
 context.variables?.set('userName', 'Alice');
@@ -321,15 +489,15 @@ Create specialized runtime instances:
 // Development runtime with enhanced error reporting
 const devRuntime = hyperscript.createRuntime({
   enableAsyncCommands: true,
-  commandTimeout: 30000,      // Longer timeout for debugging
-  enableErrorReporting: true
+  commandTimeout: 30000, // Longer timeout for debugging
+  enableErrorReporting: true,
 });
 
 // Production runtime with optimizations
 const prodRuntime = hyperscript.createRuntime({
   enableAsyncCommands: true,
-  commandTimeout: 5000,       // Shorter timeout
-  enableErrorReporting: false // Disable console logging
+  commandTimeout: 5000, // Shorter timeout
+  enableErrorReporting: false, // Disable console logging
 });
 ```
 
@@ -367,7 +535,7 @@ try {
   await hyperscript.run('me.nonExistentMethod()', context);
 } catch (error) {
   console.error('Execution failed:', error.message);
-  
+
   // Handle gracefully
   await hyperscript.run('add ".error"', context);
 }
@@ -425,7 +593,7 @@ function safeExecute(code: string, context: ExecutionContext) {
   if (!hyperscript.isValidHyperscript(code)) {
     throw new Error('Invalid hyperscript syntax');
   }
-  
+
   return hyperscript.run(code, context);
 }
 ```
@@ -434,10 +602,10 @@ function safeExecute(code: string, context: ExecutionContext) {
 
 ```typescript
 // Integrate with DOM events
-element.addEventListener('click', async (event) => {
+element.addEventListener('click', async event => {
   const context = hyperscript.createContext(element);
   context.event = event;
-  
+
   await hyperscript.run('add ".clicked"', context);
 });
 ```
@@ -486,11 +654,11 @@ For behavior definitions that should be available globally:
 
 ```html
 <script type="text/hyperscript">
-behavior Draggable
-  on pointerdown
-    -- drag logic
+  behavior Draggable
+    on pointerdown
+      -- drag logic
+    end
   end
-end
 </script>
 ```
 
