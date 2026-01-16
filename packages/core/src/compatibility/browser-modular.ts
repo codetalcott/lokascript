@@ -142,16 +142,17 @@ if (typeof window !== 'undefined') {
   window.evalHyperScriptAsync = evalHyperScriptAsync;
   window.evalHyperScriptSmart = evalHyperScriptSmart;
 
-  // Auto-initialize: preload features then process document
+  // Auto-initialize: preload features then init processor
+  // init() sets up MutationObserver for dynamic elements and dispatches hyperscript:ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
       await preloadDocumentFeatures();
-      defaultAttributeProcessor.scanAndProcessAll();
+      await defaultAttributeProcessor.init();
     });
   } else {
     // DOM already loaded
     preloadDocumentFeatures().then(() => {
-      defaultAttributeProcessor.scanAndProcessAll();
+      defaultAttributeProcessor.init();
     });
   }
 }

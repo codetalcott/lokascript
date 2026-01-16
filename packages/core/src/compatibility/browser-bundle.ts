@@ -237,8 +237,15 @@ if (typeof window !== 'undefined') {
   window.evalHyperScriptAsync = evalHyperScriptAsync;
   window.evalHyperScriptSmart = evalHyperScriptSmart;
 
-  // Note: defaultAttributeProcessor already auto-initializes itself in attribute-processor.ts
-  // No need to call init() again here - it would be redundant and has a guard against double-init
+  // Initialize attribute processor when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      defaultAttributeProcessor.init();
+    });
+  } else {
+    // DOM already ready
+    defaultAttributeProcessor.init();
+  }
 }
 
 // Export as default for IIFE

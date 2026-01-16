@@ -12,8 +12,8 @@ describe('AttributeProcessor System Events', () => {
   let testContainer: HTMLDivElement;
 
   beforeEach(() => {
-    // IMPORTANT: Destroy the default processor that auto-initializes on module import
-    // to prevent double-processing of hyperscript (which causes handlers to register twice)
+    // Reset the default processor to ensure clean state between tests
+    // (browser bundles may have initialized it)
     defaultAttributeProcessor.destroy();
 
     // Create test container

@@ -23,6 +23,7 @@ export interface MinimalRuntime {
 export class MinimalAttributeProcessor {
   private runtime: MinimalRuntime;
   private observer: MutationObserver | null = null;
+  private initialized = false;
 
   constructor(runtime: MinimalRuntime) {
     this.runtime = runtime;
@@ -36,6 +37,12 @@ export class MinimalAttributeProcessor {
     if (typeof document === 'undefined') {
       return; // Not in browser environment
     }
+
+    // Prevent double initialization
+    if (this.initialized) {
+      return;
+    }
+    this.initialized = true;
 
     // Process existing elements
     this.scanDocument();
@@ -73,6 +80,14 @@ export class MinimalAttributeProcessor {
       this.observer.disconnect();
       this.observer = null;
     }
+    this.initialized = false;
+  }
+
+  /**
+   * Reset the processor (alias for destroy, allows re-initialization)
+   */
+  reset(): void {
+    this.destroy();
   }
 
   /**

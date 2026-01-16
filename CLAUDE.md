@@ -328,6 +328,17 @@ localStorage.setItem('hyperfixi:debug', '*');
 
 Debug logging persists across page reloads via localStorage and works in production builds.
 
+**Debug Log Categories:**
+
+| Prefix    | Module              | Description                      |
+| --------- | ------------------- | -------------------------------- |
+| `ATTR:`   | attribute-processor | DOM scanning, element processing |
+| `SCRIPT:` | attribute-processor | Script tag compilation           |
+| `SCAN:`   | attribute-processor | Document scanning                |
+| `PARSE:`  | parser              | Tokenization, AST building       |
+| `CMD:`    | commands            | Command execution                |
+| `EXPR:`   | expressions         | Expression evaluation            |
+
 ### Debug Events
 
 Listen to semantic parse events to understand parser decisions:
