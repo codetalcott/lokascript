@@ -1290,8 +1290,31 @@ function toCompileError(error: ParseError): CompileError {
 }
 
 /**
- * NEW: Compile hyperscript code to AST (sync, English-optimized).
- * Use compile() for multilingual support.
+ * Synchronously compiles hyperscript code to an Abstract Syntax Tree (AST).
+ *
+ * This is the recommended method for English-only code that needs synchronous compilation.
+ * For multilingual support or when async compilation is acceptable, use `compileAsync()`.
+ *
+ * @param code - The hyperscript code to compile
+ * @param options - Compilation options
+ * @param options.language - Language code (default: 'en')
+ * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1, default: 0.5)
+ * @param options.traditional - Force traditional parser, skip semantic analysis
+ *
+ * @returns CompileResult with ok/errors/meta structure
+ *
+ * @example
+ * ```typescript
+ * const result = hyperscript.compileSync('toggle .active');
+ * if (result.ok) {
+ *   console.log('Parser used:', result.meta.parser);
+ *   // Use result.ast
+ * } else {
+ *   console.error('Errors:', result.errors);
+ * }
+ * ```
+ *
+ * @since API v2
  */
 function compileSync(code: string, options?: NewCompileOptions): CompileResult {
   if (typeof code !== 'string') {
@@ -1351,8 +1374,35 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
 }
 
 /**
- * NEW: Compile hyperscript code to AST (async, handles all languages).
- * This is the recommended compilation method.
+ * Asynchronously compiles hyperscript code to an Abstract Syntax Tree (AST).
+ *
+ * This method handles all languages and is the recommended compilation method for multilingual
+ * code. For English-only code that requires synchronous compilation, use `compileSync()`.
+ *
+ * @param code - The hyperscript code to compile
+ * @param options - Compilation options
+ * @param options.language - Language code (e.g., 'en', 'ja', 'es'). Auto-detected if not specified
+ * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1, default: 0.5)
+ * @param options.traditional - Force traditional parser, skip semantic analysis
+ *
+ * @returns Promise<CompileResult> with ok/errors/meta structure
+ *
+ * @example
+ * ```typescript
+ * // English code
+ * const result = await hyperscript.compileAsync('toggle .active');
+ *
+ * // Japanese code
+ * const result = await hyperscript.compileAsync('.active を 切り替え', {
+ *   language: 'ja'
+ * });
+ *
+ * if (result.ok) {
+ *   console.log('Confidence:', result.meta.confidence);
+ * }
+ * ```
+ *
+ * @since API v2
  */
 async function compileAsync(code: string, options?: NewCompileOptions): Promise<CompileResult> {
   if (typeof code !== 'string') {
@@ -1406,7 +1456,41 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
 }
 
 /**
- * NEW: Compile and execute in one step.
+ * Compiles and executes hyperscript code in a single call.
+ *
+ * This is the recommended method for most use cases where you want to run hyperscript code
+ * immediately. Combines compilation and execution for convenience.
+ *
+ * @param code - The hyperscript code to compile and execute
+ * @param context - Execution context or element. If an Element is provided, a context will be
+ *                  created with that element as 'me'. If omitted, a basic context is created.
+ * @param options - Compilation options
+ * @param options.language - Language code (e.g., 'en', 'ja', 'es')
+ * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1)
+ * @param options.traditional - Force traditional parser
+ *
+ * @returns Promise<unknown> - The result of execution
+ *
+ * @throws Error if compilation or execution fails
+ *
+ * @example
+ * ```typescript
+ * // Simple expression
+ * const sum = await hyperscript.eval('5 + 3');
+ *
+ * // With element context
+ * const button = document.getElementById('btn');
+ * await hyperscript.eval('add .active to me', button);
+ *
+ * // With full context
+ * const ctx = hyperscript.createContext(element);
+ * await hyperscript.eval('toggle .visible', ctx);
+ *
+ * // Multilingual
+ * await hyperscript.eval('.active を 切り替え', element, { language: 'ja' });
+ * ```
+ *
+ * @since API v2
  */
 async function evalCode(
   code: string,
@@ -1441,7 +1525,35 @@ async function evalCode(
 }
 
 /**
- * NEW: Validate hyperscript syntax without executing.
+ * Validates hyperscript syntax without executing the code.
+ *
+ * Use this method to check syntax before execution, or to provide validation feedback
+ * in development tools and editors.
+ *
+ * @param code - The hyperscript code to validate
+ * @param options - Validation options (same as compilation options)
+ * @param options.language - Language code (e.g., 'en', 'ja', 'es')
+ * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1)
+ * @param options.traditional - Force traditional parser
+ *
+ * @returns Promise<ValidateResult> with valid flag and optional errors
+ *
+ * @example
+ * ```typescript
+ * const result = await hyperscript.validate('toggle .active on me');
+ * if (result.valid) {
+ *   console.log('Syntax is valid');
+ * } else {
+ *   result.errors?.forEach(err => {
+ *     console.error(`Line ${err.line}:${err.column}: ${err.message}`);
+ *     if (err.suggestion) {
+ *       console.log('Suggestion:', err.suggestion);
+ *     }
+ *   });
+ * }
+ * ```
+ *
+ * @since API v2
  */
 async function validate(code: string, options?: NewCompileOptions): Promise<ValidateResult> {
   const result = await compileAsync(code, options);
@@ -1452,7 +1564,32 @@ async function validate(code: string, options?: NewCompileOptions): Promise<Vali
 }
 
 /**
- * NEW: Create context with optional parent
+ * Creates an execution context, optionally inheriting from a parent context.
+ *
+ * Child contexts inherit globals from their parent but maintain separate local variables.
+ * This is useful for implementing nested scopes or component hierarchies.
+ *
+ * @param element - Element to bind as 'me' in the context (optional)
+ * @param parent - Parent context to inherit from (optional)
+ *
+ * @returns ExecutionContext for executing hyperscript
+ *
+ * @example
+ * ```typescript
+ * // Basic context
+ * const ctx = hyperscript.createContext(element);
+ *
+ * // Child context inheriting from parent
+ * const parent = hyperscript.createContext();
+ * parent.globals?.set('theme', 'dark');
+ * parent.globals?.set('lang', 'en');
+ *
+ * const child = hyperscript.createContext(element, parent);
+ * // child can access parent.globals but has separate locals
+ * console.log(child.globals?.get('theme')); // 'dark'
+ * ```
+ *
+ * @since API v2
  */
 function createContextWithParent(
   element?: HTMLElement | null,
