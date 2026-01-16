@@ -162,11 +162,14 @@ export class FetchCommand implements DecoratedCommand {
   private parseResponseType(asNode: ASTNode | undefined): FetchResponseType {
     if (!asNode) return 'text';
     const n = asNode as any;
-    if (n.type === 'identifier') {
-      const t = n.name.toLowerCase();
-      if (['text', 'json', 'html', 'response', 'blob', 'arraybuffer'].includes(t))
-        return t === 'arraybuffer' ? 'arrayBuffer' : (t as FetchResponseType);
-      throw new Error(`fetch: invalid response type "${t}"`);
+    // Handle both 'identifier' and 'expression' node types (for compatibility with different AST structures)
+    if (n.type === 'identifier' || n.type === 'expression') {
+      if (n.name) {
+        const t = n.name.toLowerCase();
+        if (['text', 'json', 'html', 'response', 'blob', 'arraybuffer'].includes(t))
+          return t === 'arraybuffer' ? 'arrayBuffer' : (t as FetchResponseType);
+        throw new Error(`fetch: invalid response type "${t}"`);
+      }
     }
     return 'text';
   }

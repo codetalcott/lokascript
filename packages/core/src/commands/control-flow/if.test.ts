@@ -39,9 +39,9 @@ function createMockEvaluator(returnValue: any = true): ExpressionEvaluator {
 
 function createMockBlock(commands: any[] = []): ExpressionNode {
   return {
-    type: 'expression',
+    type: 'block',
     commands,
-  } as ExpressionNode;
+  } as unknown as ExpressionNode;
 }
 
 // =============================================================================

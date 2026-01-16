@@ -98,7 +98,8 @@ describe('RepeatCommand', () => {
       const indexEvaluator = {
         evaluate: vi.fn(async (node: any) => {
           if (node === collectionNode) return [1, 2, 3];
-          if (node.type === 'identifier' && node.name === 'i') return 'i';
+          if ((node.type === 'identifier' || node.type === 'expression') && node.name === 'i')
+            return 'i';
           return node.value;
         }),
       } as unknown as ExpressionEvaluator;

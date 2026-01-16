@@ -87,9 +87,16 @@ function createMockContext(element: HTMLElement | null = null): TypedExecutionCo
 }
 
 // Mock evaluator helper
-function createMockEvaluator(returnValue: any = ''): ExpressionEvaluator {
+function createMockEvaluator(urlValue: any = ''): ExpressionEvaluator {
   return {
-    evaluate: vi.fn(async () => returnValue),
+    evaluate: vi.fn(async (node: ASTNode) => {
+      // If the node has a 'name' property, return it (for response type nodes like 'json', 'html', etc.)
+      if ('name' in node && typeof node.name === 'string') {
+        return node.name;
+      }
+      // Otherwise return the URL value
+      return urlValue;
+    }),
   } as unknown as ExpressionEvaluator;
 }
 
