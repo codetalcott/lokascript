@@ -158,6 +158,19 @@ export class EventDispatchCommand implements DecoratedCommand {
         targets.push(document);
         continue;
       }
+      // Handle special context references as strings
+      if (val === 'me' && context.me) {
+        targets.push(context.me as EventTarget);
+        continue;
+      }
+      if (val === 'you' && (context as any).you) {
+        targets.push((context as any).you as EventTarget);
+        continue;
+      }
+      if (val === 'it' && (context as any).it) {
+        targets.push((context as any).it as EventTarget);
+        continue;
+      }
       if (isHTMLElement(val)) {
         targets.push(val as HTMLElement);
         continue;

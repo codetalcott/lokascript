@@ -22,7 +22,6 @@ import type { ASTNode } from '../../types/base-types';
 
 // Mock globals
 const originalFetch = global.fetch;
-const originalDOMParser = global.DOMParser;
 const originalAbortController = global.AbortController;
 
 // Mock fetch response helper
@@ -114,21 +113,11 @@ describe('FetchCommand', () => {
       abort = vi.fn();
     } as any;
 
-    // Mock DOMParser
-    global.DOMParser = class {
-      parseFromString(html: string, type: string) {
-        return {
-          body: {
-            childNodes: [{ nodeType: 1, cloneNode: () => ({ nodeType: 1 }) }],
-          },
-        };
-      }
-    } as any;
+    // Don't mock DOMParser - let happy-dom provide its implementation
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
-    global.DOMParser = originalDOMParser;
     global.AbortController = originalAbortController;
     vi.clearAllMocks();
   });

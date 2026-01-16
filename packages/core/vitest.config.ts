@@ -22,6 +22,7 @@ export default defineConfig({
       'dist',
       // Playwright browser tests - require real browser
       'src/compatibility/browser-tests/**/*.spec.ts',
+      'src/multilingual/browser-e2e.spec.ts',
       // Performance benchmarks - flaky/slow
       'src/parser/tokenizer-comparison.test.ts',
       'src/parser/performance.test.ts',

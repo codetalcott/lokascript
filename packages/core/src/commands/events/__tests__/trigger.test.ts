@@ -94,7 +94,8 @@ describe('EventDispatchCommand (trigger)', () => {
 
     it('should parse event with detail', async () => {
       const context = createMockContext();
-      const evaluator = createMockEvaluator([{ count: 42 }]);
+      // Provide enough values: one for detail evaluation, one for target evaluation
+      const evaluator = createMockEvaluator([{ count: 42 }, context.me]);
 
       const input = await command.parseInput(
         {
