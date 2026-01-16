@@ -47,6 +47,9 @@ import {
   fromExplicit,
 } from '@hyperfixi/semantic';
 
+// Import CompileResult type for browser bundle
+import type { CompileResult } from '../api/hyperscript-api';
+
 // Export to global scope for browser testing
 declare global {
   interface Window {
@@ -55,7 +58,7 @@ declare global {
       evalHyperScriptAsync: typeof evalHyperScriptAsync;
       evalHyperScriptSmart: typeof evalHyperScriptSmart;
       tailwindExtension: typeof tailwindExtension;
-      compile: typeof hyperscript.compile;
+      compile: (code: string) => CompileResult;
       compileMultilingual: typeof hyperscript.compileMultilingual;
       execute: typeof hyperscript.execute;
       run: typeof hyperscript.run;
@@ -118,11 +121,11 @@ const hyperfixi = {
   // Full hyperscript API for advanced usage
   compile: (code: string) => {
     debug.parse('BROWSER-BUNDLE: hyperfixi.compile() called', { code });
-    const result = hyperscript.compile(code);
-    debug.parse('BROWSER-BUNDLE: hyperscript.compile() returned', { result });
+    const result = hyperscript.compileSync(code);
+    debug.parse('BROWSER-BUNDLE: hyperscript.compileSync() returned', { result });
 
     // For compatibility with _hyperscript, throw an error if compilation fails
-    if (!result.success) {
+    if (!result.ok) {
       const errorMessage =
         result.errors && result.errors.length > 0 ? result.errors[0].message : 'Compilation failed';
       throw new Error(errorMessage);

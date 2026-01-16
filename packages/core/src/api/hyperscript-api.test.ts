@@ -18,15 +18,21 @@ describe('Hyperscript Public API', () => {
 
   describe('API Structure', () => {
     it('should expose the expected public interface', () => {
+      // New API (v2)
       expect(typeof hyperscript.compile).toBe('function');
+      expect(typeof hyperscript.compileSync).toBe('function');
       expect(typeof hyperscript.execute).toBe('function');
-      expect(typeof hyperscript.run).toBe('function');
-      expect(typeof hyperscript.evaluate).toBe('function');
+      expect(typeof hyperscript.eval).toBe('function');
+      expect(typeof hyperscript.validate).toBe('function');
+      expect(typeof hyperscript.process).toBe('function');
       expect(typeof hyperscript.createContext).toBe('function');
-      expect(typeof hyperscript.createChildContext).toBe('function');
-      expect(typeof hyperscript.isValidHyperscript).toBe('function');
       expect(typeof hyperscript.version).toBe('string');
       expect(typeof hyperscript.createRuntime).toBe('function');
+      // Deprecated but still present
+      expect(typeof hyperscript.run).toBe('function');
+      expect(typeof hyperscript.evaluate).toBe('function');
+      expect(typeof hyperscript.createChildContext).toBe('function');
+      expect(typeof hyperscript.isValidHyperscript).toBe('function');
       expect(typeof hyperscript.parse).toBe('function');
     });
 
@@ -35,38 +41,58 @@ describe('Hyperscript Public API', () => {
     });
   });
 
-  describe('compile() method', () => {
+  describe('compileSync() method - new API', () => {
     it('should compile valid hyperscript code', () => {
-      const result = hyperscript.compile('42');
+      const result = hyperscript.compileSync('42');
 
-      expect(result.success).toBe(true);
+      expect(result.ok).toBe(true);
       expect(result.ast).toBeDefined();
       expect(result.ast?.type).toBe('literal');
-      expect(result.errors).toEqual([]);
+      expect(result.errors).toBeUndefined();
     });
 
     it('should handle compilation errors gracefully', () => {
-      const result = hyperscript.compile('invalid @@ syntax');
+      const result = hyperscript.compileSync('invalid @@ syntax');
 
-      expect(result.success).toBe(false);
+      expect(result.ok).toBe(false);
       expect(result.ast).toBeUndefined();
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].message).toContain('Unexpected token');
+      expect(result.errors).toBeDefined();
+      expect(result.errors!.length).toBeGreaterThan(0);
+      expect(result.errors![0].message).toContain('Unexpected token');
     });
 
     it('should return compilation metadata', () => {
-      const result = hyperscript.compile('5 + 3');
+      const result = hyperscript.compileSync('5 + 3');
 
-      expect(result.tokens).toBeDefined();
-      expect(result.tokens.length).toBeGreaterThan(0);
-      expect(result.compilationTime).toBeTypeOf('number');
+      expect(result.meta).toBeDefined();
+      expect(result.meta.timeMs).toBeTypeOf('number');
+      expect(result.meta.language).toBe('en');
+      expect(result.meta.parser).toBeOneOf(['semantic', 'traditional']);
+    });
+  });
+
+  describe('compile() method - async new API', () => {
+    it('should compile valid hyperscript code', async () => {
+      const result = await hyperscript.compile('42');
+
+      expect(result.ok).toBe(true);
+      expect(result.ast).toBeDefined();
+      expect(result.ast?.type).toBe('literal');
+    });
+
+    it('should handle non-English input', async () => {
+      const result = await hyperscript.compile('.active を トグル', { language: 'ja' });
+
+      expect(result.ok).toBe(true);
+      expect(result.ast).toBeDefined();
+      expect(result.meta.language).toBe('ja');
     });
   });
 
   describe('execute() method', () => {
     it('should execute a compiled AST with context', async () => {
-      const compiled = hyperscript.compile('42');
-      expect(compiled.success).toBe(true);
+      const compiled = hyperscript.compileSync('42');
+      expect(compiled.ok).toBe(true);
 
       const context = hyperscript.createContext(mockElement);
       const result = await hyperscript.execute(compiled.ast!, context);
@@ -75,20 +101,46 @@ describe('Hyperscript Public API', () => {
     });
 
     it('should execute with default context if none provided', async () => {
-      const compiled = hyperscript.compile('5 + 3');
-      expect(compiled.success).toBe(true);
+      const compiled = hyperscript.compileSync('5 + 3');
+      expect(compiled.ok).toBe(true);
 
       const result = await hyperscript.execute(compiled.ast!);
       expect(result).toBe(8);
     });
 
     it('should handle execution errors gracefully', async () => {
-      const compiled = hyperscript.compile('me.nonExistentMethod()');
-      expect(compiled.success).toBe(true);
+      const compiled = hyperscript.compileSync('me.nonExistentMethod()');
+      expect(compiled.ok).toBe(true);
 
       const context = hyperscript.createContext(mockElement);
 
       await expect(hyperscript.execute(compiled.ast!, context)).rejects.toThrow();
+    });
+  });
+
+  describe('eval() method - new API', () => {
+    it('should compile and execute in one call', async () => {
+      const result = await hyperscript.eval('10 * 2');
+      expect(result).toBe(20);
+    });
+
+    it('should handle compilation errors', async () => {
+      await expect(hyperscript.eval('invalid @@ syntax')).rejects.toThrow('Compilation failed');
+    });
+  });
+
+  describe('validate() method - new API', () => {
+    it('should return valid for correct syntax', async () => {
+      const result = await hyperscript.validate('42');
+      expect(result.valid).toBe(true);
+      expect(result.errors).toBeUndefined();
+    });
+
+    it('should return invalid for incorrect syntax', async () => {
+      const result = await hyperscript.validate('invalid @@ syntax');
+      expect(result.valid).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors!.length).toBeGreaterThan(0);
     });
   });
 
@@ -205,23 +257,22 @@ describe('Hyperscript Public API', () => {
 
   describe('Error Handling and Edge Cases', () => {
     it.skip('should handle empty input gracefully', async () => {
-      await expect(hyperscript.run('')).rejects.toThrow('Compilation failed');
+      await expect(hyperscript.eval('')).rejects.toThrow('Code must be a non-empty string');
     });
 
     it('should provide detailed error information', () => {
-      const result = hyperscript.compile('5 +');
-      expect(result.success).toBe(false);
-      expect(result.errors[0]).toMatchObject({
+      const result = hyperscript.compileSync('5 +');
+      expect(result.ok).toBe(false);
+      expect(result.errors![0]).toMatchObject({
         message: expect.stringContaining('Expected expression'),
         line: expect.any(Number),
         column: expect.any(Number),
-        position: expect.any(Number),
       });
     });
 
     it('should handle null/undefined inputs safely', () => {
-      expect(() => hyperscript.compile(null as unknown as string)).toThrow();
-      expect(() => hyperscript.compile(undefined as unknown as string)).toThrow();
+      expect(() => hyperscript.compileSync(null as unknown as string)).toThrow();
+      expect(() => hyperscript.compileSync(undefined as unknown as string)).toThrow();
     });
   });
 

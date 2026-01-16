@@ -55,10 +55,10 @@ const hyperfixi = {
   // Full hyperscript API
   compile: (code: string) => {
     debug.parse('BROWSER-MODULAR: hyperfixi.compile() called', { code });
-    const result = hyperscript.compile(code);
-    debug.parse('BROWSER-MODULAR: hyperscript.compile() returned', { result });
+    const result = hyperscript.compileSync(code);
+    debug.parse('BROWSER-MODULAR: hyperscript.compileSync() returned', { result });
 
-    if (!result.success) {
+    if (!result.ok) {
       const errorMessage =
         result.errors && result.errors.length > 0 ? result.errors[0].message : 'Compilation failed';
       throw new Error(errorMessage);

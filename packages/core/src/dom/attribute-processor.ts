@@ -156,9 +156,9 @@ export class AttributeProcessor {
       );
 
       // Compile once, execute for each target
-      const compilationResult = hyperscript.compile(hyperscriptCode);
+      const compilationResult = hyperscript.compileSync(hyperscriptCode);
 
-      if (!compilationResult.success) {
+      if (!compilationResult.ok) {
         const dbg = ((window as any).__hyperfixi_debug = (window as any).__hyperfixi_debug || []);
         dbg.push(
           `Script for="${selector}" COMPILE FAILED: ` + JSON.stringify(compilationResult.errors)
@@ -203,10 +203,10 @@ export class AttributeProcessor {
       const context = createContext(null);
 
       // Compile the hyperscript code
-      const compilationResult = hyperscript.compile(hyperscriptCode);
-      debug.parse('SCRIPT: Compilation result:', compilationResult.success ? 'SUCCESS' : 'FAILED');
+      const compilationResult = hyperscript.compileSync(hyperscriptCode);
+      debug.parse('SCRIPT: Compilation result:', compilationResult.ok ? 'SUCCESS' : 'FAILED');
 
-      if (!compilationResult.success) {
+      if (!compilationResult.ok) {
         const dbg = ((window as any).__hyperfixi_debug = (window as any).__hyperfixi_debug || []);
         dbg.push('Script COMPILE FAILED: ' + JSON.stringify(compilationResult.errors));
         return;
@@ -268,14 +268,14 @@ export class AttributeProcessor {
 
       // Parse and prepare the hyperscript code
       debug.parse('ATTR: About to compile hyperscript code');
-      const compilationResult = hyperscript.compile(hyperscriptCode);
+      const compilationResult = hyperscript.compileSync(hyperscriptCode);
       debug.parse('ATTR: Compilation result:', compilationResult);
 
-      if (!compilationResult.success) {
+      if (!compilationResult.ok) {
         debug.parse('ATTR: Hyperscript compilation failed for element:', element);
         debug.parse('ATTR: Code that failed:', hyperscriptCode);
         debug.parse('ATTR: Compilation errors:', JSON.stringify(compilationResult.errors, null, 2));
-        compilationResult.errors.forEach((error, i) => {
+        (compilationResult.errors || []).forEach((error, i) => {
           debug.parse(
             `ATTR: Error ${i + 1}:`,
             error.message,

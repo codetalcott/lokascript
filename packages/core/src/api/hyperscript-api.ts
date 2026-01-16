@@ -151,6 +151,9 @@ function getDefaultParserOptions() {
 // API Types
 // ============================================================================
 
+/**
+ * @deprecated Use CompileResult instead
+ */
 export interface CompilationResult {
   success: boolean;
   ast?: ASTNode;
@@ -167,6 +170,9 @@ export interface CompilationResult {
   };
 }
 
+/**
+ * @deprecated Use NewCompileOptions instead
+ */
 export interface CompileOptions {
   /** Disable semantic parsing (use traditional parser only). Useful for complex behaviors. */
   disableSemanticParsing?: boolean;
@@ -176,6 +182,7 @@ export interface CompileOptions {
 
 /**
  * Extended compilation result with direct AST path metadata
+ * @deprecated Use CompileResult instead
  */
 export interface MultilingualCompilationResult extends CompilationResult {
   /** Whether the direct AST path was used (bypassing English text generation) */
@@ -186,37 +193,188 @@ export interface MultilingualCompilationResult extends CompilationResult {
   language?: string;
 }
 
+// ============================================================================
+// New API Types (v2)
+// ============================================================================
+
+/**
+ * Compilation error with location and optional suggestion
+ */
+export interface CompileError {
+  message: string;
+  line: number;
+  column: number;
+  /** Suggestion for fixing the error */
+  suggestion?: string;
+}
+
+/**
+ * Options for compile() and compileSync()
+ */
+export interface NewCompileOptions {
+  /** Language code (default: 'en'). Auto-detected from element if using process() */
+  language?: string;
+
+  /** Confidence threshold for semantic parsing (0-1, default: 0.5) */
+  confidenceThreshold?: number;
+
+  /** Force traditional parser (skip semantic analysis) */
+  traditional?: boolean;
+}
+
+/**
+ * Result of compilation - new cleaner API
+ */
+export interface CompileResult {
+  /** Whether compilation succeeded */
+  ok: boolean;
+
+  /** Compiled AST (present if ok=true) */
+  ast?: ASTNode;
+
+  /** Compilation errors (present if ok=false) */
+  errors?: CompileError[];
+
+  /** Metadata about the compilation */
+  meta: {
+    /** Which parser was used */
+    parser: 'semantic' | 'traditional';
+    /** Confidence score if semantic parser was used */
+    confidence?: number;
+    /** Language detected/used */
+    language: string;
+    /** Compilation time in ms */
+    timeMs: number;
+    /** Whether the direct AST path was used (multilingual) */
+    directPath?: boolean;
+  };
+}
+
+/**
+ * Result of validate()
+ */
+export interface ValidateResult {
+  valid: boolean;
+  errors?: CompileError[];
+}
+
 export interface HyperscriptAPI {
-  // Core compilation and execution
-  compile(code: string, options?: CompileOptions): CompilationResult;
+  // ─────────────────────────────────────────────────────────────
+  // NEW API (v2)
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Compile hyperscript code to AST (async, handles all languages).
+   * This is the recommended compilation method.
+   */
+  compile(code: string, options?: NewCompileOptions): Promise<CompileResult>;
+
+  /**
+   * Compile hyperscript code to AST (sync, English only).
+   * Use compile() unless you specifically need synchronous behavior.
+   */
+  compileSync(code: string, options?: NewCompileOptions): CompileResult;
+
+  /**
+   * Execute a compiled AST.
+   */
+  execute(ast: ASTNode, context?: ExecutionContext): Promise<unknown>;
+
+  /**
+   * Compile and execute in one step.
+   * Convenience method equivalent to: compile() then execute()
+   */
+  eval(code: string, context?: ExecutionContext, options?: NewCompileOptions): Promise<unknown>;
+
+  /**
+   * Validate hyperscript syntax without executing.
+   */
+  validate(code: string, options?: NewCompileOptions): Promise<ValidateResult>;
+
+  // ─────────────────────────────────────────────────────────────
+  // DOM PROCESSING
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Process element and descendants for hyperscript attributes.
+   * Automatically detects language from element/document.
+   */
+  process(element: Element): void;
+
+  // ─────────────────────────────────────────────────────────────
+  // CONTEXT
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Create an execution context.
+   * @param element - Element to bind as 'me'
+   * @param parent - Optional parent context for scope inheritance
+   */
+  createContext(element?: HTMLElement | null, parent?: ExecutionContext): ExecutionContext;
+
+  // ─────────────────────────────────────────────────────────────
+  // UTILITIES
+  // ─────────────────────────────────────────────────────────────
+
+  /** Version string */
+  version: string;
+
+  /** Global configuration */
+  config: HyperscriptConfig;
+
+  // ─────────────────────────────────────────────────────────────
+  // ADVANCED
+  // ─────────────────────────────────────────────────────────────
+
+  /** Create a custom runtime instance */
+  createRuntime(options?: RuntimeOptions): Runtime;
+
+  /** Runtime Hooks */
+  registerHooks(name: string, hooks: RuntimeHooks): void;
+  unregisterHooks(name: string): boolean;
+  getRegisteredHooks(): string[];
+
+  // ─────────────────────────────────────────────────────────────
+  // DEPRECATED (will be removed in next major version)
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * @deprecated Use compile() instead. compileMultilingual merges into unified compile().
+   */
   compileMultilingual(
     code: string,
     options?: CompileOptions
   ): Promise<MultilingualCompilationResult>;
-  execute(ast: ASTNode, context?: ExecutionContext): Promise<unknown>;
+
+  /**
+   * @deprecated Use eval() instead
+   */
   run(code: string, context?: ExecutionContext): Promise<unknown>;
-  evaluate(code: string, context?: ExecutionContext): Promise<unknown>; // Alias for run
 
-  // DOM processing (HTMX compatibility)
+  /**
+   * @deprecated Use eval() instead
+   */
+  evaluate(code: string, context?: ExecutionContext): Promise<unknown>;
+
+  /**
+   * @deprecated Use process() instead
+   */
   processNode(element: Element): void;
-  process(element: Element): void; // Alias for processNode
 
-  // Context management
-  createContext(element?: HTMLElement | null): ExecutionContext;
+  /**
+   * @deprecated Use createContext(element, parent) instead
+   */
   createChildContext(parent: ExecutionContext, element?: HTMLElement | null): ExecutionContext;
 
-  // Utilities
+  /**
+   * @deprecated Use validate() instead
+   */
   isValidHyperscript(code: string): boolean;
-  version: string;
 
-  // Advanced
-  createRuntime(options?: RuntimeOptions): Runtime;
+  /**
+   * @deprecated Use compile() or compileSync() instead
+   */
   parse(code: string): ASTNode;
-
-  // Runtime Hooks
-  registerHooks(name: string, hooks: RuntimeHooks): void;
-  unregisterHooks(name: string): boolean;
-  getRegisteredHooks(): string[];
 }
 
 // ============================================================================
@@ -1090,31 +1248,260 @@ function process(element: Element): void {
   return processNode(element);
 }
 
-export const hyperscript: HyperscriptAPI = {
-  // Core compilation and execution
-  compile,
-  compileMultilingual,
-  execute,
-  run,
-  evaluate: run, // Alias for run - compile and execute in one step
+// ============================================================================
+// New API Implementation (v2)
+// ============================================================================
 
-  // DOM processing (HTMX compatibility)
-  processNode,
+// Track whether deprecation warnings have been shown (avoid spam)
+const deprecationWarnings = new Set<string>();
+
+/**
+ * Show a deprecation warning once per method
+ */
+function warnDeprecated(oldMethod: string, newMethod: string): void {
+  if (deprecationWarnings.has(oldMethod)) return;
+  deprecationWarnings.add(oldMethod);
+  console.warn(
+    `[hyperfixi] ${oldMethod}() is deprecated and will be removed in the next major version. ` +
+      `Use ${newMethod}() instead.`
+  );
+}
+
+/**
+ * Convert old CompileOptions to NewCompileOptions
+ */
+function convertCompileOptions(options?: CompileOptions): NewCompileOptions {
+  if (!options) return {};
+  return {
+    language: options.language,
+    traditional: options.disableSemanticParsing,
+  };
+}
+
+/**
+ * Convert ParseError to CompileError
+ */
+function toCompileError(error: ParseError): CompileError {
+  return {
+    message: error.message,
+    line: error.line ?? 1,
+    column: error.column ?? 1,
+  };
+}
+
+/**
+ * NEW: Compile hyperscript code to AST (sync, English-optimized).
+ * Use compile() for multilingual support.
+ */
+function compileSync(code: string, options?: NewCompileOptions): CompileResult {
+  if (typeof code !== 'string') {
+    throw new TypeError('Code must be a string');
+  }
+
+  const startTime = performance.now();
+  const lang = options?.language || 'en';
+
+  try {
+    const disableSemantic = options?.traditional ?? false;
+    const parserOptions = disableSemantic ? {} : getDefaultParserOptions();
+    const usesSemanticParser = !disableSemantic;
+
+    const parseResult = parseToResult(code, parserOptions);
+    const timeMs = performance.now() - startTime;
+
+    if (parseResult.success && parseResult.node) {
+      return {
+        ok: true,
+        ast: parseResult.node,
+        meta: {
+          parser: usesSemanticParser ? 'semantic' : 'traditional',
+          language: lang,
+          timeMs,
+        },
+      };
+    } else {
+      return {
+        ok: false,
+        errors: parseResult.error ? [toCompileError(parseResult.error)] : [],
+        meta: {
+          parser: usesSemanticParser ? 'semantic' : 'traditional',
+          language: lang,
+          timeMs,
+        },
+      };
+    }
+  } catch (error) {
+    const timeMs = performance.now() - startTime;
+    return {
+      ok: false,
+      errors: [
+        {
+          message: error instanceof Error ? error.message : 'Unknown compilation error',
+          line: 1,
+          column: 1,
+        },
+      ],
+      meta: {
+        parser: 'traditional',
+        language: lang,
+        timeMs,
+      },
+    };
+  }
+}
+
+/**
+ * NEW: Compile hyperscript code to AST (async, handles all languages).
+ * This is the recommended compilation method.
+ */
+async function compileAsync(code: string, options?: NewCompileOptions): Promise<CompileResult> {
+  if (typeof code !== 'string') {
+    throw new TypeError('Code must be a string');
+  }
+
+  const lang = options?.language || 'en';
+  const startTime = performance.now();
+
+  // For English or when traditional parsing is requested, use sync path
+  if (lang === 'en' || options?.traditional) {
+    return compileSync(code, options);
+  }
+
+  // For non-English, try direct AST path
+  try {
+    const bridge = await getOrCreateBridge();
+    const astResult = await bridge.parseToASTWithDetails(code, lang);
+
+    if (astResult.usedDirectPath && astResult.ast) {
+      const timeMs = performance.now() - startTime;
+      return {
+        ok: true,
+        ast: astResult.ast,
+        meta: {
+          parser: 'semantic',
+          confidence: astResult.confidence,
+          language: lang,
+          timeMs,
+          directPath: true,
+        },
+      };
+    }
+
+    // Direct path failed, fall back to traditional
+    const fallbackCode = astResult.fallbackText || code;
+    const result = compileSync(fallbackCode, { ...options, language: 'en' });
+    return {
+      ...result,
+      meta: {
+        ...result.meta,
+        language: lang,
+        confidence: astResult.confidence,
+        directPath: false,
+      },
+    };
+  } catch {
+    // Fall back to sync compilation on any error
+    return compileSync(code, { ...options, language: 'en' });
+  }
+}
+
+/**
+ * NEW: Compile and execute in one step.
+ */
+async function evalCode(
+  code: string,
+  context?: ExecutionContext | Element,
+  options?: NewCompileOptions
+): Promise<unknown> {
+  if (typeof code !== 'string' || code.trim().length === 0) {
+    throw new Error('Code must be a non-empty string');
+  }
+
+  // Normalize context (handle Element passed directly)
+  let executionContext: ExecutionContext;
+  if (!context) {
+    executionContext = createContext();
+  } else if (context instanceof Element) {
+    executionContext = createContext(context as HTMLElement);
+  } else if ((context as ExecutionContext).locals instanceof Map) {
+    executionContext = context as ExecutionContext;
+  } else {
+    const partialContext = context as unknown as { me?: HTMLElement };
+    executionContext = createContext(partialContext.me);
+  }
+
+  const compiled = await compileAsync(code.trim(), options);
+
+  if (!compiled.ok) {
+    const errorMsg = compiled.errors?.[0]?.message || 'Unknown compilation error';
+    throw new Error(`Compilation failed: ${errorMsg}`);
+  }
+
+  return execute(compiled.ast!, executionContext);
+}
+
+/**
+ * NEW: Validate hyperscript syntax without executing.
+ */
+async function validate(code: string, options?: NewCompileOptions): Promise<ValidateResult> {
+  const result = await compileAsync(code, options);
+  return {
+    valid: result.ok,
+    errors: result.errors,
+  };
+}
+
+/**
+ * NEW: Create context with optional parent
+ */
+function createContextWithParent(
+  element?: HTMLElement | null,
+  parent?: ExecutionContext
+): ExecutionContext {
+  if (parent) {
+    return createChildContext(parent, element);
+  }
+  return createContext(element);
+}
+
+// ============================================================================
+// Public API Object
+// ============================================================================
+
+export const hyperscript: HyperscriptAPI = {
+  // ─────────────────────────────────────────────────────────────
+  // NEW API (v2)
+  // ─────────────────────────────────────────────────────────────
+
+  // Async compile (handles all languages)
+  compile: compileAsync,
+
+  // Sync compile (English-optimized)
+  compileSync,
+
+  // Execute compiled AST
+  execute,
+
+  // Compile and execute
+  eval: evalCode,
+
+  // Validate syntax
+  validate,
+
+  // Process DOM elements
   process,
 
-  // Context management
-  createContext,
-  createChildContext,
+  // Create context (with optional parent)
+  createContext: createContextWithParent,
 
-  // Utilities
-  isValidHyperscript,
+  // Configuration
+  config,
   version: getVersion(),
 
   // Advanced
   createRuntime: createRuntimeInstance,
-  parse,
 
-  // Runtime Hooks - delegate to default runtime
+  // Runtime Hooks
   registerHooks: (name: string, hooks: RuntimeHooks) => {
     getDefaultRuntime().registerHooks(name, hooks);
   },
@@ -1123,6 +1510,45 @@ export const hyperscript: HyperscriptAPI = {
   },
   getRegisteredHooks: () => {
     return getDefaultRuntime().getRegisteredHooks();
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // DEPRECATED (with warnings)
+  // ─────────────────────────────────────────────────────────────
+
+  compileMultilingual: async (code: string, options?: CompileOptions) => {
+    warnDeprecated('compileMultilingual', 'compile');
+    return compileMultilingual(code, options);
+  },
+
+  run: async (code: string, context?: ExecutionContext) => {
+    warnDeprecated('run', 'eval');
+    return run(code, context);
+  },
+
+  evaluate: async (code: string, context?: ExecutionContext) => {
+    warnDeprecated('evaluate', 'eval');
+    return run(code, context);
+  },
+
+  processNode: (element: Element) => {
+    warnDeprecated('processNode', 'process');
+    return processNode(element);
+  },
+
+  createChildContext: (parent: ExecutionContext, element?: HTMLElement | null) => {
+    warnDeprecated('createChildContext', 'createContext');
+    return createChildContext(parent, element);
+  },
+
+  isValidHyperscript: (code: string) => {
+    warnDeprecated('isValidHyperscript', 'validate');
+    return isValidHyperscript(code);
+  },
+
+  parse: (code: string) => {
+    warnDeprecated('parse', 'compile or compileSync');
+    return parse(code);
   },
 };
 

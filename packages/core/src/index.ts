@@ -4,7 +4,19 @@
  */
 
 // Export the main API
-export { hyperscript, type HyperscriptAPI, type CompilationResult } from './api/hyperscript-api';
+export {
+  hyperscript,
+  type HyperscriptAPI,
+  // New API types (v2)
+  type CompileResult,
+  type CompileError,
+  type NewCompileOptions,
+  type ValidateResult,
+  // Legacy types (deprecated)
+  type CompilationResult,
+  type CompileOptions,
+  type MultilingualCompilationResult,
+} from './api/hyperscript-api';
 
 // Export core types for advanced usage
 export type {
