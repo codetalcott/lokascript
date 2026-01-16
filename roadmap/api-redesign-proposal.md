@@ -334,19 +334,19 @@ function deprecated<T extends Function>(oldName: string, newName: string, fn: T)
 
 ## Implementation Plan
 
-### Phase 1: Add New Methods
+### Phase 1: Add New Methods ✅ Complete
 
-- [ ] Add `compile()` async method that wraps current logic
-- [ ] Add `compileSync()` as renamed current `compile()`
-- [ ] Add `eval()` method
-- [ ] Add `validate()` method
-- [ ] Update `createContext()` to accept optional parent
+- [x] Add `compileAsync()` async method that wraps current logic
+- [x] Add `compileSync()` as renamed current `compile()`
+- [x] Add `eval()` method (named `evalCode` internally to avoid reserved word)
+- [x] Add `validate()` method
+- [x] Update `createContext()` to accept optional parent
 
-### Phase 2: Deprecation Warnings
+### Phase 2: Deprecation Warnings ✅ Complete
 
-- [ ] Add deprecation warnings to old methods
-- [ ] Update documentation to show new API
-- [ ] Update examples and tests
+- [x] Add deprecation warnings to old methods
+- [x] Update documentation to show new API (API.md, CLAUDE.md)
+- [x] Update internal code to use new API
 
 ### Phase 3: Remove Deprecated (Major Version)
 
