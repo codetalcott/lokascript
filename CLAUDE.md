@@ -362,14 +362,45 @@ console.log(stats);
 // }
 ```
 
-### Compilation Options
+### API v2 (Recommended)
 
-Disable semantic parsing for specific code:
+The new API provides cleaner methods with structured results:
 
 ```javascript
-// Use traditional parser only (useful for complex behaviors)
-const result = hyperfixi.compile(code, { disableSemanticParsing: true });
+import { hyperscript } from 'hyperfixi';
+
+// Compile (sync) - returns CompileResult with ok/errors/meta
+const result = hyperscript.compileSync('toggle .active');
+if (result.ok) {
+  console.log('Parser:', result.meta.parser); // 'semantic' or 'traditional'
+}
+
+// Compile + execute in one call
+await hyperscript.eval('add .clicked to me', element);
+
+// Async compilation (for language loading)
+const asyncResult = await hyperscript.compileAsync(code, { language: 'ja' });
+
+// Validation
+const validation = await hyperscript.validate('toggle .active');
+if (!validation.valid) {
+  console.error(validation.errors);
+}
+
+// Context with parent inheritance
+const parent = hyperscript.createContext();
+const child = hyperscript.createContext(element, parent);
 ```
+
+**Options:**
+
+- `language?: string` - Language code (e.g., 'en', 'ja', 'es')
+- `confidenceThreshold?: number` - Min confidence for semantic parsing (0-1)
+- `traditional?: boolean` - Force traditional parser
+
+See [packages/core/docs/API.md](packages/core/docs/API.md) for complete documentation.
+
+> **Note:** Legacy methods (`compile()`, `run()`, `evaluate()`) still work but show deprecation warnings. Migrate to `compileSync()`, `eval()`, `validate()` for new code.
 
 ## Important Files
 
@@ -382,6 +413,8 @@ const result = hyperfixi.compile(code, { disableSemanticParsing: true });
 | `packages/i18n/src/browser.ts`                    | Browser bundle exports             |
 | `packages/semantic/src/parser/semantic-parser.ts` | Semantic parser                    |
 | `packages/semantic/src/tokenizers/`               | 13 language tokenizers             |
+| `packages/core/src/api/hyperscript-api.ts`        | Main API implementation (v2)       |
+| `packages/core/docs/API.md`                       | API documentation                  |
 | `roadmap/plan.md`                                 | Development context and status     |
 
 ## Vite Plugin (Recommended)
