@@ -59,9 +59,9 @@ declare global {
       evalHyperScriptSmart: typeof evalHyperScriptSmart;
       tailwindExtension: typeof tailwindExtension;
       compile: (code: string) => CompileResult;
-      compileMultilingual: typeof hyperscript.compileMultilingual;
+      compileMultilingual: (code: string, language: string) => Promise<CompileResult>;
       execute: typeof hyperscript.execute;
-      run: typeof hyperscript.run;
+      run: (code: string, context?: any) => Promise<unknown>;
       createContext: typeof hyperscript.createContext;
       createRuntime: typeof hyperscript.createRuntime;
       processNode: (element: Element | Document) => Promise<void>;
@@ -133,9 +133,14 @@ const hyperfixi = {
 
     return result;
   },
-  compileMultilingual: hyperscript.compileMultilingual,
+  // Compatibility wrappers for deprecated v1 API
+  compileMultilingual: async (code: string, language: string) => {
+    return hyperscript.compile(code, { language });
+  },
   execute: hyperscript.execute,
-  run: hyperscript.run,
+  run: async (code: string, context?: any) => {
+    return hyperscript.eval(code, context);
+  },
   createContext: hyperscript.createContext,
   createRuntime: hyperscript.createRuntime,
 

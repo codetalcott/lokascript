@@ -67,7 +67,9 @@ const hyperfixi = {
     return result;
   },
   execute: hyperscript.execute,
-  run: hyperscript.run,
+  run: async (code: string, context?: any) => {
+    return hyperscript.eval(code, context);
+  },
   createContext: hyperscript.createContext,
   createRuntime: hyperscript.createRuntime,
 

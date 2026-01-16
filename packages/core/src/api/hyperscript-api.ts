@@ -20,6 +20,13 @@ import {
 import { registerHistorySwap, registerBoosted } from '../behaviors';
 
 // =============================================================================
+// Constants
+// =============================================================================
+
+const DEFAULT_EVENT_TYPE = 'click';
+const DEFAULT_LANGUAGE = 'en';
+
+// =============================================================================
 // Type Augmentations
 // =============================================================================
 
@@ -32,21 +39,6 @@ declare global {
       runtime?: Runtime;
       behaviors?: Runtime['behaviorAPI'];
     };
-  }
-}
-
-/**
- * Custom error class for parse errors with line/column information
- */
-class HyperscriptParseError extends Error {
-  line?: number;
-  column?: number;
-
-  constructor(message: string, line?: number, column?: number) {
-    super(message);
-    this.name = 'HyperscriptParseError';
-    this.line = line;
-    this.column = column;
   }
 }
 
@@ -238,7 +230,11 @@ export interface HyperscriptAPI {
    * Compile and execute in one step.
    * Convenience method equivalent to: compile() then execute()
    */
-  eval(code: string, context?: ExecutionContext, options?: NewCompileOptions): Promise<unknown>;
+  eval(
+    code: string,
+    context?: ExecutionContext | Element,
+    options?: NewCompileOptions
+  ): Promise<unknown>;
 
   /**
    * Validate hyperscript syntax without executing.
@@ -355,8 +351,8 @@ function createRuntimeInstance(options?: RuntimeOptions): Runtime {
  * Get the current version of hyperfixi
  */
 function getVersion(): string {
-  // In a real implementation, this would be injected during build
-  return '0.1.0';
+  // TODO: Inject during build via rollup replace plugin
+  return '2.0.0';
 }
 
 // ============================================================================
@@ -407,7 +403,7 @@ function detectLanguage(element: Element): string {
   }
 
   // Default to English
-  return 'en';
+  return DEFAULT_LANGUAGE;
 }
 
 /**
@@ -418,7 +414,7 @@ function processHyperscriptAttribute(element: Element, hyperscriptCode: string):
   const lang = detectLanguage(element);
 
   // For non-English, use async multilingual path
-  if (lang !== 'en') {
+  if (lang !== DEFAULT_LANGUAGE) {
     void processHyperscriptAttributeAsync(element, hyperscriptCode, lang);
     return;
   }
@@ -649,7 +645,7 @@ function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | 
 
     // Handle the actual HyperFixi AST structure
     if (ast.type === 'eventHandler') {
-      const eventType = (ast as { event?: string }).event || 'click';
+      const eventType = (ast as { event?: string }).event || DEFAULT_EVENT_TYPE;
       const commands = (ast as { commands?: ASTNode[] }).commands;
 
       debug.event(`Found event handler: ${eventType} with ${commands?.length || 0} commands`);
@@ -669,14 +665,15 @@ function extractEventInfo(ast: ASTNode): { eventType: string; body: ASTNode } | 
 
     // Handle legacy AST structures
     if (ast.type === 'FeatureNode' && (ast as { name?: string }).name === 'on') {
-      const eventType = (ast as { args?: Array<{ value?: string }> }).args?.[0]?.value || 'click';
+      const eventType =
+        (ast as { args?: Array<{ value?: string }> }).args?.[0]?.value || DEFAULT_EVENT_TYPE;
       const body = (ast as { body?: ASTNode }).body || ast;
       return { eventType, body };
     }
 
     // Handle direct command sequences
     if (ast.type === 'CommandSequence' || ast.type === 'Block') {
-      return { eventType: 'click', body: ast }; // Default to click
+      return { eventType: DEFAULT_EVENT_TYPE, body: ast };
     }
 
     console.warn('⚠️ Unknown AST structure for event extraction:', ast.type);
@@ -754,7 +751,7 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
   }
 
   const startTime = performance.now();
-  const lang = options?.language || 'en';
+  const lang = options?.language || DEFAULT_LANGUAGE;
 
   try {
     const disableSemantic = options?.traditional ?? false;
@@ -841,11 +838,11 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
     throw new TypeError('Code must be a string');
   }
 
-  const lang = options?.language || 'en';
+  const lang = options?.language || DEFAULT_LANGUAGE;
   const startTime = performance.now();
 
   // For English or when traditional parsing is requested, use sync path
-  if (lang === 'en' || options?.traditional) {
+  if (lang === DEFAULT_LANGUAGE || options?.traditional) {
     return compileSync(code, options);
   }
 
@@ -871,7 +868,7 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
 
     // Direct path failed, fall back to traditional
     const fallbackCode = astResult.fallbackText || code;
-    const result = compileSync(fallbackCode, { ...options, language: 'en' });
+    const result = compileSync(fallbackCode, { ...options, language: DEFAULT_LANGUAGE });
     return {
       ...result,
       meta: {
