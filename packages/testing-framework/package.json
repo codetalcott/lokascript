@@ -6,7 +6,8 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "hyperfixi-test": "dist/cli.js"
+    "hyperfixi-test": "dist/cli.js",
+    "hyperfixi-test-multilingual": "dist/multilingual/cli.js"
   },
   "exports": {
     ".": {
@@ -33,6 +34,11 @@
       "import": "./dist/e2e.mjs",
       "require": "./dist/e2e.js",
       "types": "./dist/e2e.d.ts"
+    },
+    "./multilingual": {
+      "import": "./dist/multilingual/index.mjs",
+      "require": "./dist/multilingual/index.js",
+      "types": "./dist/multilingual/index.d.ts"
     }
   },
   "scripts": {
@@ -41,6 +47,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:multilingual": "tsx src/multilingual/cli.ts",
+    "test:multilingual:quick": "tsx src/multilingual/cli.ts --quick",
+    "test:multilingual:full": "tsx src/multilingual/cli.ts --full",
+    "test:multilingual:regression": "tsx src/multilingual/cli.ts --regression",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx",
     "lint:fix": "eslint src --ext ts,tsx --fix"
@@ -60,12 +70,15 @@
   "license": "MIT",
   "dependencies": {
     "@hyperfixi/core": "*",
+    "@hyperfixi/patterns-reference": "*",
+    "@hyperfixi/semantic": "*",
     "diff": "^8.0.3",
     "esbuild": "0.25.11",
     "happy-dom": "20.0.6",
     "jsdom": "^23.0.0",
     "playwright": "^1.40.0",
     "puppeteer": "^24.26.1",
+    "tsx": "^4.19.2",
     "vite": "^7.1.12"
   },
   "devDependencies": {
