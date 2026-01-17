@@ -8,8 +8,8 @@
     <style>
         /* Example-specific styles */
         .example {
-            background: var(--panel);
-            border: 1px solid var(--border);
+            background: var(--color-surface, #ffffff);
+            border: 1px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
@@ -18,7 +18,7 @@
 
         .example h3 {
             margin-top: 0;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         button.secondary {
@@ -31,8 +31,8 @@
 
         /* Details styling */
         details {
-            background: var(--panel-muted);
-            border: 1px solid var(--border);
+            background: var(--color-surface, #f4f4f5);
+            border: 1px solid var(--color-border, #e4e4e7);
             border-radius: 6px;
             padding: 10px 15px;
             margin: 10px 0;
@@ -41,41 +41,41 @@
         summary {
             cursor: pointer;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
             padding: 5px 0;
             user-select: none;
         }
 
         summary:hover {
-            color: var(--accent-primary);
+            color: var(--color-accent, #6366f1);
         }
 
         details[open] summary {
             margin-bottom: 10px;
             padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border, #e4e4e7);
         }
 
         details p {
             margin: 10px 0;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
         }
 
         /* Select styling */
         select {
             padding: 8px 12px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 6px;
             font-size: 14px;
-            background: var(--panel);
+            background: var(--color-surface, #ffffff);
             cursor: pointer;
             margin: 5px;
-            color: var(--text);
+            color: var(--color-text, #18181b);
         }
 
         select:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
@@ -94,9 +94,9 @@
         }
 
         .dialog-header {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 20px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border, #e4e4e7);
         }
 
         .dialog-header h3 {
@@ -108,9 +108,9 @@
         }
 
         .dialog-footer {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 15px 20px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--color-border, #e4e4e7);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -131,8 +131,8 @@
         }
 
         .badge.details {
-            background: var(--tag-default-bg);
-            color: var(--tag-default-color);
+            background: var(--color-surface, #e3f2fd);
+            color: var(--color-text, #18181b);
         }
 
         .badge.select {
@@ -141,9 +141,9 @@
         }
 
         .demo-content {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 15px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--color-border, #e4e4e7);
             border-radius: 6px;
             margin: 10px 0;
         }
@@ -165,16 +165,16 @@
         .summary-table td {
             padding: 12px;
             text-align: left;
-            border: 1px solid var(--border);
+            border: 1px solid var(--color-border, #e4e4e7);
         }
 
         .summary-table th {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             font-weight: 600;
         }
 
         .summary-table tr:nth-child(even) {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
         }
 
         .highlight {
@@ -289,7 +289,7 @@
 
             <div class="demo-content">
                 <button _="on click toggle #summaryDemo">Toggle via Summary Element</button>
-                <p style="font-size: 14px; color: var(--text-muted); margin: 10px 0;">
+                <p style="font-size: 14px; color: var(--color-text-muted, #71717a); margin: 10px 0;">
                     When you toggle a <code>&lt;summary&gt;</code> element, it automatically finds and toggles the parent <code>&lt;details&gt;</code>.
                 </p>
 

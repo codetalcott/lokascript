@@ -11,18 +11,18 @@
             width: 100%;
             padding: 15px;
             font-size: 16px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             margin-bottom: 20px;
             font-family: inherit;
             transition: border-color 0.3s ease;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         input:focus, textarea:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         textarea {
@@ -54,7 +54,7 @@
         }
 
         .mirror-box.styled {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             font-family: var(--font-mono);
             letter-spacing: 2px;
@@ -62,7 +62,7 @@
 
         .char-count {
             display: inline-block;
-            background: var(--success);
+            background: #22c55e;
             color: white;
             padding: 8px 16px;
             border-radius: 20px;
@@ -75,7 +75,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
     </style>
 </head>

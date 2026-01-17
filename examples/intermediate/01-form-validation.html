@@ -15,24 +15,24 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         input {
             width: 100%;
             padding: 12px;
             font-size: 16px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             font-family: inherit;
             transition: border-color 0.3s ease;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         input:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         input.error {
@@ -55,7 +55,7 @@
         }
 
         .success-message {
-            background: var(--success);
+            background: #22c55e;
             color: white;
             padding: 20px;
             border-radius: 8px;

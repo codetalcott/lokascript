@@ -54,7 +54,7 @@
         }
 
         .modal-header {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
             display: flex;
@@ -97,14 +97,14 @@
         .modal-body p {
             line-height: 1.6;
             margin: 15px 0;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         .modal-footer {
             padding: 20px 30px;
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             text-align: right;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--color-border, #e4e4e7);
         }
 
         @keyframes fadeIn {
@@ -126,24 +126,24 @@
         input {
             width: 100%;
             padding: 12px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             font-size: 16px;
             margin-bottom: 15px;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         input:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
     </style>
 </head>

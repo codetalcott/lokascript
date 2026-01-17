@@ -9,14 +9,14 @@
         /* Example-specific styles */
         .tabs {
             display: flex;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--color-border, #e4e4e7);
             margin-bottom: 20px;
             gap: 5px;
         }
 
         .tab {
-            background: var(--panel-muted);
-            color: var(--text-muted);
+            background: var(--color-surface, #f4f4f5);
+            color: var(--color-text-muted, #71717a);
             border: none;
             padding: 15px 30px;
             font-size: 16px;
@@ -29,15 +29,15 @@
         }
 
         .tab:hover {
-            background: var(--border-light);
+            background: #e4e4e7;
             transform: none;
             box-shadow: none;
         }
 
         .tab.active {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
             transform: translateY(-2px);
         }
 
@@ -77,7 +77,7 @@
         .content-box p {
             margin: 10px 0;
             line-height: 1.6;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         .icon {

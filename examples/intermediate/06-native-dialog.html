@@ -43,7 +43,7 @@
         }
 
         .dialog-header {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
             display: flex;
@@ -87,52 +87,52 @@
         .dialog-body p {
             line-height: 1.6;
             margin: 15px 0;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         .dialog-footer {
             padding: 20px 30px;
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             text-align: right;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--color-border, #e4e4e7);
             border-radius: 0 0 16px 16px;
         }
 
         input, select {
             width: 100%;
             padding: 12px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             font-size: 16px;
             margin-bottom: 15px;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         .result-display {
-            background: var(--tag-default-bg);
+            background: var(--color-surface, #e3f2fd);
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
             font-family: var(--font-mono);
-            color: var(--tag-default-color);
+            color: var(--color-text, #18181b);
         }
 
         .advantage {
-            background: var(--success-bg);
-            border-left: 4px solid var(--success);
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
             padding: 15px;
             margin: 10px 0;
             border-radius: 4px;
@@ -402,7 +402,7 @@
         <!-- Code Explanation -->
         <h2>The Code</h2>
 
-        <div class="description" style="margin-bottom: 20px; background: var(--success-bg); border-left-color: var(--success);">
+        <div class="description" style="margin-bottom: 20px; background: #dcfce7; border-left-color: #22c55e;">
             <strong>✅ Implementation Options:</strong><br>
             HyperFixi provides multiple ways to work with native <code>&lt;dialog&gt;</code> elements:<br><br>
 

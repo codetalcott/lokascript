@@ -9,12 +9,12 @@
     /* Example-specific styles */
     .subtitle {
       text-align: center;
-      color: var(--text-muted);
+      color: var(--color-text-muted, #71717a);
       margin-bottom: 30px;
     }
 
     .demo-section {
-      background: var(--panel);
+      background: var(--color-surface, #ffffff);
       border-radius: 12px;
       padding: 25px;
       margin-bottom: 30px;
@@ -23,8 +23,8 @@
 
     .demo-section h2 {
       margin-top: 0;
-      color: var(--text);
-      border-bottom: 2px solid var(--border);
+      color: var(--color-text, #18181b);
+      border-bottom: 2px solid var(--color-border, #e4e4e7);
       padding-bottom: 10px;
       margin-bottom: 20px;
     }
@@ -40,7 +40,7 @@
     }
 
     .panel {
-      border: 2px solid var(--border);
+      border: 2px solid var(--color-border, #e4e4e7);
       border-radius: 8px;
       padding: 20px;
     }
@@ -53,11 +53,11 @@
     }
 
     .morph-panel {
-      border-color: var(--success);
-      background: var(--success-bg);
+      border-color: #22c55e;
+      background: #dcfce7;
     }
 
-    .morph-panel h3 { color: var(--success); }
+    .morph-panel h3 { color: #22c55e; }
 
     .innerhtml-panel {
       border-color: #dc3545;
@@ -75,7 +75,7 @@
     }
 
     .badge.success {
-      background: var(--success);
+      background: #22c55e;
       color: white;
     }
 
@@ -88,9 +88,9 @@
     .drag-container {
       position: relative;
       height: 200px;
-      border: 2px dashed var(--border);
+      border: 2px dashed var(--color-border, #e4e4e7);
       border-radius: 8px;
-      background: var(--panel-muted);
+      background: var(--color-surface, #f4f4f5);
       margin-bottom: 15px;
     }
 
@@ -98,7 +98,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      background: var(--accent-gradient);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       cursor: move;
       user-select: none;
@@ -135,7 +135,7 @@
       position: static;
       display: inline-block;
       margin-top: 10px;
-      background: var(--text);
+      background: var(--color-text, #18181b);
     }
 
     /* Video Demo */
@@ -148,7 +148,7 @@
     .video-time {
       font-family: var(--font-mono);
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--color-text-muted, #71717a);
       margin-bottom: 10px;
     }
 
@@ -165,18 +165,18 @@
       flex-direction: column;
       gap: 4px;
       font-weight: 500;
-      color: var(--text-muted);
+      color: var(--color-text-muted, #71717a);
     }
 
     .form-container input,
     .form-container select,
     .form-container textarea {
       padding: 8px 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--color-border, #e4e4e7);
       border-radius: 4px;
       font-size: 14px;
-      background: var(--panel);
-      color: var(--text);
+      background: var(--color-surface, #ffffff);
+      color: var(--color-text, #18181b);
     }
 
     .form-container textarea {
@@ -186,7 +186,7 @@
 
     /* Panel-specific button overrides */
     .morph-panel button {
-      background: var(--success);
+      background: #22c55e;
     }
 
     .morph-panel button:hover {
@@ -213,7 +213,7 @@
     }
 
     .status.success {
-      background: var(--success-bg);
+      background: #dcfce7;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
@@ -226,7 +226,7 @@
 
     /* Flash animations */
     @keyframes flash-green {
-      0%, 100% { background: var(--success-bg); }
+      0%, 100% { background: #dcfce7; }
       50% { background: #a8e6a3; }
     }
 
@@ -257,11 +257,11 @@
       text-align: center;
       margin-top: 30px;
       padding-top: 20px;
-      border-top: 2px solid var(--border);
+      border-top: 2px solid var(--color-border, #e4e4e7);
     }
 
     .nav a {
-      color: var(--accent-primary);
+      color: var(--color-accent, #6366f1);
       text-decoration: none;
       margin: 0 15px;
     }

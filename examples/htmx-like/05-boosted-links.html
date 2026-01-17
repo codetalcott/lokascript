@@ -30,13 +30,13 @@
         }
 
         .nav-container a.active {
-            background: var(--accent-primary);
+            background: var(--color-accent, #6366f1);
             color: white;
         }
 
         .content-area {
-            background: var(--panel-muted);
-            border: 2px solid var(--border);
+            background: var(--color-surface, #f4f4f5);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             padding: 30px;
             margin: 20px 0;
@@ -48,11 +48,11 @@
         }
 
         .content-area.hx-boosting {
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         .card {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
             border-radius: 12px;
@@ -88,7 +88,7 @@
 
         .url-display::before {
             content: "URL: ";
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
         }
 
         .feature-list {
@@ -99,20 +99,20 @@
         }
 
         .feature-item {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid var(--accent-primary);
+            border-left: 4px solid var(--color-accent, #6366f1);
         }
 
         .feature-item h4 {
             margin: 0 0 5px 0;
-            color: var(--text);
+            color: var(--color-text, #18181b);
         }
 
         .feature-item p {
             margin: 0;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             font-size: 14px;
         }
 
@@ -123,16 +123,16 @@
         input[type="text"], input[type="search"] {
             padding: 12px 16px;
             font-size: 16px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             margin: 5px;
             width: 300px;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         input:focus {
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
             outline: none;
         }
     </style>
@@ -282,7 +282,7 @@
             </form>
 
             <div id="search-results" class="content-area">
-                <p style="color: var(--text-muted); text-align: center;">Enter a search term and submit</p>
+                <p style="color: var(--color-text-muted, #71717a); text-align: center;">Enter a search term and submit</p>
             </div>
         </div>
 
@@ -397,17 +397,17 @@
 
             <h3>htmx Comparison:</h3>
             <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
-                <tr style="background: var(--panel-muted);">
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">htmx</th>
-                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border);">HyperFixi</th>
+                <tr style="background: var(--color-surface, #f4f4f5);">
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--color-border, #e4e4e7);">htmx</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--color-border, #e4e4e7);">HyperFixi</th>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);"><code>&lt;body hx-boost="true"&gt;</code></td>
-                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Manual per-link or behavior pattern</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--color-border, #e4e4e7);"><code>&lt;body hx-boost="true"&gt;</code></td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--color-border, #e4e4e7);">Manual per-link or behavior pattern</td>
                 </tr>
                 <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Automatic link interception</td>
-                    <td style="padding: 10px; border-bottom: 1px solid var(--border-light);">Explicit control per link/form</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--color-border, #e4e4e7);">Automatic link interception</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--color-border, #e4e4e7);">Explicit control per link/form</td>
                 </tr>
             </table>
 

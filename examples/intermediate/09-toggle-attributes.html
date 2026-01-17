@@ -17,9 +17,9 @@
 
         .demo-target {
             padding: 12px 20px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
-            background: var(--panel);
+            background: var(--color-surface, #ffffff);
             font-size: 14px;
             min-width: 150px;
             text-align: center;
@@ -28,7 +28,7 @@
         .demo-target:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
         }
 
         input.demo-target {
@@ -37,11 +37,11 @@
         }
 
         input.demo-target:required {
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         input.demo-target:required::placeholder {
-            color: var(--accent-primary);
+            color: var(--color-accent, #6366f1);
         }
 
         .visibility-box {
@@ -56,7 +56,7 @@
 
         .status {
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             margin-top: 5px;
         }
 
@@ -70,20 +70,20 @@
         .syntax-table td {
             padding: 12px;
             text-align: left;
-            border: 1px solid var(--border);
+            border: 1px solid var(--color-border, #e4e4e7);
         }
 
         .syntax-table th {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             font-weight: 600;
         }
 
         .syntax-table tr:nth-child(even) {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
         }
 
         .syntax-table code {
-            background: var(--tag-default-bg);
+            background: var(--color-surface, #e3f2fd);
             padding: 2px 6px;
             border-radius: 3px;
         }

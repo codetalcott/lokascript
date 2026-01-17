@@ -14,7 +14,7 @@
         }
 
         .sortable-item {
-            background: linear-gradient(135deg, var(--tag-default-bg) 0%, #bbdefb 100%);
+            background: linear-gradient(135deg, var(--color-surface, #e3f2fd) 0%, #bbdefb 100%);
             padding: 20px;
             margin: 10px 0;
             border-radius: 8px;
@@ -39,14 +39,14 @@
         }
 
         .sortable-item.drag-over {
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
         }
 
         .drag-handle {
             font-size: 24px;
             cursor: grab;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #a1a1aa);
         }
 
         .drag-handle:active {
@@ -59,18 +59,18 @@
 
         .item-title {
             font-weight: bold;
-            color: var(--tag-default-color);
+            color: var(--color-text, #18181b);
             margin: 0 0 5px 0;
         }
 
         .item-description {
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             font-size: 14px;
             margin: 0;
         }
 
         .item-number {
-            background: var(--accent-primary);
+            background: var(--color-accent, #6366f1);
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -114,21 +114,21 @@
         .add-item-form input {
             flex: 1;
             padding: 12px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 6px;
             font-size: 16px;
-            background: var(--panel);
-            color: var(--text);
+            background: var(--color-surface, #ffffff);
+            color: var(--color-text, #18181b);
         }
 
         .add-item-form input:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         .status-message {
-            background: var(--success-bg);
-            color: var(--success);
+            background: #dcfce7;
+            color: #166534;
             padding: 15px;
             border-radius: 6px;
             margin-top: 20px;
@@ -143,7 +143,7 @@
         #insert-marker {
             position: fixed;
             height: 3px;
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             opacity: 0;
             pointer-events: none;
             transition: opacity 100ms ease;

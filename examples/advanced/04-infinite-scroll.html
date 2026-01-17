@@ -10,7 +10,7 @@
         .scroll-container {
             max-height: 600px;
             overflow-y: auto;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
@@ -23,7 +23,7 @@
         }
 
         .content-item {
-            background: linear-gradient(135deg, var(--tag-default-bg) 0%, #bbdefb 100%);
+            background: linear-gradient(135deg, var(--color-surface, #e3f2fd) 0%, #bbdefb 100%);
             padding: 20px;
             margin: 10px 0;
             border-radius: 8px;
@@ -49,7 +49,7 @@
         }
 
         .item-number {
-            background: var(--accent-primary);
+            background: var(--color-accent, #6366f1);
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -57,26 +57,26 @@
         }
 
         .item-timestamp {
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             font-size: 14px;
         }
 
         .item-title {
             font-weight: bold;
-            color: var(--tag-default-color);
+            color: var(--color-text, #18181b);
             font-size: 18px;
             margin: 10px 0;
         }
 
         .item-description {
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             line-height: 1.6;
         }
 
         .loading-indicator {
             text-align: center;
             padding: 30px;
-            color: var(--accent-primary);
+            color: var(--color-accent, #6366f1);
             font-size: 18px;
             display: none;
         }
@@ -89,8 +89,8 @@
             display: inline-block;
             width: 40px;
             height: 40px;
-            border: 4px solid var(--border);
-            border-top-color: var(--accent-primary);
+            border: 4px solid var(--color-border, #e4e4e7);
+            border-top-color: var(--color-accent, #6366f1);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 10px;
@@ -103,7 +103,7 @@
         .end-message {
             text-align: center;
             padding: 30px;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             font-size: 16px;
             display: none;
         }
@@ -113,7 +113,7 @@
         }
 
         .stats {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
@@ -129,11 +129,11 @@
         .stat-value {
             font-size: 32px;
             font-weight: bold;
-            color: var(--accent-primary);
+            color: var(--color-accent, #6366f1);
         }
 
         .stat-label {
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             font-size: 14px;
             margin-top: 5px;
         }

@@ -87,6 +87,10 @@
     if (/^(on|init|set|put|add|remove|toggle|wait|call|go|trigger|send|take|log|repeat|for|if|behavior)\s/i.test(trimmed)) {
       return 'hyperscript';
     }
+    // Attribute-style: _="..." or _='...' - extract and highlight the hyperscript inside
+    if (/^_\s*=\s*["']/.test(trimmed)) {
+      return 'attribute-hyperscript';
+    }
     // HTML content contains angle brackets
     if (trimmed.includes('<') && trimmed.includes('>')) {
       return 'html-hyperscript';
@@ -108,6 +112,17 @@
       codeElement.textContent = text;
       codeElement.classList.add('language-hyperscript');
       window.Prism.highlightElement(codeElement);
+    } else if (contentType === 'attribute-hyperscript' && window.Prism.languages.hyperscript) {
+      // _="..." pattern - extract hyperscript and highlight it
+      const match = text.trim().match(/^(_\s*=\s*)(["'])([\s\S]*)\2$/);
+      if (match) {
+        const prefix = match[1]; // _= or _ =
+        const quote = match[2];  // " or '
+        const hsCode = match[3]; // the hyperscript code
+        const highlighted = window.Prism.highlight(hsCode, window.Prism.languages.hyperscript, 'hyperscript');
+        codeElement.innerHTML = `<span class="token attr-name">${prefix.trim()}</span><span class="token punctuation">${quote}</span>${highlighted}<span class="token punctuation">${quote}</span>`;
+        codeElement.classList.add('language-hyperscript');
+      }
     } else if (contentType === 'html-hyperscript') {
       // HTML with embedded hyperscript - keep as-is but highlight attribute values
       codeElement.textContent = text;
@@ -128,13 +143,18 @@
     attrValueTokens.forEach(token => {
       const text = token.textContent;
       // Check if this looks like a hyperscript attribute value
-      if (/^["'](on\s|init|set\s|put\s|toggle\s|add\s|remove\s|wait\s|call\s)/i.test(text)) {
-        // Extract the hyperscript code (remove quotes)
-        const quoteChar = text[0];
-        const hsCode = text.slice(1, -1);
+      // Prism may include the = in the attr-value, so check for both patterns
+      const match = text.match(/^(=?)(["'])(on\s|init|set\s|put\s|toggle\s|add\s|remove\s|wait\s|call\s)/i);
+      if (match) {
+        const hasEquals = match[1] === '=';
+        const quoteChar = match[2];
+        // Extract the hyperscript code (skip = and quotes)
+        const startIndex = hasEquals ? 2 : 1;
+        const hsCode = text.slice(startIndex, -1);
         const highlighted = window.Prism.highlight(hsCode, window.Prism.languages.hyperscript, 'hyperscript');
-        // Rebuild with quotes and highlighted content
-        token.innerHTML = `<span class="token punctuation">${quoteChar}</span>${highlighted}<span class="token punctuation">${quoteChar}</span>`;
+        // Rebuild with optional = and quotes
+        const prefix = hasEquals ? '<span class="token punctuation">=</span>' : '';
+        token.innerHTML = `${prefix}<span class="token punctuation">${quoteChar}</span>${highlighted}<span class="token punctuation">${quoteChar}</span>`;
         token.classList.add('hs-attribute-value');
       }
     });

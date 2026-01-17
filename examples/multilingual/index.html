@@ -8,7 +8,7 @@
     <style>
         /* Multilingual demo - uses gradient background */
         body {
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 40px 20px;
             max-width: none;
@@ -64,7 +64,7 @@
         }
 
         .language-selector h2 {
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
             margin-bottom: 15px;
             font-size: 1.3rem;
         }
@@ -77,7 +77,7 @@
 
         .lang-btn {
             padding: 12px 20px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             background: white;
             cursor: pointer;
@@ -89,15 +89,15 @@
         }
 
         .lang-btn:hover {
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
             background: #f8f9ff;
             transform: none;
             box-shadow: none;
         }
 
         .lang-btn.active {
-            border-color: var(--accent-primary);
-            background: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
+            background: var(--color-accent, #6366f1);
             color: white;
         }
 
@@ -106,7 +106,7 @@
         }
 
         .example-card h3 {
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
             margin-bottom: 20px;
             font-size: 1.5rem;
             display: flex;
@@ -165,14 +165,14 @@
         .code-content .number { color: #b5cea8; }
 
         .demo-area {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             border-radius: 8px;
             padding: 25px;
             text-align: center;
         }
 
         .demo-area h4 {
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             margin-bottom: 15px;
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -190,7 +190,7 @@
         .counter-display {
             font-size: 48px;
             font-weight: bold;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
             min-width: 80px;
         }
 
@@ -228,7 +228,7 @@
         .toggle-box {
             width: 150px;
             height: 150px;
-            background: var(--accent-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -254,7 +254,7 @@
         .mirror-input {
             width: 100%;
             padding: 15px;
-            border: 2px solid var(--border);
+            border: 2px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             font-size: 16px;
             margin-bottom: 15px;
@@ -263,7 +263,7 @@
 
         .mirror-input:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--color-accent, #6366f1);
         }
 
         .mirror-output {
@@ -271,12 +271,12 @@
             background: #e8f4fd;
             border-radius: 8px;
             min-height: 50px;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
             font-size: 16px;
         }
 
         .copy-btn {
-            background: var(--accent-primary);
+            background: var(--color-accent, #6366f1);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -300,7 +300,7 @@
 
         .info-note {
             background: #e8f4fd;
-            border-left: 4px solid var(--accent-primary);
+            border-left: 4px solid var(--color-accent, #6366f1);
             padding: 15px;
             margin-top: 20px;
             border-radius: 0 8px 8px 0;

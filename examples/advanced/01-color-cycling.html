@@ -11,14 +11,14 @@
             width: 350px;
             height: 250px;
             background: hsl(200, 100%, 90%);
-            border: 3px solid var(--text);
+            border: 3px solid var(--color-text, #18181b);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             font-weight: bold;
-            color: var(--text);
+            color: var(--color-text, #18181b);
             cursor: pointer;
             user-select: none;
             transition: transform 0.1s ease;
@@ -31,17 +31,17 @@
         }
 
         .instructions {
-            background: var(--tag-default-bg);
+            background: var(--color-surface, #e3f2fd);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            color: var(--tag-default-color);
+            color: var(--color-text, #18181b);
             font-weight: 500;
         }
 
         .success-badge {
             display: inline-block;
-            background: var(--success);
+            background: #22c55e;
             color: white;
             padding: 6px 14px;
             border-radius: 20px;

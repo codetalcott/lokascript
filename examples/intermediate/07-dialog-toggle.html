@@ -8,8 +8,8 @@
     <style>
         /* Example-specific styles */
         .example {
-            background: var(--panel-muted);
-            border: 1px solid var(--border);
+            background: var(--color-surface, #f4f4f5);
+            border: 1px solid var(--color-border, #e4e4e7);
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
@@ -17,7 +17,7 @@
 
         .example h3 {
             margin-top: 0;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         button.secondary {
@@ -50,14 +50,14 @@
         }
 
         .dialog-header {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 20px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border, #e4e4e7);
         }
 
         .dialog-header h3 {
             margin: 0;
-            color: var(--text-light);
+            color: var(--color-text, #18181b);
         }
 
         .dialog-body {
@@ -65,9 +65,9 @@
         }
 
         .dialog-footer {
-            background: var(--panel-muted);
+            background: var(--color-surface, #f4f4f5);
             padding: 15px 20px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--color-border, #e4e4e7);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -83,8 +83,8 @@
         }
 
         .badge.default {
-            background: var(--tag-default-bg);
-            color: var(--tag-default-color);
+            background: var(--color-surface, #e3f2fd);
+            color: var(--color-text, #18181b);
         }
 
         .badge.modal {
@@ -93,16 +93,16 @@
         }
 
         .demo-content {
-            background: var(--panel);
+            background: var(--color-surface, #ffffff);
             padding: 15px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--color-border, #e4e4e7);
             border-radius: 6px;
             margin: 10px 0;
         }
 
         .status {
             font-size: 14px;
-            color: var(--text-muted);
+            color: var(--color-text-muted, #71717a);
             margin-top: 10px;
         }
     </style>
@@ -226,7 +226,7 @@
                         id="userName"
                         name="name"
                         required
-                        style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid var(--color-border, #e4e4e7); border-radius: 4px;">
 
                     <label for="userEmail" style="display: block; margin-top: 15px; margin-bottom: 5px;">Email:</label>
                     <input
@@ -234,7 +234,7 @@
                         id="userEmail"
                         name="email"
                         required
-                        style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid var(--color-border, #e4e4e7); border-radius: 4px;">
                 </div>
                 <div class="dialog-footer">
                     <button type="button" class="secondary" _="on click toggle #formDialog">Cancel</button>
@@ -325,34 +325,34 @@
             </div>
         </dialog>
 
-        <hr style="margin: 40px 0; border: none; border-top: 2px solid var(--border);">
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid var(--color-border, #e4e4e7);">
 
         <h2>Summary</h2>
         <div class="example">
             <h3>Syntax Reference</h3>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr style="background: var(--panel-muted);">
-                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Syntax</th>
-                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Method</th>
-                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Behavior</th>
+                    <tr style="background: var(--color-surface, #f4f4f5);">
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--color-border, #e4e4e7);">Syntax</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--color-border, #e4e4e7);">Method</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--color-border, #e4e4e7);">Behavior</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>toggle #myDialog</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>show()</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);">Non-modal (default, safer)</td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>toggle #myDialog</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>show()</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);">Non-modal (default, safer)</td>
                     </tr>
-                    <tr style="background: var(--panel-muted);">
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>toggle #myDialog modal</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>showModal()</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);">Modal (blocks page)</td>
+                    <tr style="background: var(--color-surface, #f4f4f5);">
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>toggle #myDialog modal</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>showModal()</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);">Modal (blocks page)</td>
                     </tr>
                     <tr>
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>toggle #myDialog</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);"><code>close()</code></td>
-                        <td style="padding: 10px; border: 1px solid var(--border);">Close dialog (from inside or outside)</td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>toggle #myDialog</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);"><code>close()</code></td>
+                        <td style="padding: 10px; border: 1px solid var(--color-border, #e4e4e7);">Close dialog (from inside or outside)</td>
                     </tr>
                 </tbody>
             </table>

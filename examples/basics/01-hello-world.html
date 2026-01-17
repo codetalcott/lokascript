@@ -15,9 +15,9 @@
         <h1>Hello World</h1>
 
         <div class="description">
-            <strong>Your first hyperscript!</strong><br>
+            <strong>Your first hyperscript.</strong><br>
             This example demonstrates the most basic hyperscript pattern: listening for a click event
-            and updating the DOM. No JavaScript required!
+            and updating the DOM.
         </div>
 
         <div>
@@ -28,17 +28,17 @@
 
         <!-- Demo -->
         <div class="demo">
-            <button _="on click put 'Hello, HyperFixi! 👋' into #output">
-                Click Me!
+            <button _="on click put 'Hello, HyperFixi' into #output">
+                Click
             </button>
-            <div id="output">Click the button to see the magic ✨</div>
+            <div id="output">Output appears here</div>
         </div>
 
         <!-- Code Explanation -->
         <h2>The Code</h2>
         <div class="code">
-&lt;button <span class="keyword">_</span>=<span class="string">"on click put 'Hello, HyperFixi! 👋' into #output"</span>&gt;
-  Click Me!
+&lt;button <span class="keyword">_</span>=<span class="string">"on click put 'Hello, HyperFixi' into #output"</span>&gt;
+  Click
 &lt;/button&gt;
 &lt;div <span class="keyword">id</span>=<span class="string">"output"</span>&gt;&lt;/div&gt;
         </div>
@@ -46,9 +46,9 @@
         <div class="explanation">
             <h3>How it works:</h3>
             <ul>
-                <li><code>_="..."</code> - The hyperscript attribute where all the magic happens</li>
+                <li><code>_="..."</code> - The hyperscript attribute</li>
                 <li><code>on click</code> - Listen for click events on this button</li>
-                <li><code>put 'Hello, HyperFixi! 👋'</code> - The value to insert</li>
+                <li><code>put 'Hello, HyperFixi'</code> - The value to insert</li>
                 <li><code>into #output</code> - Target the element with id="output"</li>
             </ul>
 
