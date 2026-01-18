@@ -456,6 +456,7 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   /**
    * Try to match an Arabic preposition.
+   * Attaches prepositionValue metadata for disambiguation in pattern matching.
    */
   private tryPreposition(input: string, pos: number): LanguageToken | null {
     // Check prepositions from longest to shortest
@@ -466,7 +467,14 @@ export class ArabicTokenizer extends BaseTokenizer {
         // Check that it's a standalone word (followed by space or non-Arabic)
         const nextPos = pos + prep.length;
         if (nextPos >= input.length || isWhitespace(input[nextPos]) || !isArabic(input[nextPos])) {
-          return createToken(prep, 'particle', createPosition(pos, nextPos));
+          const token = createToken(prep, 'particle', createPosition(pos, nextPos));
+          // Attach metadata for preposition disambiguation
+          return {
+            ...token,
+            metadata: {
+              prepositionValue: prep,
+            },
+          };
         }
       }
     }
