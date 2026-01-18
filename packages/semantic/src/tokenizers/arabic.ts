@@ -491,10 +491,33 @@ export class ArabicTokenizer extends BaseTokenizer {
    * - Not a proclitic character/sequence
    * - Proclitic is standalone (followed by space)
    * - Remaining word is too short (< 2 chars, to avoid false positives)
+   * - Full word is a recognized keyword (e.g., بدل should NOT be split to ب + دل)
    *
    * @see NATIVE_REVIEW_NEEDED.md for implementation rationale
    */
   private tryProclitic(input: string, pos: number): { conjunction: LanguageToken } | null {
+    // CRITICAL: Check if the full word is a keyword BEFORE splitting
+    // This prevents keywords like بدل (toggle) from being split into ب (with) + دل
+    let wordEnd = pos;
+    while (wordEnd < input.length && (isArabic(input[wordEnd]) || input[wordEnd] === 'ـ')) {
+      wordEnd++;
+    }
+    const fullWord = input.slice(pos, wordEnd);
+
+    // Check if full word is a keyword (with or without diacritics)
+    if (this.lookupKeyword(fullWord)) {
+      return null; // Let extractArabicWord handle it
+    }
+
+    // Check temporal markers (they also shouldn't be split)
+    if (TEMPORAL_MARKERS.has(fullWord)) {
+      return null;
+    }
+
+    // Check prepositions (they also shouldn't be split)
+    if (PREPOSITIONS.has(fullWord)) {
+      return null;
+    }
     // Try multi-character proclitics first (longest match)
     // Check 2-character sequences (ول, وب, فل, فب, etc.)
     if (pos + 2 <= input.length) {
