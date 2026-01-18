@@ -37,6 +37,7 @@ type TokenKind =
   | 'literal'
   | 'particle'
   | 'conjunction' // Grammatical conjunction (Arabic و/ف proclitics)
+  | 'event-modifier' // Event modifiers (.once, .prevent, etc.)
   | 'identifier'
   | 'operator'
   | 'punctuation'
@@ -127,6 +128,8 @@ function mapTokenKind(kind: TokenKind): TokenType {
     case 'particle':
       return 'modifier';
     case 'conjunction':
+      return 'modifier';
+    case 'event-modifier':
       return 'modifier';
     case 'identifier':
       return 'identifier';
