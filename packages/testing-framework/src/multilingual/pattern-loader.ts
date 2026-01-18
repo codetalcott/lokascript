@@ -28,7 +28,7 @@ export async function loadPatterns(config: TestConfig): Promise<PatternTranslati
   // Apply sampling if in quick mode
   if (config.mode === 'quick') {
     const limit = config.quickModeLimit || 10;
-    return samplePatterns(results, { type: 'first', count: limit * languages.length });
+    return samplePatterns(results, { type: 'stratified', perCategory: limit });
   }
 
   return results;
