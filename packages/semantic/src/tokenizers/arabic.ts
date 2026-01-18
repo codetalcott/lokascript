@@ -545,18 +545,44 @@ export class ArabicTokenizer extends BaseTokenizer {
 
           // Require at least 2 characters after proclitic to avoid false positives
           if (remainingLength >= 2) {
-            const tokenKind =
-              twoCharEntry.type === 'conjunction'
-                ? ('conjunction' as const)
-                : ('particle' as const);
-            return {
-              conjunction: createToken(
-                twoChar,
-                tokenKind,
-                createPosition(pos, nextPos),
-                twoCharEntry.normalized
-              ),
-            };
+            // IMPORTANT: Check if a single-char proclitic would leave a keyword
+            // e.g., "وبدل" should be "و" + "بدل" (keyword), not "وب" + "دل"
+            const singleCharProclitic = PROCLITICS.get(input[pos]);
+            if (singleCharProclitic) {
+              const afterSingleChar = input.slice(pos + 1, wordEnd);
+              if (this.lookupKeyword(afterSingleChar)) {
+                // Single-char proclitic leaves a keyword - don't match multi-proclitic
+                // Fall through to single-char proclitic handling below
+              } else {
+                // Multi-char proclitic is valid
+                const tokenKind =
+                  twoCharEntry.type === 'conjunction'
+                    ? ('conjunction' as const)
+                    : ('particle' as const);
+                return {
+                  conjunction: createToken(
+                    twoChar,
+                    tokenKind,
+                    createPosition(pos, nextPos),
+                    twoCharEntry.normalized
+                  ),
+                };
+              }
+            } else {
+              // No single-char proclitic alternative, use multi-char
+              const tokenKind =
+                twoCharEntry.type === 'conjunction'
+                  ? ('conjunction' as const)
+                  : ('particle' as const);
+              return {
+                conjunction: createToken(
+                  twoChar,
+                  tokenKind,
+                  createPosition(pos, nextPos),
+                  twoCharEntry.normalized
+                ),
+              };
+            }
           }
         }
       }

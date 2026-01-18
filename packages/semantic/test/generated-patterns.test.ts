@@ -308,9 +308,12 @@ describe('Generated vs Hand-Crafted Comparison', () => {
     it('should generate Arabic pattern with prepositions', () => {
       const generated = generatePattern(toggleSchema, arabicProfile);
 
-      // Should have بدّل or بدل verb
+      // Should have toggle verb (بدّل with shadda or بدل without) in either value or alternatives
       const hasVerb = generated.template.tokens.some(
-        t => t.type === 'literal' && (t.value === 'بدل' || t.alternatives?.includes('بدّل'))
+        t => t.type === 'literal' && (
+          t.value === 'بدّل' || t.value === 'بدل' ||
+          t.alternatives?.includes('بدّل') || t.alternatives?.includes('بدل')
+        )
       );
       expect(hasVerb).toBe(true);
     });

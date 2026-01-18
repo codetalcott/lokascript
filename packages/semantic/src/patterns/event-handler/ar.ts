@@ -129,5 +129,23 @@ export function getEventHandlerPatternsAr(): LanguagePattern[] {
         event: { position: 1 },
       },
     },
+    {
+      id: 'event-ar-selector-first',
+      language: 'ar',
+      command: 'on',
+      priority: 92, // Lower than standard patterns (95-115)
+      template: {
+        format: '{source} على {event} {body}',
+        tokens: [
+          { type: 'role', role: 'source', expectedTypes: ['selector'] },
+          { type: 'literal', value: 'على' },
+          { type: 'role', role: 'event' },
+        ],
+      },
+      extraction: {
+        source: { position: 0 },
+        event: { position: 2 },
+      },
+    },
   ];
 }

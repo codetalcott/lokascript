@@ -111,6 +111,13 @@ export class PatternMatcher {
     patternTokens: PatternToken[],
     captured: Map<SemanticRole, SemanticValue>
   ): boolean {
+    // Skip leading conjunctions for Arabic (proclitics: و, ف, ول, وب, etc.)
+    if (this.currentProfile?.code === 'ar') {
+      while (tokens.peek()?.kind === 'conjunction') {
+        tokens.advance();
+      }
+    }
+
     for (const patternToken of patternTokens) {
       const matched = this.matchPatternToken(tokens, patternToken, captured);
 

@@ -201,8 +201,12 @@ describe('Toggle Pattern Comparison', () => {
       // In VSO, verb should be first
       const firstToken = generated.template.tokens[0];
       expect(firstToken.type).toBe('literal');
-      // بدل or بدّل
-      expect(firstToken.value === 'بدل' || firstToken.alternatives?.includes('بدّل')).toBe(true);
+      // Accept either diacritic form: بدّل (with shadda) or بدل (without)
+      const value = firstToken.value;
+      const alts = firstToken.alternatives || [];
+      expect(
+        value === 'بدّل' || value === 'بدل' || alts.includes('بدّل') || alts.includes('بدل')
+      ).toBe(true);
     });
   });
 

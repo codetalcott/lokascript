@@ -9,6 +9,7 @@ import type { LanguagePattern } from '../types';
 
 // Import from subdirectories for tree-shaking
 import { getTogglePatternsForLanguage } from './toggle/index';
+import { getTakePatternsForLanguage } from './take/index';
 import { getPutPatternsForLanguage } from './put/index';
 import { getEventHandlerPatternsForLanguage } from './event-handler/index';
 import { getGrammarTransformedPatternsForLanguage } from './grammar-transformed/index';
@@ -50,6 +51,7 @@ type PatternLoader = (language: string) => LanguagePattern[];
 const PATTERN_LOADERS: PatternLoader[] = [
   // Hand-crafted core patterns
   getTogglePatternsForLanguage,
+  getTakePatternsForLanguage,
   getPutPatternsForLanguage,
   getEventHandlerPatternsForLanguage,
 

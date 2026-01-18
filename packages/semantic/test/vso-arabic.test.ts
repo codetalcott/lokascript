@@ -149,10 +149,11 @@ describe('Arabic Proclitic Separation', () => {
   describe('Edge cases', () => {
     it('should not separate standalone و', () => {
       const tokens = getTokens('و النقر', 'ar');
-      // و followed by space should remain standalone, not separated
-      const conjunctionToken = tokens.find(t => t.value === 'و');
-      // Should be null since it's standalone (followed by space)
-      expect(conjunctionToken).toBeUndefined();
+      // و followed by space should remain standalone, not treated as proclitic
+      const wawToken = tokens.find(t => t.value === 'و');
+      // Should be present as an identifier, not as a conjunction (proclitic)
+      expect(wawToken).toBeDefined();
+      expect(wawToken?.kind).not.toBe('conjunction');
     });
 
     it('should not separate if remaining word is too short', () => {
@@ -311,8 +312,9 @@ describe('Arabic Preposition Disambiguation', () => {
 
 describe('VSO Arabic - Integration Tests', () => {
   it('should parse complex verb-first command with proclitic', () => {
-    // "والنقر بدل .active" = "and-on-click toggle .active"
-    const result = parse('والنقر بدل .active', 'ar');
+    // "وعند النقر بدل .active" = "and upon the-click toggle .active"
+    // Proper Arabic requires temporal marker (عند) before the event noun
+    const result = parse('وعند النقر بدل .active', 'ar');
     expect(result).not.toBeNull();
     // Should recognize و proclitic, parse successfully
   });
@@ -331,11 +333,14 @@ describe('VSO Arabic - Integration Tests', () => {
     expect(result?.action).toBe('toggle');
   });
 
-  it('should parse command with multi-proclitic and preposition', () => {
-    // "ولالتبديل" = "and-to-toggle" (multi-proclitic)
-    const result = parse('ولالتبديل .active على #button', 'ar');
-    // Should handle ول multi-proclitic correctly
+  it('should parse command with proclitic conjunction', () => {
+    // "وبدل .active على #button" = "and-toggle .active on #button"
+    // Tests conjunction proclitic (و) with a valid command
+    // Note: Multi-proclitic (ول) tokenization is tested separately in proclitic tests
+    const result = parse('وبدل .active على #button', 'ar');
+    // Should handle و proclitic correctly and parse as toggle command
     expect(result?.metadata?.sourceLanguage).toBe('ar');
+    expect(result?.action).toBe('toggle');
   });
 
   it('should prefer idiomatic prepositions in parsing', () => {
