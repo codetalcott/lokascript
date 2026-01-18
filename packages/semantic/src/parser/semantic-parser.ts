@@ -13,11 +13,13 @@ import type {
   SemanticValue,
   ActionType,
   LanguagePattern,
+  LanguageToken,
 } from '../types';
 import { createCommandNode, createEventHandler, createCompoundNode } from '../types';
 import {
   tokenize as tokenizeInternal,
   getSupportedLanguages as getTokenizerLanguages,
+  TokenStreamImpl,
 } from '../tokenizers';
 // Import from registry for tree-shaking (registry uses directly-registered patterns first)
 import { getPatternsForLanguage } from '../registry';
@@ -186,7 +188,8 @@ export class SemanticParserImpl implements ISemanticParser {
         .filter(p => p.command !== 'on')
         .sort((a, b) => b.priority - a.priority);
 
-      body = this.parseBody(tokens, commandPatterns, language);
+      // Use parseBodyWithClauses() to properly handle multi-clause then-chains
+      body = this.parseBodyWithClauses(tokens, commandPatterns, language);
     }
 
     return createEventHandler(eventValue, body, eventModifiers, {
@@ -196,46 +199,106 @@ export class SemanticParserImpl implements ISemanticParser {
   }
 
   /**
-   * Parse body commands with support for 'then' chains.
-   * Returns a list of semantic nodes (possibly wrapped in CompoundSemanticNode).
+   * Parse body with proper clause separation.
+   * Splits the token stream at conjunction boundaries (then/それから/ثم/etc.)
+   * and parses each clause independently.
+   *
+   * This handles multi-clause patterns like:
+   * - "toggle .active then remove .hidden"
+   * - ".active を 切り替え それから .hidden を 削除"
+   * - "بدل .active ثم احذف .hidden"
+   *
+   * @param tokens Token stream to parse
+   * @param commandPatterns Command patterns for the language
+   * @param language Language code
+   * @returns Array of semantic nodes (one per clause)
    */
-  private parseBody(
+  private parseBodyWithClauses(
     tokens: ReturnType<typeof tokenizeInternal>,
     commandPatterns: LanguagePattern[],
     language: string
   ): SemanticNode[] {
-    const commands: SemanticNode[] = [];
-    let hasThenChain = false;
+    const clauses: SemanticNode[] = [];
+    const currentClauseTokens: LanguageToken[] = [];
 
     while (!tokens.isAtEnd()) {
       const current = tokens.peek();
+      if (!current) break;
 
-      // Check for 'then' keyword - indicates command chaining
-      if (current && this.isThenKeyword(current.value, language)) {
-        tokens.advance();
-        hasThenChain = true;
+      // Check if this is a conjunction token (clause boundary)
+      const isConjunction =
+        current.kind === 'conjunction' ||
+        (current.kind === 'keyword' && this.isThenKeyword(current.value, language));
+
+      // Check if this is an 'end' keyword (terminates block)
+      const isEnd = current.kind === 'keyword' && this.isEndKeyword(current.value, language);
+
+      if (isConjunction) {
+        // We've reached a clause boundary - parse accumulated tokens
+        if (currentClauseTokens.length > 0) {
+          const clauseNodes = this.parseClause(currentClauseTokens, commandPatterns, language);
+          clauses.push(...clauseNodes);
+          currentClauseTokens.length = 0; // Clear for next clause
+        }
+        tokens.advance(); // Consume conjunction token
         continue;
       }
 
-      // Check for 'end' keyword - terminates block
-      if (current && this.isEndKeyword(current.value, language)) {
-        tokens.advance();
+      if (isEnd) {
+        // End of block - parse final clause if any
+        if (currentClauseTokens.length > 0) {
+          const clauseNodes = this.parseClause(currentClauseTokens, commandPatterns, language);
+          clauses.push(...clauseNodes);
+        }
+        tokens.advance(); // Consume 'end' token
         break;
       }
 
+      // Accumulate token for current clause
+      currentClauseTokens.push(current);
+      tokens.advance();
+    }
+
+    // Parse any remaining tokens as final clause
+    if (currentClauseTokens.length > 0) {
+      const clauseNodes = this.parseClause(currentClauseTokens, commandPatterns, language);
+      clauses.push(...clauseNodes);
+    }
+
+    // If we have multiple clauses, wrap in CompoundSemanticNode
+    if (clauses.length > 1) {
+      return [createCompoundNode(clauses, 'then', { sourceLanguage: language })];
+    }
+
+    return clauses;
+  }
+
+  /**
+   * Parse a single clause (sequence of tokens between conjunctions).
+   * Returns array of semantic nodes parsed from the clause.
+   */
+  private parseClause(
+    clauseTokens: LanguageToken[],
+    commandPatterns: LanguagePattern[],
+    language: string
+  ): SemanticNode[] {
+    if (clauseTokens.length === 0) {
+      return [];
+    }
+
+    // Create a TokenStream from the clause tokens
+    const clauseStream = new TokenStreamImpl(clauseTokens, language);
+    const commands: SemanticNode[] = [];
+
+    while (!clauseStream.isAtEnd()) {
       // Try to match as a command
-      const commandMatch = patternMatcher.matchBest(tokens, commandPatterns);
+      const commandMatch = patternMatcher.matchBest(clauseStream, commandPatterns);
       if (commandMatch) {
         commands.push(this.buildCommand(commandMatch, language));
       } else {
         // Skip unrecognized token
-        tokens.advance();
+        clauseStream.advance();
       }
-    }
-
-    // If we saw 'then' chains and have multiple commands, wrap in CompoundSemanticNode
-    if (hasThenChain && commands.length > 1) {
-      return [createCompoundNode(commands, 'then', { sourceLanguage: language })];
     }
 
     return commands;
