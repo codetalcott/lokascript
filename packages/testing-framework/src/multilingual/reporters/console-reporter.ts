@@ -107,15 +107,18 @@ export class ConsoleReporter implements Reporter {
     // Show failures if verbose
     if (this.verbose && results.parseFailure > 0) {
       const failures = results.parseResults.filter(r => !r.success);
-      for (const failure of failures.slice(0, 3)) {
-        // Show first 3
-        this.log(`    ${this.dim('✗')} ${failure.pattern.hyperscript}`);
+      this.log(`    ${this.dim(`Failed patterns (${failures.length}):`)}`);
+
+      // Show all failures with pattern ID for tracking
+      for (const failure of failures) {
+        this.log(`    ${this.dim('✗')} ${failure.pattern.codeExampleId || 'unknown'}`);
+        this.log(`      ${this.dim('Input:')} ${failure.pattern.hyperscript}`);
         if (failure.error) {
-          this.log(`      ${this.red(failure.error)}`);
+          this.log(`      ${this.red('Error:')} ${failure.error}`);
         }
-      }
-      if (failures.length > 3) {
-        this.log(`    ${this.dim(`... and ${failures.length - 3} more failures`)}`);
+        if (failure.confidence !== undefined) {
+          this.log(`      ${this.dim('Confidence:')} ${failure.confidence.toFixed(2)}`);
+        }
       }
     }
   }
