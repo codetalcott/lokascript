@@ -63,7 +63,7 @@ export const arabicProfile: LanguageProfile = {
     put: { primary: 'ضع', alternatives: ['اجعل'], normalized: 'put' },
     append: { primary: 'ألحق', normalized: 'append' },
     prepend: { primary: 'سبق', normalized: 'prepend' },
-    take: { primary: 'خذ', normalized: 'take' },
+    take: { primary: 'خذ', alternatives: ['احصل'], normalized: 'take' },
     make: { primary: 'اصنع', alternatives: ['أنشئ'], normalized: 'make' },
     clone: { primary: 'استنسخ', alternatives: ['انسخ'], normalized: 'clone' },
     swap: { primary: 'استبدل', alternatives: ['تبادل'], normalized: 'swap' },
@@ -71,8 +71,8 @@ export const arabicProfile: LanguageProfile = {
     // Variable operations
     set: { primary: 'اضبط', alternatives: ['عيّن', 'حدد'], normalized: 'set' },
     get: { primary: 'احصل', alternatives: ['خذ'], normalized: 'get' },
-    increment: { primary: 'زِد', alternatives: ['ارفع'], normalized: 'increment' },
-    decrement: { primary: 'أنقص', alternatives: ['قلل'], normalized: 'decrement' },
+    increment: { primary: 'زِد', alternatives: ['زد', 'ارفع'], normalized: 'increment' },
+    decrement: { primary: 'أنقص', alternatives: ['انقص', 'قلل'], normalized: 'decrement' },
     log: { primary: 'سجل', normalized: 'log' },
     // Visibility
     show: { primary: 'اظهر', alternatives: ['أظهر', 'اعرض'], normalized: 'show' },
