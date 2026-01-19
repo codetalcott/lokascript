@@ -12,7 +12,7 @@ import {
   getRegisteredLanguages,
   type LanguageProfile,
   type KeywordTranslation,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 
 // =============================================================================
 // Tool Definitions

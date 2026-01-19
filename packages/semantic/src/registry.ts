@@ -8,11 +8,11 @@
  * @example
  * ```typescript
  * // Import only the languages you need
- * import '@hyperfixi/semantic/languages/en';
- * import '@hyperfixi/semantic/languages/es';
+ * import '@lokascript/semantic/languages/en';
+ * import '@lokascript/semantic/languages/es';
  *
  * // Now parse works for registered languages
- * import { parse } from '@hyperfixi/semantic';
+ * import { parse } from '@lokascript/semantic';
  * parse('toggle .active', 'en');     // Works
  * parse('alternar .activo', 'es');   // Works
  * parse('切り替え .active', 'ja');    // Error: Language not registered
@@ -40,7 +40,7 @@ import type { LanguageProfile } from './generators/language-profiles';
 // =============================================================================
 
 /**
- * Interface for external pattern sources (e.g., @hyperfixi/patterns-reference database).
+ * Interface for external pattern sources (e.g., @lokascript/patterns-reference database).
  * External sources can provide additional patterns at runtime.
  */
 export interface ExternalPatternsSource {
@@ -80,7 +80,7 @@ const tokenizers = new Map<string, LanguageTokenizer>();
 const profiles = new Map<string, LanguageProfile>();
 const patternCache = new Map<string, LanguagePattern[]>();
 
-// External pattern sources (e.g., @hyperfixi/patterns-reference database)
+// External pattern sources (e.g., @lokascript/patterns-reference database)
 const externalSources = new Map<string, ExternalPatternsSource>();
 
 // Pattern generator function - set by patterns module to avoid circular deps
@@ -164,13 +164,13 @@ export function getRegisteredPatterns(code: string): LanguagePattern[] | undefin
 
 /**
  * Register an external pattern source.
- * External sources (like @hyperfixi/patterns-reference) can provide
+ * External sources (like @lokascript/patterns-reference) can provide
  * additional patterns at runtime.
  *
  * @example
  * ```typescript
- * import { registerPatternsSource } from '@hyperfixi/semantic';
- * import { createPatternsProvider } from '@hyperfixi/patterns-reference';
+ * import { registerPatternsSource } from '@lokascript/semantic';
+ * import { createPatternsProvider } from '@lokascript/patterns-reference';
  *
  * const provider = createPatternsProvider();
  * registerPatternsSource(provider);
@@ -278,7 +278,7 @@ export function getTokenizer(code: string): LanguageTokenizer {
     throw new Error(
       `Language '${code}' is not registered. ` +
         `Registered languages: ${registered || 'none'}. ` +
-        `Import the language module first: import '@hyperfixi/semantic/languages/${code}';`
+        `Import the language module first: import '@lokascript/semantic/languages/${code}';`
     );
   }
   return tokenizer;
@@ -295,7 +295,7 @@ export function getProfile(code: string): LanguageProfile {
     throw new Error(
       `Language profile '${code}' is not registered. ` +
         `Registered languages: ${registered || 'none'}. ` +
-        `Import the language module first: import '@hyperfixi/semantic/languages/${code}';`
+        `Import the language module first: import '@lokascript/semantic/languages/${code}';`
     );
   }
   return profile;

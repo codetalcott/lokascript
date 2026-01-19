@@ -15,8 +15,8 @@
 import Database from 'better-sqlite3';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
-import { parse, canParse } from '@hyperfixi/semantic';
-import type { SemanticNode, SemanticRole } from '@hyperfixi/semantic';
+import { parse, canParse } from '@lokascript/semantic';
+import type { SemanticNode, SemanticRole } from '@lokascript/semantic';
 
 // =============================================================================
 // Configuration

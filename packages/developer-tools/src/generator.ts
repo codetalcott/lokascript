@@ -37,7 +37,7 @@ const PROJECT_TEMPLATES: Record<string, ProjectTemplate> = {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{name}}</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
 </head>
 <body>
     <h1>Welcome to {{name}}</h1>
@@ -82,7 +82,7 @@ const PROJECT_TEMPLATES: Record<string, ProjectTemplate> = {
   "author": "{{author}}",
   "license": "{{license}}",
   "devDependencies": {
-    "@hyperfixi/developer-tools": "^0.1.0"
+    "@lokascript/developer-tools": "^0.1.0"
   }
 }`,
       },
@@ -120,7 +120,7 @@ const PROJECT_TEMPLATES: Record<string, ProjectTemplate> = {
       },
     ],
     dependencies: [],
-    devDependencies: ['@hyperfixi/developer-tools'],
+    devDependencies: ['@lokascript/developer-tools'],
   },
 
   'multi-tenant': {
@@ -136,8 +136,8 @@ const PROJECT_TEMPLATES: Record<string, ProjectTemplate> = {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{name}} - {{tenant}}</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
-    <script src="https://unpkg.com/@hyperfixi/multi-tenant@latest/dist/index.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/multi-tenant@latest/dist/index.min.js"></script>
 </head>
 <body>
     <header data-tenant-branding>
@@ -190,7 +190,7 @@ const PROJECT_TEMPLATES: Record<string, ProjectTemplate> = {
       {
         path: 'server.js',
         content: `const express = require('express');
-const { createMultiTenantSystem } = require('@hyperfixi/multi-tenant');
+const { createMultiTenantSystem } = require('@lokascript/multi-tenant');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -268,17 +268,17 @@ app.listen(port, () => {
   "author": "{{author}}",
   "license": "{{license}}",
   "dependencies": {
-    "@hyperfixi/multi-tenant": "^0.1.0",
+    "@lokascript/multi-tenant": "^0.1.0",
     "express": "^4.18.0"
   },
   "devDependencies": {
-    "@hyperfixi/developer-tools": "^0.1.0"
+    "@lokascript/developer-tools": "^0.1.0"
   }
 }`,
       },
     ],
-    dependencies: ['@hyperfixi/multi-tenant', 'express'],
-    devDependencies: ['@hyperfixi/developer-tools'],
+    dependencies: ['@lokascript/multi-tenant', 'express'],
+    devDependencies: ['@lokascript/developer-tools'],
   },
 
   analytics: {
@@ -294,8 +294,8 @@ app.listen(port, () => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{name}} - Analytics Demo</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
-    <script src="https://unpkg.com/@hyperfixi/analytics@latest/dist/index.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/analytics@latest/dist/index.min.js"></script>
 </head>
 <body>
     <h1>{{name}} with Analytics</h1>
@@ -394,16 +394,16 @@ app.listen(port, () => {
   "author": "{{author}}",
   "license": "{{license}}",
   "dependencies": {
-    "@hyperfixi/analytics": "^0.1.0"
+    "@lokascript/analytics": "^0.1.0"
   },
   "devDependencies": {
-    "@hyperfixi/developer-tools": "^0.1.0"
+    "@lokascript/developer-tools": "^0.1.0"
   }
 }`,
       },
     ],
-    dependencies: ['@hyperfixi/analytics'],
-    devDependencies: ['@hyperfixi/developer-tools'],
+    dependencies: ['@lokascript/analytics'],
+    devDependencies: ['@lokascript/developer-tools'],
   },
 
   'full-stack': {
@@ -419,7 +419,7 @@ app.listen(port, () => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{name}}</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
 </head>
 <body>
     <h1>{{name}} - Full Stack</h1>
@@ -545,7 +545,7 @@ app.listen(port, () => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{name}}</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -573,7 +573,7 @@ app.listen(port, () => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - {{name}}</title>
-    <script src="https://unpkg.com/@hyperfixi/core@latest/dist/hyperfixi.min.js"></script>
+    <script src="https://unpkg.com/@lokascript/core@latest/dist/hyperfixi.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -679,19 +679,19 @@ export async function createProject(options: ScaffoldOptions): Promise<void> {
 
   // Add feature-specific dependencies
   if (features.includes('multi-tenant')) {
-    await addDependency(projectPath, '@hyperfixi/multi-tenant', '^0.1.0');
+    await addDependency(projectPath, '@lokascript/multi-tenant', '^0.1.0');
   }
   if (features.includes('analytics')) {
-    await addDependency(projectPath, '@hyperfixi/analytics', '^0.1.0');
+    await addDependency(projectPath, '@lokascript/analytics', '^0.1.0');
   }
   if (features.includes('progressive-enhancement')) {
-    await addDependency(projectPath, '@hyperfixi/progressive-enhancement', '^0.1.0');
+    await addDependency(projectPath, '@lokascript/progressive-enhancement', '^0.1.0');
   }
   if (features.includes('i18n')) {
-    await addDependency(projectPath, '@hyperfixi/i18n', '^0.1.0');
+    await addDependency(projectPath, '@lokascript/i18n', '^0.1.0');
   }
   if (features.includes('ssr')) {
-    await addDependency(projectPath, '@hyperfixi/ssr-support', '^0.1.0');
+    await addDependency(projectPath, '@lokascript/ssr-support', '^0.1.0');
   }
 
   // Add TypeScript support
@@ -719,10 +719,10 @@ export async function createProject(options: ScaffoldOptions): Promise<void> {
 
   // Add testing setup
   if (testing) {
-    await addDevDependency(projectPath, '@hyperfixi/testing-framework', '^0.1.0');
+    await addDevDependency(projectPath, '@lokascript/testing-framework', '^0.1.0');
 
     // Create test file
-    const testContent = `import { describe, it, expect } from '@hyperfixi/testing-framework';
+    const testContent = `import { describe, it, expect } from '@lokascript/testing-framework';
 
 describe('${name}', () => {
   it('should work', () => {
@@ -920,7 +920,7 @@ export async function createComponent(options: {
   await fs.writeFile(path.join(componentDir, `index.${extension}`), componentContent);
 
   // Component test
-  const testContent = `import { describe, it, expect } from '@hyperfixi/testing-framework';
+  const testContent = `import { describe, it, expect } from '@lokascript/testing-framework';
 import { ${name} } from './index${typescript ? '' : '.js'}';
 
 describe('${name} Component', () => {
@@ -1003,7 +1003,7 @@ export async function createTemplate(options: {
     slots,
     files: [],
     dependencies: [],
-    devDependencies: ['@hyperfixi/developer-tools'],
+    devDependencies: ['@lokascript/developer-tools'],
   };
 
   await fs.writeFile(
@@ -1180,7 +1180,7 @@ export async function generateCode(
     dependencies: [],
     warnings: [],
     metadata: {
-      generator: '@hyperfixi/developer-tools',
+      generator: '@lokascript/developer-tools',
       version: '0.1.0',
       timestamp: Date.now(),
       source: 'template',
@@ -1224,7 +1224,7 @@ async function generateFromSchema(schema: CodeGenerationSchema): Promise<SchemaG
     dependencies,
     warnings,
     metadata: {
-      generator: '@hyperfixi/developer-tools',
+      generator: '@lokascript/developer-tools',
       version: '0.1.0',
       timestamp: Date.now(),
       source: 'schema',

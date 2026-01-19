@@ -1,5 +1,5 @@
 """
-Type definitions for HyperFixi Python client
+Type definitions for LokaScript Python client
 """
 
 from typing import Dict, List, Optional, Any, Union
@@ -130,7 +130,7 @@ class CacheStats(BaseModel):
 
 
 class HealthStatus(BaseModel):
-    """Health status of the HyperFixi service"""
+    """Health status of the LokaScript service"""
     status: str
     version: str
     uptime: int

@@ -69,7 +69,7 @@ async function loadSemantic(): Promise<boolean> {
 
   try {
     // Dynamic import to break circular dependency
-    const semantic = await import('@hyperfixi/semantic');
+    const semantic = await import('@lokascript/semantic');
     _semanticTokenize = semantic.tokenize;
     _isLanguageSupported = semantic.isLanguageSupported;
     _semanticLoaded = true;

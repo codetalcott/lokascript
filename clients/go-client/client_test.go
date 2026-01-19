@@ -1,4 +1,4 @@
-package hyperfixi
+package lokascript
 
 import (
 	"context"
@@ -437,7 +437,7 @@ func TestClientError(t *testing.T) {
 		StatusCode: 400,
 	}
 
-	assert.Equal(t, "hyperfixi client error (status 400): Test error", err.Error())
+	assert.Equal(t, "lokascript client error (status 400): Test error", err.Error())
 
 	// Test with wrapped error
 	wrappedErr := &ClientError{

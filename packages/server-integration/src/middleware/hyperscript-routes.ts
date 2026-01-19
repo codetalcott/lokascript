@@ -5,8 +5,8 @@
  * This middleware should be added to your Express app to enable hyperscript-based routing.
  *
  * @example
- * import { createHyperscriptRoutesMiddleware } from '@hyperfixi/server-integration';
- * import { registry } from '@hyperfixi/core/registry';
+ * import { createHyperscriptRoutesMiddleware } from '@lokascript/server-integration';
+ * import { registry } from '@lokascript/core/registry';
  *
  * // Setup the middleware
  * const middleware = createHyperscriptRoutesMiddleware({
@@ -18,7 +18,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import type { Registry } from '@hyperfixi/core/registry';
+import type { Registry } from '@lokascript/core/registry';
 import {
   createRequestEventSource,
   expressRequestToServerRequest,
@@ -60,7 +60,7 @@ export function createHyperscriptRoutesMiddleware(options: HyperscriptRoutesOpti
     if (!initialized) {
       try {
         // Dynamic import to avoid circular dependencies
-        const { registry: defaultRegistry } = await import('@hyperfixi/core/registry');
+        const { registry: defaultRegistry } = await import('@lokascript/core/registry');
         const registry = options.registry || defaultRegistry;
 
         // Create and register the request event source
@@ -123,7 +123,7 @@ export async function setupHyperscriptRoutes(
 
   try {
     // Import registry
-    const { registry: defaultRegistry } = await import('@hyperfixi/core/registry');
+    const { registry: defaultRegistry } = await import('@lokascript/core/registry');
     const registry = options.registry || defaultRegistry;
 
     // Register context providers for request/response

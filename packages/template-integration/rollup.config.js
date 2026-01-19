@@ -34,7 +34,7 @@ export default [
         exclude: ['**/*.test.ts'],
       }),
     ],
-    external: ['@hyperfixi/component-schema', 'fs', 'path'],
+    external: ['@lokascript/component-schema', 'fs', 'path'],
   },
   // Type definitions
   {

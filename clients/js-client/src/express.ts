@@ -25,18 +25,18 @@ const DEFAULT_MIDDLEWARE_CONFIG: Partial<ExpressMiddlewareConfig> = {
  * Default error handler for Express middleware
  */
 function defaultErrorHandler(req: Request, res: Response, error: Error): void {
-  console.error('HyperFixi middleware error:', error.message);
+  console.error('LokaScript middleware error:', error.message);
   // Don't break the response, just log the error
 }
 
 /**
  * Express middleware for automatic hyperscript compilation
  */
-export function hyperfixiMiddleware(config: ExpressMiddlewareConfig) {
+export function lokascriptMiddleware(config: ExpressMiddlewareConfig) {
   const finalConfig = { ...DEFAULT_MIDDLEWARE_CONFIG, ...config };
 
   if (!finalConfig.client) {
-    throw new Error('HyperFixi client is required in middleware config');
+    throw new Error('LokaScript client is required in middleware config');
   }
 
   if (!finalConfig.errorHandler) {
@@ -45,7 +45,7 @@ export function hyperfixiMiddleware(config: ExpressMiddlewareConfig) {
 
   return (req: Request, res: Response, next: NextFunction) => {
     // Add client to request for use in handlers
-    (req as any).hyperfixi = finalConfig.client;
+    (req as any).lokascript = finalConfig.client;
 
     // Parse template variables from header
     let templateVars: Record<string, any> | undefined;
@@ -53,7 +53,7 @@ export function hyperfixiMiddleware(config: ExpressMiddlewareConfig) {
     if (headerValue) {
       try {
         templateVars = JSON.parse(headerValue);
-        (req as any).hyperfixiTemplateVars = templateVars;
+        (req as any).lokascriptTemplateVars = templateVars;
       } catch (error) {
         // Invalid JSON in header, ignore
       }
@@ -214,7 +214,7 @@ export function createTemplateHelpers(client: HyperfixiClient): TemplateHelpers 
         return compiled ? `onclick="${compiled.replace(/"/g, '&quot;')}"` : '';
       } catch (error) {
         console.error('HyperScript template compilation failed:', error);
-        return `onclick="/* HyperFixi compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
+        return `onclick="/* LokaScript compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
       }
     },
 
@@ -236,7 +236,7 @@ export function createTemplateHelpers(client: HyperfixiClient): TemplateHelpers 
         return compiled ? `onclick="${compiled.replace(/"/g, '&quot;')}"` : '';
       } catch (error) {
         console.error('HyperScript template compilation failed:', error);
-        return `onclick="/* HyperFixi compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
+        return `onclick="/* LokaScript compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
       }
     },
 
@@ -252,7 +252,7 @@ export function createTemplateHelpers(client: HyperfixiClient): TemplateHelpers 
 }
 
 /**
- * Create Express API routes for HyperFixi operations
+ * Create Express API routes for LokaScript operations
  */
 export function createApiRoutes(client: HyperfixiClient, basePath = '/hyperscript'): Router {
   const router = Router();
@@ -342,17 +342,17 @@ function handleApiError(res: Response, error: unknown): void {
 }
 
 /**
- * Get HyperFixi client from Express request
+ * Get LokaScript client from Express request
  */
 export function getHyperfixiClient(req: Request): HyperfixiClient | undefined {
-  return (req as any).hyperfixi;
+  return (req as any).lokascript;
 }
 
 /**
  * Get template variables from Express request
  */
 export function getTemplateVars(req: Request): Record<string, any> | undefined {
-  return (req as any).hyperfixiTemplateVars;
+  return (req as any).lokascriptTemplateVars;
 }
 
 /**

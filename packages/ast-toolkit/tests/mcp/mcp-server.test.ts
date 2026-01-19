@@ -39,7 +39,7 @@ describe('AST Toolkit MCP Server', () => {
           resources: { listChanged: true, subscribe: false }
         },
         serverInfo: {
-          name: '@hyperfixi/ast-toolkit',
+          name: '@lokascript/ast-toolkit',
           version: '0.1.0'
         },
         instructions: expect.stringContaining('HyperFixi AST Toolkit MCP server')

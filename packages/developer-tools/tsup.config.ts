@@ -1,9 +1,9 @@
 import { defineConfig } from 'tsup';
 
 const EXTERNAL_DEPS = [
-  '@hyperfixi/core',
-  '@hyperfixi/ast-toolkit',
-  '@hyperfixi/template-integration',
+  '@lokascript/core',
+  '@lokascript/ast-toolkit',
+  '@lokascript/template-integration',
   'prismjs',
   'commander',
   'inquirer',
@@ -25,7 +25,7 @@ const EXTERNAL_DEPS = [
 ];
 
 export default defineConfig([
-  // Main builds (Node.js) - keep @hyperfixi/i18n external
+  // Main builds (Node.js) - keep @lokascript/i18n external
   {
     entry: {
       index: 'src/index.ts',
@@ -44,7 +44,7 @@ export default defineConfig([
     minify: false,
     splitting: false,
     treeshake: true,
-    external: [...EXTERNAL_DEPS, '@hyperfixi/i18n'],
+    external: [...EXTERNAL_DEPS, '@lokascript/i18n'],
     esbuildOptions(options, context) {
       // Add shebang only for CLI files
       if (context.format === 'cjs' || context.format === 'esm') {
@@ -70,7 +70,7 @@ export default defineConfig([
       }
     },
   },
-  // Browser build - bundle @hyperfixi/i18n inline
+  // Browser build - bundle @lokascript/i18n inline
   {
     entry: {
       'prism-hyperfixi/browser': 'src/prism-hyperfixi/browser.ts',

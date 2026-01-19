@@ -5,7 +5,7 @@
  * Use this with adapters from ./adapters.ts for your specific framework.
  */
 
-import type { Registry } from '@hyperfixi/core/registry';
+import type { Registry } from '@lokascript/core/registry';
 import { createRequestEventSource } from '../events/request-event-source.js';
 import type { FrameworkAdapter } from './adapters.js';
 
@@ -31,8 +31,8 @@ export interface HyperscriptRoutesOptions {
  *
  * @example
  * // Express
- * import { createHyperscriptMiddleware } from '@hyperfixi/server-integration';
- * import { createExpressAdapter } from '@hyperfixi/server-integration/adapters';
+ * import { createHyperscriptMiddleware } from '@lokascript/server-integration';
+ * import { createExpressAdapter } from '@lokascript/server-integration/adapters';
  *
  * const middleware = createHyperscriptMiddleware({
  *   adapter: createExpressAdapter()
@@ -41,8 +41,8 @@ export interface HyperscriptRoutesOptions {
  *
  * @example
  * // Koa
- * import { createHyperscriptMiddleware } from '@hyperfixi/server-integration';
- * import { createKoaAdapter } from '@hyperfixi/server-integration/adapters';
+ * import { createHyperscriptMiddleware } from '@lokascript/server-integration';
+ * import { createKoaAdapter } from '@lokascript/server-integration/adapters';
  *
  * const middleware = createHyperscriptMiddleware({
  *   adapter: createKoaAdapter()
@@ -60,7 +60,7 @@ export function createHyperscriptMiddleware(options: HyperscriptRoutesOptions) {
 
     try {
       // Dynamic import to avoid circular dependencies
-      const { registry: defaultRegistry } = await import('@hyperfixi/core/registry');
+      const { registry: defaultRegistry } = await import('@lokascript/core/registry');
       const registry = options.registry || defaultRegistry;
 
       // Create and register the request event source
@@ -131,8 +131,8 @@ export function createHyperscriptMiddleware(options: HyperscriptRoutesOptions) {
  * This is a convenience function that creates and applies the middleware
  *
  * @example
- * import { setupHyperscriptRoutes } from '@hyperfixi/server-integration';
- * import { createExpressAdapter } from '@hyperfixi/server-integration/adapters';
+ * import { setupHyperscriptRoutes } from '@lokascript/server-integration';
+ * import { createExpressAdapter } from '@lokascript/server-integration/adapters';
  *
  * const { registry, middleware } = await setupHyperscriptRoutes(app, {
  *   adapter: createExpressAdapter(),
@@ -144,7 +144,7 @@ export async function setupHyperscriptRoutes(app: any, options: HyperscriptRoute
 
   try {
     // Import registry
-    const { registry: defaultRegistry } = await import('@hyperfixi/core/registry');
+    const { registry: defaultRegistry } = await import('@lokascript/core/registry');
     const registry = options.registry || defaultRegistry;
 
     // Create the middleware

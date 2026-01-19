@@ -13,8 +13,8 @@ import type {
   EventSource,
   EventSourceSubscription,
   EventSourceSubscribeOptions,
-} from '@hyperfixi/core/registry';
-import type { ExecutionContext } from '@hyperfixi/core';
+} from '@lokascript/core/registry';
+import type { ExecutionContext } from '@lokascript/core';
 import type {
   ServerEventPayload,
   ServerRequest,

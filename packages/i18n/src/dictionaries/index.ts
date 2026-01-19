@@ -18,7 +18,7 @@
 import { Dictionary } from '../types';
 
 // NOTE: Derivation infrastructure is ready but not yet active.
-// The languageProfiles from @hyperfixi/semantic can be used with deriveFromProfile()
+// The languageProfiles from @lokascript/semantic can be used with deriveFromProfile()
 // once we're ready to transition away from legacy dictionaries.
 // See ./derive.ts for the derivation utilities.
 

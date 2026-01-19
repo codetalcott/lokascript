@@ -11,7 +11,7 @@
 import type { Dictionary, DictionaryCategory } from '../types';
 
 /**
- * KeywordTranslation interface (matches @hyperfixi/semantic)
+ * KeywordTranslation interface (matches @lokascript/semantic)
  */
 interface KeywordTranslation {
   readonly primary: string;
@@ -339,7 +339,7 @@ export interface DeriveOptions {
  *
  * @example
  * ```typescript
- * import { japaneseProfile } from '@hyperfixi/semantic';
+ * import { japaneseProfile } from '@lokascript/semantic';
  * import { deriveFromProfile } from './derive';
  *
  * export const ja = deriveFromProfile(japaneseProfile);

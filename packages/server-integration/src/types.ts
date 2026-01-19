@@ -3,7 +3,7 @@
  */
 
 // Base types from ast-toolkit
-export type { ASTNode } from '@hyperfixi/ast-toolkit';
+export type { ASTNode } from '@lokascript/ast-toolkit';
 
 // ============================================================================
 // Parser Types

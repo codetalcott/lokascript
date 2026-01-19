@@ -1,12 +1,12 @@
-# HyperFixi Python Client
+# LokaScript Python Client
 
-A Python client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) server-side hyperscript compilation, with native integrations for Django, Flask, and FastAPI.
+A Python client library for [LokaScript](https://github.com/lokascript/lokascript) server-side hyperscript compilation, with native integrations for Django, Flask, and FastAPI.
 
 ## Features
 
-- **Async/sync client** for HyperFixi server API
+- **Async/sync client** for LokaScript server API
 - **Django integration** with template tags and middleware
-- **Flask integration** with Jinja2 filters and CLI commands  
+- **Flask integration** with Jinja2 filters and CLI commands
 - **FastAPI integration** with middleware and dependencies
 - **CLI tool** for command-line compilation and validation
 - **Template variable substitution** with `{{variable}}` syntax
@@ -17,23 +17,23 @@ A Python client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) 
 ## Installation
 
 ```bash
-pip install hyperfixi-client
+pip install lokascript-client
 ```
 
 ### Framework-specific installations:
 
 ```bash
 # Django support
-pip install hyperfixi-client[django]
+pip install lokascript-client[django]
 
-# Flask support  
-pip install hyperfixi-client[flask]
+# Flask support
+pip install lokascript-client[flask]
 
 # FastAPI support
-pip install hyperfixi-client[fastapi]
+pip install lokascript-client[fastapi]
 
 # Development tools
-pip install hyperfixi-client[dev]
+pip install lokascript-client[dev]
 ```
 
 ## Quick Start
@@ -42,17 +42,17 @@ pip install hyperfixi-client[dev]
 
 ```python
 import asyncio
-from hyperfixi_client import HyperfixiClient
+from lokascript_client import HyperfixiClient
 
 async def main():
     client = HyperfixiClient("http://localhost:3000")
-    
+
     # Compile hyperscript
     result = await client.compile({
         "button": "on click toggle .active",
         "form": "on submit fetch /api/save then put result into #status"
     })
-    
+
     print(result.compiled["button"])  # Generated JavaScript
     print(result.metadata["button"])  # Script metadata
 
@@ -62,7 +62,7 @@ asyncio.run(main())
 ### Synchronous Usage
 
 ```python
-from hyperfixi_client import HyperfixiClient
+from lokascript_client import HyperfixiClient
 
 client = HyperfixiClient("http://localhost:3000")
 
@@ -78,7 +78,7 @@ result = client.compile_sync({
 
 ```python
 from fastapi import FastAPI
-from hyperfixi_client.integrations.fastapi import FastAPIHyperscriptMiddleware
+from lokascript_client.integrations.fastapi import FastAPIHyperscriptMiddleware
 
 app = FastAPI()
 
@@ -102,7 +102,7 @@ async def home():
 
 ```python
 from fastapi import FastAPI, Depends
-from hyperfixi_client.integrations.fastapi import hyperscript_dependency
+from lokascript_client.integrations.fastapi import hyperscript_dependency
 
 app = FastAPI()
 
@@ -118,7 +118,7 @@ async def home(hyperscript = Depends(hyperscript_dependency)):
 
 ```python
 from fastapi import FastAPI
-from hyperfixi_client.integrations.fastapi import HyperscriptTemplateRenderer
+from lokascript_client.integrations.fastapi import HyperscriptTemplateRenderer
 
 app = FastAPI()
 renderer = HyperscriptTemplateRenderer("http://localhost:3000")
@@ -135,7 +135,7 @@ async def home():
 
 ```python
 from fastapi import FastAPI
-from hyperfixi_client.integrations.fastapi import create_hyperscript_routes
+from lokascript_client.integrations.fastapi import create_hyperscript_routes
 
 app = FastAPI()
 
@@ -144,7 +144,7 @@ create_hyperscript_routes(app, "http://localhost:3000")
 
 # Now available:
 # POST /hyperscript/compile
-# POST /hyperscript/validate  
+# POST /hyperscript/validate
 # GET /hyperscript/health
 # GET /hyperscript/cache/stats
 # POST /hyperscript/cache/clear
@@ -158,15 +158,15 @@ create_hyperscript_routes(app, "http://localhost:3000")
 # settings.py
 INSTALLED_APPS = [
     # ...
-    'hyperfixi_client',
+    'lokascript_client',
 ]
 
 MIDDLEWARE = [
     # ...
-    'hyperfixi_client.integrations.django.DjangoHyperscriptMiddleware',
+    'lokascript_client.integrations.django.DjangoHyperscriptMiddleware',
 ]
 
-HYPERFIXI = {
+LOKASCRIPT = {
     'CLIENT_URL': 'http://localhost:3000',
     'COMPILE_ON_RESPONSE': True,
     'TEMPLATE_VARS_HEADER': 'X-Hyperscript-Template-Vars',
@@ -201,7 +201,7 @@ HYPERFIXI = {
 
 ```bash
 # Test connection
-python manage.py test_hyperfixi --url http://localhost:3000
+python manage.py test_lokascript --url http://localhost:3000
 ```
 
 ## Flask Integration
@@ -210,7 +210,7 @@ python manage.py test_hyperfixi --url http://localhost:3000
 
 ```python
 from flask import Flask
-from hyperfixi_client.integrations.flask import FlaskHyperscriptExtension
+from lokascript_client.integrations.flask import FlaskHyperscriptExtension
 
 app = Flask(__name__)
 hyperscript = FlaskHyperscriptExtension()
@@ -240,7 +240,7 @@ def home():
 ### CLI Commands
 
 ```python
-from hyperfixi_client.integrations.flask import create_cli_commands
+from lokascript_client.integrations.flask import create_cli_commands
 
 create_cli_commands(app)
 ```
@@ -265,51 +265,51 @@ flask hyperscript clear-cache
 ### Installation
 
 ```bash
-pip install hyperfixi-client
+pip install lokascript-client
 ```
 
 ### Basic Usage
 
 ```bash
 # Check service health
-hyperfixi --url http://localhost:3000 health
+lokascript --url http://localhost:3000 health
 
 # Compile hyperscript
-hyperfixi compile "on click toggle .active"
+lokascript compile "on click toggle .active"
 
 # Multiple scripts
-hyperfixi compile button="on click toggle .active" form="on submit halt"
+lokascript compile button="on click toggle .active" form="on submit halt"
 
 # With options
-hyperfixi --minify --compatibility legacy compile "on click log 'Hello'"
+lokascript --minify --compatibility legacy compile "on click log 'Hello'"
 
 # Template variables
-hyperfixi --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"
+lokascript --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"
 
 # Validate syntax
-hyperfixi validate "on click toggle .active"
+lokascript validate "on click toggle .active"
 
 # Batch compilation
-hyperfixi batch scripts.json
+lokascript batch scripts.json
 
 # Cache management
-hyperfixi cache stats
-hyperfixi cache clear
+lokascript cache stats
+lokascript cache clear
 ```
 
 ### Output Formats
 
 ```bash
 # Default onclick format
-hyperfixi compile "on click toggle .active"
+lokascript compile "on click toggle .active"
 # Output: onclick="document.addEventListener('click', ...)"
 
 # JavaScript format
-hyperfixi --output js compile "on click toggle .active"
+lokascript --output js compile "on click toggle .active"
 # Output: document.addEventListener('click', ...)
 
 # JSON format (full response)
-hyperfixi --output json compile "on click toggle .active"
+lokascript --output json compile "on click toggle .active"
 ```
 
 ### Batch File Format
@@ -347,10 +347,10 @@ result = await client.compile(
 ## Error Handling
 
 ```python
-from hyperfixi_client import HyperfixiClient
-from hyperfixi_client.exceptions import (
+from lokascript_client import HyperfixiClient
+from lokascript_client.exceptions import (
     CompilationError,
-    ValidationError, 
+    ValidationError,
     NetworkError,
     TimeoutError
 )
@@ -386,7 +386,7 @@ client = HyperfixiClient(
 ### Compilation Options
 
 ```python
-from hyperfixi_client.types import CompilationOptions, CompatibilityMode
+from lokascript_client.types import CompilationOptions, CompatibilityMode
 
 options = CompilationOptions(
     minify=True,
@@ -401,8 +401,8 @@ options = CompilationOptions(
 ### Setup
 
 ```bash
-git clone https://github.com/hyperfixi/hyperfixi
-cd hyperfixi/clients/python-client
+git clone https://github.com/lokascript/lokascript
+cd lokascript/clients/python-client
 
 pip install -e .[dev]
 ```
@@ -411,15 +411,15 @@ pip install -e .[dev]
 
 ```bash
 pytest tests/
-pytest --cov=hyperfixi_client tests/
+pytest --cov=lokascript_client tests/
 ```
 
 ### Code Quality
 
 ```bash
-black hyperfixi_client/
-mypy hyperfixi_client/
-flake8 hyperfixi_client/
+black lokascript_client/
+mypy lokascript_client/
+flake8 lokascript_client/
 ```
 
 ## License
@@ -436,6 +436,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- **Documentation**: [https://hyperfixi.dev/docs](https://hyperfixi.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/hyperfixi/hyperfixi/discussions)
+- **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
+- **Issues**: [GitHub Issues](https://github.com/lokascript/lokascript/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lokascript/lokascript/discussions)

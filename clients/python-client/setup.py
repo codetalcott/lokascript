@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script for hyperfixi-python client library
+Setup script for lokascript-python client library
 """
 
 from setuptools import setup, find_packages
@@ -9,14 +9,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="hyperfixi-client",
+    name="lokascript-client",
     version="0.1.0",
-    author="HyperFixi Team",
-    author_email="team@hyperfixi.dev",
-    description="Python client library for HyperFixi server-side hyperscript compilation",
+    author="LokaScript Team",
+    author_email="team@lokascript.dev",
+    description="Python client library for LokaScript server-side hyperscript compilation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/hyperfixi/hyperfixi",
+    url="https://github.com/lokascript/lokascript",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -54,7 +54,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "hyperfixi=hyperfixi_client.cli:cli_main",
+            "lokascript=lokascript_client.cli:cli_main",
         ],
     },
 )

@@ -2,7 +2,7 @@
  * HyperFixi Multilingual Browser Bundle
  *
  * Parser-free bundle for developers writing hyperscript in their native language.
- * Uses @hyperfixi/semantic for parsing, bypasses core parser entirely.
+ * Uses @lokascript/semantic for parsing, bypasses core parser entirely.
  *
  * This bundle is optimized for the multilingual use case:
  *   Input (any language) → Semantic Parser → AST Builder → Runtime Execute
@@ -106,14 +106,14 @@ import { createInstallCommand } from '../commands/behaviors/install';
 // Templates (1)
 import { createRenderCommand } from '../commands/templates/render';
 
-// NO PARSER IMPORT - uses @hyperfixi/semantic package instead
+// NO PARSER IMPORT - uses @lokascript/semantic package instead
 
 // =============================================================================
 // Semantic Module Access (from browser global)
 // =============================================================================
 
 // In browser environment, use the already-loaded HyperFixiSemantic global
-function getSemanticModule(): typeof import('@hyperfixi/semantic') {
+function getSemanticModule(): typeof import('@lokascript/semantic') {
   if (typeof window !== 'undefined' && (window as any).HyperFixiSemantic) {
     return (window as any).HyperFixiSemantic;
   }

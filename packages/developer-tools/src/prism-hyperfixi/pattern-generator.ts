@@ -6,8 +6,8 @@
  * and non-Latin scripts (no boundaries needed).
  */
 
-import { dictionaries } from '@hyperfixi/i18n';
-import type { Dictionary } from '@hyperfixi/i18n';
+import { dictionaries } from '@lokascript/i18n';
+import type { Dictionary } from '@lokascript/i18n';
 import type { LanguagePatterns } from './types';
 import { isNonLatinLanguage, getTextDirection } from './token-definitions';
 

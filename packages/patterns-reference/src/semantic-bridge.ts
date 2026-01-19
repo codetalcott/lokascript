@@ -6,17 +6,17 @@
  *
  * @example
  * ```typescript
- * import { initializeSemanticIntegration } from '@hyperfixi/patterns-reference';
+ * import { initializeSemanticIntegration } from '@lokascript/patterns-reference';
  *
  * // Initialize integration with semantic parser
  * await initializeSemanticIntegration();
  *
  * // Now the semantic parser can access patterns from the database
- * import { parse } from '@hyperfixi/semantic';
+ * import { parse } from '@lokascript/semantic';
  * const result = parse('toggle .active', 'en');
  * ```
  *
- * @module @hyperfixi/patterns-reference/semantic-bridge
+ * @module @lokascript/patterns-reference/semantic-bridge
  */
 
 import {
@@ -64,7 +64,7 @@ let bridgeProvider: DatabasePatternsProvider | null = null;
  * Initialize semantic integration.
  *
  * This registers the patterns-reference database as an external pattern source
- * with the @hyperfixi/semantic registry, enabling runtime pattern matching.
+ * with the @lokascript/semantic registry, enabling runtime pattern matching.
  *
  * @param options - Integration options
  * @returns Integration result
@@ -85,9 +85,9 @@ export async function initializeSemanticIntegration(
   bridgeProvider = provider;
 
   try {
-    // Try to register with @hyperfixi/semantic
+    // Try to register with @lokascript/semantic
     // Use 'any' to avoid type errors with dynamic imports
-    const semantic = (await import('@hyperfixi/semantic')) as any;
+    const semantic = (await import('@lokascript/semantic')) as any;
 
     if (typeof semantic.registerPatternsSource === 'function') {
       semantic.registerPatternsSource(provider);
@@ -101,7 +101,7 @@ export async function initializeSemanticIntegration(
     } else {
       // Semantic package doesn't have registerPatternsSource yet
       console.warn(
-        '[SemanticBridge] @hyperfixi/semantic does not export registerPatternsSource. ' +
+        '[SemanticBridge] @lokascript/semantic does not export registerPatternsSource. ' +
           'Running in standalone mode.'
       );
 
@@ -112,9 +112,9 @@ export async function initializeSemanticIntegration(
       };
     }
   } catch (error) {
-    // @hyperfixi/semantic not available
+    // @lokascript/semantic not available
     console.warn(
-      '[SemanticBridge] @hyperfixi/semantic not available:',
+      '[SemanticBridge] @lokascript/semantic not available:',
       error instanceof Error ? error.message : String(error)
     );
 
@@ -122,7 +122,7 @@ export async function initializeSemanticIntegration(
       success: true,
       provider,
       registeredWith: 'standalone',
-      error: '@hyperfixi/semantic not available',
+      error: '@lokascript/semantic not available',
     };
   }
 }
@@ -151,7 +151,7 @@ export async function uninitializeSemanticIntegration(): Promise<void> {
   }
 
   try {
-    const semantic = (await import('@hyperfixi/semantic')) as any;
+    const semantic = (await import('@lokascript/semantic')) as any;
 
     if (typeof semantic.unregisterPatternsSource === 'function') {
       semantic.unregisterPatternsSource(bridgeProvider.id);

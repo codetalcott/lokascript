@@ -2,7 +2,7 @@
  * LSP Bridge Tools for MCP Server
  * Exposes diagnostics, completions, and hover via MCP protocol
  *
- * Supports 21 languages via @hyperfixi/semantic for multilingual assistance.
+ * Supports 21 languages via @lokascript/semantic for multilingual assistance.
  */
 
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
@@ -10,7 +10,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 // Try to import from ast-toolkit
 let astToolkit: any = null;
 try {
-  astToolkit = await import('@hyperfixi/ast-toolkit');
+  astToolkit = await import('@lokascript/ast-toolkit');
 } catch {
   // ast-toolkit not available
 }
@@ -18,7 +18,7 @@ try {
 // Try to import parse function from core
 let parseFunction: any = null;
 try {
-  const core = await import('@hyperfixi/core');
+  const core = await import('@lokascript/core');
   parseFunction = core.parse;
 } catch {
   // core not available
@@ -27,14 +27,14 @@ try {
 // Try to import semantic package for multilingual support
 let semanticPackage: any = null;
 try {
-  semanticPackage = await import('@hyperfixi/semantic');
+  semanticPackage = await import('@lokascript/semantic');
 } catch {
   // semantic not available - will use English-only fallback
 }
 
 // Import error fixes registry
 import { getFixesForDiagnostic } from './error-fixes.js';
-import type { CodeFix } from '@hyperfixi/core';
+import type { CodeFix } from '@lokascript/core';
 
 // =============================================================================
 // Cached Semantic Analyzer (Phase 6 - Performance)

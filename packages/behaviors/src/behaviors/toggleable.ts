@@ -27,7 +27,7 @@ export async function registerToggleable(hyperfixi?: LokaScriptInstance): Promis
 
   if (!hf) {
     throw new Error(
-      'HyperFixi not found. Make sure @hyperfixi/core is loaded before registering behaviors.'
+      'HyperFixi not found. Make sure @lokascript/core is loaded before registering behaviors.'
     );
   }
 

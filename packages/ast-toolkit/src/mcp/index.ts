@@ -41,7 +41,7 @@ import type { ASTNode } from '../types.js';
 
 class ASTToolkitMCPServer {
   private serverInfo = {
-    name: '@hyperfixi/ast-toolkit',
+    name: '@lokascript/ast-toolkit',
     version: '0.1.0',
   };
 
@@ -816,7 +816,7 @@ See the examples resource for detailed usage patterns.
 
 ## Basic Analysis
 \`\`\`typescript
-import { calculateComplexity, analyzeMetrics } from '@hyperfixi/ast-toolkit';
+import { calculateComplexity, analyzeMetrics } from '@lokascript/ast-toolkit';
 
 const complexity = calculateComplexity(ast);
 console.log('Cyclomatic complexity:', complexity.cyclomatic);
@@ -827,7 +827,7 @@ console.log('Code smells found:', metrics.smells.length);
 
 ## AI-Powered Explanation
 \`\`\`typescript
-import { explainCode } from '@hyperfixi/ast-toolkit';
+import { explainCode } from '@lokascript/ast-toolkit';
 
 const explanation = explainCode(ast, {
   audience: 'beginner',
@@ -838,7 +838,7 @@ console.log(explanation.overview);
 
 ## Performance Benchmarking
 \`\`\`typescript
-import { benchmarkASTOperations, analyzePerformance } from '@hyperfixi/ast-toolkit';
+import { benchmarkASTOperations, analyzePerformance } from '@lokascript/ast-toolkit';
 
 const benchmarks = benchmarkASTOperations(ast);
 const suggestions = analyzePerformance(benchmarks);
@@ -847,7 +847,7 @@ console.log('Optimization suggestions:', suggestions);
 
 ## Node Finding
 \`\`\`typescript
-import { findNodes } from '@hyperfixi/ast-toolkit';
+import { findNodes } from '@lokascript/ast-toolkit';
 
 const commands = findNodes(ast, node => node.type === 'command');
 console.log('Found commands:', commands.length);

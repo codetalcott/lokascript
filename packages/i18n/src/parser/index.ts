@@ -9,18 +9,18 @@
  * @example
  * ```typescript
  * // Spanish
- * import { esKeywords } from '@hyperfixi/i18n/parser';
+ * import { esKeywords } from '@lokascript/i18n/parser';
  * const parser = new Parser({ keywords: esKeywords });
  * parser.parse('en clic alternar .active');
  *
  * // Japanese
- * import { jaKeywords } from '@hyperfixi/i18n/parser';
+ * import { jaKeywords } from '@lokascript/i18n/parser';
  * const parser = new Parser({ keywords: jaKeywords });
  * parser.parse('クリック で 切り替え .active');
  *
  * // Custom locale
- * import { createKeywordProvider } from '@hyperfixi/i18n/parser';
- * import { fr } from '@hyperfixi/i18n/dictionaries';
+ * import { createKeywordProvider } from '@lokascript/i18n/parser';
+ * import { fr } from '@lokascript/i18n/dictionaries';
  * const frKeywords = createKeywordProvider(fr, 'fr');
  * ```
  */

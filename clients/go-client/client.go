@@ -1,4 +1,4 @@
-package hyperfixi
+package lokascript
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// ClientError represents an error from the HyperFixi client
+// ClientError represents an error from the LokaScript client
 type ClientError struct {
 	Message    string
 	StatusCode int
@@ -20,16 +20,16 @@ type ClientError struct {
 
 func (e *ClientError) Error() string {
 	if e.Err != nil {
-		return fmt.Sprintf("hyperfixi client error (status %d): %s - %v", e.StatusCode, e.Message, e.Err)
+		return fmt.Sprintf("lokascript client error (status %d): %s - %v", e.StatusCode, e.Message, e.Err)
 	}
-	return fmt.Sprintf("hyperfixi client error (status %d): %s", e.StatusCode, e.Message)
+	return fmt.Sprintf("lokascript client error (status %d): %s", e.StatusCode, e.Message)
 }
 
 func (e *ClientError) Unwrap() error {
 	return e.Err
 }
 
-// ClientConfig represents configuration for the HyperFixi client
+// ClientConfig represents configuration for the LokaScript client
 type ClientConfig struct {
 	BaseURL    string
 	Timeout    time.Duration
@@ -49,14 +49,14 @@ func DefaultClientConfig() *ClientConfig {
 	}
 }
 
-// Client represents a HyperFixi HTTP client
+// Client represents a LokaScript HTTP client
 type Client struct {
 	config     *ClientConfig
 	httpClient *http.Client
 	baseURL    *url.URL
 }
 
-// NewClient creates a new HyperFixi client
+// NewClient creates a new LokaScript client
 func NewClient(config *ClientConfig) (*Client, error) {
 	if config == nil {
 		config = DefaultClientConfig()
@@ -81,7 +81,7 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	}, nil
 }
 
-// NewDefaultClient creates a new HyperFixi client with default configuration
+// NewDefaultClient creates a new LokaScript client with default configuration
 func NewDefaultClient() (*Client, error) {
 	return NewClient(DefaultClientConfig())
 }
@@ -129,7 +129,7 @@ func (c *Client) request(ctx context.Context, method, endpoint string, body inte
 
 		// Set headers
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("User-Agent", "hyperfixi-go-client/0.1.0")
+		req.Header.Set("User-Agent", "lokascript-go-client/0.1.0")
 
 		if c.config.AuthToken != "" {
 			req.Header.Set("Authorization", "Bearer "+c.config.AuthToken)

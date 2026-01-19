@@ -9,7 +9,7 @@
  *
  * @example
  * ```typescript
- * import '@hyperfixi/semantic/languages/en';
+ * import '@lokascript/semantic/languages/en';
  * ```
  */
 

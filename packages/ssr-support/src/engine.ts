@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
-import { ComponentDefinition } from '@hyperfixi/component-schema';
-import { LokaScriptTemplateEngine, TemplateContext } from '@hyperfixi/template-integration';
+import { ComponentDefinition } from '@lokascript/component-schema';
+import { LokaScriptTemplateEngine, TemplateContext } from '@lokascript/template-integration';
 import {
   CompilationResult,
   SSREngine,

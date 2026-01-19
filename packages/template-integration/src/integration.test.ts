@@ -5,7 +5,7 @@ import {
   renderTemplate,
   createTemplateEngine,
 } from './engine';
-import { createComponent, createCollection } from '@hyperfixi/component-schema';
+import { createComponent, createCollection } from '@lokascript/component-schema';
 import { TemplateContext } from './types';
 
 describe('Template Integration Tests', () => {

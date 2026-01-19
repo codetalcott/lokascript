@@ -1,4 +1,4 @@
-module github.com/hyperfixi/hyperfixi-go
+module github.com/lokascript/lokascript-go
 
 go 1.24.0
 

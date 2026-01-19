@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Elysia } from 'elysia';
 import { 
-  hyperfixiPlugin, 
+  lokascriptPlugin, 
   createElysiaTemplateHelpers,
   createHyperfixiApp,
   createElysiaConfig,
@@ -29,7 +29,7 @@ describe('Elysia Integration', () => {
   let mockContext: any;
 
   beforeEach(() => {
-    // Mock HyperFixi client
+    // Mock LokaScript client
     mockClient = {
       compile: vi.fn(),
       validate: vi.fn(),
@@ -46,28 +46,28 @@ describe('Elysia Integration', () => {
       request: { url: 'http://localhost:3000/test' },
       response: '<div _="on click toggle .active">Test</div>',
       set: { status: 200, headers: { 'content-type': 'text/html' } },
-      hyperfixi: mockClient,
-      hyperfixiTemplateVars: undefined,
+      lokascript: mockClient,
+      lokascriptTemplateVars: undefined,
     };
 
     vi.clearAllMocks();
   });
 
-  describe('hyperfixiPlugin', () => {
+  describe('lokascriptPlugin', () => {
     it('should create plugin with required client', () => {
       expect(() => {
-        hyperfixiPlugin({ client: mockClient });
+        lokascriptPlugin({ client: mockClient });
       }).not.toThrow();
     });
 
     it('should throw error when client is missing', () => {
       expect(() => {
-        hyperfixiPlugin({} as any);
-      }).toThrow('HyperFixi client is required in plugin config');
+        lokascriptPlugin({} as any);
+      }).toThrow('LokaScript client is required in plugin config');
     });
 
     it('should use default configuration', () => {
-      const plugin = hyperfixiPlugin({ client: mockClient });
+      const plugin = lokascriptPlugin({ client: mockClient });
       expect(plugin).toBeDefined();
     });
 
@@ -80,7 +80,7 @@ describe('Elysia Integration', () => {
         basePath: '/custom-api',
       };
 
-      const plugin = hyperfixiPlugin(config);
+      const plugin = lokascriptPlugin(config);
       expect(plugin).toBeDefined();
     });
   });
@@ -116,7 +116,7 @@ describe('Elysia Integration', () => {
 
         const result = await helpers.compileHyperscript('invalid script');
         
-        expect(result).toContain('HyperFixi compilation error');
+        expect(result).toContain('LokaScript compilation error');
         expect(result).toContain('Compilation failed');
       });
 
@@ -213,7 +213,7 @@ describe('Elysia Integration', () => {
   describe('utility functions', () => {
     describe('getHyperfixiClient', () => {
       it('should return client from context', () => {
-        const context = { hyperfixi: mockClient };
+        const context = { lokascript: mockClient };
         const result = getHyperfixiClient(context as any);
         expect(result).toBe(mockClient);
       });
@@ -228,7 +228,7 @@ describe('Elysia Integration', () => {
     describe('getTemplateVars', () => {
       it('should return template vars from context', () => {
         const templateVars = { userId: '123' };
-        const context = { hyperfixiTemplateVars: templateVars };
+        const context = { lokascriptTemplateVars: templateVars };
         const result = getTemplateVars(context as any);
         expect(result).toBe(templateVars);
       });
@@ -242,7 +242,7 @@ describe('Elysia Integration', () => {
   });
 
   describe('createHyperfixiApp', () => {
-    it('should create standalone app with HyperFixi routes', () => {
+    it('should create standalone app with LokaScript routes', () => {
       const app = createHyperfixiApp(mockClient);
       expect(app).toBeDefined();
       expect(Elysia).toHaveBeenCalled();
@@ -271,12 +271,12 @@ describe('Elysia Integration', () => {
     it('should process HTML with hyperscript attributes', async () => {
       // This test would require more complex mocking of the internal compilation
       // For now, we test that the plugin structure is correct
-      const plugin = hyperfixiPlugin({ client: mockClient });
+      const plugin = lokascriptPlugin({ client: mockClient });
       expect(plugin).toBeDefined();
     });
 
     it('should skip processing for non-HTML content', async () => {
-      const plugin = hyperfixiPlugin({ 
+      const plugin = lokascriptPlugin({ 
         client: mockClient,
         onlyContentTypes: ['text/html']
       });
@@ -284,7 +284,7 @@ describe('Elysia Integration', () => {
     });
 
     it('should skip processing for configured paths', async () => {
-      const plugin = hyperfixiPlugin({ 
+      const plugin = lokascriptPlugin({ 
         client: mockClient,
         skipPaths: ['/api/', '/static/']
       });
@@ -295,7 +295,7 @@ describe('Elysia Integration', () => {
   describe('error handling', () => {
     it('should handle compilation errors in middleware', async () => {
       const errorHandler = vi.fn();
-      const plugin = hyperfixiPlugin({
+      const plugin = lokascriptPlugin({
         client: mockClient,
         errorHandler,
       });
@@ -305,7 +305,7 @@ describe('Elysia Integration', () => {
     });
 
     it('should use default error handler when none provided', () => {
-      const plugin = hyperfixiPlugin({ client: mockClient });
+      const plugin = lokascriptPlugin({ client: mockClient });
       expect(plugin).toBeDefined();
     });
   });

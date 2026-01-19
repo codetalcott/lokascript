@@ -23,8 +23,8 @@ import type { KeywordProvider } from './types';
  *
  * @example
  * ```typescript
- * import { trKeywords } from '@hyperfixi/i18n/parser/tr';
- * import { Parser } from '@hyperfixi/core';
+ * import { trKeywords } from '@lokascript/i18n/parser/tr';
+ * import { Parser } from '@lokascript/core';
  *
  * const parser = new Parser({ keywords: trKeywords });
  * parser.parse('üzerinde tıklama değiştir .active');

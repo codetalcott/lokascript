@@ -29,7 +29,7 @@ const DEFAULT_CONFIG: Partial<ClientConfig> = {
 };
 
 /**
- * HyperFixi JavaScript client for server-side hyperscript compilation
+ * LokaScript JavaScript client for server-side hyperscript compilation
  */
 export class Client implements HyperfixiClient {
   private readonly client: AxiosInstance;
@@ -43,7 +43,7 @@ export class Client implements HyperfixiClient {
       timeout: this.config.timeout!,
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'HyperFixi-JS-Client/0.1.0',
+        'User-Agent': 'LokaScript-JS-Client/0.1.0',
         ...this.config.headers,
       },
     });
@@ -249,7 +249,7 @@ export class Client implements HyperfixiClient {
   }
 
   /**
-   * Handle Axios errors and convert to appropriate HyperFixi errors
+   * Handle Axios errors and convert to appropriate LokaScript errors
    */
   private handleAxiosError(error: AxiosError): never {
     if (error.response) {
@@ -324,7 +324,7 @@ export class Client implements HyperfixiClient {
 }
 
 /**
- * Create a new HyperFixi client with default configuration
+ * Create a new LokaScript client with default configuration
  */
 export function createClient(config?: Partial<ClientConfig>): Client {
   const finalConfig = { ...DEFAULT_CONFIG, ...config } as ClientConfig;
@@ -332,7 +332,7 @@ export function createClient(config?: Partial<ClientConfig>): Client {
 }
 
 /**
- * Create a new HyperFixi client with default configuration
+ * Create a new LokaScript client with default configuration
  */
 export function createDefaultClient(): Client {
   return Client.createDefault();

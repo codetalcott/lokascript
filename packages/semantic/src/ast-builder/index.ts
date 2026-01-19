@@ -26,7 +26,7 @@ import { getCommandMapper, type CommandMapperResult } from './command-mappers';
 import type { ExpressionNode } from './expression-parser';
 
 // =============================================================================
-// AST Types (compatible with @hyperfixi/core)
+// AST Types (compatible with @lokascript/core)
 // =============================================================================
 
 /**
@@ -54,7 +54,7 @@ export interface CommandNode extends ASTNode {
 }
 
 /**
- * Event handler AST node (compatible with @hyperfixi/core)
+ * Event handler AST node (compatible with @lokascript/core)
  */
 export interface EventHandlerNode extends ASTNode {
   readonly type: 'eventHandler';

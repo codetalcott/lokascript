@@ -6,9 +6,9 @@
  *
  * @example
  * ```typescript
- * import '@hyperfixi/semantic/languages/_all';
+ * import '@lokascript/semantic/languages/_all';
  * // or
- * import '@hyperfixi/semantic/languages';
+ * import '@lokascript/semantic/languages';
  * ```
  *
  * @generated This file is auto-generated. Do not edit manually.

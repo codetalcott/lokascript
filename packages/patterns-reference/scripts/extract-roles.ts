@@ -1,7 +1,7 @@
 /**
  * Extract Semantic Roles Script
  *
- * Parses all patterns in the database using the @hyperfixi/semantic parser
+ * Parses all patterns in the database using the @lokascript/semantic parser
  * and extracts semantic roles into the pattern_roles table.
  *
  * Usage: npx tsx scripts/extract-roles.ts [--db-path <path>] [--verbose] [--clear]
@@ -15,8 +15,8 @@
 import Database from 'better-sqlite3';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
-import { parse, canParse } from '@hyperfixi/semantic';
-import type { SemanticNode, SemanticValue, SemanticRole } from '@hyperfixi/semantic';
+import { parse, canParse } from '@lokascript/semantic';
+import type { SemanticNode, SemanticValue, SemanticRole } from '@lokascript/semantic';
 
 // =============================================================================
 // Configuration

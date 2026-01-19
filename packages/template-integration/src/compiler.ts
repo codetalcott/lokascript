@@ -5,7 +5,7 @@ import {
   validateComponent,
   extractTemplateVariables,
   generateMetadata,
-} from '@hyperfixi/component-schema';
+} from '@lokascript/component-schema';
 
 import {
   TemplateNode,

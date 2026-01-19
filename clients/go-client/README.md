@@ -1,6 +1,6 @@
-# HyperFixi Go Client
+# LokaScript Go Client
 
-A Go client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) server-side hyperscript compilation, with native Gin integration and CLI tools.
+A Go client library for [LokaScript](https://github.com/lokascript/lokascript) server-side hyperscript compilation, with native Gin integration and CLI tools.
 
 ## Features
 
@@ -16,7 +16,7 @@ A Go client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) serv
 ## Installation
 
 ```bash
-go get github.com/hyperfixi/hyperfixi-go
+go get github.com/lokascript/lokascript-go
 ```
 
 ## Quick Start
@@ -31,12 +31,12 @@ import (
     "fmt"
     "log"
 
-    "github.com/hyperfixi/hyperfixi-go"
+    "github.com/lokascript/lokascript-go"
 )
 
 func main() {
     // Create client with default configuration
-    client, err := hyperfixi.NewDefaultClient()
+    client, err := lokascript.NewDefaultClient()
     if err != nil {
         log.Fatal(err)
     }
@@ -47,9 +47,9 @@ func main() {
         "form":   "on submit fetch /api/save then put result into #status",
     }
 
-    req := &hyperfixi.CompileRequest{
+    req := &lokascript.CompileRequest{
         Scripts: scripts,
-        Options: &hyperfixi.CompilationOptions{
+        Options: &lokascript.CompilationOptions{
             Minify: true,
         },
     }
@@ -68,7 +68,7 @@ func main() {
 ### Custom Client Configuration
 
 ```go
-config := &hyperfixi.ClientConfig{
+config := &lokascript.ClientConfig{
     BaseURL:   "http://localhost:3000",
     Timeout:   30 * time.Second,
     Retries:   3,
@@ -78,7 +78,7 @@ config := &hyperfixi.ClientConfig{
     },
 }
 
-client, err := hyperfixi.NewClient(config)
+client, err := lokascript.NewClient(config)
 ```
 
 ## Gin Integration
@@ -90,12 +90,12 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/hyperfixi/hyperfixi-go"
+    "github.com/lokascript/lokascript-go"
 )
 
 func main() {
-    // Create HyperFixi client
-    client, err := hyperfixi.NewDefaultClient()
+    // Create LokaScript client
+    client, err := lokascript.NewDefaultClient()
     if err != nil {
         panic(err)
     }
@@ -103,14 +103,14 @@ func main() {
     // Create Gin router
     r := gin.Default()
 
-    // Add HyperFixi middleware
-    config := hyperfixi.DefaultGinMiddlewareConfig(client)
-    r.Use(hyperfixi.GinMiddleware(config))
+    // Add LokaScript middleware
+    config := lokascript.DefaultGinMiddlewareConfig(client)
+    r.Use(lokascript.GinMiddleware(config))
 
     // Your routes will automatically compile hyperscript
     r.GET("/", func(c *gin.Context) {
         c.HTML(200, "index.html", gin.H{
-            "title": "HyperFixi Demo",
+            "title": "LokaScript Demo",
         })
     })
 
@@ -124,65 +124,65 @@ func main() {
 <!-- templates/index.html -->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>{{.title}}</title>
-</head>
-<body>
+  </head>
+  <body>
     <!-- This hyperscript will be automatically compiled -->
     <button _="on click toggle .active">Toggle Active</button>
-    
+
     <!-- This will also be compiled -->
     <form data-hs="on submit fetch /api/save then put result into #status">
-        <input type="text" name="message">
-        <button type="submit">Save</button>
+      <input type="text" name="message" />
+      <button type="submit">Save</button>
     </form>
-    
+
     <div id="status"></div>
-</body>
+  </body>
 </html>
 ```
 
 ### Advanced Middleware Configuration
 
 ```go
-config := &hyperfixi.GinMiddlewareConfig{
+config := &lokascript.GinMiddlewareConfig{
     Client:                client,
     CompileOnResponse:     true,
     TemplateVarsHeader:    "X-Hyperscript-Template-Vars",
-    CompilationOptions: &hyperfixi.CompilationOptions{
+    CompilationOptions: &lokascript.CompilationOptions{
         Minify:        true,
-        Compatibility: hyperfixi.CompatibilityModern,
+        Compatibility: lokascript.CompatibilityModern,
     },
     SkipPaths:        []string{"/api/", "/static/"},
     OnlyContentTypes: []string{"text/html"},
     ErrorHandler: func(c *gin.Context, err error) {
-        log.Printf("HyperFixi error: %v", err)
+        log.Printf("LokaScript error: %v", err)
     },
 }
 
-r.Use(hyperfixi.GinMiddleware(config))
+r.Use(lokascript.GinMiddleware(config))
 ```
 
 ### Template Helpers
 
 ```go
 // Create template helpers
-helpers := hyperfixi.NewGinHelpers(client)
+helpers := lokascript.NewGinHelpers(client)
 
 // In your handler
 r.GET("/user/:id", func(c *gin.Context) {
     userID := c.Param("id")
-    
+
     // Compile hyperscript with template variables
     templateVars := map[string]interface{}{
         "userId": userID,
     }
-    
+
     onclickAttr := helpers.CompileHyperscript(
-        "on click fetch /api/users/{{userId}}", 
+        "on click fetch /api/users/{{userId}}",
         templateVars,
     )
-    
+
     c.HTML(200, "user.html", gin.H{
         "userID":    userID,
         "onclick":   onclickAttr,
@@ -193,12 +193,12 @@ r.GET("/user/:id", func(c *gin.Context) {
 ### API Routes
 
 ```go
-// Add HyperFixi API routes to your Gin router
-hyperfixi.SetupGinRoutes(r, client, "/hyperscript")
+// Add LokaScript API routes to your Gin router
+lokascript.SetupGinRoutes(r, client, "/hyperscript")
 
 // This creates the following endpoints:
 // POST /hyperscript/compile
-// POST /hyperscript/validate  
+// POST /hyperscript/validate
 // POST /hyperscript/batch
 // GET  /hyperscript/health
 // GET  /hyperscript/cache/stats
@@ -209,15 +209,15 @@ hyperfixi.SetupGinRoutes(r, client, "/hyperscript")
 
 ```go
 r.GET("/compile-custom", func(c *gin.Context) {
-    // Get HyperFixi client from context
-    client, exists := hyperfixi.GetHyperfixiClient(c)
+    // Get LokaScript client from context
+    client, exists := lokascript.GetHyperfixiClient(c)
     if !exists {
-        c.JSON(500, gin.H{"error": "HyperFixi client not available"})
+        c.JSON(500, gin.H{"error": "LokaScript client not available"})
         return
     }
 
     // Get template variables from context
-    templateVars, _ := hyperfixi.GetTemplateVars(c)
+    templateVars, _ := lokascript.GetTemplateVars(c)
 
     // Use client directly
     result, err := client.CompileScript(
@@ -239,51 +239,51 @@ r.GET("/compile-custom", func(c *gin.Context) {
 ### Installation
 
 ```bash
-go install github.com/hyperfixi/hyperfixi-go/cmd/hyperfixi@latest
+go install github.com/lokascript/lokascript-go/cmd/lokascript@latest
 ```
 
 ### Basic Usage
 
 ```bash
 # Check service health
-hyperfixi --url http://localhost:3000 health
+lokascript --url http://localhost:3000 health
 
 # Compile hyperscript
-hyperfixi compile "on click toggle .active"
+lokascript compile "on click toggle .active"
 
 # Multiple scripts
-hyperfixi compile button="on click toggle .active" form="on submit halt"
+lokascript compile button="on click toggle .active" form="on submit halt"
 
 # With options
-hyperfixi --minify --compatibility legacy compile "on click log 'Hello'"
+lokascript --minify --compatibility legacy compile "on click log 'Hello'"
 
 # Template variables
-hyperfixi --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"
+lokascript --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"
 
 # Validate syntax
-hyperfixi validate "on click toggle .active"
+lokascript validate "on click toggle .active"
 
 # Batch compilation
-hyperfixi batch scripts.json
+lokascript batch scripts.json
 
 # Cache management
-hyperfixi cache stats
-hyperfixi cache clear
+lokascript cache stats
+lokascript cache clear
 ```
 
 ### Output Formats
 
 ```bash
 # Default onclick format
-hyperfixi compile "on click toggle .active"
+lokascript compile "on click toggle .active"
 # Output: onclick="document.addEventListener('click', ...)"
 
 # JavaScript format
-hyperfixi --output js compile "on click toggle .active"
+lokascript --output js compile "on click toggle .active"
 # Output: document.addEventListener('click', ...)
 
 # JSON format (full response)
-hyperfixi --output json compile "on click toggle .active"
+lokascript --output json compile "on click toggle .active"
 ```
 
 ### Batch File Format
@@ -369,7 +369,7 @@ type ScriptMetadata struct {
 ```go
 result, err := client.Compile(ctx, req)
 if err != nil {
-    var clientErr *hyperfixi.ClientError
+    var clientErr *lokascript.ClientError
     if errors.As(err, &clientErr) {
         fmt.Printf("Client error (status %d): %s\n", clientErr.StatusCode, clientErr.Message)
         if clientErr.StatusCode >= 400 && clientErr.StatusCode < 500 {
@@ -404,7 +404,7 @@ templateVars := map[string]interface{}{
     "className": "btn-primary",
 }
 
-result, err := client.CompileWithTemplateVars(ctx, 
+result, err := client.CompileWithTemplateVars(ctx,
     map[string]string{
         "script": "on click fetch {{apiUrl}}/users/{{userId}} then add .{{className}}",
     },
@@ -436,14 +436,14 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "github.com/hyperfixi/hyperfixi-go"
+    "github.com/lokascript/lokascript-go"
 )
 
 func main() {
-    // Initialize HyperFixi client
-    client, err := hyperfixi.NewDefaultClient()
+    // Initialize LokaScript client
+    client, err := lokascript.NewDefaultClient()
     if err != nil {
-        log.Fatal("Failed to create HyperFixi client:", err)
+        log.Fatal("Failed to create LokaScript client:", err)
     }
 
     // Create Gin router
@@ -452,29 +452,29 @@ func main() {
     // Load HTML templates
     r.LoadHTMLGlob("templates/*")
 
-    // Add HyperFixi middleware
-    config := hyperfixi.DefaultGinMiddlewareConfig(client)
+    // Add LokaScript middleware
+    config := lokascript.DefaultGinMiddlewareConfig(client)
     config.CompilationOptions.Minify = true
-    r.Use(hyperfixi.GinMiddleware(config))
+    r.Use(lokascript.GinMiddleware(config))
 
-    // Add HyperFixi API routes
-    hyperfixi.SetupGinRoutes(r, client, "/hyperscript")
+    // Add LokaScript API routes
+    lokascript.SetupGinRoutes(r, client, "/hyperscript")
 
     // Main page
     r.GET("/", func(c *gin.Context) {
         c.HTML(http.StatusOK, "index.html", gin.H{
-            "title": "HyperFixi Go Demo",
+            "title": "LokaScript Go Demo",
         })
     })
 
     // User page with template variables
     r.GET("/user/:id", func(c *gin.Context) {
         userID := c.Param("id")
-        
+
         // Set template variables for hyperscript
-        c.Header("X-Hyperscript-Template-Vars", 
+        c.Header("X-Hyperscript-Template-Vars",
             fmt.Sprintf(`{"userId": "%s"}`, userID))
-        
+
         c.HTML(http.StatusOK, "user.html", gin.H{
             "userID": userID,
         })
@@ -489,25 +489,25 @@ func main() {
 ### Batch Processing
 
 ```go
-func batchCompileExample(client *hyperfixi.Client) {
+func batchCompileExample(client *lokascript.Client) {
     ctx := context.Background()
-    
-    req := &hyperfixi.BatchCompileRequest{
-        Definitions: []hyperfixi.ScriptDefinition{
+
+    req := &lokascript.BatchCompileRequest{
+        Definitions: []lokascript.ScriptDefinition{
             {
                 ID:     "navigation",
                 Script: "on click add .active to me then remove .active from siblings",
-                Options: &hyperfixi.CompilationOptions{Minify: true},
+                Options: &lokascript.CompilationOptions{Minify: true},
             },
             {
                 ID:     "modal",
                 Script: "on click toggle .modal-open on body",
-                Options: &hyperfixi.CompilationOptions{Minify: false},
+                Options: &lokascript.CompilationOptions{Minify: false},
             },
             {
                 ID:     "form",
                 Script: "on submit fetch /api/save then put result into #status",
-                Context: &hyperfixi.ParseContext{
+                Context: &lokascript.ParseContext{
                     TemplateVars: map[string]interface{}{
                         "endpoint": "/api/save",
                     },
@@ -515,12 +515,12 @@ func batchCompileExample(client *hyperfixi.Client) {
             },
         },
     }
-    
+
     result, err := client.BatchCompile(ctx, req)
     if err != nil {
         log.Fatal("Batch compilation failed:", err)
     }
-    
+
     for id, compiled := range result.Compiled {
         fmt.Printf("%s: %s\n", id, compiled)
     }
@@ -541,6 +541,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- **Documentation**: [https://hyperfixi.dev/docs](https://hyperfixi.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **Go Package**: [pkg.go.dev](https://pkg.go.dev/github.com/hyperfixi/hyperfixi-go)
+- **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
+- **Issues**: [GitHub Issues](https://github.com/lokascript/lokascript/issues)
+- **Go Package**: [pkg.go.dev](https://pkg.go.dev/github.com/lokascript/lokascript-go)

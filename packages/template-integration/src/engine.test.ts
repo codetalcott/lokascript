@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LokaScriptTemplateEngine } from './engine';
 import { TemplateOptions, TemplateContext } from './types';
-import { createComponent } from '@hyperfixi/component-schema';
+import { createComponent } from '@lokascript/component-schema';
 
 describe('LokaScriptTemplateEngine', () => {
   let engine: LokaScriptTemplateEngine;

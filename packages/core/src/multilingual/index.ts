@@ -10,7 +10,7 @@
  * - translate: Convenience function for simple translations
  */
 
-import type { SemanticNode, ASTNode } from '@hyperfixi/semantic';
+import type { SemanticNode, ASTNode } from '@lokascript/semantic';
 import {
   SemanticGrammarBridge,
   getDefaultBridge,
@@ -31,11 +31,11 @@ export {
 };
 
 // Lazy-loaded semantic module
-let _semanticModule: typeof import('@hyperfixi/semantic') | null = null;
+let _semanticModule: typeof import('@lokascript/semantic') | null = null;
 
 async function getSemanticModule() {
   if (!_semanticModule) {
-    _semanticModule = await import('@hyperfixi/semantic');
+    _semanticModule = await import('@lokascript/semantic');
   }
   return _semanticModule;
 }

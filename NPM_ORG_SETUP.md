@@ -28,7 +28,7 @@
 - [ ] Set default package access: `public`
 - [ ] Add organization description: "Multilingual scripting for 23 languages"
 - [ ] Add organization website: https://lokascript.org
-- [ ] Add repository URL: https://github.com/codetalcott/hyperfixi
+- [ ] Add repository URL: https://github.com/codetalcott/lokascript
 
 ### Step 3: Add Team Members (Optional)
 
@@ -54,7 +54,7 @@
 
 **Option A: GitHub Website**
 
-- [ ] Go to https://github.com/codetalcott/hyperfixi/settings/secrets/actions
+- [ ] Go to https://github.com/codetalcott/lokascript/settings/secrets/actions
 - [ ] Click "New repository secret"
 - [ ] Name: `NPM_TOKEN`
 - [ ] Value: (paste token from Step 4)
@@ -132,7 +132,7 @@ Multilingual scripting language supporting 23 languages with native grammar tran
 ## Documentation
 
 - **Website**: https://lokascript.org
-- **GitHub**: https://github.com/codetalcott/hyperfixi
+- **GitHub**: https://github.com/codetalcott/lokascript
 - **Getting Started**: https://lokascript.org/docs
 
 ## License

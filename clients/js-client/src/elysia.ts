@@ -9,7 +9,7 @@ import {
 } from './types';
 
 /**
- * ElysiaJS plugin configuration for HyperFixi
+ * ElysiaJS plugin configuration for LokaScript
  */
 export interface ElysiaPluginConfig {
   client: HyperfixiClient;
@@ -38,25 +38,25 @@ const DEFAULT_PLUGIN_CONFIG: Partial<ElysiaPluginConfig> = {
  * Default error handler for ElysiaJS plugin
  */
 function defaultErrorHandler(context: Context, error: Error): void {
-  console.error('HyperFixi ElysiaJS plugin error:', error.message);
+  console.error('LokaScript ElysiaJS plugin error:', error.message);
   // Don't break the response, just log the error
 }
 
 /**
- * ElysiaJS plugin for HyperFixi integration
+ * ElysiaJS plugin for LokaScript integration
  */
-export function hyperfixiPlugin(config: ElysiaPluginConfig) {
+export function lokascriptPlugin(config: ElysiaPluginConfig) {
   const finalConfig = { ...DEFAULT_PLUGIN_CONFIG, ...config };
 
   if (!finalConfig.client) {
-    throw new Error('HyperFixi client is required in plugin config');
+    throw new Error('LokaScript client is required in plugin config');
   }
 
   if (!finalConfig.errorHandler) {
     finalConfig.errorHandler = defaultErrorHandler;
   }
 
-  return new Elysia({ name: 'hyperfixi' })
+  return new Elysia({ name: 'lokascript' })
     // Add client to context
     .derive(({ headers }) => {
       // Parse template variables from header
@@ -71,8 +71,8 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
       }
 
       return {
-        hyperfixi: finalConfig.client!,
-        hyperfixiTemplateVars: templateVars,
+        lokascript: finalConfig.client!,
+        lokascriptTemplateVars: templateVars,
       };
     })
     
@@ -114,7 +114,7 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
           const processedBody = await compileHyperscriptInHtml(
             finalConfig.client!,
             context.response,
-            context.hyperfixiTemplateVars,
+            context.lokascriptTemplateVars,
             finalConfig.compilationOptions
           );
           context.response = processedBody;
@@ -128,10 +128,10 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
     .group(finalConfig.basePath!, (app) =>
       app
         // Compile endpoint
-        .post('/compile', async ({ body, hyperfixi }) => {
+        .post('/compile', async ({ body, lokascript }) => {
           try {
             const request = body as CompileRequest;
-            return await hyperfixi.compile(request);
+            return await lokascript.compile(request);
           } catch (error) {
             throw createElysiaError(error);
           }
@@ -141,10 +141,10 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
         })
 
         // Validate endpoint
-        .post('/validate', async ({ body, hyperfixi }) => {
+        .post('/validate', async ({ body, lokascript }) => {
           try {
             const request = body as ValidateRequest;
-            return await hyperfixi.validate(request);
+            return await lokascript.validate(request);
           } catch (error) {
             throw createElysiaError(error);
           }
@@ -154,10 +154,10 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
         })
 
         // Batch compile endpoint
-        .post('/batch', async ({ body, hyperfixi }) => {
+        .post('/batch', async ({ body, lokascript }) => {
           try {
             const request = body as BatchCompileRequest;
-            return await hyperfixi.batchCompile(request);
+            return await lokascript.batchCompile(request);
           } catch (error) {
             throw createElysiaError(error);
           }
@@ -167,27 +167,27 @@ export function hyperfixiPlugin(config: ElysiaPluginConfig) {
         })
 
         // Health endpoint
-        .get('/health', async ({ hyperfixi }) => {
+        .get('/health', async ({ lokascript }) => {
           try {
-            return await hyperfixi.health();
+            return await lokascript.health();
           } catch (error) {
             throw createElysiaError(error);
           }
         })
 
         // Cache stats endpoint
-        .get('/cache/stats', async ({ hyperfixi }) => {
+        .get('/cache/stats', async ({ lokascript }) => {
           try {
-            return await hyperfixi.cacheStats();
+            return await lokascript.cacheStats();
           } catch (error) {
             throw createElysiaError(error);
           }
         })
 
         // Clear cache endpoint
-        .post('/cache/clear', async ({ hyperfixi }) => {
+        .post('/cache/clear', async ({ lokascript }) => {
           try {
-            await hyperfixi.clearCache();
+            await lokascript.clearCache();
             return { message: 'Cache cleared successfully' };
           } catch (error) {
             throw createElysiaError(error);
@@ -251,7 +251,7 @@ async function compileHyperscriptInHtml(
 }
 
 /**
- * Create appropriate Elysia error from HyperFixi error
+ * Create appropriate Elysia error from LokaScript error
  */
 function createElysiaError(error: unknown): Error {
   if (error instanceof HyperfixiError) {
@@ -286,7 +286,7 @@ export function createElysiaTemplateHelpers(client: HyperfixiClient) {
         return compiled ? `onclick="${compiled.replace(/"/g, '&quot;')}"` : '';
       } catch (error) {
         console.error('HyperScript template compilation failed:', error);
-        return `onclick="/* HyperFixi compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
+        return `onclick="/* LokaScript compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
       }
     },
 
@@ -308,7 +308,7 @@ export function createElysiaTemplateHelpers(client: HyperfixiClient) {
         return compiled ? `onclick="${compiled.replace(/"/g, '&quot;')}"` : '';
       } catch (error) {
         console.error('HyperScript template compilation failed:', error);
-        return `onclick="/* HyperFixi compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
+        return `onclick="/* LokaScript compilation error: ${error instanceof Error ? error.message : 'Unknown error'} */"`;
       }
     },
 
@@ -324,25 +324,25 @@ export function createElysiaTemplateHelpers(client: HyperfixiClient) {
 }
 
 /**
- * Get HyperFixi client from Elysia context
+ * Get LokaScript client from Elysia context
  */
 export function getHyperfixiClient(context: Context): HyperfixiClient | undefined {
-  return (context as any).hyperfixi;
+  return (context as any).lokascript;
 }
 
 /**
  * Get template variables from Elysia context
  */
 export function getTemplateVars(context: Context): Record<string, any> | undefined {
-  return (context as any).hyperfixiTemplateVars;
+  return (context as any).lokascriptTemplateVars;
 }
 
 /**
- * Create a standalone Elysia app with HyperFixi routes only
+ * Create a standalone Elysia app with LokaScript routes only
  */
 export function createHyperfixiApp(client: HyperfixiClient, basePath = '/hyperscript') {
   return new Elysia()
-    .use(hyperfixiPlugin({ client, basePath, compileOnResponse: false }));
+    .use(lokascriptPlugin({ client, basePath, compileOnResponse: false }));
 }
 
 /**

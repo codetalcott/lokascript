@@ -9,7 +9,7 @@
  *
  * @example
  * ```typescript
- * import { esKeywords } from '@hyperfixi/i18n/parser/es';
+ * import { esKeywords } from '@lokascript/i18n/parser/es';
  * const parser = new Parser({ keywords: esKeywords });
  * parser.parse('en clic alternar .active'); // Works!
  * ```

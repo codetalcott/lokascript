@@ -35,8 +35,8 @@ export default [
       }),
     ],
     external: [
-      '@hyperfixi/component-schema', 
-      '@hyperfixi/template-integration',
+      '@lokascript/component-schema', 
+      '@lokascript/template-integration',
       'jsdom',
       'fs', 
       'path',

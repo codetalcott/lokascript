@@ -10,7 +10,7 @@
 import Database from 'better-sqlite3';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import { canParse } from '@hyperfixi/semantic';
+import { canParse } from '@lokascript/semantic';
 
 // =============================================================================
 // Configuration

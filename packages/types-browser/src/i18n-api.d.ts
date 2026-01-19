@@ -1,5 +1,5 @@
 /**
- * Type definitions for @hyperfixi/i18n browser global (window.HyperFixiI18n)
+ * Type definitions for @lokascript/i18n browser global (window.HyperFixiI18n)
  */
 
 export interface LokaScriptI18nAPI {

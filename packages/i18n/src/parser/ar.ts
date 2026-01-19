@@ -25,8 +25,8 @@ import type { KeywordProvider } from './types';
  *
  * @example
  * ```typescript
- * import { arKeywords } from '@hyperfixi/i18n/parser/ar';
- * import { Parser } from '@hyperfixi/core';
+ * import { arKeywords } from '@lokascript/i18n/parser/ar';
+ * import { Parser } from '@lokascript/core';
  *
  * const parser = new Parser({ keywords: arKeywords });
  * parser.parse('على نقر بدل .active');

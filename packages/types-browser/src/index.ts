@@ -1,5 +1,5 @@
 /**
- * @hyperfixi/types-browser
+ * @lokascript/types-browser
  * TypeScript type definitions for HyperFixi browser globals
  *
  * This package provides complete type definitions for using HyperFixi
@@ -8,7 +8,7 @@
  * ## Installation
  *
  * ```bash
- * npm install --save-dev @hyperfixi/types-browser
+ * npm install --save-dev @lokascript/types-browser
  * ```
  *
  * ## Usage
@@ -17,14 +17,14 @@
  * ```json
  * {
  *   "compilerOptions": {
- *     "types": ["@hyperfixi/types-browser"]
+ *     "types": ["@lokascript/types-browser"]
  *   }
  * }
  * ```
  *
  * Or use triple-slash directive in your TypeScript files:
  * ```typescript
- * /// <reference types="@hyperfixi/types-browser" />
+ * /// <reference types="@lokascript/types-browser" />
  * ```
  *
  * ## Examples
@@ -46,7 +46,7 @@
  *
  * ### Using Type Guards
  * ```typescript
- * import { isHyperFixiCoreAvailable, getHyperFixiCore } from '@hyperfixi/types-browser'
+ * import { isHyperFixiCoreAvailable, getHyperFixiCore } from '@lokascript/types-browser'
  *
  * const hyperfixi = getHyperFixiCore()
  * if (hyperfixi) {

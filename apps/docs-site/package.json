@@ -1,5 +1,5 @@
 {
-  "name": "@hyperfixi/docs-site",
+  "name": "@lokascript/docs-site",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "vue": "^3.5.24"
   },
   "dependencies": {
-    "@hyperfixi/core": "*",
-    "@hyperfixi/semantic": "*"
+    "@lokascript/core": "*",
+    "@lokascript/semantic": "*"
   }
 }

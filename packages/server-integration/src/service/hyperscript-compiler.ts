@@ -3,9 +3,9 @@
  *
  * This compiler parses hyperscript syntax and generates executable JavaScript.
  * It uses a fallback regex-based approach for robustness, with AST-based
- * generation available when @hyperfixi/core integration is enabled.
+ * generation available when @lokascript/core integration is enabled.
  *
- * Future: Full AST-based compilation via @hyperfixi/core parser
+ * Future: Full AST-based compilation via @lokascript/core parser
  */
 
 import { CompilationCache } from '../cache/compilation-cache.js';
@@ -16,10 +16,10 @@ import type {
   CompilationWarning,
   ScriptMetadata,
 } from '../types.js';
-import { ASTVisitor, visit, findNodes, calculateComplexity } from '@hyperfixi/ast-toolkit';
-import type { ASTNode } from '@hyperfixi/ast-toolkit';
+import { ASTVisitor, visit, findNodes, calculateComplexity } from '@lokascript/ast-toolkit';
+import type { ASTNode } from '@lokascript/ast-toolkit';
 
-// Core compilation result interface (compatible with @hyperfixi/core)
+// Core compilation result interface (compatible with @lokascript/core)
 interface CoreCompilationResult {
   success: boolean;
   ast?: ASTNode;
@@ -33,14 +33,14 @@ interface CoreCompilationResult {
   compilationTime: number;
 }
 
-// Optional: Dynamic import of @hyperfixi/core for AST-based compilation
+// Optional: Dynamic import of @lokascript/core for AST-based compilation
 // This allows the package to work without requiring core to be built
 let hyperscriptCore: { compile: (code: string) => CoreCompilationResult } | null = null;
 
 async function tryLoadCore(): Promise<boolean> {
   if (hyperscriptCore !== null) return true;
   try {
-    const module = await import('@hyperfixi/core');
+    const module = await import('@lokascript/core');
     hyperscriptCore = module.hyperscript;
     return true;
   } catch {
@@ -102,7 +102,7 @@ export class HyperscriptCompiler {
     try {
       const startTime = performance.now();
 
-      // Try to use @hyperfixi/core for parsing (may not be available)
+      // Try to use @lokascript/core for parsing (may not be available)
       const coreResult = await this.parseWithCore(script);
 
       const errors: CompilationError[] = [];
@@ -186,7 +186,7 @@ export class HyperscriptCompiler {
   }
 
   /**
-   * Parse hyperscript using @hyperfixi/core (if available)
+   * Parse hyperscript using @lokascript/core (if available)
    */
   private async parseWithCore(script: string): Promise<CoreCompilationResult | null> {
     // Try to load core if not already loaded

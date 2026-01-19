@@ -1,7 +1,7 @@
 /**
- * HyperFixi JavaScript/TypeScript Client
+ * LokaScript JavaScript/TypeScript Client
  * 
- * A comprehensive client library for HyperFixi server-side hyperscript compilation
+ * A comprehensive client library for LokaScript server-side hyperscript compilation
  * with Express.js, ElysiaJS middleware integration and TypeScript support.
  */
 
@@ -41,7 +41,7 @@ export {
 
 // Express.js integration
 export {
-  hyperfixiMiddleware,
+  lokascriptMiddleware,
   createTemplateHelpers,
   createApiRoutes,
   getHyperfixiClient,
@@ -51,7 +51,7 @@ export {
 
 // ElysiaJS integration
 export {
-  hyperfixiPlugin,
+  lokascriptPlugin,
   createElysiaTemplateHelpers,
   createHyperfixiApp,
   createElysiaConfig,

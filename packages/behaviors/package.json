@@ -74,7 +74,7 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@lokascript/core": "^1.0.0"
+    "@lokascript/core": "*"
   },
   "devDependencies": {
     "@lokascript/core": "*",

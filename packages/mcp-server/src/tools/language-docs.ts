@@ -253,7 +253,7 @@ export async function handleLanguageDocsTool(
     // Try to import patterns-reference
     let patternsRef: any;
     try {
-      patternsRef = await import('@hyperfixi/patterns-reference');
+      patternsRef = await import('@lokascript/patterns-reference');
     } catch {
       // Fall back to built-in responses
       return handleWithBuiltinDocs(name, args);
@@ -596,7 +596,7 @@ function handleWithBuiltinDocs(
                   command: commandName,
                   message: `Command "${commandName}" not found in built-in docs`,
                   availableCommands: Object.keys(BUILTIN_COMMANDS),
-                  note: 'Install @hyperfixi/patterns-reference for full documentation',
+                  note: 'Install @lokascript/patterns-reference for full documentation',
                 },
                 null,
                 2
@@ -614,7 +614,7 @@ function handleWithBuiltinDocs(
               {
                 found: true,
                 ...command,
-                note: 'Using built-in docs. Install @hyperfixi/patterns-reference for full documentation.',
+                note: 'Using built-in docs. Install @lokascript/patterns-reference for full documentation.',
               },
               null,
               2
@@ -633,7 +633,7 @@ function handleWithBuiltinDocs(
               {
                 found: false,
                 expression: args.expression,
-                message: 'Expression documentation requires @hyperfixi/patterns-reference',
+                message: 'Expression documentation requires @lokascript/patterns-reference',
                 note: 'Run migration script to populate language documentation',
               },
               null,
@@ -666,7 +666,7 @@ function handleWithBuiltinDocs(
                 query,
                 totalResults: matches.length,
                 results: matches,
-                note: 'Using built-in docs. Install @hyperfixi/patterns-reference for full search.',
+                note: 'Using built-in docs. Install @lokascript/patterns-reference for full search.',
               },
               null,
               2

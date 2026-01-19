@@ -1,7 +1,7 @@
 /**
  * Public API Surface
  *
- * This file defines the stable public API for @hyperfixi/semantic.
+ * This file defines the stable public API for @lokascript/semantic.
  * All exports here are considered stable and follow semver guarantees:
  * - Major version: Breaking changes to public API
  * - Minor version: New features, backward compatible
@@ -9,7 +9,7 @@
  *
  * Internal modules (tokenizers, generators, patterns) may change without notice.
  *
- * @module @hyperfixi/semantic
+ * @module @lokascript/semantic
  * @version 1.0.0
  */
 

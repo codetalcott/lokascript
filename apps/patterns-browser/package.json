@@ -1,5 +1,5 @@
 {
-  "name": "@hyperfixi/patterns-browser",
+  "name": "@lokascript/patterns-browser",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
     "@elysiajs/html": "^1.1.0",
     "@elysiajs/static": "^1.1.0",
     "@kitajs/html": "^4.2.0",
-    "@hyperfixi/patterns-reference": "*",
-    "@hyperfixi/semantic": "*"
+    "@lokascript/patterns-reference": "*",
+    "@lokascript/semantic": "*"
   },
   "devDependencies": {
     "bun-types": "latest",

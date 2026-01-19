@@ -1,7 +1,7 @@
 /**
  * Semantic Tools Tests (Phase 5)
  *
- * Tests for full syntax-level multilingual support via @hyperfixi/semantic.
+ * Tests for full syntax-level multilingual support via @lokascript/semantic.
  * These tests verify semantic parsing, translation, and confidence scoring.
  */
 import { describe, it, expect } from 'vitest';

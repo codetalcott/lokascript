@@ -1,6 +1,6 @@
 // Import types from actual packages
-import { ComponentDefinition } from '@hyperfixi/component-schema';
-import { TemplateContext, CompilationResult } from '@hyperfixi/template-integration';
+import { ComponentDefinition } from '@lokascript/component-schema';
+import { TemplateContext, CompilationResult } from '@lokascript/template-integration';
 
 // Re-export imported types for consumers
 export { ComponentDefinition, TemplateContext, CompilationResult };

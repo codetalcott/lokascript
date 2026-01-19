@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LokaScriptSSREngine } from './engine';
 import { SSRContext, SSROptions } from './types';
-import { createComponent } from '@hyperfixi/component-schema';
+import { createComponent } from '@lokascript/component-schema';
 
 describe('LokaScriptSSREngine', () => {
   let engine: LokaScriptSSREngine;

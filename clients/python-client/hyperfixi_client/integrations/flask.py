@@ -1,5 +1,5 @@
 """
-Flask integration for HyperFixi Python client
+Flask integration for LokaScript Python client
 """
 
 import asyncio
@@ -15,11 +15,11 @@ from ..exceptions import HyperfixiError
 
 class FlaskHyperscriptExtension:
     """
-    Flask extension for HyperFixi integration
+    Flask extension for LokaScript integration
     
     Example:
         from flask import Flask
-        from hyperfixi_client.integrations.flask import FlaskHyperscriptExtension
+        from lokascript_client.integrations.flask import FlaskHyperscriptExtension
         
         app = Flask(__name__)
         hyperscript = FlaskHyperscriptExtension()
@@ -68,7 +68,7 @@ class FlaskHyperscriptExtension:
         
         # Parse template variables from header
         template_vars_header = current_app.config.get(
-            'HYPERFIXI_TEMPLATE_VARS_HEADER', 
+            'LOKASCRIPT_TEMPLATE_VARS_HEADER', 
             'X-Hyperscript-Template-Vars'
         )
         
@@ -112,7 +112,7 @@ class FlaskHyperscriptExtension:
             return f'onclick="{compiled}"'
             
         except Exception as e:
-            return f'<!-- HyperFixi compilation error: {e} -->'
+            return f'<!-- LokaScript compilation error: {e} -->'
     
     def hyperscript_function(self, script: str, **options) -> str:
         """
@@ -197,7 +197,7 @@ class FlaskHyperscriptExtension:
             
         except HyperfixiError as e:
             # If compilation fails, return original template with error comment
-            return f"<!-- HyperFixi compilation error: {e} -->\n{rendered}"
+            return f"<!-- LokaScript compilation error: {e} -->\n{rendered}"
 
 
 def hyperscript_filter(script: str, **options) -> str:
@@ -211,7 +211,7 @@ def hyperscript_filter(script: str, **options) -> str:
     # Get extension from current app
     ext = current_app.extensions.get('hyperscript')
     if not ext:
-        return '<!-- HyperFixi extension not initialized -->'
+        return '<!-- LokaScript extension not initialized -->'
     
     return ext.compile_hyperscript_filter(script, **options)
 
@@ -222,7 +222,7 @@ class HyperscriptMiddleware:
     
     Example:
         from flask import Flask
-        from hyperfixi_client.integrations.flask import HyperscriptMiddleware
+        from lokascript_client.integrations.flask import HyperscriptMiddleware
         
         app = Flask(__name__)
         app.wsgi_app = HyperscriptMiddleware(
@@ -349,11 +349,11 @@ class HyperscriptMiddleware:
 # Flask CLI commands
 def create_cli_commands(app: Flask):
     """
-    Create Flask CLI commands for HyperFixi
+    Create Flask CLI commands for LokaScript
     
     Example:
         from flask import Flask
-        from hyperfixi_client.integrations.flask import create_cli_commands
+        from lokascript_client.integrations.flask import create_cli_commands
         
         app = Flask(__name__)
         create_cli_commands(app)
@@ -365,13 +365,13 @@ def create_cli_commands(app: Flask):
     
     @app.cli.group()
     def hyperscript():
-        """HyperFixi commands"""
+        """LokaScript commands"""
         pass
     
     @hyperscript.command()
     def health():
-        """Check HyperFixi service health"""
-        client_url = app.config.get('HYPERFIXI_CLIENT_URL', 'http://localhost:3000')
+        """Check LokaScript service health"""
+        client_url = app.config.get('LOKASCRIPT_CLIENT_URL', 'http://localhost:3000')
         client = HyperfixiClient(client_url)
         
         try:
@@ -388,7 +388,7 @@ def create_cli_commands(app: Flask):
     @app.cli.argument('script')
     def compile(script):
         """Compile hyperscript to JavaScript"""
-        client_url = app.config.get('HYPERFIXI_CLIENT_URL', 'http://localhost:3000')
+        client_url = app.config.get('LOKASCRIPT_CLIENT_URL', 'http://localhost:3000')
         client = HyperfixiClient(client_url)
         
         try:
@@ -416,7 +416,7 @@ def create_cli_commands(app: Flask):
     @app.cli.argument('script')
     def validate(script):
         """Validate hyperscript syntax"""
-        client_url = app.config.get('HYPERFIXI_CLIENT_URL', 'http://localhost:3000')
+        client_url = app.config.get('LOKASCRIPT_CLIENT_URL', 'http://localhost:3000')
         client = HyperfixiClient(client_url)
         
         try:
@@ -435,7 +435,7 @@ def create_cli_commands(app: Flask):
     @hyperscript.command()
     def cache_stats():
         """Get cache statistics"""
-        client_url = app.config.get('HYPERFIXI_CLIENT_URL', 'http://localhost:3000')
+        client_url = app.config.get('LOKASCRIPT_CLIENT_URL', 'http://localhost:3000')
         client = HyperfixiClient(client_url)
         
         try:
@@ -451,7 +451,7 @@ def create_cli_commands(app: Flask):
     @hyperscript.command()
     def clear_cache():
         """Clear compilation cache"""
-        client_url = app.config.get('HYPERFIXI_CLIENT_URL', 'http://localhost:3000')
+        client_url = app.config.get('LOKASCRIPT_CLIENT_URL', 'http://localhost:3000')
         client = HyperfixiClient(client_url)
         
         try:

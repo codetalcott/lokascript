@@ -2,7 +2,7 @@
 /**
  * Sync Keywords Script
  *
- * Synchronizes language keywords from @hyperfixi/semantic profiles to
+ * Synchronizes language keywords from @lokascript/semantic profiles to
  * vite-plugin's language-keywords.ts for detection.
  *
  * Usage:

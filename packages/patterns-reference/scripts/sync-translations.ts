@@ -21,11 +21,11 @@ import {
   getGeneratorLanguages,
   calculateTranslationConfidence,
   type LanguageProfile,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 import {
   GrammarTransformer,
   getProfile as getGrammarProfile,
-} from '@hyperfixi/i18n';
+} from '@lokascript/i18n';
 
 // =============================================================================
 // Configuration
@@ -41,7 +41,7 @@ const dbPathIndex = args.indexOf('--db-path');
 const dbPath = dbPathIndex >= 0 && args[dbPathIndex + 1] ? args[dbPathIndex + 1] : DEFAULT_DB_PATH;
 
 // =============================================================================
-// Derive language data from @hyperfixi/semantic profiles
+// Derive language data from @lokascript/semantic profiles
 // =============================================================================
 
 // Build LANGUAGES from semantic profiles
@@ -75,7 +75,7 @@ const KEYWORD_TRANSLATIONS: Record<string, Record<string, string>> = Object.from
   })
 );
 
-console.log(`Loaded ${getGeneratorLanguages().length} languages from @hyperfixi/semantic`);
+console.log(`Loaded ${getGeneratorLanguages().length} languages from @lokascript/semantic`);
 
 // =============================================================================
 // Translation Logic

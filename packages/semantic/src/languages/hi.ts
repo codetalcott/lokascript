@@ -7,10 +7,10 @@
  * @example
  * ```typescript
  * // Enable Hindi
- * import '@hyperfixi/semantic/languages/hi';
+ * import '@lokascript/semantic/languages/hi';
  *
  * // Or import everything
- * import '@hyperfixi/semantic/languages/_all';
+ * import '@lokascript/semantic/languages/_all';
  * ```
  */
 

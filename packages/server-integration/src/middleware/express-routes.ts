@@ -7,7 +7,7 @@
  * For maximum flexibility, use framework-agnostic-routes.ts directly.
  */
 
-import type { Registry } from '@hyperfixi/core/registry';
+import type { Registry } from '@lokascript/core/registry';
 import {
   createHyperscriptMiddleware,
   setupHyperscriptRoutes as genericSetup,
@@ -36,7 +36,7 @@ export interface ExpressHyperscriptRoutesOptions {
  *
  * @example
  * import express from 'express';
- * import { createExpressHyperscriptMiddleware } from '@hyperfixi/server-integration/middleware/express';
+ * import { createExpressHyperscriptMiddleware } from '@lokascript/server-integration/middleware/express';
  *
  * const app = express();
  * const middleware = createExpressHyperscriptMiddleware({ debug: true });
@@ -55,7 +55,7 @@ export function createExpressHyperscriptMiddleware(options: ExpressHyperscriptRo
  *
  * @example
  * import express from 'express';
- * import { setupExpressHyperscriptRoutes } from '@hyperfixi/server-integration/middleware/express';
+ * import { setupExpressHyperscriptRoutes } from '@lokascript/server-integration/middleware/express';
  *
  * const app = express();
  * await setupExpressHyperscriptRoutes(app, { debug: true });

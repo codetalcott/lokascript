@@ -1,10 +1,10 @@
 """
-Exceptions for HyperFixi Python client
+Exceptions for LokaScript Python client
 """
 
 
 class HyperfixiError(Exception):
-    """Base exception for HyperFixi client errors"""
+    """Base exception for LokaScript client errors"""
     pass
 
 
@@ -25,7 +25,7 @@ class ValidationError(HyperfixiError):
 
 
 class NetworkError(HyperfixiError):
-    """Network-related error when communicating with HyperFixi service"""
+    """Network-related error when communicating with LokaScript service"""
     
     def __init__(self, message: str, status_code: int = None):
         super().__init__(message)
@@ -33,12 +33,12 @@ class NetworkError(HyperfixiError):
 
 
 class TimeoutError(HyperfixiError):
-    """Timeout error when communicating with HyperFixi service"""
+    """Timeout error when communicating with LokaScript service"""
     pass
 
 
 class ServiceUnavailableError(NetworkError):
-    """HyperFixi service is unavailable"""
+    """LokaScript service is unavailable"""
     pass
 
 

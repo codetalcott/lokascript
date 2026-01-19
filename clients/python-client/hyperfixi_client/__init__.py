@@ -1,5 +1,5 @@
 """
-HyperFixi Python Client Library
+LokaScript Python Client Library
 A Python client for server-side hyperscript compilation with Django, Flask, and FastAPI integration.
 """
 

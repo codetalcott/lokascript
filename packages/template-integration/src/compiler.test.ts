@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TemplateCompiler } from './compiler';
 import { TemplateOptions, TemplateContext } from './types';
-import { createComponent } from '@hyperfixi/component-schema';
+import { createComponent } from '@lokascript/component-schema';
 
 describe('TemplateCompiler', () => {
   let compiler: TemplateCompiler;

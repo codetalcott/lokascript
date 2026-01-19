@@ -9,7 +9,7 @@ import {
   recognizeIntent,
   generateQualityInsights,
   createAIAssistant
-} from '@hyperfixi/ast-toolkit';
+} from '@lokascript/ast-toolkit';
 import { sampleInteractiveAST, sampleFormAST } from './sample-data.js';
 
 console.log('🤖 HyperFixi AST Toolkit - AI-Powered Analysis Example');

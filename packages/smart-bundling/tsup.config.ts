@@ -17,7 +17,7 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   external: [
-    '@hyperfixi/core',
+    '@lokascript/core',
     'esbuild',
     'rollup',
     'terser',

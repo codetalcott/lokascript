@@ -133,7 +133,7 @@ async function handleSubscriptionCreated(
 
   // Get or create user
   const customerEmail =
-    (subscription as any).customer_email || `customer_${customerId}@hyperfixi.dev`;
+    (subscription as any).customer_email || `customer_${customerId}@lokascript.dev`;
   const user = await db.getOrCreateUserByStripeId(customerId, customerEmail);
 
   // Check if user already has an API key
@@ -191,7 +191,7 @@ async function handleSubscriptionUpdated(
   // Find user's API keys and update tier
   const user = await db.getOrCreateUserByStripeId(
     customerId,
-    `customer_${customerId}@hyperfixi.dev`
+    `customer_${customerId}@lokascript.dev`
   );
   const keys = await db.getApiKeysByUserId(user.id);
 
@@ -215,7 +215,7 @@ async function handleSubscriptionDeleted(
   // Downgrade to free tier (don't delete keys)
   const user = await db.getOrCreateUserByStripeId(
     customerId,
-    `customer_${customerId}@hyperfixi.dev`
+    `customer_${customerId}@lokascript.dev`
   );
   const keys = await db.getApiKeysByUserId(user.id);
 
@@ -236,7 +236,7 @@ async function handleInvoicePaid(db: DatabaseClient, invoice: Stripe.Invoice): P
   // Reset monthly usage counter on billing cycle
   const user = await db.getOrCreateUserByStripeId(
     customerId,
-    `customer_${customerId}@hyperfixi.dev`
+    `customer_${customerId}@lokascript.dev`
   );
   const keys = await db.getApiKeysByUserId(user.id);
 
@@ -257,7 +257,7 @@ async function handlePaymentFailed(db: DatabaseClient, invoice: Stripe.Invoice):
   // Get user for notification
   const user = await db.getOrCreateUserByStripeId(
     customerId,
-    `customer_${customerId}@hyperfixi.dev`
+    `customer_${customerId}@lokascript.dev`
   );
 
   // Log payment failed notification (replace with actual email service in production)

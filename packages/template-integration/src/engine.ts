@@ -2,7 +2,7 @@ import {
   ComponentDefinition,
   ComponentRegistry,
   createRegistry,
-} from '@hyperfixi/component-schema';
+} from '@lokascript/component-schema';
 
 import {
   TemplateEngine,

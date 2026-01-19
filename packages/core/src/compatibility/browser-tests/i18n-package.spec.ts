@@ -1,5 +1,5 @@
 /**
- * Playwright Browser Tests for @hyperfixi/i18n
+ * Playwright Browser Tests for @lokascript/i18n
  *
  * Tests the i18n browser bundle functionality including:
  * - Bundle loading and API exposure

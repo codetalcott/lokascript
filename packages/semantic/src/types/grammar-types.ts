@@ -2,7 +2,7 @@
  * Grammar Types for Semantic Multilingual Parsing
  *
  * These types define the semantic role system used across all 13 supported languages.
- * Originally from @hyperfixi/i18n, now consolidated here for package independence.
+ * Originally from @lokascript/i18n, now consolidated here for package independence.
  *
  * Key Linguistic Concepts:
  * - Word Order: SVO, SOV, VSO (and variations)

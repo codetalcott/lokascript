@@ -2,7 +2,7 @@
  * Sample AST data for performance optimization example
  */
 
-import type { ASTNode } from '@hyperfixi/ast-toolkit';
+import type { ASTNode } from '@lokascript/ast-toolkit';
 
 /**
  * Generate a simple AST with minimal nodes for baseline testing

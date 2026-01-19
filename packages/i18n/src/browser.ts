@@ -1,5 +1,5 @@
 /**
- * Browser entry point for @hyperfixi/i18n
+ * Browser entry point for @lokascript/i18n
  *
  * This module exports only what's needed for browser usage:
  * - Keyword providers for each locale
@@ -18,8 +18,8 @@
  *
  * Usage with ES modules:
  * ```typescript
- * import { esKeywords } from '@hyperfixi/i18n';
- * import { Parser } from '@hyperfixi/core';
+ * import { esKeywords } from '@lokascript/i18n';
+ * import { Parser } from '@lokascript/core';
  *
  * const parser = new Parser(tokens, { keywords: esKeywords });
  * ```

@@ -232,10 +232,10 @@ hide #test-element then show #test-element"></textarea>
             
             let passed = 0;
             
-            if (!hyperfixi || !hyperfixi.evalHyperScript) {
+            if (!hyperfixi || !lokascript.evalHyperScript) {
                 logError('LokaScript not available', 'basic-output');
                 logDebug('Available globals', 'basic-output', { 
-                    hyperfixi: typeof hyperfixi, 
+                    hyperfixi: typeof lokascript, 
                     hyperfixiKeys: hyperfixi ? Object.keys(hyperfixi) : 'undefined' 
                 });
                 return;
@@ -246,7 +246,7 @@ hide #test-element then show #test-element"></textarea>
                 
                 try {
                     const startTime = performance.now();
-                    const result = await hyperfixi.evalHyperScript(test.expr);
+                    const result = await lokascript.evalHyperScript(test.expr);
                     const duration = performance.now() - startTime;
                     
                     const isCorrect = result === test.expected;
@@ -318,10 +318,10 @@ hide #test-element then show #test-element"></textarea>
             
             let passed = 0;
             
-            if (!hyperfixi || !hyperfixi.processNode) {
+            if (!hyperfixi || !lokascript.processNode) {
                 logError('LokaScript processNode not available', 'simple-output');
                 logDebug('Available LokaScript methods', 'simple-output', { 
-                    hyperfixi: typeof hyperfixi, 
+                    hyperfixi: typeof lokascript, 
                     methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined' 
                 });
                 return;
@@ -374,7 +374,7 @@ hide #test-element then show #test-element"></textarea>
                     
                     // Process with LokaScript
                     logDebug('Processing with LokaScript...', 'simple-output');
-                    const result = await hyperfixi.processNode(scriptElement);
+                    const result = await lokascript.processNode(scriptElement);
                     const duration = performance.now() - startTime;
                     
                     // Get final state of target element
@@ -451,10 +451,10 @@ hide #test-element then show #test-element"></textarea>
             
             let passed = 0;
             
-            if (!hyperfixi || !hyperfixi.processNode) {
+            if (!hyperfixi || !lokascript.processNode) {
                 logError('LokaScript processNode not available', 'compound-output');
                 logDebug('Available LokaScript methods', 'compound-output', { 
-                    hyperfixi: typeof hyperfixi, 
+                    hyperfixi: typeof lokascript, 
                     methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined' 
                 });
                 return;
@@ -498,7 +498,7 @@ hide #test-element then show #test-element"></textarea>
                     
                     // Process with LokaScript
                     logDebug('Processing with LokaScript...', 'compound-output');
-                    const result = await hyperfixi.processNode(scriptElement);
+                    const result = await lokascript.processNode(scriptElement);
                     const duration = performance.now() - startTime;
                     
                     logSuccess(`${test.name} completed`, 'compound-output', {
@@ -570,10 +570,10 @@ hide #test-element then show #test-element"></textarea>
             
             let passed = 0;
             
-            if (!hyperfixi || !hyperfixi.processNode) {
+            if (!hyperfixi || !lokascript.processNode) {
                 logError('LokaScript processNode not available', 'events-output');
                 logDebug('Available LokaScript methods', 'events-output', { 
-                    hyperfixi: typeof hyperfixi, 
+                    hyperfixi: typeof lokascript, 
                     methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined' 
                 });
                 return;
@@ -632,7 +632,7 @@ hide #test-element then show #test-element"></textarea>
                     
                     // Process with LokaScript
                     logDebug('Processing event handler with LokaScript...', 'events-output');
-                    const result = await hyperfixi.processNode(button);
+                    const result = await lokascript.processNode(button);
                     const duration = performance.now() - startTime;
                     
                     // Verify event handler was attached
@@ -728,10 +728,10 @@ hide #test-element then show #test-element"></textarea>
                 containsThen: script.includes('then')
             });
             
-            if (!hyperfixi || !hyperfixi.processNode) {
+            if (!hyperfixi || !lokascript.processNode) {
                 logError('LokaScript processNode not available', 'custom-output');
                 logDebug('Available LokaScript methods', 'custom-output', { 
-                    hyperfixi: typeof hyperfixi, 
+                    hyperfixi: typeof lokascript, 
                     methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined' 
                 });
                 return;
@@ -769,7 +769,7 @@ hide #test-element then show #test-element"></textarea>
                 
                 // Process with LokaScript
                 logDebug('Processing custom script with LokaScript...', 'custom-output');
-                const result = await hyperfixi.processNode(scriptElement);
+                const result = await lokascript.processNode(scriptElement);
                 const duration = performance.now() - startTime;
                 
                 // Get final state of target element
@@ -852,7 +852,7 @@ hide #test-element then show #test-element"></textarea>
                 // Show current system state
                 logDebug('System State', 'debug-console', {
                     hyperfixi: {
-                        available: typeof hyperfixi !== 'undefined',
+                        available: typeof lokascript !== 'undefined',
                         methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined'
                     },
                     browser: {
@@ -881,9 +881,9 @@ hide #test-element then show #test-element"></textarea>
             
             const systemInfo = {
                 hyperfixi: {
-                    available: typeof hyperfixi !== 'undefined',
+                    available: typeof lokascript !== 'undefined',
                     methods: hyperfixi ? Object.keys(hyperfixi) : 'undefined',
-                    version: hyperfixi ? hyperfixi.version || 'unknown' : 'N/A'
+                    version: hyperfixi ? lokascript.version || 'unknown' : 'N/A'
                 },
                 browser: {
                     name: navigator.userAgent.includes('Chrome') ? 'Chrome' : 
@@ -900,7 +900,7 @@ hide #test-element then show #test-element"></textarea>
             
             logDebug('System initialization complete', 'basic-output', systemInfo);
             
-            if (typeof hyperfixi !== 'undefined') {
+            if (typeof lokascript !== 'undefined') {
                 logSuccess('LokaScript library loaded successfully', 'basic-output', {
                     methods: Object.keys(hyperfixi),
                     readyForTesting: true

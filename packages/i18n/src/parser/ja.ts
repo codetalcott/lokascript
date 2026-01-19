@@ -21,8 +21,8 @@ import type { KeywordProvider } from './types';
  *
  * @example
  * ```typescript
- * import { jaKeywords } from '@hyperfixi/i18n/parser/ja';
- * import { Parser } from '@hyperfixi/core';
+ * import { jaKeywords } from '@lokascript/i18n/parser/ja';
+ * import { Parser } from '@lokascript/core';
  *
  * const parser = new Parser({ keywords: jaKeywords });
  * parser.parse('クリック で 切り替え .active');

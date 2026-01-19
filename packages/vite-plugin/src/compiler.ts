@@ -10,7 +10,7 @@
  * - Semantic parsing happens at BUILD time (zero runtime overhead)
  */
 
-import { HybridParser } from '@hyperfixi/core/parser/hybrid/parser-core';
+import { HybridParser } from '@lokascript/core/parser/hybrid/parser-core';
 import type {
   ASTNode,
   CommandNode,
@@ -24,7 +24,7 @@ import type {
   SelectorNode,
   LiteralNode,
   PositionalNode,
-} from '@hyperfixi/core/parser/hybrid/ast-types';
+} from '@lokascript/core/parser/hybrid/ast-types';
 
 // =============================================================================
 // SEMANTIC PARSER INTEGRATION (optional)
@@ -32,7 +32,7 @@ import type {
 
 /**
  * Semantic analyzer interface for multilingual support.
- * This matches the interface from @hyperfixi/semantic.
+ * This matches the interface from @lokascript/semantic.
  */
 interface SemanticAnalysisResult {
   confidence: number;
@@ -56,12 +56,12 @@ let buildASTFn: BuildASTFn | null = null;
 
 /**
  * Configure the semantic parser for multilingual compilation.
- * Call this with the semantic analyzer from @hyperfixi/semantic.
+ * Call this with the semantic analyzer from @lokascript/semantic.
  *
  * @example
  * ```typescript
- * import { createSemanticAnalyzer, buildAST } from '@hyperfixi/semantic';
- * import { setSemanticParser } from '@hyperfixi/vite-plugin';
+ * import { createSemanticAnalyzer, buildAST } from '@lokascript/semantic';
+ * import { setSemanticParser } from '@lokascript/vite-plugin';
  *
  * setSemanticParser(createSemanticAnalyzer(), buildAST);
  * ```
@@ -351,7 +351,7 @@ export function compile(script: string, options: CompileOptions = {}): CompiledH
       // Non-English but no semantic parser available
       if (debug) {
         console.log(
-          `[hyperfixi] Semantic parser not available for "${language}". Install @hyperfixi/semantic and call setSemanticParser().`
+          `[hyperfixi] Semantic parser not available for "${language}". Install @lokascript/semantic and call setSemanticParser().`
         );
       }
       return null;

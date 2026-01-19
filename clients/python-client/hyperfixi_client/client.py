@@ -1,5 +1,5 @@
 """
-Main HyperFixi Python client
+Main LokaScript Python client
 """
 
 import asyncio
@@ -32,7 +32,7 @@ from .exceptions import (
 
 class HyperfixiClient:
     """
-    Python client for HyperFixi server-side hyperscript compilation
+    Python client for LokaScript server-side hyperscript compilation
     
     Example:
         client = HyperfixiClient("http://localhost:3000")
@@ -55,10 +55,10 @@ class HyperfixiClient:
         headers: Optional[Dict[str, str]] = None,
     ):
         """
-        Initialize HyperFixi client
+        Initialize LokaScript client
         
         Args:
-            base_url: Base URL of HyperFixi service
+            base_url: Base URL of LokaScript service
             timeout: Request timeout in seconds
             retries: Number of retry attempts
             auth_token: Optional authentication token
@@ -71,7 +71,7 @@ class HyperfixiClient:
         # Setup headers
         self._headers = {
             "Content-Type": "application/json",
-            "User-Agent": "hyperfixi-python-client/0.1.0",
+            "User-Agent": "lokascript-python-client/0.1.0",
         }
         
         if auth_token:

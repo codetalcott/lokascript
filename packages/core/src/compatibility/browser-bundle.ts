@@ -45,7 +45,7 @@ import {
   render,
   toExplicit,
   fromExplicit,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 
 // Import CompileResult type for browser bundle
 import type { CompileResult } from '../api/hyperscript-api';

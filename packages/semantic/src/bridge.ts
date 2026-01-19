@@ -8,12 +8,12 @@
 import type { SemanticNode, EventHandlerSemanticNode, SemanticValue } from './types';
 
 // =============================================================================
-// CommandNode Interface (from @hyperfixi/core)
+// CommandNode Interface (from @lokascript/core)
 // =============================================================================
 
 /**
  * Simplified CommandNode interface matching core runtime expectations.
- * In production, this would import from @hyperfixi/core.
+ * In production, this would import from @lokascript/core.
  */
 interface CommandNode {
   type: 'command';

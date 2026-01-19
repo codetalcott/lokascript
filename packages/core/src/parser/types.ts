@@ -186,14 +186,14 @@ export interface ParseError {
  * Minimal interface for keyword resolution.
  *
  * This interface allows the parser to accept locale-aware keyword providers
- * from @hyperfixi/i18n without creating a direct dependency.
+ * from @lokascript/i18n without creating a direct dependency.
  *
  * The i18n package's `KeywordProvider` implements this interface.
  *
  * @example
  * ```typescript
- * import { esKeywords } from '@hyperfixi/i18n/parser/es';
- * import { parse } from '@hyperfixi/core';
+ * import { esKeywords } from '@lokascript/i18n/parser/es';
+ * import { parse } from '@lokascript/core';
  *
  * parse('en clic alternar .active', { keywords: esKeywords });
  * ```
@@ -218,7 +218,7 @@ export interface KeywordResolver {
 
 /**
  * Interface for semantic analysis integration.
- * Mirrors the SemanticAnalyzer from @hyperfixi/semantic.
+ * Mirrors the SemanticAnalyzer from @lokascript/semantic.
  */
 export interface SemanticAnalyzerInterface {
   /**
@@ -258,14 +258,14 @@ export interface ParserOptions {
    * When provided, the parser will resolve non-English keywords
    * to their canonical English equivalents before parsing.
    *
-   * Use locale packs from @hyperfixi/i18n:
+   * Use locale packs from @lokascript/i18n:
    * - `esKeywords` for Spanish
    * - `jaKeywords` for Japanese
    * - etc.
    *
    * @example
    * ```typescript
-   * import { esKeywords } from '@hyperfixi/i18n/parser/es';
+   * import { esKeywords } from '@lokascript/i18n/parser/es';
    * parse('en clic alternar .active', { keywords: esKeywords });
    * ```
    */
@@ -277,11 +277,11 @@ export interface ParserOptions {
    * When provided, the parser can use semantic-first parsing with
    * confidence-based fallback to traditional keyword parsing.
    *
-   * Use the semantic analyzer from @hyperfixi/semantic:
+   * Use the semantic analyzer from @lokascript/semantic:
    *
    * @example
    * ```typescript
-   * import { createSemanticAnalyzer } from '@hyperfixi/semantic';
+   * import { createSemanticAnalyzer } from '@lokascript/semantic';
    * parse('#button の .active を 切り替え', {
    *   semanticAnalyzer: createSemanticAnalyzer(),
    *   language: 'ja',
@@ -314,8 +314,8 @@ export interface ParserOptions {
    * This enables server-side hyperscript with custom event sources:
    * @example
    * ```typescript
-   * import { Parser } from '@hyperfixi/core';
-   * import { getDefaultRegistryIntegration } from '@hyperfixi/core/registry';
+   * import { Parser } from '@lokascript/core';
+   * import { getDefaultRegistryIntegration } from '@lokascript/core/registry';
    *
    * const parser = new Parser(tokens, {
    *   registryIntegration: getDefaultRegistryIntegration()

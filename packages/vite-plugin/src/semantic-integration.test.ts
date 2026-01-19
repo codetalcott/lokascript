@@ -78,14 +78,14 @@ describe('getSemanticBundleImport', () => {
   it('returns main entry for all bundle types (ES module usage)', () => {
     // All ES module imports use the main entry which has named exports
     // Regional bundles are IIFE format only (for <script> tags)
-    expect(getSemanticBundleImport('en')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('es')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('tr')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('es-en')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('western')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('east-asian')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('priority')).toBe('@hyperfixi/semantic');
-    expect(getSemanticBundleImport('all')).toBe('@hyperfixi/semantic');
+    expect(getSemanticBundleImport('en')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('es')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('tr')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('es-en')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('western')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('east-asian')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('priority')).toBe('@lokascript/semantic');
+    expect(getSemanticBundleImport('all')).toBe('@lokascript/semantic');
   });
 });
 

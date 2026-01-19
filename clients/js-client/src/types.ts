@@ -1,10 +1,10 @@
 /**
- * TypeScript definitions for HyperFixi JavaScript client
+ * TypeScript definitions for LokaScript JavaScript client
  */
 
 // Core Configuration Types
 export interface ClientConfig {
-  /** Base URL of the HyperFixi service */
+  /** Base URL of the LokaScript service */
   baseURL: string;
   /** Request timeout in milliseconds */
   timeout?: number;
@@ -177,7 +177,7 @@ export interface HealthStatus {
 
 // Express Integration Types
 export interface ExpressMiddlewareConfig {
-  /** HyperFixi client instance */
+  /** LokaScript client instance */
   client: HyperfixiClient;
   /** Whether to compile hyperscript in HTML responses */
   compileOnResponse?: boolean;

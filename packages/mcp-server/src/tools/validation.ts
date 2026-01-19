@@ -2,7 +2,7 @@
  * Validation Tools
  *
  * Hyperscript syntax validation and development assistance.
- * Supports 21 languages via @hyperfixi/semantic for multilingual validation.
+ * Supports 21 languages via @lokascript/semantic for multilingual validation.
  */
 
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -18,7 +18,7 @@ import {
 // Try to import semantic package for multilingual support
 let semanticPackage: any = null;
 try {
-  semanticPackage = await import('@hyperfixi/semantic');
+  semanticPackage = await import('@lokascript/semantic');
 } catch {
   // semantic not available - will use English-only fallback
 }
@@ -950,7 +950,7 @@ function getBundleConfig(
             recommendedBundle: bundle,
             estimatedSize: bundleSize,
             viteConfig: `// vite.config.js
-import { hyperfixi } from '@hyperfixi/vite-plugin';
+import { hyperfixi } from '@lokascript/vite-plugin';
 
 export default {
   plugins: [
@@ -993,8 +993,8 @@ function validateSchema(
           type: 'text',
           text: JSON.stringify(
             {
-              error: '@hyperfixi/semantic package not available',
-              suggestion: 'Install with: npm install @hyperfixi/semantic',
+              error: '@lokascript/semantic package not available',
+              suggestion: 'Install with: npm install @lokascript/semantic',
             },
             null,
             2
@@ -1021,8 +1021,8 @@ function validateSchema(
             type: 'text',
             text: JSON.stringify(
               {
-                error: 'Schema validation not available in this version of @hyperfixi/semantic',
-                suggestion: 'Update to latest version: npm update @hyperfixi/semantic',
+                error: 'Schema validation not available in this version of @lokascript/semantic',
+                suggestion: 'Update to latest version: npm update @lokascript/semantic',
               },
               null,
               2
@@ -1144,7 +1144,7 @@ function validateSchema(
           text: JSON.stringify(
             {
               error: error instanceof Error ? error.message : String(error),
-              suggestion: 'Check that @hyperfixi/semantic is properly installed',
+              suggestion: 'Check that @lokascript/semantic is properly installed',
             },
             null,
             2
@@ -1175,8 +1175,8 @@ function parseMultilingual(
           type: 'text',
           text: JSON.stringify(
             {
-              error: '@hyperfixi/semantic package not available',
-              suggestion: 'Install with: npm install @hyperfixi/semantic',
+              error: '@lokascript/semantic package not available',
+              suggestion: 'Install with: npm install @lokascript/semantic',
               fallback: 'Using regex-based validation only',
               language,
               confidence: 0,
@@ -1265,8 +1265,8 @@ function translateToEnglish(
           type: 'text',
           text: JSON.stringify(
             {
-              error: '@hyperfixi/semantic package not available',
-              suggestion: 'Install with: npm install @hyperfixi/semantic',
+              error: '@lokascript/semantic package not available',
+              suggestion: 'Install with: npm install @lokascript/semantic',
               original: code,
               sourceLanguage,
               explicit: null,
@@ -1370,8 +1370,8 @@ function explainInLanguage(
           type: 'text',
           text: JSON.stringify(
             {
-              error: '@hyperfixi/semantic package not available',
-              suggestion: 'Install with: npm install @hyperfixi/semantic',
+              error: '@lokascript/semantic package not available',
+              suggestion: 'Install with: npm install @lokascript/semantic',
             },
             null,
             2

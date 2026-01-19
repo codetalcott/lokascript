@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, MockedFunction } from 'vitest';
 import express, { Request, Response, NextFunction } from 'express';
 import {
-  hyperfixiMiddleware,
+  lokascriptMiddleware,
   createTemplateHelpers,
   createApiRoutes,
   getHyperfixiClient,
@@ -22,7 +22,7 @@ describe('Express Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock HyperFixi client
+    // Mock LokaScript client
     mockClient = {
       compile: vi.fn(),
       compileScript: vi.fn(),
@@ -53,20 +53,20 @@ describe('Express Integration', () => {
     mockNext = vi.fn();
   });
 
-  describe('hyperfixiMiddleware', () => {
+  describe('lokascriptMiddleware', () => {
     it('should create middleware with client', () => {
       const config: ExpressMiddlewareConfig = {
         client: mockClient,
       };
 
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       expect(typeof middleware).toBe('function');
     });
 
     it('should throw error without client', () => {
       expect(() => {
-        hyperfixiMiddleware({} as ExpressMiddlewareConfig);
-      }).toThrow('HyperFixi client is required');
+        lokascriptMiddleware({} as ExpressMiddlewareConfig);
+      }).toThrow('LokaScript client is required');
     });
 
     it('should add client to request', () => {
@@ -75,10 +75,10 @@ describe('Express Integration', () => {
         compileOnResponse: false,
       };
 
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       middleware(mockReq as Request, mockRes as Response, mockNext);
 
-      expect((mockReq as any).hyperfixi).toBe(mockClient);
+      expect((mockReq as any).lokascript).toBe(mockClient);
       expect(mockNext).toHaveBeenCalled();
     });
 
@@ -92,11 +92,11 @@ describe('Express Integration', () => {
         templateVarsHeader: 'X-Template-Vars',
       };
 
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       middleware(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockReq.get).toHaveBeenCalledWith('X-Template-Vars');
-      expect((mockReq as any).hyperfixiTemplateVars).toEqual(templateVars);
+      expect((mockReq as any).lokascriptTemplateVars).toEqual(templateVars);
     });
 
     it('should skip paths when configured', () => {
@@ -108,7 +108,7 @@ describe('Express Integration', () => {
       };
 
       const originalSend = mockRes.send;
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       middleware(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockRes.send).toBe(originalSend); // Should not be overridden
@@ -122,7 +122,7 @@ describe('Express Integration', () => {
       };
 
       const originalSend = mockRes.send;
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       middleware(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockRes.send).not.toBe(originalSend);
@@ -137,10 +137,10 @@ describe('Express Integration', () => {
         compileOnResponse: false,
       };
 
-      const middleware = hyperfixiMiddleware(config);
+      const middleware = lokascriptMiddleware(config);
       middleware(mockReq as Request, mockRes as Response, mockNext);
 
-      expect((mockReq as any).hyperfixiTemplateVars).toBeUndefined();
+      expect((mockReq as any).lokascriptTemplateVars).toBeUndefined();
       expect(mockNext).toHaveBeenCalled();
     });
   });
@@ -198,7 +198,7 @@ describe('Express Integration', () => {
 
         const result = await helpers.compileHyperscript('invalid script');
 
-        expect(result).toContain('HyperFixi compilation error');
+        expect(result).toContain('LokaScript compilation error');
         expect(result).toContain('Compilation failed');
       });
     });
@@ -344,8 +344,8 @@ describe('Express Integration', () => {
   });
 
   describe('helper functions', () => {
-    it('should get HyperFixi client from request', () => {
-      (mockReq as any).hyperfixi = mockClient;
+    it('should get LokaScript client from request', () => {
+      (mockReq as any).lokascript = mockClient;
 
       const client = getHyperfixiClient(mockReq as Request);
       expect(client).toBe(mockClient);
@@ -358,7 +358,7 @@ describe('Express Integration', () => {
 
     it('should get template vars from request', () => {
       const templateVars = { userId: 123 };
-      (mockReq as any).hyperfixiTemplateVars = templateVars;
+      (mockReq as any).lokascriptTemplateVars = templateVars;
 
       const vars = getTemplateVars(mockReq as Request);
       expect(vars).toEqual(templateVars);

@@ -1,7 +1,7 @@
 /**
  * HyperFixi Semantic Complete Browser Bundle
  *
- * Single-script deployment bundle that inlines @hyperfixi/semantic.
+ * Single-script deployment bundle that inlines @lokascript/semantic.
  * No additional script tags required - everything in one file.
  *
  * This bundle provides:
@@ -124,7 +124,7 @@ import {
   isLanguageSupported,
   VERSION as SEMANTIC_VERSION,
   getSupportedLanguages,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 
 // =============================================================================
 // Runtime Configuration

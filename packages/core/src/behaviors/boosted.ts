@@ -23,7 +23,7 @@
  *   end
  *
  * Programmatic usage:
- *   import { createBoosted } from '@hyperfixi/core/behaviors';
+ *   import { createBoosted } from '@lokascript/core/behaviors';
  *   const boost = createBoosted({
  *     target: '#main',
  *     selector: 'a:not([target])',

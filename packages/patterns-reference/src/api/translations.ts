@@ -149,7 +149,7 @@ export async function getHighConfidenceTranslations(
 
 /**
  * Verify a translation parses correctly.
- * Note: This requires @hyperfixi/semantic to be available.
+ * Note: This requires @lokascript/semantic to be available.
  */
 export async function verifyTranslation(
   translation: Translation,
@@ -161,7 +161,7 @@ export async function verifyTranslation(
 
   try {
     // Dynamic import to avoid bundling issues
-    const { canParse, parse } = await import('@hyperfixi/semantic');
+    const { canParse, parse } = await import('@lokascript/semantic');
 
     if (canParse(translation.hyperscript, translation.language)) {
       parse(translation.hyperscript, translation.language);

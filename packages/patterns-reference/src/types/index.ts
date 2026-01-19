@@ -160,9 +160,9 @@ export interface LLMExample {
 // Semantic Role Types
 // =============================================================================
 
-// SemanticRole is imported from @hyperfixi/semantic
+// SemanticRole is imported from @lokascript/semantic
 // See packages/semantic/src/types/grammar-types.ts for the canonical definition
-import type { SemanticRole } from '@hyperfixi/semantic';
+import type { SemanticRole } from '@lokascript/semantic';
 export type { SemanticRole };
 
 /**

@@ -406,7 +406,7 @@ function extractDependencies(html: string): string[] {
       dependencies.add('hyperscript');
     }
     if (src.includes('hyperfixi')) {
-      dependencies.add('@hyperfixi/core');
+      dependencies.add('@lokascript/core');
     }
     if (src.includes('alpine')) {
       dependencies.add('alpinejs');

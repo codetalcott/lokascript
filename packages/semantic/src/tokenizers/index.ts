@@ -8,7 +8,7 @@
  *   import { englishTokenizer } from './tokenizers/english';
  *
  * To register languages, import the language modules:
- *   import '@hyperfixi/semantic/languages/en';
+ *   import '@lokascript/semantic/languages/en';
  */
 
 import type { LanguageTokenizer, TokenStream } from '../types';

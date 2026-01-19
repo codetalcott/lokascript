@@ -1,5 +1,5 @@
 """
-CLI interface for HyperFixi Python client
+CLI interface for LokaScript Python client
 """
 
 import asyncio
@@ -16,14 +16,14 @@ from .exceptions import HyperfixiError
 def create_parser() -> argparse.ArgumentParser:
     """Create argument parser for CLI"""
     parser = argparse.ArgumentParser(
-        prog='hyperfixi',
-        description='HyperFixi Python Client - Server-side hyperscript compilation'
+        prog='lokascript',
+        description='LokaScript Python Client - Server-side hyperscript compilation'
     )
     
     parser.add_argument(
         '--url',
         default='http://localhost:3000',
-        help='HyperFixi service URL (default: http://localhost:3000)'
+        help='LokaScript service URL (default: http://localhost:3000)'
     )
     
     parser.add_argument(

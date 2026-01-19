@@ -11,7 +11,7 @@
  * - Supports confidence scoring for ambiguous parses
  *
  * Integration with core validators:
- * - Uses patterns from @hyperfixi/core's lightweight-validators where applicable
+ * - Uses patterns from @lokascript/core's lightweight-validators where applicable
  * - Type validation follows same patterns as runtime validation
  * - Can be extended with custom validators using the same API
  */
@@ -355,17 +355,17 @@ export function validateAndAdjustConfidence(
 //
 // This semantic validator is distinct from but complementary to core validators:
 //
-// 1. @hyperfixi/core/validation/lightweight-validators.ts
+// 1. @lokascript/core/validation/lightweight-validators.ts
 //    - Runtime type validation (v.string(), v.object(), etc.)
 //    - Zod-replacement for validating runtime input shapes
 //    - Used: command inputs, API payloads, configuration
 //
-// 2. @hyperfixi/core/validation/command-pattern-validator.ts
+// 2. @lokascript/core/validation/command-pattern-validator.ts
 //    - Class structure validation
 //    - Checks command classes follow TypeScript patterns
 //    - Used: CI/CD, development tooling
 //
-// 3. @hyperfixi/semantic/validators/command-validator.ts (this file)
+// 3. @lokascript/semantic/validators/command-validator.ts (this file)
 //    - Semantic role validation
 //    - Checks parse results against command schemas
 //    - Used: semantic parser confidence scoring, debugging

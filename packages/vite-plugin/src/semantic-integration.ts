@@ -493,7 +493,7 @@ export function getSemanticBundleSize(bundleType: SemanticBundleType): {
  * Get the import path for a semantic bundle type.
  *
  * Note: For ES module usage (Vite, Rollup, etc.), we always use the main entry
- * '@hyperfixi/semantic' which has proper ES module exports. The regional bundles
+ * '@lokascript/semantic' which has proper ES module exports. The regional bundles
  * (browser/en, browser/western, etc.) are IIFE format for direct <script> tag
  * inclusion only.
  *
@@ -504,7 +504,7 @@ export function getSemanticBundleImport(_bundleType: SemanticBundleType): string
   // All ES module imports use the main entry which has named exports
   // The regional bundles are IIFE format only (for <script> tags)
   // Note: bundleType is kept for API compatibility but not used for ES modules
-  return '@hyperfixi/semantic';
+  return '@lokascript/semantic';
 }
 
 /**
@@ -533,7 +533,7 @@ import {
 
   if (config.grammarEnabled) {
     code += `
-import { GrammarTransformer, translate } from '@hyperfixi/i18n';
+import { GrammarTransformer, translate } from '@lokascript/i18n';
 
 const grammarTransformer = new GrammarTransformer();
 `;

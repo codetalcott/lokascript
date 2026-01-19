@@ -3,14 +3,14 @@
  * This demonstrates various ways to interact with the MCP server
  */
 
-import { createMCPServerWithHandlers, createASTToolkitMCPServer } from '@hyperfixi/ast-toolkit';
+import { createMCPServerWithHandlers, createASTToolkitMCPServer } from '@lokascript/ast-toolkit';
 import type { 
   InitializeRequest,
   ListToolsRequest,
   CallToolRequest,
   ListResourcesRequest,
   ReadResourceRequest 
-} from '@hyperfixi/ast-toolkit';
+} from '@lokascript/ast-toolkit';
 
 // ============================================================================
 // Sample AST Data

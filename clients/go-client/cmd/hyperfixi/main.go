@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperfixi/hyperfixi-go"
+	"github.com/lokascript/lokascript-go"
 	"github.com/spf13/cobra"
 )
 
@@ -26,11 +26,11 @@ var (
 	optimization       bool
 
 	// Root client instance
-	client *hyperfixi.Client
+	client *lokascript.Client
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&baseURL, "url", "http://localhost:3000", "HyperFixi service URL")
+	rootCmd.PersistentFlags().StringVar(&baseURL, "url", "http://localhost:3000", "LokaScript service URL")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "Request timeout")
 	rootCmd.PersistentFlags().IntVar(&retries, "retries", 3, "Number of retry attempts")
 	rootCmd.PersistentFlags().StringVar(&authToken, "auth-token", "", "Authentication token")
@@ -42,15 +42,15 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "hyperfixi",
-	Short: "HyperFixi Go Client - Server-side hyperscript compilation",
-	Long: `HyperFixi Go Client provides command-line access to server-side hyperscript 
+	Use:   "lokascript",
+	Short: "LokaScript Go Client - Server-side hyperscript compilation",
+	Long: `LokaScript Go Client provides command-line access to server-side hyperscript 
 compilation with support for template variables, batch processing, and caching.`,
 	PersistentPreRunE: initClient,
 }
 
 func initClient(cmd *cobra.Command, args []string) error {
-	config := &hyperfixi.ClientConfig{
+	config := &lokascript.ClientConfig{
 		BaseURL:   baseURL,
 		Timeout:   timeout,
 		Retries:   retries,
@@ -59,7 +59,7 @@ func initClient(cmd *cobra.Command, args []string) error {
 	}
 
 	var err error
-	client, err = hyperfixi.NewClient(config)
+	client, err = lokascript.NewClient(config)
 	return err
 }
 
@@ -91,9 +91,9 @@ var compileCmd = &cobra.Command{
 	Long: `Compile hyperscript to JavaScript. You can provide multiple scripts using name=script format.
 
 Examples:
-  hyperfixi compile "on click toggle .active"
-  hyperfixi compile button="on click toggle .active" form="on submit halt"
-  hyperfixi --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"`,
+  lokascript compile "on click toggle .active"
+  lokascript compile button="on click toggle .active" form="on submit halt"
+  lokascript --template-vars '{"userId": 123}' compile "on click fetch /api/users/{{userId}}"`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -119,14 +119,14 @@ Examples:
 		}
 
 		// Create compilation options
-		var compatMode hyperfixi.CompatibilityMode
+		var compatMode lokascript.CompatibilityMode
 		if compatibility == "legacy" {
-			compatMode = hyperfixi.CompatibilityLegacy
+			compatMode = lokascript.CompatibilityLegacy
 		} else {
-			compatMode = hyperfixi.CompatibilityModern
+			compatMode = lokascript.CompatibilityModern
 		}
 
-		options := &hyperfixi.CompilationOptions{
+		options := &lokascript.CompilationOptions{
 			Minify:        minify,
 			Compatibility: compatMode,
 			SourceMap:     sourceMap,
@@ -134,13 +134,13 @@ Examples:
 		}
 
 		// Create request
-		req := &hyperfixi.CompileRequest{
+		req := &lokascript.CompileRequest{
 			Scripts: scripts,
 			Options: options,
 		}
 
 		if templateVars != nil {
-			req.Context = &hyperfixi.ParseContext{
+			req.Context = &lokascript.ParseContext{
 				TemplateVars: templateVars,
 			}
 		}
@@ -216,12 +216,12 @@ var validateCmd = &cobra.Command{
 		}
 
 		// Create request
-		req := &hyperfixi.ValidateRequest{
+		req := &lokascript.ValidateRequest{
 			Script: script,
 		}
 
 		if templateVars != nil {
-			req.Context = &hyperfixi.ParseContext{
+			req.Context = &lokascript.ParseContext{
 				TemplateVars: templateVars,
 			}
 		}
@@ -278,7 +278,7 @@ var batchCmd = &cobra.Command{
 			return fmt.Errorf("failed to read batch file: %w", err)
 		}
 
-		var req hyperfixi.BatchCompileRequest
+		var req lokascript.BatchCompileRequest
 		if err := json.Unmarshal(data, &req); err != nil {
 			return fmt.Errorf("invalid JSON in batch file: %w", err)
 		}

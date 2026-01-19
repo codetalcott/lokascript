@@ -1,5 +1,5 @@
 /**
- * Playwright Browser Tests for @hyperfixi/semantic
+ * Playwright Browser Tests for @lokascript/semantic
  *
  * Tests the semantic parser browser bundle functionality including:
  * - Bundle loading and API exposure

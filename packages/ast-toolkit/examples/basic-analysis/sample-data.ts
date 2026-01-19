@@ -2,7 +2,7 @@
  * Sample AST data for basic analysis example
  */
 
-import type { ASTNode } from '@hyperfixi/ast-toolkit';
+import type { ASTNode } from '@lokascript/ast-toolkit';
 
 /**
  * Complex interactive application AST for comprehensive analysis

@@ -1,3 +1,3 @@
 """
-Framework integrations for HyperFixi Python client
+Framework integrations for LokaScript Python client
 """

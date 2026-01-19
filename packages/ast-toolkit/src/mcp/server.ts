@@ -143,7 +143,7 @@ async function main() {
     // Log server startup (to stderr to avoid interfering with JSON-RPC)
     console.error('AST Toolkit MCP Server started');
     console.error('Protocol version: 2025-03-26');
-    console.error('Server info: @hyperfixi/ast-toolkit v0.1.0');
+    console.error('Server info: @lokascript/ast-toolkit v0.1.0');
     console.error('Listening for JSON-RPC messages on stdin...');
   } catch (error) {
     console.error('Failed to start MCP server:', error);
@@ -232,7 +232,7 @@ For more information, visit: https://github.com/hyperfixi/ast-toolkit
  * Show version information
  */
 function showVersion() {
-  console.log('@hyperfixi/ast-toolkit MCP Server v0.1.0');
+  console.log('@lokascript/ast-toolkit MCP Server v0.1.0');
   console.log('Protocol version: 2025-03-26');
 }
 

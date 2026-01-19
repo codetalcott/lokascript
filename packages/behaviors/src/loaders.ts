@@ -7,10 +7,10 @@
  * @example
  * ```typescript
  * // Enable lazy loading
- * import '@hyperfixi/behaviors/loaders';
+ * import '@lokascript/behaviors/loaders';
  *
  * // Now load behaviors on demand
- * import { loadBehavior } from '@hyperfixi/behaviors/registry';
+ * import { loadBehavior } from '@lokascript/behaviors/registry';
  * await loadBehavior('Draggable');
  * ```
  */

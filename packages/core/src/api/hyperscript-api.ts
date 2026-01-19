@@ -16,7 +16,7 @@ import {
   createSemanticAnalyzer,
   DEFAULT_CONFIDENCE_THRESHOLD,
   type SemanticAnalyzer,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 import { registerHistorySwap, registerBoosted } from '../behaviors';
 import {
   process as processDOMElements,
@@ -128,7 +128,7 @@ function getSemanticAnalyzer(): SemanticAnalyzerInterface {
   if (!semanticAnalyzerInstance) {
     semanticAnalyzerInstance = createSemanticAnalyzer();
   }
-  // Type cast required: SemanticAnalyzer from @hyperfixi/semantic has compatible
+  // Type cast required: SemanticAnalyzer from @lokascript/semantic has compatible
   // interface but different internal types (ActionType vs string, SemanticValue vs object)
   // This is safe because the parser only uses the public interface methods
   return semanticAnalyzerInstance as unknown as SemanticAnalyzerInterface;
@@ -785,4 +785,4 @@ export const hyperscript: HyperscriptAPI = {
 export const _hyperscript = hyperscript;
 
 // Note: Default export removed in favor of named exports for better tree-shaking
-// Migration: import { hyperscript } from '@hyperfixi/core' instead of import hyperfixi from '@hyperfixi/core'
+// Migration: import { hyperscript } from '@lokascript/core' instead of import hyperfixi from '@lokascript/core'

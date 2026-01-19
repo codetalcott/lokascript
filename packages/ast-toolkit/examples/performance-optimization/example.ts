@@ -20,7 +20,7 @@ import {
   calculateComplexity,
   analyzeMetrics,
   findNodes
-} from '@hyperfixi/ast-toolkit';
+} from '@lokascript/ast-toolkit';
 import { 
   generateSimpleAST, 
   generateComplexAST, 

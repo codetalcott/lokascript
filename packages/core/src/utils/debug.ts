@@ -152,7 +152,7 @@ export const debugControl = {
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem('lokascript:debug', '*');
-        console.log('✅ HyperFixi debug logging enabled. Reload page to see detailed logs.');
+        console.log('✅ LokaScript debug logging enabled. Reload page to see detailed logs.');
       } catch (e) {
         console.warn('⚠️  Could not enable debug logging (localStorage unavailable):', e);
       }
@@ -171,7 +171,7 @@ export const debugControl = {
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.removeItem('lokascript:debug');
-        console.log('✅ HyperFixi debug logging disabled. Reload page.');
+        console.log('✅ LokaScript debug logging disabled. Reload page.');
       } catch (e) {
         console.warn('⚠️  Could not disable debug logging:', e);
       }

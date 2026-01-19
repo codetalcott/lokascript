@@ -166,7 +166,7 @@ import {
   pt as ptDictionary,
   qu as quDictionary,
   sw as swDictionary,
-} from '@hyperfixi/i18n/browser';
+} from '@lokascript/i18n/browser';
 
 // ============================================================================
 // i18n Setup - Register all locale providers

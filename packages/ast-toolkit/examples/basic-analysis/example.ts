@@ -10,7 +10,7 @@ import {
   analyzeMetrics,
   detectCodeSmells,
   countNodeTypes
-} from '@hyperfixi/ast-toolkit';
+} from '@lokascript/ast-toolkit';
 import { sampleComplexAST } from './sample-data.js';
 
 console.log('🔍 HyperFixi AST Toolkit - Basic Analysis Example');

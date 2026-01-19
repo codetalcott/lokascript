@@ -1,4 +1,4 @@
-package hyperfixi
+package lokascript
 
 import "time"
 
@@ -114,7 +114,7 @@ type CacheStats struct {
 	MaxSize  int     `json:"maxSize"`
 }
 
-// HealthStatus represents health status of the HyperFixi service
+// HealthStatus represents health status of the LokaScript service
 type HealthStatus struct {
 	Status    string     `json:"status"`
 	Version   string     `json:"version"`

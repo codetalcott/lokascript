@@ -360,7 +360,7 @@ interface LokaScriptRuntime {
 }
 
 /**
- * RuntimeHooks interface from @hyperfixi/core
+ * RuntimeHooks interface from @lokascript/core
  * Defined locally to avoid circular dependency issues
  */
 interface RuntimeHooks {
@@ -371,7 +371,7 @@ interface RuntimeHooks {
 }
 
 /**
- * HookContext interface from @hyperfixi/core
+ * HookContext interface from @lokascript/core
  */
 interface HookContext {
   commandName: string;
@@ -448,8 +448,8 @@ function summarizeResult(result: unknown): string | undefined {
  *
  * @example
  * ```typescript
- * import { createRuntime } from '@hyperfixi/core';
- * import { createAnalyticsSystem, integrateWithHyperFixi } from '@hyperfixi/analytics';
+ * import { createRuntime } from '@lokascript/core';
+ * import { createAnalyticsSystem, integrateWithHyperFixi } from '@lokascript/analytics';
  *
  * const runtime = createRuntime();
  * const analytics = createAnalyticsSystem({ storage: myStorage });
@@ -565,7 +565,7 @@ export function integrateWithHyperFixi(
  *
  * @example
  * ```typescript
- * import { createAnalyticsSystem, createTrackedCompile } from '@hyperfixi/analytics';
+ * import { createAnalyticsSystem, createTrackedCompile } from '@lokascript/analytics';
  *
  * const analytics = createAnalyticsSystem({ storage: myStorage });
  * const trackedCompile = createTrackedCompile(hyperfixi.compile, analytics);

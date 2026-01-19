@@ -22,8 +22,8 @@ import type { KeywordProvider } from './types';
  *
  * @example
  * ```typescript
- * import { koKeywords } from '@hyperfixi/i18n/parser/ko';
- * import { Parser } from '@hyperfixi/core';
+ * import { koKeywords } from '@lokascript/i18n/parser/ko';
+ * import { Parser } from '@lokascript/core';
  *
  * const parser = new Parser({ keywords: koKeywords });
  * parser.parse('에 클릭 토글 .active');

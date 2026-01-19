@@ -1,5 +1,5 @@
 """
-FastAPI integration for HyperFixi Python client
+FastAPI integration for LokaScript Python client
 """
 
 import asyncio
@@ -20,7 +20,7 @@ class FastAPIHyperscriptMiddleware(BaseHTTPMiddleware):
     
     Example:
         from fastapi import FastAPI
-        from hyperfixi_client.integrations.fastapi import FastAPIHyperscriptMiddleware
+        from lokascript_client.integrations.fastapi import FastAPIHyperscriptMiddleware
         
         app = FastAPI()
         app.add_middleware(
@@ -151,7 +151,7 @@ class FastAPIHyperscriptMiddleware(BaseHTTPMiddleware):
         response: Response
     ) -> Response:
         """Default error handler - logs error and returns original response"""
-        print(f"HyperFixi middleware error: {error}")
+        print(f"LokaScript middleware error: {error}")
         return response
 
 
@@ -161,7 +161,7 @@ class HyperscriptDependency:
     
     Example:
         from fastapi import FastAPI, Depends
-        from hyperfixi_client.integrations.fastapi import hyperscript_dependency
+        from lokascript_client.integrations.fastapi import hyperscript_dependency
         
         app = FastAPI()
         
@@ -201,7 +201,7 @@ async def compile_hyperscript_template(
         template: HTML template with hyperscript attributes
         template_vars: Template variables for substitution
         options: Compilation options
-        client: HyperFixi client instance
+        client: LokaScript client instance
         
     Returns:
         Dictionary mapping script IDs to compiled JavaScript
@@ -236,7 +236,7 @@ class HyperscriptTemplateRenderer:
     
     Example:
         from fastapi import FastAPI
-        from hyperfixi_client.integrations.fastapi import HyperscriptTemplateRenderer
+        from lokascript_client.integrations.fastapi import HyperscriptTemplateRenderer
         
         app = FastAPI()
         renderer = HyperscriptTemplateRenderer("http://localhost:3000")
@@ -310,7 +310,7 @@ class HyperscriptTemplateRenderer:
             
         except HyperfixiError as e:
             # If compilation fails, return original template with error comment
-            return f"<!-- HyperFixi compilation error: {e} -->\n{template}"
+            return f"<!-- LokaScript compilation error: {e} -->\n{template}"
 
 
 # FastAPI response models for API endpoints
@@ -335,7 +335,7 @@ def create_hyperscript_routes(app, client_url: str = "http://localhost:3000"):
     
     Example:
         from fastapi import FastAPI
-        from hyperfixi_client.integrations.fastapi import create_hyperscript_routes
+        from lokascript_client.integrations.fastapi import create_hyperscript_routes
         
         app = FastAPI()
         create_hyperscript_routes(app, "http://localhost:3000")
@@ -371,15 +371,15 @@ def create_hyperscript_routes(app, client_url: str = "http://localhost:3000"):
     
     @app.get("/hyperscript/health")
     async def hyperscript_health():
-        """Get HyperFixi service health"""
+        """Get LokaScript service health"""
         return await client.health()
     
     @app.get("/hyperscript/cache/stats")
     async def hyperscript_cache_stats():
-        """Get HyperFixi cache statistics"""
+        """Get LokaScript cache statistics"""
         return await client.cache_stats()
     
     @app.post("/hyperscript/cache/clear")
     async def hyperscript_clear_cache():
-        """Clear HyperFixi cache"""
+        """Clear LokaScript cache"""
         return await client.clear_cache()

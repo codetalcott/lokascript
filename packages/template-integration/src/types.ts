@@ -1,4 +1,4 @@
-import { ComponentDefinition } from '@hyperfixi/component-schema';
+import { ComponentDefinition } from '@lokascript/component-schema';
 
 /**
  * Template compilation and processing types

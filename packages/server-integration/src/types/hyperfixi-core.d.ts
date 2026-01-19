@@ -1,12 +1,12 @@
 /**
- * Type declarations for @hyperfixi/core
+ * Type declarations for @lokascript/core
  *
  * This provides minimal types for the optional integration with the core package.
- * When @hyperfixi/core is available and built with proper types, these can be removed.
+ * When @lokascript/core is available and built with proper types, these can be removed.
  */
 
-declare module '@hyperfixi/core' {
-  import type { ASTNode } from '@hyperfixi/ast-toolkit';
+declare module '@lokascript/core' {
+  import type { ASTNode } from '@lokascript/ast-toolkit';
 
   export interface CompilationResult {
     success: boolean;

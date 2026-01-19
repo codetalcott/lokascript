@@ -7,10 +7,10 @@
  * @example
  * ```typescript
  * // Enable Russian
- * import '@hyperfixi/semantic/languages/ru';
+ * import '@lokascript/semantic/languages/ru';
  *
  * // Or import everything
- * import '@hyperfixi/semantic/languages/_all';
+ * import '@lokascript/semantic/languages/_all';
  * ```
  */
 

@@ -71,7 +71,7 @@ describe('UsageAnalyzer', () => {
     it('should analyze a JavaScript file', async () => {
       const mockFs = await import('fs-extra');
       vi.mocked(mockFs.readFile).mockResolvedValue(`
-        import { Component } from '@hyperfixi/core';
+        import { Component } from '@lokascript/core';
         const x = 1;
         export default x;
       `);

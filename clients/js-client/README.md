@@ -1,10 +1,10 @@
-# HyperFixi JavaScript/TypeScript Client
+# LokaScript JavaScript/TypeScript Client
 
-A comprehensive JavaScript/TypeScript client library for [HyperFixi](https://github.com/hyperfixi/hyperfixi) server-side hyperscript compilation, with native Express.js and ElysiaJS integration and full TypeScript support.
+A comprehensive JavaScript/TypeScript client library for [LokaScript](https://github.com/lokascript/lokascript) server-side hyperscript compilation, with native Express.js and ElysiaJS integration and full TypeScript support.
 
 ## Features
 
-- **HTTP Client** with automatic retry logic and comprehensive error handling  
+- **HTTP Client** with automatic retry logic and comprehensive error handling
 - **Express Middleware** for automatic hyperscript compilation in HTML responses
 - **ElysiaJS Plugin** for modern Bun-based server integration with full type safety
 - **Template Helpers** for server-side rendering with hyperscript support
@@ -16,21 +16,23 @@ A comprehensive JavaScript/TypeScript client library for [HyperFixi](https://git
 ## Installation
 
 ```bash
-npm install @hyperfixi/client
+npm install @lokascript/client
 # or
-yarn add @hyperfixi/client
-# or  
-pnpm add @hyperfixi/client
+yarn add @lokascript/client
+# or
+pnpm add @lokascript/client
 ```
 
 For Express integration:
+
 ```bash
-npm install @hyperfixi/client express
+npm install @lokascript/client express
 ```
 
 For ElysiaJS integration:
+
 ```bash
-npm install @hyperfixi/client elysia
+npm install @lokascript/client elysia
 ```
 
 ## Quick Start
@@ -38,7 +40,7 @@ npm install @hyperfixi/client elysia
 ### Basic Client Usage
 
 ```typescript
-import { createClient } from '@hyperfixi/client';
+import { createClient } from '@lokascript/client';
 
 // Create client with default configuration
 const client = createClient();
@@ -46,13 +48,13 @@ const client = createClient();
 // Compile hyperscript
 const result = await client.compile({
   scripts: {
-    button: "on click toggle .active",
-    form: "on submit fetch /api/save then put result into #status"
+    button: 'on click toggle .active',
+    form: 'on submit fetch /api/save then put result into #status',
   },
   options: {
     minify: true,
-    compatibility: 'modern'
-  }
+    compatibility: 'modern',
+  },
 });
 
 console.log('Compiled JavaScript:', result.compiled.button);
@@ -62,7 +64,7 @@ console.log('Events detected:', result.metadata.button.events);
 ### Custom Client Configuration
 
 ```typescript
-import { createClient, ClientConfig } from '@hyperfixi/client';
+import { createClient, ClientConfig } from '@lokascript/client';
 
 const config: ClientConfig = {
   baseURL: 'http://localhost:3000',
@@ -70,8 +72,8 @@ const config: ClientConfig = {
   retries: 3,
   authToken: 'your-auth-token',
   headers: {
-    'X-Custom-Header': 'value'
-  }
+    'X-Custom-Header': 'value',
+  },
 };
 
 const client = createClient(config);
@@ -83,16 +85,20 @@ const client = createClient(config);
 
 ```typescript
 import express from 'express';
-import { createClient, hyperfixiMiddleware, createMiddlewareConfig } from '@hyperfixi/client/express';
+import {
+  createClient,
+  lokascriptMiddleware,
+  createMiddlewareConfig,
+} from '@lokascript/client/express';
 
 const app = express();
 
-// Create HyperFixi client
+// Create LokaScript client
 const client = createClient({ baseURL: 'http://localhost:3000' });
 
-// Add HyperFixi middleware
+// Add LokaScript middleware
 const config = createMiddlewareConfig(client);
-app.use(hyperfixiMiddleware(config));
+app.use(lokascriptMiddleware(config));
 
 // Your routes will automatically compile hyperscript
 app.get('/', (req, res) => {
@@ -124,24 +130,28 @@ app.listen(3000);
 
 ```typescript
 import { Elysia } from 'elysia';
-import { createClient, hyperfixiPlugin, createElysiaConfig } from '@hyperfixi/client/elysia';
+import { createClient, lokascriptPlugin, createElysiaConfig } from '@lokascript/client/elysia';
 
-// Create HyperFixi client
+// Create LokaScript client
 const client = createClient({ baseURL: 'http://localhost:3000' });
 
-// Create and use HyperFixi plugin
+// Create and use LokaScript plugin
 const app = new Elysia()
-  .use(hyperfixiPlugin({
-    client,
-    compileOnResponse: true,
-    compilationOptions: {
-      minify: true,
-      compatibility: 'modern'
-    },
-    skipPaths: ['/api/', '/static/'],
-    basePath: '/hyperscript'
-  }))
-  .get('/', () => `
+  .use(
+    lokascriptPlugin({
+      client,
+      compileOnResponse: true,
+      compilationOptions: {
+        minify: true,
+        compatibility: 'modern',
+      },
+      skipPaths: ['/api/', '/static/'],
+      basePath: '/hyperscript',
+    })
+  )
+  .get(
+    '/',
+    () => `
     <!DOCTYPE html>
     <html>
     <body>
@@ -157,7 +167,8 @@ const app = new Elysia()
       <div id="status"></div>
     </body>
     </html>
-  `)
+  `
+  )
   .listen(3000);
 
 console.log('🦊 Elysia is running at http://localhost:3000');
@@ -166,7 +177,7 @@ console.log('🦊 Elysia is running at http://localhost:3000');
 ### Advanced ElysiaJS Configuration
 
 ```typescript
-import { hyperfixiPlugin, ElysiaPluginConfig } from '@hyperfixi/client/elysia';
+import { lokascriptPlugin, ElysiaPluginConfig } from '@lokascript/client/elysia';
 
 const config: ElysiaPluginConfig = {
   client,
@@ -175,34 +186,32 @@ const config: ElysiaPluginConfig = {
   compilationOptions: {
     minify: true,
     compatibility: 'modern',
-    sourceMap: false
+    sourceMap: false,
   },
   skipPaths: ['/api/', '/static/', '/assets/'],
   onlyContentTypes: ['text/html', 'application/xhtml+xml'],
   basePath: '/hyperscript',
   errorHandler: (context, error) => {
-    console.error('HyperFixi ElysiaJS plugin error:', error);
+    console.error('LokaScript ElysiaJS plugin error:', error);
     // Custom error handling logic
-  }
+  },
 };
 
-const app = new Elysia().use(hyperfixiPlugin(config));
+const app = new Elysia().use(lokascriptPlugin(config));
 ```
 
 ### Template Variables with ElysiaJS
 
 ```typescript
-import { getTemplateVars, getElysiaHyperfixiClient } from '@hyperfixi/client/elysia';
+import { getTemplateVars, getElysiaHyperfixiClient } from '@lokascript/client/elysia';
 
-const app = new Elysia()
-  .use(hyperfixiPlugin({ client }))
-  .get('/user/:id', ({ params, set }) => {
-    // Set template variables via header
-    set.headers['x-hyperscript-template-vars'] = JSON.stringify({ 
-      userId: params.id 
-    });
-    
-    return `
+const app = new Elysia().use(lokascriptPlugin({ client })).get('/user/:id', ({ params, set }) => {
+  // Set template variables via header
+  set.headers['x-hyperscript-template-vars'] = JSON.stringify({
+    userId: params.id,
+  });
+
+  return `
       <!DOCTYPE html>
       <html>
       <body>
@@ -215,28 +224,28 @@ const app = new Elysia()
       </body>
       </html>
     `;
-  });
+});
 ```
 
 ### ElysiaJS Template Helpers
 
 ```typescript
-import { createElysiaTemplateHelpers } from '@hyperfixi/client/elysia';
+import { createElysiaTemplateHelpers } from '@lokascript/client/elysia';
 
 // Create template helpers
 const helpers = createElysiaTemplateHelpers(client);
 
 const app = new Elysia()
-  .use(hyperfixiPlugin({ client }))
+  .use(lokascriptPlugin({ client }))
   .get('/interactive', async ({ params }) => {
     const userId = params.id;
-    
+
     // Compile hyperscript with template variables
     const onclickAttr = await helpers.compileHyperscript(
       'on click fetch /api/users/{{userId}} then put result into #profile',
       { userId }
     );
-    
+
     return `
       <button ${onclickAttr}>Load User Profile</button>
       <div id="profile"></div>
@@ -244,22 +253,18 @@ const app = new Elysia()
   })
   .get('/custom-compile', async ({ request }) => {
     const client = getElysiaHyperfixiClient({ request } as any);
-    
+
     if (!client) {
-      return new Response(
-        JSON.stringify({ error: 'HyperFixi client not available' }), 
-        { status: 500 }
-      );
+      return new Response(JSON.stringify({ error: 'LokaScript client not available' }), {
+        status: 500,
+      });
     }
 
     try {
       const result = await client.compileScript('on click log "Custom compilation"');
       return { compiled: result.compiled };
     } catch (error) {
-      return new Response(
-        JSON.stringify({ error: error.message }), 
-        { status: 500 }
-      );
+      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
   });
 ```
@@ -267,14 +272,14 @@ const app = new Elysia()
 ### Standalone ElysiaJS API App
 
 ```typescript
-import { createHyperfixiApp } from '@hyperfixi/client/elysia';
+import { createHyperfixiApp } from '@lokascript/client/elysia';
 
-// Create standalone app with HyperFixi API routes only
+// Create standalone app with LokaScript API routes only
 const api = createHyperfixiApp(client, '/hyperscript');
 
 // This creates the following endpoints:
 // POST /hyperscript/compile
-// POST /hyperscript/validate  
+// POST /hyperscript/validate
 // POST /hyperscript/batch
 // GET  /hyperscript/health
 // GET  /hyperscript/cache/stats
@@ -286,7 +291,7 @@ api.listen(3001);
 ### Advanced Middleware Configuration
 
 ```typescript
-import { hyperfixiMiddleware, ExpressMiddlewareConfig } from '@hyperfixi/client/express';
+import { lokascriptMiddleware, ExpressMiddlewareConfig } from '@lokascript/client/express';
 
 const config: ExpressMiddlewareConfig = {
   client,
@@ -295,17 +300,17 @@ const config: ExpressMiddlewareConfig = {
   compilationOptions: {
     minify: true,
     compatibility: 'modern',
-    sourceMap: false
+    sourceMap: false,
   },
   skipPaths: ['/api/', '/static/', '/assets/'],
   onlyContentTypes: ['text/html', 'application/xhtml+xml'],
   errorHandler: (req, res, error) => {
-    console.error('HyperFixi middleware error:', error);
+    console.error('LokaScript middleware error:', error);
     // Custom error handling logic
-  }
+  },
 };
 
-app.use(hyperfixiMiddleware(config));
+app.use(lokascriptMiddleware(config));
 ```
 
 ### Template Variables with Express
@@ -313,10 +318,10 @@ app.use(hyperfixiMiddleware(config));
 ```typescript
 app.get('/user/:id', (req, res) => {
   const userId = req.params.id;
-  
+
   // Set template variables via header
   res.set('X-Hyperscript-Template-Vars', JSON.stringify({ userId }));
-  
+
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -336,7 +341,7 @@ app.get('/user/:id', (req, res) => {
 ### Template Helpers
 
 ```typescript
-import { createTemplateHelpers, getHyperfixiClient } from '@hyperfixi/client/express';
+import { createTemplateHelpers, getHyperfixiClient } from '@lokascript/client/express';
 
 // Create template helpers
 const helpers = createTemplateHelpers(client);
@@ -344,13 +349,13 @@ const helpers = createTemplateHelpers(client);
 // In your route handler
 app.get('/interactive', async (req, res) => {
   const userId = req.params.id;
-  
+
   // Compile hyperscript with template variables
   const onclickAttr = await helpers.compileHyperscript(
     'on click fetch /api/users/{{userId}} then put result into #profile',
     { userId }
   );
-  
+
   res.send(`
     <button ${onclickAttr}>Load User Profile</button>
     <div id="profile"></div>
@@ -360,9 +365,9 @@ app.get('/interactive', async (req, res) => {
 // Using client from middleware context
 app.get('/custom-compile', async (req, res) => {
   const client = getHyperfixiClient(req);
-  
+
   if (!client) {
-    return res.status(500).json({ error: 'HyperFixi client not available' });
+    return res.status(500).json({ error: 'LokaScript client not available' });
   }
 
   try {
@@ -377,15 +382,15 @@ app.get('/custom-compile', async (req, res) => {
 ### API Routes
 
 ```typescript
-import { createApiRoutes } from '@hyperfixi/client/express';
+import { createApiRoutes } from '@lokascript/client/express';
 
-// Add HyperFixi API routes to your Express app
+// Add LokaScript API routes to your Express app
 const apiRoutes = createApiRoutes(client, '/hyperscript');
 app.use(apiRoutes);
 
 // This creates the following endpoints:
 // POST /hyperscript/compile
-// POST /hyperscript/validate  
+// POST /hyperscript/validate
 // POST /hyperscript/batch
 // GET  /hyperscript/health
 // GET  /hyperscript/cache/stats
@@ -402,22 +407,21 @@ app.use(apiRoutes);
 // Compile multiple scripts
 await client.compile({
   scripts: {
-    button: "on click toggle .active",
-    form: "on submit fetch /api/save"
+    button: 'on click toggle .active',
+    form: 'on submit fetch /api/save',
   },
   options: { minify: true },
-  context: { templateVars: { userId: 123 } }
+  context: { templateVars: { userId: 123 } },
 });
 
 // Compile single script
-const { compiled, metadata } = await client.compileScript(
-  "on click toggle .active",
-  { minify: true }
-);
+const { compiled, metadata } = await client.compileScript('on click toggle .active', {
+  minify: true,
+});
 
 // Compile with template variables
 await client.compileWithTemplateVars(
-  { button: "on click fetch /api/users/{{userId}}" },
+  { button: 'on click fetch /api/users/{{userId}}' },
   { userId: 123 },
   { minify: true }
 );
@@ -428,12 +432,12 @@ await client.compileWithTemplateVars(
 ```typescript
 // Validate multiple aspects
 const result = await client.validate({
-  script: "on click toggle .active",
-  context: { templateVars: { userId: 123 } }
+  script: 'on click toggle .active',
+  context: { templateVars: { userId: 123 } },
 });
 
 // Simple validation
-const { valid, errors } = await client.validateScript("on click toggle .active");
+const { valid, errors } = await client.validateScript('on click toggle .active');
 ```
 
 #### Batch Processing
@@ -442,16 +446,16 @@ const { valid, errors } = await client.validateScript("on click toggle .active")
 await client.batchCompile({
   definitions: [
     {
-      id: "navigation",
-      script: "on click add .active to me then remove .active from siblings",
-      options: { minify: true }
+      id: 'navigation',
+      script: 'on click add .active to me then remove .active from siblings',
+      options: { minify: true },
     },
     {
-      id: "modal", 
-      script: "on click toggle .modal-open on body",
-      context: { templateVars: { modalId: "main-modal" } }
-    }
-  ]
+      id: 'modal',
+      script: 'on click toggle .modal-open on body',
+      context: { templateVars: { modalId: 'main-modal' } },
+    },
+  ],
 });
 ```
 
@@ -482,7 +486,7 @@ import type {
   ParseContext,
   CompatibilityMode,
   HyperfixiError
-} from '@hyperfixi/client';
+} from '@lokascript/client';
 
 // Configuration
 const config: ClientConfig = {
@@ -518,15 +522,15 @@ const metadata: ScriptMetadata = {
 ### Error Types
 
 ```typescript
-import { 
-  HyperfixiError, 
-  NetworkError, 
-  ValidationError, 
-  CompilationFailedError 
-} from '@hyperfixi/client';
+import {
+  HyperfixiError,
+  NetworkError,
+  ValidationError,
+  CompilationFailedError,
+} from '@lokascript/client';
 
 try {
-  const result = await client.compile({ scripts: { test: "invalid script" } });
+  const result = await client.compile({ scripts: { test: 'invalid script' } });
 } catch (error) {
   if (error instanceof CompilationFailedError) {
     console.log('Compilation errors:', error.errors);
@@ -550,19 +554,19 @@ const config: ExpressMiddlewareConfig = {
   client,
   errorHandler: (req, res, error) => {
     if (error instanceof HyperfixiError) {
-      console.error(`HyperFixi error (${error.statusCode}):`, error.message);
+      console.error(`LokaScript error (${error.statusCode}):`, error.message);
     } else {
       console.error('Unexpected error:', error.message);
     }
-    
+
     // Optionally send error response
     if (!res.headersSent) {
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'HyperScript compilation failed',
-        details: error.message 
+        details: error.message,
       });
     }
-  }
+  },
 };
 ```
 
@@ -574,14 +578,15 @@ Template variables use `{{variable}}` syntax and are processed before compilatio
 // Variables are substituted before hyperscript compilation
 const templateVars = {
   userId: 123,
-  apiEndpoint: "/api/v1",
-  className: "btn-primary",
-  timeout: 5000
+  apiEndpoint: '/api/v1',
+  className: 'btn-primary',
+  timeout: 5000,
 };
 
 const result = await client.compileWithTemplateVars(
   {
-    button: "on click fetch {{apiEndpoint}}/users/{{userId}} then add .{{className}} wait {{timeout}}ms"
+    button:
+      'on click fetch {{apiEndpoint}}/users/{{userId}} then add .{{className}} wait {{timeout}}ms',
   },
   templateVars
 );
@@ -595,11 +600,14 @@ const result = await client.compileWithTemplateVars(
 ```typescript
 // Set via header (recommended)
 app.get('/user/:id', (req, res) => {
-  res.set('X-Hyperscript-Template-Vars', JSON.stringify({
-    userId: req.params.id,
-    apiUrl: process.env.API_URL
-  }));
-  
+  res.set(
+    'X-Hyperscript-Template-Vars',
+    JSON.stringify({
+      userId: req.params.id,
+      apiUrl: process.env.API_URL,
+    })
+  );
+
   res.send(htmlWithHyperScript);
 });
 
@@ -619,31 +627,31 @@ app.use((req, res, next) => {
 
 ```typescript
 import axios from 'axios';
-import { Client } from '@hyperfixi/client';
+import { Client } from '@lokascript/client';
 
 // Create custom axios instance
 const httpClient = axios.create({
-  baseURL: 'https://hyperfixi.example.com',
+  baseURL: 'https://lokascript.example.com',
   timeout: 60000,
   headers: {
     'User-Agent': 'MyApp/1.0.0',
-    'Accept': 'application/json'
-  }
+    Accept: 'application/json',
+  },
 });
 
 // Add request interceptor
-httpClient.interceptors.request.use((config) => {
+httpClient.interceptors.request.use(config => {
   config.headers['X-Request-ID'] = generateRequestId();
   return config;
 });
 
 const client = new Client({
-  baseURL: 'https://hyperfixi.example.com',
+  baseURL: 'https://lokascript.example.com',
   timeout: 60000,
   retries: 5,
   headers: {
-    'User-Agent': 'MyApp/1.0.0'
-  }
+    'User-Agent': 'MyApp/1.0.0',
+  },
 });
 ```
 
@@ -655,9 +663,9 @@ const largeDefinitions = generateManyScriptDefinitions(); // 1000+ scripts
 
 try {
   const result = await client.batchCompile({
-    definitions: largeDefinitions
+    definitions: largeDefinitions,
   });
-  
+
   console.log(`Compiled ${Object.keys(result.compiled).length} scripts`);
   console.log(`Total time: ${result.timings.total}ms`);
 } catch (error) {
@@ -675,21 +683,21 @@ const startTime = Date.now();
 
 const result = await client.compile({
   scripts: myScripts,
-  options: { minify: true }
+  options: { minify: true },
 });
 
 const totalTime = Date.now() - startTime;
 console.log('Client timing:', {
   total: totalTime,
   server: result.timings.total,
-  network: totalTime - result.timings.total
+  network: totalTime - result.timings.total,
 });
 
 // Monitor cache effectiveness
 const stats = await client.cacheStats();
 console.log('Cache performance:', {
   hitRatio: (stats.hitRatio * 100).toFixed(1) + '%',
-  utilization: (stats.size / stats.maxSize * 100).toFixed(1) + '%'
+  utilization: ((stats.size / stats.maxSize) * 100).toFixed(1) + '%',
 });
 ```
 
@@ -699,18 +707,18 @@ console.log('Cache performance:', {
 
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
-import { createClient } from '@hyperfixi/client';
+import { createClient } from '@lokascript/client';
 
-describe('HyperFixi Client', () => {
+describe('LokaScript Client', () => {
   it('should compile scripts successfully', async () => {
     const client = createClient({
-      baseURL: 'http://localhost:3000'
+      baseURL: 'http://localhost:3000',
     });
 
     const result = await client.compile({
       scripts: {
-        test: 'on click toggle .active'
-      }
+        test: 'on click toggle .active',
+      },
     });
 
     expect(result.compiled.test).toContain('addEventListener');
@@ -724,7 +732,11 @@ describe('HyperFixi Client', () => {
 ```typescript
 import request from 'supertest';
 import express from 'express';
-import { createClient, hyperfixiMiddleware, createMiddlewareConfig } from '@hyperfixi/client/express';
+import {
+  createClient,
+  lokascriptMiddleware,
+  createMiddlewareConfig,
+} from '@lokascript/client/express';
 
 describe('Express Integration', () => {
   let app: express.Application;
@@ -733,7 +745,7 @@ describe('Express Integration', () => {
     app = express();
     const client = createClient({ baseURL: 'http://localhost:3000' });
     const config = createMiddlewareConfig(client);
-    app.use(hyperfixiMiddleware(config));
+    app.use(lokascriptMiddleware(config));
   });
 
   it('should compile hyperscript in HTML responses', async () => {
@@ -742,7 +754,7 @@ describe('Express Integration', () => {
     });
 
     const response = await request(app).get('/test');
-    
+
     expect(response.text).toContain('onclick=');
     expect(response.text).not.toContain('_=');
   });
@@ -755,17 +767,24 @@ describe('Express Integration', () => {
 
 ```typescript
 import express from 'express';
-import { createClient, hyperfixiMiddleware, createApiRoutes, createTemplateHelpers } from '@hyperfixi/client/express';
+import {
+  createClient,
+  lokascriptMiddleware,
+  createApiRoutes,
+  createTemplateHelpers,
+} from '@lokascript/client/express';
 
 const app = express();
 const client = createClient({ baseURL: 'http://localhost:3000' });
 
 // Add middleware
-app.use(hyperfixiMiddleware({
-  client,
-  compilationOptions: { minify: true },
-  skipPaths: ['/api/', '/static/']
-}));
+app.use(
+  lokascriptMiddleware({
+    client,
+    compilationOptions: { minify: true },
+    skipPaths: ['/api/', '/static/'],
+  })
+);
 
 // Add API routes
 app.use(createApiRoutes(client));
@@ -778,7 +797,7 @@ app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html>
-    <head><title>HyperFixi Demo</title></head>
+    <head><title>LokaScript Demo</title></head>
     <body>
       <h1>Interactive Elements</h1>
       
@@ -799,12 +818,12 @@ app.get('/', (req, res) => {
 // Dynamic compilation
 app.get('/user/:id', async (req, res) => {
   const userId = req.params.id;
-  
+
   const loadButtonAttr = await helpers.compileHyperscript(
     'on click fetch /api/users/{{userId}} then put result into #profile',
     { userId }
   );
-  
+
   res.send(`
     <div>
       <h2>User ${userId}</h2>
@@ -864,6 +883,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- **Documentation**: [https://hyperfixi.dev/docs](https://hyperfixi.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **NPM Package**: [npmjs.com/package/@hyperfixi/client](https://www.npmjs.com/package/@hyperfixi/client)
+- **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
+- **Issues**: [GitHub Issues](https://github.com/lokascript/lokascript/issues)
+- **NPM Package**: [npmjs.com/package/@lokascript/client](https://www.npmjs.com/package/@lokascript/client)

@@ -6,9 +6,9 @@ declare global {
   }
 }
 
-// Module declaration for @hyperfixi/i18n/browser
+// Module declaration for @lokascript/i18n/browser
 // This module is resolved by the bundler at build time
-declare module '@hyperfixi/i18n/browser' {
+declare module '@lokascript/i18n/browser' {
   export const esKeywords: any;
   export const jaKeywords: any;
   export const frKeywords: any;

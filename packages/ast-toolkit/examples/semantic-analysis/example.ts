@@ -9,7 +9,7 @@ import {
   generateVariations,
   extractSemanticPatterns,
   analyzeSemantics
-} from '@hyperfixi/ast-toolkit';
+} from '@lokascript/ast-toolkit';
 import { 
   sampleModalAST, 
   sampleFormAST, 

@@ -9,7 +9,7 @@
  *
  * @example
  * ```typescript
- * import { loadLanguage, parse } from '@hyperfixi/semantic/browser/lazy';
+ * import { loadLanguage, parse } from '@lokascript/semantic/browser/lazy';
  *
  * // Load Japanese on demand
  * await loadLanguage('ja');

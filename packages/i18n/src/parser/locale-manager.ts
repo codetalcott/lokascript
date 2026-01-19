@@ -13,8 +13,8 @@ import { createEnglishProvider } from './create-provider';
  *
  * @example
  * ```typescript
- * import { LocaleManager } from '@hyperfixi/i18n/parser';
- * import { esKeywords, frKeywords } from '@hyperfixi/i18n/parser';
+ * import { LocaleManager } from '@lokascript/i18n/parser';
+ * import { esKeywords, frKeywords } from '@lokascript/i18n/parser';
  *
  * // Register available locales
  * LocaleManager.register('es', esKeywords);
@@ -141,8 +141,8 @@ export class LocaleManager {
    *
    * @example
    * ```typescript
-   * import { LocaleManager } from '@hyperfixi/i18n/parser';
-   * import { esKeywords, jaKeywords, frKeywords, deKeywords, arKeywords } from '@hyperfixi/i18n/parser';
+   * import { LocaleManager } from '@lokascript/i18n/parser';
+   * import { esKeywords, jaKeywords, frKeywords, deKeywords, arKeywords } from '@lokascript/i18n/parser';
    *
    * LocaleManager.registerAll({
    *   es: esKeywords,
@@ -168,8 +168,8 @@ export class LocaleManager {
  *
  * @example
  * ```typescript
- * import { detectBrowserLocale } from '@hyperfixi/i18n/parser';
- * import { Parser } from '@hyperfixi/core';
+ * import { detectBrowserLocale } from '@lokascript/i18n/parser';
+ * import { Parser } from '@lokascript/core';
  *
  * // Auto-detect and use browser locale
  * const parser = new Parser({ keywords: detectBrowserLocale() });

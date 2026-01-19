@@ -13,7 +13,7 @@ import {
   createSemanticAnalyzer,
   DEFAULT_CONFIDENCE_THRESHOLD,
   type SemanticAnalyzer,
-} from '@hyperfixi/semantic';
+} from '@lokascript/semantic';
 
 // Singleton semantic analyzer instance (lazy-initialized)
 let semanticAnalyzerInstance: SemanticAnalyzer | null = null;

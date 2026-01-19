@@ -1,4 +1,4 @@
-package hyperfixi
+package lokascript
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func DefaultGinMiddlewareConfig(client *Client) *GinMiddlewareConfig {
 // defaultGinErrorHandler is the default error handler for the middleware
 func defaultGinErrorHandler(c *gin.Context, err error) {
 	// Log the error but don't break the response
-	gin.DefaultWriter.Write([]byte(fmt.Sprintf("HyperFixi middleware error: %v\n", err)))
+	gin.DefaultWriter.Write([]byte(fmt.Sprintf("LokaScript middleware error: %v\n", err)))
 }
 
 // GinMiddleware returns a Gin middleware that automatically compiles hyperscript in HTML responses
@@ -53,13 +53,13 @@ func GinMiddleware(config *GinMiddlewareConfig) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		// Add client to context for use in handlers
-		c.Set("hyperfixi", config.Client)
+		c.Set("lokascript", config.Client)
 
 		// Parse template variables from header
 		var templateVars map[string]interface{}
 		if headerValue := c.GetHeader(config.TemplateVarsHeader); headerValue != "" {
 			if err := json.Unmarshal([]byte(headerValue), &templateVars); err == nil {
-				c.Set("hyperfixi_template_vars", templateVars)
+				c.Set("lokascript_template_vars", templateVars)
 			}
 		}
 
@@ -210,7 +210,7 @@ func (h *GinHelpers) CompileHyperscript(script string, templateVars map[string]i
 
 	compiled, _, err := h.client.CompileScript(ctx, script, nil)
 	if err != nil {
-		return fmt.Sprintf(`onclick="/* HyperFixi compilation error: %v */"`, err)
+		return fmt.Sprintf(`onclick="/* LokaScript compilation error: %v */"`, err)
 	}
 
 	return fmt.Sprintf(`onclick="%s"`, compiled)
@@ -234,14 +234,14 @@ func (h *GinHelpers) CompileHyperscriptWithOptions(script string, templateVars m
 
 	result, err := h.client.Compile(ctx, req)
 	if err != nil {
-		return fmt.Sprintf(`onclick="/* HyperFixi compilation error: %v */"`, err)
+		return fmt.Sprintf(`onclick="/* LokaScript compilation error: %v */"`, err)
 	}
 
 	if compiled, exists := result.Compiled["template_script"]; exists {
 		return fmt.Sprintf(`onclick="%s"`, compiled)
 	}
 
-	return `onclick="/* HyperFixi compilation failed */"`
+	return `onclick="/* LokaScript compilation failed */"`
 }
 
 // ValidateHyperscript validates hyperscript syntax
@@ -356,18 +356,18 @@ func SetupGinRoutes(router *gin.Engine, client *Client, basePath string) {
 
 // GetHyperfixiClient is a helper to get the client from Gin context
 func GetHyperfixiClient(c *gin.Context) (*Client, bool) {
-	client, exists := c.Get("hyperfixi")
+	client, exists := c.Get("lokascript")
 	if !exists {
 		return nil, false
 	}
 	
-	hyperfixiClient, ok := client.(*Client)
-	return hyperfixiClient, ok
+	lokascriptClient, ok := client.(*Client)
+	return lokascriptClient, ok
 }
 
 // GetTemplateVars is a helper to get template variables from Gin context
 func GetTemplateVars(c *gin.Context) (map[string]interface{}, bool) {
-	vars, exists := c.Get("hyperfixi_template_vars")
+	vars, exists := c.Get("lokascript_template_vars")
 	if !exists {
 		return nil, false
 	}

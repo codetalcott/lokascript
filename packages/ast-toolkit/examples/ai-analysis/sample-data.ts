@@ -2,7 +2,7 @@
  * Sample AST data for AI analysis example
  */
 
-import type { ASTNode } from '@hyperfixi/ast-toolkit';
+import type { ASTNode } from '@lokascript/ast-toolkit';
 
 /**
  * Interactive dashboard with multiple user interactions

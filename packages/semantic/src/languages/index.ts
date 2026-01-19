@@ -7,11 +7,11 @@
  * @example
  * ```typescript
  * // Full bundle - all languages
- * import '@hyperfixi/semantic/languages';
+ * import '@lokascript/semantic/languages';
  *
  * // Minimal bundle - specific languages only
- * import '@hyperfixi/semantic/languages/en';
- * import '@hyperfixi/semantic/languages/es';
+ * import '@lokascript/semantic/languages/en';
+ * import '@lokascript/semantic/languages/es';
  * ```
  */
 

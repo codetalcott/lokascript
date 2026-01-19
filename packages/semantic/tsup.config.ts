@@ -409,7 +409,7 @@ export default defineConfig([
     },
   },
   // Individual language modules (ESM) for npm tree-shaking
-  // These allow: import '@hyperfixi/semantic/languages/en'
+  // These allow: import '@lokascript/semantic/languages/en'
   {
     entry: {
       'languages/en': 'src/languages/en.ts',

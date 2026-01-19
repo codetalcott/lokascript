@@ -5,7 +5,7 @@
  * These types guarantee HTTP request/response APIs are used correctly.
  *
  * Usage:
- *   import type { ServerEventPayload, ServerEventHandler } from '@hyperfixi/server-integration';
+ *   import type { ServerEventPayload, ServerEventHandler } from '@lokascript/server-integration';
  *
  * Benefits:
  * - Full type safety for HTTP request/response
@@ -18,8 +18,8 @@ import type {
   EventSourceHandler,
   EventSourceSubscription,
   EventSource,
-} from '@hyperfixi/core/registry';
-import type { ExecutionContext } from '@hyperfixi/core';
+} from '@lokascript/core/registry';
+import type { ExecutionContext } from '@lokascript/core';
 
 /**
  * HTTP Method type

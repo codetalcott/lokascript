@@ -1,7 +1,7 @@
 /**
  * TRON Backend Integration for HyperFixi
  *
- * @module @hyperfixi/tron-backend
+ * @module @lokascript/tron-backend
  * @description High-performance TRON (Tree Root Object Notation) serialization
  * for hyperscript compilation, execution, and SSR hydration.
  */
@@ -57,11 +57,7 @@ export type {
   ContentNegotiation,
 } from './types/protocol';
 
-export {
-  TRON_CONTENT_TYPE,
-  JSON_CONTENT_TYPE,
-  parseAcceptHeader,
-} from './types/protocol';
+export { TRON_CONTENT_TYPE, JSON_CONTENT_TYPE, parseAcceptHeader } from './types/protocol';
 
 // =============================================================================
 // Adapter Interface
@@ -80,25 +76,24 @@ export type {
   BackendCapabilities,
 } from './adapters/adapter-interface';
 
-export {
-  BaseTronAdapter,
-  DEFAULT_CONFIG,
-} from './adapters/adapter-interface';
+export { BaseTronAdapter, DEFAULT_CONFIG } from './adapters/adapter-interface';
 
 // =============================================================================
 // Node.js Adapter
 // =============================================================================
 
-export {
-  NodeTronAdapter,
-  createNodeAdapter,
-} from './backends/nodejs/adapter';
+export { NodeTronAdapter, createNodeAdapter } from './backends/nodejs/adapter';
 
 // =============================================================================
 // Factory
 // =============================================================================
 
-import type { ITronAdapter, ITronAdapterFactory, BackendType, TronAdapterConfig } from './adapters/adapter-interface';
+import type {
+  ITronAdapter,
+  ITronAdapterFactory,
+  BackendType,
+  TronAdapterConfig,
+} from './adapters/adapter-interface';
 import { NodeTronAdapter } from './backends/nodejs/adapter';
 
 /**
@@ -109,9 +104,9 @@ import { NodeTronAdapter } from './backends/nodejs/adapter';
 class TronAdapterFactory implements ITronAdapterFactory {
   private availableBackends = new Map<BackendType, boolean>([
     ['nodejs', true],
-    ['go', false],     // Requires external Go binary
-    ['rust', false],   // Requires external Rust binary
-    ['mojo', false],   // Requires Mojo runtime
+    ['go', false], // Requires external Go binary
+    ['rust', false], // Requires external Rust binary
+    ['mojo', false], // Requires Mojo runtime
   ]);
 
   async create(backend: BackendType, config?: Partial<TronAdapterConfig>): Promise<ITronAdapter> {
@@ -124,19 +119,19 @@ class TronAdapterFactory implements ITronAdapterFactory {
       case 'go':
         throw new Error(
           'Go backend requires external setup. ' +
-          'See packages/tron-backend/src/backends/go/README.md'
+            'See packages/tron-backend/src/backends/go/README.md'
         );
 
       case 'rust':
         throw new Error(
           'Rust backend requires external setup. ' +
-          'See packages/tron-backend/src/backends/rust/README.md'
+            'See packages/tron-backend/src/backends/rust/README.md'
         );
 
       case 'mojo':
         throw new Error(
           'Mojo backend requires Modular runtime. ' +
-          'See packages/tron-backend/src/backends/mojo/README.md'
+            'See packages/tron-backend/src/backends/mojo/README.md'
         );
 
       default:
@@ -193,7 +188,7 @@ export async function createAdapter(
  *
  * Usage:
  * ```typescript
- * import { TronBackend } from '@hyperfixi/tron-backend';
+ * import { TronBackend } from '@lokascript/tron-backend';
  *
  * await TronBackend.initialize();
  * const result = await TronBackend.compile({ source: 'toggle .active' });

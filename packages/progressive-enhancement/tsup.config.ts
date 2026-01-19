@@ -15,7 +15,7 @@ export default defineConfig({
   minify: false,
   splitting: false,
   treeshake: true,
-  external: ['@hyperfixi/core'],
+  external: ['@lokascript/core'],
   banner: {
     js: '/* Progressive Enhancement for HyperFixi Applications */',
   },

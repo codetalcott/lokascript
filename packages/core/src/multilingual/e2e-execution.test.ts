@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { JSDOM } from 'jsdom';
-import { parse, buildAST } from '@hyperfixi/semantic';
+import { parse, buildAST } from '@lokascript/semantic';
 import { createMinimalRuntime } from '../runtime/runtime-experimental';
 import { createContext } from '../core/context';
 import type { ASTNode } from '../types/base-types';

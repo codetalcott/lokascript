@@ -1,5 +1,5 @@
 /**
- * Type definitions for @hyperfixi/semantic browser global (window.HyperFixiSemantic)
+ * Type definitions for @lokascript/semantic browser global (window.HyperFixiSemantic)
  */
 
 export interface LokaScriptSemanticAPI {

@@ -1,7 +1,7 @@
 /**
  * Pattern Tools
  *
- * Pattern lookup and LLM example retrieval from @hyperfixi/patterns-reference.
+ * Pattern lookup and LLM example retrieval from @lokascript/patterns-reference.
  * These tools help LLMs generate correct hyperscript by providing examples.
  */
 
@@ -103,7 +103,7 @@ export async function handlePatternTool(
     // Try to import patterns-reference
     let patternsRef: any;
     try {
-      patternsRef = await import('@hyperfixi/patterns-reference');
+      patternsRef = await import('@lokascript/patterns-reference');
     } catch {
       // Fall back to built-in examples
       return handleWithBuiltinExamples(name, args);
@@ -189,7 +189,7 @@ export async function handlePatternTool(
 
         // Try semantic package for translation
         try {
-          const semantic = await import('@hyperfixi/semantic');
+          const semantic = await import('@lokascript/semantic');
           const translated = await semantic.translate(code, fromLanguage, toLanguage);
           return {
             content: [
@@ -214,7 +214,7 @@ export async function handlePatternTool(
               {
                 type: 'text',
                 text: JSON.stringify({
-                  error: 'Translation requires @hyperfixi/semantic package',
+                  error: 'Translation requires @lokascript/semantic package',
                   original: code,
                   fromLanguage,
                   toLanguage,
@@ -460,7 +460,7 @@ function handleWithBuiltinExamples(
               {
                 examples: matches,
                 count: matches.length,
-                note: 'Using built-in examples (install @hyperfixi/patterns-reference for 400+ examples)',
+                note: 'Using built-in examples (install @lokascript/patterns-reference for 400+ examples)',
               },
               null,
               2
@@ -491,7 +491,7 @@ function handleWithBuiltinExamples(
               {
                 patterns: matches.slice(0, limit),
                 count: matches.length,
-                note: 'Using built-in patterns (install @hyperfixi/patterns-reference for 100+ patterns)',
+                note: 'Using built-in patterns (install @lokascript/patterns-reference for 100+ patterns)',
               },
               null,
               2
@@ -511,7 +511,7 @@ function handleWithBuiltinExamples(
                 builtinExamples: BUILTIN_EXAMPLES.length,
                 categories: [...new Set(BUILTIN_EXAMPLES.map(ex => ex.category))],
                 supportedLanguages: ['en'],
-                note: 'Install @hyperfixi/patterns-reference for 106 patterns, 1378 translations, 414 LLM examples',
+                note: 'Install @lokascript/patterns-reference for 106 patterns, 1378 translations, 414 LLM examples',
               },
               null,
               2
@@ -531,7 +531,7 @@ function handleWithBuiltinExamples(
             type: 'text',
             text: JSON.stringify(
               {
-                error: 'Translation requires @hyperfixi/semantic package',
+                error: 'Translation requires @lokascript/semantic package',
                 original: code,
                 fromLanguage,
                 toLanguage,

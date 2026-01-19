@@ -2,7 +2,7 @@
  * Sample AST data for semantic analysis example
  */
 
-import type { ASTNode } from '@hyperfixi/ast-toolkit';
+import type { ASTNode } from '@lokascript/ast-toolkit';
 
 /**
  * Modal dialog system with trigger and close functionality

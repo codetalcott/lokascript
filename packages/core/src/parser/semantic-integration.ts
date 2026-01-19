@@ -1,7 +1,7 @@
 /**
  * Semantic Integration Adapter
  *
- * Bridges the semantic parser from @hyperfixi/semantic into the core parser.
+ * Bridges the semantic parser from @lokascript/semantic into the core parser.
  * Provides confidence-based routing between semantic and traditional parsing.
  *
  * @module parser/semantic-integration
@@ -16,7 +16,7 @@ import {
 } from '../utils/debug-events';
 
 // =============================================================================
-// Semantic Analyzer Interface (mirrors @hyperfixi/semantic/core-bridge)
+// Semantic Analyzer Interface (mirrors @lokascript/semantic/core-bridge)
 // =============================================================================
 
 /**
@@ -166,7 +166,7 @@ export interface SemanticParseAttempt {
  *
  * Usage:
  * ```typescript
- * import { createSemanticAnalyzer } from '@hyperfixi/semantic';
+ * import { createSemanticAnalyzer } from '@lokascript/semantic';
  *
  * const adapter = new SemanticIntegrationAdapter({
  *   analyzer: createSemanticAnalyzer(),

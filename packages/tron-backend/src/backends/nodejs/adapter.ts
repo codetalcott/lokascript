@@ -36,7 +36,7 @@ import type {
 // TRON Encoding Constants
 // =============================================================================
 
-const TRON_MAGIC = 0x54524F4E; // "TRON" in ASCII
+const TRON_MAGIC = 0x54524f4e; // "TRON" in ASCII
 const TRON_HEADER_SIZE = 8;
 
 // =============================================================================
@@ -125,7 +125,7 @@ export class NodeTronAdapter extends BaseTronAdapter {
       const startTime = performance.now();
 
       // Use hyperfixi's compilation API
-      const { hyperscript } = await import('@hyperfixi/core');
+      const { hyperscript } = await import('@lokascript/core');
 
       const result = await hyperscript.compileAsync(request.source, {
         language: request.language,
@@ -187,7 +187,7 @@ export class NodeTronAdapter extends BaseTronAdapter {
 
     try {
       const startTime = performance.now();
-      const { hyperscript } = await import('@hyperfixi/core');
+      const { hyperscript } = await import('@lokascript/core');
 
       // Get source code from request
       let source: string;
@@ -245,7 +245,7 @@ export class NodeTronAdapter extends BaseTronAdapter {
 
   async validate(request: ValidateRequest): Promise<AdapterResult<ValidateResult>> {
     try {
-      const { hyperscript } = await import('@hyperfixi/core');
+      const { hyperscript } = await import('@lokascript/core');
 
       const result = await hyperscript.validate(request.source);
 
@@ -259,12 +259,13 @@ export class NodeTronAdapter extends BaseTronAdapter {
             column: e.column,
             code: e.code,
           })),
-          warnings: result.warnings?.map(w => ({
-            message: w.message,
-            line: w.line,
-            column: w.column,
-            code: w.code,
-          })) || [],
+          warnings:
+            result.warnings?.map(w => ({
+              message: w.message,
+              line: w.line,
+              column: w.column,
+              code: w.code,
+            })) || [],
         },
       };
     } catch (error) {
@@ -280,7 +281,7 @@ export class NodeTronAdapter extends BaseTronAdapter {
 
   async translate(request: TranslateRequest): Promise<AdapterResult<TranslateResult>> {
     try {
-      const { MultilingualHyperscript } = await import('@hyperfixi/core');
+      const { MultilingualHyperscript } = await import('@lokascript/core');
 
       const ml = new MultilingualHyperscript();
       await ml.initialize();
@@ -499,7 +500,7 @@ export class NodeTronAdapter extends BaseTronAdapter {
     // via node-ffi-napi or node-addon-api
     //
     // For now, we throw to trigger emulation mode
-    throw new Error('Native bindings not available - install @hyperfixi/tron-native');
+    throw new Error('Native bindings not available - install @lokascript/tron-native');
   }
 
   private createHeader(): TronHeader {

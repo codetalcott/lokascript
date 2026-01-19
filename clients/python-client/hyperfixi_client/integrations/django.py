@@ -1,5 +1,5 @@
 """
-Django integration for HyperFixi Python client
+Django integration for LokaScript Python client
 """
 
 from typing import Dict, Optional, Any
@@ -23,11 +23,11 @@ class DjangoHyperscriptMiddleware(MiddlewareMixin):
     Add to MIDDLEWARE in settings.py:
         MIDDLEWARE = [
             ...
-            'hyperfixi_client.integrations.django.DjangoHyperscriptMiddleware',
+            'lokascript_client.integrations.django.DjangoHyperscriptMiddleware',
         ]
     
     Configure in settings.py:
-        HYPERFIXI = {
+        LOKASCRIPT = {
             'CLIENT_URL': 'http://localhost:3000',
             'COMPILE_ON_RESPONSE': True,
             'TEMPLATE_VARS_HEADER': 'X-Hyperscript-Template-Vars',
@@ -42,18 +42,18 @@ class DjangoHyperscriptMiddleware(MiddlewareMixin):
         super().__init__(get_response)
         
         # Get configuration from Django settings
-        hyperfixi_config = getattr(settings, 'HYPERFIXI', {})
+        lokascript_config = getattr(settings, 'LOKASCRIPT', {})
         
-        client_url = hyperfixi_config.get('CLIENT_URL', 'http://localhost:3000')
+        client_url = lokascript_config.get('CLIENT_URL', 'http://localhost:3000')
         self.client = HyperfixiClient(client_url)
         
-        self.compile_on_response = hyperfixi_config.get('COMPILE_ON_RESPONSE', True)
-        self.template_vars_header = hyperfixi_config.get(
+        self.compile_on_response = lokascript_config.get('COMPILE_ON_RESPONSE', True)
+        self.template_vars_header = lokascript_config.get(
             'TEMPLATE_VARS_HEADER', 
             'X-Hyperscript-Template-Vars'
         )
         
-        options_dict = hyperfixi_config.get('COMPILATION_OPTIONS', {})
+        options_dict = lokascript_config.get('COMPILATION_OPTIONS', {})
         self.compilation_options = CompilationOptions(**options_dict)
     
     def process_request(self, request):
@@ -92,7 +92,7 @@ class DjangoHyperscriptMiddleware(MiddlewareMixin):
                 # Log error but don't break the response
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.error(f"HyperFixi middleware error: {e}")
+                logger.error(f"LokaScript middleware error: {e}")
         
         return response
     
@@ -164,7 +164,7 @@ class HyperscriptNode(Node):
         # Get client from request
         request = context.get('request')
         if not request or not hasattr(request, 'hyperscript'):
-            return f'<!-- HyperFixi client not available -->'
+            return f'<!-- LokaScript client not available -->'
         
         client = request.hyperscript
         
@@ -199,7 +199,7 @@ class HyperscriptNode(Node):
                 return mark_safe(f'onclick="{compiled}"')
                 
         except Exception as e:
-            error_msg = f'<!-- HyperFixi compilation error: {e} -->'
+            error_msg = f'<!-- LokaScript compilation error: {e} -->'
             if self.var_name:
                 context[self.var_name] = error_msg
                 return ''
@@ -262,7 +262,7 @@ def hyperscript_tag(context, script, **options):
     # Get client from request
     request = context.get('request')
     if not request or not hasattr(request, 'hyperscript'):
-        return mark_safe('<!-- HyperFixi client not available -->')
+        return mark_safe('<!-- LokaScript client not available -->')
     
     client = request.hyperscript
     
@@ -284,7 +284,7 @@ def hyperscript_tag(context, script, **options):
         return mark_safe(f'onclick="{compiled}"')
         
     except Exception as e:
-        return mark_safe(f'<!-- HyperFixi compilation error: {e} -->')
+        return mark_safe(f'<!-- LokaScript compilation error: {e} -->')
 
 
 @register.filter
@@ -301,8 +301,8 @@ def compile_hyperscript(script, options=None):
     
     try:
         from django.conf import settings
-        hyperfixi_config = getattr(settings, 'HYPERFIXI', {})
-        client_url = hyperfixi_config.get('CLIENT_URL', 'http://localhost:3000')
+        lokascript_config = getattr(settings, 'LOKASCRIPT', {})
+        client_url = lokascript_config.get('CLIENT_URL', 'http://localhost:3000')
         
         client = HyperfixiClient(client_url)
         
@@ -328,27 +328,27 @@ def compile_hyperscript(script, options=None):
         return mark_safe(f'onclick="{compiled}"')
         
     except Exception as e:
-        return mark_safe(f'<!-- HyperFixi compilation error: {e} -->')
+        return mark_safe(f'<!-- LokaScript compilation error: {e} -->')
 
 
-# Django management command for testing HyperFixi connection
+# Django management command for testing LokaScript connection
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     """
-    Django management command to test HyperFixi connection
+    Django management command to test LokaScript connection
     
     Usage:
-        python manage.py test_hyperfixi
+        python manage.py test_lokascript
     """
-    help = 'Test connection to HyperFixi service'
+    help = 'Test connection to LokaScript service'
     
     def add_arguments(self, parser):
         parser.add_argument(
             '--url',
             type=str,
             default='http://localhost:3000',
-            help='HyperFixi service URL'
+            help='LokaScript service URL'
         )
     
     def handle(self, *args, **options):
@@ -357,7 +357,7 @@ class Command(BaseCommand):
         try:
             health = asyncio.run(client.health())
             self.stdout.write(
-                self.style.SUCCESS(f'HyperFixi service is healthy: {health.status}')
+                self.style.SUCCESS(f'LokaScript service is healthy: {health.status}')
             )
             self.stdout.write(f'Version: {health.version}')
             self.stdout.write(f'Uptime: {health.uptime}ms')
@@ -373,5 +373,5 @@ class Command(BaseCommand):
             
         except Exception as e:
             self.stdout.write(
-                self.style.ERROR(f'HyperFixi connection failed: {e}')
+                self.style.ERROR(f'LokaScript connection failed: {e}')
             )
