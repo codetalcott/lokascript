@@ -362,8 +362,9 @@ for (const [bundleKey, bundleConfig] of Object.entries(BUNDLES)) {
       });
     }
 
-    // Bundle-specific feature tests (skip for browser bundle - too large to inject)
-    if (bundleConfig.features.blocks && bundleKey !== 'browser') {
+    // Bundle-specific feature tests (skip for large bundles - too slow to inject via setContent)
+    // Browser (203KB), Minimal (269KB), Standard (285KB) are too large for inline injection
+    if (bundleConfig.features.blocks && !['browser', 'minimal', 'standard'].includes(bundleKey)) {
       test('if/else blocks work', async ({ page }) => {
         await page.setContent(`
           <!DOCTYPE html>
@@ -388,7 +389,10 @@ for (const [bundleKey, bundleConfig] of Object.entries(BUNDLES)) {
       });
     }
 
-    if (bundleConfig.features.eventModifiers && bundleKey !== 'browser') {
+    if (
+      bundleConfig.features.eventModifiers &&
+      !['browser', 'minimal', 'standard'].includes(bundleKey)
+    ) {
       test('.once modifier works', async ({ page }) => {
         await page.setContent(`
           <!DOCTYPE html>

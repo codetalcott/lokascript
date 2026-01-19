@@ -49,7 +49,7 @@ export default {
         drop_debugger: true,
         drop_console: false,    // Keep console.log for LOG command
         booleans_as_integers: true,  // true -> 1, false -> 0
-        toplevel: true,         // Allow mangling top-level variables
+        // DON'T use toplevel: true - breaks global window.hyperfixi export
         pure_funcs: [           // Strip debug helpers
           'debug.command',
           'debug.event',
@@ -62,7 +62,7 @@ export default {
         ]
       },
       mangle: {
-        toplevel: true,         // Mangle top-level names
+        // Don't mangle top-level - breaks global window.hyperfixi export
         properties: {
           regex: /^_/           // Mangle underscore-prefixed properties
         }
