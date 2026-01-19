@@ -46,8 +46,12 @@
     "version:set": "node scripts/set-version.cjs",
     "version:bump": "node scripts/bump-version.cjs",
     "version:validate": "node scripts/validate-versions.cjs",
+    "changelog:validate": "node scripts/validate-changelog.cjs",
+    "packages:list": "node scripts/list-packages.cjs",
+    "packages:list:public": "node scripts/list-packages.cjs --public",
+    "packages:list:private": "node scripts/list-packages.cjs --private",
     "workspace:enable": "node scripts/use-workspace-protocol.cjs && npm install",
-    "prepublishOnly": "npm run version:validate && npm run build && npm run test",
+    "prepublishOnly": "npm run version:validate && npm run changelog:validate && npm run build && npm run test",
     "prepare": "husky"
   },
   "devDependencies": {
