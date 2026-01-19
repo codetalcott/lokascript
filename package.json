@@ -10,7 +10,8 @@
     "mcp-server-hyperscript"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build --workspace=packages/* --if-present",
     "test": "npm run test --workspaces",
     "test:integration": "npm test --workspace=@lokascript/core && npm test --workspace=@lokascript/semantic",
     "test:core": "npm test --workspace=@lokascript/core",
@@ -50,6 +51,10 @@
     "packages:list": "node scripts/list-packages.cjs",
     "packages:list:public": "node scripts/list-packages.cjs --public",
     "packages:list:private": "node scripts/list-packages.cjs --private",
+    "rebuild": "npm run build && npm run typecheck",
+    "rebuild:full": "./scripts/rebuild-all.sh",
+    "rebuild:clean": "./scripts/rebuild-all.sh --clean",
+    "rebuild:fast": "./scripts/rebuild-all.sh --skip-tests",
     "workspace:enable": "node scripts/use-workspace-protocol.cjs && npm install",
     "prepublishOnly": "npm run version:validate && npm run changelog:validate && npm run build && npm run test",
     "prepare": "husky"
