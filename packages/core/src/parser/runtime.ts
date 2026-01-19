@@ -211,8 +211,8 @@ async function evaluateIdentifier(node: any, context: ExecutionContext): Promise
 async function evaluateBinaryExpression(node: any, context: ExecutionContext): Promise<any> {
   const operator = node.operator;
 
-  // Handle 'has' operator for CSS class checking
-  if (operator === 'has') {
+  // Handle 'has'/'have' operator for CSS class checking (e.g., "me has .active" or "I have .active")
+  if (operator === 'has' || operator === 'have') {
     const left = await evaluateAST(node.left, context);
     if (
       left instanceof Element &&

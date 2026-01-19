@@ -1,7 +1,7 @@
 {
   "$schema": "./hyperfixi-extensions.schema.json",
   "version": "1.0.0",
-  "lastUpdated": "2025-01-11",
+  "lastUpdated": "2026-01-19",
   "description": "Tracks HyperFixi-specific syntax extensions that may not be available in official _hyperscript",
   "extensions": [
     {
@@ -43,7 +43,21 @@
       "status": "stable",
       "addedVersion": "1.0.0",
       "officialHyperscript": false,
-      "supportedLanguages": ["en", "es", "fr", "pt", "de", "ja", "ko", "zh", "ar", "tr", "id", "sw", "qu"],
+      "supportedLanguages": [
+        "en",
+        "es",
+        "fr",
+        "pt",
+        "de",
+        "ja",
+        "ko",
+        "zh",
+        "ar",
+        "tr",
+        "id",
+        "sw",
+        "qu"
+      ],
       "examples": [
         {
           "hyperfixi": "クリック で .active を 切り替え",

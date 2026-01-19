@@ -838,8 +838,8 @@ export class BaseExpressionEvaluator {
     const leftValue = await this.evaluate(left, context);
     const rightValue = await this.evaluate(right, context);
 
-    // Handle 'has' operator for CSS class checking (before general switch)
-    if (operator === 'has') {
+    // Handle 'has'/'have' operator for CSS class checking (e.g., "me has .active" or "I have .active")
+    if (operator === 'has' || operator === 'have') {
       if (leftValue instanceof Element) {
         // Handle different selector node types
         if (

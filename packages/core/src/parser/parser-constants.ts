@@ -362,6 +362,17 @@ export const LOGICAL_OPERATORS = new Set(['and', 'or', 'not', 'no']);
 
 /**
  * Comparison operators (includes both symbolic and English-style)
+ *
+ * Note on 'has'/'have':
+ * Both forms are supported for grammatical correctness in English.
+ * - "I have .active" (correct first-person grammar)
+ * - "me has .active" (commonly used but grammatically "me has a car" is wrong)
+ * - "it has .active" (correct third-person grammar)
+ * - "#element has .active" (correct for named subjects)
+ *
+ * Hyperscript is designed to read like natural English, so supporting 'have'
+ * allows users to write grammatically correct code: "if I have .loading return"
+ * The 'I' identifier is case-sensitive (uppercase) to avoid conflict with loop variable 'i'.
  */
 export const COMPARISON_OPERATORS = new Set([
   '==',
@@ -379,6 +390,8 @@ export const COMPARISON_OPERATORS = new Set([
   'is not a',
   'is not an',
   'contains',
+  'has', // "it has .class", "#element has .class"
+  'have', // "I have .class" - grammatically correct first-person
   'does not contain',
   'include',
   'includes',

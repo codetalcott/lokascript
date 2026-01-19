@@ -1506,8 +1506,8 @@ function resolveIdentifier(name: string, context: ExecutionContext): any {
 async function evaluateBinaryExpression(node: any, context: ExecutionContext): Promise<any> {
   const operator = node.operator;
 
-  // Handle 'has' operator for CSS class checking
-  if (operator === 'has') {
+  // Handle 'has'/'have' operator for CSS class checking (e.g., "me has .active" or "I have .active")
+  if (operator === 'has' || operator === 'have') {
     const left = await evaluateASTNode(node.left, context);
     // Check if left is an Element and right is a class selector
     if (left instanceof Element) {
