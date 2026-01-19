@@ -43,6 +43,11 @@
     "patterns:extract": "node scripts/analysis/extract-official-patterns.mjs",
     "patterns:coverage": "node scripts/analysis/verify-patterns-coverage.mjs",
     "patterns:full": "npm run build:browser --prefix packages/core && npm run patterns:validate",
+    "version:set": "node scripts/set-version.cjs",
+    "version:bump": "node scripts/bump-version.cjs",
+    "version:validate": "node scripts/validate-versions.cjs",
+    "workspace:enable": "node scripts/use-workspace-protocol.cjs && npm install",
+    "prepublishOnly": "npm run version:validate && npm run build && npm run test",
     "prepare": "husky"
   },
   "devDependencies": {

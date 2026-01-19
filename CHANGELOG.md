@@ -1,325 +1,87 @@
 # Changelog
 
-All notable changes to LokaScript will be documented in this file.
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-01-16
-
-### Changed
-
-#### API v2 Release and Code Quality Improvements
-
-**Breaking Changes**: Removed all deprecated API methods. See [roadmap/api-v2-implementation-plan.md](roadmap/api-v2-implementation-plan.md) for migration guide.
-
-**Major API Changes**:
-
-- Removed deprecated methods: `evalHyperScript()`, `evalHyperScriptAsync()`, `evalHyperScriptSmart()`, `compileMultilingual()`, `run()`, `createChildContext()`, `isValidHyperscript()`
-- Unified API around v2 methods: `compile()`, `compileSync()`, `eval()`, `validate()`, `createContext()`
-- Updated browser type definitions in `@lokascript/types-browser`
-
-**Code Quality Improvements** (Post-v2.0.0 Cleanup):
-
-This release includes comprehensive internal refactoring to improve code quality, maintainability, and type safety. All changes are internal with **zero breaking changes** to the public API.
-
-### Refactored
-
-#### Phase 1: Quick Wins
-
-- **Removed Dead Code**: Deleted unused `HyperscriptParseError` class
-- **Fixed Version**: Updated hardcoded version from '0.1.0' to '2.0.0'
-- **Added Constants**: Extracted magic strings to `DEFAULT_EVENT_TYPE` and `DEFAULT_LANGUAGE` constants
-
-#### Phase 2: Debug Logging Cleanup
-
-- **Error Logging Helper**: Created focused `logCompileError()` helper function
-- **Reduced Debug Verbosity**: Consolidated debug calls from 9 to 2 in event handler setup
-- **Improved Debug Output**: Better structured debug information with object logging
-
-#### Phase 3: Module Extraction
-
-- **Created DOM Processor Module**: Extracted DOM processing logic into `packages/core/src/api/dom-processor.ts` (~350 lines)
-- **Separation of Concerns**: Separated API layer (compilation/execution) from DOM layer (element processing)
-- **Dependency Injection**: Used `initializeDOMProcessor()` pattern to avoid circular dependencies
-- **Functions Extracted**:
-  - `process()` - DOM element processing
-  - `detectLanguage()` - Language detection from element attributes
-  - `processHyperscriptAttribute()` - Attribute processing
-  - `setupEventHandler()` - Event handler setup
-  - `extractEventInfo()` - Event information extraction
-  - `createHyperscriptContext()` - Context creation
-  - `logCompileError()` - Error logging
-
-#### Phase 4: Type Safety Improvements
-
-- **Added Type Guards**: Created proper type guard functions for safer type narrowing
-  - `isExecutionContext()` - Type guard for ExecutionContext
-  - `hasMe()` - Type guard for partial context with 'me' property
-  - `isEventHandlerAST()` - Type guard for EventHandler AST nodes
-  - `isFeatureAST()` - Type guard for Feature AST nodes
-- **Removed Unsafe Casts**: Replaced 8+ unsafe type casts with proper type guards
-- **Fixed Language Narrowing**: Removed unsafe `as 'en'` cast in language configuration
-- **Documented Necessary Casts**: Added clear documentation for remaining necessary type casts due to package interface compatibility
-
-### Improved
-
-#### Code Organization
-
-- **Reduced File Size**: Extracted ~350 lines from `hyperscript-api.ts` into dedicated module
-- **Better Modularity**: Clear separation between API and DOM processing concerns
-- **Improved Maintainability**: Focused modules with single responsibilities
-
-#### Type Safety
-
-- **Better TypeScript Support**: Improved type checking with proper type guards
-- **Clearer Intent**: Type guards make code intentions explicit
-- **Enhanced IDE Support**: Better autocomplete and type inference
-
-#### Developer Experience
-
-- **Reduced Console Noise**: Consolidated debug logging
-- **Better Error Messages**: Improved error logging with structured output
-- **Clearer Code**: Removed magic strings and unclear type casts
-
-### Technical Details
-
-#### Files Modified
-
-- `packages/core/src/api/hyperscript-api.ts` - Main API refactoring
-- `packages/core/src/api/dom-processor.ts` - New DOM processing module (created)
-- `roadmap/api-cleanup-plan.md` - Cleanup implementation plan
-
-#### Test Results
-
-- ✅ All 3,923 tests passing (149 test files)
-- ✅ TypeScript compilation successful with no errors
-- ✅ Browser bundle builds successfully (20.1s)
-- ✅ Bundle size maintained (no increase)
-
-#### Commits
-
-- Phase 1: `refactor: Phase 1 cleanup - remove dead code, fix version, add constants`
-- Phase 2: `refactor: reduce debug logging verbosity in hyperscript-api (Phase 2)`
-- Phase 3: `refactor: extract DOM processing into separate module (Phase 3)`
-- Phase 4: `refactor: improve type safety by replacing unsafe casts with type guards (Phase 4)`
-
-### Migration Notes
-
-**For Users**: No changes required - all refactoring is internal only.
-
-**For Contributors**:
-
-- DOM processing code moved to `packages/core/src/api/dom-processor.ts`
-- Use provided type guards instead of type casts when working with AST nodes or contexts
-- Constants `DEFAULT_EVENT_TYPE` and `DEFAULT_LANGUAGE` available for reuse
-
----
-
-## [1.1.0] - 2025-11-13
+## [Unreleased]
 
 ### Added
 
-#### Local Variables Feature (`:variable` Syntax)
+- Tracking unreleased changes here
 
-**Major Feature**: Complete implementation of scoped local variables using the `:` prefix.
+## [1.0.0] - 2026-01-19
 
-Local variables provide scope isolation, preventing variable naming conflicts and making code more maintainable. Variables prefixed with `:` are only accessible within their execution context and don't pollute the global namespace.
+### Added
 
-**Core Features**:
+- **Initial Release**: First public release of LokaScript
+- **Core Package** (@lokascript/core): Full hyperscript runtime with 43 commands
+- **Semantic Package** (@lokascript/semantic): Multilingual parsing for 23 languages
+- **I18n Package** (@lokascript/i18n): Grammar transformation for SOV/VSO/SVO word orders
+- **Vite Plugin** (@lokascript/vite-plugin): Zero-config Vite integration
+- **MCP Server** (@lokascript/mcp-server): Model Context Protocol server for LLM integration
+- **Browser Bundles**: 7 size-optimized bundles (lite, lite-plus, hybrid-complete, hybrid-hx, minimal, standard, full)
+- **23 Language Support**: English, Spanish, Japanese, Korean, Arabic, Chinese, French, German, Portuguese, Indonesian, Turkish, Swahili, Quechua, and more
+- **4046 Tests**: Comprehensive test suite with >95% coverage
+- **Etymology**: "LokaScript" from Sanskrit "loka" (world/realm/universe) reflecting multilingual scope
 
-- **Parser Support**: Full recognition of `:variable` syntax in all contexts
-- **Scope Isolation**: Local variables only check `context.locals`, never global scope
-- **Arithmetic Operations**: Complete support for INCREMENT, DECREMENT, and all math operators (+, -, \*, /)
-- **Expression Integration**: Works seamlessly in all expression contexts
-- **Type Conversions**: Full support with `as` keyword and type casting
+### Changed
 
-**Example Usage**:
+- **Rebrand**: Project renamed from HyperFixi to LokaScript
+- **NPM Organization**: Published under @lokascript/\* scope
+- **Browser API**: Primary global changed to window.lokascript (with window.hyperfixi backward compatibility)
+- **Lifecycle Events**: Renamed to lokascript:_ prefix (dual dispatch with hyperfixi:_ for compatibility)
 
-```hyperscript
-<!-- Basic local variable -->
-on click
-  set :counter to 0
-  increment :counter by 1
-  put :counter into #display
-end
+### Fixed
 
-<!-- Loop with local variables -->
-on click
-  set :sum to 0
-  repeat 3 times
-    set :idx to it
-    increment :sum by :idx
-  end
-  put :sum into #result  <!-- displays: 6 -->
-end
+- Workspace dependency resolution using wildcard versions (\*)
+- TypeScript compilation across all 20+ packages
+- Build system for browser bundles
 
-<!-- Arithmetic expressions -->
-on input
-  set :width to #width.value as Int
-  set :height to #height.value as Int
-  set :area to (:width * :height)
-  put :area into #result
-end
-```
+### Backward Compatibility
 
-**Documentation**:
+- window.hyperfixi available as deprecated alias to window.lokascript
+- hyperfixi:_ events still dispatched alongside lokascript:_ events
+- File names kept for compatibility (e.g., hyperfixi-browser.js)
 
-- Complete user guide: `docs/LOCAL_VARIABLES_GUIDE.md`
-- 30+ practical code examples
-- Best practices and common patterns
-- Migration guide from global to local variables
+### Documentation
 
-**Test Coverage**:
+- Complete rebrand of all README files
+- Updated CLAUDE.md with project context
+- NPM organization setup guide
+- Version management documentation
 
-- 9 parser tests (100% passing)
-- 10 evaluator tests (100% passing)
-- 7 integration tests (100% passing)
-- **Total**: 33 tests (97% pass rate)
+### Security
 
-#### Bug Fixes
-
-**REPEAT Command**: Fixed `context.it` assignment in loops
-
-- **Issue**: `repeat N times` loops had `it` undefined in all iterations
-- **Fix**: Now correctly sets `it` to 1, 2, 3, ... (1-indexed)
-- **Impact**: Fixes patterns like `set :idx to it` in loops
-- **Compatibility**: Matches official \_hyperscript behavior
-
-**Example**:
-
-```hyperscript
-<!-- Before: it was undefined -->
-repeat 3 times
-  log it  <!-- undefined, undefined, undefined -->
-end
-
-<!-- After: it is 1-indexed -->
-repeat 3 times
-  log it  <!-- 1, 2, 3 -->
-end
-```
-
-### Enhanced
-
-#### Expression Evaluator
-
-**Scope-Aware Variable Lookup**:
-
-- Added `scope` parameter to `evaluateIdentifier()` method
-- Implements explicit scope checking:
-  - `scope: 'local'` → Only checks `context.locals`
-  - `scope: 'global'` → Only checks `context.globals` + window
-  - No scope → Normal fallback (locals → globals → variables → window)
-- Prevents accidental global variable access with `:variable` syntax
-- Full type safety with TypeScript
-
-#### Runtime Execution
-
-**INCREMENT/DECREMENT Scope Extraction**:
-
-- Added scope metadata extraction from identifier AST nodes
-- Runtime correctly passes `scope: 'local'` to command implementations
-- Enables local variable support in arithmetic commands
-
-**Example**:
-
-```hyperscript
-set :counter to 10
-increment :counter by 5  <!-- scope: 'local' passed to INCREMENT -->
-put :counter  <!-- displays: 15 -->
-```
-
-### Technical Details
-
-#### Architecture Improvements
-
-**Complete Scope Propagation Chain**:
-
-1. **Parser** (`parsePrimary`): Creates `{ name: 'x', scope: 'local' }`
-2. **Runtime** (`executeCommand`): Extracts scope from AST nodes
-3. **Commands** (INCREMENT, SET): Receive scope parameter
-4. **Evaluator** (`evaluateIdentifier`): Uses scope for variable lookup
-
-**Zero Breaking Changes**:
-
-- Fully backward compatible with existing code
-- Global variables work exactly as before
-- No changes to existing command behavior
-
-### Statistics
-
-- **Lines of Code Added**: ~500 lines (parser, runtime, evaluator)
-- **Tests Added**: 33 comprehensive tests
-- **Documentation**: 340 lines, 13 major sections
-- **Files Modified**: 6 core files
-- **Files Created**: 4 new files (tests, docs, examples)
-
-### Migration Guide
-
-**From Global to Local Variables**:
-
-```hyperscript
-<!-- Before: Global variables -->
-on click
-  set tempValue to 0
-  repeat 5 times
-    set tempValue to it
-    increment counter by tempValue
-  end
-end
-
-<!-- After: Local variables -->
-on click
-  set :tempValue to 0
-  repeat 5 times
-    set :tempValue to it
-    increment counter by :tempValue
-  end
-end
-```
-
-**Benefits**:
-
-- ✅ No global namespace pollution
-- ✅ No naming conflicts between handlers
-- ✅ Clearer intent (: prefix shows local scope)
-- ✅ Better maintainability
-
-### Known Limitations
-
-1. **Local Scope Only**: `:variable` cannot access global variables
-   - Workaround: Use global variables without `:` prefix
-
-2. **No Cross-Handler Access**: Local variables don't persist across event handlers
-   - Workaround: Use global variables for shared state
-
-### Contributors
-
-- **Implementation**: Claude (Anthropic)
-- **Testing**: Automated test suite + manual verification
-- **Documentation**: Comprehensive user guide with examples
+- npm access token stored in GitHub Secrets
+- 2FA recommended for npm organization
 
 ---
 
-## [1.0.0] - 2025-11-12
+## Version History
 
-### Initial Release
+### Versioning Strategy
 
-Complete HyperScript/LokaScript ecosystem with:
+All @lokascript/\* packages are released together with synchronized versions:
 
-- ✅ Expression System (388 tests)
-- ✅ Command System (142 tests)
-- ✅ Event System (63 tests)
-- ✅ Feature System (400+ tests)
-- ✅ Server-Side Integration
-- ✅ Advanced Tooling (CLI, bundling, testing)
-- ✅ Internationalization (12 languages)
-- ✅ Browser Compatibility (~85% with official \_hyperscript)
+- **1.0.0**: Initial public release (2026-01-19)
 
-See [roadmap/plan.md](roadmap/plan.md) for complete feature list.
+### Compatibility Promise
+
+- All packages at the same version are tested together
+- Mixing versions (e.g., core@1.0.0 + i18n@1.1.0) is not supported
+- Always upgrade all packages together
+
+### Breaking Changes Policy
+
+We follow [Semantic Versioning](https://semver.org/):
+
+- **Major (2.0.0)**: Breaking API changes, upgrade guide provided
+- **Minor (1.1.0)**: New features, fully backward compatible
+- **Patch (1.0.1)**: Bug fixes only
 
 ---
 
-[1.1.0]: https://github.com/codetalcott/lokascript/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/codetalcott/lokascript/releases/tag/v1.0.0
+[Unreleased]: https://github.com/codetalcott/hyperfixi/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/codetalcott/hyperfixi/releases/tag/v1.0.0

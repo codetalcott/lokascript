@@ -1,6 +1,6 @@
 {
   "name": "@lokascript/template-integration",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Template compiler that processes embedded hyperscript with component integration",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

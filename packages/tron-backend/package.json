@@ -1,6 +1,6 @@
 {
   "name": "@lokascript/tron-backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "TRON (Tree Root Object Notation) backend integration for HyperFixi",
   "type": "module",
@@ -59,7 +59,7 @@
     "directory": "packages/tron-backend"
   },
   "peerDependencies": {
-    "@lokascript/core": ">=0.1.0"
+    "@lokascript/core": "*"
   },
   "peerDependenciesMeta": {
     "@lokascript/core": {

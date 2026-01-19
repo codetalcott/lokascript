@@ -1,6 +1,6 @@
 {
   "name": "@lokascript/behaviors",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Reusable hyperscript behaviors for HyperFixi",
   "type": "module",
   "main": "./dist/index.js",
