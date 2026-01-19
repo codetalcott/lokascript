@@ -1,7 +1,7 @@
 /**
  * Runtime Bridge
  *
- * Connects the semantic parser to the HyperFixi core runtime.
+ * Connects the semantic parser to the LokaScript core runtime.
  * Converts SemanticNodes to the CommandNode format expected by the runtime.
  */
 

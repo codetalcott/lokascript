@@ -2,14 +2,14 @@
  * Browser Bundle Entry Point
  *
  * This file exports the public API for browser usage via the
- * HyperFixiSemantic global object.
+ * LokaScriptSemantic global object.
  *
  * @example
  * ```html
  * <script src="hyperfixi-semantic.browser.js"></script>
  * <script>
- *   const result = HyperFixiSemantic.parse('toggle .active on #button', 'en');
- *   const japanese = HyperFixiSemantic.translate(
+ *   const result = LokaScriptSemantic.parse('toggle .active on #button', 'en');
+ *   const japanese = LokaScriptSemantic.translate(
  *     'toggle .active on #button',
  *     'en',
  *     'ja'

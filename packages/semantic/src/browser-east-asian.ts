@@ -14,7 +14,7 @@
  * <script src="hyperfixi-semantic.east-asian.global.js"></script>
  * <script>
  *   // Parse Japanese hyperscript
- *   const ast = HyperFixiSemanticEastAsian.parse('.active を 切り替え', 'ja');
+ *   const ast = LokaScriptSemanticEastAsian.parse('.active を 切り替え', 'ja');
  * </script>
  * ```
  */

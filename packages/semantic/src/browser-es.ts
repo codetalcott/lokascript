@@ -9,10 +9,10 @@
  * <script src="hyperfixi-semantic.es.global.js"></script>
  * <script>
  *   // Parse Spanish hyperscript
- *   const ast = HyperFixiSemanticEs.parse('alternar .activo', 'es');
+ *   const ast = LokaScriptSemanticEs.parse('alternar .activo', 'es');
  *
  *   // Tokenize
- *   const tokens = HyperFixiSemanticEs.tokenize('en clic mostrar #mensaje', 'es');
+ *   const tokens = LokaScriptSemanticEs.tokenize('en clic mostrar #mensaje', 'es');
  * </script>
  * ```
  */

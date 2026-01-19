@@ -14,11 +14,11 @@
  * <script src="hyperfixi-semantic.lazy.global.js"></script>
  * <script>
  *   // Load only the languages you need
- *   await HyperFixiSemanticLazy.loadLanguage('en');
- *   await HyperFixiSemanticLazy.loadLanguage('ja');
+ *   await LokaScriptSemanticLazy.loadLanguage('en');
+ *   await LokaScriptSemanticLazy.loadLanguage('ja');
  *
  *   // Now parsing works for loaded languages
- *   const ast = HyperFixiSemanticLazy.parse('toggle .active', 'en');
+ *   const ast = LokaScriptSemanticLazy.parse('toggle .active', 'en');
  * </script>
  * ```
  */

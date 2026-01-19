@@ -14,7 +14,7 @@
  * <script src="hyperfixi-semantic-core.global.js"></script>
  * <script src="lang/en.global.js"></script> <!-- Self-registering -->
  * <script>
- *   const ast = HyperFixiSemanticCore.parse('toggle .active', 'en');
+ *   const ast = LokaScriptSemanticCore.parse('toggle .active', 'en');
  * </script>
  * ```
  *
@@ -23,8 +23,8 @@
  * <script src="hyperfixi-semantic-core.global.js"></script>
  * <script>
  *   // Load from URL
- *   await HyperFixiSemanticCore.loadLanguageFromUrl('ja', '/lang/ja.global.js');
- *   const ast = HyperFixiSemanticCore.parse('トグル .active', 'ja');
+ *   await LokaScriptSemanticCore.loadLanguageFromUrl('ja', '/lang/ja.global.js');
+ *   const ast = LokaScriptSemanticCore.parse('トグル .active', 'ja');
  * </script>
  * ```
  */

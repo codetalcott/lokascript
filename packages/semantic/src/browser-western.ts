@@ -16,7 +16,7 @@
  * <script src="hyperfixi-semantic.western.global.js"></script>
  * <script>
  *   // Parse Spanish hyperscript
- *   const ast = HyperFixiSemanticWestern.parse('alternar .active', 'es');
+ *   const ast = LokaScriptSemanticWestern.parse('alternar .active', 'es');
  * </script>
  * ```
  */

@@ -6,9 +6,9 @@
  *
  * @example
  * ```html
- * <script src="hyperfixi-semantic.tr.global.js"></script>
+ * <script src="lokascript-semantic.tr.global.js"></script>
  * <script>
- *   const ast = HyperFixiSemanticTr.parse('toggle .active', 'tr');
+ *   const ast = LokaScriptSemanticTr.parse('toggle .active', 'tr');
  * </script>
  * ```
  */

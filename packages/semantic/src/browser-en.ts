@@ -9,7 +9,7 @@
  * <script src="hyperfixi-semantic.en.global.js"></script>
  * <script>
  *   // Parse English hyperscript
- *   const ast = HyperFixiSemanticEn.parse('toggle .active on #button', 'en');
+ *   const ast = LokaScriptSemanticEn.parse('toggle .active on #button', 'en');
  * </script>
  * ```
  */

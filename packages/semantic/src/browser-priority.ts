@@ -14,7 +14,7 @@
  * <script src="hyperfixi-semantic.priority.global.js"></script>
  * <script>
  *   // Parse Arabic hyperscript
- *   const ast = HyperFixiSemanticPriority.parse('بدّل .active', 'ar');
+ *   const ast = LokaScriptSemanticPriority.parse('بدّل .active', 'ar');
  * </script>
  * ```
  */

@@ -8,7 +8,7 @@
  * ```html
  * <script src="hyperfixi-semantic.ar.global.js"></script>
  * <script>
- *   const ast = HyperFixiSemanticAr.parse('toggle .active', 'ar');
+ *   const ast = LokaScriptSemanticAr.parse('toggle .active', 'ar');
  * </script>
  * ```
  */
