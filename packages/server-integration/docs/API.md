@@ -1,12 +1,13 @@
-# HyperFixi API Reference
+# LokaScript API Reference
 
 ## Base URL
 
 ```
-https://api.hyperfixi.dev/v1
+https://api.lokascript.dev/v1
 ```
 
 For local development:
+
 ```
 http://localhost:3000
 ```
@@ -16,7 +17,7 @@ http://localhost:3000
 All API requests (except `/health`) require an API key in the `X-API-Key` header.
 
 ```bash
-curl -H "X-API-Key: hfx_your_api_key_here" https://api.hyperfixi.dev/v1/compile
+curl -H "X-API-Key: hfx_your_api_key_here" https://api.lokascript.dev/v1/compile
 ```
 
 API keys are prefixed with `hfx_` and are tied to your subscription tier.
@@ -36,6 +37,7 @@ Compile one or more hyperscript snippets to JavaScript.
 | `Content-Type` | Yes | Must be `application/json` |
 
 **Body:**
+
 ```json
 {
   "scripts": {
@@ -60,6 +62,7 @@ Compile one or more hyperscript snippets to JavaScript.
 #### Response
 
 **Success (200):**
+
 ```json
 {
   "success": true,
@@ -86,6 +89,7 @@ Compile one or more hyperscript snippets to JavaScript.
 ```
 
 **Validation Error (400):**
+
 ```json
 {
   "success": false,
@@ -101,6 +105,7 @@ Compile one or more hyperscript snippets to JavaScript.
 ```
 
 **Authentication Error (401):**
+
 ```json
 {
   "error": "Invalid API key",
@@ -109,6 +114,7 @@ Compile one or more hyperscript snippets to JavaScript.
 ```
 
 **Rate Limit Error (429):**
+
 ```json
 {
   "error": "Rate limit exceeded",
@@ -117,7 +123,7 @@ Compile one or more hyperscript snippets to JavaScript.
   "remaining": 0,
   "resetIn": 45,
   "tier": "free",
-  "upgrade": "https://hyperfixi.dev/pricing"
+  "upgrade": "https://lokascript.dev/pricing"
 }
 ```
 
@@ -128,6 +134,7 @@ Health check endpoint. Does not require authentication.
 #### Response
 
 **Success (200):**
+
 ```json
 {
   "status": "healthy",
@@ -140,21 +147,21 @@ Health check endpoint. Does not require authentication.
 Rate limits are enforced per API key based on subscription tier:
 
 | Tier | Requests/Minute | Monthly Compiles | Burst Capacity |
-|------|-----------------|------------------|----------------|
-| Free | 60 | 1,000 | 10 |
-| Pro | 600 | Unlimited | 100 |
-| Team | 3,000 | Unlimited | 500 |
+| ---- | --------------- | ---------------- | -------------- |
+| Free | 60              | 1,000            | 10             |
+| Pro  | 600             | Unlimited        | 100            |
+| Team | 3,000           | Unlimited        | 500            |
 
 ### Rate Limit Headers
 
 Every response includes these headers:
 
-| Header | Description |
-|--------|-------------|
-| `X-RateLimit-Limit` | Maximum requests allowed per window |
+| Header                  | Description                          |
+| ----------------------- | ------------------------------------ |
+| `X-RateLimit-Limit`     | Maximum requests allowed per window  |
 | `X-RateLimit-Remaining` | Requests remaining in current window |
-| `X-RateLimit-Reset` | Unix timestamp when window resets |
-| `X-RateLimit-Policy` | Rate limit policy (e.g., `60;w=60`) |
+| `X-RateLimit-Reset`     | Unix timestamp when window resets    |
+| `X-RateLimit-Policy`    | Rate limit policy (e.g., `60;w=60`)  |
 
 When rate limited, the response also includes:
 | Header | Description |
@@ -163,58 +170,58 @@ When rate limited, the response also includes:
 
 ## Error Codes
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 400 | `Missing request body` | No JSON body provided |
-| 400 | `Invalid request format` | Body is not valid JSON |
-| 400 | `Missing scripts field` | Request body missing `scripts` |
-| 400 | `Invalid signature` | Webhook signature verification failed |
-| 401 | `Missing API key` | No `X-API-Key` header |
-| 401 | `Invalid API key format` | Key doesn't start with `hfx_` |
-| 401 | `Invalid API key` | Key not found or revoked |
-| 403 | `Insufficient permissions` | Tier doesn't allow this operation |
-| 429 | `Rate limit exceeded` | Too many requests |
-| 500 | `Compilation failed` | Internal compiler error |
-| 500 | `Authentication failed` | Database error during auth |
+| Status | Error                      | Description                           |
+| ------ | -------------------------- | ------------------------------------- |
+| 400    | `Missing request body`     | No JSON body provided                 |
+| 400    | `Invalid request format`   | Body is not valid JSON                |
+| 400    | `Missing scripts field`    | Request body missing `scripts`        |
+| 400    | `Invalid signature`        | Webhook signature verification failed |
+| 401    | `Missing API key`          | No `X-API-Key` header                 |
+| 401    | `Invalid API key format`   | Key doesn't start with `hfx_`         |
+| 401    | `Invalid API key`          | Key not found or revoked              |
+| 403    | `Insufficient permissions` | Tier doesn't allow this operation     |
+| 429    | `Rate limit exceeded`      | Too many requests                     |
+| 500    | `Compilation failed`       | Internal compiler error               |
+| 500    | `Authentication failed`    | Database error during auth            |
 
 ## Supported Languages
 
 The `language` option supports:
 
-| Code | Language | Example |
-|------|----------|---------|
-| `en` | English | `on click toggle .active` |
-| `ja` | Japanese | `クリック で .active を トグル` |
-| `es` | Spanish | `al hacer clic alternar .active` |
-| `ko` | Korean | `클릭 시 .active 토글` |
-| `zh` | Chinese | `点击时 切换 .active` |
-| `ar` | Arabic | `عند النقر بدل .active` |
-| `de` | German | `bei klick umschalten .active` |
-| `fr` | French | `au clic basculer .active` |
-| `pt` | Portuguese | `ao clicar alternar .active` |
-| `tr` | Turkish | `tiklayinca .active degistir` |
-| `id` | Indonesian | `saat klik toggle .active` |
+| Code | Language   | Example                          |
+| ---- | ---------- | -------------------------------- |
+| `en` | English    | `on click toggle .active`        |
+| `ja` | Japanese   | `クリック で .active を トグル`  |
+| `es` | Spanish    | `al hacer clic alternar .active` |
+| `ko` | Korean     | `클릭 시 .active 토글`           |
+| `zh` | Chinese    | `点击时 切换 .active`            |
+| `ar` | Arabic     | `عند النقر بدل .active`          |
+| `de` | German     | `bei klick umschalten .active`   |
+| `fr` | French     | `au clic basculer .active`       |
+| `pt` | Portuguese | `ao clicar alternar .active`     |
+| `tr` | Turkish    | `tiklayinca .active degistir`    |
+| `id` | Indonesian | `saat klik toggle .active`       |
 
 ## Webhooks
 
 Stripe webhooks are received at `/webhooks/stripe`. The following events are handled:
 
-| Event | Action |
-|-------|--------|
-| `customer.subscription.created` | Create/upgrade API key |
-| `customer.subscription.updated` | Update tier |
-| `customer.subscription.deleted` | Downgrade to free |
-| `invoice.paid` | Reset usage counter |
-| `invoice.payment_failed` | Log failure (grace period) |
+| Event                           | Action                     |
+| ------------------------------- | -------------------------- |
+| `customer.subscription.created` | Create/upgrade API key     |
+| `customer.subscription.updated` | Update tier                |
+| `customer.subscription.deleted` | Downgrade to free          |
+| `invoice.paid`                  | Reset usage counter        |
+| `invoice.payment_failed`        | Log failure (grace period) |
 
 ## SDKs
 
 ### TypeScript/JavaScript
 
 ```typescript
-import { HyperFixiClient } from '@hyperfixi/client';
+import { LokaScriptClient } from '@lokascript/client';
 
-const client = new HyperFixiClient({
+const client = new LokaScriptClient({
   apiKey: 'hfx_your_api_key',
 });
 
@@ -230,7 +237,7 @@ console.log(result.compiled.main);
 ### cURL
 
 ```bash
-curl -X POST https://api.hyperfixi.dev/v1/compile \
+curl -X POST https://api.lokascript.dev/v1/compile \
   -H "X-API-Key: hfx_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{"scripts":{"main":"on click toggle .active"}}'
@@ -242,4 +249,4 @@ curl -X POST https://api.hyperfixi.dev/v1/compile \
 2. **Cache responses**: Compiled JavaScript is deterministic; cache based on input hash
 3. **Handle rate limits**: Implement exponential backoff on 429 responses
 4. **Use source maps**: Enable in development for easier debugging
-5. **Validate locally**: Use `@hyperfixi/core` for local validation before API calls
+5. **Validate locally**: Use `@lokascript/core` for local validation before API calls

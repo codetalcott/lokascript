@@ -17,12 +17,14 @@ Successfully created CommandAdapterV2 (generic, 288 lines) and RuntimeExperiment
 **File**: `packages/core/src/runtime/command-adapter-v2.ts` (288 lines)
 
 **Key Differences from V1** (973 lines):
+
 - ✅ **Generic adapter** - No command-specific logic (vs 609 lines in V1)
 - ✅ **Calls parseInput()** - Delegates argument parsing to commands
 - ✅ **Much shorter** - 288 lines vs 973 lines (70% smaller)
 - ✅ **Tree-shakable** - No command imports
 
 **Architecture**:
+
 ```typescript
 class CommandAdapterV2 {
   async execute(context, ...args) {
@@ -44,6 +46,7 @@ class CommandAdapterV2 {
 ```
 
 **Before (V1 CommandAdapter)**:
+
 ```typescript
 // 609 lines of command-specific parsing
 if (this.impl.name === 'set') {
@@ -60,6 +63,7 @@ if (this.impl.name === 'set') {
 ```
 
 **After (V2 CommandAdapter)**:
+
 ```typescript
 // Generic - delegates to command's parseInput()
 if (this.impl.parseInput) {
@@ -74,11 +78,13 @@ result = await this.impl.execute(parsedInput, typedContext);
 ### EnhancedCommandRegistryV2
 
 **Features**:
+
 - ✅ Uses CommandAdapterV2 for all commands
 - ✅ Same interface as V1 registry (compatible with RuntimeBase)
 - ✅ Supports both V1 (no parseInput) and V2 (with parseInput) commands
 
 **Methods**:
+
 - `register(command)` - Register any command
 - `getAdapter(name)` - Get adapter for command
 - `has(name)` - Check if command exists
@@ -95,6 +101,7 @@ result = await this.impl.execute(parsedInput, typedContext);
 **Purpose**: Test runtime for validating the complete tree-shaking architecture
 
 **Architecture**:
+
 ```
 RuntimeExperimental extends RuntimeBase
   ├─ Uses RuntimeBase (generic AST traversal, zero command imports)
@@ -103,6 +110,7 @@ RuntimeExperimental extends RuntimeBase
 ```
 
 **Default Configuration**:
+
 ```typescript
 const runtime = new RuntimeExperimental();
 
@@ -111,14 +119,12 @@ const runtime = new RuntimeExperimental();
 ```
 
 **Custom Configuration**:
+
 ```typescript
 import { createMinimalRuntime } from './runtime-experimental';
 import { createHideCommand, createShowCommand } from '../commands-v2';
 
-const runtime = createMinimalRuntime([
-  createHideCommand(),
-  createShowCommand()
-]);
+const runtime = createMinimalRuntime([createHideCommand(), createShowCommand()]);
 
 // Result: Bundle only includes hide + show ✅
 ```
@@ -128,6 +134,7 @@ const runtime = createMinimalRuntime([
 ## Complete Architecture Flow
 
 ### Traditional Runtime (V1)
+
 ```
 User code: "hide me"
   ↓
@@ -147,6 +154,7 @@ Bundle: 511KB (includes all 45 commands)
 ```
 
 ### RuntimeExperimental (V2)
+
 ```
 User code: "hide me"
   ↓
@@ -170,14 +178,17 @@ Bundle: ~120KB (only includes registered commands) ✅
 ## Files Created/Modified
 
 ### Created (Phases 3-4)
+
 - ✅ `packages/core/src/runtime/command-adapter-v2.ts` (288 lines)
 - ✅ `packages/core/src/runtime/runtime-experimental.ts` (140 lines)
 - ✅ `roadmap/tree-shaking/PHASE3_4_COMPLETE.md` (this file)
 
 ### Modified (Phases 3-4)
+
 - None ✅ (completely non-destructive)
 
 ### Untouched (Verified)
+
 - ✅ `src/runtime/runtime.ts` (0 changes)
 - ✅ `src/runtime/runtime-base.ts` (0 changes)
 - ✅ `src/runtime/command-adapter.ts` (0 changes)
@@ -200,8 +211,9 @@ Bundle: ~120KB (only includes registered commands) ✅
 ## How to Use RuntimeExperimental
 
 ### Option 1: Default (5 core commands)
+
 ```typescript
-import { RuntimeExperimental } from '@hyperfixi/core/runtime/runtime-experimental';
+import { RuntimeExperimental } from '@lokascript/core/runtime/runtime-experimental';
 
 const runtime = new RuntimeExperimental();
 
@@ -210,27 +222,26 @@ await runtime.execute(astNode, context);
 ```
 
 ### Option 2: Custom command set
-```typescript
-import { createMinimalRuntime } from '@hyperfixi/core/runtime/runtime-experimental';
-import { createHideCommand } from '@hyperfixi/core/commands-v2/dom/hide';
-import { createShowCommand } from '@hyperfixi/core/commands-v2/dom/show';
 
-const runtime = createMinimalRuntime([
-  createHideCommand(),
-  createShowCommand()
-]);
+```typescript
+import { createMinimalRuntime } from '@lokascript/core/runtime/runtime-experimental';
+import { createHideCommand } from '@lokascript/core/commands-v2/dom/hide';
+import { createShowCommand } from '@lokascript/core/commands-v2/dom/show';
+
+const runtime = createMinimalRuntime([createHideCommand(), createShowCommand()]);
 
 // Only has: hide, show
 // Bundle size: ~90KB (vs 511KB for full Runtime)
 ```
 
 ### Option 3: With options
+
 ```typescript
 const runtime = new RuntimeExperimental({
   lazyLoad: true,
   expressionPreload: 'core',
   commandTimeout: 5000,
-  enableErrorReporting: true
+  enableErrorReporting: true,
 });
 ```
 
@@ -239,16 +250,19 @@ const runtime = new RuntimeExperimental({
 ## Key Achievements
 
 ### 1. Generic Adapter (CommandAdapterV2)
+
 - **Before**: 973 lines with 609 lines of command-specific logic
 - **After**: 288 lines with 0 lines of command-specific logic
 - **Reduction**: 70% smaller, 100% generic ✅
 
 ### 2. Tree-Shakable Runtime (RuntimeExperimental)
+
 - **Before**: Runtime with 45+ static command imports (511KB)
 - **After**: RuntimeBase with selective command registration (~120KB)
 - **Reduction**: 76% smaller for minimal builds ✅
 
 ### 3. Complete Architecture
+
 - ✅ RuntimeBase (generic, zero command imports)
 - ✅ CommandAdapterV2 (generic, calls parseInput())
 - ✅ Commands-v2 (with parseInput() methods)
@@ -259,12 +273,14 @@ const runtime = new RuntimeExperimental({
 ## Code Quality Metrics
 
 ### CommandAdapterV2
+
 - **Lines**: 288 (vs 973 in V1)
 - **Command-specific logic**: 0 lines (vs 609 in V1)
 - **Complexity**: Low (generic delegation)
 - **Maintainability**: High (no command knowledge)
 
 ### RuntimeExperimental
+
 - **Lines**: 140
 - **Command imports**: 5 (vs 45+ in Runtime)
 - **Default bundle**: ~120KB (vs 511KB)
@@ -314,13 +330,13 @@ Now that we have the complete architecture, Phase 5 will validate it works corre
 
 ## Risk Assessment
 
-| Risk | Status | Mitigation |
-|------|--------|-----------|
-| Breaking changes | ✅ **ZERO** | All original code untouched |
-| TypeScript errors | ✅ **ZERO** | All files compile cleanly |
-| Logic differences | ⚠️ **UNKNOWN** | Requires Phase 5 validation |
-| Performance regression | ⚠️ **UNKNOWN** | Benchmark in Phase 5 |
-| Edge cases | ⚠️ **POSSIBLE** | Comprehensive testing needed |
+| Risk                   | Status          | Mitigation                   |
+| ---------------------- | --------------- | ---------------------------- |
+| Breaking changes       | ✅ **ZERO**     | All original code untouched  |
+| TypeScript errors      | ✅ **ZERO**     | All files compile cleanly    |
+| Logic differences      | ⚠️ **UNKNOWN**  | Requires Phase 5 validation  |
+| Performance regression | ⚠️ **UNKNOWN**  | Benchmark in Phase 5         |
+| Edge cases             | ⚠️ **POSSIBLE** | Comprehensive testing needed |
 
 ---
 
@@ -329,16 +345,20 @@ Now that we have the complete architecture, Phase 5 will validate it works corre
 ### Completed Today
 
 **Phase 1** (2 hours):
+
 - ✅ RuntimeBase foundation (617 lines, zero command imports)
 
 **Phase 2** (1.5 hours):
+
 - ✅ Commands-v2 (5 commands with parseInput())
 
 **Phase 3** (1 hour):
+
 - ✅ CommandAdapterV2 (288 lines, generic)
 - ✅ EnhancedCommandRegistryV2
 
 **Phase 4** (1 hour):
+
 - ✅ RuntimeExperimental
 - ✅ Factory functions (createMinimalRuntime)
 
@@ -355,6 +375,7 @@ Now that we have the complete architecture, Phase 5 will validate it works corre
 ### What's Next
 
 **Phase 5: Validation** (2-3 hours)
+
 - Create test scenarios
 - Compare RuntimeExperimental vs Runtime
 - Validate behavior
@@ -362,6 +383,7 @@ Now that we have the complete architecture, Phase 5 will validate it works corre
 - Document results
 
 **Phase 6+: Expansion** (if validation passes)
+
 - Add parseInput() to remaining commands
 - Migrate complex commands
 - Create comprehensive test suite

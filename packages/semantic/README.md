@@ -1,6 +1,6 @@
-# @hyperfixi/semantic
+# @lokascript/semantic
 
-Semantic-first multilingual parser for HyperFixi. Parses hyperscript-like syntax from 23 languages into a language-agnostic semantic representation.
+Semantic-first multilingual parser for LokaScript. Parses hyperscript-like syntax from 23 languages into a language-agnostic semantic representation.
 
 ## Features
 
@@ -12,7 +12,7 @@ Semantic-first multilingual parser for HyperFixi. Parses hyperscript-like syntax
 ## Installation
 
 ```bash
-npm install @hyperfixi/semantic
+npm install @lokascript/semantic
 ```
 
 ## Bundle Selection Guide
@@ -23,41 +23,41 @@ Choose the right bundle for your use case. All bundles are minified IIFE for dir
 
 #### Tier 1: Single Language (~14-20 KB gzip)
 
-| Bundle                    | Global                | Size   | Languages |
-| ------------------------- | --------------------- | ------ | --------- |
-| `browser-en.en.global.js` | `HyperFixiSemanticEn` | ~20 KB | en        |
-| `browser-es.es.global.js` | `HyperFixiSemanticEs` | ~16 KB | es        |
-| `browser-ja.ja.global.js` | `HyperFixiSemanticJa` | ~17 KB | ja        |
-| `browser-ar.ar.global.js` | `HyperFixiSemanticAr` | ~17 KB | ar        |
-| `browser-ko.ko.global.js` | `HyperFixiSemanticKo` | ~18 KB | ko        |
-| `browser-zh.zh.global.js` | `HyperFixiSemanticZh` | ~15 KB | zh        |
-| `browser-tr.tr.global.js` | `HyperFixiSemanticTr` | ~18 KB | tr        |
-| `browser-pt.pt.global.js` | `HyperFixiSemanticPt` | ~14 KB | pt        |
-| `browser-fr.fr.global.js` | `HyperFixiSemanticFr` | ~14 KB | fr        |
-| `browser-de.de.global.js` | `HyperFixiSemanticDe` | ~14 KB | de        |
-| `browser-id.id.global.js` | `HyperFixiSemanticId` | ~14 KB | id        |
-| `browser-qu.qu.global.js` | `HyperFixiSemanticQu` | ~14 KB | qu        |
-| `browser-sw.sw.global.js` | `HyperFixiSemanticSw` | ~14 KB | sw        |
+| Bundle                    | Global                 | Size   | Languages |
+| ------------------------- | ---------------------- | ------ | --------- |
+| `browser-en.en.global.js` | `LokaScriptSemanticEn` | ~20 KB | en        |
+| `browser-es.es.global.js` | `LokaScriptSemanticEs` | ~16 KB | es        |
+| `browser-ja.ja.global.js` | `LokaScriptSemanticJa` | ~17 KB | ja        |
+| `browser-ar.ar.global.js` | `LokaScriptSemanticAr` | ~17 KB | ar        |
+| `browser-ko.ko.global.js` | `LokaScriptSemanticKo` | ~18 KB | ko        |
+| `browser-zh.zh.global.js` | `LokaScriptSemanticZh` | ~15 KB | zh        |
+| `browser-tr.tr.global.js` | `LokaScriptSemanticTr` | ~18 KB | tr        |
+| `browser-pt.pt.global.js` | `LokaScriptSemanticPt` | ~14 KB | pt        |
+| `browser-fr.fr.global.js` | `LokaScriptSemanticFr` | ~14 KB | fr        |
+| `browser-de.de.global.js` | `LokaScriptSemanticDe` | ~14 KB | de        |
+| `browser-id.id.global.js` | `LokaScriptSemanticId` | ~14 KB | id        |
+| `browser-qu.qu.global.js` | `LokaScriptSemanticQu` | ~14 KB | qu        |
+| `browser-sw.sw.global.js` | `LokaScriptSemanticSw` | ~14 KB | sw        |
 
 #### Tier 2-5: Multi-Language Bundles
 
-| Bundle                                    | Global                       | Size   | Languages          |
-| ----------------------------------------- | ---------------------------- | ------ | ------------------ |
-| `browser-es-en.es-en.global.js`           | `HyperFixiSemanticEsEn`      | ~25 KB | en, es             |
-| `browser-western.western.global.js`       | `HyperFixiSemanticWestern`   | ~30 KB | en, es, pt, fr, de |
-| `browser-east-asian.east-asian.global.js` | `HyperFixiSemanticEastAsian` | ~24 KB | ja, zh, ko         |
-| `browser-priority.priority.global.js`     | `HyperFixiSemanticPriority`  | ~48 KB | 11 languages       |
-| `browser.global.js`                       | `HyperFixiSemantic`          | ~61 KB | All 13             |
-| `browser-lazy.lazy.global.js`             | `HyperFixiSemanticLazy`      | ~15 KB | On-demand          |
+| Bundle                                    | Global                        | Size   | Languages          |
+| ----------------------------------------- | ----------------------------- | ------ | ------------------ |
+| `browser-es-en.es-en.global.js`           | `LokaScriptSemanticEsEn`      | ~25 KB | en, es             |
+| `browser-western.western.global.js`       | `LokaScriptSemanticWestern`   | ~30 KB | en, es, pt, fr, de |
+| `browser-east-asian.east-asian.global.js` | `LokaScriptSemanticEastAsian` | ~24 KB | ja, zh, ko         |
+| `browser-priority.priority.global.js`     | `LokaScriptSemanticPriority`  | ~48 KB | 11 languages       |
+| `browser.global.js`                       | `LokaScriptSemantic`          | ~61 KB | All 13             |
+| `browser-lazy.lazy.global.js`             | `LokaScriptSemanticLazy`      | ~15 KB | On-demand          |
 
 ### Lazy Loading (Smallest Initial Bundle)
 
 For applications that need minimal initial bundle size:
 
 ```html
-<script src="node_modules/@hyperfixi/semantic/dist/browser-lazy.lazy.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-lazy.lazy.global.js"></script>
 <script>
-  const { loadLanguage, parse } = HyperFixiSemanticLazy;
+  const { loadLanguage, parse } = LokaScriptSemanticLazy;
 
   // Load languages on demand
   await loadLanguage('en');
@@ -88,40 +88,40 @@ node scripts/generate-bundle.mjs --group western
 
 ```html
 <!-- Spanish only (smallest for Spanish devs) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser-es.es.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-es.es.global.js"></script>
 <script>
-  const { parse, tokenize } = HyperFixiSemanticEs;
+  const { parse, tokenize } = LokaScriptSemanticEs;
   parse('alternar .activo', 'es');
 </script>
 
 <!-- English only (smallest for English devs) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser-en.en.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-en.en.global.js"></script>
 <script>
-  const { parse, canParse } = HyperFixiSemanticEn;
+  const { parse, canParse } = LokaScriptSemanticEn;
 </script>
 
 <!-- Western languages (European users) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser-western.western.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-western.western.global.js"></script>
 <script>
-  const { parse, canParse } = HyperFixiSemanticWestern;
+  const { parse, canParse } = LokaScriptSemanticWestern;
 </script>
 
 <!-- East Asian languages (CJK users) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser-east-asian.east-asian.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-east-asian.east-asian.global.js"></script>
 <script>
-  const { parse, canParse } = HyperFixiSemanticEastAsian;
+  const { parse, canParse } = LokaScriptSemanticEastAsian;
 </script>
 
 <!-- Priority languages (11 most common) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser-priority.priority.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser-priority.priority.global.js"></script>
 <script>
-  const { parse, canParse } = HyperFixiSemanticPriority;
+  const { parse, canParse } = LokaScriptSemanticPriority;
 </script>
 
 <!-- Full bundle (all 23 languages) -->
-<script src="node_modules/@hyperfixi/semantic/dist/browser.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/browser.global.js"></script>
 <script>
-  const { parse, canParse } = HyperFixiSemantic;
+  const { parse, canParse } = LokaScriptSemantic;
 </script>
 ```
 
@@ -131,16 +131,16 @@ For tree-shakeable imports in bundlers:
 
 ```typescript
 // Import specific languages for optimal tree-shaking
-import '@hyperfixi/semantic/languages/en';
-import '@hyperfixi/semantic/languages/ja';
+import '@lokascript/semantic/languages/en';
+import '@lokascript/semantic/languages/ja';
 
-import { parse } from '@hyperfixi/semantic';
+import { parse } from '@lokascript/semantic';
 ```
 
 ## Usage
 
 ```typescript
-import { parse, translate, canParse } from '@hyperfixi/semantic';
+import { parse, translate, canParse } from '@lokascript/semantic';
 
 // Parse from any language
 const node = parse('toggle .active on #button', 'en');
@@ -159,7 +159,7 @@ if (result.canParse) {
 
 ## English Native Idioms
 
-HyperFixi accepts multiple beginner-friendly English forms to make hyperscript easier to learn and more readable.
+LokaScript accepts multiple beginner-friendly English forms to make hyperscript easier to learn and more readable.
 
 ### Event Handler Alternatives
 
@@ -255,7 +255,7 @@ parse('set color to red', 'en');
 
 ## Japanese Native Idioms
 
-HyperFixi accepts multiple natural Japanese forms, following Nadeshiko's approach of "accepting multiple orthodox native Japanese expressions."
+LokaScript accepts multiple natural Japanese forms, following Nadeshiko's approach of "accepting multiple orthodox native Japanese expressions."
 
 | Form                 | Example                              | Notes                            |
 | -------------------- | ------------------------------------ | -------------------------------- |
@@ -305,7 +305,7 @@ The parser handles Japanese verb conjugations automatically:
 
 ## Korean Native Idioms
 
-HyperFixi accepts multiple natural Korean forms, following Nadeshiko's approach.
+LokaScript accepts multiple natural Korean forms, following Nadeshiko's approach.
 
 | Form                  | Example                      | Notes                          |
 | --------------------- | ---------------------------- | ------------------------------ |
@@ -358,7 +358,7 @@ The parser handles Korean verb conjugations automatically:
 
 ## Spanish Native Idioms
 
-HyperFixi accepts multiple natural Spanish forms.
+LokaScript accepts multiple natural Spanish forms.
 
 | Form                     | Example                        | Notes                                |
 | ------------------------ | ------------------------------ | ------------------------------------ |
@@ -390,7 +390,7 @@ parse('alternar .active', 'es'); // Formal alternative
 
 ## Chinese Native Idioms
 
-HyperFixi accepts multiple natural Chinese forms using native temporal and aspect markers.
+LokaScript accepts multiple natural Chinese forms using native temporal and aspect markers.
 
 | Form                | Example                    | Notes             |
 | ------------------- | -------------------------- | ----------------- |
@@ -424,7 +424,7 @@ parse('把 .active 切换', 'zh'); // BA construction (把)
 
 ## Arabic Native Idioms
 
-HyperFixi accepts multiple natural Arabic forms, supporting VSO word order.
+LokaScript accepts multiple natural Arabic forms, supporting VSO word order.
 
 | Form              | Example                             | Notes                     |
 | ----------------- | ----------------------------------- | ------------------------- |
@@ -454,7 +454,7 @@ The parser handles Arabic verb patterns and prefix stripping:
 
 ## Turkish Native Idioms
 
-HyperFixi accepts multiple natural Turkish forms with full vowel harmony support.
+LokaScript accepts multiple natural Turkish forms with full vowel harmony support.
 
 | Form                   | Example                        | Notes                             |
 | ---------------------- | ------------------------------ | --------------------------------- |
@@ -490,7 +490,7 @@ parse('#button den tıklandığında artır', 'tr');
 
 ## Portuguese Native Idioms
 
-HyperFixi accepts multiple natural Portuguese forms.
+LokaScript accepts multiple natural Portuguese forms.
 
 | Form                     | Example                                 | Notes                                |
 | ------------------------ | --------------------------------------- | ------------------------------------ |
@@ -542,7 +542,7 @@ Input → Semantic Parser → English Text → Core Parser → AST
 ### Basic AST Building
 
 ```typescript
-import { parse, buildAST } from '@hyperfixi/semantic';
+import { parse, buildAST } from '@lokascript/semantic';
 
 // Parse input to semantic node
 const node = parse('#button の .active を 切り替え', 'ja');
@@ -560,7 +560,7 @@ const ast = buildAST(node);
 ### With MultilingualHyperscript (Core Package)
 
 ```typescript
-import { MultilingualHyperscript } from '@hyperfixi/core';
+import { MultilingualHyperscript } from '@lokascript/core';
 
 const ml = new MultilingualHyperscript();
 await ml.initialize();
@@ -595,7 +595,7 @@ if (result.usedDirectPath) {
 // Semantic: toggle patient:.active destination:#button
 // AST: { name: 'toggle', args: ['.active'], modifiers: { on: '#button' } }
 
-import { getCommandMapper, registerCommandMapper } from '@hyperfixi/semantic';
+import { getCommandMapper, registerCommandMapper } from '@lokascript/semantic';
 
 // Get mapper for a command
 const mapper = getCommandMapper('toggle');

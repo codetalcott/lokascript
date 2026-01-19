@@ -104,7 +104,7 @@ export interface EventSourcePayload<TEnv extends RuntimeEnvironment = 'universal
 ### Browser Code
 
 ```typescript
-import type { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
+import type { BrowserEventPayload } from '@lokascript/core/registry/browser';
 
 const payload: BrowserEventPayload = {
   type: 'click',
@@ -117,7 +117,7 @@ const payload: BrowserEventPayload = {
 ### Server Code
 
 ```typescript
-import type { ServerEventPayload } from '@hyperfixi/server-integration';
+import type { ServerEventPayload } from '@lokascript/server-integration';
 
 const payload: ServerEventPayload = {
   type: 'request',
@@ -133,7 +133,7 @@ const payload: ServerEventPayload = {
 ### Universal Code
 
 ```typescript
-import type { UniversalEventPayload } from '@hyperfixi/core/registry/universal';
+import type { UniversalEventPayload } from '@lokascript/core/registry/universal';
 
 function handleEvent(payload: UniversalEventPayload) {
   if (payload.target instanceof Element) {
@@ -178,7 +178,7 @@ Default to `'universal'` environment keeps existing code working.
 
 ## Files Modified
 
-### Core Package (@hyperfixi/core)
+### Core Package (@lokascript/core)
 
 - ✅ `src/registry/environment.ts` (new)
 - ✅ `src/registry/event-source-registry.ts` (updated with conditional types)
@@ -187,7 +187,7 @@ Default to `'universal'` environment keeps existing code working.
 - ✅ `src/registry/__tests__/conditional-types.test.ts` (new)
 - ✅ `package.json` (added registry exports)
 
-### Server Integration Package (@hyperfixi/server-integration)
+### Server Integration Package (@lokascript/server-integration)
 
 - ✅ `src/types/server-types.ts` (new)
 - ✅ `src/types/index.ts` (new export file)
@@ -220,8 +220,8 @@ npm run typecheck --prefix packages/core
 
 The conditional type system is fully implemented and provides zero-cost type safety for environment-specific code. Developers can now use:
 
-- `@hyperfixi/core/registry/browser` for browser-only types
-- `@hyperfixi/server-integration` for server-only types
-- `@hyperfixi/core/registry/universal` for universal types
+- `@lokascript/core/registry/browser` for browser-only types
+- `@lokascript/server-integration` for server-only types
+- `@lokascript/core/registry/universal` for universal types
 
 All with full TypeScript support and no runtime overhead.

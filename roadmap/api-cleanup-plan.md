@@ -256,7 +256,7 @@ The `process()` function moved to dom-processor.ts and imported into hyperscript
 
 ```typescript
 // Documented necessary cast - type compatibility between packages
-// Type cast required: SemanticAnalyzer from @hyperfixi/semantic has compatible
+// Type cast required: SemanticAnalyzer from @lokascript/semantic has compatible
 // interface but different internal types (ActionType vs string, SemanticValue vs object)
 // This is safe because the parser only uses the public interface methods
 return semanticAnalyzerInstance as unknown as SemanticAnalyzerInterface;

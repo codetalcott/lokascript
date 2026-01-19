@@ -19,17 +19,20 @@ Phase 1 of the analysis tools enhancement has been successfully implemented. The
 ### File 1: `scripts/analysis/comparison/extract-command-metrics.mjs`
 
 **Added:**
+
 - `estimateMinifiedSize()` function - calculates minified size estimate
 - `findAllCommandFiles()` function - scans multiple directories
 - Multi-directory support via `HYPERFIXI_COMMAND_DIRS` array
 - Three new metrics per command: `sourceBytes`, `estimatedMinifiedBytes`, `compressionRatio`
 
 **Updated:**
+
 - Path resolution to try multiple locations
-- Return object from `extractHyperFixiCommand()` to include minified metrics
+- Return object from `extractLokaScriptCommand()` to include minified metrics
 - JSON output structure to include new metrics
 
 **Impact:**
+
 - 52 command files now analyzed (was ~25)
 - Minified impact per command visible
 - Complete command coverage
@@ -37,24 +40,27 @@ Phase 1 of the analysis tools enhancement has been successfully implemented. The
 ### File 2: `scripts/analysis/comparison/pattern-analyzer.mjs`
 
 **Updated:**
-- Path resolution to support multiple _hyperscript locations
+
+- Path resolution to support multiple \_hyperscript locations
 - Tries both: 3rd-party-clones and projects directories
 
 **Impact:**
+
 - More robust path handling
 - Team-friendly (works regardless of where files are located)
 
 ## Results
 
 ### Analysis Coverage
+
 ```
 Command Files Found:     52 (was ~25)
 Matched to Original:     33 commands
-HyperFixi-specific:      14 commands (not in original)
+LokaScript-specific:      14 commands (not in original)
 
 Code Metrics:
   Original total:        1673 lines
-  HyperFixi total:       4969 lines
+  LokaScript total:       4969 lines
   Code ratio:            2.97x
   Potential savings:     ~2677 lines (54% reduction)
 ```
@@ -79,8 +85,9 @@ Each command now includes production-relevant metrics:
 ### Top Optimization Targets
 
 With minified metrics:
+
 ```
-Command         Orig  HyperFixi  Ratio   Potential  Minified(Est)
+Command         Orig  LokaScript  Ratio   Potential  Minified(Est)
 ─────────────────────────────────────────────────────────────────
 set               29      348    12x     ~299 lines   ~5.7 KB
 repeat             5      237   47.4x    ~212 lines   ~2.8 KB
@@ -92,18 +99,21 @@ go               129      303    2.35x   ~154 lines   ~3.1 KB
 ## Impact Assessment
 
 ### Before Phase 1
+
 - ❌ Incomplete command coverage (missing v2 commands)
 - ❌ Unrealistic metrics (source lines only)
 - ❌ Fragile setup (hard-coded paths)
 - ❌ Limited decision data (3 metrics per command)
 
 ### After Phase 1
+
 - ✅ Complete command coverage (52 files scanned)
 - ✅ Production-accurate metrics (minified + compression)
 - ✅ Robust setup (flexible path resolution)
 - ✅ Rich decision data (12+ metrics per command)
 
 ### Coverage Improvement
+
 ```
 Commands analyzed:      25 → 52 (+108%)
 Metrics per command:     3 → 12+ (+300%)
@@ -113,6 +123,7 @@ Decision quality:        Poor → Good
 ## How to Use
 
 ### Run the Analysis
+
 ```bash
 # Standard output (human-readable)
 node scripts/analysis/comparison/compare-implementations.mjs
@@ -122,12 +133,13 @@ node scripts/analysis/comparison/extract-command-metrics.mjs --json
 ```
 
 ### View Results
+
 ```bash
 # View the comprehensive report
 cat analysis-output/comparison/comparison-report.json | jq '.summary'
 
 # View metrics for a specific command
-cat analysis-output/comparison/command-metrics.json | jq '.hyperfixi.commands[] | select(.name=="set")'
+cat analysis-output/comparison/command-metrics.json | jq '.lokascript.commands[] | select(.name=="set")'
 
 # Save progress snapshot
 node scripts/analysis/comparison/compare-implementations.mjs --snapshot
@@ -136,16 +148,20 @@ node scripts/analysis/comparison/compare-implementations.mjs --snapshot
 ### Interpret Metrics
 
 **sourceBytes:** File size in bytes
+
 - Example: 9876 bytes for set command
 
 **estimatedMinifiedBytes:** Size after removing comments/whitespace
+
 - Example: 5678 bytes (57% of source)
 
 **compressionRatio:** How well it minifies (minified/source)
+
 - 0.50-0.60 is typical
 - Higher = less compressible (more complex)
 
 **extendsBase:** Whether uses base class
+
 - true = benefits from shared logic
 - false = standalone implementation
 
@@ -163,18 +179,21 @@ node scripts/analysis/comparison/compare-implementations.mjs --snapshot
 ## Ready For
 
 ### Immediate Use
+
 - ✓ Accurate optimization targeting
 - ✓ Production-realistic metrics
 - ✓ Flexible team setup
 - ✓ Evidence-based decisions
 
 ### Phase 2 (Optional)
+
 - Create bundle composition analyzer
 - Break down 664 KB bundle into components
 - Identify optimization bottlenecks
 - Evidence-based prioritization
 
 ### Phase 3 (Optional)
+
 - Track optimization progress
 - Verify if changes helped
 - Build data-driven strategy
@@ -205,4 +224,4 @@ All phases are optional - Phase 1 is complete and production-ready.
 
 ---
 
-*Phase 1 successfully implemented. Analysis tools ready for production use.*
+_Phase 1 successfully implemented. Analysis tools ready for production use._

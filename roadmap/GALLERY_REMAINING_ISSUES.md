@@ -3,6 +3,7 @@
 ## Summary
 
 After multiple sessions of parser fixes, the gallery tests show:
+
 - Basics: 5/5 ✅
 - Intermediate: 6/6 ✅
 - Advanced: 4/5 ✅ (Color Cycling, Draggable, Sortable, Infinite Scroll pass)
@@ -13,11 +14,12 @@ Two remaining issues:
 
 **Status**: Runtime execution issue, not a parsing issue
 
-**Symptoms**: The State Machine page times out during DOM content load in Playwright testing. The page HTML loads successfully (commit), and HyperFixi runtime registers, but execution hangs.
+**Symptoms**: The State Machine page times out during DOM content load in Playwright testing. The page HTML loads successfully (commit), and LokaScript runtime registers, but execution hangs.
 
 **Root Cause**: Unknown - likely an infinite loop or blocking operation during hyperscript execution. The parsing works correctly (verified via `npx tsx` tests).
 
 **Investigation Notes**:
+
 - Page commit succeeds
 - Runtime V2 registers successfully (43 commands)
 - Execution hangs after that
@@ -49,6 +51,7 @@ Two remaining issues:
 **Status**: ✅ RESOLVED (Session 14)
 
 **Implementation Completed**:
+
 - Added `for` to COMMANDS set in `tokenizer.ts` and `parser-constants.ts`
 - Created `parseForCommand()` in `control-flow-commands.ts`
 - Reuses RepeatCommand execution for iteration
@@ -56,6 +59,7 @@ Two remaining issues:
 - Unit tests: 5/5 passing in `packages/core/src/parser/for-in.test.ts`
 
 **Syntax Supported**:
+
 ```hyperscript
 for item in items
   log item

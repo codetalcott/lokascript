@@ -1,6 +1,6 @@
-# hyperfixi-python
+# lokascript-python
 
-Django 6.0 and FastAPI integration for HyperFixi.
+Django 6.0 and FastAPI integration for LokaScript.
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ pip install -e ".[fastapi]"
 ## Package Structure
 
 ```
-hyperfixi/
+lokascript/
 ├── core.py              # hs(), hs_attr(), escape_hyperscript()
 ├── validator.py         # Basic regex validation (Tier 1)
 ├── cli_validator.py     # Node.js CLI validation (Tier 2)
@@ -29,11 +29,11 @@ hyperfixi/
 ├── scanner.py           # Template scanner for bundle generation
 ├── aggregator.py        # Usage aggregation across files
 ├── django/
-│   ├── templatetags/hyperfixi.py  # {% hs %}, {% hs_behaviors %}
+│   ├── templatetags/lokascript.py  # {% hs %}, {% hs_behaviors %}
 │   ├── context_processors.py      # Common scripts
 │   └── management/commands/
-│       ├── hyperfixi_check.py     # Validate templates
-│       └── hyperfixi_bundle.py    # Generate bundle config
+│       ├── lokascript_check.py     # Validate templates
+│       └── lokascript_bundle.py    # Generate bundle config
 └── fastapi/
     └── jinja.py         # Jinja2 extension
 ```
@@ -42,18 +42,18 @@ hyperfixi/
 
 ```python
 # Core function - variable substitution with HTML escaping
-from hyperfixi import hs
+from lokascript import hs
 script = hs("on click fetch /api/user/{id}", id=123)
 
 # Behavior decorator - register reusable hyperscript
-from hyperfixi import behavior
+from lokascript import behavior
 
 @behavior("Removable")
 def removable():
     """on click remove me"""
 
 # Validation
-from hyperfixi import validate, validate_basic
+from lokascript import validate, validate_basic
 result = validate_basic("on click toggle .active")
 ```
 
@@ -61,14 +61,14 @@ result = validate_basic("on click toggle .active")
 
 ```python
 # settings.py
-INSTALLED_APPS = ['hyperfixi.django']
+INSTALLED_APPS = ['lokascript.django']
 TEMPLATES[0]['OPTIONS']['context_processors'].append(
-    'hyperfixi.django.context_processors.hyperscript'
+    'lokascript.django.context_processors.hyperscript'
 )
 ```
 
 ```html
-{% load hyperfixi %}
+{% load lokascript %}
 <button {% hs %}on click toggle .active{% endhs %}>Toggle</button>
 {% hs_behaviors %}
 ```
@@ -76,7 +76,7 @@ TEMPLATES[0]['OPTIONS']['context_processors'].append(
 ## FastAPI Usage
 
 ```python
-from hyperfixi.fastapi import setup_jinja
+from lokascript.fastapi import setup_jinja
 setup_jinja(templates)
 ```
 
@@ -87,7 +87,7 @@ setup_jinja(templates)
 ## Validation Tiers
 
 1. **Tier 1 (Basic)**: Pure Python regex (~80% error detection)
-2. **Tier 2 (Full)**: Node.js CLI via `npx hyperfixi validate`
+2. **Tier 2 (Full)**: Node.js CLI via `npx lokascript validate`
 
 Falls back gracefully: Tier 2 → Tier 1 if Node.js unavailable.
 
@@ -100,19 +100,19 @@ then generate a minimal bundle configuration.
 
 ```bash
 # Scan and output JSON bundle config
-python manage.py hyperfixi_bundle
+python manage.py lokascript_bundle
 
 # Write to file
-python manage.py hyperfixi_bundle --output bundle-config.json
+python manage.py lokascript_bundle --output bundle-config.json
 
 # View human-readable summary
-python manage.py hyperfixi_bundle --format summary
+python manage.py lokascript_bundle --format summary
 
 # Generate JS config for direct use
-python manage.py hyperfixi_bundle --format js-config
+python manage.py lokascript_bundle --format js-config
 
 # Add extra commands/blocks
-python manage.py hyperfixi_bundle --extra-commands fetch --extra-blocks if
+python manage.py lokascript_bundle --extra-commands fetch --extra-blocks if
 ```
 
 ### Django Settings
@@ -130,7 +130,7 @@ HYPERFIXI = {
 ### Programmatic Usage
 
 ```python
-from hyperfixi import Scanner, Aggregator
+from lokascript import Scanner, Aggregator
 
 # Scan templates
 scanner = Scanner()
@@ -150,12 +150,12 @@ print(f"Blocks: {summary['blocks']}")
 
 ```yaml
 # .github/workflows/deploy.yml
-- name: Generate HyperFixi bundle
+- name: Generate LokaScript bundle
   run: |
-    python manage.py hyperfixi_bundle --output bundle-config.json
+    python manage.py lokascript_bundle --output bundle-config.json
     cd packages/core
     npm run generate:bundle -- --config /path/to/bundle-config.json
-    cp dist/hyperfixi-*.js ../django/static/js/
+    cp dist/lokascript-*.js ../django/static/js/
 ```
 
 ### Detected Features

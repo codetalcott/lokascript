@@ -8,38 +8,38 @@ Establish baseline performance metrics and measure improvements from native (Rus
 
 ### 1. Tokenization Benchmarks
 
-| Benchmark | Description | Expected Native Improvement |
-|-----------|-------------|----------------------------|
-| `tokenize-small` | 100 char hyperscript | 50-60% faster |
-| `tokenize-medium` | 1KB hyperscript | 60-70% faster |
-| `tokenize-large` | 10KB hyperscript (complex behaviors) | 70-80% faster |
-| `tokenize-stress` | 100KB hyperscript (stress test) | 80%+ faster |
+| Benchmark         | Description                          | Expected Native Improvement |
+| ----------------- | ------------------------------------ | --------------------------- |
+| `tokenize-small`  | 100 char hyperscript                 | 50-60% faster               |
+| `tokenize-medium` | 1KB hyperscript                      | 60-70% faster               |
+| `tokenize-large`  | 10KB hyperscript (complex behaviors) | 70-80% faster               |
+| `tokenize-stress` | 100KB hyperscript (stress test)      | 80%+ faster                 |
 
 ### 2. Parsing Benchmarks
 
-| Benchmark | Description | Expected Native Improvement |
-|-----------|-------------|----------------------------|
-| `parse-expression` | Single expression parsing | 40-50% faster |
-| `parse-command` | Command with arguments | 45-55% faster |
-| `parse-behavior` | Full behavior definition | 50-60% faster |
-| `parse-complex` | Nested control flow | 55-65% faster |
+| Benchmark          | Description               | Expected Native Improvement |
+| ------------------ | ------------------------- | --------------------------- |
+| `parse-expression` | Single expression parsing | 40-50% faster               |
+| `parse-command`    | Command with arguments    | 45-55% faster               |
+| `parse-behavior`   | Full behavior definition  | 50-60% faster               |
+| `parse-complex`    | Nested control flow       | 55-65% faster               |
 
 ### 3. Expression Evaluation Benchmarks
 
-| Benchmark | Description | Expected Native Improvement |
-|-----------|-------------|----------------------------|
-| `eval-arithmetic` | Math operations | 60-70% faster |
-| `eval-comparison` | Logical comparisons | 55-65% faster |
-| `eval-property` | Property access chains | 40-50% faster |
-| `eval-mixed` | Combined expression types | 50-60% faster |
+| Benchmark         | Description               | Expected Native Improvement |
+| ----------------- | ------------------------- | --------------------------- |
+| `eval-arithmetic` | Math operations           | 60-70% faster               |
+| `eval-comparison` | Logical comparisons       | 55-65% faster               |
+| `eval-property`   | Property access chains    | 40-50% faster               |
+| `eval-mixed`      | Combined expression types | 50-60% faster               |
 
 ### 4. Memory Benchmarks
 
-| Benchmark | Description | Expected Native Improvement |
-|-----------|-------------|----------------------------|
-| `mem-tokens` | Token object allocation | 70% less memory |
-| `mem-ast` | AST node creation | 60% less memory |
-| `mem-pool` | Object pool efficiency | 50% less GC pressure |
+| Benchmark    | Description             | Expected Native Improvement |
+| ------------ | ----------------------- | --------------------------- |
+| `mem-tokens` | Token object allocation | 70% less memory             |
+| `mem-ast`    | AST node creation       | 60% less memory             |
+| `mem-pool`   | Object pool efficiency  | 50% less GC pressure        |
 
 ## Benchmark Implementation
 
@@ -68,7 +68,7 @@ export function createSuite(name: string): Suite {
 // benchmarks/tokenize.bench.ts
 import { createSuite } from './setup';
 import { tokenize as jsTokenize } from '../src/parser/tokenizer';
-import { tokenize as nativeTokenize } from '@hyperfixi/native-core';
+import { tokenize as nativeTokenize } from '@lokascript/native-core';
 
 const SMALL = 'on click set x to 5';
 const MEDIUM = generateMediumScript();
@@ -83,7 +83,7 @@ suite
   .add('Native - Medium', () => nativeTokenize(MEDIUM))
   .add('JS - Large', () => jsTokenize(LARGE))
   .add('Native - Large', () => nativeTokenize(LARGE))
-  .on('complete', function() {
+  .on('complete', function () {
     console.log('Fastest is ' + this.filter('fastest').map('name'));
   })
   .run({ async: true });
@@ -128,7 +128,7 @@ Memory Benchmarks:
 
 ### Initialization Time
 
-Current HyperFixi initialization for a typical page:
+Current LokaScript initialization for a typical page:
 
 ```
 Current (all JavaScript):
@@ -199,7 +199,7 @@ jobs:
 
       - name: Build native
         run: |
-          cd crates/hyperfixi-napi
+          cd crates/lokascript-napi
           npm run build
 
       - name: Run benchmarks
@@ -232,14 +232,14 @@ npm run benchmark:memory
 
 ## Success Criteria
 
-| Metric | Target | Priority |
-|--------|--------|----------|
-| Tokenization speedup | ≥3x | High |
-| Parsing speedup | ≥2.5x | High |
-| Expression eval speedup | ≥2x | Medium |
-| Memory reduction | ≥50% | Medium |
-| Bundle size increase | ≤5MB | Low |
-| No regressions | 100% tests pass | Critical |
+| Metric                  | Target          | Priority |
+| ----------------------- | --------------- | -------- |
+| Tokenization speedup    | ≥3x             | High     |
+| Parsing speedup         | ≥2.5x           | High     |
+| Expression eval speedup | ≥2x             | Medium   |
+| Memory reduction        | ≥50%            | Medium   |
+| Bundle size increase    | ≤5MB            | Low      |
+| No regressions          | 100% tests pass | Critical |
 
 ## Risk Mitigation
 

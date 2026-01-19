@@ -2,7 +2,7 @@
 
 ## Overview
 
-HyperFixi supports local variables using the `:` prefix syntax. Local variables are scoped to the current execution context and don't pollute the global namespace, making your code more maintainable and reducing naming conflicts.
+LokaScript supports local variables using the `:` prefix syntax. Local variables are scoped to the current execution context and don't pollute the global namespace, making your code more maintainable and reducing naming conflicts.
 
 ## Basic Syntax
 

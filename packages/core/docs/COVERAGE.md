@@ -1,6 +1,6 @@
-# HyperFixi Coverage
+# LokaScript Coverage
 
-Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
+Comprehensive coverage documentation for LokaScript's hyperscript implementation.
 
 ## Table of Contents
 
@@ -17,33 +17,33 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ### ✅ Fully Supported
 
-| Feature Category | Support Level | Test Coverage |
-|-----------------|---------------|---------------|
-| **Arithmetic Expressions** | Complete | 66 tests |
-| **Logical Expressions** | Complete | 64 tests |
-| **DOM Manipulation** | Complete | 23 tests |
-| **Context Variables** | Complete | 44 tests |
-| **Property Access** | Complete | 59 tests |
-| **Type Conversion** | Complete | 40 tests |
-| **CSS Selectors** | Complete | 44 tests |
-| **Form Processing** | Complete | 40 tests |
-| **Error Handling** | Complete | 54 tests |
-| **Performance Optimization** | Complete | 16 tests |
+| Feature Category             | Support Level | Test Coverage |
+| ---------------------------- | ------------- | ------------- |
+| **Arithmetic Expressions**   | Complete      | 66 tests      |
+| **Logical Expressions**      | Complete      | 64 tests      |
+| **DOM Manipulation**         | Complete      | 23 tests      |
+| **Context Variables**        | Complete      | 44 tests      |
+| **Property Access**          | Complete      | 59 tests      |
+| **Type Conversion**          | Complete      | 40 tests      |
+| **CSS Selectors**            | Complete      | 44 tests      |
+| **Form Processing**          | Complete      | 40 tests      |
+| **Error Handling**           | Complete      | 54 tests      |
+| **Performance Optimization** | Complete      | 16 tests      |
 
 ### 🚧 In Development
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Event Syntax** | Planned | `on click` event handlers |
-| **Command Chains** | Planned | `then` keyword chaining |
+| Feature            | Status  | Notes                         |
+| ------------------ | ------- | ----------------------------- |
+| **Event Syntax**   | Planned | `on click` event handlers     |
+| **Command Chains** | Planned | `then` keyword chaining       |
 | **Async Commands** | Planned | `fetch` and `call` operations |
 
 ### ❌ Not Supported
 
-| Feature | Reason | Alternative |
-|---------|--------|-------------|
-| **Legacy Syntax** | Deprecated | Use modern expression syntax |
-| **Browser-Specific APIs** | Scope | Use native JavaScript APIs |
+| Feature                   | Reason     | Alternative                  |
+| ------------------------- | ---------- | ---------------------------- |
+| **Legacy Syntax**         | Deprecated | Use modern expression syntax |
+| **Browser-Specific APIs** | Scope      | Use native JavaScript APIs   |
 
 ## Expression Categories
 
@@ -53,20 +53,20 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Context variables
-'me'           // Current element
-'it'           // Previous result  
-'you'          // Target element
-'result'       // Explicit result storage
+'me'; // Current element
+'it'; // Previous result
+'you'; // Target element
+'result'; // Explicit result storage
 
 // CSS selectors
-'<button/>'    // Query selector
-'<.class/>'    // Class selector
-'<#id/>'       // ID selector
+'<button/>'; // Query selector
+'<.class/>'; // Class selector
+'<#id/>'; // ID selector
 
 // DOM traversal
-'closest form' // Closest ancestor
-'next element' // Next sibling
-'first child'  // First child element
+'closest form'; // Closest ancestor
+'next element'; // Next sibling
+'first child'; // First child element
 ```
 
 **Performance**: O(1) for context variables, O(n) for CSS queries
@@ -77,14 +77,14 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Possessive syntax
-"element's className"     // Element properties
-"my dataset.value"        // Data attributes
-"window's location.href"  // Nested properties
+"element's className"; // Element properties
+'my dataset.value'; // Data attributes
+"window's location.href"; // Nested properties
 
 // Attribute access
-'@data-value'    // Data attributes
-'@class'         // HTML attributes
-'@id'            // Element ID
+'@data-value'; // Data attributes
+'@class'; // HTML attributes
+'@id'; // Element ID
 ```
 
 **Performance**: Direct property access, no DOM queries required
@@ -95,14 +95,14 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Basic conversions
-'"123" as Int'           // String to number
-'true as String'         // Boolean to string
-'null as Boolean'        // Null handling
+'"123" as Int'; // String to number
+'true as String'; // Boolean to string
+'null as Boolean'; // Null handling
 
 // Complex conversions
-'form as Values'         // Form data extraction
-'data as JSON'           // JSON parsing
-'elements as Array'      // NodeList to Array
+'form as Values'; // Form data extraction
+'data as JSON'; // JSON parsing
+'elements as Array'; // NodeList to Array
 ```
 
 **Supported Types**: `String`, `Int`, `Number`, `Boolean`, `JSON`, `Values`, `Array`
@@ -113,18 +113,18 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Comparisons
-'value > 5'              // Numeric comparison
-'text is not empty'      // String validation
-'element exists'         // Existence checks
+'value > 5'; // Numeric comparison
+'text is not empty'; // String validation
+'element exists'; // Existence checks
 
 // Boolean logic
-'a and b'                // Logical AND
-'not (x or y)'          // Logical NOT/OR
-'value in range'         // Membership testing
+'a and b'; // Logical AND
+'not (x or y)'; // Logical NOT/OR
+'value in range'; // Membership testing
 
 // Pattern matching
-'element matches .class' // CSS matching
-'text contains "word"'   // String matching
+'element matches .class'; // CSS matching
+'text contains "word"'; // String matching
 ```
 
 **Performance**: Optimized short-circuit evaluation
@@ -135,14 +135,14 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Basic operations
-'5 + 3 * 2'             // Order of operations: 11
-'(value + 5) / 2'       // Parentheses grouping
-'array.length mod 3'    // Modulo operations
+'5 + 3 * 2'; // Order of operations: 11
+'(value + 5) / 2'; // Parentheses grouping
+'array.length mod 3'; // Modulo operations
 
 // Advanced operations
-'Math.round(value)'     // Math function access
-'string.length'         // Property arithmetic
-'count += 1'            // Assignment operators
+'Math.round(value)'; // Math function access
+'string.length'; // Property arithmetic
+'count += 1'; // Assignment operators
 ```
 
 **Performance**: Single-pass evaluation with operator precedence parsing
@@ -153,14 +153,14 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ```typescript
 // Array operations
-'first of array'        // First element
-'last 3 of list'       // Last N elements
-'items[index]'         // Index access
+'first of array'; // First element
+'last 3 of list'; // Last N elements
+'items[index]'; // Index access
 
 // DOM navigation
-'first <div/>'         // First matching element
-'last .item'          // Last matching element
-'elements at index'    // Positional access
+'first <div/>'; // First matching element
+'last .item'; // Last matching element
+'elements at index'; // Positional access
 ```
 
 **Performance**: Optimized for common patterns, O(1) for index access
@@ -169,14 +169,14 @@ Comprehensive coverage documentation for HyperFixi's hyperscript implementation.
 
 ### Element Manipulation
 
-| Operation | Syntax | Support | Tests |
-|-----------|--------|---------|-------|
-| **Hide Element** | `hide me` | ✅ Complete | 3 |
-| **Show Element** | `show me` | ✅ Complete | 3 |
-| **Add Class** | `add ".class"` | ✅ Complete | 4 |
-| **Remove Class** | `remove ".class"` | ✅ Complete | 4 |
-| **Set Content** | `put "text" into me` | ✅ Complete | 5 |
-| **Get Content** | `me.textContent` | ✅ Complete | 4 |
+| Operation        | Syntax               | Support     | Tests |
+| ---------------- | -------------------- | ----------- | ----- |
+| **Hide Element** | `hide me`            | ✅ Complete | 3     |
+| **Show Element** | `show me`            | ✅ Complete | 3     |
+| **Add Class**    | `add ".class"`       | ✅ Complete | 4     |
+| **Remove Class** | `remove ".class"`    | ✅ Complete | 4     |
+| **Set Content**  | `put "text" into me` | ✅ Complete | 5     |
+| **Get Content**  | `me.textContent`     | ✅ Complete | 4     |
 
 ### CSS Class Management
 
@@ -210,8 +210,9 @@ await hyperscript.run('put formData into form as Values', context);
 ### Current Support
 
 ✅ **JavaScript Event Integration**:
+
 ```typescript
-element.addEventListener('click', async (event) => {
+element.addEventListener('click', async event => {
   const context = hyperscript.createContext(element);
   context.event = event;
   await hyperscript.run('add ".clicked"', context);
@@ -221,6 +222,7 @@ element.addEventListener('click', async (event) => {
 ### Planned Support
 
 🚧 **Native Hyperscript Event Syntax**:
+
 ```hyperscript
 on click add .active to me
 on submit validate form then send data
@@ -231,22 +233,22 @@ on keydown[key='Enter'] search for query
 
 ### Parser Performance
 
-| Expression Size | Parse Time | Memory Usage |
-|----------------|------------|--------------|
-| **Simple (< 10 tokens)** | < 1ms | < 1KB |
-| **Medium (10-100 tokens)** | < 5ms | < 10KB |
-| **Large (100-1000 tokens)** | < 50ms | < 100KB |
-| **Complex (1000+ tokens)** | < 500ms | < 1MB |
+| Expression Size             | Parse Time | Memory Usage |
+| --------------------------- | ---------- | ------------ |
+| **Simple (< 10 tokens)**    | < 1ms      | < 1KB        |
+| **Medium (10-100 tokens)**  | < 5ms      | < 10KB       |
+| **Large (100-1000 tokens)** | < 50ms     | < 100KB      |
+| **Complex (1000+ tokens)**  | < 500ms    | < 1MB        |
 
 ### Execution Performance
 
-| Operation Type | Performance | Optimization |
-|---------------|-------------|--------------|
-| **Variable Access** | O(1) | Map-based lookup |
-| **CSS Queries** | O(n) | Browser-optimized |
-| **Property Access** | O(1) | Direct references |
-| **Type Conversion** | O(1) | Pre-compiled functions |
-| **DOM Manipulation** | O(1) | Native API calls |
+| Operation Type       | Performance | Optimization           |
+| -------------------- | ----------- | ---------------------- |
+| **Variable Access**  | O(1)        | Map-based lookup       |
+| **CSS Queries**      | O(n)        | Browser-optimized      |
+| **Property Access**  | O(1)        | Direct references      |
+| **Type Conversion**  | O(1)        | Pre-compiled functions |
+| **DOM Manipulation** | O(1)        | Native API calls       |
 
 ### Memory Management
 
@@ -258,13 +260,13 @@ on keydown[key='Enter'] search for query
 
 ### Browser Support
 
-| Browser | Version | Support Level | Notes |
-|---------|---------|---------------|-------|
-| **Chrome** | 70+ | ✅ Full | Primary development target |
-| **Firefox** | 65+ | ✅ Full | Comprehensive testing |
-| **Safari** | 12+ | ✅ Full | CSS compatibility verified |
-| **Edge** | 79+ | ✅ Full | Chromium-based |
-| **IE 11** | N/A | ❌ None | Use legacy alternatives |
+| Browser     | Version | Support Level | Notes                      |
+| ----------- | ------- | ------------- | -------------------------- |
+| **Chrome**  | 70+     | ✅ Full       | Primary development target |
+| **Firefox** | 65+     | ✅ Full       | Comprehensive testing      |
+| **Safari**  | 12+     | ✅ Full       | CSS compatibility verified |
+| **Edge**    | 79+     | ✅ Full       | Chromium-based             |
+| **IE 11**   | N/A     | ❌ None       | Use legacy alternatives    |
 
 ### Node.js Support
 
@@ -275,24 +277,26 @@ on keydown[key='Enter'] search for query
 
 ### Framework Integration
 
-| Framework | Integration Level | Notes |
-|-----------|------------------|-------|
-| **React** | ✅ Excellent | Hook-based integration |
-| **Vue.js** | ✅ Excellent | Composition API support |
-| **Angular** | ✅ Good | Service-based integration |
-| **Svelte** | ✅ Excellent | Store integration |
-| **Vanilla JS** | ✅ Perfect | Primary use case |
+| Framework      | Integration Level | Notes                     |
+| -------------- | ----------------- | ------------------------- |
+| **React**      | ✅ Excellent      | Hook-based integration    |
+| **Vue.js**     | ✅ Excellent      | Composition API support   |
+| **Angular**    | ✅ Good           | Service-based integration |
+| **Svelte**     | ✅ Excellent      | Store integration         |
+| **Vanilla JS** | ✅ Perfect        | Primary use case          |
 
 ## Migration Guide
 
 ### From Raw Hyperscript
 
 **Before (attribute-based)**:
+
 ```html
 <div _="on click add .active">Click me</div>
 ```
 
-**After (HyperFixi)**:
+**After (LokaScript)**:
+
 ```typescript
 element.addEventListener('click', async () => {
   const context = hyperscript.createContext(element);
@@ -303,11 +307,13 @@ element.addEventListener('click', async () => {
 ### From jQuery
 
 **Before (jQuery)**:
+
 ```javascript
 $('.button').addClass('active').hide().delay(1000).show();
 ```
 
-**After (HyperFixi)**:
+**After (LokaScript)**:
+
 ```typescript
 const elements = document.querySelectorAll('.button');
 for (const element of elements) {
@@ -319,6 +325,7 @@ for (const element of elements) {
 ### From Other Libraries
 
 **Stimulus.js Migration**:
+
 ```typescript
 // Before: Stimulus controller
 class ButtonController extends Controller {
@@ -327,7 +334,7 @@ class ButtonController extends Controller {
   }
 }
 
-// After: HyperFixi
+// After: LokaScript
 element.addEventListener('click', async () => {
   const context = hyperscript.createContext(element);
   await hyperscript.run('add ".active"', context);
@@ -374,13 +381,13 @@ element.addEventListener('click', async () => {
 
 ### Test Categories
 
-| Category | Test Count | Focus Area |
-|----------|------------|------------|
-| **Parser Tests** | 54 | Syntax parsing and error handling |
-| **Expression Tests** | 265 | All expression categories |
-| **Integration Tests** | 63 | Real-world usage patterns |
-| **Performance Tests** | 16 | Large-scale operations |
-| **Error Recovery** | 21 | Error handling and recovery |
+| Category              | Test Count | Focus Area                        |
+| --------------------- | ---------- | --------------------------------- |
+| **Parser Tests**      | 54         | Syntax parsing and error handling |
+| **Expression Tests**  | 265        | All expression categories         |
+| **Integration Tests** | 63         | Real-world usage patterns         |
+| **Performance Tests** | 16         | Large-scale operations            |
+| **Error Recovery**    | 21         | Error handling and recovery       |
 
 ### Quality Assurance
 
@@ -392,4 +399,4 @@ element.addEventListener('click', async () => {
 
 ---
 
-HyperFixi provides comprehensive hyperscript support with modern development practices, excellent performance, and thorough testing. For specific implementation questions, see the [API Reference](./API.md) and [Examples](./EXAMPLES.md).
+LokaScript provides comprehensive hyperscript support with modern development practices, excellent performance, and thorough testing. For specific implementation questions, see the [API Reference](./API.md) and [Examples](./EXAMPLES.md).

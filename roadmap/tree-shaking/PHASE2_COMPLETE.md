@@ -13,6 +13,7 @@ Successfully created non-destructive command wrappers for 5 core DOM commands, e
 ## What Was Accomplished
 
 ### 1. Commands V2 Directory Created
+
 **Location**: `packages/core/src/commands-v2/`
 
 - ✅ Non-destructive wrapper pattern established
@@ -23,18 +24,21 @@ Successfully created non-destructive command wrappers for 5 core DOM commands, e
 ### 2. Five Core Commands Enhanced
 
 #### **HideCommand** (`commands-v2/dom/hide.ts`)
+
 - Extends `HideCommand` from `commands/dom/hide.ts`
 - Adds `parseInput()` for argument evaluation
 - Handles: `hide [<target>]` pattern
 - Logic moved from `Runtime.executeCommand()` lines 1682-1688
 
 #### **ShowCommand** (`commands-v2/dom/show.ts`)
+
 - Extends `ShowCommand` from `commands/dom/show.ts`
 - Adds `parseInput()` for argument evaluation
 - Handles: `show [<target>]` pattern
 - Logic moved from `Runtime.executeCommand()` lines 1690-1694
 
 #### **AddCommand** (`commands-v2/dom/add.ts`)
+
 - Extends `AddCommand` from `commands/dom/add.ts`
 - Adds `parseInput()` for class name extraction
 - Handles: `add .className` pattern
@@ -42,6 +46,7 @@ Successfully created non-destructive command wrappers for 5 core DOM commands, e
 - Logic moved from `Runtime.executeCommand()` lines 1704-1713
 
 #### **RemoveCommand** (`commands-v2/dom/remove.ts`)
+
 - Extends `RemoveCommand` from `commands/dom/remove.ts`
 - Adds `parseInput()` for class name extraction
 - Handles: `remove .className` pattern
@@ -49,6 +54,7 @@ Successfully created non-destructive command wrappers for 5 core DOM commands, e
 - Logic moved from `Runtime.executeCommand()` lines 1715-1724
 
 #### **ToggleCommand** (`commands-v2/dom/toggle.ts`)
+
 - Extends `ToggleCommand` from `commands/dom/toggle.ts`
 - Adds `parseInput()` with complex pattern handling
 - Handles multiple patterns:
@@ -59,6 +65,7 @@ Successfully created non-destructive command wrappers for 5 core DOM commands, e
 - Logic moved from `Runtime.executeEnhancedCommand()` lines 844-1011
 
 ### 3. Index File for Easy Imports
+
 **File**: `commands-v2/index.ts`
 
 ```typescript
@@ -86,7 +93,7 @@ interface CommandWithParseInput {
    * @returns Evaluated arguments ready for execute()
    */
   parseInput(
-    raw: { args: ASTNode[], modifiers: Record<string, ASTNode> },
+    raw: { args: ASTNode[]; modifiers: Record<string, ASTNode> },
     evaluator: ExpressionEvaluator,
     context: ExecutionContext
   ): Promise<any[]>;
@@ -98,7 +105,9 @@ interface CommandWithParseInput {
 ```typescript
 // Before (V1): Original command without parseInput()
 export class HideCommand {
-  async execute(context, ...args) { /* ... */ }
+  async execute(context, ...args) {
+    /* ... */
+  }
 }
 
 // After (V2): Non-destructive wrapper WITH parseInput()
@@ -107,9 +116,7 @@ import { HideCommand as HideCommandV1 } from '../../commands/dom/hide';
 export class HideCommand extends HideCommandV1 {
   async parseInput(raw, evaluator, context) {
     // Move parsing logic from Runtime here
-    const evaluatedArgs = await Promise.all(
-      raw.args.map(arg => evaluator.evaluate(arg, context))
-    );
+    const evaluatedArgs = await Promise.all(raw.args.map(arg => evaluator.evaluate(arg, context)));
     return evaluatedArgs;
   }
 
@@ -131,16 +138,16 @@ export class HideCommand extends HideCommandV1 {
 ## Argument Parsing Patterns
 
 ### Pattern 1: Simple Evaluation (Hide/Show)
+
 **Commands**: hide, show
 
 ```typescript
 // Evaluate each arg as expression
-const evaluatedArgs = await Promise.all(
-  raw.args.map(arg => evaluator.evaluate(arg, context))
-);
+const evaluatedArgs = await Promise.all(raw.args.map(arg => evaluator.evaluate(arg, context)));
 ```
 
 ### Pattern 2: String Extraction (Add/Remove)
+
 **Commands**: add, remove
 
 ```typescript
@@ -155,6 +162,7 @@ const classNames = raw.args.map(arg => {
 ```
 
 ### Pattern 3: Complex Multi-Pattern (Toggle)
+
 **Command**: toggle
 
 ```typescript
@@ -177,6 +185,7 @@ if (args.length === 3) {
 ## Validation Results
 
 ### TypeScript Compilation
+
 ```bash
 ✅ All 5 commands compile with 0 errors
 ✅ All imports resolve correctly
@@ -184,6 +193,7 @@ if (args.length === 3) {
 ```
 
 ### File Structure
+
 ```
 packages/core/src/
 ├── commands/              (V1 - original, UNTOUCHED)
@@ -212,12 +222,12 @@ packages/core/src/
 ## How RuntimeBase Will Use These Commands
 
 ```typescript
-import { RuntimeBase } from '@hyperfixi/core/runtime/runtime-base';
-import { EnhancedCommandRegistry } from '@hyperfixi/core/runtime/command-adapter';
+import { RuntimeBase } from '@lokascript/core/runtime/runtime-base';
+import { EnhancedCommandRegistry } from '@lokascript/core/runtime/command-adapter';
 
 // Import V2 commands with parseInput()
-import { createHideCommand } from '@hyperfixi/core/commands-v2/dom/hide';
-import { createShowCommand } from '@hyperfixi/core/commands-v2/dom/show';
+import { createHideCommand } from '@lokascript/core/commands-v2/dom/hide';
+import { createShowCommand } from '@lokascript/core/commands-v2/dom/show';
 
 // Create registry
 const registry = new EnhancedCommandRegistry();
@@ -242,6 +252,7 @@ const runtime = new RuntimeBase({ registry });
 ## Files Created/Modified
 
 ### Created (Phase 2)
+
 - ✅ `packages/core/src/commands-v2/index.ts`
 - ✅ `packages/core/src/commands-v2/dom/hide.ts`
 - ✅ `packages/core/src/commands-v2/dom/show.ts`
@@ -251,9 +262,11 @@ const runtime = new RuntimeBase({ registry });
 - ✅ `roadmap/tree-shaking/PHASE2_COMPLETE.md` (this file)
 
 ### Modified (Phase 2)
+
 - None ✅ (completely non-destructive)
 
 ### Untouched (Verified)
+
 - ✅ All files in `src/commands/` (0 changes)
 - ✅ `src/runtime/runtime.ts` (0 changes)
 - ✅ `src/runtime/runtime-base.ts` (0 changes)
@@ -279,11 +292,13 @@ Phase 2 is complete. Next: Gate 2 validation to test these commands with Runtime
 ### After Gate 2 Passes
 
 If validation succeeds:
+
 - ✅ Proceed to Phase 3 (Refactor CommandAdapter)
 - ✅ Add parseInput() to remaining 15+ commands
 - ✅ Create comprehensive test suite
 
 If validation fails:
+
 - ❌ Investigate discrepancies
 - ❌ Fix command wrappers
 - ❌ Re-test before proceeding
@@ -292,11 +307,11 @@ If validation fails:
 
 ## Risk Assessment
 
-| Risk | Status | Mitigation |
-|------|--------|-----------|
-| Breaking changes | ✅ **ZERO** | Original commands untouched, wrappers extend |
-| TypeScript errors | ✅ **ZERO** | All commands compile cleanly |
-| Logic differences | ⚠️ **UNKNOWN** | Requires Gate 2 testing |
+| Risk               | Status          | Mitigation                                       |
+| ------------------ | --------------- | ------------------------------------------------ |
+| Breaking changes   | ✅ **ZERO**     | Original commands untouched, wrappers extend     |
+| TypeScript errors  | ✅ **ZERO**     | All commands compile cleanly                     |
+| Logic differences  | ⚠️ **UNKNOWN**  | Requires Gate 2 testing                          |
 | Missing edge cases | ⚠️ **POSSIBLE** | Toggle has complex logic, needs thorough testing |
 
 ---
@@ -304,6 +319,7 @@ If validation fails:
 ## Code Quality Metrics
 
 ### Commands V2 Statistics
+
 - **Total files**: 6 (5 commands + 1 index)
 - **Total lines**: ~500 lines
 - **Inheritance**: All extend V1 commands
@@ -312,6 +328,7 @@ If validation fails:
 - **Test coverage**: Pending (Gate 2)
 
 ### Complexity Analysis
+
 - **HideCommand**: Low (simple evaluation)
 - **ShowCommand**: Low (simple evaluation)
 - **AddCommand**: Medium (string extraction + strip)
@@ -325,11 +342,13 @@ If validation fails:
 ### Why Wrappers Instead of Direct Modifications?
 
 **Option A (Rejected)**: Modify original commands directly
+
 - ❌ Risk: Breaking existing functionality
 - ❌ Risk: Hard to rollback
 - ❌ Risk: Affects all Runtime users immediately
 
 **Option B (Chosen)**: Create wrappers in commands-v2
+
 - ✅ Zero risk: Original commands untouched
 - ✅ Easy rollback: Delete commands-v2/
 - ✅ Parallel testing: Can test both versions

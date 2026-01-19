@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to @hyperfixi/mcp-server will be documented in this file.
+All notable changes to @lokascript/mcp-server will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -63,14 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ```bash
 # Start server
-npx @hyperfixi/mcp-server
+npx @lokascript/mcp-server
 
 # Configure in Claude Desktop
 {
   "mcpServers": {
-    "hyperfixi": {
+    "lokascript": {
       "command": "npx",
-      "args": ["@hyperfixi/mcp-server"]
+      "args": ["@lokascript/mcp-server"]
     }
   }
 }
@@ -100,4 +100,4 @@ npx @hyperfixi/mcp-server
 
 - This is the first stable 1.0 release
 - API is stable and production-ready
-- Used extensively in HyperFixi development workflow
+- Used extensively in LokaScript development workflow

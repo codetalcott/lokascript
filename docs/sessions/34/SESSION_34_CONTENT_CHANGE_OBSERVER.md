@@ -19,12 +19,11 @@ on change in #count
 ```
 
 **Example:**
+
 ```html
 <div id="count">0</div>
 
-<span _="on change in #count put #count's textContent into me">
-  Mirror: 0
-</span>
+<span _="on change in #count put #count's textContent into me"> Mirror: 0 </span>
 ```
 
 When `#count`'s content changes, the mirror automatically updates!
@@ -72,7 +71,7 @@ export interface EventHandlerNode extends ASTNode {
   readonly selector?: string;
   readonly condition?: ASTNode;
   readonly attributeName?: string; // For "on mutation of @attr"
-  readonly watchTarget?: ASTNode;  // ← NEW: For "on change in <target>"
+  readonly watchTarget?: ASTNode; // ← NEW: For "on change in <target>"
   readonly args?: string[];
   readonly commands: ASTNode[];
 }
@@ -99,15 +98,22 @@ if (event === 'change' && watchTarget) {
     watchTargetElements = watchTargetResult.filter((el: any) => this.isElement(el));
   }
 
-  debug.runtime(`RUNTIME: Watching ${watchTargetElements.length} target elements for content changes`);
+  debug.runtime(
+    `RUNTIME: Watching ${watchTargetElements.length} target elements for content changes`
+  );
 
   // Set up observer for each watch target
   for (const watchedElement of watchTargetElements) {
-    const observer = new MutationObserver(async (mutations) => {
+    const observer = new MutationObserver(async mutations => {
       for (const mutation of mutations) {
         // Detect content changes (childList or characterData)
         if (mutation.type === 'childList' || mutation.type === 'characterData') {
-          debug.event(`CONTENT CHANGE DETECTED on`, watchedElement, `mutation type:`, mutation.type);
+          debug.event(
+            `CONTENT CHANGE DETECTED on`,
+            watchedElement,
+            `mutation type:`,
+            mutation.type
+          );
 
           // Create context for change event
           const changeContext: ExecutionContext = {
@@ -142,9 +148,9 @@ if (event === 'change' && watchTarget) {
 
     // Observe content changes
     observer.observe(watchedElement, {
-      childList: true,      // Watch for child nodes being added/removed
-      characterData: true,  // Watch for text content changes
-      subtree: true,        // Watch all descendants
+      childList: true, // Watch for child nodes being added/removed
+      characterData: true, // Watch for text content changes
+      subtree: true, // Watch all descendants
       characterDataOldValue: true, // Track old text values
     });
 
@@ -161,21 +167,23 @@ if (event === 'change' && watchTarget) {
 ## 🔄 MutationObserver Configuration
 
 ### Attribute Changes (Session 32)
+
 ```javascript
 observer.observe(targetElement, {
   attributes: true,
   attributeOldValue: true,
-  attributeFilter: [attributeName]
+  attributeFilter: [attributeName],
 });
 ```
 
 ### Content Changes (Session 34)
+
 ```javascript
 observer.observe(watchedElement, {
-  childList: true,      // Watch for child nodes being added/removed
-  characterData: true,  // Watch for text content changes
-  subtree: true,        // Watch all descendants
-  characterDataOldValue: true // Track old text values
+  childList: true, // Watch for child nodes being added/removed
+  characterData: true, // Watch for text content changes
+  subtree: true, // Watch all descendants
+  characterDataOldValue: true, // Track old text values
 });
 ```
 
@@ -252,9 +260,11 @@ observer.observe(watchedElement, {
 ### 1. Natural Extension of Session 32
 
 Session 32 implemented:
+
 - `on mutation of @attribute` → attribute changes
 
 Session 34 extends:
+
 - `on change in <target>` → content changes
 
 **Same architecture, different configuration!**
@@ -262,6 +272,7 @@ Session 34 extends:
 ### 2. No Polling or Timers
 
 Uses native browser `MutationObserver`:
+
 - ✅ Efficient (only fires on actual changes)
 - ✅ Battery-friendly (no continuous checking)
 - ✅ Performant (hardware-accelerated notifications)
@@ -348,6 +359,7 @@ This allows the handler to update itself based on changes elsewhere.
 **File:** [examples/basics/05-counter.html](../../../examples/basics/05-counter.html)
 
 **Test:**
+
 ```bash
 # Open in browser
 open http://localhost:3000/examples/basics/05-counter.html
@@ -362,6 +374,7 @@ open http://localhost:3000/examples/basics/05-counter.html
 ```
 
 **Expected:**
+
 - ✅ Mirror updates immediately on every change
 - ✅ No console errors
 - ✅ Smooth, reactive updates
@@ -372,23 +385,25 @@ open http://localhost:3000/examples/basics/05-counter.html
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Content Change Test</title>
-</head>
-<body>
+  </head>
+  <body>
     <div id="source">Initial</div>
 
-    <div _="on change in #source
-            put 'Changed to: ' + newValue into me">
-        Waiting...
+    <div
+      _="on change in #source
+            put 'Changed to: ' + newValue into me"
+    >
+      Waiting...
     </div>
 
     <button onclick="document.getElementById('source').textContent = 'Updated!'">
-        Change Source
+      Change Source
     </button>
 
-    <script src="packages/core/dist/hyperfixi-browser.js"></script>
-</body>
+    <script src="packages/core/dist/lokascript-browser.js"></script>
+  </body>
 </html>
 ```
 
@@ -399,7 +414,7 @@ open http://localhost:3000/examples/basics/05-counter.html
 ```bash
 npm run build:browser
 
-✅ created dist/hyperfixi-browser.js in 5.7s
+✅ created dist/lokascript-browser.js in 5.7s
 ✅ Zero TypeScript errors
 ✅ ~78 lines of code added
 ✅ Backward compatible
@@ -420,7 +435,7 @@ npm run build:browser
 - Framework overhead
 ```
 
-### HyperFixi Content Observer
+### LokaScript Content Observer
 
 ```hyperscript
 # Requires:
@@ -475,6 +490,7 @@ Session 32's MutationObserver for attributes provided the perfect foundation. In
 ### 2. Browser APIs Are Powerful
 
 MutationObserver is incredibly powerful:
+
 - Watches any DOM changes
 - Configurable (attributes, children, text)
 - Efficient (only fires on changes)
@@ -483,6 +499,7 @@ MutationObserver is incredibly powerful:
 ### 3. Simple Syntax, Complex Capability
 
 The syntax `on change in <target>` is:
+
 - ✅ Intuitive (reads like English)
 - ✅ Concise (short and clear)
 - ✅ Powerful (full expression support)

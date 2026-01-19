@@ -1,4 +1,4 @@
-# HyperFixi Compatibility Matrix
+# LokaScript Compatibility Matrix
 
 **Last Updated**: 2025-01-13 (Session 18)
 **Overall Compatibility**: **89.2%** (647/725 tests passing)
@@ -8,13 +8,15 @@
 
 ## Executive Summary
 
-HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725 test cases covering:
+LokaScript achieves **89.2% compatibility** with official \_hyperscript across 725 test cases covering:
+
 - 81 official test files
 - 10 feature categories
 - 33 expression types
 - 19 commands
 
 **Key Strengths** ✅:
+
 - Core commands: 100% (SET, PUT, ADD, REMOVE, etc.)
 - Event handling: 100% (ON feature)
 - Variable scoping: 100% (local/global/element)
@@ -23,6 +25,7 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 - Type conversions: 93% (missing: Date conversion)
 
 **Areas for Improvement** ⚠️:
+
 - Logical expressions: 75% (17 failures)
 - Positional expressions: 75% (17 failures)
 - CSS selectors: 85% (10 failures)
@@ -33,19 +36,19 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 ### 1. Core System Tests (113 tests)
 
-| Test File | Tests | Passed | Failed | Pass Rate | Status |
-|-----------|-------|--------|--------|-----------|--------|
-| api.js | 1 | 1 | 0 | 100% | ✅ |
-| bootstrap.js | 12 | 12 | 0 | 100% | ✅ |
-| parser.js | 9 | 9 | 0 | 100% | ✅ |
-| regressions.js | 16 | 16 | 0 | 100% | ✅ |
-| runtime.js | 4 | 4 | 0 | 100% | ✅ |
-| runtimeErrors.js | 18 | 18 | 0 | 100% | ✅ |
-| scoping.js | 21 | 21 | 0 | 100% | ✅ |
-| security.js | 1 | 1 | 0 | 100% | ✅ |
-| sourceInfo.js | 4 | 4 | 0 | 100% | ✅ |
-| tokenizer.js | 17 | 17 | 0 | 100% | ✅ |
-| **TOTAL** | **113** | **113** | **0** | **100%** | ✅ |
+| Test File        | Tests   | Passed  | Failed | Pass Rate | Status |
+| ---------------- | ------- | ------- | ------ | --------- | ------ |
+| api.js           | 1       | 1       | 0      | 100%      | ✅     |
+| bootstrap.js     | 12      | 12      | 0      | 100%      | ✅     |
+| parser.js        | 9       | 9       | 0      | 100%      | ✅     |
+| regressions.js   | 16      | 16      | 0      | 100%      | ✅     |
+| runtime.js       | 4       | 4       | 0      | 100%      | ✅     |
+| runtimeErrors.js | 18      | 18      | 0      | 100%      | ✅     |
+| scoping.js       | 21      | 21      | 0      | 100%      | ✅     |
+| security.js      | 1       | 1       | 0      | 100%      | ✅     |
+| sourceInfo.js    | 4       | 4       | 0      | 100%      | ✅     |
+| tokenizer.js     | 17      | 17      | 0      | 100%      | ✅     |
+| **TOTAL**        | **113** | **113** | **0**  | **100%**  | ✅     |
 
 **Analysis**: Core system is rock-solid. Parser, tokenizer, scoping, and error handling all work perfectly.
 
@@ -55,31 +58,32 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 #### 2.1 Reference Expressions (44 tests)
 
-| Pattern | Pass Rate | Notes |
-|---------|-----------|-------|
-| `me` / `you` / `it` | 100% | ✅ All context references work |
-| `my property` | 100% | ✅ Possessive syntax works |
-| `closest <selector>` | 100% | ✅ DOM traversal works |
-| `<selector>` queries | 100% | ✅ CSS selector queries work |
+| Pattern              | Pass Rate | Notes                          |
+| -------------------- | --------- | ------------------------------ |
+| `me` / `you` / `it`  | 100%      | ✅ All context references work |
+| `my property`        | 100%      | ✅ Possessive syntax works     |
+| `closest <selector>` | 100%      | ✅ DOM traversal works         |
+| `<selector>` queries | 100%      | ✅ CSS selector queries work   |
 
 **Status**: ✅ **100% passing** (44/44)
 
 #### 2.2 Logical Expressions (64 tests → 47 passing)
 
-| Pattern | Pass Rate | Failures |
-|---------|-----------|----------|
-| Basic comparisons (`>`, `<`, `>=`, `<=`) | 100% | ✅ 0 |
-| Equality (`==`, `!=`) | 85% | ⚠️ Missing `===`, `!==` |
-| Boolean operators (`and`, `or`, `not`) | 100% | ✅ 0 |
-| Membership (`in`, `not in`) | 85% | ⚠️ 1 failure |
-| Type checking (`is a`, `is an`) | 70% | ⚠️ 4 failures |
-| Existence (`exists`, `does not exist`) | 85% | ⚠️ 2 failures |
-| Content matching (`contains`, `includes`) | 85% | ⚠️ 2 failures |
-| Quantifiers (`some`, `no`) | 75% | ⚠️ 4 failures |
+| Pattern                                   | Pass Rate | Failures                |
+| ----------------------------------------- | --------- | ----------------------- |
+| Basic comparisons (`>`, `<`, `>=`, `<=`)  | 100%      | ✅ 0                    |
+| Equality (`==`, `!=`)                     | 85%       | ⚠️ Missing `===`, `!==` |
+| Boolean operators (`and`, `or`, `not`)    | 100%      | ✅ 0                    |
+| Membership (`in`, `not in`)               | 85%       | ⚠️ 1 failure            |
+| Type checking (`is a`, `is an`)           | 70%       | ⚠️ 4 failures           |
+| Existence (`exists`, `does not exist`)    | 85%       | ⚠️ 2 failures           |
+| Content matching (`contains`, `includes`) | 85%       | ⚠️ 2 failures           |
+| Quantifiers (`some`, `no`)                | 75%       | ⚠️ 4 failures           |
 
 **Status**: ⚠️ **73% passing** (47/64) - **17 failures**
 
 **Top Failures**:
+
 1. Triple equals (`===`, `!==`) not implemented
 2. `is a` / `is an` type checking incomplete
 3. `exists` / `does not exist` operators missing
@@ -87,31 +91,32 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 #### 2.3 Conversion Expressions (28 tests → 26 passing)
 
-| Conversion Type | Pass Rate | Notes |
-|----------------|-----------|-------|
-| `as String` | 100% | ✅ Works |
-| `as Int` / `as Float` / `as Number` | 100% | ✅ Works |
-| `as JSON` | 100% | ✅ Works |
-| `as Object` | 100% | ✅ Works |
-| `as Values` | 100% | ✅ Form processing works |
-| `as HTML` / `as Fragment` | 100% | ✅ DOM conversion works |
-| `as Date` | 0% | ❌ Not implemented |
+| Conversion Type                     | Pass Rate | Notes                    |
+| ----------------------------------- | --------- | ------------------------ |
+| `as String`                         | 100%      | ✅ Works                 |
+| `as Int` / `as Float` / `as Number` | 100%      | ✅ Works                 |
+| `as JSON`                           | 100%      | ✅ Works                 |
+| `as Object`                         | 100%      | ✅ Works                 |
+| `as Values`                         | 100%      | ✅ Form processing works |
+| `as HTML` / `as Fragment`           | 100%      | ✅ DOM conversion works  |
+| `as Date`                           | 0%        | ❌ Not implemented       |
 
 **Status**: ⚠️ **93% passing** (26/28) - **2 failures**
 
 #### 2.4 Positional Expressions (52 tests → 35 passing)
 
-| Pattern | Pass Rate | Failures |
-|---------|-----------|----------|
-| Array access (`array[0]`) | 100% | ✅ 0 |
-| `first` / `last` | 75% | ⚠️ 4 failures |
-| `next` / `previous` | 65% | ⚠️ 8 failures |
-| `within` modifier | 0% | ❌ 1 failure |
-| Array-like handling | 60% | ⚠️ 8 failures |
+| Pattern                   | Pass Rate | Failures      |
+| ------------------------- | --------- | ------------- |
+| Array access (`array[0]`) | 100%      | ✅ 0          |
+| `first` / `last`          | 75%       | ⚠️ 4 failures |
+| `next` / `previous`       | 65%       | ⚠️ 8 failures |
+| `within` modifier         | 0%        | ❌ 1 failure  |
+| Array-like handling       | 60%       | ⚠️ 8 failures |
 
 **Status**: ⚠️ **67% passing** (35/52) - **17 failures**
 
 **Top Failures**:
+
 1. `next` / `previous` with wrapping not working
 2. `within` modifier not implemented
 3. Array-like object handling incomplete
@@ -119,39 +124,40 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 #### 2.5 Property Access (59 tests)
 
-| Pattern | Pass Rate | Notes |
-|---------|-----------|-------|
-| Possessive (`element's property`) | 100% | ✅ Works |
-| Attribute access (`@attr`) | 100% | ✅ Works |
-| Computed property (`element[key]`) | 100% | ✅ Works |
-| Chained access | 100% | ✅ Works |
+| Pattern                            | Pass Rate | Notes    |
+| ---------------------------------- | --------- | -------- |
+| Possessive (`element's property`)  | 100%      | ✅ Works |
+| Attribute access (`@attr`)         | 100%      | ✅ Works |
+| Computed property (`element[key]`) | 100%      | ✅ Works |
+| Chained access                     | 100%      | ✅ Works |
 
 **Status**: ✅ **100% passing** (59/59)
 
 #### 2.6 Special Expressions (66 tests → 60 passing)
 
-| Pattern | Pass Rate | Failures |
-|---------|-----------|----------|
-| Literals (string, number, boolean) | 100% | ✅ 0 |
-| Array literals | 100% | ✅ 0 |
-| Object literals | 100% | ✅ 0 |
-| Mathematical operations | 100% | ✅ 0 |
-| String operations | 90% | ⚠️ 3 failures |
-| Block literals | 25% | ❌ 3 failures |
+| Pattern                            | Pass Rate | Failures      |
+| ---------------------------------- | --------- | ------------- |
+| Literals (string, number, boolean) | 100%      | ✅ 0          |
+| Array literals                     | 100%      | ✅ 0          |
+| Object literals                    | 100%      | ✅ 0          |
+| Mathematical operations            | 100%      | ✅ 0          |
+| String operations                  | 90%       | ⚠️ 3 failures |
+| Block literals                     | 25%       | ❌ 3 failures |
 
 **Status**: ⚠️ **91% passing** (60/66) - **6 failures**
 
 #### 2.7 CSS Selectors (59 tests → 49 passing)
 
-| Pattern | Pass Rate | Failures |
-|---------|-----------|----------|
-| Class refs (`.class`) | 75% | ⚠️ 8 failures |
-| ID refs (`#id`) | 90% | ⚠️ 1 failure |
-| Query refs (`<selector>`) | 85% | ⚠️ 7 failures |
+| Pattern                   | Pass Rate | Failures      |
+| ------------------------- | --------- | ------------- |
+| Class refs (`.class`)     | 75%       | ⚠️ 8 failures |
+| ID refs (`#id`)           | 90%       | ⚠️ 1 failure  |
+| Query refs (`<selector>`) | 85%       | ⚠️ 7 failures |
 
 **Status**: ⚠️ **83% passing** (49/59) - **10 failures**
 
 **Top Failures**:
+
 1. Dashed class names (`.my-class`) not working
 2. Colon class names (`.hover:state`) not working
 3. Tailwind complex classes not working
@@ -161,24 +167,24 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 ### 3. Command Tests (134 tests)
 
-| Command | Tests | Passed | Failed | Pass Rate | Status |
-|---------|-------|--------|--------|-----------|--------|
-| SET | 15 | 15 | 0 | 100% | ✅ |
-| PUT | 12 | 12 | 0 | 100% | ✅ |
-| ADD | 10 | 10 | 0 | 100% | ✅ |
-| REMOVE | 10 | 10 | 0 | 100% | ✅ |
-| TOGGLE | 8 | 8 | 0 | 100% | ✅ |
-| SHOW/HIDE | 6 | 6 | 0 | 100% | ✅ |
-| INCREMENT/DECREMENT | 8 | 8 | 0 | 100% | ✅ |
-| SEND/TRIGGER | 10 | 10 | 0 | 100% | ✅ |
-| WAIT | 8 | 8 | 0 | 100% | ✅ |
-| IF/ELSE | 12 | 12 | 0 | 100% | ✅ |
-| REPEAT | 10 | 10 | 0 | 100% | ✅ |
-| CALL | 8 | 8 | 0 | 100% | ✅ |
-| LOG | 5 | 5 | 0 | 100% | ✅ |
-| MAKE | 8 | 3 | 5 | 38% | ❌ |
-| GO | 4 | 4 | 0 | 100% | ✅ |
-| **TOTAL** | **134** | **129** | **5** | **96%** | ⚠️ |
+| Command             | Tests   | Passed  | Failed | Pass Rate | Status |
+| ------------------- | ------- | ------- | ------ | --------- | ------ |
+| SET                 | 15      | 15      | 0      | 100%      | ✅     |
+| PUT                 | 12      | 12      | 0      | 100%      | ✅     |
+| ADD                 | 10      | 10      | 0      | 100%      | ✅     |
+| REMOVE              | 10      | 10      | 0      | 100%      | ✅     |
+| TOGGLE              | 8       | 8       | 0      | 100%      | ✅     |
+| SHOW/HIDE           | 6       | 6       | 0      | 100%      | ✅     |
+| INCREMENT/DECREMENT | 8       | 8       | 0      | 100%      | ✅     |
+| SEND/TRIGGER        | 10      | 10      | 0      | 100%      | ✅     |
+| WAIT                | 8       | 8       | 0      | 100%      | ✅     |
+| IF/ELSE             | 12      | 12      | 0      | 100%      | ✅     |
+| REPEAT              | 10      | 10      | 0      | 100%      | ✅     |
+| CALL                | 8       | 8       | 0      | 100%      | ✅     |
+| LOG                 | 5       | 5       | 0      | 100%      | ✅     |
+| MAKE                | 8       | 3       | 5      | 38%       | ❌     |
+| GO                  | 4       | 4       | 0      | 100%      | ✅     |
+| **TOTAL**           | **134** | **129** | **5**  | **96%**   | ⚠️     |
 
 **Analysis**: Commands are very strong overall. Only MAKE command has significant issues (object/element creation).
 
@@ -186,18 +192,18 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 
 ### 4. Feature Tests (106 tests)
 
-| Feature | Tests | Passed | Failed | Pass Rate | Status |
-|---------|-------|--------|--------|-----------|--------|
-| ON (events) | 35 | 35 | 0 | 100% | ✅ |
-| BEHAVIOR | 20 | 20 | 0 | 100% | ✅ |
-| INIT | 12 | 12 | 0 | 100% | ✅ |
-| WORKER | 8 | 8 | 0 | 100% | ✅ |
-| DEF (functions) | 10 | 10 | 0 | 100% | ✅ |
-| SOCKET | 6 | 6 | 0 | 100% | ✅ |
-| EVENTSOURCE | 5 | 5 | 0 | 100% | ✅ |
-| INSTALL | 4 | 4 | 0 | 100% | ✅ |
-| ASYNC | 6 | 5 | 1 | 83% | ⚠️ |
-| **TOTAL** | **106** | **105** | **1** | **99%** | ✅ |
+| Feature         | Tests   | Passed  | Failed | Pass Rate | Status |
+| --------------- | ------- | ------- | ------ | --------- | ------ |
+| ON (events)     | 35      | 35      | 0      | 100%      | ✅     |
+| BEHAVIOR        | 20      | 20      | 0      | 100%      | ✅     |
+| INIT            | 12      | 12      | 0      | 100%      | ✅     |
+| WORKER          | 8       | 8       | 0      | 100%      | ✅     |
+| DEF (functions) | 10      | 10      | 0      | 100%      | ✅     |
+| SOCKET          | 6       | 6       | 0      | 100%      | ✅     |
+| EVENTSOURCE     | 5       | 5       | 0      | 100%      | ✅     |
+| INSTALL         | 4       | 4       | 0      | 100%      | ✅     |
+| ASYNC           | 6       | 5       | 1      | 83%       | ⚠️     |
+| **TOTAL**       | **106** | **105** | **1**  | **99%**   | ✅     |
 
 **Analysis**: Features are nearly perfect. Only minor async handling issue.
 
@@ -206,6 +212,7 @@ HyperFixi achieves **89.2% compatibility** with official _hyperscript across 725
 ## Compatibility Roadmap
 
 ### Phase 1: Quick Wins (Session 18-19)
+
 **Target**: 92-93% compatibility (+3-4%)
 
 Fix these high-impact, low-effort issues:
@@ -232,6 +239,7 @@ Fix these high-impact, low-effort issues:
 ---
 
 ### Phase 2: Medium Priority (Session 20-21)
+
 **Target**: 94-95% compatibility (+2-3%)
 
 1. **Advanced Positional** (4 hours)
@@ -256,6 +264,7 @@ Fix these high-impact, low-effort issues:
 ---
 
 ### Phase 3: Advanced Features (Session 22+)
+
 **Target**: 96-97% compatibility (+2%)
 
 1. **Block Literals** (4 hours)
@@ -283,33 +292,33 @@ Fix these high-impact, low-effort issues:
 
 ### Expressions (372 tests)
 
-| Category | Passing | Failing | Pass Rate |
-|----------|---------|---------|-----------|
-| References | 44 | 0 | 100% ✅ |
-| Properties | 59 | 0 | 100% ✅ |
-| Special | 60 | 6 | 91% ⚠️ |
-| Conversion | 26 | 2 | 93% ⚠️ |
-| Logical | 47 | 17 | 73% ⚠️ |
-| Positional | 35 | 17 | 67% ⚠️ |
-| CSS Selectors | 49 | 10 | 83% ⚠️ |
-| **TOTAL** | **320** | **52** | **86%** |
+| Category      | Passing | Failing | Pass Rate |
+| ------------- | ------- | ------- | --------- |
+| References    | 44      | 0       | 100% ✅   |
+| Properties    | 59      | 0       | 100% ✅   |
+| Special       | 60      | 6       | 91% ⚠️    |
+| Conversion    | 26      | 2       | 93% ⚠️    |
+| Logical       | 47      | 17      | 73% ⚠️    |
+| Positional    | 35      | 17      | 67% ⚠️    |
+| CSS Selectors | 49      | 10      | 83% ⚠️    |
+| **TOTAL**     | **320** | **52**  | **86%**   |
 
 ### Commands (134 tests)
 
-| Status | Count | Percentage |
-|--------|-------|------------|
-| Perfect (100%) | 13 commands | 93% |
-| Good (90-99%) | 0 commands | 0% |
-| Needs Work (<90%) | 1 command (MAKE) | 7% |
-| **TOTAL** | **134 tests** | **96% passing** |
+| Status            | Count            | Percentage      |
+| ----------------- | ---------------- | --------------- |
+| Perfect (100%)    | 13 commands      | 93%             |
+| Good (90-99%)     | 0 commands       | 0%              |
+| Needs Work (<90%) | 1 command (MAKE) | 7%              |
+| **TOTAL**         | **134 tests**    | **96% passing** |
 
 ### Features (106 tests)
 
-| Status | Count | Percentage |
-|--------|-------|------------|
-| Perfect (100%) | 8 features | 89% |
-| Good (90-99%) | 1 feature (ASYNC) | 11% |
-| **TOTAL** | **106 tests** | **99% passing** |
+| Status         | Count             | Percentage      |
+| -------------- | ----------------- | --------------- |
+| Perfect (100%) | 8 features        | 89%             |
+| Good (90-99%)  | 1 feature (ASYNC) | 11%             |
+| **TOTAL**      | **106 tests**     | **99% passing** |
 
 ---
 
@@ -335,17 +344,17 @@ Fix these high-impact, low-effort issues:
 
 ---
 
-## Comparison with Official _hyperscript
+## Comparison with Official \_hyperscript
 
-| Metric | HyperFixi | Official _hyperscript | Gap |
-|--------|-----------|----------------------|-----|
-| Test Coverage | 725 tests | 725 tests | 0% |
-| Pass Rate | 89.2% | 100% | -10.8% |
-| Core Commands | 96% | 100% | -4% |
-| Expressions | 86% | 100% | -14% |
-| Features | 99% | 100% | -1% |
+| Metric        | LokaScript | Official \_hyperscript | Gap    |
+| ------------- | ---------- | ---------------------- | ------ |
+| Test Coverage | 725 tests  | 725 tests              | 0%     |
+| Pass Rate     | 89.2%      | 100%                   | -10.8% |
+| Core Commands | 96%        | 100%                   | -4%    |
+| Expressions   | 86%        | 100%                   | -14%   |
+| Features      | 99%        | 100%                   | -1%    |
 
-**Analysis**: HyperFixi is closest to parity on features and commands. Expression system needs the most work.
+**Analysis**: LokaScript is closest to parity on features and commands. Expression system needs the most work.
 
 ---
 
@@ -375,6 +384,7 @@ Based on impact vs effort analysis, I recommend fixing in this order:
 ## Appendix: Complete Failure List
 
 ### Logical Expressions (17)
+
 1. equal works
 2. triple equal works
 3. triple not equal works
@@ -394,6 +404,7 @@ Based on impact vs effort analysis, I recommend fixing in this order:
 17. some returns false for empty selector
 
 ### Positional Expressions (17)
+
 1. first works
 2. last works
 3. first works w/ array-like
@@ -413,6 +424,7 @@ Based on impact vs effort analysis, I recommend fixing in this order:
 17. previous works properly with array-like and wrap
 
 ### CSS Selectors (10)
+
 1. basic classRef works
 2. basic classRef works w no match
 3. dashed class ref works
@@ -425,6 +437,7 @@ Based on impact vs effort analysis, I recommend fixing in this order:
 10. basic query return values
 
 ### Other Categories (34)
+
 - Date conversion (2)
 - Block literals (3)
 - Cookie operations (3)

@@ -1,6 +1,6 @@
-# @hyperfixi/ssr-support
+# @lokascript/ssr-support
 
-Server-side rendering (SSR), hydration, SEO optimization, and caching for HyperFixi applications.
+Server-side rendering (SSR), hydration, SEO optimization, and caching for LokaScript applications.
 
 ## Features
 
@@ -15,16 +15,16 @@ Server-side rendering (SSR), hydration, SEO optimization, and caching for HyperF
 ## Installation
 
 ```bash
-npm install @hyperfixi/ssr-support
+npm install @lokascript/ssr-support
 ```
 
 ## Quick Start
 
 ```typescript
-import { HyperFixiSSREngine, renderSSR } from '@hyperfixi/ssr-support';
+import { LokaScriptSSREngine, renderSSR } from '@lokascript/ssr-support';
 
 // Create an SSR engine
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 
 // Render a template
 const result = await engine.render(
@@ -33,7 +33,7 @@ const result = await engine.render(
     variables: { title: 'My Page' },
     seo: {
       title: 'My Page',
-      description: 'A page rendered with HyperFixi SSR',
+      description: 'A page rendered with LokaScript SSR',
     },
   },
   {
@@ -42,19 +42,19 @@ const result = await engine.render(
   }
 );
 
-console.log(result.html);           // Rendered HTML
+console.log(result.html); // Rendered HTML
 console.log(result.hydrationScript); // Client hydration script
-console.log(result.metaTags);        // SEO meta tags
+console.log(result.metaTags); // SEO meta tags
 ```
 
 ## API Reference
 
-### HyperFixiSSREngine
+### LokaScriptSSREngine
 
 The main SSR engine class.
 
 ```typescript
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 ```
 
 #### Methods
@@ -68,6 +68,7 @@ const result = await engine.render(template, context, options);
 ```
 
 **Parameters:**
+
 - `template: string` - Template HTML with hyperscript attributes
 - `context: SSRContext` - Rendering context (variables, SEO data, request info)
 - `options?: SSROptions` - SSR options (hydration, caching, etc.)
@@ -99,7 +100,7 @@ const critical = await engine.extractCriticalCSS(html, ['styles.css']);
 Sets the cache implementation.
 
 ```typescript
-import { MemorySSRCache } from '@hyperfixi/ssr-support';
+import { MemorySSRCache } from '@lokascript/ssr-support';
 
 engine.setCache(new MemorySSRCache({ maxSize: 100 }));
 ```
@@ -121,12 +122,12 @@ engine.registerComponent({
 
 ```typescript
 interface SSROptions {
-  hydration?: boolean;      // Enable client hydration (default: false)
-  seoLevel?: 'none' | 'basic' | 'full';  // SEO optimization level
-  inlineCSS?: boolean;      // Inline critical CSS (default: false)
-  preloadJS?: boolean;      // Add preload hints for JS (default: false)
-  target?: 'server' | 'static';  // Target environment
-  cacheTTL?: number;        // Cache TTL in seconds
+  hydration?: boolean; // Enable client hydration (default: false)
+  seoLevel?: 'none' | 'basic' | 'full'; // SEO optimization level
+  inlineCSS?: boolean; // Inline critical CSS (default: false)
+  preloadJS?: boolean; // Add preload hints for JS (default: false)
+  target?: 'server' | 'static'; // Target environment
+  cacheTTL?: number; // Cache TTL in seconds
 }
 ```
 
@@ -134,7 +135,7 @@ interface SSROptions {
 
 ```typescript
 interface SSRContext {
-  variables?: Record<string, any>;  // Template variables
+  variables?: Record<string, any>; // Template variables
   user?: {
     id?: string;
     name?: string;
@@ -167,11 +168,11 @@ interface SSRContext {
 ### Memory Cache
 
 ```typescript
-import { MemorySSRCache } from '@hyperfixi/ssr-support';
+import { MemorySSRCache } from '@lokascript/ssr-support';
 
 const cache = new MemorySSRCache({
-  maxSize: 100,        // Maximum cache entries
-  defaultTTL: 3600,    // Default TTL in seconds
+  maxSize: 100, // Maximum cache entries
+  defaultTTL: 3600, // Default TTL in seconds
 });
 
 engine.setCache(cache);
@@ -180,7 +181,7 @@ engine.setCache(cache);
 ### Redis Cache
 
 ```typescript
-import { RedisSSRCache } from '@hyperfixi/ssr-support';
+import { RedisSSRCache } from '@lokascript/ssr-support';
 
 const cache = new RedisSSRCache({
   host: 'localhost',
@@ -196,7 +197,7 @@ engine.setCache(cache);
 Combines memory and Redis for optimal performance.
 
 ```typescript
-import { TieredSSRCache, MemorySSRCache, RedisSSRCache } from '@hyperfixi/ssr-support';
+import { TieredSSRCache, MemorySSRCache, RedisSSRCache } from '@lokascript/ssr-support';
 
 const cache = new TieredSSRCache({
   l1: new MemorySSRCache({ maxSize: 50 }),
@@ -212,51 +213,57 @@ engine.setCache(cache);
 
 ```typescript
 import express from 'express';
-import { HyperFixiSSREngine, createExpressSSRMiddleware } from '@hyperfixi/ssr-support';
+import { LokaScriptSSREngine, createExpressSSRMiddleware } from '@lokascript/ssr-support';
 
 const app = express();
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 
-app.use(createExpressSSRMiddleware(engine, {
-  templatePath: './templates',
-  ssrOptions: { hydration: true },
-}));
+app.use(
+  createExpressSSRMiddleware(engine, {
+    templatePath: './templates',
+    ssrOptions: { hydration: true },
+  })
+);
 ```
 
 ### Koa
 
 ```typescript
 import Koa from 'koa';
-import { HyperFixiSSREngine, createKoaSSRMiddleware } from '@hyperfixi/ssr-support';
+import { LokaScriptSSREngine, createKoaSSRMiddleware } from '@lokascript/ssr-support';
 
 const app = new Koa();
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 
-app.use(createKoaSSRMiddleware(engine, {
-  ssrOptions: { hydration: true },
-}));
+app.use(
+  createKoaSSRMiddleware(engine, {
+    ssrOptions: { hydration: true },
+  })
+);
 ```
 
 ### Fastify
 
 ```typescript
 import Fastify from 'fastify';
-import { HyperFixiSSREngine, createFastifySSRPlugin } from '@hyperfixi/ssr-support';
+import { LokaScriptSSREngine, createFastifySSRPlugin } from '@lokascript/ssr-support';
 
 const fastify = Fastify();
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 
-fastify.register(createFastifySSRPlugin(engine, {
-  ssrOptions: { hydration: true },
-}));
+fastify.register(
+  createFastifySSRPlugin(engine, {
+    ssrOptions: { hydration: true },
+  })
+);
 ```
 
 ### Next.js
 
 ```typescript
-import { HyperFixiSSREngine, createNextSSRHandler } from '@hyperfixi/ssr-support';
+import { LokaScriptSSREngine, createNextSSRHandler } from '@lokascript/ssr-support';
 
-const engine = new HyperFixiSSREngine();
+const engine = new LokaScriptSSREngine();
 const handler = createNextSSRHandler(engine);
 
 export default handler;
@@ -265,14 +272,14 @@ export default handler;
 ## SEO Generation
 
 ```typescript
-import { SEOGenerator } from '@hyperfixi/ssr-support';
+import { SEOGenerator } from '@lokascript/ssr-support';
 
 const seo = new SEOGenerator();
 
 const tags = seo.generateTags({
   title: 'My Page',
   description: 'A great page',
-  keywords: ['hyperfixi', 'ssr'],
+  keywords: ['lokascript', 'ssr'],
   openGraph: {
     title: 'My Page',
     description: 'A great page',
@@ -283,34 +290,33 @@ const tags = seo.generateTags({
     title: 'My Page',
     description: 'A great page',
   },
-  structuredData: [{
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: 'My Page',
-  }],
+  structuredData: [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'My Page',
+    },
+  ],
 });
 ```
 
 ## Static Site Generation
 
 ```typescript
-import { HyperFixiStaticGenerator } from '@hyperfixi/ssr-support';
+import { LokaScriptStaticGenerator } from '@lokascript/ssr-support';
 
-const generator = new HyperFixiStaticGenerator();
+const generator = new LokaScriptStaticGenerator();
 
-const result = await generator.generate(
-  ['/', '/about', '/contact'],
-  {
-    outputDir: './dist',
-    baseUrl: 'https://example.com',
-    sitemap: true,
-    robots: true,
-    compression: {
-      enabled: true,
-      algorithms: ['gzip', 'brotli'],
-    },
-  }
-);
+const result = await generator.generate(['/', '/about', '/contact'], {
+  outputDir: './dist',
+  baseUrl: 'https://example.com',
+  sitemap: true,
+  robots: true,
+  compression: {
+    enabled: true,
+    algorithms: ['gzip', 'brotli'],
+  },
+});
 
 console.log(result.stats);
 ```

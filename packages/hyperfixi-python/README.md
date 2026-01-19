@@ -1,17 +1,17 @@
-# hyperfixi-python
+# lokascript-python
 
-Django and FastAPI integration for HyperFixi hyperscript.
+Django and FastAPI integration for LokaScript hyperscript.
 
 ## Installation
 
 ```bash
-pip install hyperfixi
+pip install lokascript
 
 # With Django
-pip install hyperfixi[django]
+pip install lokascript[django]
 
 # With FastAPI
-pip install hyperfixi[fastapi]
+pip install lokascript[fastapi]
 ```
 
 ## Django Usage
@@ -20,12 +20,12 @@ pip install hyperfixi[fastapi]
 # settings.py
 INSTALLED_APPS = [
     ...
-    'hyperfixi.django',
+    'lokascript.django',
 ]
 ```
 
 ```html
-{% load hyperfixi %}
+{% load lokascript %}
 
 <button {{ hs("on click toggle .active") }}>Toggle</button>
 ```
@@ -35,7 +35,7 @@ INSTALLED_APPS = [
 Scan templates to generate minimal bundle configurations:
 
 ```bash
-python manage.py hyperfixi_bundle --output bundle-config.json
+python manage.py lokascript_bundle --output bundle-config.json
 ```
 
 Then generate the JavaScript bundle:

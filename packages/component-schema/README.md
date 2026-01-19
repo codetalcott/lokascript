@@ -1,6 +1,6 @@
-# HyperFixi Component Schema
+# LokaScript Component Schema
 
-Universal component definition schema and validation for HyperFixi server-side hyperscript compilation. This package provides comprehensive JSON Schema definitions, TypeScript types, and validation utilities for creating reusable hyperscript components.
+Universal component definition schema and validation for LokaScript server-side hyperscript compilation. This package provides comprehensive JSON Schema definitions, TypeScript types, and validation utilities for creating reusable hyperscript components.
 
 ## Features
 
@@ -16,11 +16,11 @@ Universal component definition schema and validation for HyperFixi server-side h
 ## Installation
 
 ```bash
-npm install @hyperfixi/component-schema
+npm install @lokascript/component-schema
 # or
-yarn add @hyperfixi/component-schema
+yarn add @lokascript/component-schema
 # or
-pnpm add @hyperfixi/component-schema
+pnpm add @lokascript/component-schema
 ```
 
 ## Quick Start
@@ -28,14 +28,10 @@ pnpm add @hyperfixi/component-schema
 ### Basic Component Creation
 
 ```typescript
-import { createComponent, validateComponent } from '@hyperfixi/component-schema';
+import { createComponent, validateComponent } from '@lokascript/component-schema';
 
 // Create a simple toggle button component
-const toggleButton = createComponent(
-  'toggle-button',
-  'Toggle Button', 
-  'on click toggle .active'
-);
+const toggleButton = createComponent('toggle-button', 'Toggle Button', 'on click toggle .active');
 
 // Validate the component
 const validation = validateComponent(toggleButton);
@@ -49,7 +45,7 @@ if (validation.valid) {
 ### Component with Template Variables
 
 ```typescript
-import { createTemplatedComponent } from '@hyperfixi/component-schema';
+import { createTemplatedComponent } from '@lokascript/component-schema';
 
 const ajaxForm = createTemplatedComponent(
   'ajax-form',
@@ -61,19 +57,19 @@ const ajaxForm = createTemplatedComponent(
       apiUrl: {
         type: 'string',
         description: 'API endpoint for form submission',
-        required: true
+        required: true,
       },
       resultId: {
-        type: 'string', 
+        type: 'string',
         default: 'form-result',
-        description: 'ID of element to display results'
+        description: 'ID of element to display results',
       },
       formContent: {
         type: 'string',
         description: 'HTML content of the form',
-        required: true
-      }
-    }
+        required: true,
+      },
+    },
   }
 );
 ```
@@ -81,7 +77,7 @@ const ajaxForm = createTemplatedComponent(
 ### Component Registry Usage
 
 ```typescript
-import { createRegistry } from '@hyperfixi/component-schema';
+import { createRegistry } from '@lokascript/component-schema';
 
 // Create a file-based registry
 const registry = createRegistry('file', { path: './components' });
@@ -98,14 +94,14 @@ const specificComponent = await registry.get('toggle-button');
 // Filter components by category
 const formComponents = await registry.list({
   category: 'form',
-  complexity: { max: 5 }
+  complexity: { max: 5 },
 });
 ```
 
 ### SQLite Registry (Recommended for Production)
 
 ```typescript
-import { createRegistry, SqliteComponentRegistry } from '@hyperfixi/component-schema';
+import { createRegistry, SqliteComponentRegistry } from '@lokascript/component-schema';
 
 // Using the factory function
 const registry = createRegistry('sqlite', { dbPath: './components.db' });
@@ -126,7 +122,7 @@ await sqliteRegistry.clear(); // Clear all components
 // Import/export collections
 await sqliteRegistry.importCollection(myCollection);
 const exported = await sqliteRegistry.exportCollection(['comp-a', 'comp-b'], {
-  name: 'My Export'
+  name: 'My Export',
 });
 ```
 
@@ -147,9 +143,9 @@ A complete component definition includes:
 ```typescript
 interface ComponentDefinition {
   // Required fields
-  id: string;                    // Unique identifier (kebab-case)
-  name: string;                  // Human-readable name
-  version: string;               // Semantic version
+  id: string; // Unique identifier (kebab-case)
+  name: string; // Human-readable name
+  version: string; // Semantic version
   hyperscript: string | string[]; // Hyperscript code
 
   // Optional metadata
@@ -166,9 +162,9 @@ interface ComponentDefinition {
 
   // Dependencies
   dependencies?: {
-    components?: string[];       // Other component dependencies
-    css?: string[];             // CSS file dependencies  
-    javascript?: string[];      // JavaScript dependencies
+    components?: string[]; // Other component dependencies
+    css?: string[]; // CSS file dependencies
+    javascript?: string[]; // JavaScript dependencies
   };
 
   // Configuration
@@ -207,7 +203,7 @@ interface ComponentDefinition {
 Components can be categorized for better organization:
 
 - **`form`** - Form-related components (submit handlers, validation)
-- **`navigation`** - Navigation and routing components  
+- **`navigation`** - Navigation and routing components
 - **`ui-interaction`** - Interactive UI elements (modals, toggles, dropdowns)
 - **`data-display`** - Components for displaying data (tables, lists, cards)
 - **`animation`** - Animation and transition components
@@ -233,15 +229,15 @@ const component = {
       userId: {
         type: 'number',
         description: 'User ID to load',
-        required: true
+        required: true,
       },
       targetId: {
-        type: 'string', 
+        type: 'string',
         default: 'user-data',
-        description: 'Target element ID for results'
-      }
-    }
-  }
+        description: 'Target element ID for results',
+      },
+    },
+  },
 };
 ```
 
@@ -250,14 +246,14 @@ const component = {
 Group related components into collections:
 
 ```typescript
-import { createCollection, validateCollection } from '@hyperfixi/component-schema';
+import { createCollection, validateCollection } from '@lokascript/component-schema';
 
 const uiCollection = createCollection(
   'UI Components',
   {
     'toggle-button': toggleButton,
     'ajax-form': ajaxForm,
-    'modal-dialog': modalDialog
+    'modal-dialog': modalDialog,
   },
   '2.1.0'
 );
@@ -266,8 +262,8 @@ const uiCollection = createCollection(
 uiCollection.description = 'Comprehensive UI component library';
 uiCollection.configuration = {
   defaults: {
-    compilation: { minify: true, compatibility: 'modern' }
-  }
+    compilation: { minify: true, compatibility: 'modern' },
+  },
 };
 
 // Validate entire collection
@@ -279,7 +275,11 @@ const validation = validateCollection(uiCollection);
 ### Component Analysis
 
 ```typescript
-import { analyzeComplexity, generateMetadata, extractTemplateVariables } from '@hyperfixi/component-schema';
+import {
+  analyzeComplexity,
+  generateMetadata,
+  extractTemplateVariables,
+} from '@lokascript/component-schema';
 
 // Analyze component complexity (1-10 scale)
 const complexity = analyzeComplexity(component);
@@ -298,7 +298,7 @@ const variables = extractTemplateVariables(
 ### Component Merging
 
 ```typescript
-import { mergeComponents } from '@hyperfixi/component-schema';
+import { mergeComponents } from '@lokascript/component-schema';
 
 const baseComponent = createComponent('base', 'Base Component', 'on click log "base"');
 const extensionConfig = {
@@ -306,9 +306,9 @@ const extensionConfig = {
   tags: ['extended'],
   template: {
     variables: {
-      newVar: { type: 'string', description: 'New variable' }
-    }
-  }
+      newVar: { type: 'string', description: 'New variable' },
+    },
+  },
 };
 
 const mergedComponent = mergeComponents(baseComponent, extensionConfig);
@@ -317,7 +317,7 @@ const mergedComponent = mergeComponents(baseComponent, extensionConfig);
 ### Dependency Management
 
 ```typescript
-import { checkCircularDependencies, getTopologicalOrder } from '@hyperfixi/component-schema';
+import { checkCircularDependencies, getTopologicalOrder } from '@lokascript/component-schema';
 
 // Check for circular dependencies in a collection
 const cycles = checkCircularDependencies(collection);
@@ -335,7 +335,7 @@ console.log('Build order:', buildOrder);
 ### Component Validation
 
 ```typescript
-import { validateComponent } from '@hyperfixi/component-schema';
+import { validateComponent } from '@lokascript/component-schema';
 
 const result = validateComponent(component);
 
@@ -370,7 +370,7 @@ The validator includes semantic rules beyond JSON schema:
 ```json
 {
   "id": "toggle-button",
-  "name": "Toggle Button", 
+  "name": "Toggle Button",
   "version": "1.0.0",
   "category": "ui-interaction",
   "tags": ["button", "toggle", "state"],
@@ -384,7 +384,7 @@ The validator includes semantic rules beyond JSON schema:
         "description": "CSS class for the button"
       },
       "buttonText": {
-        "type": "string", 
+        "type": "string",
         "required": true,
         "description": "Button text"
       }
@@ -400,7 +400,7 @@ The validator includes semantic rules beyond JSON schema:
     "unit": [
       {
         "name": "Toggle adds active class",
-        "action": "click button", 
+        "action": "click button",
         "expected": "button has class 'active'"
       }
     ]
@@ -414,7 +414,7 @@ The validator includes semantic rules beyond JSON schema:
 {
   "id": "modal-dialog",
   "name": "Modal Dialog",
-  "version": "2.0.1", 
+  "version": "2.0.1",
   "category": "ui-interaction",
   "tags": ["modal", "dialog", "overlay"],
   "hyperscript": [
@@ -432,7 +432,7 @@ The validator includes semantic rules beyond JSON schema:
         "description": "Unique modal ID"
       },
       "modalContent": {
-        "type": "string", 
+        "type": "string",
         "required": true,
         "description": "Modal content HTML"
       }
@@ -456,6 +456,7 @@ The validator includes semantic rules beyond JSON schema:
 Components can be saved in multiple formats:
 
 ### JSON Format
+
 ```json
 {
   "id": "component-id",
@@ -465,7 +466,8 @@ Components can be saved in multiple formats:
 }
 ```
 
-### YAML Format  
+### YAML Format
+
 ```yaml
 id: component-id
 name: Component Name
@@ -484,15 +486,15 @@ template:
 
 ```typescript
 // Build script integration
-import { createRegistry, getTopologicalOrder } from '@hyperfixi/component-schema';
+import { createRegistry, getTopologicalOrder } from '@lokascript/component-schema';
 
 const registry = createRegistry('file', './src/components');
 await registry.initialize();
 
-const collection = await registry.exportCollection(
-  ['toggle-button', 'ajax-form', 'modal-dialog'],
-  { name: 'Production Build', version: '1.0.0' }
-);
+const collection = await registry.exportCollection(['toggle-button', 'ajax-form', 'modal-dialog'], {
+  name: 'Production Build',
+  version: '1.0.0',
+});
 
 // Build components in dependency order
 const buildOrder = getTopologicalOrder(collection);
@@ -501,25 +503,25 @@ for (const componentId of buildOrder) {
 }
 ```
 
-### With HyperFixi Server Integration
+### With LokaScript Server Integration
 
 ```typescript
-// Use with HyperFixi compilation service
-import { createClient } from '@hyperfixi/client';
-import { createRegistry } from '@hyperfixi/component-schema';
+// Use with LokaScript compilation service
+import { createClient } from '@lokascript/client';
+import { createRegistry } from '@lokascript/component-schema';
 
-const hyperfixiClient = createClient({ baseURL: 'http://localhost:3000' });
+const lokascriptClient = createClient({ baseURL: 'http://localhost:3000' });
 const registry = createRegistry('file', './components');
 
 // Compile a component from registry
 const component = await registry.get('toggle-button');
 if (component) {
-  const result = await hyperfixiClient.compile({
+  const result = await lokascriptClient.compile({
     scripts: { [component.id]: component.hyperscript },
     options: component.configuration?.compilation,
-    context: { templateVars: { buttonText: 'Click Me!' } }
+    context: { templateVars: { buttonText: 'Click Me!' } },
   });
-  
+
   console.log('Compiled JavaScript:', result.compiled[component.id]);
 }
 ```
@@ -550,8 +552,8 @@ npm run typecheck
 
 MIT License - see LICENSE file for details.
 
-## Support  
+## Support
 
-- **Documentation**: [https://hyperfixi.dev/docs](https://hyperfixi.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **NPM Package**: [npmjs.com/package/@hyperfixi/component-schema](https://www.npmjs.com/package/@hyperfixi/component-schema)
+- **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
+- **Issues**: [GitHub Issues](https://github.com/codetalcott/hyperfixi/issues)
+- **NPM Package**: [npmjs.com/package/@lokascript/component-schema](https://www.npmjs.com/package/@lokascript/component-schema)

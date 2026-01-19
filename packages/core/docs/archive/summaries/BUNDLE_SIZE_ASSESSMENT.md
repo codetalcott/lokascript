@@ -1,4 +1,4 @@
-# HyperFixi Bundle Size Assessment & Optimization Plan
+# LokaScript Bundle Size Assessment & Optimization Plan
 
 **Date**: December 2025
 **Current Size**: 361 KB minified / 80 KB gzipped
@@ -8,17 +8,18 @@
 
 ## Executive Summary
 
-HyperFixi's bundle size (80 KB gzipped) is **4-5x larger** than comparable libraries:
+LokaScript's bundle size (80 KB gzipped) is **4-5x larger** than comparable libraries:
 
-| Library | Gzipped | Purpose |
-|---------|---------|---------|
-| _hyperscript (official) | ~18 KB | Hyperscript implementation |
-| Alpine.js | 15 KB | Reactive framework |
-| htmx | 14 KB | HTML extensions |
-| **HyperFixi (current)** | **80 KB** | Hyperscript implementation |
-| **HyperFixi (target)** | **40 KB** | Same features, optimized |
+| Library                  | Gzipped   | Purpose                    |
+| ------------------------ | --------- | -------------------------- |
+| \_hyperscript (official) | ~18 KB    | Hyperscript implementation |
+| Alpine.js                | 15 KB     | Reactive framework         |
+| htmx                     | 14 KB     | HTML extensions            |
+| **LokaScript (current)** | **80 KB** | Hyperscript implementation |
+| **LokaScript (target)**  | **40 KB** | Same features, optimized   |
 
-To be competitive, HyperFixi needs significant architectural changes focused on:
+To be competitive, LokaScript needs significant architectural changes focused on:
+
 1. Modular expression system (currently largest contributor)
 2. On-demand command loading
 3. Parser optimization
@@ -28,14 +29,14 @@ To be competitive, HyperFixi needs significant architectural changes focused on:
 
 ## Current Bundle Composition (Estimated)
 
-| Component | Est. Size | % of Bundle | Notes |
-|-----------|-----------|-------------|-------|
-| **Parser** (parser.ts + expression-parser.ts) | ~85 KB | 24% | Required, hard to reduce |
-| **Expression System** (6 categories) | ~90 KB | 25% | Largest opportunity |
-| **43 Commands** | ~55 KB | 15% | All registered at startup |
-| **Runtime + Evaluator** | ~40 KB | 11% | Core execution engine |
-| **Features** (sockets, webworker, etc.) | ~50 KB | 14% | Advanced features |
-| **Utilities + Types** | ~40 KB | 11% | Infrastructure |
+| Component                                     | Est. Size | % of Bundle | Notes                     |
+| --------------------------------------------- | --------- | ----------- | ------------------------- |
+| **Parser** (parser.ts + expression-parser.ts) | ~85 KB    | 24%         | Required, hard to reduce  |
+| **Expression System** (6 categories)          | ~90 KB    | 25%         | Largest opportunity       |
+| **43 Commands**                               | ~55 KB    | 15%         | All registered at startup |
+| **Runtime + Evaluator**                       | ~40 KB    | 11%         | Core execution engine     |
+| **Features** (sockets, webworker, etc.)       | ~50 KB    | 14%         | Advanced features         |
+| **Utilities + Types**                         | ~40 KB    | 11%         | Infrastructure            |
 
 ---
 
@@ -46,11 +47,13 @@ To be competitive, HyperFixi needs significant architectural changes focused on:
 **Problem**: The expression registry imports ALL expression implementations even though many are redundant with inlined operators.
 
 **Files**:
+
 - `src/expressions/logical/index.ts` - exports lessThan, greaterThan, etc.
 - `src/expressions/special/index.ts` - exports arithmetic operations
 - `src/core/expression-evaluator.ts` - registers all expressions
 
 **Action**: Remove expression implementations that are now inlined:
+
 - `lessThan`, `greaterThan`, `lessThanOrEqual`, `greaterThanOrEqual`
 - `equals`, `strictEquals`, `notEquals`, `strictNotEquals`
 - `subtract`, `multiply`, `divide`, `modulo`
@@ -63,6 +66,7 @@ To be competitive, HyperFixi needs significant architectural changes focused on:
 **Problem**: Debug utilities add overhead even when stripped by Terser.
 
 **Files**:
+
 - `src/utils/debug.ts`
 - All files importing `debug`
 
@@ -87,6 +91,7 @@ To be competitive, HyperFixi needs significant architectural changes focused on:
 **Problem**: All 43 commands are imported and registered at startup.
 
 **Current**:
+
 ```typescript
 // runtime.ts imports all 43 commands
 import { createHideCommand } from '../commands/dom/hide';
@@ -130,16 +135,19 @@ class LazyCommandRegistry {
 **Solution**: Tiered expression loading based on actual usage.
 
 **Tier 0 - Core (always loaded, ~20 KB)**:
+
 - Basic operators (inlined, already done)
 - `me`, `you`, `it` references
 - CSS selectors
 
 **Tier 1 - Common (loaded on demand, ~30 KB)**:
+
 - `as` type conversion
 - `matches`, `contains`
 - Property access
 
 **Tier 2 - Advanced (loaded on demand, ~40 KB)**:
+
 - Positional expressions (`first`, `last`, `random`)
 - Complex conversions
 - Form processing
@@ -151,6 +159,7 @@ class LazyCommandRegistry {
 **Problem**: Advanced features bundled even if unused.
 
 **Files**:
+
 - `src/features/sockets.ts` (1,439 lines) - WebSocket
 - `src/features/webworker.ts` (1,289 lines) - Web Workers
 - `src/features/eventsource.ts` (1,250 lines) - SSE
@@ -161,10 +170,10 @@ Users choose their preference - no configuration needed for either:
 
 ```html
 <!-- Simple: Full bundle, no thinking required (80KB gzipped) -->
-<script src="hyperfixi.js"></script>
+<script src="lokascript.js"></script>
 
 <!-- Optimized: ES module with auto-loading (40KB + features on demand) -->
-<script type="module" src="hyperfixi.mjs"></script>
+<script type="module" src="lokascript.mjs"></script>
 ```
 
 **Implementation** (✅ COMPLETE):
@@ -186,18 +195,19 @@ Users choose their preference - no configuration needed for either:
 **Build command**: `npm run build:browser:modular`
 
 **Feature detection patterns**:
+
 - `socket` / `connect to ws:` → loads sockets.ts
 - `eventsource` / `connect to sse:` → loads eventsource.ts
 - `worker` / `start worker` → loads webworker.ts
 
 **Actual Results** (Measured December 2025):
 
-| Bundle | Size | Gzipped |
-|--------|------|---------|
-| Core (hyperfixi.mjs) | 367 KB | 81 KB |
-| Sockets chunk | 30 KB | 8 KB |
-| EventSource chunk | 20 KB | 6 KB |
-| WebWorker chunk | 20 KB | 6 KB |
+| Bundle                | Size   | Gzipped |
+| --------------------- | ------ | ------- |
+| Core (lokascript.mjs) | 367 KB | 81 KB   |
+| Sockets chunk         | 30 KB  | 8 KB    |
+| EventSource chunk     | 20 KB  | 6 KB    |
+| WebWorker chunk       | 20 KB  | 6 KB    |
 
 ✅ **Code splitting verified**: WebSocket/SSE/Worker code IS in separate chunks
 ⚠️ **Finding**: Features are only ~70 KB total. The core itself is ~360 KB.
@@ -217,11 +227,13 @@ since they're already small relative to the core.
 **Problem**: Parser is 3,408 lines with many specialized parsing functions.
 
 **Analysis needed**:
+
 - Which parsing functions are rarely used?
 - Can some be lazy-loaded?
 - Are there redundant code paths?
 
 **Potential actions**:
+
 - Extract advanced parsing (behaviors, workers) to add-ons
 - Simplify error handling (verbose in production)
 - Remove unused parser features
@@ -233,6 +245,7 @@ since they're already small relative to the core.
 **Problem**: Expression parser is 2,531 lines.
 
 **Potential actions**:
+
 - Combine similar parsing patterns
 - Remove debug logging code paths
 - Simplify operator precedence handling
@@ -246,6 +259,7 @@ since they're already small relative to the core.
 ### 4.1 Replace Verbose Patterns
 
 **Examples**:
+
 ```typescript
 // Before (verbose)
 if (Array.isArray(value)) {
@@ -257,23 +271,26 @@ if (Array.isArray(value)) {
 }
 
 // After (compact)
-const arr = Array.isArray(value) ? value :
-            value instanceof NodeList ? Array.from(value) : null;
+const arr = Array.isArray(value) ? value : value instanceof NodeList ? Array.from(value) : null;
 return arr?.includes(item) ?? value?.includes?.(String(item)) ?? false;
 ```
 
 ### 4.2 Use Terser More Aggressively
 
 **Current config**:
+
 ```javascript
-mangle: { properties: false }
+mangle: {
+  properties: false;
+}
 ```
 
 **Consider**:
+
 ```javascript
 mangle: {
   properties: {
-    regex: /^_/  // Mangle private properties starting with _
+    regex: /^_/; // Mangle private properties starting with _
   }
 }
 ```
@@ -285,6 +302,7 @@ mangle: {
 ## Recommended Implementation Order
 
 ### Immediate (1-2 days)
+
 1. Remove unused expression implementations (Phase 1.1)
 2. Tree-shake expression categories (Phase 1.3)
 3. Fix minimal/standard bundle entry points
@@ -292,18 +310,21 @@ mangle: {
 **Expected result**: 330 KB / 70 KB gzipped
 
 ### Short-term (1 week)
+
 4. Implement lazy command registry (Phase 2.1)
 5. Create tiered expression loading (Phase 2.2)
 
 **Expected result**: 250 KB / 55 KB gzipped
 
 ### Medium-term (2-3 weeks)
+
 6. Extract optional features to add-ons (Phase 2.3)
 7. Parser optimization (Phase 3)
 
 **Expected result**: 200 KB / 45 KB gzipped
 
 ### Long-term
+
 8. Code-level optimizations (Phase 4)
 9. Consider alternative parsing strategies
 
@@ -313,23 +334,23 @@ mangle: {
 
 ## Success Metrics
 
-| Metric | Current | Target | Competitive |
-|--------|---------|--------|-------------|
-| Full bundle (gzipped) | 80 KB | 40 KB | < 25 KB |
-| Core bundle (gzipped) | N/A | 25 KB | < 20 KB |
-| Time to Interactive | ~50ms | ~25ms | < 15ms |
-| Parse time | ~10ms | ~5ms | < 3ms |
+| Metric                | Current | Target | Competitive |
+| --------------------- | ------- | ------ | ----------- |
+| Full bundle (gzipped) | 80 KB   | 40 KB  | < 25 KB     |
+| Core bundle (gzipped) | N/A     | 25 KB  | < 20 KB     |
+| Time to Interactive   | ~50ms   | ~25ms  | < 15ms      |
+| Parse time            | ~10ms   | ~5ms   | < 3ms       |
 
 ---
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Breaking changes | Medium | High | Comprehensive test suite |
-| Performance regression | Low | Medium | Benchmark before/after |
-| Async loading complexity | Medium | Medium | Careful API design |
-| Increased maintenance | Medium | Low | Good documentation |
+| Risk                     | Likelihood | Impact | Mitigation               |
+| ------------------------ | ---------- | ------ | ------------------------ |
+| Breaking changes         | Medium     | High   | Comprehensive test suite |
+| Performance regression   | Low        | Medium | Benchmark before/after   |
+| Async loading complexity | Medium     | Medium | Careful API design       |
+| Increased maintenance    | Medium     | Low    | Good documentation       |
 
 ---
 

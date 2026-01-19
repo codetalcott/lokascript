@@ -1,20 +1,20 @@
-# TRON Backend Integration for HyperFixi
+# TRON Backend Integration for LokaScript
 
 > **TRON** (Tree Root Object Notation) - Zero-copy binary serialization for hyperscript execution
 
 ## Overview
 
-This package provides backend integration between HyperFixi's hyperscript runtime and TRON (formerly Lite³), a high-performance zero-copy serialization format. TRON enables O(log n) field access directly on the wire format without traditional parsing overhead.
+This package provides backend integration between LokaScript's hyperscript runtime and TRON (formerly Lite³), a high-performance zero-copy serialization format. TRON enables O(log n) field access directly on the wire format without traditional parsing overhead.
 
-## Why TRON for HyperFixi?
+## Why TRON for LokaScript?
 
-| Feature | JSON | TRON | Benefit |
-|---------|------|------|---------|
-| Parse time | O(n) | O(1) | No parsing needed |
-| Field access | O(n) | O(log n) | B-tree structure |
-| Memory copies | Multiple | Zero | Direct wire access |
-| Type safety | Runtime | Embedded | Self-describing |
-| Speed vs JSON | 1x | 120x | SIMD optimized |
+| Feature       | JSON     | TRON     | Benefit            |
+| ------------- | -------- | -------- | ------------------ |
+| Parse time    | O(n)     | O(1)     | No parsing needed  |
+| Field access  | O(n)     | O(log n) | B-tree structure   |
+| Memory copies | Multiple | Zero     | Direct wire access |
+| Type safety   | Runtime  | Embedded | Self-describing    |
+| Speed vs JSON | 1x       | 120x     | SIMD optimized     |
 
 ### Integration Points
 
@@ -28,7 +28,7 @@ This package provides backend integration between HyperFixi's hyperscript runtim
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    HyperFixi Runtime                             │
+│                    LokaScript Runtime                             │
 ├─────────────────────────────────────────────────────────────────┤
 │  packages/core    │  packages/ssr-support  │  packages/server   │
 │  - Compilation    │  - Hydration           │  - HTTP Service    │
@@ -55,31 +55,31 @@ This package provides backend integration between HyperFixi's hyperscript runtim
 
 This integration is **backend-agnostic**. Choose based on your requirements:
 
-| Backend | Strengths | Use Case |
-|---------|-----------|----------|
-| **Node.js** | TypeScript ecosystem, existing hyperfixi integration | Default choice, rapid development |
-| **Go** | Simple deployment, excellent concurrency | Microservices, containers |
-| **Rust** | Maximum performance, native TRON FFI | High-throughput, latency-critical |
-| **Mojo** | Python syntax + C performance | ML/AI integration, scientific |
+| Backend     | Strengths                                             | Use Case                          |
+| ----------- | ----------------------------------------------------- | --------------------------------- |
+| **Node.js** | TypeScript ecosystem, existing lokascript integration | Default choice, rapid development |
+| **Go**      | Simple deployment, excellent concurrency              | Microservices, containers         |
+| **Rust**    | Maximum performance, native TRON FFI                  | High-throughput, latency-critical |
+| **Mojo**    | Python syntax + C performance                         | ML/AI integration, scientific     |
 
 ## Quick Start
 
 ### Node.js (Reference Implementation)
 
 ```bash
-npm install @hyperfixi/tron-backend
+npm install @lokascript/tron-backend
 ```
 
 ```typescript
-import { TronBackend } from '@hyperfixi/tron-backend';
-import { createExpressAdapter } from '@hyperfixi/server-integration';
+import { TronBackend } from '@lokascript/tron-backend';
+import { createExpressAdapter } from '@lokascript/server-integration';
 
 const backend = new TronBackend({
-  format: 'tron',  // Use TRON instead of JSON
-  fallback: 'json' // Fallback for unsupported clients
+  format: 'tron', // Use TRON instead of JSON
+  fallback: 'json', // Fallback for unsupported clients
 });
 
-// Integrate with existing hyperfixi service
+// Integrate with existing lokascript service
 const app = express();
 app.use(backend.middleware());
 app.use(createExpressAdapter());
@@ -88,7 +88,7 @@ app.use(createExpressAdapter());
 ### Go
 
 ```go
-import "github.com/hyperfixi/tron-backend-go"
+import "github.com/lokascript/tron-backend-go"
 
 backend := tron.NewBackend(tron.Config{
     Format:   tron.FormatTRON,
@@ -101,7 +101,7 @@ http.Handle("/api/", backend.Handler(hyperscriptHandler))
 ### Rust
 
 ```rust
-use hyperfixi_tron::TronBackend;
+use lokascript_tron::TronBackend;
 
 let backend = TronBackend::new(Config {
     format: Format::Tron,
@@ -133,7 +133,7 @@ Accept: application/tron, application/json;q=0.9  # Prefer TRON
 │ Version: uint16                          │
 │ Flags: uint16                            │
 ├──────────────────────────────────────────┤
-│ HyperFixi Payload                        │
+│ LokaScript Payload                        │
 ├──────────────────────────────────────────┤
 │ type: "compile" | "execute" | "event"    │
 │ id: string (request correlation)         │
@@ -145,6 +145,7 @@ Accept: application/tron, application/json;q=0.9  # Prefer TRON
 ### Payload Types
 
 #### Compilation Request
+
 ```typescript
 {
   type: "compile",
@@ -158,6 +159,7 @@ Accept: application/tron, application/json;q=0.9  # Prefer TRON
 ```
 
 #### Execution Event
+
 ```typescript
 {
   type: "event",
@@ -171,6 +173,7 @@ Accept: application/tron, application/json;q=0.9  # Prefer TRON
 ```
 
 #### SSR Hydration
+
 ```typescript
 {
   type: "hydrate",
@@ -198,12 +201,12 @@ Accept: application/tron, application/json;q=0.9  # Prefer TRON
 
 ## Performance Targets
 
-| Operation | JSON | TRON Target |
-|-----------|------|-------------|
-| Compile response serialize | 2ms | 0.02ms |
-| Hydration state transfer | 5ms | 0.05ms |
-| Event payload roundtrip | 1ms | 0.01ms |
-| Cache hit deserialize | 0.5ms | 0ms (zero-copy) |
+| Operation                  | JSON  | TRON Target     |
+| -------------------------- | ----- | --------------- |
+| Compile response serialize | 2ms   | 0.02ms          |
+| Hydration state transfer   | 5ms   | 0.05ms          |
+| Event payload roundtrip    | 1ms   | 0.01ms          |
+| Cache hit deserialize      | 0.5ms | 0ms (zero-copy) |
 
 ## Development
 
@@ -225,5 +228,5 @@ npm run generate:backends
 
 - [TRON/Lite³ Official Documentation](https://lite3.io/)
 - [TRON GitHub Repository](https://github.com/fastserial/lite3)
-- [HyperFixi Server Integration](../server-integration/README.md)
-- [HyperFixi SSR Support](../ssr-support/README.md)
+- [LokaScript Server Integration](../server-integration/README.md)
+- [LokaScript SSR Support](../ssr-support/README.md)

@@ -1,55 +1,56 @@
 # AST Toolkit Assessment
 
-## How AST Toolkit is Used in HyperFixi
+## How AST Toolkit is Used in LokaScript
 
-The @hyperfixi/ast-toolkit serves as the analysis and tooling layer for the HyperFixi ecosystem. Here's how it's integrated:
-1. Server Integration (@hyperfixi/server-integration)
-Re-exports the ASTNode type for server-side compilation services:
-export type { ASTNode } from '@hyperfixi/ast-toolkit';
-Used in:
-HTTP compilation endpoints
-Template processing with {{variable}} substitution
-Batch script compilation
-Validation services
+The @lokascript/ast-toolkit serves as the analysis and tooling layer for the LokaScript ecosystem. Here's how it's integrated:
+
+1. Server Integration (@lokascript/server-integration)
+   Re-exports the ASTNode type for server-side compilation services:
+   export type { ASTNode } from '@lokascript/ast-toolkit';
+   Used in:
+   HTTP compilation endpoints
+   Template processing with {{variable}} substitution
+   Batch script compilation
+   Validation services
 2. MCP (Model Context Protocol) Server
-Exposes AST toolkit capabilities to AI assistants via MCP:
-import { createASTToolkitMCPServer } from '@hyperfixi/ast-toolkit';
-Tools exposed to AI:
-analyze_code - Complexity and code smell analysis
-explain_code - Natural language code explanations
-benchmark - Performance profiling
-find_nodes - Query AST structure
+   Exposes AST toolkit capabilities to AI assistants via MCP:
+   import { createASTToolkitMCPServer } from '@lokascript/ast-toolkit';
+   Tools exposed to AI:
+   analyze_code - Complexity and code smell analysis
+   explain_code - Natural language code explanations
+   benchmark - Performance profiling
+   find_nodes - Query AST structure
 3. LSP Integration
-Provides Language Server Protocol support for editor features:
-import {
-  astToLSPDiagnostics,   // Real-time error highlighting
-  astToLSPCompletions,   // Autocomplete suggestions
-  astToLSPHover,         // Hover documentation
-  astToLSPSymbols        // Symbol navigation
-} from '@hyperfixi/ast-toolkit';
-4. i18n Package (@hyperfixi/i18n)
-Uses AST analysis for internationalization:
-Extract translatable strings from hyperscript
-Transform commands for different locales
+   Provides Language Server Protocol support for editor features:
+   import {
+   astToLSPDiagnostics, // Real-time error highlighting
+   astToLSPCompletions, // Autocomplete suggestions
+   astToLSPHover, // Hover documentation
+   astToLSPSymbols // Symbol navigation
+   } from '@lokascript/ast-toolkit';
+4. i18n Package (@lokascript/i18n)
+   Uses AST analysis for internationalization:
+   Extract translatable strings from hyperscript
+   Transform commands for different locales
 5. Example Use Cases
-Basic Analysis
-import { calculateComplexity, detectCodeSmells, findNodes } from '@hyperfixi/ast-toolkit';
+   Basic Analysis
+   import { calculateComplexity, detectCodeSmells, findNodes } from '@lokascript/ast-toolkit';
 
 const complexity = calculateComplexity(ast);
 const smells = detectCodeSmells(ast);
 const handlers = findNodes(ast, n => n.type === 'eventHandler');
 Semantic Analysis
-import { extractIntents, calculateSimilarity } from '@hyperfixi/ast-toolkit';
+import { extractIntents, calculateSimilarity } from '@lokascript/ast-toolkit';
 
-const intents = extractIntents(ast);  // "toggle visibility", "handle click"
+const intents = extractIntents(ast); // "toggle visibility", "handle click"
 const similarity = calculateSimilarity(ast1, ast2);
 AI-Friendly APIs
-import { explainCode, recognizeIntent } from '@hyperfixi/ast-toolkit';
+import { explainCode, recognizeIntent } from '@lokascript/ast-toolkit';
 
 const explanation = explainCode(ast, { level: 'beginner' });
-const intent = recognizeIntent(ast);  // { type: 'ui-toggle', confidence: 0.9 }
+const intent = recognizeIntent(ast); // { type: 'ui-toggle', confidence: 0.9 }
 Performance Optimization
-import { benchmarkASTOperations, analyzePerformance } from '@hyperfixi/ast-toolkit';
+import { benchmarkASTOperations, analyzePerformance } from '@lokascript/ast-toolkit';
 
 const results = benchmarkASTOperations(ast, ['complexity', 'smells']);
 const suggestions = analyzePerformance(ast);
@@ -57,50 +58,49 @@ const suggestions = analyzePerformance(ast);
 ## Architecture Summary
 
 ┌─────────────────────────────────────────────────────────┐
-│                    @hyperfixi/core                       │
-│         (Parser, Runtime, Command Execution)             │
+│ @lokascript/core │
+│ (Parser, Runtime, Command Execution) │
 └─────────────────────────┬───────────────────────────────┘
-                          │ produces ASTs
-                          ▼
+│ produces ASTs
+▼
 ┌─────────────────────────────────────────────────────────┐
-│                 @hyperfixi/ast-toolkit                   │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
-│  │ Visitor  │ │  Query   │ │ Analyzer │ │ Semantic │   │
-│  │ Pattern  │ │  Engine  │ │          │ │ Analysis │   │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
-│  │Transform │ │   LSP    │ │    AI    │ │   MCP    │   │
-│  │          │ │          │ │  APIs    │ │  Server  │   │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
+│ @lokascript/ast-toolkit │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │
+│ │ Visitor │ │ Query │ │ Analyzer │ │ Semantic │ │
+│ │ Pattern │ │ Engine │ │ │ │ Analysis │ │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │
+│ │Transform │ │ LSP │ │ AI │ │ MCP │ │
+│ │ │ │ │ │ APIs │ │ Server │ │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘ │
 └─────────────────────────────────────────────────────────┘
-                          │ consumed by
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│   server-    │  │     i18n     │  │   AI Tools   │
-│ integration  │  │              │  │  (via MCP)   │
-└──────────────┘  └──────────────┘  └──────────────┘
-
+│ consumed by
+┌─────────────────┼─────────────────┐
+▼ ▼ ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ server- │ │ i18n │ │ AI Tools │
+│ integration │ │ │ │ (via MCP) │
+└──────────────┘ └──────────────┘ └──────────────┘
 
 ## Integration Status: Partially Integrated, Uses Mock ASTs
 
 ### What's Working
 
 Type Compatibility ✅
-AST toolkit imports ASTNode from @hyperfixi/core
+AST toolkit imports ASTNode from @lokascript/core
 Core's ASTNode interface is flexible: { type: string, line?, column?, start?, end?, [key: string]: unknown }
 This allows any node properties, so toolkit analysis works
 Package Dependency ✅
-"@hyperfixi/core": "file:../core"
+"@lokascript/core": "file:../core"
 
 ### What's Missing
 
 No Direct Parser Integration ⚠️
 The integration tests use manually constructed mock ASTs, not actual parsed output:
-// In a real implementation, these would come from @hyperfixi/core parser
+// In a real implementation, these would come from @lokascript/core parser
 const createRealWorldAST = () => ({
-  type: 'program',
-  features: [...]
+type: 'program',
+features: [...]
 } as any);
 AST Structure Mismatch ⚠️
 Core parser produces: { type: 'program', features: [{ keyword: 'on', body: [...] }] }
@@ -123,28 +123,28 @@ Need to check if core is built
 Looking at the parser tests I read earlier, the actual AST structure from parseHyperscript() is:
 // Actual output from parseHyperscript('on click log "clicked"')
 {
-  type: 'program',
-  features: [{
-    type: 'feature',
-    keyword: 'on',        // ← Different from toolkit's 'event: click'
-    body: [{
-      type: 'command',    // ← Commands in 'body', not 'commands'
-      name: 'log',
-      args: [{ value: 'clicked' }]
-    }]
-  }]
+type: 'program',
+features: [{
+type: 'feature',
+keyword: 'on', // ← Different from toolkit's 'event: click'
+body: [{
+type: 'command', // ← Commands in 'body', not 'commands'
+name: 'log',
+args: [{ value: 'clicked' }]
+}]
+}]
 }
 
 ### Summary
 
-Aspect	Status
-Type imports from core	✅ Working
-Generic ASTNode compatible	✅ Working
-Visitor pattern works	✅ Working
-Query engine works	✅ Working
-Analysis works	✅ Working
-Uses actual parser output	❌ Uses mocks
-Node type names match	⚠️ Partial mismatch
+Aspect Status
+Type imports from core ✅ Working
+Generic ASTNode compatible ✅ Working
+Visitor pattern works ✅ Working
+Query engine works ✅ Working
+Analysis works ✅ Working
+Uses actual parser output ❌ Uses mocks
+Node type names match ⚠️ Partial mismatch
 Bottom line: The ast-toolkit works well with any AST structure due to the generic ASTNode type, but its test fixtures and examples use a different node naming convention than what the core parser actually produces. The toolkit functions would work on real ASTs, but:
 findNodes(ast, n => n.type === 'eventHandler') → Would return 0 (core uses 'feature')
 queryAll(ast, 'command') → Would work ✅

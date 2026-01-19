@@ -6,7 +6,7 @@
 
 ## Overview
 
-This plan covers the remaining work to fully roll out the new HyperFixi API (v2) with cleaner naming, async-by-default compilation, and consistent error handling.
+This plan covers the remaining work to fully roll out the new LokaScript API (v2) with cleaner naming, async-by-default compilation, and consistent error handling.
 
 ---
 

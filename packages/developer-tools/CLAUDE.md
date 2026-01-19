@@ -1,6 +1,6 @@
 # Developer Tools - CLAUDE.md
 
-This package provides CLI tools, code generators, and development utilities for HyperFixi projects.
+This package provides CLI tools, code generators, and development utilities for LokaScript projects.
 
 ## Package Overview
 
@@ -28,14 +28,14 @@ npm run build --prefix packages/developer-tools
 
 ## Main Files
 
-| File | Purpose |
-|------|---------|
-| `src/cli.ts` | CLI command definitions and routing |
-| `src/generator.ts` | Project scaffolding and code generation |
-| `src/analyzer.ts` | Hyperscript usage analysis |
-| `src/builder.ts` | Project builder and VisualBuilderServer |
-| `src/dev-server.ts` | Development server with hot reload |
-| `src/types.ts` | Type definitions |
+| File                | Purpose                                 |
+| ------------------- | --------------------------------------- |
+| `src/cli.ts`        | CLI command definitions and routing     |
+| `src/generator.ts`  | Project scaffolding and code generation |
+| `src/analyzer.ts`   | Hyperscript usage analysis              |
+| `src/builder.ts`    | Project builder and VisualBuilderServer |
+| `src/dev-server.ts` | Development server with hot reload      |
+| `src/types.ts`      | Type definitions                        |
 
 ## Code Generation
 
@@ -60,7 +60,8 @@ const result = await generateCode({
 ## Project Templates
 
 Available templates in `createProject()`:
-- `basic` - Simple HyperFixi project
+
+- `basic` - Simple LokaScript project
 - `multi-tenant` - Multi-tenant project with tenant isolation
 - `analytics` - Project with analytics integration
 - `full-stack` - Full-stack project with Express server

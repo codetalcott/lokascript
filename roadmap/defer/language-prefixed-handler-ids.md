@@ -2,7 +2,7 @@
 
 **Status:** Deferred
 **Priority:** Low
-**Package:** `@hyperfixi/vite-plugin`
+**Package:** `@lokascript/vite-plugin`
 **Related:** Compile mode, multilingual support
 
 ## Overview
@@ -24,18 +24,18 @@ This loses the language context from the original source code.
 Add a `handlerIdFormat` option to preserve language information in compiled handler IDs:
 
 ```typescript
-hyperfixi({
+lokascript({
   mode: 'compile',
-  handlerIdFormat: 'ascii' | 'prefixed'  // default: 'ascii'
-})
+  handlerIdFormat: 'ascii' | 'prefixed', // default: 'ascii'
+});
 ```
 
 ### Format Options
 
-| Format | Example | Description |
-|--------|---------|-------------|
-| `ascii` (default) | `click_toggle_3a2b` | Current behavior, English normalized |
-| `prefixed` | `ja_click_toggle_3a2b` | Language code prefix for non-English |
+| Format            | Example                | Description                          |
+| ----------------- | ---------------------- | ------------------------------------ |
+| `ascii` (default) | `click_toggle_3a2b`    | Current behavior, English normalized |
+| `prefixed`        | `ja_click_toggle_3a2b` | Language code prefix for non-English |
 
 ### Output Examples
 
@@ -74,9 +74,7 @@ function generateHandlerId(
   format: 'ascii' | 'prefixed' = 'ascii'
 ): string {
   const hash = hashScript(script);
-  const prefix = format === 'prefixed' && language !== 'en'
-    ? `${language}_`
-    : '';
+  const prefix = format === 'prefixed' && language !== 'en' ? `${language}_` : '';
 
   let id = `${prefix}${event}_${command}_${hash}`;
   // ... collision handling
@@ -99,11 +97,11 @@ function generateHandlerId(
 
 ## Size Impact
 
-| Handlers | ASCII | Prefixed | Delta |
-|----------|-------|----------|-------|
-| 10 | ~170 bytes | ~200 bytes | +30 bytes |
-| 50 | ~850 bytes | ~1000 bytes | +150 bytes |
-| 100 | ~1.7 KB | ~2 KB | +300 bytes |
+| Handlers | ASCII      | Prefixed    | Delta      |
+| -------- | ---------- | ----------- | ---------- |
+| 10       | ~170 bytes | ~200 bytes  | +30 bytes  |
+| 50       | ~850 bytes | ~1000 bytes | +150 bytes |
+| 100      | ~1.7 KB    | ~2 KB       | +300 bytes |
 
 Negligible in context of overall bundle size.
 
@@ -119,6 +117,7 @@ Negligible in context of overall bundle size.
 ### Native Unicode IDs (`click_トグル_3a2b`)
 
 Rejected due to:
+
 - Potential DevTools compatibility issues
 - CSS attribute selector escaping requirements
 - URL encoding complexity
@@ -127,6 +126,7 @@ Rejected due to:
 ### Transliteration (`click_toguru_3a2b`)
 
 Rejected due to:
+
 - Inconsistent transliteration rules across languages
 - Potential collisions between similar-sounding words
 - Added dependency on transliteration library
@@ -134,6 +134,7 @@ Rejected due to:
 ## When to Revisit
 
 Consider implementing if:
+
 - Users explicitly request language-aware debugging
 - Build tooling improves non-ASCII attribute support
 - Multilingual projects become a primary use case

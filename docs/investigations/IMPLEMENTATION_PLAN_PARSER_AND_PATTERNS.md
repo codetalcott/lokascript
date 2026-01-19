@@ -22,6 +22,7 @@
 ### Phase 1: Parser Multi-Word Command Support (4-6 hours)
 
 **Affected Commands:**
+
 - `append <value> to <target>`
 - `fetch <url> [as TYPE] [with OPTIONS]`
 - `make a <type>`
@@ -29,6 +30,7 @@
 - `throw <error>` (single word but needs context)
 
 **Files to Modify:**
+
 1. `/packages/core/src/parser/parser.ts` - Add multi-word pattern recognition
 2. `/packages/core/src/parser/tokenizer.ts` - Token lookahead (if needed)
 3. `/packages/core/src/runtime/runtime.ts` - Update command dispatch
@@ -39,12 +41,14 @@
 ### Phase 2: Implement Missing Patterns (2-3 hours)
 
 **New Commands:**
+
 1. `put <value> before <target>` - DOM insertion
 2. `put <value> after <target>` - DOM insertion
 3. `on <event> from <selector>` - Event delegation (may already work)
 4. `on mutation of <attribute>` - MutationObserver
 
 **Files to Create:**
+
 1. `/packages/core/src/commands/dom/put-before.ts`
 2. `/packages/core/src/commands/dom/put-after.ts`
 3. `/packages/core/src/features/event-delegation.ts` (if needed)
@@ -57,6 +61,7 @@
 ### Step 1.1: Understand Current Parser Flow
 
 **Current Behavior:**
+
 ```javascript
 // Input: _="on click append 'Hello' to :myvar"
 // Parser Output:
@@ -71,6 +76,7 @@
 ```
 
 **Desired Behavior:**
+
 ```javascript
 // Input: _="on click append 'Hello' to :myvar"
 // Parser Output:
@@ -105,28 +111,28 @@ const MULTI_WORD_PATTERNS: MultiWordPattern[] = [
   {
     command: 'append',
     keywords: ['to'],
-    syntax: 'append <value> [to <target>]'
+    syntax: 'append <value> [to <target>]',
   },
   {
     command: 'fetch',
     keywords: ['as', 'with'],
-    syntax: 'fetch <url> [as <type>] [with <options>]'
+    syntax: 'fetch <url> [as <type>] [with <options>]',
   },
   {
     command: 'make',
     keywords: ['a', 'an'],
-    syntax: 'make (a|an) <type>'
+    syntax: 'make (a|an) <type>',
   },
   {
     command: 'send',
     keywords: ['to'],
-    syntax: 'send <event> to <target>'
+    syntax: 'send <event> to <target>',
   },
   {
     command: 'put',
     keywords: ['into', 'before', 'after', 'at'],
-    syntax: 'put <value> (into|before|after|at) <target>'
-  }
+    syntax: 'put <value> (into|before|after|at) <target>',
+  },
 ];
 ```
 
@@ -370,7 +376,7 @@ export interface CommandNode extends ASTNode {
   type: 'command';
   name: string;
   args: any[];
-  modifiers?: Record<string, any>;  // ← ADD THIS
+  modifiers?: Record<string, any>; // ← ADD THIS
   target?: any;
   selector?: string;
 }
@@ -395,7 +401,7 @@ describe('Multi-Word Command Parsing', () => {
       type: 'command',
       name: 'append',
       args: ['"Hello"'],
-      modifiers: { to: ':myvar' }
+      modifiers: { to: ':myvar' },
     });
   });
 
@@ -409,8 +415,8 @@ describe('Multi-Word Command Parsing', () => {
       args: ['"/api/data"'],
       modifiers: {
         as: 'json',
-        with: '{method:"POST"}'
-      }
+        with: '{method:"POST"}',
+      },
     });
   });
 
@@ -422,7 +428,7 @@ describe('Multi-Word Command Parsing', () => {
       type: 'command',
       name: 'make',
       args: ['<div/>'],
-      modifiers: { a: true }
+      modifiers: { a: true },
     });
   });
 
@@ -434,7 +440,7 @@ describe('Multi-Word Command Parsing', () => {
       type: 'command',
       name: 'send',
       args: ['customEvent'],
-      modifiers: { to: '#target' }
+      modifiers: { to: '#target' },
     });
   });
 });
@@ -445,41 +451,45 @@ describe('Multi-Word Command Parsing', () => {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Multi-Word Commands Test</title>
-  <script src="/dist/hyperfixi-browser.js"></script>
-</head>
-<body>
-  <h1>Multi-Word Command Tests</h1>
+  <head>
+    <title>Multi-Word Commands Test</title>
+    <script src="/dist/lokascript-browser.js"></script>
+  </head>
+  <body>
+    <h1>Multi-Word Command Tests</h1>
 
-  <div id="append-target"></div>
-  <button _="on click
+    <div id="append-target"></div>
+    <button
+      _="on click
              set :greeting to 'Hello'
              then append ' World' to :greeting
-             then put :greeting into #append-target">
-    Test Append To
-  </button>
+             then put :greeting into #append-target"
+    >
+      Test Append To
+    </button>
 
-  <div id="fetch-target"></div>
-  <button _="on click
+    <div id="fetch-target"></div>
+    <button
+      _="on click
              fetch 'https://jsonplaceholder.typicode.com/todos/1' as json
-             then put it.title into #fetch-target">
-    Test Fetch As
-  </button>
+             then put it.title into #fetch-target"
+    >
+      Test Fetch As
+    </button>
 
-  <div id="send-target" _="on customEvent put 'Event received!' into me"></div>
-  <button _="on click send customEvent to #send-target">
-    Test Send To
-  </button>
+    <div id="send-target" _="on customEvent put 'Event received!' into me"></div>
+    <button _="on click send customEvent to #send-target">Test Send To</button>
 
-  <div id="make-target"></div>
-  <button _="on click
+    <div id="make-target"></div>
+    <button
+      _="on click
              make a <div.created/>
              then put 'Created!' into it
-             then put it into #make-target">
-    Test Make A
-  </button>
-</body>
+             then put it into #make-target"
+    >
+      Test Make A
+    </button>
+  </body>
 </html>
 ```
 
@@ -512,16 +522,15 @@ export interface PutBeforeCommandOutput {
   element?: HTMLElement;
 }
 
-export class PutBeforeCommand
-  implements CommandImplementation<PutBeforeCommandInput, PutBeforeCommandOutput, TypedExecutionContext>
-{
+export class PutBeforeCommand implements CommandImplementation<
+  PutBeforeCommandInput,
+  PutBeforeCommandOutput,
+  TypedExecutionContext
+> {
   metadata = {
     name: 'put-before',
     description: 'Insert content before a target element',
-    examples: [
-      'put "<li>New</li>" before first <li/>',
-      'put :newElement before #target'
-    ],
+    examples: ['put "<li>New</li>" before first <li/>', 'put :newElement before #target'],
     syntax: 'put <value> before <target>',
     category: 'dom' as const,
     version: '2.0.0',
@@ -532,11 +541,13 @@ export class PutBeforeCommand
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put before command requires value and target',
-            suggestions: ['Provide both value and target']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put before command requires value and target',
+              suggestions: ['Provide both value and target'],
+            },
+          ],
           suggestions: ['Provide both value and target'],
         };
       }
@@ -546,11 +557,13 @@ export class PutBeforeCommand
       if (inputObj.value === undefined) {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put before command requires a value',
-            suggestions: ['Provide content to insert']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put before command requires a value',
+              suggestions: ['Provide content to insert'],
+            },
+          ],
           suggestions: ['Provide content to insert'],
         };
       }
@@ -558,11 +571,13 @@ export class PutBeforeCommand
       if (!inputObj.target) {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put before command requires a target',
-            suggestions: ['Provide target element or selector']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put before command requires a target',
+              suggestions: ['Provide target element or selector'],
+            },
+          ],
           suggestions: ['Provide target element or selector'],
         };
       }
@@ -603,7 +618,10 @@ export class PutBeforeCommand
     };
   }
 
-  private resolveTarget(target: string | HTMLElement, context: TypedExecutionContext): HTMLElement | null {
+  private resolveTarget(
+    target: string | HTMLElement,
+    context: TypedExecutionContext
+  ): HTMLElement | null {
     if (target instanceof HTMLElement) {
       return target;
     }
@@ -667,16 +685,15 @@ export interface PutAfterCommandOutput {
   element?: HTMLElement;
 }
 
-export class PutAfterCommand
-  implements CommandImplementation<PutAfterCommandInput, PutAfterCommandOutput, TypedExecutionContext>
-{
+export class PutAfterCommand implements CommandImplementation<
+  PutAfterCommandInput,
+  PutAfterCommandOutput,
+  TypedExecutionContext
+> {
   metadata = {
     name: 'put-after',
     description: 'Insert content after a target element',
-    examples: [
-      'put "<li>New</li>" after last <li/>',
-      'put :newElement after #target'
-    ],
+    examples: ['put "<li>New</li>" after last <li/>', 'put :newElement after #target'],
     syntax: 'put <value> after <target>',
     category: 'dom' as const,
     version: '2.0.0',
@@ -687,11 +704,13 @@ export class PutAfterCommand
       if (!input || typeof input !== 'object') {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put after command requires value and target',
-            suggestions: ['Provide both value and target']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put after command requires value and target',
+              suggestions: ['Provide both value and target'],
+            },
+          ],
           suggestions: ['Provide both value and target'],
         };
       }
@@ -701,11 +720,13 @@ export class PutAfterCommand
       if (inputObj.value === undefined) {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put after command requires a value',
-            suggestions: ['Provide content to insert']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put after command requires a value',
+              suggestions: ['Provide content to insert'],
+            },
+          ],
           suggestions: ['Provide content to insert'],
         };
       }
@@ -713,11 +734,13 @@ export class PutAfterCommand
       if (!inputObj.target) {
         return {
           isValid: false,
-          errors: [{
-            type: 'missing-argument',
-            message: 'Put after command requires a target',
-            suggestions: ['Provide target element or selector']
-          }],
+          errors: [
+            {
+              type: 'missing-argument',
+              message: 'Put after command requires a target',
+              suggestions: ['Provide target element or selector'],
+            },
+          ],
           suggestions: ['Provide target element or selector'],
         };
       }
@@ -762,7 +785,10 @@ export class PutAfterCommand
     };
   }
 
-  private resolveTarget(target: string | HTMLElement, context: TypedExecutionContext): HTMLElement | null {
+  private resolveTarget(
+    target: string | HTMLElement,
+    context: TypedExecutionContext
+  ): HTMLElement | null {
     if (target instanceof HTMLElement) {
       return target;
     }
@@ -806,13 +832,16 @@ export default PutAfterCommand;
 **Investigation Needed:** This may already work via event bubbling!
 
 **Test First:**
+
 ```html
 <div id="container">
   <button class="action-btn">Click Me</button>
 </div>
 
-<div _="on click from .action-btn
-        log 'Button clicked via delegation!'">
+<div
+  _="on click from .action-btn
+        log 'Button clicked via delegation!'"
+>
   Event Listener Container
 </div>
 ```
@@ -839,10 +868,7 @@ export class EventDelegation {
   /**
    * Attach delegated event listener
    */
-  static attach(
-    element: HTMLElement,
-    config: DelegatedEventConfig
-  ): () => void {
+  static attach(element: HTMLElement, config: DelegatedEventConfig): () => void {
     const { eventName, fromSelector, handler } = config;
 
     const delegatedHandler = (event: Event) => {
@@ -927,10 +953,9 @@ export class AttributeMutationObserver {
   constructor(config: MutationObserverConfig) {
     this.config = config;
 
-    this.observer = new MutationObserver((mutations) => {
+    this.observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
-        if (mutation.type === 'attributes' &&
-            mutation.attributeName === this.config.attribute) {
+        if (mutation.type === 'attributes' && mutation.attributeName === this.config.attribute) {
           const newValue = this.config.element.getAttribute(this.config.attribute);
           this.config.handler(mutation.oldValue, newValue);
         }
@@ -945,7 +970,7 @@ export class AttributeMutationObserver {
     this.observer.observe(this.config.element, {
       attributes: true,
       attributeOldValue: true,
-      attributeFilter: [this.config.attribute]
+      attributeFilter: [this.config.attribute],
     });
   }
 
@@ -1072,34 +1097,24 @@ private parseEventHandler(): EventHandlerNode {
 ### Recommended Order
 
 **Session 1: Parser Foundation (2-3 hours)**
+
 1. Implement multi-word pattern recognition
 2. Add parser lookahead logic
 3. Update CommandNode types
 4. Write parser unit tests
 
-**Session 2: Runtime Integration (2-3 hours)**
-5. Update runtime command execution
-6. Implement buildCommandInput
-7. Test with existing commands
-8. Fix any integration issues
+**Session 2: Runtime Integration (2-3 hours)** 5. Update runtime command execution 6. Implement buildCommandInput 7. Test with existing commands 8. Fix any integration issues
 
-**Session 3: Missing Patterns (2-3 hours)**
-9. Implement put-before and put-after commands
-10. Verify event delegation (may already work)
-11. Implement mutation observer feature
-12. Write comprehensive tests
+**Session 3: Missing Patterns (2-3 hours)** 9. Implement put-before and put-after commands 10. Verify event delegation (may already work) 11. Implement mutation observer feature 12. Write comprehensive tests
 
-**Session 4: Testing & Polish (1 hour)**
-13. Run full test suite
-14. Fix any bugs discovered
-15. Update pattern registry to 100%
-16. Update documentation
+**Session 4: Testing & Polish (1 hour)** 13. Run full test suite 14. Fix any bugs discovered 15. Update pattern registry to 100% 16. Update documentation
 
 ---
 
 ## 📋 Files Summary
 
 ### Files to Create:
+
 1. `/packages/core/src/commands/dom/put-before.ts`
 2. `/packages/core/src/commands/dom/put-after.ts`
 3. `/packages/core/src/features/event-delegation.ts` (if needed)
@@ -1108,6 +1123,7 @@ private parseEventHandler(): EventHandlerNode {
 6. `/packages/core/multi-word-commands-test.html`
 
 ### Files to Modify:
+
 1. `/packages/core/src/parser/parser.ts` - Multi-word support
 2. `/packages/core/src/runtime/runtime.ts` - Command execution
 3. `/packages/core/src/commands/command-registry.ts` - Add new commands
@@ -1119,18 +1135,21 @@ private parseEventHandler(): EventHandlerNode {
 ## ✅ Success Criteria
 
 **Parser Fix Complete When:**
+
 - ✅ All 5 multi-word commands work in `_=""` attributes
 - ✅ Parser tests pass (15+ test cases)
 - ✅ Browser test page shows all green
 - ✅ No "Unknown command" errors
 
 **Missing Patterns Complete When:**
+
 - ✅ All 4 patterns have implementations
 - ✅ Commands registered and tested
 - ✅ Unit tests pass (12+ test cases)
 - ✅ Browser demos work
 
 **100% Compatibility Achieved When:**
+
 - ✅ Pattern registry: 77/77 implemented
 - ✅ All pattern tests pass
 - ✅ Documentation updated
@@ -1140,7 +1159,7 @@ private parseEventHandler(): EventHandlerNode {
 
 **Total Estimated Time:** 6-9 hours
 **Can be split across:** 3-4 focused sessions
-**Final Result:** 100% _hyperscript pattern compatibility!
+**Final Result:** 100% \_hyperscript pattern compatibility!
 
 ---
 

@@ -17,11 +17,13 @@ We created ES module bundle configurations to enable code splitting for modern b
 ### ES Module Configs Created
 
 **New Files** (3):
+
 - `rollup.browser-esm.config.mjs` - Full ES module bundle
 - `rollup.browser-minimal-esm.config.mjs` - Minimal ES module bundle
 - `rollup.browser-standard-esm.config.mjs` - Standard ES module bundle
 
 **Key Differences from IIFE Bundles**:
+
 ```javascript
 {
   output: {
@@ -63,6 +65,7 @@ IIFE Bundles (dist/) for comparison:
 Rollup can statically analyze our dynamic imports and bundles everything:
 
 **Our Code**:
+
 ```typescript
 // LazyCommandRegistry
 private async loadCommand(name: string): Promise<any> {
@@ -82,6 +85,7 @@ private async _loadCategoryImpl(category: string): Promise<void> {
 ```
 
 **Rollup's Perspective**:
+
 - ✅ Can see all possible import paths at build time
 - ✅ Knows exactly what modules might be imported
 - ✅ Bundles all reachable code into main bundle
@@ -94,6 +98,7 @@ private async _loadCategoryImpl(category: string): Promise<void> {
 ### Static vs Dynamic Imports
 
 **Truly Dynamic** (creates chunks):
+
 ```typescript
 // Import path determined at runtime
 const modulePath = `/modules/${userChoice}.js`;
@@ -101,20 +106,26 @@ const module = await import(modulePath);
 ```
 
 **Statically Analyzable** (bundled):
+
 ```typescript
 // Import path is a string literal
 const module = await import('../commands/command-registry');
 
 // Switch statement with literal imports
 switch (category) {
-  case 'references': await import('../expressions/references'); break;
-  case 'logical': await import('../expressions/logical'); break;
+  case 'references':
+    await import('../expressions/references');
+    break;
+  case 'logical':
+    await import('../expressions/logical');
+    break;
 }
 ```
 
 ### Rollup's Behavior
 
 Rollup applies these rules:
+
 1. **String literal imports**: Resolved and bundled
 2. **Switch/if with literals**: All branches bundled
 3. **Template literals with variables**: Creates chunks (if can't resolve)
@@ -159,12 +170,13 @@ Use service worker to intercept module requests:
 Accept that browser bundles include everything, but NPM users get benefits:
 
 **Webpack/Vite users**:
+
 ```typescript
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 
 const runtime = new Runtime({
   lazyLoad: true,
-  expressionPreload: 'core'
+  expressionPreload: 'core',
 });
 ```
 
@@ -182,11 +194,13 @@ Despite not achieving code splitting in browser bundles, Phase 2 provides signif
 ### ✅ Runtime Performance
 
 **Initialization Speed**:
+
 - Before: Register all 6 expression categories (~870 lines)
 - After: Register only 'core' tier (~300 lines)
 - **Result**: ~60% faster startup for minimal apps
 
 **Memory Efficiency**:
+
 - Only loaded expressions consume memory
 - Expression registry grows on-demand
 - Better for memory-constrained environments
@@ -194,15 +208,17 @@ Despite not achieving code splitting in browser bundles, Phase 2 provides signif
 ### ✅ NPM Package Benefits
 
 **For Webpack/Vite/Rollup Users**:
+
 ```typescript
 // Only includes what you use
 const runtime = new Runtime({
-  commands: ['add', 'remove'],      // Only these commands
-  expressionPreload: 'core'          // Only core expressions
+  commands: ['add', 'remove'], // Only these commands
+  expressionPreload: 'core', // Only core expressions
 });
 ```
 
 Modern bundlers will:
+
 - Tree-shake unused expressions
 - Create optimal chunks automatically
 - Achieve 30-50% size reduction naturally
@@ -210,18 +226,20 @@ Modern bundlers will:
 ### ✅ Developer Experience
 
 **Flexible Preload Strategies**:
+
 ```typescript
 // Minimal (fastest startup)
-expressionPreload: 'core'
+expressionPreload: 'core';
 
 // Balanced (common use cases)
-expressionPreload: 'common'
+expressionPreload: 'common';
 
 // Full compatibility
-expressionPreload: 'all'
+expressionPreload: 'all';
 ```
 
 **Warmup API**:
+
 ```typescript
 // Preload before needed
 await runtime.expressionEvaluator.warmupExpressions(['positional']);
@@ -234,12 +252,14 @@ await runtime.expressionEvaluator.warmupExpressions(['positional']);
 ### For This Project
 
 **Keep Current Approach**:
+
 1. ✅ Phase 2 implementation provides runtime benefits
 2. ✅ NPM users get tree-shaking automatically
 3. ✅ Browser bundles have better initialization
 4. ❌ Don't pursue browser code splitting further
 
 **Document Clearly**:
+
 - Browser IIFE/ESM bundles: Same size, better runtime
 - NPM package: Optimal tree-shaking with modern bundlers
 - Runtime benefits: Faster init, lower memory
@@ -247,21 +267,23 @@ await runtime.expressionEvaluator.warmupExpressions(['positional']);
 ### For Users
 
 **Browser Script Tags**:
+
 ```html
 <!-- Use IIFE bundles -->
-<script src="dist/hyperfixi-browser-minimal.js"></script>
+<script src="dist/lokascript-browser-minimal.js"></script>
 
 <!-- Benefits: Faster initialization, same size -->
 ```
 
 **NPM + Modern Bundler**:
+
 ```typescript
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 
 // Benefits: Tree-shaking, optimal chunks, 30-50% smaller
 const runtime = new Runtime({
   lazyLoad: true,
-  expressionPreload: 'core'
+  expressionPreload: 'core',
 });
 ```
 
@@ -272,6 +294,7 @@ const runtime = new Runtime({
 **ES Module Bundles**: Created and working, but no size reduction due to Rollup's static analysis.
 
 **Phase 2 Success**: Despite not achieving browser code splitting, Phase 2 provides:
+
 - ✅ 60% faster initialization
 - ✅ Better memory efficiency
 - ✅ NPM tree-shaking support
@@ -284,11 +307,13 @@ const runtime = new Runtime({
 ## Files
 
 **New Configs** (3):
+
 - `rollup.browser-esm.config.mjs`
 - `rollup.browser-minimal-esm.config.mjs`
 - `rollup.browser-standard-esm.config.mjs`
 
 **New Scripts** (package.json):
+
 - `build:browser:esm` - Full ES module bundle
 - `build:browser:esm:minimal` - Minimal ES module bundle
 - `build:browser:esm:standard` - Standard ES module bundle
@@ -301,12 +326,14 @@ const runtime = new Runtime({
 ## Next Steps
 
 **No further action needed** for code splitting. The current implementation provides:
+
 1. Runtime performance benefits for all users
 2. Tree-shaking benefits for NPM users
 3. Clean, maintainable codebase
 4. Backward compatibility
 
 **Optional enhancements**:
+
 1. Document bundle behavior in README
 2. Add bundle size comparison to docs
 3. Create migration guide for NPM users

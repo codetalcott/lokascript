@@ -1,6 +1,6 @@
 # Behaviors Pattern Documentation
 
-HyperFixi behaviors provide reusable, htmx-like patterns that can be installed on elements using the `install` command. This document describes the behavior pattern architecture and how to create your own behaviors.
+LokaScript behaviors provide reusable, htmx-like patterns that can be installed on elements using the `install` command. This document describes the behavior pattern architecture and how to create your own behaviors.
 
 ## Table of Contents
 
@@ -12,7 +12,7 @@ HyperFixi behaviors provide reusable, htmx-like patterns that can be installed o
 
 ## Architecture Overview
 
-A HyperFixi behavior follows a consistent pattern with five core components:
+A LokaScript behavior follows a consistent pattern with five core components:
 
 ### 1. Configuration Interface
 
@@ -63,7 +63,7 @@ export function createMyBehavior(config: MyBehaviorConfig): MyBehaviorInstance {
   const resolveTarget = (): HTMLElement | null => {
     if (typeof target === 'string') {
       const element = document.querySelector(target);
-      return isHTMLElement(element) ? element as HTMLElement : null;
+      return isHTMLElement(element) ? (element as HTMLElement) : null;
     }
     return isHTMLElement(target) ? target : null;
   };
@@ -89,7 +89,6 @@ export function createMyBehavior(config: MyBehaviorConfig): MyBehaviorInstance {
       if (onAfterSwap) {
         await onAfterSwap(/* ... */);
       }
-
     } catch (error) {
       if (onError) {
         onError(error as Error);
@@ -178,7 +177,7 @@ Create a new file `src/behaviors/my-behavior.ts`:
  *   install MyBehavior(target: "#container")
  *
  * Programmatic usage:
- *   import { createMyBehavior } from '@hyperfixi/core/behaviors';
+ *   import { createMyBehavior } from '@lokascript/core/behaviors';
  *   const instance = createMyBehavior({ target: '#container' });
  */
 
@@ -204,7 +203,7 @@ export function createMyBehavior(config: MyBehaviorConfig): MyBehaviorInstance {
   const resolveTarget = (): HTMLElement | null => {
     if (typeof target === 'string') {
       const element = document.querySelector(target);
-      return isHTMLElement(element) ? element as HTMLElement : null;
+      return isHTMLElement(element) ? (element as HTMLElement) : null;
     }
     return isHTMLElement(target) ? target : null;
   };
@@ -293,8 +292,8 @@ Behaviors must be registered with the runtime before they can be used in hypersc
 ### Method 1: Register Individual Behavior
 
 ```typescript
-import { createRuntime } from '@hyperfixi/core';
-import { registerMyBehavior } from '@hyperfixi/core/behaviors';
+import { createRuntime } from '@lokascript/core';
+import { registerMyBehavior } from '@lokascript/core/behaviors';
 
 const runtime = createRuntime();
 const registry = runtime.getBehaviorRegistry();
@@ -304,8 +303,8 @@ registerMyBehavior(registry);
 ### Method 2: Register All Behaviors
 
 ```typescript
-import { createRuntime } from '@hyperfixi/core';
-import { registerAllBehaviors } from '@hyperfixi/core/behaviors';
+import { createRuntime } from '@lokascript/core';
+import { registerAllBehaviors } from '@lokascript/core/behaviors';
 
 const runtime = createRuntime();
 const registry = runtime.getBehaviorRegistry();
@@ -315,8 +314,8 @@ registerAllBehaviors(registry);
 ### Method 3: Register at Runtime Creation
 
 ```typescript
-import { createRuntime } from '@hyperfixi/core';
-import { MyBehaviorObject } from '@hyperfixi/core/behaviors';
+import { createRuntime } from '@lokascript/core';
+import { MyBehaviorObject } from '@lokascript/core/behaviors';
 
 const runtime = createRuntime({
   behaviors: {
@@ -335,10 +334,10 @@ Automatically re-fetches content when the user navigates back/forward in browser
 
 ```typescript
 interface HistorySwapConfig {
-  target: string | HTMLElement;           // Target element for swapping
-  strategy?: SwapStrategy;                // Swap strategy (default: 'morph')
-  useViewTransition?: boolean;            // Use View Transitions API
-  fetchOptions?: RequestInit;             // Custom fetch options
+  target: string | HTMLElement; // Target element for swapping
+  strategy?: SwapStrategy; // Swap strategy (default: 'morph')
+  useViewTransition?: boolean; // Use View Transitions API
+  fetchOptions?: RequestInit; // Custom fetch options
   transformUrl?: (url: string) => string; // URL transformer
   onBeforeFetch?: (url: string) => void | Promise<void>;
   onAfterSwap?: (url: string, content: string) => void | Promise<void>;
@@ -353,36 +352,30 @@ interface HistorySwapConfig {
 - Swaps content using specified strategy
 - Supports View Transitions API
 - Adds `hx-swapping` class during fetch
-- Dispatches `hyperfixi:historyswap` event after swap
+- Dispatches `lokascript:historyswap` event after swap
 
 **Usage:**
 
 ```html
 <!-- Basic usage -->
-<div id="content" _="install HistorySwap(target: '#content')">
-  Content here...
-</div>
+<div id="content" _="install HistorySwap(target: '#content')">Content here...</div>
 
 <!-- With custom swap strategy -->
-<div _="install HistorySwap(target: '#app', strategy: 'innerHTML')">
-  App content...
-</div>
+<div _="install HistorySwap(target: '#app', strategy: 'innerHTML')">App content...</div>
 
 <!-- With View Transitions -->
-<div _="install HistorySwap(target: '#main', useViewTransition: true)">
-  Main content...
-</div>
+<div _="install HistorySwap(target: '#main', useViewTransition: true)">Main content...</div>
 ```
 
 **Programmatic usage:**
 
 ```typescript
-import { createHistorySwap } from '@hyperfixi/core/behaviors';
+import { createHistorySwap } from '@lokascript/core/behaviors';
 
 const historySwap = createHistorySwap({
   target: '#content',
   strategy: 'morph',
-  onBeforeFetch: async (url) => {
+  onBeforeFetch: async url => {
     console.log('Fetching:', url);
   },
   onAfterSwap: async (url, content) => {
@@ -402,15 +395,15 @@ Converts regular links and forms to AJAX requests (similar to htmx `hx-boost`).
 
 ```typescript
 interface BoostedConfig {
-  container: HTMLElement;                 // Container to attach listeners
-  target?: string | HTMLElement;          // Target for swapping (default: body)
-  linkSelector?: string;                  // CSS selector for links (default: 'a[href]')
-  formSelector?: string;                  // CSS selector for forms (default: 'form')
-  boostForms?: boolean;                   // Whether to boost forms (default: false)
-  strategy?: SwapStrategy;                // Swap strategy (default: 'morph')
-  pushUrl?: boolean;                      // Push URL to history (default: true)
-  useViewTransition?: boolean;            // Use View Transitions API
-  fetchOptions?: RequestInit;             // Custom fetch options
+  container: HTMLElement; // Container to attach listeners
+  target?: string | HTMLElement; // Target for swapping (default: body)
+  linkSelector?: string; // CSS selector for links (default: 'a[href]')
+  formSelector?: string; // CSS selector for forms (default: 'form')
+  boostForms?: boolean; // Whether to boost forms (default: false)
+  strategy?: SwapStrategy; // Swap strategy (default: 'morph')
+  pushUrl?: boolean; // Push URL to history (default: true)
+  useViewTransition?: boolean; // Use View Transitions API
+  fetchOptions?: RequestInit; // Custom fetch options
   onBeforeFetch?: (url: string, method: string) => void | boolean | Promise<void | boolean>;
   onAfterSwap?: (url: string, content: string) => void | Promise<void>;
   onError?: (error: Error, url: string) => void;
@@ -427,7 +420,7 @@ interface BoostedConfig {
 - Respects modifier keys (Ctrl/Cmd/Shift) for new tabs
 - Skips links with `target`, `download`, or `data-no-boost` attributes
 - Adds `hx-swapping` and `hx-boosting` classes during fetch
-- Dispatches `hyperfixi:boosted` event after swap
+- Dispatches `lokascript:boosted` event after swap
 
 **Usage:**
 
@@ -457,7 +450,7 @@ interface BoostedConfig {
 **Programmatic usage:**
 
 ```typescript
-import { createBoosted } from '@hyperfixi/core/behaviors';
+import { createBoosted } from '@lokascript/core/behaviors';
 
 const boosted = createBoosted({
   container: document.querySelector('nav'),
@@ -487,29 +480,29 @@ boosted.destroy();
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>SPA Example</title>
-</head>
-<body>
-  <nav _="install Boosted(target: '#app', boostForms: true)">
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-  </nav>
+  <head>
+    <title>SPA Example</title>
+  </head>
+  <body>
+    <nav _="install Boosted(target: '#app', boostForms: true)">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </nav>
 
-  <main id="app" _="install HistorySwap(target: '#app', strategy: 'morph')">
-    <!-- Content swapped here -->
-  </main>
+    <main id="app" _="install HistorySwap(target: '#app', strategy: 'morph')">
+      <!-- Content swapped here -->
+    </main>
 
-  <script type="module">
-    import { createRuntime } from '@hyperfixi/core';
-    import { registerAllBehaviors } from '@hyperfixi/core/behaviors';
+    <script type="module">
+      import { createRuntime } from '@lokascript/core';
+      import { registerAllBehaviors } from '@lokascript/core/behaviors';
 
-    const runtime = createRuntime();
-    registerAllBehaviors(runtime.getBehaviorRegistry());
-    runtime.init();
-  </script>
-</body>
+      const runtime = createRuntime();
+      registerAllBehaviors(runtime.getBehaviorRegistry());
+      runtime.init();
+    </script>
+  </body>
 </html>
 ```
 
@@ -535,7 +528,7 @@ boosted.destroy();
 ### Example 3: Custom Behavior with Callbacks
 
 ```typescript
-import { createBoosted } from '@hyperfixi/core/behaviors';
+import { createBoosted } from '@lokascript/core/behaviors';
 
 const boosted = createBoosted({
   container: document.querySelector('nav'),
@@ -579,11 +572,15 @@ const boosted = createBoosted({
   }
 
   @keyframes fade-out {
-    to { opacity: 0; }
+    to {
+      opacity: 0;
+    }
   }
 
   @keyframes fade-in {
-    from { opacity: 0; }
+    from {
+      opacity: 0;
+    }
   }
 </style>
 ```
@@ -599,7 +596,9 @@ export function createMyBehavior(config: MyBehaviorConfig): MyBehaviorInstance {
   const handlers = [];
 
   // Track handlers
-  const handleClick = (e) => { /* ... */ };
+  const handleClick = e => {
+    /* ... */
+  };
   handlers.push({ element: window, event: 'click', handler: handleClick });
   window.addEventListener('click', handleClick);
 
@@ -683,9 +682,11 @@ const handleEvent = async () => {
 Allow monitoring and debugging:
 
 ```typescript
-window.dispatchEvent(new CustomEvent('hyperfixi:mybehavior', {
-  detail: { url, result, config },
-}));
+window.dispatchEvent(
+  new CustomEvent('lokascript:mybehavior', {
+    detail: { url, result, config },
+  })
+);
 ```
 
 ## Related Documentation

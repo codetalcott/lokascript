@@ -1,8 +1,8 @@
-# HyperFixi
+# LokaScript
 
-[![CI](https://github.com/hyperfixi/hyperfixi/actions/workflows/ci.yml/badge.svg)](https://github.com/hyperfixi/hyperfixi/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/hyperfixi/hyperfixi/graph/badge.svg)](https://codecov.io/gh/hyperfixi/hyperfixi)
-[![npm version](https://img.shields.io/npm/v/@hyperfixi/core.svg)](https://www.npmjs.com/package/@hyperfixi/core)
+[![CI](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml/badge.svg)](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/codetalcott/hyperfixi/graph/badge.svg)](https://codecov.io/gh/codetalcott/hyperfixi)
+[![npm version](https://img.shields.io/npm/v/@lokascript/core.svg)](https://www.npmjs.com/package/@lokascript/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 DOM scripting in Japanese, Korean, Arabic, Spanish—23 languages total.
@@ -33,12 +33,12 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 ## Current Status
 
-| Package                                          | Tests        | Status |
-| ------------------------------------------------ | ------------ | ------ |
-| [@hyperfixi/core](./packages/core)               | 3316 passing | Stable |
-| [@hyperfixi/semantic](./packages/semantic)       | 1984 passing | Stable |
-| [@hyperfixi/i18n](./packages/i18n)               | 309 passing  | Stable |
-| [@hyperfixi/vite-plugin](./packages/vite-plugin) | 163 passing  | Stable |
+| Package                                           | Tests        | Status |
+| ------------------------------------------------- | ------------ | ------ |
+| [@lokascript/core](./packages/core)               | 3316 passing | Stable |
+| [@lokascript/semantic](./packages/semantic)       | 1984 passing | Stable |
+| [@lokascript/i18n](./packages/i18n)               | 309 passing  | Stable |
+| [@lokascript/vite-plugin](./packages/vite-plugin) | 163 passing  | Stable |
 
 ### Language Support
 
@@ -48,35 +48,35 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 The full bundle is large because it includes 23 language tokenizers, grammar transformation, and the complete AST parser. Most projects should use the hybrid bundle or vite-plugin for automatic tree-shaking.
 
-| Bundle                       | Size   | Use Case                           |
-| ---------------------------- | ------ | ---------------------------------- |
-| hyperfixi-lite.js            | 8 KB   | Minimal (8 commands, regex parser) |
-| hyperfixi-hybrid-complete.js | 28 KB  | Recommended (~85% coverage)        |
-| hyperfixi-browser.js         | 912 KB | Everything (rarely needed)         |
-| Semantic (English only)      | 84 KB  | Single-language parsing            |
-| Semantic (all 23 languages)  | 260 KB | Full multilingual                  |
+| Bundle                        | Size   | Use Case                           |
+| ----------------------------- | ------ | ---------------------------------- |
+| lokascript-lite.js            | 8 KB   | Minimal (8 commands, regex parser) |
+| lokascript-hybrid-complete.js | 28 KB  | Recommended (~85% coverage)        |
+| lokascript-browser.js         | 912 KB | Everything (rarely needed)         |
+| Semantic (English only)       | 84 KB  | Single-language parsing            |
+| Semantic (all 23 languages)   | 260 KB | Full multilingual                  |
 
 ## Quick Start
 
 ### Browser (CDN)
 
 ```html
-<script src="hyperfixi-hybrid-complete.js"></script>
+<script src="lokascript-hybrid-complete.js"></script>
 <button _="on click toggle .active">Toggle</button>
 ```
 
 ### Vite Projects
 
 ```bash
-npm install @hyperfixi/vite-plugin
+npm install @lokascript/vite-plugin
 ```
 
 ```javascript
 // vite.config.js
-import { hyperfixi } from '@hyperfixi/vite-plugin';
+import { lokascript } from '@lokascript/vite-plugin';
 
 export default {
-  plugins: [hyperfixi()],
+  plugins: [lokascript()],
 };
 ```
 
@@ -85,7 +85,7 @@ The plugin scans your files for `_="..."` attributes and generates a minimal bun
 ### Multilingual Usage
 
 ```typescript
-import { MultilingualHyperscript } from '@hyperfixi/core';
+import { MultilingualHyperscript } from '@lokascript/core';
 
 const ml = new MultilingualHyperscript();
 await ml.initialize();
@@ -126,7 +126,7 @@ packages/
 
 ### MCP Server
 
-The `mcp-server` package exposes HyperFixi tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
+The `mcp-server` package exposes LokaScript tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
 
 ## Examples Gallery
 
@@ -244,7 +244,7 @@ The codebase is complex. The semantic role mapping, grammar transformations, and
 
 **Current gaps:**
 
-- Compatibility is one-way: official \_hyperscript code should work in HyperFixi, but HyperFixi's extended syntax (multilingual, flexible grammar) won't work in official \_hyperscript
+- Compatibility is one-way: official \_hyperscript code should work in LokaScript, but LokaScript's extended syntax (multilingual, flexible grammar) won't work in official \_hyperscript
 - Bundle sizes are large for full multilingual support
 - Language idioms are approximations, not yet verified by native speakers
 

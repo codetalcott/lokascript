@@ -22,7 +22,7 @@
 
 ## Overview
 
-The **Sortable** behavior enables drag-to-reorder functionality for list items in HyperFixi. It has been thoroughly validated through a comprehensive 9-phase testing process, ensuring production-ready reliability.
+The **Sortable** behavior enables drag-to-reorder functionality for list items in LokaScript. It has been thoroughly validated through a comprehensive 9-phase testing process, ensuring production-ready reliability.
 
 ### Key Features
 
@@ -37,55 +37,55 @@ The **Sortable** behavior enables drag-to-reorder functionality for list items i
 
 ## Quick Start
 
-### 1. Include HyperFixi
+### 1. Include LokaScript
 
 ```html
-<script src="dist/hyperfixi-browser.js"></script>
+<script src="dist/lokascript-browser.js"></script>
 ```
 
 ### 2. Add Sortable Behavior Definition
 
 ```html
 <script type="text/hyperscript">
-behavior Sortable()
-  on pointerdown(clientX, clientY)
-    set draggedItem to event.target.closest('.sortable-item')
-    if no draggedItem exit
-    halt the event
-    add .dragging to draggedItem
-    set initialHTML to my innerHTML
-    trigger sortable:start
-    repeat until event pointerup from document
-      wait for pointermove(clientY) or pointerup from document
-      set items to <.sortable-item/> in me
-      set targetItem to null
-      repeat for item in items
-        if item is not draggedItem
-          measure item's top
-          set itemTop to it
-          measure item's height
-          set itemHeight to it
-          set itemMid to itemTop + (itemHeight / 2)
-          if clientY < itemMid
-            set targetItem to item
-            exit
+  behavior Sortable()
+    on pointerdown(clientX, clientY)
+      set draggedItem to event.target.closest('.sortable-item')
+      if no draggedItem exit
+      halt the event
+      add .dragging to draggedItem
+      set initialHTML to my innerHTML
+      trigger sortable:start
+      repeat until event pointerup from document
+        wait for pointermove(clientY) or pointerup from document
+        set items to <.sortable-item/> in me
+        set targetItem to null
+        repeat for item in items
+          if item is not draggedItem
+            measure item's top
+            set itemTop to it
+            measure item's height
+            set itemHeight to it
+            set itemMid to itemTop + (itemHeight / 2)
+            if clientY < itemMid
+              set targetItem to item
+              exit
+            end
           end
         end
+        if targetItem
+          call me.insertBefore(draggedItem, targetItem)
+        else
+          call me.appendChild(draggedItem)
+        end
+        trigger sortable:move
       end
-      if targetItem
-        call me.insertBefore(draggedItem, targetItem)
-      else
-        call me.appendChild(draggedItem)
+      remove .dragging from draggedItem
+      trigger sortable:end
+      if my innerHTML is not initialHTML
+        trigger sortable:change
       end
-      trigger sortable:move
-    end
-    remove .dragging from draggedItem
-    trigger sortable:end
-    if my innerHTML is not initialHTML
-      trigger sortable:change
     end
   end
-end
 </script>
 ```
 
@@ -129,6 +129,7 @@ end
 ### Behavior Breakdown
 
 #### 1. **Drag Initiation**
+
 ```hyperscript
 on pointerdown(clientX, clientY)
   set draggedItem to event.target.closest('.sortable-item')
@@ -140,6 +141,7 @@ on pointerdown(clientX, clientY)
 ```
 
 **What it does:**
+
 - Finds the `.sortable-item` that was clicked
 - Prevents default browser behavior
 - Adds visual feedback class
@@ -147,6 +149,7 @@ on pointerdown(clientX, clientY)
 - Emits `sortable:start` event
 
 #### 2. **Drag Loop**
+
 ```hyperscript
 repeat until event pointerup from document
   wait for pointermove(clientY) or pointerup from document
@@ -180,6 +183,7 @@ end
 ```
 
 **What it does:**
+
 - Continuously tracks pointer movement
 - Queries all sortable items
 - Measures each item's position and height
@@ -188,6 +192,7 @@ end
 - Emits `sortable:move` event on each update
 
 #### 3. **Drag Completion**
+
 ```hyperscript
 remove .dragging from draggedItem
 trigger sortable:end
@@ -198,6 +203,7 @@ end
 ```
 
 **What it does:**
+
 - Removes visual feedback class
 - Emits `sortable:end` event
 - Compares final HTML to initial HTML
@@ -208,6 +214,7 @@ end
 ## Features
 
 ### 1. CSS Selector in Context
+
 **Pattern**: `set items to <.sortable-item/> in me`
 
 Queries all elements with class `.sortable-item` within the list element.
@@ -215,7 +222,9 @@ Queries all elements with class `.sortable-item` within the list element.
 **Test File**: `test-sortable-selectors.html`
 
 ### 2. Collection Iteration
+
 **Patterns**:
+
 - `repeat for item in items` - Basic iteration
 - `repeat for item in items with index` - Iteration with index
 - `if item is not draggedItem` - Conditional logic
@@ -225,7 +234,9 @@ Iterates through all sortable items to find insertion points.
 **Test File**: `test-sortable-iteration.html`
 
 ### 3. Element Measurement
+
 **Patterns**:
+
 - `measure item's top` - Get Y position
 - `measure item's height` - Get element height
 - `set itemMid to itemTop + (itemHeight / 2)` - Calculate midpoint
@@ -235,7 +246,9 @@ Measures element dimensions to determine where to insert dragged item.
 **Test File**: `test-sortable-measure.html`
 
 ### 4. DOM Manipulation
+
 **Patterns**:
+
 - `call me.insertBefore(draggedItem, targetItem)` - Insert before target
 - `call me.appendChild(draggedItem)` - Append to end
 
@@ -244,23 +257,29 @@ Reorders DOM elements dynamically.
 **Test File**: `test-sortable-dom.html`
 
 ### 5. Custom Events
+
 **Events**:
+
 - `sortable:start` - Fired when drag begins
 - `sortable:move` - Fired during dragging (continuous)
 - `sortable:end` - Fired when drag ends
 - `sortable:change` - Fired only if order changed
 
 **Usage**:
+
 ```html
-<ul _="install Sortable()
+<ul
+  _="install Sortable()
        on sortable:change
          log 'Order changed!'
-       end">
+       end"
+></ul>
 ```
 
 **Test File**: `test-sortable-events.html`
 
 ### 6. Change Detection
+
 **Pattern**: `if my innerHTML is not initialHTML`
 
 Only triggers change event when the order actually changes, preventing false positives from click-without-drag or drag-back-to-original-position.
@@ -268,6 +287,7 @@ Only triggers change event when the order actually changes, preventing false pos
 **Test File**: `test-sortable-change.html`
 
 ### 7. Visual Feedback
+
 **Pattern**: `add .dragging` and `remove .dragging`
 
 Adds/removes CSS class for visual feedback during drag operations.
@@ -280,26 +300,27 @@ Adds/removes CSS class for visual feedback during drag operations.
 
 ### Phase 1: Core Feature Validation
 
-| Test | File | Status |
-|------|------|--------|
-| CSS Selector in Context | `test-sortable-selectors.html` | ✅ Pass |
-| Collection Iteration | `test-sortable-iteration.html` | ✅ Pass |
-| Measure Multiple Elements | `test-sortable-measure.html` | ✅ Pass |
-| DOM Method Calls | `test-sortable-dom.html` | ✅ Pass |
+| Test                      | File                           | Status  |
+| ------------------------- | ------------------------------ | ------- |
+| CSS Selector in Context   | `test-sortable-selectors.html` | ✅ Pass |
+| Collection Iteration      | `test-sortable-iteration.html` | ✅ Pass |
+| Measure Multiple Elements | `test-sortable-measure.html`   | ✅ Pass |
+| DOM Method Calls          | `test-sortable-dom.html`       | ✅ Pass |
 
 ### Phase 2: Minimal Integration
 
-| Test | File | Status |
-|------|------|--------|
+| Test                     | File                         | Status  |
+| ------------------------ | ---------------------------- | ------- |
 | Minimal Working Sortable | `test-sortable-minimal.html` | ✅ Pass |
 
 ### Phase 3: Edge Cases
 
-| Test | File | Status |
-|------|------|--------|
+| Test                 | File                       | Status  |
+| -------------------- | -------------------------- | ------- |
 | Edge Case Validation | `test-sortable-edges.html` | ✅ Pass |
 
 **Scenarios Tested**:
+
 - Empty list
 - Single item
 - Two items
@@ -311,16 +332,16 @@ Adds/removes CSS class for visual feedback during drag operations.
 
 ### Phase 4: Enhanced Features
 
-| Test | File | Status |
-|------|------|--------|
-| Custom Events | `test-sortable-events.html` | ✅ Pass |
+| Test             | File                        | Status  |
+| ---------------- | --------------------------- | ------- |
+| Custom Events    | `test-sortable-events.html` | ✅ Pass |
 | Change Detection | `test-sortable-change.html` | ✅ Pass |
-| Visual Feedback | `test-sortable-visual.html` | ✅ Pass |
+| Visual Feedback  | `test-sortable-visual.html` | ✅ Pass |
 
 ### Phase 5: Final Integration
 
-| Test | File | Status |
-|------|------|--------|
+| Test                      | File                           | Status  |
+| ------------------------- | ------------------------------ | ------- |
 | Production Ready Examples | `sortable-behavior-final.html` | ✅ Pass |
 
 ---
@@ -340,31 +361,35 @@ Adds/removes CSS class for visual feedback during drag operations.
 ### Example 2: TODO with Change Event
 
 ```html
-<ul class="todo-list"
-    _="install Sortable()
+<ul
+  class="todo-list"
+  _="install Sortable()
        on sortable:change
          call saveToServer()
-       end">
+       end"
+>
   <li class="sortable-item">Task 1</li>
   <li class="sortable-item">Task 2</li>
 </ul>
 
 <script>
-function saveToServer() {
-  console.log('Saving new order to server...');
-  // Your save logic here
-}
+  function saveToServer() {
+    console.log('Saving new order to server...');
+    // Your save logic here
+  }
 </script>
 ```
 
 ### Example 3: Priority Task List
 
 ```html
-<ul class="priority-list"
-    _="install Sortable()
+<ul
+  class="priority-list"
+  _="install Sortable()
        on sortable:change
          call updatePriorities()
-       end">
+       end"
+>
   <li class="sortable-item priority-high">Fix critical bug</li>
   <li class="sortable-item priority-medium">Code review</li>
   <li class="sortable-item priority-low">Update docs</li>
@@ -374,8 +399,9 @@ function saveToServer() {
 ### Example 4: Event Logging
 
 ```html
-<ul class="todo-list"
-    _="install Sortable()
+<ul
+  class="todo-list"
+  _="install Sortable()
        on sortable:start
          log 'Drag started'
        end
@@ -387,7 +413,8 @@ function saveToServer() {
        end
        on sortable:change
          log 'Order changed!'
-       end">
+       end"
+>
   <li class="sortable-item">Task 1</li>
   <li class="sortable-item">Task 2</li>
 </ul>
@@ -403,17 +430,17 @@ function saveToServer() {
 
 **Events Emitted**:
 
-| Event | When | Detail |
-|-------|------|--------|
-| `sortable:start` | Drag begins | None |
-| `sortable:move` | During drag (continuous) | None |
-| `sortable:end` | Drag ends | None |
-| `sortable:change` | Order changed | None |
+| Event             | When                     | Detail |
+| ----------------- | ------------------------ | ------ |
+| `sortable:start`  | Drag begins              | None   |
+| `sortable:move`   | During drag (continuous) | None   |
+| `sortable:end`    | Drag ends                | None   |
+| `sortable:change` | Order changed            | None   |
 
 **CSS Classes**:
 
-| Class | Applied To | When |
-|-------|-----------|------|
+| Class       | Applied To   | When                  |
+| ----------- | ------------ | --------------------- |
 | `.dragging` | Dragged item | During drag operation |
 
 **Required HTML Structure**:
@@ -426,6 +453,7 @@ function saveToServer() {
 ```
 
 **Required Classes**:
+
 - `.sortable-item` - Must be applied to each item that should be sortable
 
 ---
@@ -454,9 +482,10 @@ function saveToServer() {
 **Issue**: Clicking items doesn't start drag
 
 **Solutions**:
+
 1. Ensure `.sortable-item` class is applied to each item
 2. Check that behavior is installed: `_="install Sortable()"`
-3. Verify HyperFixi is loaded before the behavior definition
+3. Verify LokaScript is loaded before the behavior definition
 4. Check browser console for errors
 
 ### Visual Feedback Not Showing
@@ -464,6 +493,7 @@ function saveToServer() {
 **Issue**: `.dragging` class not working
 
 **Solutions**:
+
 1. Ensure CSS for `.dragging` class is defined
 2. Check browser DevTools to verify class is being added
 3. Verify CSS specificity isn't being overridden
@@ -473,6 +503,7 @@ function saveToServer() {
 **Issue**: `sortable:change` event not triggered
 
 **Solutions**:
+
 1. Verify you actually moved the item to a new position
 2. Check that you didn't drag back to original position
 3. Ensure change detection logic is present in behavior
@@ -482,6 +513,7 @@ function saveToServer() {
 **Issue**: Items reordering incorrectly
 
 **Solutions**:
+
 1. Ensure all items have `.sortable-item` class
 2. Check that items are direct children of the list
 3. Verify no other event handlers are interfering
@@ -492,6 +524,7 @@ function saveToServer() {
 **Issue**: Lag during dragging
 
 **Solutions**:
+
 1. Reduce `sortable:move` event handlers
 2. Optimize CSS transitions
 3. Consider throttling move events for very long lists
@@ -534,7 +567,7 @@ function saveToServer() {
 
 ## Credits
 
-**Implementation**: HyperFixi Team
+**Implementation**: LokaScript Team
 **Testing Framework**: 9-phase comprehensive validation
 **Compatibility**: 100% valid HyperScript syntax
 **Status**: Production Ready ✅
@@ -543,17 +576,18 @@ function saveToServer() {
 
 ## License
 
-This sortable behavior implementation is part of the HyperFixi project.
+This sortable behavior implementation is part of the LokaScript project.
 
 ---
 
 ## Support
 
 For issues or questions:
+
 1. Review test files in `packages/core/test-sortable-*.html`
 2. Check browser console for errors
 3. Review this guide's troubleshooting section
-4. Open an issue on the HyperFixi repository
+4. Open an issue on the LokaScript repository
 
 ---
 

@@ -162,7 +162,7 @@ Export server-specific types (in `server-integration` package):
 ```typescript
 // packages/server-integration/src/types.ts
 
-import type { EventSourcePayload } from '@hyperfixi/core/registry';
+import type { EventSourcePayload } from '@lokascript/core/registry';
 
 /**
  * HTTP request object (framework-agnostic)
@@ -282,7 +282,7 @@ export interface TypedRegistry<TEnv extends RuntimeEnvironment = 'universal'> {
 import type {
   BrowserEventPayload,
   BrowserEventSource,
-} from '@hyperfixi/core/registry/browser-types';
+} from '@lokascript/core/registry/browser-types';
 
 const clickSource: BrowserEventSource = {
   name: 'custom-click',
@@ -309,7 +309,7 @@ const clickSource: BrowserEventSource = {
 ### Server-Only Code
 
 ```typescript
-import type { ServerEventPayload } from '@hyperfixi/server-integration';
+import type { ServerEventPayload } from '@lokascript/server-integration';
 
 function handleRequest(payload: ServerEventPayload) {
   const { request, response } = payload.data; // ✅ Type-safe
@@ -324,7 +324,7 @@ function handleRequest(payload: ServerEventPayload) {
 ### Universal Code (Works in Both)
 
 ```typescript
-import type { EventSourcePayload } from '@hyperfixi/core/registry';
+import type { EventSourcePayload } from '@lokascript/core/registry';
 import { isBrowserPayload, isServerPayload } from './type-guards';
 
 function handleEvent(payload: EventSourcePayload) {
@@ -427,7 +427,7 @@ Provide clear migration path for existing code:
 **Before** (generic, less safe):
 
 ```typescript
-import { EventSourcePayload } from '@hyperfixi/core/registry';
+import { EventSourcePayload } from '@lokascript/core/registry';
 
 const payload: EventSourcePayload = {
   type: 'click',
@@ -440,7 +440,7 @@ const payload: EventSourcePayload = {
 
 ```typescript
 // Browser code
-import { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
+import { BrowserEventPayload } from '@lokascript/core/registry/browser';
 
 const payload: BrowserEventPayload = {
   type: 'click',
@@ -452,7 +452,7 @@ const payload: BrowserEventPayload = {
 
 ```typescript
 // Server code
-import { ServerEventPayload } from '@hyperfixi/server-integration';
+import { ServerEventPayload } from '@lokascript/server-integration';
 
 const payload: ServerEventPayload = {
   type: 'request',
@@ -548,7 +548,7 @@ expectType<Element | object>(null as any as UniversalTarget);
 // packages/core/src/registry/__tests__/type-guards.test.ts
 
 import { isBrowserPayload } from '../browser-types';
-import { isServerPayload } from '@hyperfixi/server-integration';
+import { isServerPayload } from '@lokascript/server-integration';
 
 describe('Type Guards', () => {
   it('should detect browser payload', () => {
@@ -588,12 +588,12 @@ describe('Type Guards', () => {
 ````markdown
 ## Type Safety
 
-HyperFixi uses conditional types for environment-specific type safety:
+LokaScript uses conditional types for environment-specific type safety:
 
 **Browser Code**:
 
 ```typescript
-import { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
+import { BrowserEventPayload } from '@lokascript/core/registry/browser';
 // Full type safety for DOM elements and Events
 ```
 ````
@@ -601,14 +601,14 @@ import { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
 **Server Code**:
 
 ```typescript
-import { ServerEventPayload } from '@hyperfixi/server-integration';
+import { ServerEventPayload } from '@lokascript/server-integration';
 // Full type safety for HTTP request/response
 ```
 
 **Universal Code**:
 
 ```typescript
-import { EventSourcePayload } from '@hyperfixi/core/registry';
+import { EventSourcePayload } from '@lokascript/core/registry';
 // Works in both environments
 ```
 

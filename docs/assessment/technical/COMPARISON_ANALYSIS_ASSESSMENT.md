@@ -2,7 +2,7 @@
 
 **Date:** December 18, 2025
 **Current Bundle Size:** 664 KB (single-script bundle)
-**Code Ratio:** 2.97x (HyperFixi vs original _hyperscript)
+**Code Ratio:** 2.97x (LokaScript vs original \_hyperscript)
 
 ## Executive Summary
 
@@ -20,24 +20,28 @@ Your comparison analysis tools are **well-structured and comprehensive**, provid
 ### What's Working Well ✅
 
 **compare-implementations.mjs**
+
 - Clean orchestration pattern for running sub-analyses
 - Proper snapshot tracking with progress deltas
 - Good summary generation with top offenders identification
 - Handles JSON output for programmatic consumption
 
 **extract-command-metrics.mjs**
+
 - Extracts command structure from both codebases
 - Categorizes lines by section (imports, types, decorators, methods)
 - Identifies boilerplate ratios and helper usage
 - Detects base class inheritance patterns
 
 **pattern-analyzer.mjs**
+
 - Identifies 8+ adoptable patterns from original code
 - Provides type-safe adaptations for each pattern
 - Estimates savings per pattern
 - Focuses on high-impact optimizations
 
 **Reporting**
+
 - Clear, readable console output with progress tracking
 - Snapshot history for trend analysis
 - Top 10 offenders highlighted
@@ -48,13 +52,15 @@ Your comparison analysis tools are **well-structured and comprehensive**, provid
 ## Issues & Limitations 🔴
 
 ### 1. **Stale Command Reference** (Critical)
+
 ```javascript
 // extract-command-metrics.mjs line 22-23
 const ORIGINAL_PATH = '/Users/williamtalcott/projects/_hyperscript/src/_hyperscript.js';
 const HYPERFIXI_COMMANDS = join(PROJECT_ROOT, 'packages/core/src/commands');
 ```
 
-**Problem:** The hard-coded path to original _hyperscript assumes it exists locally. Also searches only `packages/core/src/commands` but:
+**Problem:** The hard-coded path to original \_hyperscript assumes it exists locally. Also searches only `packages/core/src/commands` but:
+
 - Commands now in `packages/core/src/commands-v2/` (standalone, tree-shakeable)
 - V1 archive in `packages/core/src/commands-v1-archive/` (legacy)
 - Should aggregate both for complete picture
@@ -62,26 +68,32 @@ const HYPERFIXI_COMMANDS = join(PROJECT_ROOT, 'packages/core/src/commands');
 **Impact:** Analysis misses optimizations already achieved through commands-v2
 
 ### 2. **No Bundle Composition Analysis**
+
 **Missing:** Understanding what contributes to the 664 KB bundle:
+
 - Runtime overhead (now much smaller via commands-v2)
 - Command bloat (which commands take up space)
 - Parser size (3000+ lines)
 - Unnecessary dependencies in bundle
 
 **Opportunity:** Analyze final bundle contents to identify:
+
 - Commands included in build
 - Dead code that could be stripped
 - Duplicate code across command implementations
 
 ### 3. **No Multi-Bundle Analysis**
+
 Recent work added:
-- `hyperfixi-multilingual.js` (250 KB) - Multilingual without parser
-- `hyperfixi-semantic.browser.global.js` (261 KB) - Semantic parsing (13 languages)
+
+- `lokascript-multilingual.js` (250 KB) - Multilingual without parser
+- `lokascript-semantic.browser.global.js` (261 KB) - Semantic parsing (13 languages)
 - Single-script bundles combining multiple packages
 
 **Missing:** Comparative analysis of bundle variants
 
 ### 4. **Boilerplate Calculation Oversimplified**
+
 ```javascript
 // Current calculation (extract-command-metrics.mjs line 236-237)
 const boilerplate = importLines + typeLines + decoratorLines + validateLines;
@@ -89,12 +101,15 @@ const boilerplateRatio = boilerplate / totalLines;
 ```
 
 **Issues:**
+
 - Doesn't account for class structure overhead
 - Doesn't identify truly redundant boilerplate patterns
 - Doesn't compare against inline patterns in original
 
 ### 5. **No Optimization Tracking Progress**
+
 Recent commits show 5+ commands refactored:
+
 - ✅ `repeat`, `set`, `default`, `make`, `toggle` (commit 606a216)
 - ✅ Base class extraction (add/remove via DOMModificationBase)
 - ✅ Control flow consolidation (break/continue/exit)
@@ -103,9 +118,11 @@ Recent commits show 5+ commands refactored:
 **Missing:** Before/after metrics for these specific optimizations
 
 ### 6. **Parser Analysis Missing**
+
 The parser is 3000+ lines and a major bundle contributor.
 
 **Missing Analysis:**
+
 - Parser bloat breakdown (tokenizer, command parsers, expression parsers)
 - Opportunities for parser tree-shaking
 - Unused expression types or command support
@@ -122,8 +139,8 @@ The parser is 3000+ lines and a major bundle contributor.
 ```javascript
 // Better command discovery
 const HYPERFIXI_COMMANDS = [
-  join(PROJECT_ROOT, 'packages/core/src/commands-v2/'),      // Current (tree-shakeable)
-  join(PROJECT_ROOT, 'packages/core/src/commands/'),          // Fallback
+  join(PROJECT_ROOT, 'packages/core/src/commands-v2/'), // Current (tree-shakeable)
+  join(PROJECT_ROOT, 'packages/core/src/commands/'), // Fallback
 ];
 
 // Extract metrics from commands-v2 with size tracking
@@ -140,6 +157,7 @@ async function extractBundleSize(commandFile) {
 ```
 
 **What you'll learn:**
+
 - Which commands have highest bundle impact
 - Whether base class extraction actually helped
 - Minified size per command (more accurate than source)
@@ -170,10 +188,11 @@ Create new script: `analyze-bundle-composition.mjs`
 ```
 
 **Metrics to track:**
+
 ```json
 {
   "bundles": {
-    "hyperfixi-browser.js": {
+    "lokascript-browser.js": {
       "size": 664000,
       "composition": {
         "runtime": 8500,
@@ -187,7 +206,7 @@ Create new script: `analyze-bundle-composition.mjs`
         "ratio": 0.337
       }
     },
-    "hyperfixi-multilingual.js": {
+    "lokascript-multilingual.js": {
       "size": 250000,
       "excludes": ["parser", "commands", "expressions"]
     }
@@ -198,6 +217,7 @@ Create new script: `analyze-bundle-composition.mjs`
 ### Priority 3: Track Optimization Progress (Medium Impact)
 
 Update comparison report to include:
+
 ```javascript
 // Recent optimizations completed
 const optimizationHistory = [
@@ -207,15 +227,15 @@ const optimizationHistory = [
     commands: ['repeat', 'set', 'default', 'make', 'toggle'],
     approach: 'Base class consolidation',
     estimatedSavings: '150-200 lines',
-    verification: 'Check bundle size delta'
+    verification: 'Check bundle size delta',
   },
   {
     commit: '59890e8',
     date: '2025-12-14',
     commands: ['add', 'remove'],
     approach: 'DOMModificationBase extraction',
-    estimatedSavings: '50-70 lines'
-  }
+    estimatedSavings: '50-70 lines',
+  },
 ];
 
 // Generate before/after metrics for tracked optimizations
@@ -231,8 +251,8 @@ const commandsByCategory = {
   'dom-manipulation': ['add', 'remove', 'put', 'toggle', 'show', 'hide'],
   'data-operations': ['set', 'default', 'increment', 'decrement', 'bind'],
   'control-flow': ['if', 'repeat', 'unless', 'break', 'continue', 'exit'],
-  'async': ['wait', 'fetch', 'call'],
-  'advanced': ['take', 'transition', 'measure', 'settle', 'install']
+  async: ['wait', 'fetch', 'call'],
+  advanced: ['take', 'transition', 'measure', 'settle', 'install'],
 };
 
 // Group analysis
@@ -240,16 +260,17 @@ const categoryAnalysis = {};
 for (const [category, commands] of Object.entries(commandsByCategory)) {
   const categoryCommands = matchedCommands.filter(c => commands.includes(c.name));
   categoryAnalysis[category] = {
-    totalLines: sum(c => c.hyperfixi.lines),
+    totalLines: sum(c => c.lokascript.lines),
     commands: categoryCommands.length,
-    averageSize: avg(c => c.hyperfixi.lines),
+    averageSize: avg(c => c.lokascript.lines),
     potentialSavings: sum(c => c.diff?.potentialSavings || 0),
-    consolidationOpportunity: identifyPatterns(categoryCommands)
+    consolidationOpportunity: identifyPatterns(categoryCommands),
   };
 }
 ```
 
 **Next targets likely:**
+
 1. **Control-flow commands** (if, repeat, unless) - share loop logic
 2. **Data operations** (set, default, increment) - share parsing/validation
 3. **Async commands** (fetch, wait) - share promise handling
@@ -275,16 +296,19 @@ const unusedPatterns = findPatternsNeverReached(parserTests);
 ## Implementation Priority Path
 
 ### Phase 1: Quick Win (1-2 hours)
+
 1. Update command file discovery (commands-v2 support)
 2. Add minified size estimation to metrics
 3. Re-run analysis to get accurate baseline
 
 ### Phase 2: Medium Effort (4-6 hours)
+
 1. Create bundle composition analyzer
 2. Track optimization progress
 3. Identify next 5 optimization targets
 
 ### Phase 3: Advanced Analysis (Optional)
+
 1. Parser contribution analysis
 2. Tree-shaking opportunity identification
 3. Dependency bloat investigation
@@ -308,14 +332,14 @@ cat analysis-output/comparison/comparison-report.json | jq .summary
 
 ## Key Metrics to Track Going Forward
 
-| Metric | Current | Target | Notes |
-|--------|---------|--------|-------|
-| **Bundle Size** | 664 KB | <550 KB | 17% reduction needed |
-| **Minified + Gzipped** | ~224 KB | <190 KB | Actually used size |
-| **Code Ratio** | 2.97x | <2.5x | Boilerplate reduction |
-| **Commands Optimized** | 5/43 | 20+/43 | Via base classes |
-| **Parser Size** | ~125 KB | <100 KB | Tree-shaking opportunities |
-| **Top Offender (repeat)** | ? | <40 lines | Command consolidation |
+| Metric                    | Current | Target    | Notes                      |
+| ------------------------- | ------- | --------- | -------------------------- |
+| **Bundle Size**           | 664 KB  | <550 KB   | 17% reduction needed       |
+| **Minified + Gzipped**    | ~224 KB | <190 KB   | Actually used size         |
+| **Code Ratio**            | 2.97x   | <2.5x     | Boilerplate reduction      |
+| **Commands Optimized**    | 5/43    | 20+/43    | Via base classes           |
+| **Parser Size**           | ~125 KB | <100 KB   | Tree-shaking opportunities |
+| **Top Offender (repeat)** | ?       | <40 lines | Command consolidation      |
 
 ---
 

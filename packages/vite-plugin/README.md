@@ -1,6 +1,6 @@
-# @hyperfixi/vite-plugin
+# @lokascript/vite-plugin
 
-Zero-config Vite plugin that automatically generates minimal HyperFixi bundles based on detected hyperscript usage.
+Zero-config Vite plugin that automatically generates minimal LokaScript bundles based on detected hyperscript usage.
 
 ## Features
 
@@ -13,23 +13,23 @@ Zero-config Vite plugin that automatically generates minimal HyperFixi bundles b
 ## Installation
 
 ```bash
-npm install @hyperfixi/vite-plugin @hyperfixi/core
+npm install @lokascript/vite-plugin @lokascript/core
 ```
 
 ## Quick Start
 
 ```javascript
 // vite.config.js
-import { hyperfixi } from '@hyperfixi/vite-plugin';
+import { lokascript } from '@lokascript/vite-plugin';
 
 export default {
-  plugins: [hyperfixi()]
+  plugins: [lokascript()],
 };
 ```
 
 ```javascript
 // main.js
-import 'hyperfixi';  // Auto-generated minimal bundle
+import 'lokascript'; // Auto-generated minimal bundle
 ```
 
 ```html
@@ -49,19 +49,19 @@ import 'hyperfixi';  // Auto-generated minimal bundle
 When bundle size is the priority, use **compile mode** to pre-compile hyperscript to JavaScript at build time:
 
 ```javascript
-hyperfixi({
-  mode: 'compile'  // ~500 bytes gzip vs ~8KB for interpret mode
-})
+lokascript({
+  mode: 'compile', // ~500 bytes gzip vs ~8KB for interpret mode
+});
 ```
 
 **Trade-offs:**
 
-| Feature              | Interpret (default) | Compile             |
-| -------------------- | ------------------- | ------------------- |
-| Bundle size          | ~8 KB gzip          | ~500 bytes gzip     |
-| Dynamic `execute()`  | ✓                   | ✗                   |
-| Block commands       | ✓                   | ✗                   |
-| Build complexity     | Lower               | Higher              |
+| Feature             | Interpret (default) | Compile         |
+| ------------------- | ------------------- | --------------- |
+| Bundle size         | ~8 KB gzip          | ~500 bytes gzip |
+| Dynamic `execute()` | ✓                   | ✗               |
+| Block commands      | ✓                   | ✗               |
+| Build complexity    | Lower               | Higher          |
 
 **When to use compile mode:**
 
@@ -88,13 +88,13 @@ Enable semantic parsing for natural language hyperscript and multilingual suppor
 
 ### Multilingual Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `semantic` | `boolean \| 'en' \| 'auto'` | `false` | Enable semantic parser |
-| `languages` | `string[]` | `[]` | Explicit language codes to support |
-| `region` | `'western' \| 'east-asian' \| 'priority' \| 'all'` | auto | Force a regional bundle |
-| `grammar` | `boolean` | `false` | Enable grammar transformation (SOV/VSO) |
-| `extraLanguages` | `string[]` | `[]` | Languages to always include |
+| Option           | Type                                               | Default | Description                             |
+| ---------------- | -------------------------------------------------- | ------- | --------------------------------------- |
+| `semantic`       | `boolean \| 'en' \| 'auto'`                        | `false` | Enable semantic parser                  |
+| `languages`      | `string[]`                                         | `[]`    | Explicit language codes to support      |
+| `region`         | `'western' \| 'east-asian' \| 'priority' \| 'all'` | auto    | Force a regional bundle                 |
+| `grammar`        | `boolean`                                          | `false` | Enable grammar transformation (SOV/VSO) |
+| `extraLanguages` | `string[]`                                         | `[]`    | Languages to always include             |
 
 ### Supported Languages (13)
 
@@ -106,19 +106,19 @@ Enable semantic parsing for natural language hyperscript and multilingual suppor
 
 ```javascript
 // Auto-detect languages from source files
-hyperfixi({ semantic: 'auto' })
+lokascript({ semantic: 'auto' });
 
 // English synonyms only (smallest semantic bundle)
-hyperfixi({ semantic: 'en' })
+lokascript({ semantic: 'en' });
 
 // Explicit languages (selects optimal regional bundle)
-hyperfixi({ languages: ['en', 'es', 'ja'] })
+lokascript({ languages: ['en', 'es', 'ja'] });
 
 // Force a specific regional bundle
-hyperfixi({ region: 'western' })
+lokascript({ region: 'western' });
 
 // Full multilingual with grammar transformation
-hyperfixi({ semantic: true, grammar: true })
+lokascript({ semantic: true, grammar: true });
 ```
 
 ### Language Auto-Detection
@@ -137,15 +137,15 @@ The plugin automatically selects the smallest bundle that covers all detected la
 
 ### Semantic Bundle Sizes
 
-| Bundle | Gzip Size | Languages |
-|--------|-----------|-----------|
-| `semantic: 'en'` | ~20 KB | English only |
-| `semantic: 'es'` | ~16 KB | Spanish only |
-| `region: 'es-en'` | ~25 KB | English + Spanish |
-| `region: 'western'` | ~30 KB | en, es, pt, fr, de |
-| `region: 'east-asian'` | ~24 KB | ja, zh, ko |
-| `region: 'priority'` | ~48 KB | 11 priority languages |
-| `region: 'all'` | ~61 KB | All 13 languages |
+| Bundle                 | Gzip Size | Languages             |
+| ---------------------- | --------- | --------------------- |
+| `semantic: 'en'`       | ~20 KB    | English only          |
+| `semantic: 'es'`       | ~16 KB    | Spanish only          |
+| `region: 'es-en'`      | ~25 KB    | English + Spanish     |
+| `region: 'western'`    | ~30 KB    | en, es, pt, fr, de    |
+| `region: 'east-asian'` | ~24 KB    | ja, zh, ko            |
+| `region: 'priority'`   | ~48 KB    | 11 priority languages |
+| `region: 'all'`        | ~61 KB    | All 13 languages      |
 
 ### Tiered Bundle Architecture
 
@@ -162,7 +162,7 @@ Level 3: + Grammar Transformation        +68 KB
 ## Options
 
 ```javascript
-hyperfixi({
+lokascript({
   // Bundle mode: 'interpret' (default) or 'compile'
   mode: 'interpret',
 
@@ -186,16 +186,16 @@ hyperfixi({
   // Custom bundle name (shown in generated code comments)
   bundleName: 'MyApp',
 
-  // Global variable name (default: 'hyperfixi')
-  globalName: 'hyperfixi',
+  // Global variable name (default: 'lokascript')
+  globalName: 'lokascript',
 
   // Multilingual options (see "Multilingual & Semantic Parsing" section)
-  semantic: false,        // boolean | 'en' | 'auto'
-  languages: [],          // ['en', 'es', 'ja']
-  region: undefined,      // 'western' | 'east-asian' | 'priority' | 'all'
-  grammar: false,         // Enable grammar transformation
-  extraLanguages: [],     // Languages to always include
-})
+  semantic: false, // boolean | 'en' | 'auto'
+  languages: [], // ['en', 'es', 'ja']
+  region: undefined, // 'western' | 'east-asian' | 'priority' | 'all'
+  grammar: false, // Enable grammar transformation
+  extraLanguages: [], // Languages to always include
+});
 ```
 
 ## Detected Features
@@ -219,26 +219,27 @@ The plugin creates a virtual module that you can import:
 
 ```javascript
 // All of these work:
-import 'hyperfixi';
-import 'virtual:hyperfixi';
-import '@hyperfixi/core';  // Redirects to virtual module
+import 'lokascript';
+import 'virtual:lokascript';
+import '@lokascript/core'; // Redirects to virtual module
 ```
 
 ## HMR Support
 
 When you add new hyperscript to your HTML files, the plugin:
+
 1. Re-scans the changed file
 2. Updates the aggregated usage
 3. Triggers a page reload if new commands are detected
 
 ## Bundle Size Comparison
 
-| Usage | Generated Size (gzip) | vs Full Bundle |
-|-------|----------------------|----------------|
-| 3 commands | ~5 KB | 90% smaller |
-| 6 commands | ~6.5 KB | 85% smaller |
-| 9 commands + blocks | ~8 KB | 80% smaller |
-| All features | ~40 KB | same |
+| Usage               | Generated Size (gzip) | vs Full Bundle |
+| ------------------- | --------------------- | -------------- |
+| 3 commands          | ~5 KB                 | 90% smaller    |
+| 6 commands          | ~6.5 KB               | 85% smaller    |
+| 9 commands + blocks | ~8 KB                 | 80% smaller    |
+| All features        | ~40 KB                | same           |
 
 ## Edge Cases
 
@@ -252,9 +253,9 @@ element.setAttribute('_', `on click ${dynamicCommand} .active`);
 Use `extraCommands` to include those:
 
 ```javascript
-hyperfixi({
-  extraCommands: ['toggle', 'add', 'remove']
-})
+lokascript({
+  extraCommands: ['toggle', 'add', 'remove'],
+});
 ```
 
 ## Supported File Types
@@ -268,20 +269,23 @@ hyperfixi({
 
 ## Monorepo Development
 
-When developing in the hyperfixi monorepo:
+When developing in the lokascript monorepo:
 
 ```javascript
 // vite.config.js
-import { hyperfixi } from '../../packages/vite-plugin/src/index.ts';
+import { lokascript } from '../../packages/vite-plugin/src/index.ts';
 import path from 'path';
 
 export default {
-  plugins: [hyperfixi({ debug: true })],
+  plugins: [lokascript({ debug: true })],
   resolve: {
     alias: {
-      '@hyperfixi/core/parser/hybrid': path.resolve(__dirname, '../../packages/core/src/parser/hybrid')
-    }
-  }
+      '@lokascript/core/parser/hybrid': path.resolve(
+        __dirname,
+        '../../packages/core/src/parser/hybrid'
+      ),
+    },
+  },
 };
 ```
 
@@ -313,22 +317,22 @@ This example demonstrates language auto-detection with Japanese, Spanish, and Ko
 
 ### Plugin Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `debug` | `boolean` | `false` | Enable debug logging |
-| `include` | `RegExp \| string[]` | See below | File patterns to scan |
-| `exclude` | `RegExp \| string[]` | `/node_modules/` | File patterns to exclude |
-| `extraCommands` | `string[]` | `[]` | Commands to always include |
-| `extraBlocks` | `string[]` | `[]` | Blocks to always include |
-| `positional` | `boolean` | `false` | Always include positional expressions |
-| `htmx` | `boolean` | `false` | Enable htmx integration |
-| `bundleName` | `string` | `'ViteAutoGenerated'` | Bundle name in comments |
-| `globalName` | `string` | `'hyperfixi'` | Window global name |
-| `semantic` | `boolean \| 'en' \| 'auto'` | `false` | Enable semantic parser |
-| `languages` | `string[]` | `[]` | Explicit language codes |
-| `region` | `string` | auto | Force regional bundle |
-| `grammar` | `boolean` | `false` | Enable grammar transformation |
-| `extraLanguages` | `string[]` | `[]` | Languages to always include |
+| Option           | Type                        | Default               | Description                           |
+| ---------------- | --------------------------- | --------------------- | ------------------------------------- |
+| `debug`          | `boolean`                   | `false`               | Enable debug logging                  |
+| `include`        | `RegExp \| string[]`        | See below             | File patterns to scan                 |
+| `exclude`        | `RegExp \| string[]`        | `/node_modules/`      | File patterns to exclude              |
+| `extraCommands`  | `string[]`                  | `[]`                  | Commands to always include            |
+| `extraBlocks`    | `string[]`                  | `[]`                  | Blocks to always include              |
+| `positional`     | `boolean`                   | `false`               | Always include positional expressions |
+| `htmx`           | `boolean`                   | `false`               | Enable htmx integration               |
+| `bundleName`     | `string`                    | `'ViteAutoGenerated'` | Bundle name in comments               |
+| `globalName`     | `string`                    | `'lokascript'`        | Window global name                    |
+| `semantic`       | `boolean \| 'en' \| 'auto'` | `false`               | Enable semantic parser                |
+| `languages`      | `string[]`                  | `[]`                  | Explicit language codes               |
+| `region`         | `string`                    | auto                  | Force regional bundle                 |
+| `grammar`        | `boolean`                   | `false`               | Enable grammar transformation         |
+| `extraLanguages` | `string[]`                  | `[]`                  | Languages to always include           |
 
 ### Default Include Pattern
 

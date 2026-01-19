@@ -10,7 +10,7 @@
 
 ## Bundles Analyzed
 
-### 1. `hyperfixi-hybrid-complete.js`
+### 1. `lokascript-hybrid-complete.js`
 
 **Size**:
 
@@ -31,7 +31,7 @@
 
 **Verdict**: Clean browser build, optimal for production
 
-### 2. `hyperfixi-browser.js` (Full Bundle)
+### 2. `lokascript-browser.js` (Full Bundle)
 
 **Size**:
 
@@ -156,11 +156,11 @@ Ensure registry can be excluded from minimal bundles:
 
 ## Bundle Size Targets
 
-| Bundle                                | Current | Target  | Status               |
-| ------------------------------------- | ------- | ------- | -------------------- |
-| `hyperfixi-hybrid-complete.js` (gzip) | 7.4 KB  | <10 KB  | ✅ Excellent         |
-| `hyperfixi-browser-minimal.js` (gzip) | ?       | <15 KB  | ❓ Needs measurement |
-| `hyperfixi-browser.js` (gzip)         | ?       | <200 KB | ❓ Needs measurement |
+| Bundle                                 | Current | Target  | Status               |
+| -------------------------------------- | ------- | ------- | -------------------- |
+| `lokascript-hybrid-complete.js` (gzip) | 7.4 KB  | <10 KB  | ✅ Excellent         |
+| `lokascript-browser-minimal.js` (gzip) | ?       | <15 KB  | ❓ Needs measurement |
+| `lokascript-browser.js` (gzip)         | ?       | <200 KB | ❓ Needs measurement |
 
 ## Action Items
 

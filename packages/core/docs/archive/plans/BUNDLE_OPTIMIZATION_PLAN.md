@@ -1,10 +1,11 @@
 # Bundle Optimization Plan
 
-**Goal**: Reduce HyperFixi bundle from 353 KB (80 KB gzipped) to match original _hyperscript at 101 KB (26 KB gzipped)
+**Goal**: Reduce LokaScript bundle from 353 KB (80 KB gzipped) to match original \_hyperscript at 101 KB (26 KB gzipped)
 
 **Current State**:
-- HyperFixi: 353 KB raw, 351 KB minified, 80 KB gzipped
-- Original _hyperscript: 308 KB raw, 101 KB minified, 26 KB gzipped
+
+- LokaScript: 353 KB raw, 351 KB minified, 80 KB gzipped
+- Original \_hyperscript: 308 KB raw, 101 KB minified, 26 KB gzipped
 - Gap: 3.5x larger (gzipped)
 
 ---
@@ -14,14 +15,17 @@
 **Problem**: Minification reduces bundle by only 2 KB (353 KB → 351 KB), should be ~60% reduction.
 
 **Root Cause Analysis**:
+
 ```bash
 # Current rollup config likely missing terser or misconfigured
 ```
 
 **Tasks**:
+
 1. [ ] Audit `rollup.browser.config.mjs` for terser plugin configuration
 2. [ ] Ensure terser is installed: `npm ls terser`
 3. [ ] Add/fix terser config:
+
    ```js
    import terser from '@rollup/plugin-terser';
 
@@ -41,6 +45,7 @@
      ],
    };
    ```
+
 4. [ ] Create separate `rollup.browser.prod.config.mjs` if needed
 5. [ ] Verify minification works: target 120-150 KB minified
 
@@ -53,6 +58,7 @@
 **Problem**: All features bundled together (sockets, workers, eventsource = 125 KB source)
 
 **Current Structure**:
+
 ```
 src/features/
 ├── sockets.ts        (45 KB) - WebSocket support
@@ -65,17 +71,20 @@ src/features/
 ```
 
 **New Bundle Structure**:
+
 ```
 dist/
-├── hyperfixi-core.min.js      (~60 KB) - Parser, runtime, core commands
-├── hyperfixi-full.min.js      (~100 KB) - Core + all features
-├── hyperfixi-sockets.min.js   (~5 KB) - WebSocket feature (optional)
-├── hyperfixi-workers.min.js   (~5 KB) - Web Worker feature (optional)
-├── hyperfixi-sse.min.js       (~5 KB) - EventSource feature (optional)
+├── lokascript-core.min.js      (~60 KB) - Parser, runtime, core commands
+├── lokascript-full.min.js      (~100 KB) - Core + all features
+├── lokascript-sockets.min.js   (~5 KB) - WebSocket feature (optional)
+├── lokascript-workers.min.js   (~5 KB) - Web Worker feature (optional)
+├── lokascript-sse.min.js       (~5 KB) - EventSource feature (optional)
 ```
 
 **Tasks**:
+
 1. [ ] Create `browser-bundle-core.ts` with minimal imports:
+
    ```typescript
    // Core only - no optional features
    import { Parser } from '../parser/parser';
@@ -85,6 +94,7 @@ dist/
    ```
 
 2. [ ] Create feature entry points:
+
    ```typescript
    // src/features/sockets-bundle.ts
    export { SocketFeature } from './sockets';
@@ -98,25 +108,27 @@ dist/
    - `rollup.sse.config.mjs`
 
 4. [ ] Update package.json exports:
+
    ```json
    {
      "exports": {
-       ".": "./dist/hyperfixi-core.min.js",
-       "./full": "./dist/hyperfixi-full.min.js",
-       "./sockets": "./dist/hyperfixi-sockets.min.js",
-       "./workers": "./dist/hyperfixi-workers.min.js",
-       "./sse": "./dist/hyperfixi-sse.min.js"
+       ".": "./dist/lokascript-core.min.js",
+       "./full": "./dist/lokascript-full.min.js",
+       "./sockets": "./dist/lokascript-sockets.min.js",
+       "./workers": "./dist/lokascript-workers.min.js",
+       "./sse": "./dist/lokascript-sse.min.js"
      }
    }
    ```
 
 5. [ ] Document usage in README:
+
    ```html
    <!-- Core only (smallest) -->
-   <script src="hyperfixi-core.min.js"></script>
+   <script src="lokascript-core.min.js"></script>
 
    <!-- Add WebSocket support -->
-   <script src="hyperfixi-sockets.min.js"></script>
+   <script src="lokascript-sockets.min.js"></script>
    ```
 
 **Expected Savings**: 40-60 KB for core-only bundle
@@ -128,6 +140,7 @@ dist/
 **Problem**: Validation, suggestions, and metadata add ~30 KB to production bundle
 
 **Code to Strip**:
+
 1. `suggestions` arrays in error objects
 2. `metadata` objects on expressions/commands
 3. `LLMDocumentation` interfaces
@@ -137,6 +150,7 @@ dist/
 **Implementation Options**:
 
 ### Option A: Build-time stripping (Recommended)
+
 ```typescript
 // Use process.env.NODE_ENV
 if (process.env.NODE_ENV !== 'production') {
@@ -147,6 +161,7 @@ if (process.env.NODE_ENV !== 'production') {
 ```
 
 ### Option B: Separate development/production builds
+
 ```typescript
 // src/expressions/base-expression.ts
 export abstract class BaseExpressionImpl<TInput, TOutput> {
@@ -160,12 +175,14 @@ export abstract class BaseExpressionImpl<TInput, TOutput> {
 ```
 
 ### Option C: External metadata file
+
 ```typescript
 // metadata.json - not bundled in production
 // Can be loaded separately for dev tools
 ```
 
 **Tasks**:
+
 1. [ ] Audit all `suggestions` arrays - wrap in `NODE_ENV` check
 2. [ ] Audit all `metadata` objects - make optional or strip
 3. [ ] Configure terser to drop `debug.*` calls
@@ -181,6 +198,7 @@ export abstract class BaseExpressionImpl<TInput, TOutput> {
 **Problem**: Multiple parallel expression systems with duplicated code
 
 **Current Duplication**:
+
 ```
 src/expressions/
 ├── logical/
@@ -193,7 +211,9 @@ src/expressions/
 ```
 
 **Tasks**:
+
 1. [ ] Audit expression directories for duplication:
+
    ```bash
    # Find similar function names across files
    grep -r "evaluate\|validate" src/expressions/ --include="*.ts"
@@ -205,6 +225,7 @@ src/expressions/
    - Multiple `inferResultType` implementations (already started with BaseExpressionImpl)
 
 3. [ ] Create shared utilities:
+
    ```typescript
    // src/expressions/shared/collection-utils.ts
    export function normalizeCollection(value: unknown): unknown[] { ... }
@@ -222,16 +243,17 @@ src/expressions/
 
 ## Phase 5: Reduce Feature Code Bloat
 
-**Problem**: Features are 8-14x larger than original _hyperscript equivalents
+**Problem**: Features are 8-14x larger than original \_hyperscript equivalents
 
 **Comparison**:
-| Feature | Original | HyperFixi | Bloat Factor |
+| Feature | Original | LokaScript | Bloat Factor |
 |---------|----------|-----------|--------------|
 | sockets | 5.5 KB | 45 KB | 8x |
 | worker | 5 KB | 40 KB | 8x |
 | eventsource | 7.5 KB | 40 KB | 5x |
 
 **Root Causes**:
+
 1. Extensive TypeScript interfaces
 2. Validation at every step
 3. Error handling with suggestions
@@ -239,12 +261,14 @@ src/expressions/
 5. Performance tracking
 
 **Tasks**:
+
 1. [ ] Audit each feature file for:
    - Unused code paths
    - Excessive type definitions (move to `.d.ts`)
    - Verbose error handling
 
 2. [ ] Simplify feature implementations:
+
    ```typescript
    // Before: 45 KB
    class SocketFeature {
@@ -263,13 +287,14 @@ src/expressions/
    ```
 
 3. [ ] Move type definitions to declaration files:
+
    ```
    src/features/
    ├── sockets.ts      (10 KB) - Implementation only
    └── sockets.d.ts    (5 KB) - Types (not bundled)
    ```
 
-4. [ ] Consider using original _hyperscript feature code as reference
+4. [ ] Consider using original \_hyperscript feature code as reference
 
 **Expected Savings**: 80-100 KB across all features
 
@@ -280,6 +305,7 @@ src/expressions/
 **Problem**: `lightweight-validators.ts` is 26 KB
 
 **Tasks**:
+
 1. [ ] Audit validator usage - are all validators needed?
 2. [ ] Consider lazy-loading validators
 3. [ ] Remove unused validator methods
@@ -302,18 +328,19 @@ src/expressions/
 
 ## Success Metrics
 
-| Metric | Current | Target | Stretch |
-|--------|---------|--------|---------|
-| Core bundle (min) | 351 KB | 100 KB | 80 KB |
-| Core bundle (gzip) | 80 KB | 30 KB | 25 KB |
-| Full bundle (min) | 351 KB | 150 KB | 120 KB |
-| Full bundle (gzip) | 80 KB | 45 KB | 35 KB |
+| Metric             | Current | Target | Stretch |
+| ------------------ | ------- | ------ | ------- |
+| Core bundle (min)  | 351 KB  | 100 KB | 80 KB   |
+| Core bundle (gzip) | 80 KB   | 30 KB  | 25 KB   |
+| Full bundle (min)  | 351 KB  | 150 KB | 120 KB  |
+| Full bundle (gzip) | 80 KB   | 45 KB  | 35 KB   |
 
 ---
 
 ## Rollback Plan
 
 Each phase should be:
+
 1. Developed on a feature branch
 2. Tested against full test suite
 3. Compared with bundle size baseline
@@ -325,7 +352,7 @@ Keep archived copies of removed code in case features need restoration.
 
 ## Notes
 
-- Original _hyperscript uses plain JavaScript with no build step
-- HyperFixi's TypeScript adds overhead but provides type safety
+- Original \_hyperscript uses plain JavaScript with no build step
+- LokaScript's TypeScript adds overhead but provides type safety
 - Some size increase is acceptable for better DX and LLM compatibility
 - Target: 1.5-2x original size (not 3.5x)

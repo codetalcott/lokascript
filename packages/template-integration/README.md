@@ -1,11 +1,11 @@
-# HyperFixi Template Integration
+# LokaScript Template Integration
 
 Template compiler that processes embedded hyperscript with component integration for server-side rendering and client-side hydration.
 
 ## Features
 
 - **Template Parsing** - Parse HTML templates with embedded hyperscript and template variables
-- **Component Integration** - Seamless integration with `@hyperfixi/component-schema` components
+- **Component Integration** - Seamless integration with `@lokascript/component-schema` components
 - **Template Compilation** - Compile templates to optimized HTML and hyperscript
 - **Variable Substitution** - Support for `{{variable}}` template syntax with custom delimiters
 - **Directive System** - Extensible directive system for conditional rendering and loops
@@ -16,11 +16,11 @@ Template compiler that processes embedded hyperscript with component integration
 ## Installation
 
 ```bash
-npm install @hyperfixi/template-integration
+npm install @lokascript/template-integration
 # or
-yarn add @hyperfixi/template-integration
+yarn add @lokascript/template-integration
 # or
-pnpm add @hyperfixi/template-integration
+pnpm add @lokascript/template-integration
 ```
 
 ## Quick Start
@@ -28,7 +28,7 @@ pnpm add @hyperfixi/template-integration
 ### Basic Template Compilation
 
 ```typescript
-import { compileTemplate, renderTemplate } from '@hyperfixi/template-integration';
+import { compileTemplate, renderTemplate } from '@lokascript/template-integration';
 
 // Simple template with variables
 const template = `
@@ -45,8 +45,8 @@ const compiled = await compileTemplate(template);
 const rendered = await renderTemplate(template, {
   variables: {
     name: 'Alice',
-    siteName: 'My Awesome Site'
-  }
+    siteName: 'My Awesome Site',
+  },
 });
 
 console.log(rendered);
@@ -56,9 +56,9 @@ console.log(rendered);
 ### Template with Hyperscript
 
 ```typescript
-import { HyperFixiTemplateEngine } from '@hyperfixi/template-integration';
+import { LokaScriptTemplateEngine } from '@lokascript/template-integration';
 
-const engine = new HyperFixiTemplateEngine();
+const engine = new LokaScriptTemplateEngine();
 
 const template = `
   <div class="interactive-card" _="init add .loaded">
@@ -82,17 +82,13 @@ console.log(compiled.variables);
 ### Component Integration
 
 ```typescript
-import { createComponent } from '@hyperfixi/component-schema';
-import { HyperFixiTemplateEngine } from '@hyperfixi/template-integration';
+import { createComponent } from '@lokascript/component-schema';
+import { LokaScriptTemplateEngine } from '@lokascript/template-integration';
 
-const engine = new HyperFixiTemplateEngine();
+const engine = new LokaScriptTemplateEngine();
 
 // Create a reusable component
-const alertComponent = createComponent(
-  'alert',
-  'Alert Component',
-  'on click remove me'
-);
+const alertComponent = createComponent('alert', 'Alert Component', 'on click remove me');
 
 alertComponent.template = {
   html: `
@@ -105,14 +101,14 @@ alertComponent.template = {
     type: {
       type: 'string',
       default: 'info',
-      description: 'Alert type (info, warning, error, success)'
+      description: 'Alert type (info, warning, error, success)',
     },
     message: {
       type: 'string',
       required: true,
-      description: 'Alert message'
-    }
-  }
+      description: 'Alert message',
+    },
+  },
 };
 
 // Register component
@@ -148,8 +144,8 @@ Use `{{variableName}}` syntax for variable substitution:
 ### Custom Delimiters
 
 ```typescript
-const engine = new HyperFixiTemplateEngine({
-  delimiters: { start: '[[', end: ']]' }
+const engine = new LokaScriptTemplateEngine({
+  delimiters: { start: '[[', end: ']]' },
 });
 
 const template = '<div>Hello [[name]]!</div>';
@@ -186,13 +182,9 @@ Use directives for conditional rendering and loops:
 ### Registering Components
 
 ```typescript
-import { createComponent } from '@hyperfixi/component-schema';
+import { createComponent } from '@lokascript/component-schema';
 
-const cardComponent = createComponent(
-  'card',
-  'Card Component',
-  'on click toggle .expanded'
-);
+const cardComponent = createComponent('card', 'Card Component', 'on click toggle .expanded');
 
 cardComponent.template = {
   html: `
@@ -207,8 +199,8 @@ cardComponent.template = {
   `,
   variables: {
     title: { type: 'string', required: true, description: 'Card title' },
-    class: { type: 'string', default: '', description: 'Additional CSS classes' }
-  }
+    class: { type: 'string', default: '', description: 'Additional CSS classes' },
+  },
 };
 
 await engine.registerComponent(cardComponent);
@@ -230,7 +222,7 @@ const modalComponent = createComponent('modal', 'Modal', 'on show add .visible')
 modalComponent.dependencies = {
   css: ['modal.css'],
   javascript: ['modal.js'],
-  components: ['button'] // Depends on button component
+  components: ['button'], // Depends on button component
 };
 ```
 
@@ -243,13 +235,13 @@ engine.addDirective('repeat', {
   async process(directive, context) {
     const count = parseInt(directive.expression);
     const nodes = [];
-    
+
     for (let i = 0; i < count; i++) {
       if (directive.children) {
         nodes.push(...directive.children);
       }
     }
-    
+
     return nodes;
   },
   validate(directive) {
@@ -257,7 +249,7 @@ engine.addDirective('repeat', {
       return ['Expression must be a valid number'];
     }
     return [];
-  }
+  },
 });
 
 // Usage: <span hf-repeat="3">Hello </span>
@@ -267,7 +259,7 @@ engine.addDirective('repeat', {
 ### Performance Monitoring
 
 ```typescript
-import { TemplatePerformanceMonitor } from '@hyperfixi/template-integration';
+import { TemplatePerformanceMonitor } from '@lokascript/template-integration';
 
 const monitor = new TemplatePerformanceMonitor();
 
@@ -285,12 +277,12 @@ console.log(`Average compilation time: ${stats?.average}ms`);
 const templates = {
   home: '<div>Welcome to {{siteName}}</div>',
   about: '<div>About {{siteName}}</div>',
-  contact: '<div>Contact: {{email}}</div>'
+  contact: '<div>Contact: {{email}}</div>',
 };
 
 const bundle = await engine.createBundle(templates, {
   minify: true,
-  target: 'browser'
+  target: 'browser',
 });
 
 console.log(bundle.html); // Combined HTML
@@ -303,8 +295,8 @@ console.log(bundle.javascript); // All JS dependencies
 
 ```typescript
 // Development mode with hot reload
-const devEngine = new HyperFixiTemplateEngine({
-  development: true
+const devEngine = new LokaScriptTemplateEngine({
+  development: true,
 });
 
 // Hot reload a template
@@ -319,8 +311,8 @@ const updated = await devEngine.hotReload(newTemplate, 'template-id');
 const context = {
   variables: {
     user: { name: 'John', role: 'admin' },
-    config: { theme: 'dark', lang: 'en' }
-  }
+    config: { theme: 'dark', lang: 'en' },
+  },
 };
 ```
 
@@ -328,26 +320,32 @@ const context = {
 
 ```typescript
 const context = {
-  variables: { /* template variables */ },
-  components: { /* component instances */ },
-  functions: { /* custom functions */ },
+  variables: {
+    /* template variables */
+  },
+  components: {
+    /* component instances */
+  },
+  functions: {
+    /* custom functions */
+  },
   request: {
     url: '/current-page',
     headers: { 'user-agent': '...' },
     params: { id: '123' },
-    query: { search: 'term' }
+    query: { search: 'term' },
   },
   user: {
     id: 'user123',
     roles: ['user', 'premium'],
-    permissions: ['read', 'write']
-  }
+    permissions: ['read', 'write'],
+  },
 };
 ```
 
 ## API Reference
 
-### HyperFixiTemplateEngine
+### LokaScriptTemplateEngine
 
 Main template engine class.
 
@@ -368,11 +366,12 @@ Main template engine class.
 
 ```typescript
 interface TemplateOptions {
-  minify?: boolean;           // Minify output HTML
-  sourceMaps?: boolean;       // Generate source maps
-  target?: 'browser' | 'server' | 'universal';  // Target environment
-  development?: boolean;      // Enable development features
-  delimiters?: {             // Custom variable delimiters
+  minify?: boolean; // Minify output HTML
+  sourceMaps?: boolean; // Generate source maps
+  target?: 'browser' | 'server' | 'universal'; // Target environment
+  development?: boolean; // Enable development features
+  delimiters?: {
+    // Custom variable delimiters
     start: string;
     end: string;
   };
@@ -404,12 +403,12 @@ Template compilation engine.
 ### Template Analysis
 
 ```typescript
-import { 
+import {
   extractTemplateVariables,
   validateTemplate,
   analyzeTemplateComplexity,
-  debugTemplate
-} from '@hyperfixi/template-integration';
+  debugTemplate,
+} from '@lokascript/template-integration';
 
 const variables = extractTemplateVariables('Hello {{name}} from {{city}}');
 // Returns: ['name', 'city']
@@ -427,7 +426,7 @@ const debug = debugTemplate(template, context);
 ### Template Optimization
 
 ```typescript
-import { optimizeTemplate, nodesToHtml } from '@hyperfixi/template-integration';
+import { optimizeTemplate, nodesToHtml } from '@lokascript/template-integration';
 
 const optimized = optimizeTemplate(parsedNodes);
 const html = nodesToHtml(optimized);
@@ -444,17 +443,17 @@ const productTemplate = `
       <h1>{{product.name}}</h1>
       <div class="price">${{product.price}}</div>
     </div>
-    
+
     <div class="product-images">
-      <img src="{{product.image}}" alt="{{product.name}}" 
+      <img src="{{product.image}}" alt="{{product.name}}"
            _="on click call lightbox with me" />
     </div>
-    
+
     <add-to-cart productId="{{productId}}" price="{{product.price}}">
       <quantity-selector min="1" max="{{product.stock}}" />
       <variant-selector variants="{{product.variants}}" />
     </add-to-cart>
-    
+
     <review-section productId="{{productId}}" />
   </div>
 `;
@@ -484,17 +483,17 @@ const dashboardTemplate = `
       <h1>Welcome, {{user.name}}</h1>
       <notification-bell userId="{{user.id}}" />
     </header>
-    
+
     <div class="stats-grid">
-      <stat-card title="Revenue" value="${{stats.revenue}}" 
+      <stat-card title="Revenue" value="${{stats.revenue}}"
                  change="{{stats.revenueChange}}"
                  _="on update transition opacity to 0.5 then to 1" />
-      <stat-card title="Orders" value="{{stats.orders}}" 
+      <stat-card title="Orders" value="{{stats.orders}}"
                  change="{{stats.ordersChange}}" />
-      <stat-card title="Customers" value="{{stats.customers}}" 
+      <stat-card title="Customers" value="{{stats.customers}}"
                  change="{{stats.customersChange}}" />
     </div>
-    
+
     <div class="charts">
       <revenue-chart data="{{chartData.revenue}}" />
       <orders-chart data="{{chartData.orders}}" />
@@ -510,13 +509,13 @@ const dashboardTemplate = `
 ### Programmatic Build Integration
 
 ```javascript
-import { HyperFixiTemplateEngine } from '@hyperfixi/template-integration';
+import { LokaScriptTemplateEngine } from '@lokascript/template-integration';
 import fs from 'fs';
 import path from 'path';
 
 // Build script example
 async function buildTemplates(inputDir, outputDir) {
-  const engine = new HyperFixiTemplateEngine({ minify: true });
+  const engine = new LokaScriptTemplateEngine({ minify: true });
 
   const files = fs.readdirSync(inputDir).filter(f => f.endsWith('.html'));
 
@@ -524,10 +523,7 @@ async function buildTemplates(inputDir, outputDir) {
     const template = fs.readFileSync(path.join(inputDir, file), 'utf-8');
     const compiled = await engine.compile(template);
 
-    fs.writeFileSync(
-      path.join(outputDir, file),
-      compiled.html
-    );
+    fs.writeFileSync(path.join(outputDir, file), compiled.html);
   }
 }
 
@@ -565,6 +561,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- **Documentation**: [https://hyperfixi.dev/docs/template-integration](https://hyperfixi.dev/docs/template-integration)
-- **Issues**: [GitHub Issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **NPM Package**: [npmjs.com/package/@hyperfixi/template-integration](https://www.npmjs.com/package/@hyperfixi/template-integration)
+- **Documentation**: [https://lokascript.dev/docs/template-integration](https://lokascript.dev/docs/template-integration)
+- **Issues**: [GitHub Issues](https://github.com/codetalcott/hyperfixi/issues)
+- **NPM Package**: [npmjs.com/package/@lokascript/template-integration](https://www.npmjs.com/package/@lokascript/template-integration)

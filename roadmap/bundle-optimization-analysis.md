@@ -1,4 +1,4 @@
-# HyperFixi Bundle Size Optimization Analysis
+# LokaScript Bundle Size Optimization Analysis
 
 **Date**: 2025-11-02
 **Status**: Analysis Complete - Ready for Implementation
@@ -19,12 +19,14 @@
 ### Entry Points
 
 **Browser Bundle** ([src/compatibility/browser-bundle.ts](../packages/core/src/compatibility/browser-bundle.ts))
+
 - **Purpose**: IIFE bundle for `<script>` tag usage
 - **Size**: 1.3MB unminified, 192KB gzipped
-- **Global**: `window.hyperfixi`
+- **Global**: `window.lokascript`
 - **Build**: [rollup.browser.config.mjs](../packages/core/rollup.browser.config.mjs)
 
 **NPM Package** ([src/index.ts](../packages/core/src/index.ts))
+
 - **Exports**: ES modules + CommonJS
 - **Flag**: `"sideEffects": false` ✅ (tree-shaking enabled)
 - **Formats**:
@@ -330,12 +332,15 @@ on           - 34KB (event binding - likely core)
 ### Category E: Expression Categories (Granular tree-shaking potential)
 
 **Core** (always needed): ~150KB
+
 - references/, logical/basic, special/literals
 
 **Common** (high usage): ~270KB
+
 - properties/, conversion/basic, comparison/
 
 **Optional** (low usage): ~1080KB
+
 - positional/, mathematical/, form/, array/, time/, function-calls/, etc.
 
 ---
@@ -359,7 +364,7 @@ on           - 34KB (event binding - likely core)
 export function createAllEnhancedCommands() {
   const commands = new Map();
   for (const [name, factory] of Object.entries(ENHANCED_COMMAND_FACTORIES)) {
-    commands.set(name, factory());  // ← Instantiates ALL commands
+    commands.set(name, factory()); // ← Instantiates ALL commands
   }
   return commands;
 }
@@ -394,7 +399,7 @@ import { evalHyperScript } from './eval-hyperscript';
 import { defaultAttributeProcessor } from '../dom/attribute-processor';
 import { tailwindExtension } from '../extensions/tailwind';
 import { Parser } from '../parser/parser';
-import { Runtime } from '../runtime/runtime';  // ← Pulls ALL commands
+import { Runtime } from '../runtime/runtime'; // ← Pulls ALL commands
 ```
 
 ### ✅ Good: Command Implementations
@@ -419,6 +424,7 @@ export function createAddCommand(): AddCommand {
 **Current Bundle**: 192KB gzipped
 
 **Theoretical Optimal Bundle**:
+
 ```
 Core (required)          40KB gzipped
 ├── Parser               15KB
@@ -442,6 +448,7 @@ Total: ~72KB gzipped (62% reduction)
 **Current Bundle**: 192KB gzipped
 
 **Theoretical Optimal Bundle**:
+
 ```
 Core                     40KB gzipped
 Commands (8 used)        30KB gzipped
@@ -455,6 +462,7 @@ Total: ~100KB gzipped (48% reduction)
 **Current Bundle**: 192KB gzipped
 
 **Theoretical Optimal Bundle**:
+
 ```
 Core                     40KB gzipped
 Commands (15 used)       60KB gzipped
@@ -474,12 +482,14 @@ Total: ~150KB gzipped (22% reduction)
 **Change**: [command-registry.ts](../packages/core/src/commands/command-registry.ts) and [command-adapter.ts](../packages/core/src/runtime/command-adapter.ts)
 
 **Before**:
+
 ```typescript
 // runtime/command-adapter.ts
 const commands = createAllEnhancedCommands(); // Loads all 40
 ```
 
 **After**:
+
 ```typescript
 // New: Lazy registry with on-demand loading
 export class LazyCommandRegistry {
@@ -509,6 +519,7 @@ export class LazyCommandRegistry {
 **Change**: [expression-evaluator.ts](../packages/core/src/core/expression-evaluator.ts)
 
 **Before**:
+
 ```typescript
 // Imports ALL expression categories upfront
 import { referenceExpressions } from '../expressions/references/index';
@@ -521,6 +532,7 @@ constructor() {
 ```
 
 **After Option 1** (Lazy loading):
+
 ```typescript
 export class LazyExpressionEvaluator {
   private loaded = new Map<string, ExpressionImplementation>();
@@ -536,7 +548,7 @@ export class LazyExpressionEvaluator {
   }
 
   private async loadExpression(type: string) {
-    switch(type) {
+    switch (type) {
       case 'reference':
         const { referenceExpressions } = await import('../expressions/references/index');
         this.registerCategory(referenceExpressions);
@@ -548,6 +560,7 @@ export class LazyExpressionEvaluator {
 ```
 
 **After Option 2** (Simpler - split into tiers):
+
 ```typescript
 // expression-evaluator-core.ts (always imported)
 import { referenceExpressions } from '../expressions/references/index';
@@ -572,6 +585,7 @@ import { propertyExpressions } from '../expressions/properties/index';
 **Change**: [runtime/runtime.ts](../packages/core/src/runtime/runtime.ts)
 
 **Before**:
+
 ```typescript
 constructor(options: RuntimeOptions = {}) {
   this.enhancedRegistry = EnhancedCommandRegistry.createWithDefaults();
@@ -580,6 +594,7 @@ constructor(options: RuntimeOptions = {}) {
 ```
 
 **After**:
+
 ```typescript
 interface RuntimeOptions {
   commands?: string[];  // Only load specified commands
@@ -603,10 +618,11 @@ constructor(options: RuntimeOptions = {}) {
 ```
 
 **Usage**:
+
 ```typescript
 // Minimal runtime (only specified commands loaded)
 const runtime = new Runtime({
-  commands: ['add', 'remove', 'toggle']
+  commands: ['add', 'remove', 'toggle'],
 });
 
 // Lazy runtime (default - commands loaded on first use)
@@ -628,6 +644,7 @@ const runtime = new Runtime({ lazyLoad: false });
 **Change**: Add multiple browser bundle configurations
 
 **New Files**:
+
 ```
 rollup.browser-minimal.config.mjs  // Core + 8 common commands
 rollup.browser-standard.config.mjs // Core + 20 common commands
@@ -635,37 +652,54 @@ rollup.browser-full.config.mjs     // Current full bundle
 ```
 
 **Build Outputs**:
+
 ```
-dist/hyperfixi-browser-minimal.js   // ~400KB (~60KB gzipped)
-dist/hyperfixi-browser-standard.js  // ~800KB (~120KB gzipped)
-dist/hyperfixi-browser-full.js      // ~1.3MB (~192KB gzipped)
+dist/lokascript-browser-minimal.js   // ~400KB (~60KB gzipped)
+dist/lokascript-browser-standard.js  // ~800KB (~120KB gzipped)
+dist/lokascript-browser-full.js      // ~1.3MB (~192KB gzipped)
 ```
 
 **Minimal Bundle** includes:
+
 ```typescript
 // 8 Commands
-commands: ['add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log']
+commands: ['add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log'];
 
 // Core Expressions only
-expressions: ['references', 'logical', 'special']
+expressions: ['references', 'logical', 'special'];
 ```
 
 **Standard Bundle** includes:
+
 ```typescript
 // 20 Commands (minimal + common)
 commands: [
   // Minimal
-  'add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log',
+  'add',
+  'remove',
+  'toggle',
+  'put',
+  'set',
+  'if',
+  'send',
+  'log',
   // Common additions
-  'show', 'hide', 'increment', 'decrement', 'trigger', 'wait',
-  'halt', 'return', 'make', 'append', 'call', 'get'
-]
+  'show',
+  'hide',
+  'increment',
+  'decrement',
+  'trigger',
+  'wait',
+  'halt',
+  'return',
+  'make',
+  'append',
+  'call',
+  'get',
+];
 
 // Extended expressions
-expressions: [
-  'references', 'logical', 'special',
-  'properties', 'conversion', 'comparison'
-]
+expressions: ['references', 'logical', 'special', 'properties', 'conversion', 'comparison'];
 ```
 
 **Bundle Reduction**: Immediate 54-69% for most users
@@ -680,6 +714,7 @@ expressions: [
 **Change**: Make features opt-in imports
 
 **Before** ([src/index.ts](../packages/core/src/index.ts)):
+
 ```typescript
 // Features always exported
 export { TypedDefFeatureImplementation } from './features/def';
@@ -689,6 +724,7 @@ export { TypedSocketsFeatureImplementation } from './features/sockets';
 ```
 
 **After**:
+
 ```typescript
 // Core API only
 export { hyperscript } from './api/hyperscript-api';
@@ -705,14 +741,15 @@ export { Runtime } from './runtime/runtime';
 ```
 
 **Usage**:
+
 ```typescript
 // Core only
-import { hyperscript } from '@hyperfixi/core';
+import { hyperscript } from '@lokascript/core';
 
 // With features
-import { hyperscript } from '@hyperfixi/core';
-import { def } from '@hyperfixi/core/features/def';
-import { sockets } from '@hyperfixi/core/features/sockets';
+import { hyperscript } from '@lokascript/core';
+import { def } from '@lokascript/core/features/def';
+import { sockets } from '@lokascript/core/features/sockets';
 ```
 
 **Bundle Reduction**: ~512KB source (~80KB gzipped)
@@ -729,6 +766,7 @@ import { sockets } from '@hyperfixi/core/features/sockets';
 **File**: `scripts/analyze-usage.mjs`
 
 **Functionality**:
+
 ```typescript
 // Scans HTML files for _="" attributes
 // Parses hyperscript code
@@ -777,6 +815,7 @@ Output:
 - [ ] **Testing**: Run all 440+ tests, browser compatibility suite
 
 **Deliverables**:
+
 - Lazy command loading (default)
 - 3 browser bundle sizes available
 - Usage analyzer tool
@@ -803,6 +842,7 @@ Output:
 - [ ] **Testing**: Full test suite + expression integration tests
 
 **Deliverables**:
+
 - `new Runtime({ commands: [...] })` API
 - Core/extended expression evaluators
 - Migration guide for opt-in APIs
@@ -833,6 +873,7 @@ Output:
   - Performance benchmarks
 
 **Deliverables**:
+
 - Tree-shakable features via subpath imports
 - Comprehensive documentation
 - Migration guides
@@ -845,16 +886,19 @@ Output:
 ### Phase 1: Non-Breaking Optimizations (Week 1)
 
 **Changes**:
+
 1. Implement `LazyCommandRegistry` (Priority 1)
 2. Create browser bundle variants (Priority 4)
 3. Add smart analyzer tool (Priority 6)
 
 **Compatibility**: 100% backward compatible
+
 - Default behavior unchanged for NPM package users
 - New browser bundles are opt-in (users choose variant)
 - Analyzer is dev tool only
 
 **Testing**:
+
 - Run full test suite (440+ tests)
 - Verify browser compatibility tests
 - Manual testing with demos
@@ -866,32 +910,36 @@ Output:
 ### Phase 2: Enhanced Tree-Shaking (Week 2)
 
 **Changes**:
+
 1. Modular expression system (Priority 2)
 2. Runtime plugin system (Priority 3)
 
 **Compatibility**: 95% backward compatible
+
 - Add deprecation warnings for eager loading
 - Provide migration guide
 - Support both modes for 2 versions
 
 **Migration Guide**:
+
 ```typescript
 // Old (still works, deprecated warning)
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 const runtime = new Runtime();
 
 // New (recommended, default)
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 const runtime = new Runtime({ lazyLoad: true });
 
 // Explicit (optimal for production)
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 const runtime = new Runtime({
-  commands: ['add', 'remove', 'toggle']
+  commands: ['add', 'remove', 'toggle'],
 });
 ```
 
 **Testing**:
+
 - All existing tests pass
 - New opt-in API tests
 - Deprecation warnings logged
@@ -903,24 +951,28 @@ const runtime = new Runtime({
 ### Phase 3: Feature Separation (Week 3)
 
 **Changes**:
+
 1. Feature tree-shaking (Priority 5)
 2. Expression tier splitting
 
 **Compatibility**: 90% backward compatible
+
 - Named exports remain in main entry (deprecated)
 - Subpath imports added as alternative
 - Deprecate direct feature exports in v2.0
 
 **Migration Guide**:
+
 ```typescript
 // Old (still works, deprecated in v1.x, removed in v2.0)
-import { TypedDefFeatureImplementation } from '@hyperfixi/core';
+import { TypedDefFeatureImplementation } from '@lokascript/core';
 
 // New (tree-shakable, recommended)
-import { TypedDefFeatureImplementation } from '@hyperfixi/core/features/def';
+import { TypedDefFeatureImplementation } from '@lokascript/core/features/def';
 ```
 
 **Testing**:
+
 - Verify subpath imports work
 - Tree-shaking verification
 - Bundle size validation
@@ -933,25 +985,26 @@ import { TypedDefFeatureImplementation } from '@hyperfixi/core/features/def';
 
 ### Summary Table
 
-| Scenario | Current Size | Optimized Size | Reduction | Commands |
-|----------|--------------|----------------|-----------|----------|
-| **Minimal App** | 192KB gzipped | 72KB gzipped | **62%** | 3 (add, remove, toggle) |
-| **Typical App** | 192KB gzipped | 100KB gzipped | **48%** | 8 (+ put, set, if, send, log) |
-| **Complex App** | 192KB gzipped | 150KB gzipped | **22%** | 15 (+ animation, templates) |
-| **Full Featured** | 192KB gzipped | 192KB gzipped | **0%** | All 40+ commands |
+| Scenario          | Current Size  | Optimized Size | Reduction | Commands                      |
+| ----------------- | ------------- | -------------- | --------- | ----------------------------- |
+| **Minimal App**   | 192KB gzipped | 72KB gzipped   | **62%**   | 3 (add, remove, toggle)       |
+| **Typical App**   | 192KB gzipped | 100KB gzipped  | **48%**   | 8 (+ put, set, if, send, log) |
+| **Complex App**   | 192KB gzipped | 150KB gzipped  | **22%**   | 15 (+ animation, templates)   |
+| **Full Featured** | 192KB gzipped | 192KB gzipped  | **0%**    | All 40+ commands              |
 
 ### Implementation Effort vs Impact
 
-| Priority | Description | Effort | Impact | Reduction | ROI |
-|----------|-------------|--------|--------|-----------|-----|
-| **Priority 1** | Lazy Command Registry | 2-3 hours | High | ~120KB | ⭐⭐⭐⭐⭐ |
-| **Priority 4** | Bundle Variants | 2-3 hours | High | ~92-132KB | ⭐⭐⭐⭐⭐ |
-| **Priority 6** | Analyzer Tool | 2-3 hours | Medium | N/A (dev tool) | ⭐⭐⭐⭐ |
-| **Priority 3** | Runtime Plugins | 1-2 hours | Medium | Enables above | ⭐⭐⭐⭐ |
-| **Priority 2** | Modular Expressions | 4-6 hours | High | ~140KB | ⭐⭐⭐ |
-| **Priority 5** | Feature Tree-Shaking | 3-4 hours | Medium | ~80KB | ⭐⭐⭐ |
+| Priority       | Description           | Effort    | Impact | Reduction      | ROI        |
+| -------------- | --------------------- | --------- | ------ | -------------- | ---------- |
+| **Priority 1** | Lazy Command Registry | 2-3 hours | High   | ~120KB         | ⭐⭐⭐⭐⭐ |
+| **Priority 4** | Bundle Variants       | 2-3 hours | High   | ~92-132KB      | ⭐⭐⭐⭐⭐ |
+| **Priority 6** | Analyzer Tool         | 2-3 hours | Medium | N/A (dev tool) | ⭐⭐⭐⭐   |
+| **Priority 3** | Runtime Plugins       | 1-2 hours | Medium | Enables above  | ⭐⭐⭐⭐   |
+| **Priority 2** | Modular Expressions   | 4-6 hours | High   | ~140KB         | ⭐⭐⭐     |
+| **Priority 5** | Feature Tree-Shaking  | 3-4 hours | Medium | ~80KB          | ⭐⭐⭐     |
 
 **Recommended Quick Win**: Implement Priority 1 + Priority 4 first
+
 - **Total Effort**: 4-6 hours
 - **Total Impact**: 48-62% reduction for typical apps
 - **Zero Breaking Changes**
@@ -963,12 +1016,14 @@ import { TypedDefFeatureImplementation } from '@hyperfixi/core/features/def';
 ### Lazy Loading Trade-offs
 
 **Pros**:
+
 - ✅ **Smaller initial bundle** (62% reduction for minimal apps)
 - ✅ **Faster page load** (less JavaScript parsing)
 - ✅ **Better caching** (only used commands cached)
 - ✅ **Improved metrics** (Lighthouse, Core Web Vitals)
 
 **Cons**:
+
 - ⚠️ **First command use overhead** (~1-2ms module evaluation)
 - ⚠️ **Slightly more complex debugging** (lazy instantiation)
 - ⚠️ **Async loading complexity** (if using dynamic imports)
@@ -976,19 +1031,22 @@ import { TypedDefFeatureImplementation } from '@hyperfixi/core/features/def';
 ### Mitigation Strategies
 
 **1. Warmup API** (preload common commands):
+
 ```typescript
 runtime.warmup(['add', 'remove', 'toggle']); // Preload during idle time
 ```
 
 **2. Critical command preloading** (for known usage):
+
 ```typescript
 const runtime = new Runtime({
   commands: ['add', 'remove', 'toggle'], // Explicit list
-  preload: true // Load immediately, not lazily
+  preload: true, // Load immediately, not lazily
 });
 ```
 
 **3. Performance budget**:
+
 - Minimal bundle: <10KB initial (critical commands)
 - Standard bundle: <30KB initial (common commands)
 - Lazy load: <5ms per command on first use
@@ -1000,6 +1058,7 @@ const runtime = new Runtime({
 ### Layer 1: Unit Tests (Vitest)
 
 **Scope**: All refactored components
+
 - Lazy command registry functionality
 - Expression evaluator tiers
 - Runtime plugin system
@@ -1010,12 +1069,14 @@ const runtime = new Runtime({
 ### Layer 2: Integration Tests
 
 **Scope**: End-to-end workflows
+
 - Command execution with lazy loading
 - Expression evaluation with tiered system
 - Runtime initialization variants
 - Feature opt-in imports
 
 **Test Matrix**:
+
 - Lazy mode + minimal commands
 - Eager mode + all commands
 - Mixed mode + selective loading
@@ -1023,6 +1084,7 @@ const runtime = new Runtime({
 ### Layer 3: Browser Compatibility
 
 **Scope**: All browser bundles
+
 - Minimal bundle (8 commands)
 - Standard bundle (20 commands)
 - Full bundle (40+ commands)
@@ -1032,15 +1094,16 @@ const runtime = new Runtime({
 ### Layer 4: Bundle Size Verification
 
 **Automated Checks**:
+
 ```bash
 # scripts/verify-bundle-sizes.mjs
 npm run build:all
 npm run verify:bundles
 
 Expected Sizes:
-✓ hyperfixi-browser-minimal.js: ~60KB gzipped
-✓ hyperfixi-browser-standard.js: ~120KB gzipped
-✓ hyperfixi-browser-full.js: ~192KB gzipped
+✓ lokascript-browser-minimal.js: ~60KB gzipped
+✓ lokascript-browser-standard.js: ~120KB gzipped
+✓ lokascript-browser-full.js: ~192KB gzipped
 ```
 
 **CI Integration**: Add bundle size regression checks to GitHub Actions
@@ -1048,6 +1111,7 @@ Expected Sizes:
 ### Layer 5: Performance Benchmarks
 
 **Metrics**:
+
 - Initial load time (DOMContentLoaded)
 - First command execution time
 - Lazy loading overhead
@@ -1103,6 +1167,7 @@ Expected Sizes:
 **Description**: Some users may rely on eager loading behavior
 
 **Mitigation**:
+
 - Provide legacy mode (`lazyLoad: false`)
 - Add deprecation warnings with clear migration path
 - Support both modes for 2 major versions
@@ -1114,6 +1179,7 @@ Expected Sizes:
 **Description**: Command dependencies or initialization order issues
 
 **Mitigation**:
+
 - Extensive testing of lazy loading paths
 - Add command dependency declarations
 - Runtime validation of command availability
@@ -1125,6 +1191,7 @@ Expected Sizes:
 **Description**: Users unsure which bundle to choose
 
 **Mitigation**:
+
 - Clear documentation with decision tree
 - Bundle analyzer tool recommendations
 - Default to "standard" bundle (covers 90% of use cases)
@@ -1136,6 +1203,7 @@ Expected Sizes:
 **Description**: Codebase becomes harder to maintain
 
 **Mitigation**:
+
 - Keep lazy loading logic centralized
 - Maintain simple fallback paths
 - Comprehensive inline documentation
@@ -1237,6 +1305,7 @@ Continue with Priority 2, 3, and 5 as outlined in roadmap.
 ### Recommended Approach
 
 **Start with Phase 1** (Week 1: Quick Wins):
+
 - Implement lazy command loading
 - Create bundle variants (minimal/standard/full)
 - Add bundle analyzer tool
@@ -1247,6 +1316,7 @@ Continue with Priority 2, 3, and 5 as outlined in roadmap.
 ### Expected Impact
 
 After full implementation:
+
 - **62% smaller bundles** for minimal apps (192KB → 72KB gzipped)
 - **48% smaller bundles** for typical apps (192KB → 100KB gzipped)
 - **100% backward compatible** (Phase 1) or clear migration path (Phase 2-3)
@@ -1261,6 +1331,7 @@ After full implementation:
 ## Appendix A: File Locations Reference
 
 **Core Files**:
+
 - Command Registry: [packages/core/src/commands/command-registry.ts](../packages/core/src/commands/command-registry.ts)
 - Command Adapter: [packages/core/src/runtime/command-adapter.ts](../packages/core/src/runtime/command-adapter.ts)
 - Expression Evaluator: [packages/core/src/core/expression-evaluator.ts](../packages/core/src/core/expression-evaluator.ts)
@@ -1268,6 +1339,7 @@ After full implementation:
 - Browser Bundle: [packages/core/src/compatibility/browser-bundle.ts](../packages/core/src/compatibility/browser-bundle.ts)
 
 **Build Configuration**:
+
 - Browser Rollup: [packages/core/rollup.browser.config.mjs](../packages/core/rollup.browser.config.mjs)
 - Package JSON: [packages/core/package.json](../packages/core/package.json)
 

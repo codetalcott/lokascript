@@ -13,7 +13,7 @@ Extend the server-side handler to support multiple languages:
 export async function renderPage(request: Request) {
   // Detect user's preferred language
   const userLocale = request.headers.get('accept-language')?.split(',')[0] || 'en';
-  
+
   // Define behaviors in the developer's preferred language
   const pageScripts = {
     // Spanish example
@@ -25,8 +25,8 @@ export async function renderPage(request: Request) {
           esperar 300ms entonces 
             buscar /api/search?q={yo.value} poner el resultado en <#results/>
     `,
-    
-    // Korean example  
+
+    // Korean example
     modalBehavior: `
       behavior modal
         클릭 on <.modal-trigger/>
@@ -34,20 +34,20 @@ export async function renderPage(request: Request) {
         클릭 on <.modal-close/> 또는 on escape
           hide <#modal/> with *opacity transition
       end
-    `
+    `,
   };
 
   // Compile with i18n support
   const compiledScripts = await compileHyperscripts(pageScripts, {
     sourceLocale: userLocale,
     targetLocale: 'en', // Always compile to English for runtime
-    preserveOriginal: true // Keep original for debugging
+    preserveOriginal: true, // Keep original for debugging
   });
-  
+
   return renderTemplate('page.html', {
     scripts: compiledScripts,
     locale: userLocale,
-    data: await fetchPageData()
+    data: await fetchPageData(),
   });
 }
 ```
@@ -59,23 +59,23 @@ Update the AST processor to handle internationalized scripts:
 ```typescript
 export class I18nServerHyperscriptProcessor extends ServerHyperscriptProcessor {
   private translator: HyperscriptI18n;
-  
+
   constructor(options: ProcessorOptions) {
     super(options);
     this.translator = new HyperscriptI18n(options.sourceLocale);
   }
-  
+
   async processViewScripts(scripts: Record<string, string>, locale: string) {
     const processed: Record<string, ProcessedScript> = {};
-    
+
     for (const [name, script] of Object.entries(scripts)) {
       // Translate to English first
       const englishScript = this.translator.translate(script);
-      
+
       // Parse and analyze the English version
       const ast = await this.astToolkit.parse(englishScript);
       const analysis = await this.astToolkit.analyze(ast);
-      
+
       // Store both versions
       processed[name] = {
         original: script,
@@ -84,31 +84,29 @@ export class I18nServerHyperscriptProcessor extends ServerHyperscriptProcessor {
         optimized: await this.optimize(ast),
         metadata: {
           complexity: analysis.complexity,
-          keywords: this.extractLocalizedKeywords(script, locale)
-        }
+          keywords: this.extractLocalizedKeywords(script, locale),
+        },
       };
     }
-    
+
     return processed;
   }
-  
+
   // Extract keywords for documentation generation
   private extractLocalizedKeywords(script: string, locale: string): LocalizedKeywords {
     const keywords = new Set<string>();
     const dictionary = HyperscriptI18n.dictionaries[locale] || {};
-    
+
     Object.keys(dictionary).forEach(keyword => {
       if (script.includes(keyword)) {
         keywords.add(keyword);
       }
     });
-    
+
     return {
       locale,
       keywords: Array.from(keywords),
-      translations: Object.fromEntries(
-        Array.from(keywords).map(k => [k, dictionary[k]])
-      )
+      translations: Object.fromEntries(Array.from(keywords).map(k => [k, dictionary[k]])),
     };
   }
 }
@@ -121,37 +119,37 @@ Create a template engine that supports multiple languages:
 ```typescript
 export class I18nHyperscriptTemplateEngine extends HyperscriptTemplateEngine {
   private i18nProcessor: I18nServerHyperscriptProcessor;
-  
+
   async render(template: string, context: ViewContext): Promise<string> {
     // Detect script language from template metadata or context
     const locale = context.locale || this.detectLocale(template);
-    
+
     // Extract scripts with language hints
     const { html, scripts, locales } = await this.extractI18nScripts(template);
-    
+
     // Process each script with its detected language
     const processedScripts = await this.processI18nScripts(scripts, locales);
-    
+
     // Inject with locale metadata
     return this.renderWithI18nContext(html, {
       ...context,
       scripts: processedScripts,
       locale,
-      translations: await this.loadTranslations(locale)
+      translations: await this.loadTranslations(locale),
     });
   }
-  
+
   private async extractI18nScripts(template: string): Promise<ExtractedI18nTemplate> {
     const scriptRegex = /@hyperscript\s+(\w+)(?:\s+lang="(\w+)")?([\\s\\S]*?)@end/g;
     const scripts: Record<string, string> = {};
     const locales: Record<string, string> = {};
-    
+
     const html = template.replace(scriptRegex, (match, name, lang, content) => {
       scripts[name] = content.trim();
       locales[name] = lang || 'en';
       return `<!-- hyperscript:${name}:${lang || 'en'} -->`;
     });
-    
+
     return { html, scripts, locales };
   }
 }
@@ -167,29 +165,29 @@ export class I18nServerHyperscriptExtension {
     // Get user's preferred language
     const config = vscode.workspace.getConfiguration('hyperscript');
     const devLocale = config.get('developmentLocale', 'en');
-    
+
     // Register multi-language support
     const i18nProvider = new HyperscriptI18nLSP(devLocale);
-    
+
     // Provide completions in developer's language
     vscode.languages.registerCompletionItemProvider(
       { pattern: '**/*.{html,django,jinja2}' },
       {
         async provideCompletionItems(document, position) {
           const scriptContext = await detectScriptContext(document, position);
-          
+
           if (scriptContext) {
             // Provide completions in the detected language
             return i18nProvider.getCompletions({
               line: document.lineAt(position).text,
               character: position.character,
-              locale: scriptContext.locale || devLocale
+              locale: scriptContext.locale || devLocale,
             });
           }
-        }
+        },
       }
     );
-    
+
     // Multi-language diagnostics
     const diagnosticProvider = new I18nDiagnosticProvider();
     vscode.languages.registerDiagnosticProvider(
@@ -203,15 +201,15 @@ export class I18nServerHyperscriptExtension {
 ### 5. **Django/Flask Integration with I18n**
 
 ```python
-from hyperfixi import I18nHyperscriptHandler, get_user_locale
+from lokascript import I18nHyperscriptHandler, get_user_locale
 
 class LocalizedProductListView(I18nHyperscriptHandler):
     template_name = 'products/list.html'
-    
+
     def get_hyperscript_context(self, request):
         # Get user's preferred language
         user_locale = get_user_locale(request)
-        
+
         # Define behaviors in multiple languages
         behaviors = {
             'es': {
@@ -247,10 +245,10 @@ class LocalizedProductListView(I18nHyperscriptHandler):
                 '''
             }
         }
-        
+
         # Select behaviors based on user locale
         user_behaviors = behaviors.get(user_locale, behaviors.get('en', {}))
-        
+
         return {
             'behaviors': user_behaviors,
             'locale': user_locale,
@@ -268,51 +266,47 @@ export const hyperscriptBuildConfig = {
   i18n: {
     // Languages to build
     locales: ['en', 'es', 'ko', 'zh'],
-    
+
     // Source language for your team
     sourceLocale: 'es',
-    
+
     // Build outputs
     outputs: {
       // Single bundle with all translations
       bundle: 'dist/hyperscript-i18n.js',
-      
+
       // Separate bundles per language
       split: true,
-      splitPattern: 'dist/hyperscript-[locale].js'
+      splitPattern: 'dist/hyperscript-[locale].js',
     },
-    
+
     // Translation validation
     validation: {
       // Ensure all keywords are translated
       requireComplete: true,
-      
+
       // Validate against hyperscript grammar
-      validateGrammar: true
-    }
-  }
+      validateGrammar: true,
+    },
+  },
 };
 
 // Build task
 export async function buildI18nHyperscript() {
   const builder = new HyperscriptI18nBuilder({
     sourceLocale: config.i18n.sourceLocale,
-    preserveOriginal: true
+    preserveOriginal: true,
   });
-  
+
   // Process all view files
-  const results = await builder.processDirectory(
-    'src/views',
-    'dist/views',
-    {
-      pattern: '**/*.{html,py,ts}',
-      locales: config.i18n.locales
-    }
-  );
-  
+  const results = await builder.processDirectory('src/views', 'dist/views', {
+    pattern: '**/*.{html,py,ts}',
+    locales: config.i18n.locales,
+  });
+
   // Generate language packs
   await generateLanguagePacks(results);
-  
+
   // Generate documentation in multiple languages
   await generateI18nDocs(results);
 }
@@ -328,33 +322,33 @@ export class HyperscriptI18nRuntime {
   constructor(private currentLocale: string) {
     this.dictionaries = {};
   }
-  
+
   async switchLanguage(newLocale: string) {
     // Load language pack if not cached
     if (!this.dictionaries[newLocale]) {
       this.dictionaries[newLocale] = await this.loadLanguagePack(newLocale);
     }
-    
+
     // Find all hyperscript attributes
     const elements = document.querySelectorAll('[_], [script], [data-script]');
-    
+
     elements.forEach(element => {
       // Get original script (preserved during build)
       const originalAttr = `_-${this.currentLocale}`;
       const original = element.getAttribute(originalAttr);
-      
+
       if (original) {
         // Translate to new language
         const translated = this.translateScript(original, this.currentLocale, newLocale);
-        
+
         // Update the hyperscript
         element.setAttribute('_', translated);
-        
+
         // Re-process the element
         _hyperscript.processNode(element);
       }
     });
-    
+
     this.currentLocale = newLocale;
   }
 }
@@ -370,9 +364,9 @@ export class I18nDocGenerator {
     const docs = {
       locale,
       behaviors: {},
-      examples: {}
+      examples: {},
     };
-    
+
     for (const [name, script] of Object.entries(processedScripts)) {
       // Generate docs in the original language
       docs.behaviors[name] = {
@@ -380,13 +374,13 @@ export class I18nDocGenerator {
         syntax: {
           original: script.original,
           english: script.translated,
-          locale: script.originalLocale
+          locale: script.originalLocale,
         },
         keywords: script.metadata.keywords,
-        examples: await this.generateExamples(script, locale)
+        examples: await this.generateExamples(script, locale),
       };
     }
-    
+
     return docs;
   }
 }

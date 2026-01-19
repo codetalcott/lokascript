@@ -2,12 +2,13 @@
 
 ## Executive Summary
 
-This proposal outlines the evolution of hyperfixi's semantic schema to support:
+This proposal outlines the evolution of lokascript's semantic schema to support:
+
 1. **Multi-actor systems** via an activated `agent` role
 2. **Multi-target code generation** beyond JavaScript
 3. **Extended execution contexts** (server, IoT, AI agents)
 
-The semantic-first architecture positions hyperfixi as a **universal intent language** that can target multiple runtimes while maintaining a single, human-readable syntax.
+The semantic-first architecture positions lokascript as a **universal intent language** that can target multiple runtimes while maintaining a single, human-readable syntax.
 
 ---
 
@@ -19,29 +20,29 @@ The semantic schema now defines **11 thematic roles**, organized into three cate
 
 **Core Thematic Roles** (from linguistic theory):
 
-| Role | Status | Description | Example |
-|------|--------|-------------|---------|
-| action | Active | Command verb (implicit) | toggle, put, fetch |
-| agent | Reserved | Who performs action | server, claude, me |
-| patient | Active | Primary object of action | .active, #counter |
-| source | Active | Origin of data/content | from #input, from URL |
-| destination | Active | Target location | into #output, on #button |
-| event | Active | Trigger for handlers | click, input, keydown |
-| condition | Active | Boolean expressions | if x > 5 |
+| Role        | Status   | Description              | Example                  |
+| ----------- | -------- | ------------------------ | ------------------------ |
+| action      | Active   | Command verb (implicit)  | toggle, put, fetch       |
+| agent       | Reserved | Who performs action      | server, claude, me       |
+| patient     | Active   | Primary object of action | .active, #counter        |
+| source      | Active   | Origin of data/content   | from #input, from URL    |
+| destination | Active   | Target location          | into #output, on #button |
+| event       | Active   | Trigger for handlers     | click, input, keydown    |
+| condition   | Active   | Boolean expressions      | if x > 5                 |
 
 **Quantitative Roles** (answer "how much/long"):
 
-| Role | Status | Description | Example |
-|------|--------|-------------|---------|
-| quantity | Active | Numeric amount | by 5, 3 times |
-| duration | **NEW** | Time span | for 5 seconds, over 500ms |
+| Role     | Status  | Description    | Example                   |
+| -------- | ------- | -------------- | ------------------------- |
+| quantity | Active  | Numeric amount | by 5, 3 times             |
+| duration | **NEW** | Time span      | for 5 seconds, over 500ms |
 
 **Adverbial Roles** (answer "how/by what means"):
 
-| Role | Status | Description | Example |
-|------|--------|-------------|---------|
-| method | **NEW** | Protocol/technique | as GET, via websocket |
-| style | **RENAMED** | Visual/behavioral manner | with fade, smoothly |
+| Role   | Status      | Description              | Example               |
+| ------ | ----------- | ------------------------ | --------------------- |
+| method | **NEW**     | Protocol/technique       | as GET, via websocket |
+| style  | **RENAMED** | Visual/behavioral manner | with fade, smoothly   |
 
 **Removed Roles**:
 
@@ -57,29 +58,29 @@ The semantic schema now defines **11 thematic roles**, organized into three cate
 ```typescript
 // packages/semantic/src/types.ts - Extended AgentValue
 export type AgentValue =
-  | ReferenceValue           // me, you, it, self
-  | SelectorValue            // #element, .component
-  | ServiceIdentifier        // NEW: server, worker, claude
-  | RemoteIdentifier         // NEW: peer:id, device:name
-  | DelegateIdentifier;      // NEW: on-behalf-of:user
+  | ReferenceValue // me, you, it, self
+  | SelectorValue // #element, .component
+  | ServiceIdentifier // NEW: server, worker, claude
+  | RemoteIdentifier // NEW: peer:id, device:name
+  | DelegateIdentifier; // NEW: on-behalf-of:user
 
 export interface ServiceIdentifier {
   readonly type: 'service';
-  readonly value: string;           // 'server' | 'worker' | 'claude' | custom
-  readonly endpoint?: string;       // Optional URL/address
+  readonly value: string; // 'server' | 'worker' | 'claude' | custom
+  readonly endpoint?: string; // Optional URL/address
   readonly capabilities?: string[]; // What this agent can do
 }
 
 export interface RemoteIdentifier {
   readonly type: 'remote';
-  readonly protocol: string;        // 'peer' | 'device' | 'socket'
-  readonly address: string;         // Identifier within protocol
+  readonly protocol: string; // 'peer' | 'device' | 'socket'
+  readonly address: string; // Identifier within protocol
 }
 
 export interface DelegateIdentifier {
   readonly type: 'delegate';
-  readonly principal: AgentValue;   // Who we're acting for
-  readonly scope?: string[];        // Allowed actions
+  readonly principal: AgentValue; // Who we're acting for
+  readonly scope?: string[]; // Allowed actions
 }
 ```
 
@@ -119,26 +120,34 @@ export interface DelegateIdentifier {
 
 **New roles for expanded capabilities**:
 
-| Role | Purpose | Example |
-|------|---------|---------|
-| `beneficiary` | Who benefits from action | "fetch data for user" |
-| `duration` | Time span | "show message for 5 seconds" |
-| `frequency` | Repetition rate | "poll every 30 seconds" |
-| `constraint` | Limitations | "fetch with timeout 5000" |
-| `fallback` | Error recovery | "fetch or use cached" |
+| Role          | Purpose                  | Example                      |
+| ------------- | ------------------------ | ---------------------------- |
+| `beneficiary` | Who benefits from action | "fetch data for user"        |
+| `duration`    | Time span                | "show message for 5 seconds" |
+| `frequency`   | Repetition rate          | "poll every 30 seconds"      |
+| `constraint`  | Limitations              | "fetch with timeout 5000"    |
+| `fallback`    | Error recovery           | "fetch or use cached"        |
 
 ```typescript
 // Extended SemanticRole type
 export type SemanticRole =
   // Existing (core thematic)
-  | 'action' | 'agent' | 'patient' | 'source' | 'destination'
-  | 'instrument' | 'event' | 'condition' | 'quantity' | 'manner'
+  | 'action'
+  | 'agent'
+  | 'patient'
+  | 'source'
+  | 'destination'
+  | 'instrument'
+  | 'event'
+  | 'condition'
+  | 'quantity'
+  | 'manner'
   // New (extended)
-  | 'beneficiary'   // for whom
-  | 'duration'      // how long
-  | 'frequency'     // how often
-  | 'constraint'    // with what limits
-  | 'fallback';     // on failure
+  | 'beneficiary' // for whom
+  | 'duration' // how long
+  | 'frequency' // how often
+  | 'constraint' // with what limits
+  | 'fallback'; // on failure
 ```
 
 #### Phase 3: Role Composition
@@ -216,17 +225,17 @@ export interface CodeGenerator<TOutput = string> {
 }
 
 export type GeneratorTarget =
-  | 'javascript'      // Browser/Node.js
-  | 'typescript'      // With type annotations
-  | 'sql'             // Database queries
-  | 'graphql'         // API queries
-  | 'rest'            // HTTP requests
-  | 'llm-prompt'      // AI model prompts
-  | 'state-machine'   // XState/statecharts
-  | 'workflow'        // Temporal/workflow engines
-  | 'hardware'        // IoT/embedded
-  | 'test'            // Test assertions
-  | 'documentation';  // Human-readable docs
+  | 'javascript' // Browser/Node.js
+  | 'typescript' // With type annotations
+  | 'sql' // Database queries
+  | 'graphql' // API queries
+  | 'rest' // HTTP requests
+  | 'llm-prompt' // AI model prompts
+  | 'state-machine' // XState/statecharts
+  | 'workflow' // Temporal/workflow engines
+  | 'hardware' // IoT/embedded
+  | 'test' // Test assertions
+  | 'documentation'; // Human-readable docs
 
 export interface GeneratorContext {
   /** Available runtime capabilities */
@@ -317,8 +326,8 @@ export class SQLGenerator implements CodeGenerator<SQLQuery> {
   }
 
   private generateSelect(node: SemanticNode, ctx: GeneratorContext): SQLQuery {
-    const source = node.roles.get('source');    // table
-    const patient = node.roles.get('patient');  // columns
+    const source = node.roles.get('source'); // table
+    const patient = node.roles.get('patient'); // columns
     const condition = node.roles.get('condition');
 
     return {
@@ -331,7 +340,7 @@ export class SQLGenerator implements CodeGenerator<SQLQuery> {
   }
 
   private generateInsertOrUpdate(node: SemanticNode, ctx: GeneratorContext): SQLQuery {
-    const patient = node.roles.get('patient');      // data
+    const patient = node.roles.get('patient'); // data
     const destination = node.roles.get('destination'); // table
     const condition = node.roles.get('condition');
 
@@ -403,10 +412,10 @@ export class LLMPromptGenerator implements CodeGenerator<LLMPrompt> {
   }
 
   private generateAsk(node: SemanticNode, ctx: GeneratorContext): LLMPrompt {
-    const patient = node.roles.get('patient');      // The question
-    const source = node.roles.get('source');        // Context/document
-    const manner = node.roles.get('manner');        // Style
-    const agent = node.roles.get('agent');          // Which model
+    const patient = node.roles.get('patient'); // The question
+    const source = node.roles.get('source'); // Context/document
+    const manner = node.roles.get('manner'); // Style
+    const agent = node.roles.get('agent'); // Which model
     const constraint = node.roles.get('constraint'); // Limits
 
     return {
@@ -421,8 +430,8 @@ export class LLMPromptGenerator implements CodeGenerator<LLMPrompt> {
   }
 
   private generateSummarize(node: SemanticNode, ctx: GeneratorContext): LLMPrompt {
-    const patient = node.roles.get('patient');   // Content to summarize
-    const manner = node.roles.get('manner');     // bullets, paragraph, tl;dr
+    const patient = node.roles.get('patient'); // Content to summarize
+    const manner = node.roles.get('manner'); // bullets, paragraph, tl;dr
     const quantity = node.roles.get('quantity'); // length limit
 
     const style = this.mannerToStyle(manner);
@@ -431,7 +440,10 @@ export class LLMPromptGenerator implements CodeGenerator<LLMPrompt> {
     return {
       model: this.defaultModel(ctx),
       messages: [
-        { role: 'system', content: `You are a summarization assistant. Provide ${style} summaries${lengthHint}.` },
+        {
+          role: 'system',
+          content: `You are a summarization assistant. Provide ${style} summaries${lengthHint}.`,
+        },
         { role: 'user', content: `Summarize the following:\n\n${this.resolveContent(patient)}` },
       ],
       options: {},
@@ -495,21 +507,18 @@ export class StateMachineGenerator implements CodeGenerator<StateMachineDefiniti
     const transitions = this.buildTransitions(handlers, states);
 
     return {
-      id: ctx.options.machineId ?? 'hyperfixi-machine',
+      id: ctx.options.machineId ?? 'lokascript-machine',
       initial: states[0]?.name ?? 'idle',
-      states: Object.fromEntries(
-        states.map(s => [s.name, this.stateToXState(s, transitions)])
-      ),
+      states: Object.fromEntries(states.map(s => [s.name, this.stateToXState(s, transitions)])),
     };
   }
 
   private stateToXState(state: InferredState, transitions: TransitionMap): XStateNode {
     return {
       on: Object.fromEntries(
-        transitions.get(state.name)?.map(t => [
-          t.event,
-          { target: t.target, actions: t.actions }
-        ]) ?? []
+        transitions
+          .get(state.name)
+          ?.map(t => [t.event, { target: t.target, actions: t.actions }]) ?? []
       ),
       entry: state.entryActions,
       exit: state.exitActions,
@@ -530,18 +539,18 @@ const machine = {
   initial: 'idle',
   states: {
     idle: {
-      on: { CLICK: { target: 'playing', actions: ['togglePlaying'] } }
+      on: { CLICK: { target: 'playing', actions: ['togglePlaying'] } },
     },
     playing: {
       on: {
         CLICK: { target: 'paused', actions: ['togglePlaying'] },
-        ENDED: { target: 'idle', actions: ['removePlaying'] }
-      }
+        ENDED: { target: 'idle', actions: ['removePlaying'] },
+      },
     },
     paused: {
-      on: { CLICK: { target: 'playing', actions: ['togglePlaying'] } }
-    }
-  }
+      on: { CLICK: { target: 'playing', actions: ['togglePlaying'] } },
+    },
+  },
 };
 ```
 
@@ -660,11 +669,7 @@ export class GeneratorRegistry {
     this.targetMap.set(generator.target, existing);
   }
 
-  generate(
-    node: SemanticNode,
-    target: GeneratorTarget,
-    context: GeneratorContext
-  ): unknown {
+  generate(node: SemanticNode, target: GeneratorTarget, context: GeneratorContext): unknown {
     const generators = this.targetMap.get(target) ?? [];
     const suitable = generators.find(g => g.supports(node));
 
@@ -681,9 +686,7 @@ export class GeneratorRegistry {
     targets: GeneratorTarget[],
     context: GeneratorContext
   ): Map<GeneratorTarget, unknown> {
-    return new Map(
-      targets.map(t => [t, this.generate(node, t, context)])
-    );
+    return new Map(targets.map(t => [t, this.generate(node, t, context)]));
   }
 }
 
@@ -718,10 +721,7 @@ export class MultiTargetRuntime {
     private executors: Map<GeneratorTarget, Executor>
   ) {}
 
-  async execute(
-    node: SemanticNode,
-    context: RuntimeContext
-  ): Promise<ExecutionResult> {
+  async execute(node: SemanticNode, context: RuntimeContext): Promise<ExecutionResult> {
     // Determine best target based on agent and capabilities
     const target = this.selectTarget(node, context);
 
@@ -739,11 +739,14 @@ export class MultiTargetRuntime {
     // Agent-based routing
     if (agent?.type === 'service') {
       switch (agent.value) {
-        case 'server': return 'rest';
-        case 'database': return 'sql';
+        case 'server':
+          return 'rest';
+        case 'database':
+          return 'sql';
         case 'claude':
         case 'gpt':
-        case 'assistant': return 'llm-prompt';
+        case 'assistant':
+          return 'llm-prompt';
       }
     }
 
@@ -871,30 +874,35 @@ export const pipelineSchema: CommandSchema = {
 ## Part 5: Implementation Roadmap
 
 ### Phase 1: Foundation (2-3 weeks)
+
 - [ ] Extend `AgentValue` type with service/remote identifiers
 - [ ] Add new roles (beneficiary, duration, frequency, constraint, fallback)
 - [ ] Create `CodeGenerator` interface and registry
 - [ ] Refactor current JS output as `JavaScriptGenerator`
 
 ### Phase 2: Core Generators (3-4 weeks)
+
 - [ ] Implement `SQLGenerator` for database commands
 - [ ] Implement `RESTGenerator` for API calls
 - [ ] Implement `TestGenerator` for test assertions
 - [ ] Add generator selection logic based on agent role
 
 ### Phase 3: AI Integration (2-3 weeks)
+
 - [ ] Implement `LLMPromptGenerator`
 - [ ] Add AI command schemas (ask, summarize, analyze, translate)
 - [ ] Create patterns for AI commands in all 4 languages
 - [ ] Build executor for LLM API calls
 
 ### Phase 4: Advanced Targets (4-6 weeks)
+
 - [ ] Implement `StateMachineGenerator` for XState
 - [ ] Implement `WorkflowGenerator` for Temporal/similar
 - [ ] Add GraphQL generator
 - [ ] IoT/hardware target exploration
 
 ### Phase 5: Runtime Composition (2-3 weeks)
+
 - [ ] Build `MultiTargetRuntime` with dynamic routing
 - [ ] Implement capability-based target selection
 - [ ] Add agent delegation and multi-hop execution
@@ -967,13 +975,13 @@ on load
 
 ## Conclusion
 
-This proposal outlines a path from hyperfixi's current browser-focused JavaScript output to a **universal semantic execution platform**. By:
+This proposal outlines a path from lokascript's current browser-focused JavaScript output to a **universal semantic execution platform**. By:
 
 1. **Activating the agent role** for multi-actor systems
 2. **Adding new roles** for temporal and constraint concepts
 3. **Implementing the generator pattern** for multi-target output
 4. **Creating domain-specific generators** (SQL, LLM, REST, etc.)
 
-...hyperfixi can become a **human-readable intent language** that bridges the gap between natural language and executable code across diverse platforms.
+...lokascript can become a **human-readable intent language** that bridges the gap between natural language and executable code across diverse platforms.
 
 The semantic schema's linguistic foundation makes it particularly well-suited for this evolution, as thematic roles are universal concepts that map naturally to different execution domains.

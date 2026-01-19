@@ -12,6 +12,7 @@ Found `src/runtime/minimal-runtime.ts` (251 lines) but it's **not suitable** for
 ### What It Is
 
 A **toy implementation** for demos - completely separate from main Runtime:
+
 - No command registry integration
 - Hard-coded 4 commands (toggle, set, add, remove)
 - Basic AST execution
@@ -22,6 +23,7 @@ A **toy implementation** for demos - completely separate from main Runtime:
 ### What We Need
 
 **Production-ready runtime classes** that:
+
 - ✅ Extend from RuntimeBase (shared core logic)
 - ✅ Use enhanced command architecture
 - ✅ Support full expression evaluation
@@ -36,6 +38,7 @@ A **toy implementation** for demos - completely separate from main Runtime:
 ### Runtime.ts File Size: **2,956 lines**
 
 **Key Components:**
+
 1. **Lines 1-100**: Imports (20+ command factories) ← **THIS IS THE PROBLEM**
 2. **Lines 100-160**: RuntimeOptions, constructor, initialization
 3. **Lines 160-250**: Enhanced command initialization
@@ -46,18 +49,21 @@ A **toy implementation** for demos - completely separate from main Runtime:
 ### Extraction Challenges
 
 **Challenge 1: Circular Dependencies**
+
 - Runtime imports commands
 - Commands import Runtime types
 - Behaviors depend on Runtime
 - Need careful extraction to avoid cycles
 
 **Challenge 2: Shared State**
+
 - `enhancedRegistry` - shared command registry
 - `expressionEvaluator` - shared evaluator
 - `behaviorRegistry` - shared behaviors
 - `globalVariables` - shared globals
 
 **Challenge 3: Testing**
+
 - 2,956 lines of runtime logic
 - Multiple test files depend on Runtime
 - Need to ensure no regressions
@@ -86,8 +92,8 @@ export class MinimalRuntimeEnhanced extends Runtime {
   constructor(options = {}) {
     super({
       ...options,
-      lazyLoad: false,  // Disable lazy load
-      useEnhancedCommands: true
+      lazyLoad: false, // Disable lazy load
+      useEnhancedCommands: true,
     });
 
     // Clear any auto-registered commands
@@ -107,6 +113,7 @@ export class MinimalRuntimeEnhanced extends Runtime {
 ```
 
 **Pros:**
+
 - ✅ Minimal code changes
 - ✅ Low risk of regressions
 - ✅ Uses existing Runtime logic
@@ -129,12 +136,14 @@ export class MinimalRuntimeEnhanced extends Runtime {
 **Estimated Effort:** 8-12 hours
 
 **Risks:**
+
 - ⚠️ High risk of regressions (touching 2,956 lines)
 - ⚠️ Circular dependency issues
 - ⚠️ Need comprehensive testing
 - ⚠️ May break existing code
 
 **Pros:**
+
 - ✅ True tree-shaking (only imports needed commands)
 - ✅ Clean architecture
 - ✅ Long-term maintainability
@@ -179,20 +188,21 @@ registry.register(createSendCommand());
 registry.register(createLogCommand());
 
 // Expose minimal API
-window.hyperfixi = {
-  parse: (code) => parser.parse(code),
+window.lokascript = {
+  parse: code => parser.parse(code),
   execute: async (code, context = createContext()) => {
     const ast = parser.parse(code);
     return registry.execute(ast, context);
   },
   createContext,
-  attributeProcessor: defaultAttributeProcessor
+  attributeProcessor: defaultAttributeProcessor,
 };
 
 defaultAttributeProcessor.init();
 ```
 
 **Pros:**
+
 - ✅ Zero changes to Runtime.ts (no risk!)
 - ✅ True tree-shaking (only imports 8 commands)
 - ✅ Can implement in 2-3 hours
@@ -209,6 +219,7 @@ defaultAttributeProcessor.init();
 ### What Would Be Included:
 
 **Minimal Bundle:**
+
 - Parser (~30KB)
 - ExpressionEvaluator (~25KB)
 - EnhancedCommandRegistry (~15KB)
@@ -218,11 +229,13 @@ defaultAttributeProcessor.init();
 - **Total: ~128KB uncompressed (~45-55KB gzipped)**
 
 **Standard Bundle:**
+
 - Same as minimal
-- + 12 more commands (~60KB)
+- - 12 more commands (~60KB)
 - **Total: ~188KB uncompressed (~65-75KB gzipped)**
 
 **Expected Reduction:**
+
 - Minimal: 447KB → 128KB (**71% smaller!**)
 - Standard: 447KB → 188KB (**58% smaller!**)
 
@@ -233,6 +246,7 @@ defaultAttributeProcessor.init();
 **Implement Option C** - New entry points without modifying Runtime
 
 ### Reasons:
+
 1. **Low risk** - No changes to 2,956-line Runtime.ts
 2. **Fast** - Can implement in 2-3 hours
 3. **Effective** - Achieves 58-71% size reduction
@@ -250,6 +264,7 @@ defaultAttributeProcessor.init();
 7. ✅ If successful, can extract RuntimeBase later
 
 ### Timeline:
+
 - **Hour 1**: Create entry points
 - **Hour 2**: Update configs, build, test
 - **Hour 3**: Verify and document

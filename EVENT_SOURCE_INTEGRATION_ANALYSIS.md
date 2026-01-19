@@ -1,7 +1,7 @@
 # Custom Event Source Integration Opportunities
 
 **Date:** 2026-01-17
-**Context:** Analysis of integration opportunities for the custom event source system (registry system) across HyperFixi packages
+**Context:** Analysis of integration opportunities for the custom event source system (registry system) across LokaScript packages
 
 ## Executive Summary
 
@@ -22,7 +22,7 @@ The recently implemented custom event source registry system enables server-side
 
 ## 1. Server-Integration Package
 
-**Package:** `@hyperfixi/server-integration`
+**Package:** `@lokascript/server-integration`
 **Priority:** 🔴 **HIGH**
 **Status:** Ready for integration
 
@@ -43,8 +43,8 @@ Create a first-class request event source that integrates with the Express serve
 
 ```typescript
 // packages/server-integration/src/events/request-event-source.ts
-import { createRequestEventSource } from '@hyperfixi/core/registry/examples';
-import { registry } from '@hyperfixi/core/registry';
+import { createRequestEventSource } from '@lokascript/core/registry/examples';
+import { registry } from '@lokascript/core/registry';
 
 export function setupRequestEvents(app: Express) {
   const requestSource = createRequestEventSource();
@@ -74,7 +74,7 @@ export function setupRequestEvents(app: Express) {
 
 ```typescript
 // Server-side hyperscript routes
-hyperfixi.compile(`
+lokascript.compile(`
   on request(GET, /api/users/:id)
     set user to db.users.findById(params.id)
     respond with <json> user </json>
@@ -203,7 +203,7 @@ end
 
 ## 2. SSR-Support Package
 
-**Package:** `@hyperfixi/ssr-support`
+**Package:** `@lokascript/ssr-support`
 **Priority:** 🔴 **HIGH**
 **Status:** Ready for integration
 
@@ -289,7 +289,7 @@ const hydrationSource: EventSource = {
 
   subscribe(options, context) {
     // Listen for hydration events from client
-    window.addEventListener(`hyperfixi:hydration:${options.event}`, e => {
+    window.addEventListener(`lokascript:hydration:${options.event}`, e => {
       options.handler(
         {
           type: options.event,
@@ -324,13 +324,13 @@ end
 
 ## 3. Developer-Tools Package
 
-**Package:** `@hyperfixi/developer-tools`
+**Package:** `@lokascript/developer-tools`
 **Priority:** 🟡 **MEDIUM-HIGH**
 **Status:** Ready for integration
 
 ### Current State
 
-- CLI tools (`hyperfixi` / `hfx`)
+- CLI tools (`lokascript` / `hfx`)
 - Visual builder with live preview
 - Development server with WebSocket live reload
 - Code analyzer, profiler, bundle analyzer
@@ -478,7 +478,7 @@ end
 
 ## 4. MCP-Server Package
 
-**Package:** `@hyperfixi/mcp-server`
+**Package:** `@lokascript/mcp-server`
 **Priority:** 🟡 **MEDIUM**
 **Status:** Ready for integration
 
@@ -589,7 +589,7 @@ const eventSourcePatterns = [
 
 ## 5. Testing-Framework Package
 
-**Package:** `@hyperfixi/testing-framework`
+**Package:** `@lokascript/testing-framework`
 **Priority:** 🟡 **MEDIUM**
 **Status:** Ready for integration
 
@@ -723,7 +723,7 @@ end
 
 ## 6. Analytics Package
 
-**Package:** `@hyperfixi/analytics`
+**Package:** `@lokascript/analytics`
 **Priority:** 🟢 **LOW-MEDIUM**
 **Status:** Ready for integration
 
@@ -827,7 +827,7 @@ eventSourceRegistry.subscribe = (sourceName, options, context) => {
 
 ## 7. Vite-Plugin Package
 
-**Package:** `@hyperfixi/vite-plugin`
+**Package:** `@lokascript/vite-plugin`
 **Priority:** 🟢 **LOW** (needs research)
 **Status:** Exploration phase
 
@@ -983,7 +983,7 @@ const source: EventSource = {
 
 ## Conclusion
 
-The custom event source registry system opens up **significant opportunities** across the HyperFixi ecosystem. The highest-value integrations are in **server-integration** (request handlers), **ssr-support** (lifecycle hooks), and **developer-tools** (dev server events).
+The custom event source registry system opens up **significant opportunities** across the LokaScript ecosystem. The highest-value integrations are in **server-integration** (request handlers), **ssr-support** (lifecycle hooks), and **developer-tools** (dev server events).
 
 **Estimated Impact:**
 

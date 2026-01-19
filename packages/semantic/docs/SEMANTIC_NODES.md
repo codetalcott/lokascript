@@ -1,12 +1,13 @@
-# Semantic Nodes in HyperFixi
+# Semantic Nodes in LokaScript
 
-This document explains the semantic node system that powers HyperFixi's multilingual hyperscript capabilities.
+This document explains the semantic node system that powers LokaScript's multilingual hyperscript capabilities.
 
 ## Overview
 
-A **semantic node** is a language-independent representation of a hyperscript command. It captures the *meaning* of a command using universal semantic roles from linguistics, rather than the surface syntax of any particular language.
+A **semantic node** is a language-independent representation of a hyperscript command. It captures the _meaning_ of a command using universal semantic roles from linguistics, rather than the surface syntax of any particular language.
 
 This enables:
+
 - **True multilingual support**: Parse from any language, render to any language
 - **Meaning preservation**: Translations maintain semantic equivalence
 - **Runtime optimization**: Commands can be analyzed and optimized at the semantic level
@@ -18,7 +19,7 @@ This enables:
 ```typescript
 interface SemanticNode {
   kind: 'command' | 'event-handler' | 'conditional' | 'compound' | 'loop';
-  action: string;           // The verb: 'toggle', 'add', 'set', etc.
+  action: string; // The verb: 'toggle', 'add', 'set', etc.
   roles: Map<SemanticRole, SemanticValue>;
   metadata?: {
     sourceText?: string;
@@ -31,13 +32,13 @@ interface SemanticNode {
 
 ### Node Types
 
-| Kind | Description | Example |
-|------|-------------|---------|
-| `command` | Single command | `toggle .active` |
-| `event-handler` | Event listener with body | `on click toggle .active` |
-| `conditional` | If/else block | `if condition show #x else hide #x end` |
-| `compound` | Then-chained commands | `toggle .a then put 'x' into #y` |
-| `loop` | Repeat/while/for blocks | `repeat 3 times toggle .active end` |
+| Kind            | Description              | Example                                 |
+| --------------- | ------------------------ | --------------------------------------- |
+| `command`       | Single command           | `toggle .active`                        |
+| `event-handler` | Event listener with body | `on click toggle .active`               |
+| `conditional`   | If/else block            | `if condition show #x else hide #x end` |
+| `compound`      | Then-chained commands    | `toggle .a then put 'x' into #y`        |
+| `loop`          | Repeat/while/for blocks  | `repeat 3 times toggle .active end`     |
 
 ### SemanticValue Types
 
@@ -49,7 +50,14 @@ type SemanticValue =
   | { type: 'literal'; value: string | number | boolean; dataType?: string }
   | { type: 'reference'; value: 'me' | 'you' | 'it' | 'result' | 'event' | 'target' | 'body' }
   | { type: 'property-path'; object: SemanticValue; property: string }
-  | { type: 'expression'; value: string; expressionType?: 'method-call'; object?: SemanticValue; method?: string; args?: string[] };
+  | {
+      type: 'expression';
+      value: string;
+      expressionType?: 'method-call';
+      object?: SemanticValue;
+      method?: string;
+      args?: string[];
+    };
 ```
 
 ### Advanced Expression Types
@@ -86,32 +94,32 @@ The parser now supports complex multi-token expressions:
 
 ## Semantic Roles
 
-The system uses **semantic roles** (also called thematic roles) from linguistics. These describe the *function* of each argument in a command, regardless of language:
+The system uses **semantic roles** (also called thematic roles) from linguistics. These describe the _function_ of each argument in a command, regardless of language:
 
-| Role | Meaning | Description |
-|------|---------|-------------|
-| `patient` | Thing being affected | The direct object of the action |
-| `agent` | Thing doing the action | The subject performing the action |
-| `destination` | Target location | Where something goes or happens |
-| `source` | Origin location | Where something comes from |
-| `instrument` | Tool or means | How the action is performed |
-| `theme` | Thing being moved/described | Content or subject matter |
-| `trigger` | Event that starts action | The initiating event |
-| `condition` | Logical condition | When/if the action occurs |
-| `duration` | Time span | How long something lasts |
-| `value` | New value being set | The value assigned in set operations |
-| `attribute` | Property being modified | CSS property, attribute name |
+| Role          | Meaning                     | Description                          |
+| ------------- | --------------------------- | ------------------------------------ |
+| `patient`     | Thing being affected        | The direct object of the action      |
+| `agent`       | Thing doing the action      | The subject performing the action    |
+| `destination` | Target location             | Where something goes or happens      |
+| `source`      | Origin location             | Where something comes from           |
+| `instrument`  | Tool or means               | How the action is performed          |
+| `theme`       | Thing being moved/described | Content or subject matter            |
+| `trigger`     | Event that starts action    | The initiating event                 |
+| `condition`   | Logical condition           | When/if the action occurs            |
+| `duration`    | Time span                   | How long something lasts             |
+| `value`       | New value being set         | The value assigned in set operations |
+| `attribute`   | Property being modified     | CSS property, attribute name         |
 
 ### Example Mappings
 
-| Command | Roles |
-|---------|-------|
-| `toggle .active` | patient: `.active` |
-| `toggle .active on #btn` | patient: `.active`, destination: `#btn` |
+| Command                   | Roles                                       |
+| ------------------------- | ------------------------------------------- |
+| `toggle .active`          | patient: `.active`                          |
+| `toggle .active on #btn`  | patient: `.active`, destination: `#btn`     |
 | `add .highlight to #item` | patient: `.highlight`, destination: `#item` |
-| `set x to 5` | patient: `x`, value: `5` |
-| `remove .old from #list` | patient: `.old`, source: `#list` |
-| `on click toggle .show` | trigger: `click`, patient: `.show` |
+| `set x to 5`              | patient: `x`, value: `5`                    |
+| `remove .old from #list`  | patient: `.old`, source: `#list`            |
+| `on click toggle .show`   | trigger: `click`, patient: `.show`          |
 
 ---
 
@@ -150,31 +158,31 @@ The semantic node acts as a universal "interlingua" that enables translation bet
 
 Different languages have different word orders:
 
-| Type | Order | Languages | Example |
-|------|-------|-----------|---------|
-| **SVO** | Subject-Verb-Object | English, Spanish, Chinese | `toggle .active on #button` |
+| Type    | Order               | Languages                 | Example                          |
+| ------- | ------------------- | ------------------------- | -------------------------------- |
+| **SVO** | Subject-Verb-Object | English, Spanish, Chinese | `toggle .active on #button`      |
 | **SOV** | Subject-Object-Verb | Japanese, Korean, Turkish | `#button の .active を 切り替え` |
-| **VSO** | Verb-Subject-Object | Arabic | `بدّل .active على #button` |
+| **VSO** | Verb-Subject-Object | Arabic                    | `بدّل .active على #button`       |
 
-The semantic node contains the *meaning*, and the renderer reorders based on the target language's grammar profile.
+The semantic node contains the _meaning_, and the renderer reorders based on the target language's grammar profile.
 
 ### Grammatical Markers
 
 Languages use different particles and prepositions to mark roles:
 
-| Language | Patient Marker | Destination Marker |
-|----------|---------------|-------------------|
-| English | (none) | "on", "to" |
-| Japanese | を (wo) | に (ni), の (no) |
-| Korean | 을/를 (eul/reul) | 에 (e), 의 (ui) |
-| Arabic | (none) | على (ala) |
-| Turkish | -(y)i/-ı | -e/-a, -(n)in |
+| Language | Patient Marker   | Destination Marker |
+| -------- | ---------------- | ------------------ |
+| English  | (none)           | "on", "to"         |
+| Japanese | を (wo)          | に (ni), の (no)   |
+| Korean   | 을/를 (eul/reul) | 에 (e), 의 (ui)    |
+| Arabic   | (none)           | على (ala)          |
+| Turkish  | -(y)i/-ı         | -e/-a, -(n)in      |
 
 ---
 
 ## Runtime Flow
 
-Semantic nodes integrate with the HyperFixi runtime in two ways:
+Semantic nodes integrate with the LokaScript runtime in two ways:
 
 ### 1. Multilingual Parsing Path
 
@@ -242,7 +250,7 @@ The `SemanticGrammarBridge` connects semantic parsing to the core runtime:
 
 ```typescript
 // In core runtime initialization
-import { createSemanticAnalyzer } from '@hyperfixi/semantic';
+import { createSemanticAnalyzer } from '@lokascript/semantic';
 
 const analyzer = createSemanticAnalyzer();
 
@@ -267,7 +275,7 @@ function parseMultilingual(input: string, lang: string): AST {
 ### Basic Translation
 
 ```typescript
-import { getMultilingual } from '@hyperfixi/core/multilingual';
+import { getMultilingual } from '@lokascript/core/multilingual';
 
 const ml = await getMultilingual();
 
@@ -289,11 +297,11 @@ const korean = await ml.render(node, 'ko');
 ### Accessing Semantic Information
 
 ```typescript
-import { parse } from '@hyperfixi/semantic';
+import { parse } from '@lokascript/semantic';
 
 const node = parse('add .highlight to #item', 'en');
 
-console.log(node.action);  // 'add'
+console.log(node.action); // 'add'
 console.log(node.roles.get('patient'));
 // { type: 'selector', value: '.highlight', selectorKind: 'class' }
 
@@ -304,35 +312,35 @@ console.log(node.roles.get('destination'));
 ### Round-Trip Validation
 
 ```typescript
-import { roundTrip } from '@hyperfixi/semantic';
+import { roundTrip } from '@lokascript/semantic';
 
 // Verify translation preserves meaning
 const result = roundTrip('toggle .active on #button', 'en', 'ja');
 // Parses EN → Semantic → Renders JA → Parses JA → Semantic
 // Compares semantic nodes for equivalence
 
-console.log(result.equivalent);  // true if meaning preserved
+console.log(result.equivalent); // true if meaning preserved
 ```
 
 ---
 
 ## Supported Languages
 
-| Code | Language | Word Order | Direction |
-|------|----------|------------|-----------|
-| `en` | English | SVO | LTR |
-| `ja` | Japanese (日本語) | SOV | LTR |
-| `ar` | Arabic (العربية) | VSO | RTL |
-| `es` | Spanish (Español) | SVO | LTR |
-| `ko` | Korean (한국어) | SOV | LTR |
-| `zh` | Chinese (中文) | SVO | LTR |
-| `tr` | Turkish (Türkçe) | SOV | LTR |
-| `pt` | Portuguese (Português) | SVO | LTR |
-| `fr` | French (Français) | SVO | LTR |
-| `de` | German (Deutsch) | SVO | LTR |
-| `id` | Indonesian (Bahasa Indonesia) | SVO | LTR |
-| `qu` | Quechua (Runasimi) | SOV | LTR |
-| `sw` | Swahili (Kiswahili) | SVO | LTR |
+| Code | Language                      | Word Order | Direction |
+| ---- | ----------------------------- | ---------- | --------- |
+| `en` | English                       | SVO        | LTR       |
+| `ja` | Japanese (日本語)             | SOV        | LTR       |
+| `ar` | Arabic (العربية)              | VSO        | RTL       |
+| `es` | Spanish (Español)             | SVO        | LTR       |
+| `ko` | Korean (한국어)               | SOV        | LTR       |
+| `zh` | Chinese (中文)                | SVO        | LTR       |
+| `tr` | Turkish (Türkçe)              | SOV        | LTR       |
+| `pt` | Portuguese (Português)        | SVO        | LTR       |
+| `fr` | French (Français)             | SVO        | LTR       |
+| `de` | German (Deutsch)              | SVO        | LTR       |
+| `id` | Indonesian (Bahasa Indonesia) | SVO        | LTR       |
+| `qu` | Quechua (Runasimi)            | SOV        | LTR       |
+| `sw` | Swahili (Kiswahili)           | SVO        | LTR       |
 
 ---
 

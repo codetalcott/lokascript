@@ -75,7 +75,7 @@ end
 ```javascript
 const btn = document.getElementById('btn'); // has class="active"
 btn.classList.contains('active'); // ✅ true (correct)
-hyperfixi.evaluate('me has .active', btn); // ❌ {} (wrong, should be true)
+lokascript.evaluate('me has .active', btn); // ❌ {} (wrong, should be true)
 ```
 
 **Reproduction:** `node test-has-operator.mjs`

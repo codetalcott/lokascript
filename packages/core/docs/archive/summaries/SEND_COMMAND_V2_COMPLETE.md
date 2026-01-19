@@ -14,13 +14,13 @@ Successfully created a **standalone SendCommand V2 implementation** with **ZERO 
 
 ### Key Metrics
 
-| Metric | V1 | V2 | Improvement |
-|--------|----|----|-------------|
-| **Lines of Code** | 723 | 528 | **-195 lines (27% reduction)** |
-| **Runtime Imports** | 3 (validators, events, dom-utils) | **0** | **100% eliminated** |
-| **Type Imports** | ✅ | ✅ | Preserved |
-| **Features** | All | All | **100% preserved** |
-| **Tree-Shakable** | ❌ No | ✅ **Yes** | **Achieved** |
+| Metric              | V1                                | V2         | Improvement                    |
+| ------------------- | --------------------------------- | ---------- | ------------------------------ |
+| **Lines of Code**   | 723                               | 528        | **-195 lines (27% reduction)** |
+| **Runtime Imports** | 3 (validators, events, dom-utils) | **0**      | **100% eliminated**            |
+| **Type Imports**    | ✅                                | ✅         | Preserved                      |
+| **Features**        | All                               | All        | **100% preserved**             |
+| **Tree-Shakable**   | ❌ No                             | ✅ **Yes** | **Achieved**                   |
 
 ---
 
@@ -67,6 +67,7 @@ Successfully created a **standalone SendCommand V2 implementation** with **ZERO 
 ### Zero V1 Dependencies
 
 **Only Type Imports** (Zero Runtime Cost):
+
 ```typescript
 import type { Command } from '../../types/command-types';
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
@@ -75,6 +76,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ```
 
 **NO Runtime Imports From**:
+
 - ❌ `utils/event-utils` - Inlined `createCustomEvent()`
 - ❌ `validation/*` - Removed validation overhead
 - ❌ `core/events` - Inlined event creation logic
@@ -82,26 +84,31 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ### Inlined Utilities (~150 lines)
 
 **1. resolveTargets()** (~75 lines)
+
 - Handles: HTMLElement, NodeList, Array, CSS selectors
 - Special cases: `window`, `document`, EventTarget
 - Error handling for invalid selectors
 
 **2. parseEventDetail()** (~30 lines)
+
 - Parses function call arguments as event detail
 - Handles object literals and multiple properties
 - Type conversion via `parseValue()`
 
 **3. parseEventOptions()** (~50 lines)
+
 - Finds `with` keyword in args
 - Parses option keywords: `bubbles`, `cancelable`, `composed`
 - Returns EventOptions object
 
 **4. createCustomEvent()** (~15 lines)
+
 - Creates CustomEvent with detail and options
 - Inlined from `event-utils.ts`
 - Default values for all options
 
 **5. parseValue()** (~30 lines)
+
 - Converts strings to numbers, booleans, null
 - Removes quotes from string literals
 - Used by event detail parsing
@@ -114,10 +121,10 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 
 ```typescript
 export interface SendCommandInput {
-  eventName: string;           // Event to send
-  detail?: any;                // Event detail data (optional)
-  targets: EventTarget[];      // Where to dispatch (HTMLElement, Window, Document)
-  options: EventOptions;       // Event options (bubbles, cancelable, composed)
+  eventName: string; // Event to send
+  detail?: any; // Event detail data (optional)
+  targets: EventTarget[]; // Where to dispatch (HTMLElement, Window, Document)
+  options: EventOptions; // Event options (bubbles, cancelable, composed)
 }
 
 export interface EventOptions {
@@ -171,9 +178,10 @@ export class SendCommand implements Command<SendCommandInput, void> {
 
 ### parseTriggerCommand()
 
-Located in: `/Users/williamtalcott/projects/hyperfixi/packages/core/src/parser/parser.ts:1133-1197`
+Located in: `/Users/williamtalcott/projects/lokascript/packages/core/src/parser/parser.ts:1133-1197`
 
 **Syntax Handled**:
+
 ```hyperscript
 send <event> to <target>
 send <event>(<detail>) to <target>
@@ -181,6 +189,7 @@ trigger <event> on <target>
 ```
 
 **Parser Output**:
+
 ```typescript
 {
   type: 'command',
@@ -197,6 +206,7 @@ trigger <event> on <target>
 
 **Function Call Syntax**:
 When event has details, parser emits:
+
 ```typescript
 {
   type: 'functionCall',
@@ -216,11 +226,13 @@ V2 SendCommand detects this and parses event detail from function arguments.
 ### Critical Feature: Function Call Syntax
 
 **Hyperscript Syntax**:
+
 ```hyperscript
 send event(foo: 'bar', count: 42) to #target
 ```
 
 **Parser Output**:
+
 ```typescript
 {
   type: 'functionCall',
@@ -235,6 +247,7 @@ send event(foo: 'bar', count: 42) to #target
 ```
 
 **V2 Implementation**:
+
 ```typescript
 // In parseInput():
 if (firstType === 'functionCall') {
@@ -254,6 +267,7 @@ if (args.length === 1) {
 ```
 
 **Result**:
+
 ```typescript
 {
   eventName: 'event',
@@ -270,6 +284,7 @@ if (args.length === 1) {
 ### "with" Keyword Support
 
 **Syntax**:
+
 ```hyperscript
 send event to #target with bubbles
 send event to #target with cancelable
@@ -277,6 +292,7 @@ send event to #target with composed
 ```
 
 **Implementation**:
+
 ```typescript
 private async parseEventOptions(args, evaluator, context): Promise<EventOptions> {
   const options: EventOptions = {
@@ -311,6 +327,7 @@ private async parseEventOptions(args, evaluator, context): Promise<EventOptions>
 ### Handles Multiple Target Types
 
 **1. HTMLElement**:
+
 ```typescript
 if (evaluated instanceof HTMLElement) {
   targets.push(evaluated);
@@ -318,6 +335,7 @@ if (evaluated instanceof HTMLElement) {
 ```
 
 **2. Window/Document**:
+
 ```typescript
 if (evaluated === 'window' || evaluated === window) {
   targets.push(window);
@@ -329,6 +347,7 @@ if (evaluated === 'document' || evaluated === document) {
 ```
 
 **3. CSS Selectors**:
+
 ```typescript
 if (typeof evaluated === 'string') {
   const selected = document.querySelectorAll(evaluated);
@@ -340,6 +359,7 @@ if (typeof evaluated === 'string') {
 ```
 
 **4. NodeList/Array**:
+
 ```typescript
 if (evaluated instanceof NodeList) {
   const elements = Array.from(evaluated).filter(
@@ -350,6 +370,7 @@ if (evaluated instanceof NodeList) {
 ```
 
 **5. Generic EventTarget**:
+
 ```typescript
 if (evaluated && typeof evaluated === 'object' && 'addEventListener' in evaluated) {
   targets.push(evaluated as EventTarget);
@@ -361,35 +382,42 @@ if (evaluated && typeof evaluated === 'object' && 'addEventListener' in evaluate
 ## Testing Requirements
 
 ### ✅ Zero V1 Dependencies
+
 - [x] No runtime imports from `utils/event-utils`
 - [x] No runtime imports from `validation/*`
 - [x] No runtime imports from `core/events`
 - [x] Only type imports allowed
 
 ### ✅ Simple Events
+
 - [x] `send myEvent to #target`
 - [x] `send click to #button`
 - [x] `trigger loaded on document`
 
 ### ✅ Events with Details
+
 - [x] `send event(foo: 'bar') to #target`
 - [x] `send event(count: 42) to #target`
 - [x] `send event(a: 1, b: 'two', c: true) to #target`
 
 ### ✅ Event Options
+
 - [x] `send event to #target with bubbles`
 - [x] `send event to #target with cancelable`
 - [x] `send event to #target with composed`
 
 ### ✅ Multiple Targets
+
 - [x] `send event to .targets` (multiple elements)
 - [x] All targets receive event
 
 ### ✅ Window/Document Targets
+
 - [x] `send globalEvent to window`
 - [x] `send docEvent to document`
 
 ### ✅ Default Target
+
 - [x] `send event` (defaults to context.me)
 
 ---
@@ -399,6 +427,7 @@ if (evaluated && typeof evaluated === 'object' && 'addEventListener' in evaluate
 ### V1 Implementation (723 lines)
 
 **Imports** (Runtime Dependencies):
+
 ```typescript
 import { v } from '../../validation/lightweight-validators';
 import { validators } from '../../validation/common-validators';
@@ -406,12 +435,14 @@ import { asHTMLElement } from '../../utils/dom-utils';
 ```
 
 **Overhead**:
+
 - ✗ Validation layer (~150 lines)
 - ✗ Enhanced event tracking (~50 lines)
 - ✗ Error handling boilerplate (~80 lines)
 - ✗ TypeScript type guards (~40 lines)
 
 **Features**:
+
 - ✅ All event dispatch features
 - ✅ Type safety
 - ✅ Validation
@@ -420,6 +451,7 @@ import { asHTMLElement } from '../../utils/dom-utils';
 ### V2 Implementation (528 lines)
 
 **Imports** (Zero Runtime Dependencies):
+
 ```typescript
 import type { Command } from '../../types/command-types';
 import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
@@ -428,6 +460,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ```
 
 **Optimizations**:
+
 - ✅ Removed validation layer (-150 lines)
 - ✅ Removed enhanced event tracking (-50 lines)
 - ✅ Simplified error handling (-80 lines)
@@ -435,6 +468,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 - ✅ **Net reduction: -195 lines (27%)**
 
 **Features**:
+
 - ✅ All event dispatch features (100% preserved)
 - ✅ Type safety (maintained)
 - ✅ Tree-shakable (achieved)
@@ -447,6 +481,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ### Week 3 Goal: Convert All Remaining Week 3 Commands
 
 **Target Commands** (9 total):
+
 1. ✅ **hide** (Completed)
 2. ✅ **show** (Completed)
 3. ✅ **add** (Completed)
@@ -474,10 +509,12 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ## Files Modified
 
 ### Created
-- `/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands-v2/events/send.ts` (528 lines)
+
+- `/Users/williamtalcott/projects/lokascript/packages/core/src/commands-v2/events/send.ts` (528 lines)
 
 ### Documentation
-- `/Users/williamtalcott/projects/hyperfixi/packages/core/SEND_COMMAND_V2_COMPLETE.md` (this file)
+
+- `/Users/williamtalcott/projects/lokascript/packages/core/SEND_COMMAND_V2_COMPLETE.md` (this file)
 
 ---
 
@@ -486,6 +523,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 ### Week 4: Advanced Commands Conversion
 
 **Target Commands** (Remaining):
+
 - **Fetch commands**: `fetch`, `call`
 - **Async commands**: `settle`, `complete`
 - **DOM commands**: `append`, `prepend`, `replace`
@@ -493,6 +531,7 @@ import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 - **Event handlers**: `on`, `off`, `once`
 
 **Strategy**:
+
 1. Convert high-value commands first (fetch, on)
 2. Handle complex control flow (if, repeat)
 3. Preserve all V1 features with zero dependencies

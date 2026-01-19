@@ -2,29 +2,32 @@
 
 ## Executive Summary
 
-This document provides a comprehensive audit plan for the htmx-like feature additions to HyperFixi. The audit examines pattern consistency, DRY principles, type safety, and alignment with established codebase conventions.
+This document provides a comprehensive audit plan for the htmx-like feature additions to LokaScript. The audit examines pattern consistency, DRY principles, type safety, and alignment with established codebase conventions.
 
 ## Files Added for htmx-like Features
 
 ### Commands (Builder Pattern)
-| File | Lines | Pattern |
-|------|-------|---------|
-| `commands/dom/swap.ts` | 662 | **New** Builder Pattern |
-| `commands/navigation/push-url.ts` | 184 | **New** Builder Pattern |
-| `commands/navigation/replace-url.ts` | 182 | **New** Builder Pattern |
+
+| File                                 | Lines | Pattern                 |
+| ------------------------------------ | ----- | ----------------------- |
+| `commands/dom/swap.ts`               | 662   | **New** Builder Pattern |
+| `commands/navigation/push-url.ts`    | 184   | **New** Builder Pattern |
+| `commands/navigation/replace-url.ts` | 182   | **New** Builder Pattern |
 
 ### Behaviors (Pre-built)
-| File | Lines | Pattern |
-|------|-------|---------|
-| `behaviors/history-swap.ts` | 332 | Behavior Object + Factory |
-| `behaviors/boosted.ts` | 506 | Behavior Object + Factory |
-| `behaviors/index.ts` | 57 | Re-export barrel |
+
+| File                        | Lines | Pattern                   |
+| --------------------------- | ----- | ------------------------- |
+| `behaviors/history-swap.ts` | 332   | Behavior Object + Factory |
+| `behaviors/boosted.ts`      | 506   | Behavior Object + Factory |
+| `behaviors/index.ts`        | 57    | Re-export barrel          |
 
 ### Library Utilities
-| File | Lines | Pattern |
-|------|-------|---------|
-| `lib/morph-adapter.ts` | 268 | Pluggable Adapter Pattern |
-| `lib/view-transitions.ts` | 343 | Module + Queue Pattern |
+
+| File                      | Lines | Pattern                   |
+| ------------------------- | ----- | ------------------------- |
+| `lib/morph-adapter.ts`    | 268   | Pluggable Adapter Pattern |
+| `lib/view-transitions.ts` | 343   | Module + Queue Pattern    |
 
 **Total New Code**: ~2,534 lines across 8 files
 
@@ -37,6 +40,7 @@ This document provides a comprehensive audit plan for the htmx-like feature addi
 #### Issue: Two Command Patterns Exist
 
 **Existing Pattern (43 commands)**: Class-based with `CommandImplementation` interface
+
 ```typescript
 // Example: commands/navigation/go.ts
 class GoCommand implements CommandImplementation<GoInput, void, TypedExecutionContext> {
@@ -48,6 +52,7 @@ export function createGoCommand() { return new GoCommand(); }
 ```
 
 **New Pattern (3 commands)**: Builder Pattern with `defineCommand()`
+
 ```typescript
 // Example: commands/dom/swap.ts
 export const swapCommand = defineCommand('swap')
@@ -62,12 +67,14 @@ export function createSwapCommand() { return swapCommand; }
 ```
 
 #### Audit Questions
+
 - [ ] Is the Builder Pattern intended to replace the class-based pattern?
 - [ ] Should existing 43 commands be migrated to Builder Pattern?
 - [ ] Is the factory function `createXxxCommand()` still required for Builder Pattern?
 - [ ] Does `command-builder.ts` integrate properly with `CommandRegistryV2`?
 
 #### Recommendations
+
 1. **Document the pattern decision** - Add explanation to ARCHITECTURE.md about when to use each pattern
 2. **Consider migration path** - If Builder is preferred, create migration plan for existing commands
 3. **Ensure registry compatibility** - Verify both patterns work with the same registry
@@ -77,6 +84,7 @@ export function createSwapCommand() { return swapCommand; }
 ### 2. Shared Helper Utilization
 
 #### Available Helpers (commands/helpers/index.ts)
+
 ```typescript
 export { getVariableValue, setVariableValue } from './variable-access';
 export { resolveElement, resolveElements, ... } from './element-resolution';
@@ -86,17 +94,18 @@ export { parseClasses } from './class-manipulation';
 
 #### Audit: Helper Usage in htmx-like Commands
 
-| File | Uses Helpers? | Duplicated Functionality? |
-|------|---------------|--------------------------|
-| `swap.ts` | ❌ No | ⚠️ Yes - `resolveTargets()` duplicates `resolveElements()` |
-| `push-url.ts` | ❌ No | ✅ No duplication |
-| `replace-url.ts` | ❌ No | ✅ No duplication |
-| `history-swap.ts` | ❌ No | ⚠️ Yes - `resolveTarget()` duplicates `resolveElement()` |
-| `boosted.ts` | ❌ No | ⚠️ Yes - `resolveTarget()` duplicates `resolveElement()` |
+| File              | Uses Helpers? | Duplicated Functionality?                                  |
+| ----------------- | ------------- | ---------------------------------------------------------- |
+| `swap.ts`         | ❌ No         | ⚠️ Yes - `resolveTargets()` duplicates `resolveElements()` |
+| `push-url.ts`     | ❌ No         | ✅ No duplication                                          |
+| `replace-url.ts`  | ❌ No         | ✅ No duplication                                          |
+| `history-swap.ts` | ❌ No         | ⚠️ Yes - `resolveTarget()` duplicates `resolveElement()`   |
+| `boosted.ts`      | ❌ No         | ⚠️ Yes - `resolveTarget()` duplicates `resolveElement()`   |
 
 #### Duplication Analysis
 
 **swap.ts:147-170** - `resolveTargets()`:
+
 ```typescript
 async function resolveTargets(
   selector: string | null,
@@ -112,16 +121,15 @@ async function resolveTargets(
 ```
 
 **Compare to helpers/element-resolution.ts** - `resolveElements()`:
+
 ```typescript
-export function resolveElements(
-  value: unknown,
-  context: ExecutionContext
-): Element[] {
+export function resolveElements(value: unknown, context: ExecutionContext): Element[] {
   // Similar but more comprehensive logic
 }
 ```
 
 #### Recommendations
+
 1. **Refactor swap.ts** to use `resolveElements()` from helpers
 2. **Refactor behaviors** to use `resolveElement()` from helpers
 3. **Consider new helper** for common URL validation/transformation logic
@@ -133,27 +141,33 @@ export function resolveElements(
 #### Current htmx-like Types
 
 **swap.ts**:
+
 - `SwapStrategy` - union type for swap strategies
 - `SwapCommandInput` - input interface
 
 **push-url.ts / replace-url.ts**:
+
 - `PushUrlCommandInput` / `ReplaceUrlCommandInput` - input interfaces
 
 **morph-adapter.ts**:
+
 - `MorphOptions` - morphing configuration
 - `MorphEngine` - pluggable engine interface
 
 **view-transitions.ts**:
+
 - `TransitionCallback` - callback type
 - `ViewTransitionOptions` - options interface
 - `ViewTransitionsConfig` - global configuration
 
 #### Audit Questions
+
 - [ ] Are these types exported from the main package entry point?
 - [ ] Should `SwapStrategy` be in a shared types file?
 - [ ] Are type exports documented for external consumers?
 
 #### Recommendations
+
 1. **Add exports to `types/index.ts`** for public consumption
 2. **Consider consolidating** `SwapStrategy` to shared types if used elsewhere
 3. **Document type exports** in package README
@@ -169,6 +183,7 @@ export function resolveElements(
 **Location 3**: `boosted.ts:166-191` - `executeSwap()`
 
 All three implement the same switch statement for swap strategies:
+
 ```typescript
 switch (strategy) {
   case 'morph': morphAdapter.morphInner(...); break;
@@ -181,6 +196,7 @@ switch (strategy) {
 **Impact**: ~60 lines duplicated 3 times = 120 lines wasted
 
 **Recommendation**: Extract to `lib/swap-executor.ts`:
+
 ```typescript
 // lib/swap-executor.ts
 export function executeSwap(
@@ -194,6 +210,7 @@ export function executeSwap(
 #### 4.2 View Transition Pattern Duplication
 
 **Location 1**: `swap.ts:531-535`
+
 ```typescript
 if (useViewTransition && isViewTransitionsSupported()) {
   await withViewTransition(performSwap);
@@ -203,6 +220,7 @@ if (useViewTransition && isViewTransitionsSupported()) {
 ```
 
 **Location 2**: `history-swap.ts:207-211`
+
 ```typescript
 if (useViewTransition && 'startViewTransition' in document) {
   await (document as any).startViewTransition(performSwap).finished;
@@ -216,12 +234,14 @@ if (useViewTransition && 'startViewTransition' in document) {
 **Issue**: Inconsistent implementations - swap.ts uses the proper `withViewTransition()` helper while others don't
 
 **Recommendation**:
+
 1. All files should use `withViewTransition()` from `lib/view-transitions.ts`
 2. Remove direct `startViewTransition` calls
 
 #### 4.3 URL Validation Duplication
 
 **push-url.ts:136-143** and **replace-url.ts:136-143**:
+
 ```typescript
 if (!url || typeof url !== 'string') {
   throw new Error(`push url command: URL must be a string...`);
@@ -232,6 +252,7 @@ if (url === 'undefined') {
 ```
 
 **Recommendation**: Extract to `helpers/url-validation.ts`:
+
 ```typescript
 export function validateUrl(url: unknown, commandName: string): string {
   if (!url || typeof url !== 'string') throw new Error(...);
@@ -245,7 +266,9 @@ export function validateUrl(url: unknown, commandName: string): string {
 ### 5. Behavior Pattern Consistency
 
 #### Existing Behavior Pattern
+
 Both `history-swap.ts` and `boosted.ts` follow the same pattern:
+
 ```typescript
 // Types
 export interface XxxConfig { ... }
@@ -271,6 +294,7 @@ export const xxxHyperscript = `behavior Xxx...`;
 **Assessment**: ✅ Consistent and well-structured
 
 #### Recommendations
+
 1. **Document behavior pattern** in a BEHAVIORS.md file
 2. **Consider behavior base class** if more behaviors are added
 3. **Add tests** for behavior registration
@@ -282,23 +306,29 @@ export const xxxHyperscript = `behavior Xxx...`;
 #### Current Patterns
 
 **swap.ts**: Throws errors with descriptive messages
+
 ```typescript
 throw new Error('swap command requires arguments');
 throw new Error(`swap command: no elements found matching "${selector}"`);
 ```
 
 **push-url.ts/replace-url.ts**: Includes debug info in errors
+
 ```typescript
-throw new Error(`push url command: URL must be a string (got ${typeof url}: ${url}). Debug: ${debugInfo}`);
+throw new Error(
+  `push url command: URL must be a string (got ${typeof url}: ${url}). Debug: ${debugInfo}`
+);
 ```
 
 **behaviors**: Uses console.warn for recoverable issues
+
 ```typescript
 console.warn(`HistorySwap: target "${target}" not found`);
 ```
 
 #### Recommendations
-1. **Standardize error format** - Consider: `[HyperFixi:command-name] Error message`
+
+1. **Standardize error format** - Consider: `[LokaScript:command-name] Error message`
 2. **Remove debug info from production** - Use a debug flag instead of always including
 3. **Document error handling guidelines**
 
@@ -309,6 +339,7 @@ console.warn(`HistorySwap: target "${target}" not found`);
 #### Debug Logging Found
 
 **swap.ts**: 12 console.log statements (DEBUG)
+
 ```typescript
 console.log('[SWAP DEBUG] parseInput called with raw:', ...);
 console.log('[SWAP DEBUG] args.length:', args.length);
@@ -316,6 +347,7 @@ console.log('[SWAP DEBUG] args.length:', args.length);
 ```
 
 **push-url.ts**: 1 console.log statement
+
 ```typescript
 console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 ```
@@ -325,6 +357,7 @@ console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 **behaviors**: Uses console.warn for warnings appropriately ✅
 
 #### Recommendations
+
 1. **Remove debug console.log** before production
 2. **Add debug flag** or use consistent debug logging pattern:
    ```typescript
@@ -338,10 +371,12 @@ console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 ### 8. Test Coverage Analysis
 
 #### Current Test Status
+
 - htmx-like examples test: **19 passed, 3 failed**
 - Failures are in boosted links form submission
 
 #### Missing Tests
+
 - [ ] Unit tests for `morph-adapter.ts`
 - [ ] Unit tests for `view-transitions.ts`
 - [ ] Unit tests for individual swap strategies
@@ -349,6 +384,7 @@ console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 - [ ] Error handling tests
 
 #### Recommendations
+
 1. **Add Vitest unit tests** for lib utilities
 2. **Add Playwright tests** for each swap strategy
 3. **Add behavior integration tests**
@@ -383,15 +419,15 @@ console.log('[PUSH-URL EXECUTE] About to pushState with url:', url);
 
 ## Metrics Summary
 
-| Metric | Value | Assessment |
-|--------|-------|------------|
-| Total new lines | ~2,534 | Moderate addition |
-| Duplicated lines | ~200 | ⚠️ Needs refactoring |
-| Console.log statements | 13 | ⚠️ Remove before prod |
-| Pattern consistency | 2 patterns | ⚠️ Needs documentation |
-| Helper utilization | 0% | ❌ Not using shared helpers |
-| Test coverage | ~86% | ⚠️ 3 failing tests |
-| Type exports | Incomplete | ⚠️ Needs updates |
+| Metric                 | Value      | Assessment                  |
+| ---------------------- | ---------- | --------------------------- |
+| Total new lines        | ~2,534     | Moderate addition           |
+| Duplicated lines       | ~200       | ⚠️ Needs refactoring        |
+| Console.log statements | 13         | ⚠️ Remove before prod       |
+| Pattern consistency    | 2 patterns | ⚠️ Needs documentation      |
+| Helper utilization     | 0%         | ❌ Not using shared helpers |
+| Test coverage          | ~86%       | ⚠️ 3 failing tests          |
+| Type exports           | Incomplete | ⚠️ Needs updates            |
 
 ---
 
@@ -419,6 +455,7 @@ When constructing HTML strings inside hyperscript `_=` attributes, escaped quote
 ```
 
 Issues:
+
 - Escaped double quotes `\"` inside single-quoted hyperscript strings
 - Nested `_=` attributes require multiple levels of escaping
 - Multi-line HTML strings are unreadable in single-line `_=` attributes
@@ -426,13 +463,13 @@ Issues:
 
 **2. New Elements Need Manual Re-processing**
 
-After `swap innerHTML`, new elements with `_="..."` attributes don't automatically get processed by hyperfixi. Behaviors like `install Draggable` won't work unless `hyperfixi.processNode()` is called:
+After `swap innerHTML`, new elements with `_="..."` attributes don't automatically get processed by lokascript. Behaviors like `install Draggable` won't work unless `lokascript.processNode()` is called:
 
 ```javascript
 // Required after innerHTML swap to re-initialize behaviors
 container.innerHTML = newHtml;
-if (window.hyperfixi && window.hyperfixi.processNode) {
-  window.hyperfixi.processNode(container);
+if (window.lokascript && window.lokascript.processNode) {
+  window.lokascript.processNode(container);
 }
 ```
 
@@ -459,16 +496,17 @@ document.getElementById('innerHTML-btn').addEventListener('click', function() {
     </div>
   `;
   // Re-process so Draggable behavior works
-  if (window.hyperfixi && window.hyperfixi.processNode) {
-    window.hyperfixi.processNode(container);
+  if (window.lokascript && window.lokascript.processNode) {
+    window.lokascript.processNode(container);
   }
 });
 </script>
 ```
 
 Benefits:
+
 - **Cleaner template literals** - No quote escaping issues
-- **Proper behavior re-initialization** - Calls `hyperfixi.processNode()` after swap
+- **Proper behavior re-initialization** - Calls `lokascript.processNode()` after swap
 - **Better maintainability** - Multi-line HTML is readable and editable
 
 #### Recommendations for Library Improvements
@@ -479,11 +517,11 @@ Benefits:
 
    ```typescript
    // Potential implementation
-   const observer = new MutationObserver((mutations) => {
+   const observer = new MutationObserver(mutations => {
      for (const mutation of mutations) {
        for (const node of mutation.addedNodes) {
          if (node instanceof Element) {
-           hyperfixi.processNode(node);
+           lokascript.processNode(node);
          }
        }
      }
@@ -491,7 +529,7 @@ Benefits:
    observer.observe(document.body, { childList: true, subtree: true });
    ```
 
-2. **Document `processNode()` API** - Ensure `hyperfixi.processNode()` is documented and exported for cases where manual re-processing is needed.
+2. **Document `processNode()` API** - Ensure `lokascript.processNode()` is documented and exported for cases where manual re-processing is needed.
 
 **Medium Priority:**
 
@@ -532,11 +570,11 @@ Benefits:
 
 #### Affected Files
 
-| File | Issue |
-|------|-------|
-| `examples/htmx-like/02-morph-comparison.html` | Used JavaScript handlers as workaround |
-| `packages/core/src/runtime/` | Potential location for MutationObserver |
-| `packages/core/docs/API.md` | Should document `processNode()` |
+| File                                          | Issue                                   |
+| --------------------------------------------- | --------------------------------------- |
+| `examples/htmx-like/02-morph-comparison.html` | Used JavaScript handlers as workaround  |
+| `packages/core/src/runtime/`                  | Potential location for MutationObserver |
+| `packages/core/docs/API.md`                   | Should document `processNode()`         |
 
 ---
 

@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for HyperFixi.
+Complete API documentation for LokaScript.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ Complete API documentation for HyperFixi.
 
 ---
 
-> **API v2 Notice:** HyperFixi now provides a cleaner API with structured results. The new methods (`compileSync`, `compileAsync`, `eval`, `validate`) are recommended for all new code. Legacy methods (`compile`, `run`, `evaluate`) remain functional but will show deprecation warnings.
+> **API v2 Notice:** LokaScript now provides a cleaner API with structured results. The new methods (`compileSync`, `compileAsync`, `eval`, `validate`) are recommended for all new code. Legacy methods (`compile`, `run`, `evaluate`) remain functional but will show deprecation warnings.
 
 ---
 
@@ -23,10 +23,10 @@ Complete API documentation for HyperFixi.
 
 ### `hyperscript`
 
-The main HyperFixi API object providing all core functionality.
+The main LokaScript API object providing all core functionality.
 
 ```typescript
-import { hyperscript } from 'hyperfixi';
+import { hyperscript } from 'lokascript';
 ```
 
 ### API v2 Methods (Recommended)
@@ -292,10 +292,10 @@ console.log('Parse result:', result);
 
 ##### `version: string`
 
-The current version of HyperFixi.
+The current version of LokaScript.
 
 ```typescript
-console.log('HyperFixi version:', hyperscript.version);
+console.log('LokaScript version:', hyperscript.version);
 ```
 
 ## Types
@@ -543,7 +543,7 @@ try {
 
 ### Enhanced Error Messages
 
-HyperFixi provides detailed error information:
+LokaScript provides detailed error information:
 
 ```typescript
 const result = hyperscript.compile('5 +');
@@ -557,7 +557,7 @@ if (!result.success) {
 
 ### Error Recovery
 
-HyperFixi attempts to provide partial results when possible:
+LokaScript attempts to provide partial results when possible:
 
 ```typescript
 const result = hyperscript.compile('valid + invalid syntax');
@@ -618,7 +618,7 @@ element.addEventListener('click', async event => {
 // Before: Using _hyperscript directly
 // <div _="on click add .active">
 
-// After: Using HyperFixi
+// After: Using LokaScript
 element.addEventListener('click', async () => {
   const context = hyperscript.createContext(element);
   await hyperscript.run('add ".active"', context);
@@ -631,7 +631,7 @@ element.addEventListener('click', async () => {
 // Before: jQuery
 // $element.addClass('active').hide().delay(1000).show();
 
-// After: HyperFixi
+// After: LokaScript
 const context = hyperscript.createContext(element);
 await hyperscript.run('add ".active" then hide me then wait 1s then show me', context);
 ```
@@ -676,7 +676,7 @@ Bind hyperscript to specific elements using the `for` attribute. This is useful 
   on click
     set html to `<div class="box" _="install Draggable">Drag me</div>`
     swap innerHTML of #container with html
-    call hyperfixi.processNode(#container)
+    call lokascript.processNode(#container)
 </script>
 ```
 
@@ -700,7 +700,7 @@ Re-process an element (and descendants) after dynamic HTML insertion:
 
 ```javascript
 container.innerHTML = '<div _="on click log \'hello\'">New</div>';
-hyperfixi.processNode(container);
+lokascript.processNode(container);
 ```
 
 ---

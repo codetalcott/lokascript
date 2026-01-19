@@ -32,18 +32,18 @@ performance optimizations.
 ### 1.1 Monorepo Structure
 
 ```
-hyperfixi/
+lokascript/
 ├── packages/
-│   ├── @hyperfixi/core          # ~2KB minimal runtime
-│   ├── @hyperfixi/runtime       # Tree-shakable command library
-│   ├── @hyperfixi/parser        # Incremental parser (TypeScript initially)
-│   ├── @hyperfixi/compiler      # Build-time compiler
-│   ├── @hyperfixi/analyzer      # Static analysis engine
-│   └── @hyperfixi/accelerator   # GPU/WASM acceleration layer
+│   ├── @lokascript/core          # ~2KB minimal runtime
+│   ├── @lokascript/runtime       # Tree-shakable command library
+│   ├── @lokascript/parser        # Incremental parser (TypeScript initially)
+│   ├── @lokascript/compiler      # Build-time compiler
+│   ├── @lokascript/analyzer      # Static analysis engine
+│   └── @lokascript/accelerator   # GPU/WASM acceleration layer
 ├── tools/
-│   ├── @hyperfixi/cli          # Command-line interface
-│   ├── @hyperfixi/vite-plugin  # Vite integration
-│   └── @hyperfixi/lsp          # Language server
+│   ├── @lokascript/cli          # Command-line interface
+│   ├── @lokascript/vite-plugin  # Vite integration
+│   └── @lokascript/lsp          # Language server
 ```
 
 ### 1.2 Core Runtime Architecture
@@ -51,8 +51,8 @@ hyperfixi/
 Building on the validated Fixi.ts pattern, create a minimal core that handles:
 
 ```typescript
-// @hyperfixi/core/runtime.ts
-export interface HyperFixiRuntime {
+// @lokascript/core/runtime.ts
+export interface LokaScriptRuntime {
   // Essential event delegation
   process(root: Element): void;
 
@@ -76,7 +76,7 @@ export const _hyperscript = {
 Transform monolithic commands into tree-shakable functions:
 
 ```typescript
-// @hyperfixi/runtime/commands/toggle.ts
+// @lokascript/runtime/commands/toggle.ts
 export function toggleClass(element: Element, className: string): void {
   element.classList.toggle(className);
 }
@@ -85,10 +85,10 @@ export function toggleAttribute(element: Element, attr: string): void {
   element.toggleAttribute(attr);
 }
 
-// @hyperfixi/runtime/commands/index.ts
-export * from "./toggle";
-export * from "./add";
-export * from "./remove";
+// @lokascript/runtime/commands/index.ts
+export * from './toggle';
+export * from './add';
+export * from './remove';
 // ... all commands as individual exports
 ```
 
@@ -100,7 +100,7 @@ Start with a TypeScript implementation for rapid iteration, with clear
 interfaces for future Rust/WASM optimization:
 
 ```typescript
-// @hyperfixi/parser/incremental-parser.ts
+// @lokascript/parser/incremental-parser.ts
 export interface IncrementalParser {
   // Tree-sitter style incremental parsing
   parse(source: string): HyperScriptAST;
@@ -116,7 +116,7 @@ export interface IncrementalParser {
 
 // AST designed for both interpretation and compilation
 export interface HyperScriptAST {
-  type: "Program";
+  type: 'Program';
   features: Feature[];
   metadata: {
     source: string;
@@ -140,7 +140,7 @@ compile-time code generation.
 ### 3.1 Dependency Analysis Engine
 
 ```typescript
-// @hyperfixi/analyzer/dependency-analyzer.ts
+// @lokascript/analyzer/dependency-analyzer.ts
 export class DependencyAnalyzer {
   analyze(ast: HyperScriptAST): DependencyGraph {
     const graph = new DependencyGraph();
@@ -168,13 +168,13 @@ export class DependencyAnalyzer {
 ### 3.2 Code Generation Pipeline
 
 ```typescript
-// @hyperfixi/compiler/code-generator.ts
+// @lokascript/compiler/code-generator.ts
 export class CodeGenerator {
   generate(ast: HyperScriptAST, analysis: AnalysisResult): string {
     // Generate optimized JavaScript
     return `
-      import { ${analysis.imports.join(", ")} } from '@hyperfixi/runtime';
-      import { accelerate } from '@hyperfixi/accelerator';
+      import { ${analysis.imports.join(', ')} } from '@lokascript/runtime';
+      import { accelerate } from '@lokascript/accelerator';
       
       export default function(element) {
         ${this.generateOptimizedCode(ast, analysis)}
@@ -183,10 +183,7 @@ export class CodeGenerator {
   }
 
   // Smart optimization based on patterns
-  private generateOptimizedCode(
-    ast: HyperScriptAST,
-    analysis: AnalysisResult,
-  ): string {
+  private generateOptimizedCode(ast: HyperScriptAST, analysis: AnalysisResult): string {
     if (analysis.hasGPUCandidates) {
       return this.generateGPUAcceleratedCode(ast);
     }
@@ -205,14 +202,14 @@ export class CodeGenerator {
 Integrate WebGPU for massive parallel operations:
 
 ```typescript
-// @hyperfixi/accelerator/gpu-engine.ts
+// @lokascript/accelerator/gpu-engine.ts
 export class GPUAccelerator {
   // Detect GPU-suitable operations
   canAccelerate(operation: Operation): boolean {
     return (
-      operation.type === "BULK_QUERY" ||
-      operation.type === "PARALLEL_TRANSFORM" ||
-      (operation.type === "DOM_BATCH" && operation.count > 1000)
+      operation.type === 'BULK_QUERY' ||
+      operation.type === 'PARALLEL_TRANSFORM' ||
+      (operation.type === 'DOM_BATCH' && operation.count > 1000)
     );
   }
 
@@ -220,7 +217,7 @@ export class GPUAccelerator {
   async accelerate(operation: Operation): Promise<AcceleratedOperation> {
     const shader = this.compileToWGSL(operation);
     const pipeline = await this.device.createComputePipeline({
-      compute: { module: shader, entryPoint: "main" },
+      compute: { module: shader, entryPoint: 'main' },
     });
 
     return new AcceleratedOperation(pipeline, operation);
@@ -233,7 +230,7 @@ export class GPUAccelerator {
 Implement Solid.js-style reactivity for optimal updates:
 
 ```typescript
-// @hyperfixi/runtime/reactivity.ts
+// @lokascript/runtime/reactivity.ts
 export class ReactiveSystem {
   // Signal-based state management
   createSignal<T>(value: T): [getter: () => T, setter: (v: T) => void] {
@@ -246,7 +243,7 @@ export class ReactiveSystem {
 
     const setter = (newValue: T) => {
       value = newValue;
-      subscribers.forEach((effect) => effect());
+      subscribers.forEach(effect => effect());
     };
 
     return [getter, setter];
@@ -265,21 +262,21 @@ export class ReactiveSystem {
 ### 5.1 Zero-Config Build Integration
 
 ```typescript
-// @hyperfixi/vite-plugin/index.ts
+// @lokascript/vite-plugin/index.ts
 export default function hyperFixiPlugin(): Plugin {
   return {
-    name: "hyperfixi",
+    name: 'lokascript',
 
     transform(code: string, id: string) {
-      if (!id.endsWith(".html")) return;
+      if (!id.endsWith('.html')) return;
 
       // Find all _ attributes
       const scripts = extractHyperScripts(code);
 
       // Compile each script
-      const compiled = scripts.map((script) =>
+      const compiled = scripts.map(script =>
         compiler.compile(script, {
-          mode: "production",
+          mode: 'production',
           optimize: true,
           treeShake: true,
         })
@@ -297,7 +294,7 @@ export default function hyperFixiPlugin(): Plugin {
 Provide IDE support for hyperscript in HTML:
 
 ```typescript
-// @hyperfixi/lsp/server.ts
+// @lokascript/lsp/server.ts
 export class HyperScriptLanguageServer {
   // Syntax highlighting
   provideSemanticTokens(document: TextDocument): SemanticTokens {
@@ -330,15 +327,15 @@ maintain project momentum and context._
 #### Week 1-2: Monorepo Setup & Core Runtime
 
 - [ ] **Monorepo Architecture**
-  - [ ] Set up Lerna/Nx workspace with @hyperfixi packages
+  - [ ] Set up Lerna/Nx workspace with @lokascript packages
   - [ ] Configure TypeScript build pipeline across packages
   - [ ] Set up testing infrastructure with Vitest
   - [ ] Create initial package structure (core, runtime, parser, compiler)
 - [ ] **Core Runtime Refactor**
-  - [ ] Extract minimal 2KB @hyperfixi/core runtime
-  - [ ] Implement HyperFixiRuntime interface with process/execute
+  - [ ] Extract minimal 2KB @lokascript/core runtime
+  - [ ] Implement LokaScriptRuntime interface with process/execute
   - [ ] Add lifecycle hooks for compiler integration
-  - [ ] Preserve _hyperscript.processNode() backward compatibility
+  - [ ] Preserve \_hyperscript.processNode() backward compatibility
 
 #### Week 3-4: Modular Command System
 
@@ -348,7 +345,7 @@ maintain project momentum and context._
   - [ ] Create command registration and execution system
   - [ ] Add tree-shaking validation and bundle size testing
 - [ ] **Test Compatibility**
-  - [ ] Achieve 100% official _hyperscript test suite compatibility
+  - [ ] Achieve 100% official \_hyperscript test suite compatibility
   - [ ] Validate performance matches/exceeds original
   - [ ] Create migration testing for existing projects
   - [ ] Document API compatibility guarantees
@@ -494,15 +491,15 @@ maintain project momentum and context._
 #### Week 25-26: Build Tool Integration
 
 - [ ] **Vite Plugin**
-  - [ ] Implement @hyperfixi/vite-plugin with auto-compilation
+  - [ ] Implement @lokascript/vite-plugin with auto-compilation
   - [ ] Add development mode with fast refresh
   - [ ] Create production optimization pipeline
   - [ ] Add comprehensive Vite integration testing
 - [ ] **CLI Development**
-  - [ ] Create @hyperfixi/cli for standalone compilation
+  - [ ] Create @lokascript/cli for standalone compilation
   - [ ] Add watch mode and incremental builds
   - [ ] Implement project analysis and optimization suggestions
-  - [ ] Create migration tooling from _hyperscript
+  - [ ] Create migration tooling from \_hyperscript
 
 #### Week 27-28: Language Server & IDE Support
 
@@ -529,7 +526,7 @@ maintain project momentum and context._
 
 #### Compatibility & Quality
 
-- [ ] **Test Suite**: 100% official _hyperscript compatibility
+- [ ] **Test Suite**: 100% official \_hyperscript compatibility
 - [ ] **API Compatibility**: Full backward compatibility validated
 - [ ] **Migration Path**: Automated tooling working
 - [ ] **Documentation**: Comprehensive guides with examples
@@ -577,7 +574,7 @@ maintain project momentum and context._
 
 ### Compatibility Goals
 
-- **Test Suite**: 100% official _hyperscript test compatibility
+- **Test Suite**: 100% official \_hyperscript test compatibility
 - **API Surface**: Full backward compatibility with legacy mode
 - **Migration Path**: Automated tooling for existing projects
 

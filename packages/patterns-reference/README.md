@@ -1,11 +1,11 @@
-# @hyperfixi/patterns-reference
+# @lokascript/patterns-reference
 
 Queryable patterns database for hyperscript with multilingual translations and LLM few-shot learning support.
 
 ## Installation
 
 ```bash
-npm install @hyperfixi/patterns-reference
+npm install @lokascript/patterns-reference
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ This creates a database at `data/patterns.db` with:
 ### 2. Use the API
 
 ```typescript
-import { createPatternsReference } from '@hyperfixi/patterns-reference';
+import { createPatternsReference } from '@lokascript/patterns-reference';
 
 // Create a patterns reference instance
 const ref = createPatternsReference({
@@ -116,8 +116,9 @@ getLLMStats(): Promise<{ total: number; byLanguage: Record<string, number>; avgQ
 The database path can be configured via:
 
 1. **Constructor option:**
+
    ```typescript
-   createPatternsReference({ dbPath: '/path/to/db.sqlite' })
+   createPatternsReference({ dbPath: '/path/to/db.sqlite' });
    ```
 
 2. **Environment variables:**
@@ -129,18 +130,18 @@ The database path can be configured via:
 
 ### Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run populate` | Full database setup (init + translations + LLM examples) |
-| `npm run db:init` | Initialize database with seed patterns |
-| `npm run db:init:force` | Reinitialize database (overwrites existing) |
-| `npm run sync:translations` | Generate translations for all 13 languages |
-| `npm run seed:llm` | Generate LLM few-shot examples |
-| `npm run validate` | Validate all patterns parse correctly |
-| `npm run validate:fix` | Validate and update verified_parses flag |
-| `npm run build` | Build the package |
-| `npm test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once |
+| Script                      | Description                                              |
+| --------------------------- | -------------------------------------------------------- |
+| `npm run populate`          | Full database setup (init + translations + LLM examples) |
+| `npm run db:init`           | Initialize database with seed patterns                   |
+| `npm run db:init:force`     | Reinitialize database (overwrites existing)              |
+| `npm run sync:translations` | Generate translations for all 13 languages               |
+| `npm run seed:llm`          | Generate LLM few-shot examples                           |
+| `npm run validate`          | Validate all patterns parse correctly                    |
+| `npm run validate:fix`      | Validate and update verified_parses flag                 |
+| `npm run build`             | Build the package                                        |
+| `npm test`                  | Run tests in watch mode                                  |
+| `npm run test:run`          | Run tests once                                           |
 
 ## Database Schema
 
@@ -148,94 +149,94 @@ The database path can be configured via:
 
 Pattern source code from the hyperscript cookbook.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | TEXT | Unique identifier |
-| title | TEXT | Human-readable title |
-| raw_code | TEXT | Hyperscript code |
-| description | TEXT | Pattern description |
-| feature | TEXT | Category (e.g., 'class-manipulation') |
-| created_at | TEXT | Creation timestamp |
+| Column      | Type | Description                           |
+| ----------- | ---- | ------------------------------------- |
+| id          | TEXT | Unique identifier                     |
+| title       | TEXT | Human-readable title                  |
+| raw_code    | TEXT | Hyperscript code                      |
+| description | TEXT | Pattern description                   |
+| feature     | TEXT | Category (e.g., 'class-manipulation') |
+| created_at  | TEXT | Creation timestamp                    |
 
 ### pattern_translations
 
 Multilingual translations of patterns.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Auto-increment ID |
-| code_example_id | TEXT | Foreign key to code_examples |
-| language | TEXT | Language code (en, ja, es, etc.) |
-| hyperscript | TEXT | Translated code |
-| word_order | TEXT | SVO, SOV, VSO, or V2 |
-| confidence | REAL | Translation confidence (0-1) |
+| Column          | Type    | Description                      |
+| --------------- | ------- | -------------------------------- |
+| id              | INTEGER | Auto-increment ID                |
+| code_example_id | TEXT    | Foreign key to code_examples     |
+| language        | TEXT    | Language code (en, ja, es, etc.) |
+| hyperscript     | TEXT    | Translated code                  |
+| word_order      | TEXT    | SVO, SOV, VSO, or V2             |
+| confidence      | REAL    | Translation confidence (0-1)     |
 | verified_parses | INTEGER | Whether translation parses (0/1) |
 
 ### llm_examples
 
 Prompt/completion pairs for few-shot learning.
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INTEGER | Auto-increment ID |
-| code_example_id | TEXT | Foreign key to code_examples |
-| language | TEXT | Language code |
-| prompt | TEXT | Natural language prompt |
-| completion | TEXT | Hyperscript code |
-| quality_score | REAL | Quality rating (0-1) |
-| usage_count | INTEGER | Retrieval count |
+| Column          | Type    | Description                  |
+| --------------- | ------- | ---------------------------- |
+| id              | INTEGER | Auto-increment ID            |
+| code_example_id | TEXT    | Foreign key to code_examples |
+| language        | TEXT    | Language code                |
+| prompt          | TEXT    | Natural language prompt      |
+| completion      | TEXT    | Hyperscript code             |
+| quality_score   | REAL    | Quality rating (0-1)         |
+| usage_count     | INTEGER | Retrieval count              |
 
 ## Supported Languages
 
 The database supports 13 languages with different word orders:
 
-| Language | Code | Word Order |
-|----------|------|------------|
-| English | en | SVO |
-| Spanish | es | SVO |
-| French | fr | SVO |
-| Portuguese | pt | SVO |
-| Indonesian | id | SVO |
-| Swahili | sw | SVO |
-| Chinese | zh | SVO |
-| Japanese | ja | SOV |
-| Korean | ko | SOV |
-| Turkish | tr | SOV |
-| Quechua | qu | SOV |
-| Arabic | ar | VSO |
-| German | de | V2 |
+| Language   | Code | Word Order |
+| ---------- | ---- | ---------- |
+| English    | en   | SVO        |
+| Spanish    | es   | SVO        |
+| French     | fr   | SVO        |
+| Portuguese | pt   | SVO        |
+| Indonesian | id   | SVO        |
+| Swahili    | sw   | SVO        |
+| Chinese    | zh   | SVO        |
+| Japanese   | ja   | SOV        |
+| Korean     | ko   | SOV        |
+| Turkish    | tr   | SOV        |
+| Quechua    | qu   | SOV        |
+| Arabic     | ar   | VSO        |
+| German     | de   | V2         |
 
-## Integration with @hyperfixi/semantic
+## Integration with @lokascript/semantic
 
-The patterns-reference package integrates with @hyperfixi/semantic to provide runtime pattern matching from the database.
+The patterns-reference package integrates with @lokascript/semantic to provide runtime pattern matching from the database.
 
 ### Semantic Bridge
 
 ```typescript
-import { initializeSemanticIntegration } from '@hyperfixi/patterns-reference';
+import { initializeSemanticIntegration } from '@lokascript/patterns-reference';
 
 // Initialize integration (registers database as pattern source)
 const result = await initializeSemanticIntegration();
 
 if (result.success) {
   console.log(`Registered with: ${result.registeredWith}`);
-  // 'semantic' if @hyperfixi/semantic is available
+  // 'semantic' if @lokascript/semantic is available
   // 'standalone' if running without semantic package
 }
 
 // Query patterns directly
-import { queryPatterns, getSupportedLanguages } from '@hyperfixi/patterns-reference';
+import { queryPatterns, getSupportedLanguages } from '@lokascript/patterns-reference';
 
 const jaPatterns = await queryPatterns('ja');
 const languages = await getSupportedLanguages();
 ```
 
-### LLM Adapter (for @hyperfixi/core)
+### LLM Adapter (for @lokascript/core)
 
 The package provides a unified LLM adapter that replaces the deprecated `llm-examples-query.ts`:
 
 ```typescript
-import { findRelevantExamples, buildFewShotContextSync } from '@hyperfixi/patterns-reference';
+import { findRelevantExamples, buildFewShotContextSync } from '@lokascript/patterns-reference';
 
 // Find examples matching a prompt
 const examples = findRelevantExamples('toggle a class on click', 'en', 5);

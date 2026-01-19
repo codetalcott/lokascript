@@ -50,6 +50,7 @@ export class LazyCommandRegistry {
 ```
 
 **Benefits**:
+
 - Commands only instantiated when first used
 - Reduces runtime memory usage
 - Enables explicit command filtering
@@ -95,7 +96,7 @@ const runtime = new Runtime();
 
 // Explicit command list
 const runtime = new Runtime({
-  commands: ['add', 'remove', 'toggle']
+  commands: ['add', 'remove', 'toggle'],
 });
 
 // Legacy eager loading
@@ -121,6 +122,7 @@ Created three browser bundle configurations optimized for different use cases:
 **File**: [packages/core/src/compatibility/browser-bundle-standard.ts](../packages/core/src/compatibility/browser-bundle-standard.ts)
 
 **Commands** (20):
+
 - Minimal commands (8)
 - Plus: show, hide, increment, decrement, trigger, wait, halt, return, make, append, call, get
 
@@ -136,7 +138,7 @@ Created three browser bundle configurations optimized for different use cases:
 
 **Size**: 192KB gzipped (baseline)
 
-**Use Case**: Complex applications, full _hyperscript compatibility
+**Use Case**: Complex applications, full \_hyperscript compatibility
 
 #### 4. Build Configuration ✅
 
@@ -147,6 +149,7 @@ Created separate Rollup configs for each bundle:
 - `rollup.browser-standard.config.mjs` - Standard bundle (with terser)
 
 **Package.json scripts**:
+
 ```json
 {
   "build:browser": "rollup -c rollup.browser.config.mjs",
@@ -161,6 +164,7 @@ Created separate Rollup configs for each bundle:
 **File**: [packages/core/scripts/analyze-usage.mjs](../packages/core/scripts/analyze-usage.mjs)
 
 Created intelligent bundle analyzer that:
+
 - Scans HTML files for hyperscript usage
 - Extracts commands from `_=""` attributes and `<script type="text/hyperscript">` blocks
 - Recommends optimal bundle based on usage
@@ -168,6 +172,7 @@ Created intelligent bundle analyzer that:
 - Provides usage instructions
 
 **Usage**:
+
 ```bash
 npm run analyze:usage -- "src/**/*.html"
 
@@ -181,7 +186,7 @@ Commands: add, remove, toggle
 
 🎯 Recommended Bundle:
   Bundle: Minimal
-  File: hyperfixi-browser-minimal.js
+  File: lokascript-browser-minimal.js
   Size: ~60KB gzipped
 
 💰 Potential Savings:
@@ -196,11 +201,11 @@ Commands: add, remove, toggle
 
 ### Bundle Sizes Achieved
 
-| Bundle | Uncompressed | Gzipped | Reduction | Commands |
-|--------|--------------|---------|-----------|----------|
-| **Full** | 1.3MB | 192KB | Baseline | 40+ |
-| **Standard** | 378KB | 82KB | **57%** | 20 |
-| **Minimal** | 378KB | 82KB | **57%** | 8 |
+| Bundle       | Uncompressed | Gzipped | Reduction | Commands |
+| ------------ | ------------ | ------- | --------- | -------- |
+| **Full**     | 1.3MB        | 192KB   | Baseline  | 40+      |
+| **Standard** | 378KB        | 82KB    | **57%**   | 20       |
+| **Minimal**  | 378KB        | 82KB    | **57%**   | 8        |
 
 ### Why Minimal & Standard Are Same Size
 
@@ -240,20 +245,22 @@ Beyond bundle size, lazy loading provides:
 ### For Browser Bundle Users
 
 **Before**:
+
 ```html
-<script src="dist/hyperfixi-browser.js"></script>
+<script src="dist/lokascript-browser.js"></script>
 ```
 
 **After** (choose appropriate bundle):
+
 ```html
 <!-- Minimal (recommended for simple apps) -->
-<script src="dist/hyperfixi-browser-minimal.js"></script>
+<script src="dist/lokascript-browser-minimal.js"></script>
 
 <!-- Standard (recommended for most apps) -->
-<script src="dist/hyperfixi-browser-standard.js"></script>
+<script src="dist/lokascript-browser-standard.js"></script>
 
 <!-- Full (for maximum compatibility) -->
-<script src="dist/hyperfixi-browser.js"></script>
+<script src="dist/lokascript-browser.js"></script>
 ```
 
 ### For NPM Package Users
@@ -261,14 +268,14 @@ Beyond bundle size, lazy loading provides:
 No changes required! Lazy loading is automatic:
 
 ```typescript
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 
 // Automatically uses lazy loading
 const runtime = new Runtime();
 
 // Optional: Explicit command list
 const runtime = new Runtime({
-  commands: ['add', 'remove', 'toggle']
+  commands: ['add', 'remove', 'toggle'],
 });
 
 // Optional: Disable lazy loading (legacy behavior)
@@ -296,9 +303,9 @@ const runtime = new Runtime({ lazyLoad: false });
 
 ### Build Outputs
 
-1. `dist/hyperfixi-browser.js` - Full bundle (192KB gzipped)
-2. `dist/hyperfixi-browser-minimal.js` - Minimal bundle (82KB gzipped)
-3. `dist/hyperfixi-browser-standard.js` - Standard bundle (82KB gzipped)
+1. `dist/lokascript-browser.js` - Full bundle (192KB gzipped)
+2. `dist/lokascript-browser-minimal.js` - Minimal bundle (82KB gzipped)
+3. `dist/lokascript-browser-standard.js` - Standard bundle (82KB gzipped)
 
 ---
 
@@ -329,6 +336,7 @@ const runtime = new Runtime({ lazyLoad: false });
 **Goal**: Further reduce bundle sizes with dynamic imports
 
 **Approach**:
+
 ```typescript
 // Instead of require(), use dynamic import()
 private async loadCommand(name: string): Promise<any> {
@@ -338,10 +346,12 @@ private async loadCommand(name: string): Promise<any> {
 ```
 
 **Expected Impact**:
+
 - Minimal: 82KB → 50-60KB gzipped
 - Standard: 82KB → 100-120KB gzipped
 
 **Tradeoffs**:
+
 - Async command loading (1-2ms delay on first use)
 - More complex build configuration
 - Requires code splitting support

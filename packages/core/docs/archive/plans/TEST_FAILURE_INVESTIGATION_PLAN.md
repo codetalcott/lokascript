@@ -16,7 +16,7 @@
 
 2. **Category 2: CSS Selectors (8 → ~3)** ✅
    - Fixed colon escaping in query references with pseudo-class preservation
-   - Class selectors always return arrays (consistent with _hyperscript)
+   - Class selectors always return arrays (consistent with \_hyperscript)
    - Updated core-system test to use array access
 
 3. **Category 1: Validation Tests (partial)** ✅
@@ -42,6 +42,7 @@
 ## Executive Summary
 
 After analyzing the 106 test failures, they can be categorized into **8 distinct categories**. Most failures are caused by:
+
 1. Changes in validation behavior (errors → success or different error messages)
 2. CSS selector return type changes (array → single element for single matches)
 3. Environment-specific issues (Deno integration)
@@ -52,9 +53,11 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ## Category Breakdown
 
 ### Category 1: Validation Behavior Changes (34 failures)
+
 **Root Cause**: Expression validation now succeeds where it previously threw errors, or error messages changed.
 
 **Affected Files**:
+
 - `src/expressions/array/index.test.ts` (3)
 - `src/expressions/in/index.test.ts` (3)
 - `src/expressions/object/index.test.ts` (4)
@@ -67,6 +70,7 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 - `src/commands/dom/__tests__/*.test.ts` (4)
 
 **Fix Strategy**:
+
 1. Review if validation changes are intentional improvements
 2. Update test expectations to match new behavior
 3. OR restore stricter validation if it was accidentally removed
@@ -77,17 +81,20 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 2: CSS Selector Return Type (8 failures)
+
 **Root Cause**: Class selectors now return single element when one match (convenience change), but some tests expect arrays.
 
 **Affected Files**:
+
 - `src/expressions/css-references-fix.test.ts` (1)
 - `src/expressions/css-special-characters.test.ts` (4)
 - `src/compatibility/hyperscript-validation.test.ts` (3)
 
 **Fix Strategy**:
+
 1. Update tests to handle both single element and array returns
 2. OR use `first .class` syntax when single element is expected
-3. Consider if semantic change is correct for _hyperscript compatibility
+3. Consider if semantic change is correct for \_hyperscript compatibility
 
 **Priority**: High (affects API compatibility)
 **Estimated Effort**: 1 hour
@@ -95,15 +102,18 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 3: Template Literal / Interpolation (6 failures)
+
 **Root Cause**: String interpolation with expressions may have parsing issues.
 
 **Affected Files**:
+
 - `src/expressions/advanced-patterns.test.ts` (1)
 - `src/expressions/integration-simple.test.ts` (2)
 - `src/expressions/integration.test.ts` (2)
 - `src/integration/end-to-end.test.ts` (1)
 
 **Fix Strategy**:
+
 1. Debug template literal evaluation in `evaluateTemplateLiteral()`
 2. Check `${}` interpolation parsing
 3. Verify escape sequence handling
@@ -114,14 +124,17 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 4: API/Context Handling (8 failures)
+
 **Root Cause**: Context passing in hyperscript API may have issues with variable resolution.
 
 **Affected Files**:
+
 - `src/api/hyperscript-api.test.ts` (4)
 - `src/runtime/context-bridge.test.ts` (3)
 - `src/context/__tests__/integration.test.ts` (1)
 
 **Fix Strategy**:
+
 1. Review `run()` and `evaluate()` context passing
 2. Check TypedExecutionContext conversion
 3. Verify variable resolution in provided context
@@ -132,12 +145,15 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 5: Lambda/Promise/Error Expressions (10 failures)
+
 **Root Cause**: Advanced expression implementations may have import or implementation issues.
 
 **Affected Files**:
+
 - `src/expressions/advanced/index.test.ts` (10)
 
 **Fix Strategy**:
+
 1. Check if these features are fully implemented
 2. Review lambda expression creation and evaluation
 3. May need to skip if features are WIP
@@ -148,13 +164,16 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 6: Environment-Specific (2 failures)
+
 **Root Cause**: Deno integration tests try to load HTTPS URLs which Node doesn't support.
 
 **Affected Files**:
+
 - `src/deno-integration.test.ts`
 - `src/deno-simple.test.ts`
 
 **Fix Strategy**:
+
 1. Skip these tests in Node environment
 2. OR mock the HTTPS imports
 3. OR remove if Deno support is not a priority
@@ -165,9 +184,11 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 7: Feature-Specific Regressions (12 failures)
+
 **Root Cause**: Various feature tests with specific issues.
 
 **Affected Files**:
+
 - `src/features/def.test.ts` (1) - metadata issue
 - `src/features/init-verification.test.ts` (3) - timing issues
 - `src/features/js.test.ts` (file issue)
@@ -176,6 +197,7 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 - `src/parser/*.test.ts` (4) - error handling
 
 **Fix Strategy**:
+
 1. Review each feature test individually
 2. Check for timing-related issues (init, wait)
 3. Verify parser error message expectations
@@ -186,9 +208,11 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 ---
 
 ### Category 8: Type System / Import Issues (6 failures)
+
 **Root Cause**: Module import failures or type conversion issues.
 
 **Affected Files**:
+
 - `src/expressions/conversion/impl/index.test.ts`
 - `src/expressions/logical/impl/comparisons.test.ts`
 - `src/expressions/logical/impl/pattern-matching.test.ts`
@@ -197,6 +221,7 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 - `src/types/hyperscript-program.test.ts`
 
 **Fix Strategy**:
+
 1. Check if impl files exist and export correctly
 2. Review import paths
 3. Verify type definitions
@@ -223,13 +248,13 @@ After analyzing the 106 test failures, they can be categorized into **8 distinct
 
 ```bash
 # Run specific category tests
-npm test --workspace=@hyperfixi/core -- --run src/expressions/css-references-fix.test.ts
+npm test --workspace=@lokascript/core -- --run src/expressions/css-references-fix.test.ts
 
 # Run with verbose output
-npm test --workspace=@hyperfixi/core -- --run --reporter=verbose src/api/hyperscript-api.test.ts
+npm test --workspace=@lokascript/core -- --run --reporter=verbose src/api/hyperscript-api.test.ts
 
 # Run all failing tests in a directory
-npm test --workspace=@hyperfixi/core -- --run src/expressions/advanced/
+npm test --workspace=@lokascript/core -- --run src/expressions/advanced/
 ```
 
 ---

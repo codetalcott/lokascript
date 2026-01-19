@@ -1,49 +1,70 @@
-# @hyperfixi/multi-tenant
+# @lokascript/multi-tenant
 
-Multi-tenant behavior customization and tenant isolation for HyperFixi applications.
+Multi-tenant behavior customization and tenant isolation for LokaScript applications.
 
 ## Installation
 
 ```bash
-npm install @hyperfixi/multi-tenant
+npm install @lokascript/multi-tenant
 ```
 
 ## Quick Start
 
 ```typescript
-import { quickStartMultiTenant } from '@hyperfixi/multi-tenant';
+import { quickStartMultiTenant } from '@lokascript/multi-tenant';
 
 // Simple setup with in-memory tenant storage
 const system = await quickStartMultiTenant({
   tenants: [
     { id: 'tenant-1', name: 'Acme Corp', domain: 'acme.example.com', plan: 'premium' },
-    { id: 'tenant-2', name: 'Beta Inc', domain: 'beta.example.com', plan: 'basic' }
+    { id: 'tenant-2', name: 'Beta Inc', domain: 'beta.example.com', plan: 'basic' },
   ],
-  identifier: 'domain'
+  identifier: 'domain',
 });
 
 // Use the tenant manager
-const tenant = await system.tenantManager.resolveTenant({ type: 'domain', value: 'acme.example.com' });
+const tenant = await system.tenantManager.resolveTenant({
+  type: 'domain',
+  value: 'acme.example.com',
+});
 ```
 
 ## Full Setup
 
 ```typescript
-import { createMultiTenantSystem, TenantResolver, CustomizationProvider } from '@hyperfixi/multi-tenant';
+import {
+  createMultiTenantSystem,
+  TenantResolver,
+  CustomizationProvider,
+} from '@lokascript/multi-tenant';
 
 // Implement your tenant resolver (e.g., database lookup)
 const tenantResolver: TenantResolver = {
-  async resolveTenant(identifier) { /* ... */ },
-  async resolveTenantByDomain(domain) { /* ... */ },
-  async resolveTenantBySubdomain(subdomain) { /* ... */ },
-  async resolveTenantById(id) { /* ... */ }
+  async resolveTenant(identifier) {
+    /* ... */
+  },
+  async resolveTenantByDomain(domain) {
+    /* ... */
+  },
+  async resolveTenantBySubdomain(subdomain) {
+    /* ... */
+  },
+  async resolveTenantById(id) {
+    /* ... */
+  },
 };
 
 // Implement your customization provider
 const customizationProvider: CustomizationProvider = {
-  async getCustomization(tenantId) { /* ... */ },
-  async updateCustomization(tenantId, customization) { /* ... */ },
-  async deleteCustomization(tenantId) { /* ... */ }
+  async getCustomization(tenantId) {
+    /* ... */
+  },
+  async updateCustomization(tenantId, customization) {
+    /* ... */
+  },
+  async deleteCustomization(tenantId) {
+    /* ... */
+  },
 };
 
 // Create the multi-tenant system
@@ -52,12 +73,12 @@ const system = createMultiTenantSystem({
   customizationProvider,
   isolation: {
     sandboxLevel: 'strict',
-    enableStorageIsolation: true
+    enableStorageIsolation: true,
   },
   caching: {
     enabled: true,
-    ttl: 300000 // 5 minutes
-  }
+    ttl: 300000, // 5 minutes
+  },
 });
 ```
 
@@ -65,16 +86,20 @@ const system = createMultiTenantSystem({
 
 ```typescript
 import express from 'express';
-import { createMultiTenantSystem } from '@hyperfixi/multi-tenant';
+import { createMultiTenantSystem } from '@lokascript/multi-tenant';
 
 const app = express();
-const system = createMultiTenantSystem({ /* config */ });
+const system = createMultiTenantSystem({
+  /* config */
+});
 
 // Add tenant middleware
-app.use(system.createExpressMiddleware({
-  requireTenant: true,
-  enableIsolation: true
-}));
+app.use(
+  system.createExpressMiddleware({
+    requireTenant: true,
+    enableIsolation: true,
+  })
+);
 
 // Access tenant in routes
 app.get('/api/data', (req, res) => {
@@ -88,14 +113,18 @@ app.get('/api/data', (req, res) => {
 
 ```typescript
 import { Elysia } from 'elysia';
-import { createMultiTenantSystem } from '@hyperfixi/multi-tenant';
+import { createMultiTenantSystem } from '@lokascript/multi-tenant';
 
-const system = createMultiTenantSystem({ /* config */ });
+const system = createMultiTenantSystem({
+  /* config */
+});
 
 const app = new Elysia()
-  .use(system.createElysiaPlugin({
-    requireTenant: true
-  }))
+  .use(
+    system.createElysiaPlugin({
+      requireTenant: true,
+    })
+  )
   .get('/api/data', ({ tenant, tenantContext }) => {
     // Access tenant data
   });
@@ -104,7 +133,7 @@ const app = new Elysia()
 ## Enhanced Pattern (Type-Safe)
 
 ```typescript
-import { createEnhancedMultiTenant } from '@hyperfixi/multi-tenant';
+import { createEnhancedMultiTenant } from '@lokascript/multi-tenant';
 
 const result = await createEnhancedMultiTenant(
   { tenantResolver, isolation: { sandboxLevel: 'strict' } },
@@ -143,21 +172,21 @@ if (result.success && result.value) {
 
 ## Tenant Identification
 
-| Type | Description | Example |
-|------|-------------|---------|
-| `domain` | Full domain name | `tenant.example.com` |
-| `subdomain` | Subdomain only | `tenant` from `tenant.example.com` |
-| `id` | Direct tenant ID | `tenant-123` |
-| `header` | Custom HTTP header | `X-Tenant-ID: tenant-123` |
-| `custom` | Custom resolver function | `(req) => extractTenant(req)` |
+| Type        | Description              | Example                            |
+| ----------- | ------------------------ | ---------------------------------- |
+| `domain`    | Full domain name         | `tenant.example.com`               |
+| `subdomain` | Subdomain only           | `tenant` from `tenant.example.com` |
+| `id`        | Direct tenant ID         | `tenant-123`                       |
+| `header`    | Custom HTTP header       | `X-Tenant-ID: tenant-123`          |
+| `custom`    | Custom resolver function | `(req) => extractTenant(req)`      |
 
 ## Isolation Levels
 
-| Level | Description |
-|-------|-------------|
-| `none` | No isolation |
-| `basic` | Element and CSS namespacing |
-| `strict` | Complete DOM and script separation |
+| Level      | Description                           |
+| ---------- | ------------------------------------- |
+| `none`     | No isolation                          |
+| `basic`    | Element and CSS namespacing           |
+| `strict`   | Complete DOM and script separation    |
 | `complete` | Full sandbox isolation (backend only) |
 
 ## License

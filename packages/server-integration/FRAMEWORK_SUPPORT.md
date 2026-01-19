@@ -8,7 +8,7 @@ The request event source is **framework-agnostic** with built-in adapters for po
 
 ```typescript
 import express from 'express';
-import { setupExpressHyperscriptRoutes } from '@hyperfixi/server-integration/middleware/express';
+import { setupExpressHyperscriptRoutes } from '@lokascript/server-integration/middleware/express';
 
 const app = express();
 app.use(express.json());
@@ -20,7 +20,7 @@ await setupExpressHyperscriptRoutes(app, { debug: true });
 
 ```typescript
 import Koa from 'koa';
-import { createHyperscriptMiddleware, createKoaAdapter } from '@hyperfixi/server-integration';
+import { createHyperscriptMiddleware, createKoaAdapter } from '@lokascript/server-integration';
 
 const app = new Koa();
 
@@ -36,7 +36,7 @@ app.use(middleware);
 
 ```typescript
 import Fastify from 'fastify';
-import { createHyperscriptMiddleware, createFastifyAdapter } from '@hyperfixi/server-integration';
+import { createHyperscriptMiddleware, createFastifyAdapter } from '@lokascript/server-integration';
 
 const fastify = Fastify();
 
@@ -53,7 +53,7 @@ fastify.addHook('onRequest', middleware);
 
 ```typescript
 import { Hono } from 'hono';
-import { createHyperscriptMiddleware, createHonoAdapter } from '@hyperfixi/server-integration';
+import { createHyperscriptMiddleware, createHonoAdapter } from '@lokascript/server-integration';
 
 const app = new Hono();
 
@@ -70,8 +70,8 @@ app.use('*', middleware);
 All frameworks use the same core API:
 
 ```typescript
-import { createHyperscriptMiddleware } from '@hyperfixi/server-integration';
-import { getAdapter } from '@hyperfixi/server-integration/adapters';
+import { createHyperscriptMiddleware } from '@lokascript/server-integration';
+import { getAdapter } from '@lokascript/server-integration/adapters';
 
 const middleware = createHyperscriptMiddleware({
   adapter: getAdapter('express'), // or 'koa', 'fastify', 'hono'
@@ -92,7 +92,7 @@ import type {
   FrameworkAdapter,
   ServerRequest,
   ServerResponse,
-} from '@hyperfixi/server-integration';
+} from '@lokascript/server-integration';
 
 export function createMyFrameworkAdapter(): FrameworkAdapter {
   return {

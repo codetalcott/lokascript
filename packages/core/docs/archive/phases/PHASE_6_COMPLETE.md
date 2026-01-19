@@ -37,12 +37,14 @@ Phase 6 successfully migrated **all user-facing commands** from V1 to standalone
 **Purpose**: Move classes, attributes, and properties from one element to another
 
 **Syntax**:
+
 ```hyperscript
 take <property> from <source>
 take <property> from <source> and put it on <target>
 ```
 
 **Examples**:
+
 ```hyperscript
 take class from <#source/> and put it on me
 take @data-value from <.source/> and put it on <#target/>
@@ -51,6 +53,7 @@ take background-color from <.theme-source/> and put it on <.theme-target/>
 ```
 
 **Key Features**:
+
 - Property transfer (classes, attributes, CSS properties)
 - Source/target element resolution (me, it, you, selectors)
 - Automatic property detection (class, @attribute, data-, style properties)
@@ -58,6 +61,7 @@ take background-color from <.theme-source/> and put it on <.theme-target/>
 - Defaults to context.me for target
 
 **Implementation Highlights**:
+
 ```typescript
 // Take property from source
 private takeProperty(element: HTMLElement, property: string): unknown {
@@ -93,6 +97,7 @@ private putProperty(element: HTMLElement, property: string, value: unknown): voi
 **Purpose**: Render templates with @if, @else, and @repeat directives
 
 **Syntax**:
+
 ```hyperscript
 render <template>
 render <template> with <variables>
@@ -100,6 +105,7 @@ render <template> with (key: value, ...)
 ```
 
 **Examples**:
+
 ```hyperscript
 render myTemplate
 render myTemplate with (name: "Alice", items: [1,2,3])
@@ -108,6 +114,7 @@ render template with (items: data) then put result into #output
 ```
 
 **Key Features**:
+
 - Template content extraction (HTMLTemplateElement or string)
 - Variable interpolation (${variable})
 - @if/@else conditional rendering (inline directive logic)
@@ -117,6 +124,7 @@ render template with (items: data) then put result into #output
 - DOM element creation
 
 **Template Directives** (Inline Implementation):
+
 ```hyperscript
 @if <condition>
   Content when true
@@ -133,6 +141,7 @@ Unescaped: ${unescaped htmlContent}
 ```
 
 **Implementation Highlights**:
+
 ```typescript
 // Inline @repeat directive processing
 private async processRepeatDirective(
@@ -196,6 +205,7 @@ private processVariableInterpolation(content: string, context: any): string {
 ### All 43 V2 Commands
 
 #### DOM Commands (7)
+
 1. hide
 2. show
 3. add
@@ -205,10 +215,12 @@ private processVariableInterpolation(content: string, context: any): string {
 7. make
 
 #### Async Commands (2)
+
 8. wait
 9. fetch
 
 #### Data Commands (6)
+
 10. set
 11. increment
 12. decrement
@@ -217,6 +229,7 @@ private processVariableInterpolation(content: string, context: any): string {
 15. persist
 
 #### Utility Commands (6)
+
 16. log
 17. tell
 18. copy
@@ -225,13 +238,16 @@ private processVariableInterpolation(content: string, context: any): string {
 21. install
 
 #### Event Commands (2)
+
 22. trigger
 23. send
 
 #### Navigation Commands (1)
+
 24. go
 
 #### Control Flow Commands (9)
+
 25. if
 26. repeat
 27. break
@@ -243,23 +259,28 @@ private processVariableInterpolation(content: string, context: any): string {
 33. throw
 
 #### Content Commands (1)
+
 34. append
 
 #### Execution Commands (3)
+
 35. call
 36. pseudo-command
 37. async
 
 #### Animation Commands (4)
+
 38. transition
 39. measure
 40. settle
 41. take
 
 #### Advanced Commands (1)
+
 42. js
 
 #### Template Commands (1)
+
 43. render
 
 ---
@@ -276,16 +297,16 @@ test-standard.js:   224 KB  (all 43 V2 commands)
 
 ### Size Evolution
 
-| Phase | Commands | Bundle Size | vs Baseline | Change from Previous |
-|-------|----------|-------------|-------------|---------------------|
-| Baseline | V1 | 366 KB | 0% | - |
-| Phase 5 | 16 | ~205 KB | -44% | -161 KB |
-| Phase 6-1 | 21 | ~208 KB | -43% | +3 KB |
-| Phase 6-2 | 26 | ~210 KB | -43% | +2 KB |
-| Phase 6-3 | 30 | ~212 KB | -42% | +2 KB |
-| Phase 6-4 | 35 | ~216 KB | -41% | +4 KB |
-| Phase 6-5 | 41 | ~216 KB | -41% | 0 KB |
-| **Phase 6-6** | **43** | **224 KB** | **-39%** | **+8 KB** |
+| Phase         | Commands | Bundle Size | vs Baseline | Change from Previous |
+| ------------- | -------- | ----------- | ----------- | -------------------- |
+| Baseline      | V1       | 366 KB      | 0%          | -                    |
+| Phase 5       | 16       | ~205 KB     | -44%        | -161 KB              |
+| Phase 6-1     | 21       | ~208 KB     | -43%        | +3 KB                |
+| Phase 6-2     | 26       | ~210 KB     | -43%        | +2 KB                |
+| Phase 6-3     | 30       | ~212 KB     | -42%        | +2 KB                |
+| Phase 6-4     | 35       | ~216 KB     | -41%        | +4 KB                |
+| Phase 6-5     | 41       | ~216 KB     | -41%        | 0 KB                 |
+| **Phase 6-6** | **43**   | **224 KB**  | **-39%**    | **+8 KB**            |
 
 ### Analysis
 
@@ -295,6 +316,7 @@ test-standard.js:   224 KB  (all 43 V2 commands)
 - **Tree-shaking effectiveness**: 39% smaller with ALL commands vs V1 baseline
 
 The slight size increase from Phase 6-5 to 6-6 is expected:
+
 - TakeCommand (360 lines) - Complex property transfer logic
 - RenderCommand (520 lines) - Inline template directive processing
 
@@ -312,7 +334,9 @@ Every V2 command follows the consistent pattern:
 export class CommandName {
   readonly name = 'command-name';
 
-  static readonly metadata = { /* ... */ };
+  static readonly metadata = {
+    /* ... */
+  };
 
   async parseInput(
     raw: { args: ASTNode[]; modifiers: Record<string, ExpressionNode> },
@@ -322,10 +346,7 @@ export class CommandName {
     // Convert AST nodes to typed input (zero V1 dependencies)
   }
 
-  async execute(
-    input: CommandInput,
-    context: TypedExecutionContext
-  ): Promise<CommandOutput> {
+  async execute(input: CommandInput, context: TypedExecutionContext): Promise<CommandOutput> {
     // Execute command logic (zero V1 dependencies)
   }
 
@@ -378,18 +399,20 @@ export function createCommandName(): CommandName {
 
 ### Implementation Sizes (Phase 6-6)
 
-| Command | Lines | Category | V1 Size | Reduction |
-|---------|-------|----------|---------|-----------|
-| TakeCommand | 360 | Animation | 935 | -61% |
-| RenderCommand | 520 | Templates | 776 | -33% |
-| **Total** | **880** | **Mixed** | **1,711** | **-49%** |
+| Command       | Lines   | Category  | V1 Size   | Reduction |
+| ------------- | ------- | --------- | --------- | --------- |
+| TakeCommand   | 360     | Animation | 935       | -61%      |
+| RenderCommand | 520     | Templates | 776       | -33%      |
+| **Total**     | **880** | **Mixed** | **1,711** | **-49%**  |
 
 TakeCommand achieved excellent reduction by:
+
 - Removing validation schema infrastructure
 - Simplifying error handling
 - Inlining element resolution
 
 RenderCommand achieved moderate reduction by:
+
 - Inlining directive logic (no external dependencies)
 - Simplifying template context creation
 - Removing Zod schema dependencies
@@ -433,10 +456,12 @@ RenderCommand achieved moderate reduction by:
 ## Files Modified (Phase 6-6)
 
 ### New Files (2 commands)
+
 1. `packages/core/src/commands-v2/animation/take.ts` (360 lines)
 2. `packages/core/src/commands-v2/templates/render.ts` (520 lines)
 
 ### Modified Files (3 files)
+
 1. `packages/core/src/commands-v2/index.ts` - Added exports for 2 commands
 2. `packages/core/src/runtime/runtime-experimental.ts` - Registered 2 commands (43 total)
 3. `packages/core/src/bundles/test-standard.ts` - Updated command list
@@ -448,6 +473,7 @@ RenderCommand achieved moderate reduction by:
 ### What Was Migrated (All Phases)
 
 **Phase 5** (Baseline - 16 commands):
+
 - DOM: hide, show, add, remove, toggle, put, make
 - Async: wait, fetch
 - Data: set, increment, decrement
@@ -456,26 +482,33 @@ RenderCommand achieved moderate reduction by:
 - Navigation: go
 
 **Phase 6-1** (Control Flow - 5 commands):
+
 - if, repeat, break, continue, halt
 
 **Phase 6-2** (Data & Execution - 5 commands):
+
 - bind, call, append, return, exit
 
 **Phase 6-3** (Animation & Persistence - 4 commands):
+
 - transition, measure, settle, persist
 
 **Phase 6-4** (Advanced Features - 5 commands):
+
 - js, async, unless, default, pseudo-command
 
 **Phase 6-5** (Utility & Specialized - 6 commands):
+
 - tell, copy, pick, throw, beep, install
 
 **Phase 6-6** (Final Commands - 2 commands):
+
 - take, render
 
 ### What Was NOT Migrated (Infrastructure)
 
 The following V1 files are infrastructure, not user-facing commands:
+
 - `base/types.ts` - Type definitions
 - `command-executor.ts` - Command execution infrastructure
 - `command-performance-profiler.ts` - Profiling utilities
@@ -497,6 +530,7 @@ These files remain in V1 as infrastructure code supporting the overall system.
 ### 1. Template Directive Inlining
 
 RenderCommand successfully demonstrated that complex functionality (template directives) can be inlined without external dependencies:
+
 - @if/@else logic: ~60 lines inline
 - @repeat logic: ~40 lines inline
 - Variable interpolation: ~30 lines inline
@@ -507,6 +541,7 @@ RenderCommand successfully demonstrated that complex functionality (template dir
 ### 2. Property Transfer Complexity
 
 TakeCommand showed that even complex property transfer logic can be simplified:
+
 - V1: 935 lines with validation schemas, complex error handling
 - V2: 360 lines with runtime validation, inline utilities
 - **61% reduction** while maintaining full functionality
@@ -521,6 +556,7 @@ Actual count: 2 commands remaining
 ### 4. Bundle Size Scaling
 
 Adding final 2 commands:
+
 - TakeCommand + RenderCommand = +8 KB
 - Average: ~4 KB per command
 - Consistent with previous phases (~3-5 KB per command)
@@ -571,6 +607,7 @@ Phase 6 is **COMPLETE**, but the following could be considered for future work:
 ### Infrastructure Modernization
 
 The following V1 infrastructure could be refactored if needed:
+
 - Command registry system
 - Command performance profiler
 - Unified command system
@@ -584,15 +621,17 @@ However, these are not required for Phase 6 completion.
 **Phase 6: Tree-Shaking Migration is COMPLETE** ✅
 
 All 43 user-facing commands have been successfully migrated to standalone V2 implementations with:
+
 - ✅ **100% migration** of user-facing commands
 - ✅ **39% bundle reduction** (366 KB → 224 KB)
 - ✅ **Zero V1 dependencies** across all commands
 - ✅ **Full type safety** with TypeScript
 - ✅ **Consistent architecture** and clean code
 
-The HyperFixi command system now features a modern, tree-shakable architecture ready for production use.
+The LokaScript command system now features a modern, tree-shakable architecture ready for production use.
 
 **Phase 6-6 specifically delivered**:
+
 - ✅ TakeCommand: Property/attribute/class transfer (360 lines, 61% reduction)
 - ✅ RenderCommand: Template rendering with inline directives (520 lines, 33% reduction)
 - ✅ Final bundle size: 224 KB (39% improvement)

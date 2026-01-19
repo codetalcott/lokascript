@@ -1,4 +1,4 @@
-# Tree-Shaking Guide for HyperFixi
+# Tree-Shaking Guide for LokaScript
 
 **Status**: ✅ **Tree-shaking fully implemented and working!** (2025-01-20)
 
@@ -18,23 +18,24 @@
 
 ## Overview
 
-HyperFixi has a fully modular architecture that **supports tree-shaking when used as an npm package with manual imports**. Pre-built browser bundles currently include most commands due to implementation limitations (being addressed).
+LokaScript has a fully modular architecture that **supports tree-shaking when used as an npm package with manual imports**. Pre-built browser bundles currently include most commands due to implementation limitations (being addressed).
 
 ## Current Capabilities
 
 ### ✅ What Works Today
 
 **1. Individual Command Imports**
+
 ```typescript
 // Import only the commands you need
-import { createRuntime } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
 import {
   HideCommand,
   ShowCommand,
   ToggleCommand,
   AddCommand,
-  RemoveCommand
-} from '@hyperfixi/core';
+  RemoveCommand,
+} from '@lokascript/core';
 
 // Create runtime and register only needed commands
 const runtime = createRuntime();
@@ -48,25 +49,27 @@ runtime.registerCommand(new RemoveCommand());
 ```
 
 **2. Expression System Tree-Shaking**
+
 ```typescript
 // Import only needed expression categories
 import {
-  referencesExpressions,    // me, you, it, CSS selectors
-  logicalExpressions,       // and, or, not, comparisons
-} from '@hyperfixi/core';
+  referencesExpressions, // me, you, it, CSS selectors
+  logicalExpressions, // and, or, not, comparisons
+} from '@lokascript/core';
 
 // Skip: conversionExpressions, positionalExpressions, etc.
 // Savings: ~40-50 KB per category excluded
 ```
 
 **3. Factory Functions**
+
 ```typescript
 // Use factory functions for optimal tree-shaking
 import {
   createHideCommand,
   createShowCommand,
-  createToggleCommand
-} from '@hyperfixi/core/commands';
+  createToggleCommand,
+} from '@lokascript/core/commands';
 
 const runtime = createRuntime();
 runtime.registerCommand(createHideCommand());
@@ -103,15 +106,15 @@ All bundles include `MinimalAttributeProcessor` which automatically:
 ### Option 1: Custom Vite/Rollup Build (Recommended)
 
 ```typescript
-// src/hyperfixi-custom.ts
-import { createRuntime } from '@hyperfixi/core';
+// src/lokascript-custom.ts
+import { createRuntime } from '@lokascript/core';
 
 // Import ONLY the commands you use in your HTML
-import { HideCommand } from '@hyperfixi/core';
-import { ShowCommand } from '@hyperfixi/core';
-import { ToggleCommand } from '@hyperfixi/core';
-import { AddCommand } from '@hyperfixi/core';
-import { FetchCommand } from '@hyperfixi/core';
+import { HideCommand } from '@lokascript/core';
+import { ShowCommand } from '@lokascript/core';
+import { ToggleCommand } from '@lokascript/core';
+import { AddCommand } from '@lokascript/core';
+import { FetchCommand } from '@lokascript/core';
 
 // Create and configure runtime
 const runtime = createRuntime();
@@ -130,8 +133,9 @@ export { runtime };
 ```
 
 Then build with Vite or Rollup:
+
 ```bash
-npx vite build src/hyperfixi-custom.ts
+npx vite build src/lokascript-custom.ts
 # Output: ~180 KB (5 commands) instead of 474 KB (all commands)
 ```
 
@@ -140,14 +144,18 @@ npx vite build src/hyperfixi-custom.ts
 Create preset files for common use cases:
 
 **DOM-Only Preset** (~150 KB):
+
 ```typescript
 // src/presets/dom-only.ts
-import { createRuntime } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
 import {
-  HideCommand, ShowCommand, ToggleCommand,
-  AddCommand, RemoveCommand,
-  PutCommand
-} from '@hyperfixi/core';
+  HideCommand,
+  ShowCommand,
+  ToggleCommand,
+  AddCommand,
+  RemoveCommand,
+  PutCommand,
+} from '@lokascript/core';
 
 export function createDOMOnlyRuntime() {
   const runtime = createRuntime();
@@ -162,17 +170,24 @@ export function createDOMOnlyRuntime() {
 ```
 
 **Interactive Preset** (~220 KB):
+
 ```typescript
 // src/presets/interactive.ts
-import { createRuntime } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
 import {
   // DOM commands
-  HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand,
+  HideCommand,
+  ShowCommand,
+  ToggleCommand,
+  AddCommand,
+  RemoveCommand,
   // Event commands
-  TriggerCommand, SendCommand,
+  TriggerCommand,
+  SendCommand,
   // Async commands
-  WaitCommand, FetchCommand
-} from '@hyperfixi/core';
+  WaitCommand,
+  FetchCommand,
+} from '@lokascript/core';
 
 export function createInteractiveRuntime() {
   const runtime = createRuntime();
@@ -182,9 +197,10 @@ export function createInteractiveRuntime() {
 ```
 
 **Full Preset** (474 KB - same as browser bundle):
+
 ```typescript
-import { createRuntime } from '@hyperfixi/core';
-import * as commands from '@hyperfixi/core/commands';
+import { createRuntime } from '@lokascript/core';
+import * as commands from '@lokascript/core/commands';
 
 export function createFullRuntime() {
   const runtime = createRuntime();
@@ -207,13 +223,13 @@ async function setupHyperfixi(commandsNeeded: string[]) {
   const runtime = createRuntime();
 
   for (const cmdName of commandsNeeded) {
-    switch(cmdName) {
+    switch (cmdName) {
       case 'hide':
-        const { HideCommand } = await import('@hyperfixi/core/commands/dom/hide');
+        const { HideCommand } = await import('@lokascript/core/commands/dom/hide');
         runtime.registerCommand(new HideCommand());
         break;
       case 'show':
-        const { ShowCommand } = await import('@hyperfixi/core/commands/dom/show');
+        const { ShowCommand } = await import('@lokascript/core/commands/dom/show');
         runtime.registerCommand(new ShowCommand());
         break;
       // ... more commands
@@ -229,30 +245,30 @@ const runtime = await setupHyperfixi(['hide', 'show', 'toggle']);
 
 ## Bundle Size Comparison
 
-| Build Type | Commands | Size (uncompressed) | Size (gzipped est.) |
-|------------|----------|---------------------|---------------------|
-| **Full browser bundle** | All 40+ | 474 KB | ~120-130 KB |
-| **DOM-only preset** | 6 DOM commands | ~150 KB | ~40-50 KB |
-| **Interactive preset** | 9 core commands | ~220 KB | ~60-70 KB |
-| **Minimal custom** | 3 commands | ~100 KB | ~30-35 KB |
-| **Single command** | 1 command | ~60-80 KB | ~20-25 KB |
+| Build Type              | Commands        | Size (uncompressed) | Size (gzipped est.) |
+| ----------------------- | --------------- | ------------------- | ------------------- |
+| **Full browser bundle** | All 40+         | 474 KB              | ~120-130 KB         |
+| **DOM-only preset**     | 6 DOM commands  | ~150 KB             | ~40-50 KB           |
+| **Interactive preset**  | 9 core commands | ~220 KB             | ~60-70 KB           |
+| **Minimal custom**      | 3 commands      | ~100 KB             | ~30-35 KB           |
+| **Single command**      | 1 command       | ~60-80 KB           | ~20-25 KB           |
 
 ## Command Categories and Sizes
 
 Approximate sizes (uncompressed) for reference:
 
-| Category | Commands | Approx Size |
-|----------|----------|-------------|
-| **DOM** | add, remove, toggle, hide, show, put | ~80 KB |
-| **Events** | trigger, send, on | ~45 KB |
-| **Async** | fetch, wait | ~50 KB |
-| **Control Flow** | if, repeat, exit, halt, return, break, continue | ~90 KB |
-| **Data** | set, increment, decrement, default | ~40 KB |
-| **Navigation** | go | ~35 KB |
-| **Animation** | settle, measure, transition, take | ~65 KB |
-| **Advanced** | tell, js, beep, async | ~35 KB |
-| **Utility** | log, pick, copy | ~25 KB |
-| **Runtime Core** | Parser, tokenizer, context | ~150 KB |
+| Category         | Commands                                        | Approx Size |
+| ---------------- | ----------------------------------------------- | ----------- |
+| **DOM**          | add, remove, toggle, hide, show, put            | ~80 KB      |
+| **Events**       | trigger, send, on                               | ~45 KB      |
+| **Async**        | fetch, wait                                     | ~50 KB      |
+| **Control Flow** | if, repeat, exit, halt, return, break, continue | ~90 KB      |
+| **Data**         | set, increment, decrement, default              | ~40 KB      |
+| **Navigation**   | go                                              | ~35 KB      |
+| **Animation**    | settle, measure, transition, take               | ~65 KB      |
+| **Advanced**     | tell, js, beep, async                           | ~35 KB      |
+| **Utility**      | log, pick, copy                                 | ~25 KB      |
+| **Runtime Core** | Parser, tokenizer, context                      | ~150 KB     |
 
 ## Webpack Configuration
 
@@ -263,13 +279,13 @@ If using Webpack, ensure tree-shaking is enabled:
 module.exports = {
   mode: 'production',
   optimization: {
-    usedExports: true,        // Enable tree-shaking
-    sideEffects: false,       // Mark all code as side-effect free
+    usedExports: true, // Enable tree-shaking
+    sideEffects: false, // Mark all code as side-effect free
     minimize: true,
   },
   resolve: {
-    mainFields: ['module', 'main'],  // Prefer ES modules
-  }
+    mainFields: ['module', 'main'], // Prefer ES modules
+  },
 };
 ```
 
@@ -283,7 +299,7 @@ import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 
 export default {
-  input: 'src/hyperfixi-custom.ts',
+  input: 'src/lokascript-custom.ts',
   output: {
     file: 'dist/bundle.js',
     format: 'es',
@@ -295,12 +311,12 @@ export default {
         dead_code: true,
         unused: true,
         pure_getters: true,
-      }
-    })
+      },
+    }),
   ],
   treeshake: {
-    moduleSideEffects: false,  // Enable aggressive tree-shaking
-  }
+    moduleSideEffects: false, // Enable aggressive tree-shaking
+  },
 };
 ```
 
@@ -309,41 +325,44 @@ export default {
 ### Planned Features
 
 1. **Smart Build Tool** - Scan HTML and auto-generate minimal bundle
+
    ```bash
-   hyperfixi analyze ./src/**/*.html
+   lokascript analyze ./src/**/*.html
    # Output: Commands used: hide, show, toggle, add (4 commands)
    # Suggested bundle size: ~140 KB
 
-   hyperfixi build --auto
+   lokascript build --auto
    # Automatically creates optimized bundle with only used commands
    ```
 
 2. **Updated Preset Bundles** - Modern preset files for common use cases
-   - `hyperfixi-minimal.js` - DOM only (~150 KB)
-   - `hyperfixi-standard.js` - DOM + Events + Async (~220 KB)
-   - `hyperfixi-full.js` - All commands (474 KB)
+   - `lokascript-minimal.js` - DOM only (~150 KB)
+   - `lokascript-standard.js` - DOM + Events + Async (~220 KB)
+   - `lokascript-full.js` - All commands (474 KB)
 
 3. **CDN Preset URLs** - Serve optimized presets via CDN
+
    ```html
    <!-- Minimal DOM preset -->
-   <script src="https://cdn.hyperfixi.dev/v1/presets/dom.min.js"></script>
+   <script src="https://cdn.lokascript.dev/v1/presets/dom.min.js"></script>
 
    <!-- Interactive preset -->
-   <script src="https://cdn.hyperfixi.dev/v1/presets/interactive.min.js"></script>
+   <script src="https://cdn.lokascript.dev/v1/presets/interactive.min.js"></script>
    ```
 
 4. **Vite Plugin** - Auto-detect commands and create optimized bundle
+
    ```javascript
    // vite.config.js
-   import hyperfixi from '@hyperfixi/vite-plugin';
+   import lokascript from '@lokascript/vite-plugin';
 
    export default {
      plugins: [
-       hyperfixi({
-         scan: './src/**/*.html',  // Auto-detect used commands
-         preset: 'auto',            // Or 'minimal', 'standard', 'full'
-       })
-     ]
+       lokascript({
+         scan: './src/**/*.html', // Auto-detect used commands
+         preset: 'auto', // Or 'minimal', 'standard', 'full'
+       }),
+     ],
    };
    ```
 
@@ -360,7 +379,7 @@ export default {
 ### ❌ Don't
 
 - Don't use the full browser bundle in production apps (use custom builds)
-- Don't import via destructuring if you need tree-shaking: ~~`import { HideCommand } from '@hyperfixi/core/commands'`~~
+- Don't import via destructuring if you need tree-shaking: ~~`import { HideCommand } from '@lokascript/core/commands'`~~
 - Don't assume all commands are always needed
 - Don't skip measuring bundle size impact
 
@@ -370,8 +389,8 @@ export default {
 
 ```typescript
 // Only needs: toggle, add, remove
-import { createRuntime } from '@hyperfixi/core';
-import { ToggleCommand, AddCommand, RemoveCommand } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
+import { ToggleCommand, AddCommand, RemoveCommand } from '@lokascript/core';
 
 const runtime = createRuntime();
 runtime.registerCommand(new ToggleCommand());
@@ -387,8 +406,8 @@ runtime.scanAndProcess();
 
 ```typescript
 // Only needs: show, hide, toggle, add (for animations/reveals)
-import { createRuntime } from '@hyperfixi/core';
-import { ShowCommand, HideCommand, ToggleCommand, AddCommand } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
+import { ShowCommand, HideCommand, ToggleCommand, AddCommand } from '@lokascript/core';
 
 const runtime = createRuntime();
 runtime.registerCommand(new ShowCommand());
@@ -405,14 +424,22 @@ runtime.scanAndProcess();
 
 ```typescript
 // Needs most commands
-import { createRuntime } from '@hyperfixi/core';
+import { createRuntime } from '@lokascript/core';
 import {
-  HideCommand, ShowCommand, ToggleCommand, AddCommand, RemoveCommand, PutCommand,
-  TriggerCommand, SendCommand,
-  WaitCommand, FetchCommand,
+  HideCommand,
+  ShowCommand,
+  ToggleCommand,
+  AddCommand,
+  RemoveCommand,
+  PutCommand,
+  TriggerCommand,
+  SendCommand,
+  WaitCommand,
+  FetchCommand,
   GoCommand,
-  IfCommand, RepeatCommand
-} from '@hyperfixi/core';
+  IfCommand,
+  RepeatCommand,
+} from '@lokascript/core';
 
 const runtime = createRuntime();
 // Register all commands...
@@ -436,6 +463,7 @@ rollup -c --plugin visualizer
 ```
 
 Look for:
+
 - ✅ Only imported commands present
 - ✅ Unused expressions removed
 - ✅ Metadata stripped in production builds
@@ -445,19 +473,19 @@ Look for:
 
 ### Pre-built Browser Bundles (Easiest)
 
-**Minimal Bundle** (46.4KB gzipped) - `dist/hyperfixi-browser-minimal.js`
+**Minimal Bundle** (46.4KB gzipped) - `dist/lokascript-browser-minimal.js`
 
 - 8 essential commands: add, remove, toggle, put, set, if, send, log
 - Best for: Landing pages, simple forms, basic interactivity
 - Use when: You need minimal overhead and fast load times
 
-**Standard Bundle** (57.1KB gzipped) - `dist/hyperfixi-browser-standard.js`
+**Standard Bundle** (57.1KB gzipped) - `dist/lokascript-browser-standard.js`
 
 - 19 common commands: all minimal + show, hide, increment, decrement, trigger, wait, halt, return, make, append, call
 - Best for: Web applications, rich UIs, form-heavy pages
 - Use when: You need most common features without everything
 
-**Full Bundle** (112KB gzipped) - `dist/hyperfixi-browser.js`
+**Full Bundle** (112KB gzipped) - `dist/lokascript-browser.js`
 
 - All 45 commands
 - Best for: Complex applications, admin dashboards, development
@@ -467,18 +495,18 @@ Look for:
 
 ```html
 <!-- Minimal (fastest) -->
-<script src="https://cdn.hyperfixi.com/v1/hyperfixi-browser-minimal.js"></script>
+<script src="https://cdn.lokascript.com/v1/lokascript-browser-minimal.js"></script>
 
 <!-- Standard (recommended) -->
-<script src="https://cdn.hyperfixi.com/v1/hyperfixi-browser-standard.js"></script>
+<script src="https://cdn.lokascript.com/v1/lokascript-browser-standard.js"></script>
 
 <!-- Full (all features) -->
-<script src="https://cdn.hyperfixi.com/v1/hyperfixi-browser.js"></script>
+<script src="https://cdn.lokascript.com/v1/lokascript-browser.js"></script>
 ```
 
 ## Conclusion
 
-**HyperFixi successfully achieves optimal tree-shaking:**
+**LokaScript successfully achieves optimal tree-shaking:**
 
 - ✅ Individual command exports
 - ✅ ES module format

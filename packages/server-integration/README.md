@@ -1,4 +1,4 @@
-# @hyperfixi/server-integration
+# @lokascript/server-integration
 
 Server-side hyperscript compilation API with enterprise features: API key authentication, tiered rate limiting, Stripe billing integration, and usage tracking.
 
@@ -14,13 +14,13 @@ Server-side hyperscript compilation API with enterprise features: API key authen
 ## Installation
 
 ```bash
-npm install @hyperfixi/server-integration
+npm install @lokascript/server-integration
 ```
 
 ## Quick Start
 
 ```typescript
-import { HyperfixiService } from '@hyperfixi/server-integration';
+import { HyperfixiService } from '@lokascript/server-integration';
 
 const service = new HyperfixiService({
   port: 3000,
@@ -31,7 +31,7 @@ const service = new HyperfixiService({
 });
 
 await service.start();
-console.log('HyperFixi API running on http://localhost:3000');
+console.log('LokaScript API running on http://localhost:3000');
 ```
 
 ## Server-Side Hyperscript Routes (New!)
@@ -42,7 +42,7 @@ The server-integration package now supports declarative HTTP request handling us
 
 ```typescript
 import express from 'express';
-import { setupHyperscriptRoutes } from '@hyperfixi/server-integration';
+import { setupHyperscriptRoutes } from '@lokascript/server-integration';
 
 const app = express();
 app.use(express.json());
@@ -51,7 +51,7 @@ app.use(express.json());
 await setupHyperscriptRoutes(app, { debug: true });
 
 // Now compile hyperscript route handlers
-const { hyperscript } = await import('@hyperfixi/core');
+const { hyperscript } = await import('@lokascript/core');
 
 await hyperscript.compileAsync(`
   on request(GET, /api/users)
@@ -165,8 +165,8 @@ end
 For more control, you can manually configure the request event source:
 
 ```typescript
-import { createHyperscriptRoutesMiddleware } from '@hyperfixi/server-integration';
-import { registry } from '@hyperfixi/core/registry';
+import { createHyperscriptRoutesMiddleware } from '@lokascript/server-integration';
+import { registry } from '@lokascript/core/registry';
 
 const middleware = createHyperscriptRoutesMiddleware({
   registry,

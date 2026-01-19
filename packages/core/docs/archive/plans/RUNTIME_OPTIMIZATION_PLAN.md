@@ -1,21 +1,23 @@
 # Runtime Optimization Plan
 
-**Goal:** Identify and implement performance improvements in the HyperFixi runtime system
+**Goal:** Identify and implement performance improvements in the LokaScript runtime system
 
 **Date:** 2024-01-24
 
 ## Current Runtime Status
 
 **Architecture:** V2 Standalone System (Post-Phase 7)
+
 - ✅ RuntimeBase: Generic runtime with zero command imports (617 lines)
 - ✅ CommandAdapterV2: Generic adapter (288 lines, 70% reduction from V1)
 - ✅ Commands-v2: 43 standalone commands with parseInput() pattern
 - ✅ Bundle size: 224 KB (39% reduction from 366 KB baseline)
 
 **Test Coverage:**
+
 - Expression tests: 388/388 passing (100%)
 - Runtime tests: Data needed
-- Integration tests: ~85% compatibility with official _hyperscript
+- Integration tests: ~85% compatibility with official \_hyperscript
 
 ## Optimization Opportunities
 
@@ -113,6 +115,7 @@
 **Focus:** Low-complexity, high-impact optimizations
 
 **Tasks:**
+
 1. ✅ Bundle analysis with rollup-plugin-visualizer
    - Identify largest dependencies
    - Find duplicate code
@@ -135,6 +138,7 @@
 **Focus:** Measure before optimizing
 
 **Tasks:**
+
 1. ✅ Set up performance benchmarks
    - Create representative test cases
    - Measure baseline performance
@@ -157,16 +161,19 @@
 **Focus:** Implement high-impact optimizations
 
 **Priority 1: Expression Caching**
+
 - Implement EvaluationCache
 - Add cache invalidation logic
 - Benchmark improvements
 
 **Priority 2: Selector Caching**
+
 - Implement SelectorCache
 - Add MutationObserver integration
 - Benchmark improvements
 
 **Priority 3: Context Pooling**
+
 - Implement object pool
 - Integrate with runtime
 - Benchmark improvements
@@ -178,11 +185,13 @@
 **Focus:** Complex, high-reward optimizations
 
 **Tree-Shaking Enhancement**
+
 - Evaluate hybrid V1/V2 approach
 - Implement per-command imports
 - Measure bundle size improvements
 
 **Memory Leak Prevention**
+
 - Comprehensive event cleanup
 - WeakMap conversions
 - Memory profiling
@@ -192,16 +201,19 @@
 ## Success Metrics
 
 ### Bundle Size
+
 - **Current:** 224 KB
 - **Phase 1 Target:** 174-194 KB (22-29% improvement)
 - **Ultimate Target:** 144 KB (36% additional improvement)
 
 ### Performance
+
 - **Expression Evaluation:** 20-40% faster
 - **DOM Operations:** 30-50% faster
 - **Overall:** 30-60% faster
 
 ### Memory
+
 - **Zero memory leaks** in SPA scenarios
 - **30-50% less GC** pressure
 - **Faster page unload** (cleanup efficiency)
@@ -209,16 +221,19 @@
 ## Risk Assessment
 
 ### Low Risk (Phase 1)
+
 - Minification improvements: ✅ Easily revertible
 - Dead code removal: ✅ Well-tested
 - Bundle analysis: ✅ No code changes
 
 ### Medium Risk (Phase 2-3)
+
 - Expression caching: ⚠️ Must maintain correctness
 - Selector caching: ⚠️ Must invalidate properly
 - Context pooling: ⚠️ Must reset completely
 
 ### High Risk (Phase 4)
+
 - Tree-shaking changes: ⚠️ Complex refactoring
 - Major architecture changes: ⚠️ Potential regressions
 
@@ -227,35 +242,43 @@
 ### Test Cases
 
 **1. Command Execution**
+
 ```hyperscript
 on click
   add .active to me
   wait 100ms
   remove .active from me
 ```
+
 **Measure:** Commands/second
 
 **2. Expression Evaluation**
+
 ```hyperscript
 on input
   set count to (#input's value as Int) + 1
   put count into #output
 ```
+
 **Measure:** Evaluations/second
 
 **3. DOM Manipulation**
+
 ```hyperscript
 on click
   repeat 100 times
     put <div>Item</div> into <#container/>
   end
 ```
+
 **Measure:** Elements/second
 
 **4. Event Handling**
+
 ```hyperscript
 <button _="on click log 'clicked'">
 ```
+
 **Measure:** Events/second
 
 ### Measurement Tools
@@ -283,35 +306,41 @@ on click
 ## Implementation Checklist
 
 ### Pre-Implementation
+
 - [ ] Set up benchmark infrastructure
 - [ ] Baseline performance measurements
 - [ ] Bundle analysis complete
 - [ ] Hot paths identified
 
 ### Phase 1: Quick Wins
+
 - [ ] Advanced Terser configuration
 - [ ] Dead code removal
 - [ ] Dependency cleanup
 - [ ] Verify 30-50 KB reduction
 
 ### Phase 2: Profiling
+
 - [ ] Performance benchmarks created
 - [ ] Chrome DevTools profiling
 - [ ] Hot paths documented
 - [ ] Optimization priorities set
 
 ### Phase 3: Optimizations
+
 - [ ] Expression caching implemented
 - [ ] Selector caching implemented
 - [ ] Context pooling implemented
 - [ ] 30-60% performance improvement verified
 
 ### Phase 4: Advanced (Optional)
+
 - [ ] Tree-shaking enhancements
 - [ ] Memory leak prevention
 - [ ] Additional 50-80 KB reduction
 
 ### Post-Implementation
+
 - [ ] Documentation updated
 - [ ] Benchmarks in CI
 - [ ] Performance guide created
@@ -320,6 +349,7 @@ on click
 ## Dependencies
 
 **Required Tools:**
+
 - rollup-plugin-visualizer (bundle analysis)
 - Vitest (benchmarking)
 - Chrome DevTools (profiling)
@@ -338,6 +368,7 @@ on click
 ## Next Steps
 
 After creating this plan:
+
 1. **Parser tests first** - Fix 10 failing tests (2-3 hours)
 2. **Bundle analysis** - Start Phase 1 (1 day)
 3. **Performance profiling** - Start Phase 2 (2-3 days)
@@ -346,6 +377,7 @@ After creating this plan:
 ## Documentation
 
 **Related Documents:**
+
 - [TREE_SHAKING_COMPLETE.md](../roadmap/tree-shaking/TREE_SHAKING_COMPLETE.md) - Current tree-shaking status
 - [PHASE_7_COMPLETE.md](PHASE_7_COMPLETE.md) - Runtime consolidation history
 - [RUNTIME_OPTIMIZATION_RESULTS.md](RUNTIME_OPTIMIZATION_RESULTS.md) - Results after implementation (TBD)

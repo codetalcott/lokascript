@@ -1,6 +1,6 @@
-# Progressive Enhancement for HyperFixi
+# Progressive Enhancement for LokaScript
 
-A comprehensive progressive enhancement system that detects browser capabilities and applies appropriate enhancements based on what the browser supports. This package provides capability detection, enhancement levels, and an intelligent system for applying progressive enhancements to HyperFixi applications.
+A comprehensive progressive enhancement system that detects browser capabilities and applies appropriate enhancements based on what the browser supports. This package provides capability detection, enhancement levels, and an intelligent system for applying progressive enhancements to LokaScript applications.
 
 ## Features
 
@@ -15,11 +15,11 @@ A comprehensive progressive enhancement system that detects browser capabilities
 ## Installation
 
 ```bash
-npm install @hyperfixi/progressive-enhancement
+npm install @lokascript/progressive-enhancement
 # or
-yarn add @hyperfixi/progressive-enhancement
+yarn add @lokascript/progressive-enhancement
 # or
-pnpm add @hyperfixi/progressive-enhancement
+pnpm add @lokascript/progressive-enhancement
 ```
 
 ## Quick Start
@@ -29,7 +29,7 @@ pnpm add @hyperfixi/progressive-enhancement
 The easiest way to get started is with auto-enhancement:
 
 ```typescript
-import { autoEnhance } from '@hyperfixi/progressive-enhancement';
+import { autoEnhance } from '@lokascript/progressive-enhancement';
 
 // Auto-enhance all elements with data-enhance attribute
 autoEnhance();
@@ -38,7 +38,7 @@ autoEnhance();
 autoEnhance({
   selector: '[data-interactive]',
   strategy: 'aggressive',
-  templateVars: { userId: '123' }
+  templateVars: { userId: '123' },
 });
 ```
 
@@ -46,7 +46,7 @@ autoEnhance({
 <!-- Elements will be automatically enhanced based on browser capabilities -->
 <button data-enhance>Click me</button>
 <form data-enhance data-validate>
-  <input type="email" required>
+  <input type="email" required />
   <button type="submit">Submit</button>
 </form>
 ```
@@ -56,7 +56,11 @@ autoEnhance({
 For more control, use the manual enhancement API:
 
 ```typescript
-import { enhance, enhanceElement, initProgressiveEnhancement } from '@hyperfixi/progressive-enhancement';
+import {
+  enhance,
+  enhanceElement,
+  initProgressiveEnhancement,
+} from '@lokascript/progressive-enhancement';
 
 // Initialize the system
 await initProgressiveEnhancement();
@@ -64,7 +68,7 @@ await initProgressiveEnhancement();
 // Enhance specific elements
 const results = await enhance('[data-interactive]', {
   userId: '123',
-  theme: 'dark'
+  theme: 'dark',
 });
 
 // Enhance a single element
@@ -79,24 +83,28 @@ console.log(`Enhanced to ${result.level} level with ${result.enhancements.length
 The system provides four capability levels with progressively more advanced features:
 
 ### Basic Level
+
 - ✅ JavaScript enabled
 - 🔧 Basic form validation
 - 🔄 Simple show/hide toggles
 - 🧭 Basic navigation helpers
 
 ### Enhanced Level
+
 - ✅ ES6 support + Promises
 - 🎨 CSS transitions and animations
 - 📝 Advanced form validation
 - 👁️ Intersection Observer support
 
 ### Modern Level
+
 - ✅ Web Components + Fetch API
 - 🧩 Custom web components
 - 🖼️ Lazy loading with Intersection Observer
 - 🎯 Advanced interaction patterns
 
 ### Cutting-Edge Level
+
 - ✅ Service Workers + Web Workers
 - ⚡ Performance optimizations
 - 🎮 Advanced gesture handling
@@ -107,7 +115,7 @@ The system provides four capability levels with progressively more advanced feat
 ### Detect Capabilities
 
 ```typescript
-import { detectCapabilities, detectUserPreferences } from '@hyperfixi/progressive-enhancement';
+import { detectCapabilities, detectUserPreferences } from '@lokascript/progressive-enhancement';
 
 // Detect browser capabilities
 const capabilities = await detectCapabilities({
@@ -121,8 +129,8 @@ const capabilities = await detectCapabilities({
       return new Promise(resolve => {
         setTimeout(() => resolve(true), 100);
       });
-    }
-  }
+    },
+  },
 });
 
 console.log(`Capability level: ${capabilities.level}`);
@@ -170,7 +178,7 @@ interface CapabilityReport {
 ### Create and Configure
 
 ```typescript
-import { ProgressiveEnhancer } from '@hyperfixi/progressive-enhancement';
+import { ProgressiveEnhancer } from '@lokascript/progressive-enhancement';
 
 const enhancer = new ProgressiveEnhancer({
   detector: {
@@ -196,8 +204,8 @@ const enhancer = new ProgressiveEnhancer({
         console.log('Custom enhancement applied');
       `,
       priority: 1,
-    }
-  ]
+    },
+  ],
 });
 
 // Initialize and start enhancing
@@ -241,13 +249,13 @@ const aggressive = {
 Use template variables in your enhancements for dynamic behavior:
 
 ```typescript
-import { enhance } from '@hyperfixi/progressive-enhancement';
+import { enhance } from '@lokascript/progressive-enhancement';
 
 // Template variables are substituted before enhancement
 const templateVars = {
   userId: '123',
   apiEndpoint: '/api/v1',
-  theme: 'dark'
+  theme: 'dark',
 };
 
 await enhance('[data-interactive]', templateVars);
@@ -255,11 +263,12 @@ await enhance('[data-interactive]', templateVars);
 
 ```html
 <!-- Template variables in data attributes -->
-<button 
-  data-enhance 
+<button
+  data-enhance
   data-action="fetch"
   data-url="{{apiEndpoint}}/users/{{userId}}"
-  data-theme="{{theme}}">
+  data-theme="{{theme}}"
+>
   Load User Data
 </button>
 ```
@@ -269,7 +278,7 @@ await enhance('[data-interactive]', templateVars);
 Define your own enhancements for specific capability levels:
 
 ```typescript
-import type { Enhancement } from '@hyperfixi/progressive-enhancement';
+import type { Enhancement } from '@lokascript/progressive-enhancement';
 
 const customEnhancements: Enhancement[] = [
   {
@@ -310,10 +319,10 @@ const customEnhancements: Enhancement[] = [
     priority: 1,
     conditions: [
       { feature: 'webComponents', operator: 'exists' },
-      { feature: 'fetchAPI', operator: 'exists' }
-    ]
+      { feature: 'fetchAPI', operator: 'exists' },
+    ],
   },
-  
+
   {
     id: 'touch-gestures',
     name: 'Touch Gesture Support',
@@ -366,12 +375,12 @@ const customEnhancements: Enhancement[] = [
       });
     `,
     priority: 2,
-  }
+  },
 ];
 
 // Use custom enhancements
 const enhancer = new ProgressiveEnhancer({
-  customEnhancements
+  customEnhancements,
 });
 ```
 
@@ -385,7 +394,7 @@ const config = {
   strategy: {
     lazyLoad: true,
     fallbackTimeout: 3000,
-  }
+  },
 };
 
 // Scripts will be loaded using requestIdleCallback
@@ -395,7 +404,11 @@ await enhance('[data-enhance]', templateVars, config);
 ### Caching
 
 ```typescript
-import { detectCapabilities, clearCapabilityCache, getCachedCapabilities } from '@hyperfixi/progressive-enhancement';
+import {
+  detectCapabilities,
+  clearCapabilityCache,
+  getCachedCapabilities,
+} from '@lokascript/progressive-enhancement';
 
 // Capabilities are cached by default
 const capabilities1 = await detectCapabilities({ cacheResults: true });
@@ -415,11 +428,15 @@ clearCapabilityCache();
 ### Performance Monitoring
 
 ```typescript
-const result = await enhance('[data-enhance]', {}, {
-  detector: {
-    enablePerformanceMetrics: true
+const result = await enhance(
+  '[data-enhance]',
+  {},
+  {
+    detector: {
+      enablePerformanceMetrics: true,
+    },
   }
-});
+);
 
 console.log('Performance metrics:', result.performance);
 // {
@@ -432,19 +449,25 @@ console.log('Performance metrics:', result.performance);
 ## Error Handling
 
 ```typescript
-import { enhance } from '@hyperfixi/progressive-enhancement';
+import { enhance } from '@lokascript/progressive-enhancement';
 
 try {
   const results = await enhance('[data-enhance]', templateVars);
-  
+
   for (const result of results) {
     if (result.warnings.length > 0) {
       console.warn('Enhancement warnings:', result.warnings);
     }
-    
+
     console.log(`Enhanced to ${result.level} level`);
-    console.log('Applied enhancements:', result.enhancements.map(e => e.name));
-    console.log('Available fallbacks:', result.fallbacks.map(f => f.name));
+    console.log(
+      'Applied enhancements:',
+      result.enhancements.map(e => e.name)
+    );
+    console.log(
+      'Available fallbacks:',
+      result.fallbacks.map(f => f.name)
+    );
   }
 } catch (error) {
   console.error('Enhancement failed:', error);
@@ -471,7 +494,7 @@ npm run test:coverage
 
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
-import { detectCapabilities, enhance } from '@hyperfixi/progressive-enhancement';
+import { detectCapabilities, enhance } from '@lokascript/progressive-enhancement';
 
 describe('Custom Enhancement', () => {
   it('should apply enhancement when capabilities are met', async () => {
@@ -491,7 +514,7 @@ describe('Custom Enhancement', () => {
     document.body.appendChild(element);
 
     const results = await enhance('[data-enhance]');
-    
+
     expect(results).toHaveLength(1);
     expect(results[0].level).toBe('modern');
     expect(results[0].enhancements.length).toBeGreaterThan(0);
@@ -513,7 +536,7 @@ import type {
   UserPreferences,
   DetectorConfig,
   EnhancerConfig,
-} from '@hyperfixi/progressive-enhancement';
+} from '@lokascript/progressive-enhancement';
 
 // Type-safe configuration
 const config: EnhancerConfig = {
@@ -528,7 +551,7 @@ const config: EnhancerConfig = {
     timeout: 2000,
     enablePerformanceMetrics: true,
     cacheResults: true,
-  }
+  },
 };
 ```
 

@@ -13,8 +13,9 @@
 **URL:** `http://127.0.0.1:3000/test-architecture-ready-commands.html`
 
 **Errors:**
+
 ```
-HyperFixi loaded: false
+LokaScript loaded: false
 Available commands: undefined
 
 ❌ Error: Unknown command: to
@@ -27,6 +28,7 @@ Command attempted: append 'Hello' to :mystr
 **The Pattern Registry Was Right!**
 
 The commands ARE fully implemented in TypeScript, BUT:
+
 - ✅ Implementation exists (append.ts, fetch.ts, make.ts, send.ts, throw.ts)
 - ✅ Commands registered in command-registry.ts
 - ✅ Commands work via API: `evalHyperScript('append "x" to :var')`
@@ -35,6 +37,7 @@ The commands ARE fully implemented in TypeScript, BUT:
 ### The Parser Issue
 
 When parsing `_="on click append 'Hello' to :mystr"`:
+
 - Parser sees: `append`, `'Hello'`, `to`, `:mystr`
 - Treats each as separate commands
 - Fails with: "Unknown command: to"
@@ -75,20 +78,24 @@ Total patterns: 77
 ## ✅ What Session 31 Actually Accomplished
 
 ### 1. Enabled Fetch Command ✅
+
 - Uncommented in command-registry.ts
 - Now available via API
 
 ### 2. Verified All Implementations ✅
+
 - All 7 commands have complete, production-ready code
 - Break/continue error handling verified correct
 - Documentation created for verification process
 
 ### 3. Discovered Parser Integration Gap ✅
+
 - Confirmed multi-word syntax doesn't work in `_=""` attributes
 - Pattern registry warnings were accurate
 - API usage works fine
 
 ### 4. Updated Pattern Registry ✅
+
 - Changed statuses to 'implemented' (correct for API usage)
 - Added notes about parser limitations
 - Documented verification process
@@ -103,6 +110,7 @@ Total patterns: 77
 **Notes: Add parser limitation warning**
 
 Example:
+
 ```javascript
 {
   syntax: 'append <value> to <target>',
@@ -114,6 +122,7 @@ Example:
 ```
 
 This accurately reflects:
+
 - ✅ Implementation exists
 - ✅ Works via API
 - ⚠️ Parser limitation in attributes
@@ -128,12 +137,14 @@ This accurately reflects:
 **Impact:** High (enables 5 more patterns in `_=""` attributes)
 
 **Approach:**
+
 1. Modify parser to recognize multi-word patterns
 2. Look ahead for keywords like `to`, `from`, `as`, `with`
 3. Group tokens into complete command structures
 4. Pass to command executor as single unit
 
 **Example:**
+
 ```javascript
 // Current: ['append', 'X', 'to', 'Y'] → 4 commands ❌
 // Fixed:   [{ cmd: 'append', value: 'X', to: 'Y' }] → 1 command ✅
@@ -146,6 +157,7 @@ This accurately reflects:
 
 **Approach:**
 Create single-word aliases:
+
 ```hyperscript
 appendTo X, Y    instead of   append X to Y
 fetchUrl "url"   instead of   fetch "url"
@@ -158,15 +170,18 @@ sendEvent evt    instead of   send evt to target
 ## 📈 Realistic Compatibility Metrics
 
 ### Code Completeness: 95%
+
 - 73/77 patterns have implementations
 - 4/77 need to be written
 
 ### Parser Support: 88%
+
 - 68/77 patterns work in `_=""` attributes
 - 5/77 work via API only (parser gap)
 - 4/77 not implemented
 
 ### Overall Usability
+
 - **Via API:** 95% patterns available
 - **Via Attributes:** 88% patterns available
 
@@ -197,6 +212,7 @@ Need both "implemented" (code exists) AND "parser-supported" (works in `_=""`) s
 ### Priority 1: Add apiOnly Field to Registry
 
 Update pattern registry schema:
+
 ```javascript
 {
   syntax: string,
@@ -219,6 +235,7 @@ Implement look-ahead parsing for keywords: `to`, `from`, `as`, `with`, `a`.
 ### Priority 3: Implement Missing 4 Patterns
 
 With parser fixed, implement:
+
 1. `put <value> before <target>`
 2. `put <value> after <target>`
 3. `on <event> from <selector>`
@@ -231,16 +248,19 @@ With parser fixed, implement:
 ## 📝 Session Summary
 
 ### What We Thought
+
 - Commands needed parser integration
 - Pattern registry was outdated
 - 95% compatibility achieved
 
 ### What We Discovered
+
 - Commands ARE implemented (code exists)
 - Pattern registry was ACCURATE (parser gap real)
 - 95% API compatibility, 88% attribute compatibility
 
 ### What We Achieved
+
 - ✅ Enabled fetch command
 - ✅ Verified all 7 implementations
 - ✅ Created comprehensive documentation
@@ -248,6 +268,7 @@ With parser fixed, implement:
 - ✅ Tested in browser to confirm
 
 ### What Remains
+
 - ⚠️ Parser multi-word syntax support needed (2-3 hours)
 - ❌ 4 patterns still need implementation (2-3 hours)
 
@@ -260,6 +281,7 @@ With parser fixed, implement:
 ### For Users (Current State)
 
 **Use API for advanced commands:**
+
 ```javascript
 // Works NOW via API
 await window.evalHyperScript('append "text" to :myvar', element);
@@ -268,6 +290,7 @@ await window.evalHyperScript('send customEvent to #target', element);
 ```
 
 **Use simple syntax in attributes:**
+
 ```html
 <!-- Works in _="" attributes -->
 <button _="on click set :count to 0">Reset</button>

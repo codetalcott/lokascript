@@ -1,6 +1,6 @@
 # CLAUDE.md - Semantic Package
 
-This file provides guidance for working with the `@hyperfixi/semantic` package.
+This file provides guidance for working with the `@lokascript/semantic` package.
 
 ## Package Overview
 
@@ -60,7 +60,7 @@ src/
 │
 ├── types.ts              # Core type definitions
 ├── browser.ts            # Browser bundle entry point
-├── core-bridge.ts        # Integration with @hyperfixi/core
+├── core-bridge.ts        # Integration with @lokascript/core
 └── index.ts              # Main entry point
 ```
 
@@ -240,17 +240,17 @@ Available templates:
 ## Browser Usage
 
 ```html
-<script src="hyperfixi-semantic.browser.global.js"></script>
+<script src="lokascript-semantic.browser.global.js"></script>
 <script>
   // Parse in any language
-  const result = HyperFixiSemantic.parse('toggle .active', 'en');
-  const jaResult = HyperFixiSemantic.parse('トグル .active', 'ja');
+  const result = LokaScriptSemantic.parse('toggle .active', 'en');
+  const jaResult = LokaScriptSemantic.parse('トグル .active', 'ja');
 
   // Translate between languages
-  const japanese = HyperFixiSemantic.translate('toggle .active on #button', 'en', 'ja');
+  const japanese = LokaScriptSemantic.translate('toggle .active on #button', 'en', 'ja');
 
   // Get all translations
-  const all = HyperFixiSemantic.getAllTranslations('toggle .active', 'en');
+  const all = LokaScriptSemantic.getAllTranslations('toggle .active', 'en');
   // Returns: { en: '...', ja: '...', ar: '...', ... }
 </script>
 ```
@@ -280,10 +280,10 @@ npx http-server . -p 3000 -c-1
 
 ## Integration with Core
 
-The semantic parser integrates with `@hyperfixi/core` via `SemanticIntegrationAdapter`:
+The semantic parser integrates with `@lokascript/core` via `SemanticIntegrationAdapter`:
 
 ```typescript
-import { createSemanticAnalyzer } from '@hyperfixi/semantic';
+import { createSemanticAnalyzer } from '@lokascript/semantic';
 
 const analyzer = createSemanticAnalyzer();
 const result = analyzer.analyze('toggle .active', 'ja');
@@ -300,7 +300,7 @@ if (result.confidence >= 0.5) {
 The `ast-builder/` module converts SemanticNodes directly to AST, bypassing English text generation:
 
 ```typescript
-import { parse, buildAST } from '@hyperfixi/semantic';
+import { parse, buildAST } from '@lokascript/semantic';
 
 // Parse Japanese → SemanticNode → AST (no English intermediate)
 const node = parse('#button の .active を 切り替え', 'ja');
@@ -322,7 +322,7 @@ The AST builder handles all semantic node kinds:
 
 ### Runtime-Compatible Output
 
-The AST builder produces output compatible with the hyperfixi runtime:
+The AST builder produces output compatible with the lokascript runtime:
 
 ```typescript
 // Compound statements → CommandSequence
@@ -340,7 +340,7 @@ The AST builder produces output compatible with the hyperfixi runtime:
 Event handlers support parameter destructuring:
 
 ```typescript
-import { createEventHandler } from '@hyperfixi/semantic';
+import { createEventHandler } from '@lokascript/semantic';
 
 // on click(clientX, clientY) ...
 const handler = createEventHandler(
@@ -359,7 +359,7 @@ const ast = buildAST(handler);
 Loops use `LoopSemanticNode` with explicit body attachment:
 
 ```typescript
-import { createLoopNode } from '@hyperfixi/semantic';
+import { createLoopNode } from '@lokascript/semantic';
 
 // repeat 5 times ...
 const loop = createLoopNode(
@@ -383,7 +383,7 @@ Each of 46 commands has a dedicated mapper in `src/ast-builder/command-mappers.t
 // toggle patient:.active destination:#button
 // → { name: 'toggle', args: ['.active'], modifiers: { on: '#button' } }
 
-import { getCommandMapper, registerCommandMapper } from '@hyperfixi/semantic';
+import { getCommandMapper, registerCommandMapper } from '@lokascript/semantic';
 
 // Custom mapper
 registerCommandMapper({
@@ -396,10 +396,10 @@ registerCommandMapper({
 
 `src/ast-builder/value-converters.ts` converts SemanticValue → ExpressionNode:
 
-| SemanticValue               | ExpressionNode                            |
-| --------------------------- | ----------------------------------------- |
-| `{ type: 'selector' }`      | `{ type: 'selector' }`                    |
-| `{ type: 'literal' }`       | `{ type: 'literal' }`                     |
-| `{ type: 'reference' }`     | `{ type: 'contextReference' }`            |
-| `{ type: 'property-path' }` | `{ type: 'propertyAccess' }`              |
-| `{ type: 'expression' }`    | Parsed via `@hyperfixi/expression-parser` |
+| SemanticValue               | ExpressionNode                             |
+| --------------------------- | ------------------------------------------ |
+| `{ type: 'selector' }`      | `{ type: 'selector' }`                     |
+| `{ type: 'literal' }`       | `{ type: 'literal' }`                      |
+| `{ type: 'reference' }`     | `{ type: 'contextReference' }`             |
+| `{ type: 'property-path' }` | `{ type: 'propertyAccess' }`               |
+| `{ type: 'expression' }`    | Parsed via `@lokascript/expression-parser` |

@@ -1,12 +1,12 @@
-# @hyperfixi/core
+# @lokascript/core
 
-🚀 **Complete hyperscript implementation with 100% _hyperscript compatibility**
+🚀 **Complete hyperscript implementation with 100% \_hyperscript compatibility**
 
-An experimental hyperscript engine that provides fast parsing, command execution, and comprehensive error handling for web applications. Built with TypeScript-first design and full compatibility with the official _hyperscript library.
+An experimental hyperscript engine that provides fast parsing, command execution, and comprehensive error handling for web applications. Built with TypeScript-first design and full compatibility with the official \_hyperscript library.
 
 ## Features
 
-- 🎯 **100% _hyperscript Compatible** - Full compatibility with official _hyperscript library
+- 🎯 **100% \_hyperscript Compatible** - Full compatibility with official \_hyperscript library
 - 🚀 **High Performance** - Optimized tokenizer and parser for large expressions
 - 🔧 **TypeScript First** - Complete type safety with comprehensive type definitions
 - 🧪 **Thoroughly Tested** - 2800+ tests with 98.5%+ reliability
@@ -17,15 +17,15 @@ An experimental hyperscript engine that provides fast parsing, command execution
 ## Installation
 
 ```bash
-npm install @hyperfixi/core
+npm install @lokascript/core
 # or
-yarn add @hyperfixi/core
+yarn add @lokascript/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { hyperscript } from '@hyperfixi/core';
+import { hyperscript } from '@lokascript/core';
 
 // Simple expression evaluation
 const result = await hyperscript.run('5 + 3 * 2'); // Returns 11
@@ -54,18 +54,18 @@ await hyperscript.run('set my className to "active"', context);
 
 ## Debugging
 
-HyperFixi includes a built-in debug control API for troubleshooting compilation and execution issues.
+LokaScript includes a built-in debug control API for troubleshooting compilation and execution issues.
 
 ### Enable Debug Logging
 
 ```javascript
 // In browser console
-hyperfixi.debugControl.enable();   // Enable detailed logging
+lokascript.debugControl.enable(); // Enable detailed logging
 // Reload page to see logs
 
-hyperfixi.debugControl.disable();  // Disable logging
-hyperfixi.debugControl.isEnabled(); // Check if enabled
-hyperfixi.debugControl.status();   // Get detailed status
+lokascript.debugControl.disable(); // Disable logging
+lokascript.debugControl.isEnabled(); // Check if enabled
+lokascript.debugControl.status(); // Get detailed status
 ```
 
 Debug settings persist across page reloads via localStorage. Logs include:
@@ -80,7 +80,7 @@ Debug settings persist across page reloads via localStorage. Logs include:
 Every compilation returns metadata about parser usage and warnings:
 
 ```javascript
-const result = hyperfixi.compile('toggle .active');
+const result = lokascript.compile('toggle .active');
 console.log(result.metadata);
 // {
 //   parserUsed: 'semantic',
@@ -92,14 +92,14 @@ console.log(result.metadata);
 
 ## Runtime Hooks
 
-HyperFixi provides a hooks system for observing and intercepting command execution:
+LokaScript provides a hooks system for observing and intercepting command execution:
 
 ```javascript
-import { HookRegistry, createHooks } from '@hyperfixi/core';
+import { HookRegistry, createHooks } from '@lokascript/core';
 
 // Create hooks for logging, analytics, or debugging
 const hooks = createHooks({
-  beforeExecute: (ctx) => {
+  beforeExecute: ctx => {
     console.log(`Executing: ${ctx.commandName}`);
   },
   afterExecute: (ctx, result) => {
@@ -112,11 +112,11 @@ const hooks = createHooks({
   interceptCommand: (name, ctx) => {
     // Return true to skip command execution
     return name === 'disabled-command';
-  }
+  },
 });
 
 // Register hooks with the runtime
-hyperfixi.registerHooks('my-hooks', hooks);
+lokascript.registerHooks('my-hooks', hooks);
 ```
 
 Built-in hook utilities:
@@ -130,17 +130,17 @@ The runtime automatically tracks event listeners and observers for cleanup when 
 
 ```javascript
 // Clean up a specific element
-hyperfixi.cleanup(element);
+lokascript.cleanup(element);
 
 // Clean up element and all descendants
-hyperfixi.cleanupTree(containerElement);
+lokascript.cleanupTree(containerElement);
 
 // Get cleanup statistics
-const stats = hyperfixi.getCleanupStats();
+const stats = lokascript.getCleanupStats();
 // { elementsTracked: 5, listeners: 12, observers: 2, ... }
 
 // Full runtime shutdown
-hyperfixi.destroy();
+lokascript.destroy();
 ```
 
 ## API Reference
@@ -153,7 +153,7 @@ For complete API documentation, see [API.md](./docs/API.md).
 - `hyperscript.execute(ast, context)` - Execute compiled AST
 - `hyperscript.run(code, context)` - Compile and execute in one step
 - `hyperscript.createContext(element)` - Create execution context
-- `evalHyperScript(code, context)` - _hyperscript compatibility API
+- `evalHyperScript(code, context)` - \_hyperscript compatibility API
 - `hyperscript.registerHooks(name, hooks)` - Register runtime hooks
 - `hyperscript.cleanup(element)` - Clean up element resources
 - `hyperscript.destroy()` - Full runtime shutdown
@@ -161,6 +161,7 @@ For complete API documentation, see [API.md](./docs/API.md).
 ## Supported Features
 
 ### Commands (All Implemented)
+
 - **DOM Manipulation**: `hide me`, `show me`, `toggle me`
 - **Content Management**: `put "text" into me`, `set my innerHTML to "content"`
 - **CSS Classes**: `add .class to me`, `remove .class from me`
@@ -169,7 +170,8 @@ For complete API documentation, see [API.md](./docs/API.md).
 - **Async Operations**: `wait 500ms`, `fetch "/api/data"`
 - **Events**: `send customEvent to me`
 
-### Expressions (100% _hyperscript Compatible)
+### Expressions (100% \_hyperscript Compatible)
+
 - **Arithmetic**: `5 + 3 * 2`, `value / 2`, `x mod 3`
 - **Logical**: `true and false`, `value > 10`, `x contains y`
 - **Property Access**: `my property`, `element.property`, `object's method()`
@@ -178,6 +180,7 @@ For complete API documentation, see [API.md](./docs/API.md).
 - **CSS Selectors**: `<button/>`, `closest <form/>`
 
 ### HTML Integration
+
 - **Automatic Processing**: All `_=""` attributes processed automatically
 - **Event Binding**: `on click`, `on submit`, `on change` etc.
 - **DOM Context**: Automatic `me`, `you`, `it` context setup
@@ -188,20 +191,21 @@ See [EXAMPLES.md](./docs/EXAMPLES.md) for comprehensive usage examples.
 
 ## Compatibility Testing
 
-This package includes compatibility tests that validate HyperFixi against the official _hyperscript library:
+This package includes compatibility tests that validate LokaScript against the official \_hyperscript library:
 
 ```bash
-# Run compatibility tests with official hyperscript test suite  
+# Run compatibility tests with official hyperscript test suite
 npm run test:browser
 
 # Run only command compatibility tests
 npx playwright test --grep "Command Tests"
 
-# Run only expression compatibility tests  
+# Run only expression compatibility tests
 npx playwright test --grep "Expression Tests"
 ```
 
 The compatibility tests measure:
+
 - **Expression compatibility**: **100%** (15/15 tests passing) ✅
 - **Command compatibility**: **100%** (2/2 core tests passing) ✅
 - **HTML Integration**: **100%** (3/3 integration tests passing) ✅

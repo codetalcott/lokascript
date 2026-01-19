@@ -5,6 +5,7 @@
 ## Overview
 
 A SQLite-backed patterns reference system that serves as:
+
 1. Living documentation for hyperscript patterns
 2. Test suite for automated verification
 3. LLM context for code generation
@@ -61,22 +62,24 @@ A SQLite-backed patterns reference system that serves as:
 
 ### Integration Strategy
 
-| Source | What to Import | How |
-|--------|---------------|-----|
-| **hyperscript-lsp** | Language definitions (commands, expressions) | Link via foreign keys or sync |
-| **hyperscript-lsp** | code_examples table | Import as seed patterns |
-| **ast-toolkit** | Pattern matching APIs | Use for AST verification |
-| **developer-tools** | Template patterns | Reference in scaffolding |
-| **sqlite-extensions-framework** | DB patterns, connection pooling | Adopt architecture |
+| Source                          | What to Import                               | How                           |
+| ------------------------------- | -------------------------------------------- | ----------------------------- |
+| **hyperscript-lsp**             | Language definitions (commands, expressions) | Link via foreign keys or sync |
+| **hyperscript-lsp**             | code_examples table                          | Import as seed patterns       |
+| **ast-toolkit**                 | Pattern matching APIs                        | Use for AST verification      |
+| **developer-tools**             | Template patterns                            | Reference in scaffolding      |
+| **sqlite-extensions-framework** | DB patterns, connection pooling              | Adopt architecture            |
 
 ### Key Decision: Shared vs Separate Databases
 
 **Option A: Shared Database (Recommended)**
+
 - Extend hyperscript-lsp's database schema
 - Add `pattern_translations`, `pattern_tests`, `llm_examples` tables
 - Single source of truth
 
 **Option B: Separate Database with Links**
+
 - Patterns Reference has own SQLite database
 - Links to hyperscript-lsp via element IDs
 - More modular but requires sync
@@ -94,7 +97,7 @@ The `hyperscript-lsp` project needs updates to support the Patterns Reference in
 **Implemented ✅:**
 
 - Database created at `hyperscript-lsp/data/hyperscript.db`
-- Schema extended with HyperFixi integration tables
+- Schema extended with LokaScript integration tables
 - 116 code examples ingested from hyperscript.org cookbook
 - 1,118 pattern translations (86 examples × 13 languages)
 - 86.8% validation pass rate (970/1,118 translations parse correctly)
@@ -160,7 +163,7 @@ CREATE INDEX IF NOT EXISTS idx_llm_lang ON llm_examples(language);
 ### Integration Workflow
 
 ```
-hyperscript-lsp                    hyperfixi
+hyperscript-lsp                    lokascript
 ─────────────────                  ─────────────────
 
 code_examples ◄──────────────────► packages/patterns-reference
@@ -182,29 +185,31 @@ llm_examples ◄───────────────── curated sele
 ### Sync Strategy
 
 Option 1: **Shared Database** (recommended for now)
+
 ```typescript
-// hyperfixi reads directly from hyperscript-lsp database
+// lokascript reads directly from hyperscript-lsp database
 const LSP_DB_PATH = process.env.LSP_DB_PATH || '../hyperscript-lsp/data/hyperscript.db';
 const db = new Database(LSP_DB_PATH);
 ```
 
 Option 2: **Periodic Sync**
+
 ```bash
-# Sync script in hyperfixi
+# Sync script in lokascript
 npm run sync:lsp-patterns  # Copies/imports from hyperscript-lsp
 ```
 
 ---
 
-## Integration with HyperFixi Systems
+## Integration with LokaScript Systems
 
-| Existing System | Integration |
-|-----------------|-------------|
-| **Semantic Parser** (13 languages) | Auto-verify translations parse correctly |
-| **Grammar Transformer** (SOV/VSO/SVO) | Store natural word-order variants |
-| **Command Schemas** | Link patterns to schema definitions |
-| **Language Profiles** | Use for translation generation |
-| **LLM Generation Context** | Feed patterns as few-shot examples |
+| Existing System                       | Integration                              |
+| ------------------------------------- | ---------------------------------------- |
+| **Semantic Parser** (13 languages)    | Auto-verify translations parse correctly |
+| **Grammar Transformer** (SOV/VSO/SVO) | Store natural word-order variants        |
+| **Command Schemas**                   | Link patterns to schema definitions      |
+| **Language Profiles**                 | Use for translation generation           |
+| **LLM Generation Context**            | Feed patterns as few-shot examples       |
 
 ## Database Schema
 
@@ -270,7 +275,7 @@ CREATE TABLE pattern_tests (
   -- Test execution
   test_date TEXT NOT NULL,
   browser TEXT,                  -- 'chromium', 'firefox', 'webkit'
-  runtime_version TEXT,          -- HyperFixi version
+  runtime_version TEXT,          -- LokaScript version
 
   -- Results
   parse_success INTEGER,
@@ -405,11 +410,7 @@ for (const translation of jaPatterns) {
 
 ```typescript
 // Get relevant examples for LLM prompt
-const examples = await ref.getLLMExamples(
-  'toggle visibility when clicked',
-  'en',
-  3
-);
+const examples = await ref.getLLMExamples('toggle visibility when clicked', 'en', 3);
 const context = examples.map(e => `${e.prompt}\n${e.completion}`).join('\n\n');
 // Use as few-shot examples for LLM
 ```
@@ -428,11 +429,14 @@ const context = examples.map(e => `${e.prompt}\n${e.completion}`).join('\n\n');
 
 ```html
 <!-- Search patterns -->
-<input type="search" _="
+<input
+  type="search"
+  _="
   on input
     fetch `/api/patterns/search?q=${my value}` as json
     swap innerHTML of #results with it
-">
+"
+/>
 <div id="results"></div>
 ```
 
@@ -456,7 +460,7 @@ async function generateTranslation(patternId: string, targetLang: string) {
   return {
     hyperscript: translated,
     confidence: parseResult.confidence,
-    verified_parses: parseResult.success ? 1 : 0
+    verified_parses: parseResult.success ? 1 : 0,
   };
 }
 ```
@@ -472,8 +476,8 @@ function linkToSchema(pattern: Pattern) {
     schema: {
       roles: schema.roles,
       category: schema.category,
-      hasBody: schema.hasBody
-    }
+      hasBody: schema.hasBody,
+    },
   };
 }
 ```
@@ -532,7 +536,7 @@ packages/patterns-reference/
 
 - [x] Create SQLite schema (`hyperscript-lsp/scripts/database/schema.ts`)
 - [x] Import existing examples (116 cookbook examples)
-- [x] Extend schema for HyperFixi integration
+- [x] Extend schema for LokaScript integration
 
 ### Phase 2: Translation Support ✅
 
@@ -562,12 +566,12 @@ packages/patterns-reference/
 
 ## Benefits Summary
 
-| Benefit | Description |
-|---------|-------------|
-| **Single Source of Truth** | All patterns in one queryable database |
-| **Automated Testing** | Verify patterns work across languages/browsers |
-| **LLM Support** | Curated examples for code generation |
-| **Translation Tracking** | Know which patterns have quality translations |
-| **Documentation** | Auto-generate docs from database |
-| **Discoverability** | Search by command, tag, difficulty |
-| **Learning Paths** | Prerequisites and progression |
+| Benefit                    | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| **Single Source of Truth** | All patterns in one queryable database         |
+| **Automated Testing**      | Verify patterns work across languages/browsers |
+| **LLM Support**            | Curated examples for code generation           |
+| **Translation Tracking**   | Know which patterns have quality translations  |
+| **Documentation**          | Auto-generate docs from database               |
+| **Discoverability**        | Search by command, tag, difficulty             |
+| **Learning Paths**         | Prerequisites and progression                  |

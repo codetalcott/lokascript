@@ -9,27 +9,31 @@
 ## 🔍 Issue 1: MutationObserver Not Detecting Increment/Decrement Changes
 
 ### Current State
+
 - ✅ Increment/decrement commands execute successfully
 - ✅ Counter display updates visually (textContent is being set)
 - ❌ MutationObserver doesn't fire (no "CONTENT CHANGE DETECTED" log)
 - ❌ Reactive mirror doesn't update
 
 ### MutationObserver Configuration (runtime.ts:1743-1748)
+
 ```typescript
 observer.observe(watchedElement, {
-  childList: true,      // Watch for child nodes being added/removed
-  characterData: true,  // Watch for text content changes
-  subtree: true,        // Watch all descendants
+  childList: true, // Watch for child nodes being added/removed
+  characterData: true, // Watch for text content changes
+  subtree: true, // Watch all descendants
   characterDataOldValue: true, // Track old text values
 });
 ```
 
 **This configuration SHOULD detect:**
+
 - `childList`: When textContent replaces children with new text node
 - `characterData`: When existing text node content changes
 - `subtree`: Changes in descendants
 
 ### Hypothesis
+
 The increment command is setting `textContent` correctly, but:
 
 1. **Timing Issue?** - Mutation might be happening before observer is set up
@@ -40,8 +44,11 @@ The increment command is setting `textContent` correctly, but:
 ### Debug Steps (Added)
 
 **Increment Command Logging** (increment.ts:272-301):
+
 ```typescript
-debug.command(`INCREMENT setTargetValue: target type=${typeof target}, isElement=${target instanceof HTMLElement}, newValue=${newValue}`);
+debug.command(
+  `INCREMENT setTargetValue: target type=${typeof target}, isElement=${target instanceof HTMLElement}, newValue=${newValue}`
+);
 debug.command(`  → Target is HTMLElement: ${target.tagName}#${target.id}`);
 debug.command(`  → No property specified. hasValue=${hasValue}, tagName=${target.tagName}`);
 debug.command(`  → Setting textContent to: ${newValue}`);
@@ -49,6 +56,7 @@ debug.command(`  → textContent changed from "${oldContent}" to "${target.textC
 ```
 
 **What to Look For:**
+
 1. Does increment log show textContent being set?
 2. What element ID is being modified?
 3. Is the value check (`'value' in target`) causing wrong path?
@@ -57,9 +65,11 @@ debug.command(`  → textContent changed from "${oldContent}" to "${target.textC
 ### Next Steps
 
 #### Step 1: Test with Current Debug Logging
+
 **URL**: http://localhost:3000/examples/basics/05-counter.html
 **Action**: Click increment button with debug enabled
 **Expected Logs**:
+
 ```
 INCREMENT setTargetValue: target type=object, isElement=true, newValue=1
   → Target is HTMLElement: DIV#count
@@ -69,17 +79,21 @@ INCREMENT setTargetValue: target type=object, isElement=true, newValue=1
 ```
 
 #### Step 2: Add MutationObserver Debugging
+
 If textContent IS being set but no mutation detected, add logging to MutationObserver:
 
 **Location**: runtime.ts:1705-1740
 **Add**:
+
 ```typescript
-const observer = new MutationObserver(async (mutations) => {
+const observer = new MutationObserver(async mutations => {
   debug.event(`🔔 MutationObserver callback fired! ${mutations.length} mutations`);
   for (const mutation of mutations) {
     debug.event(`  → Mutation type: ${mutation.type}, target: ${mutation.target.nodeName}`);
     if (mutation.type === 'childList') {
-      debug.event(`    - addedNodes: ${mutation.addedNodes.length}, removedNodes: ${mutation.removedNodes.length}`);
+      debug.event(
+        `    - addedNodes: ${mutation.addedNodes.length}, removedNodes: ${mutation.removedNodes.length}`
+      );
     }
     // ... rest of code
   }
@@ -87,7 +101,9 @@ const observer = new MutationObserver(async (mutations) => {
 ```
 
 #### Step 3: Verify Observer Setup
+
 Add logging when observer is created:
+
 ```typescript
 debug.runtime(`RUNTIME: MutationObserver created for element:`, watchedElement);
 debug.runtime(`  → Element ID: ${watchedElement.id}`);
@@ -95,11 +111,11 @@ debug.runtime(`  → Current textContent: "${watchedElement.textContent}"`);
 ```
 
 #### Step 4: Test Manual Mutation
+
 Create a test button that manually sets textContent:
+
 ```html
-<button onclick="document.getElementById('count').textContent = '99'">
-  Manual Set
-</button>
+<button onclick="document.getElementById('count').textContent = '99'">Manual Set</button>
 ```
 
 If this triggers the observer but increment doesn't, the issue is in how increment modifies the DOM.
@@ -107,23 +123,29 @@ If this triggers the observer but increment doesn't, the issue is in how increme
 ### Potential Fixes
 
 #### Fix 1: Force MutationObserver to Detect
+
 If textContent changes don't trigger, try explicitly removing/adding text node:
+
 ```typescript
 // Instead of: target.textContent = String(newValue);
 const textNode = document.createTextNode(String(newValue));
-target.innerHTML = '';  // Clear
-target.appendChild(textNode);  // Add new text node
+target.innerHTML = ''; // Clear
+target.appendChild(textNode); // Add new text node
 ```
 
 #### Fix 2: Dispatch Custom Event
+
 As a fallback, manually trigger an event that MutationObserver listens for:
+
 ```typescript
 target.textContent = String(newValue);
-target.dispatchEvent(new Event('hyperfixi:content-changed', { bubbles: true }));
+target.dispatchEvent(new Event('lokascript:content-changed', { bubbles: true }));
 ```
 
 #### Fix 3: Use Direct Callback
+
 Instead of relying on MutationObserver, have increment/decrement commands directly notify watchers:
+
 ```typescript
 // After setting textContent
 if (context.contentChangeCallbacks?.has(target)) {
@@ -141,6 +163,7 @@ if (context.contentChangeCallbacks?.has(target)) {
 **Method**: `parsePutCommand()`
 
 **Current Implementation**:
+
 ```typescript
 private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
   const allArgs: ASTNode[] = [];
@@ -167,11 +190,13 @@ private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
 ```
 
 **Why It Fails**:
+
 ```hyperscript
 put (#count's textContent as Int) + 1 into #count
 ```
 
 With `parsePrimary()`:
+
 1. `(#count's textContent as Int)` → Grouped expression (OK)
 2. `+` → Operator token (stops parsing! ❌)
 3. Never sees `into` keyword
@@ -179,7 +204,8 @@ With `parsePrimary()`:
 
 ### Put Command Syntax Patterns
 
-**Official _hyperscript patterns**:
+**Official \_hyperscript patterns**:
+
 ```hyperscript
 put <expr> into <target>
 put <expr> before <target>
@@ -285,6 +311,7 @@ private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
 ### Testing Plan
 
 **Test Cases**:
+
 ```hyperscript
 ✅ put "hello" into #target                    # Simple literal
 ✅ put 123 into #target                         # Number
@@ -301,11 +328,13 @@ private parsePutCommand(identifierNode: IdentifierNode): CommandNode | null {
 ### Implementation Priority
 
 **Phase 1**: Strategy 1 (Simpler, cleaner)
+
 - Change `parsePrimary()` to `parseExpression()`
 - Handle "at start/end of" multi-word operations
 - Test with simple cases
 
 **Phase 2**: Advanced Features
+
 - Property access targets: `put value into #el.innerHTML`
 - Multiple targets: `put value into #a and #b`
 - Conditional puts: `put value into #target if condition`

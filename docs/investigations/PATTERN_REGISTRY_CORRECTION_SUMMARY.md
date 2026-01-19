@@ -22,6 +22,7 @@ The original pattern registry had **inflated and inaccurate status flags** that 
 ## 📊 Honest vs Inflated Metrics
 
 ### Before Correction (Inflated)
+
 ```
 Total patterns: 98 (+ 8 phantom = "106")
 Status breakdown:
@@ -34,6 +35,7 @@ Claimed: 106/106 (100%) ← MISLEADING
 ```
 
 ### After Correction (Honest)
+
 ```
 Total patterns: 77 (removed duplicates/artifacts)
 Status breakdown:
@@ -53,37 +55,37 @@ Realistic Compatibility: 88% ← HONEST
 
 **Verified against codebase** - these files exist with tests:
 
-| Pattern | Old Status | New Status | Verification |
-|---------|-----------|-----------|--------------|
-| `hide <target>` | unknown | ✅ implemented | hide.ts + hide.test.ts |
-| `show <target>` | unknown | ✅ implemented | show.ts + show.test.ts |
-| `increment <target>` | unknown | ✅ implemented | increment.ts + tests |
-| `decrement <target>` | unknown | ✅ implemented | decrement.ts + tests |
-| `wait <duration>` | unknown | ✅ implemented | wait.ts + wait.test.ts |
-| `take <class>` | unknown | ✅ implemented | take.ts + take.test.ts |
-| `first <selector>` | unknown | ✅ implemented | firstExpression in positional/index.ts |
-| `last <selector>` | unknown | ✅ implemented | lastExpression in positional/index.ts |
-| `previous <selector>` | unknown | ✅ implemented | previousExpression in positional/index.ts |
+| Pattern               | Old Status | New Status     | Verification                              |
+| --------------------- | ---------- | -------------- | ----------------------------------------- |
+| `hide <target>`       | unknown    | ✅ implemented | hide.ts + hide.test.ts                    |
+| `show <target>`       | unknown    | ✅ implemented | show.ts + show.test.ts                    |
+| `increment <target>`  | unknown    | ✅ implemented | increment.ts + tests                      |
+| `decrement <target>`  | unknown    | ✅ implemented | decrement.ts + tests                      |
+| `wait <duration>`     | unknown    | ✅ implemented | wait.ts + wait.test.ts                    |
+| `take <class>`        | unknown    | ✅ implemented | take.ts + take.test.ts                    |
+| `first <selector>`    | unknown    | ✅ implemented | firstExpression in positional/index.ts    |
+| `last <selector>`     | unknown    | ✅ implemented | lastExpression in positional/index.ts     |
+| `previous <selector>` | unknown    | ✅ implemented | previousExpression in positional/index.ts |
 
 **Impact**: +9 patterns correctly classified as implemented
 
 ### 2. Honest About Issues (architecture-ready → partial)
 
-| Pattern | Old Status | New Status | Reason |
-|---------|-----------|-----------|--------|
-| `break` | architecture-ready + tested | ⚠️ partial + tested | Runtime error propagation issues |
-| `continue` | architecture-ready + tested | ⚠️ partial + tested | CONTINUE_LOOP error not caught |
+| Pattern    | Old Status                  | New Status          | Reason                           |
+| ---------- | --------------------------- | ------------------- | -------------------------------- |
+| `break`    | architecture-ready + tested | ⚠️ partial + tested | Runtime error propagation issues |
+| `continue` | architecture-ready + tested | ⚠️ partial + tested | CONTINUE_LOOP error not caught   |
 
 These patterns **work** but have **known runtime issues** - users should know this!
 
 ### 3. Honest About Non-Implementation
 
-| Pattern | Old Status | New Status | Verification |
-|---------|-----------|-----------|--------------|
-| `put <value> before <target>` | unknown | ❌ not-implemented | No code found in codebase |
-| `put <value> after <target>` | unknown | ❌ not-implemented | No code found in codebase |
-| `on <event> from <selector>` | unknown | ❌ not-implemented | Needs verification |
-| `on mutation of <attribute>` | unknown | ❌ not-implemented | Needs verification |
+| Pattern                       | Old Status | New Status         | Verification              |
+| ----------------------------- | ---------- | ------------------ | ------------------------- |
+| `put <value> before <target>` | unknown    | ❌ not-implemented | No code found in codebase |
+| `put <value> after <target>`  | unknown    | ❌ not-implemented | No code found in codebase |
+| `on <event> from <selector>`  | unknown    | ❌ not-implemented | Needs verification        |
+| `on mutation of <attribute>`  | unknown    | ❌ not-implemented | Needs verification        |
 
 **Impact**: Honest about what's missing
 
@@ -91,7 +93,7 @@ These patterns **work** but have **known runtime issues** - users should know th
 
 - Removed 21 patterns that were duplicates, unclear, or testing artifacts
 - Original: 98 patterns → Corrected: 77 patterns
-- Focused on **core, documented _hyperscript patterns**
+- Focused on **core, documented \_hyperscript patterns**
 
 ---
 
@@ -117,6 +119,7 @@ grep -E "export (const|function)" packages/core/src/expressions/*/index.ts
 ## 📈 Realistic Compatibility Metrics
 
 ### Pattern-Level Compatibility
+
 - **Total documented patterns**: 77
 - **Fully working**: 66 (86%)
 - **Partial (with known issues)**: 2 (3%)
@@ -124,7 +127,8 @@ grep -E "export (const|function)" packages/core/src/expressions/*/index.ts
 - **Not implemented**: 4 (5%)
 
 ### Real-World Compatibility
-**88%** (66 implemented + 2 partial) of documented _hyperscript patterns work
+
+**88%** (66 implemented + 2 partial) of documented \_hyperscript patterns work
 
 This is **honest** and gives **true confidence**.
 
@@ -133,17 +137,21 @@ This is **honest** and gives **true confidence**.
 ## 🎯 Impact on Documentation
 
 ### Before
+
 ```markdown
 - Pattern Registry Validation: 106/106 documented patterns passing (100%)
 ```
+
 **Problem**: Misleading - implied 100% compatibility
 
 ### After
+
 ```markdown
 - Pattern Compatibility: 77 core patterns, 68 fully working (88% realistic compatibility)
 - Verified against codebase: hide, show, increment, decrement, wait, take, first, last, previous
 - Honest about limitations: break/continue have runtime issues, 5 patterns have parser gaps
 ```
+
 **Benefit**: Accurate expectations
 
 ---
@@ -151,11 +159,13 @@ This is **honest** and gives **true confidence**.
 ## 📝 Files Changed
 
 ### Registry Files
+
 1. **patterns-registry.mjs** - Replaced with corrected version
 2. **patterns-registry-INFLATED-BACKUP.mjs** - Backup of original (for reference)
 3. **PATTERN_REGISTRY_CORRECTION_SUMMARY.md** - This file
 
 ### Impact on Tests
+
 - Pattern tests will now show **honest results** (not inflated 100%)
 - Test generation should reflect **77 patterns** (not 106)
 - Results will be **trustworthy** for development decisions
@@ -188,17 +198,20 @@ This is **honest** and gives **true confidence**.
 ## 🚀 Recommendations
 
 ### Short-term
+
 1. ✅ **DONE**: Replace registry with honest version
 2. **TODO**: Re-run pattern tests with corrected registry
 3. **TODO**: Update README.md compatibility claims (106/106 → 68/77)
 4. **TODO**: Document the 5 "architecture-ready" patterns as "planned features"
 
 ### Medium-term
+
 4. **Implement parser integration** for the 5 architecture-ready patterns
 5. **Fix runtime issues** in break/continue commands
 6. **Implement missing patterns** (4 not-implemented patterns)
 
 ### Long-term
+
 7. **Maintain honest metrics** - Regular verification against codebase
 8. **Automate status verification** - Script to check status vs actual code
 9. **Document limitations clearly** - Users appreciate honesty
@@ -207,10 +220,10 @@ This is **honest** and gives **true confidence**.
 
 ## 📊 Final Honest Metrics
 
-**HyperFixi Pattern Compatibility (Verified 2025-01-14):**
+**LokaScript Pattern Compatibility (Verified 2025-01-14):**
 
 - ✅ **Fully Working**: 66/77 patterns (86%)
-- ⚠️  **Partial**: 2/77 patterns (3%) - work but have known issues
+- ⚠️ **Partial**: 2/77 patterns (3%) - work but have known issues
 - 🔧 **Code Exists**: 5/77 patterns (6%) - code written but parser integration pending
 - ❌ **Missing**: 4/77 patterns (5%) - not yet implemented
 

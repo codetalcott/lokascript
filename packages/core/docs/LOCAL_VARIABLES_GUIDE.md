@@ -22,15 +22,16 @@
 
 ## Overview
 
-HyperFixi provides three ways to work with variables, each with different scoping behavior:
+LokaScript provides three ways to work with variables, each with different scoping behavior:
 
-| Syntax | Scope | Description |
-|--------|-------|-------------|
-| `:variable` | **Local** | Isolated to the current event handler |
-| `::variable` | **Global** | Explicitly global, accessible everywhere |
-| `variable` | **Implicit** | Falls back through local → global → window |
+| Syntax       | Scope        | Description                                |
+| ------------ | ------------ | ------------------------------------------ |
+| `:variable`  | **Local**    | Isolated to the current event handler      |
+| `::variable` | **Global**   | Explicitly global, accessible everywhere   |
+| `variable`   | **Implicit** | Falls back through local → global → window |
 
 **Why use explicit scoping?**
+
 - **Clarity**: Intent is clear at a glance
 - **Maintainability**: Easy to track variable scope in large codebases
 - **Fewer Bugs**: Prevents accidental global access or shadowing
@@ -97,6 +98,7 @@ Local variables work with all arithmetic operations:
 ```
 
 **Supported Operations**:
+
 - Addition: `:a + :b`
 - Subtraction: `:a - :b`
 - Multiplication: `:a * :b`
@@ -200,6 +202,7 @@ Using `::variable` makes global access explicit and clear:
 ```
 
 **Benefits**:
+
 1. **Code Reviews**: Easy to identify global state
 2. **Debugging**: Quickly find global variable usage
 3. **Refactoring**: Know exactly what's global vs local
@@ -219,6 +222,7 @@ Variables without prefixes use fallback behavior:
 ```
 
 **Lookup Order**:
+
 1. Check local scope (`context.locals`)
 2. Check global scope (`context.globals`)
 3. Check runtime variables (`context.variables`)
@@ -226,11 +230,13 @@ Variables without prefixes use fallback behavior:
 5. Return `undefined` if not found
 
 **When to Use**:
+
 - Legacy code compatibility
 - Quick prototyping
 - When scope doesn't matter
 
 **When NOT to Use**:
+
 - Production code (prefer explicit `:` or `::`)
 - Large codebases (hard to track)
 - Team projects (unclear intent)
@@ -265,6 +271,7 @@ Variables without prefixes use fallback behavior:
 ```
 
 **Output**:
+
 - `:value = local`
 - `::value = global`
 - `value = implicit`
@@ -296,6 +303,7 @@ All three variables coexist without conflict!
 ```
 
 **Result**:
+
 - `:local` → `undefined` (can't access other handler's locals)
 - `::global` → `'B'` (explicit global works)
 - `implicit` → `'C'` (implicit global works)
@@ -369,6 +377,7 @@ Don't use names that might conflict with context properties:
 ```
 
 **Common Reserved Names**:
+
 - `result`, `target`, `event`, `me`, `you`, `it`
 - `window`, `document`, `console`
 
@@ -550,16 +559,17 @@ set ::calculatedSum to (::x + ::y)
 
 **Choose the Right Scope**:
 
-| Use Case | Recommended Syntax | Example |
-|----------|-------------------|---------|
-| Loop counter | `:variable` | `set :idx to it` |
-| Temporary calculation | `:variable` | `set :sum to (:a + :b)` |
-| Handler-specific state | `:variable` | `set :isActive to true` |
-| Cross-handler communication | `::variable` | `set ::userId to 123` |
-| Application-wide state | `::variable` | `set ::theme to 'dark'` |
-| Legacy compatibility | `variable` | `set myVar to 'value'` |
+| Use Case                    | Recommended Syntax | Example                 |
+| --------------------------- | ------------------ | ----------------------- |
+| Loop counter                | `:variable`        | `set :idx to it`        |
+| Temporary calculation       | `:variable`        | `set :sum to (:a + :b)` |
+| Handler-specific state      | `:variable`        | `set :isActive to true` |
+| Cross-handler communication | `::variable`       | `set ::userId to 123`   |
+| Application-wide state      | `::variable`       | `set ::theme to 'dark'` |
+| Legacy compatibility        | `variable`         | `set myVar to 'value'`  |
 
 **Key Takeaways**:
+
 1. ✅ **Use `:variable` by default** - keeps scope clean
 2. ✅ **Use `::variable` for globals** - makes intent explicit
 3. ✅ **Avoid implicit globals** - unless necessary for compatibility
@@ -570,6 +580,6 @@ set ::calculatedSum to (::x + ::y)
 
 ## Further Reading
 
-- [API Documentation](API.md) - Complete HyperFixi API reference
+- [API Documentation](API.md) - Complete LokaScript API reference
 - [Examples](EXAMPLES.md) - More usage examples
 - [CHANGELOG](../../CHANGELOG.md) - Feature history and migration guides

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan outlines the implementation of remaining napi-rs-inspired patterns for HyperFixi, building on the completed Expression Type Registry and Command Metadata System.
+This plan outlines the implementation of remaining napi-rs-inspired patterns for LokaScript, building on the completed Expression Type Registry and Command Metadata System.
 
 **Status**: Planning
 **Estimated Effort**: 3-5 days total
@@ -18,6 +18,7 @@ This plan outlines the implementation of remaining napi-rs-inspired patterns for
 ### Current State
 
 The audit reports 20 warnings for valid but unlisted side effects:
+
 - `control-flow`, `console-output`, `clipboard-write`, `context-mutation`
 - `data-binding`, `event-listeners`, `dom-observation`
 - `property-transfer`, `event-dispatching`, `random-selection`
@@ -121,7 +122,11 @@ npx tsx scripts/audit-command-metadata.ts
  *   npx tsx scripts/generate-command-docs.ts --output docs/commands/
  */
 
-import { CommandMetadata, CommandCategory, COMMAND_CATEGORIES } from '../src/types/command-metadata';
+import {
+  CommandMetadata,
+  CommandCategory,
+  COMMAND_CATEGORIES,
+} from '../src/types/command-metadata';
 
 // Import all commands (same as audit script)
 // ... command imports ...
@@ -136,15 +141,16 @@ interface DocOptions {
 function generateMarkdown(commands: Map<string, CommandMetadata>): string {
   const lines: string[] = [];
 
-  lines.push('# HyperFixi Command Reference');
+  lines.push('# LokaScript Command Reference');
   lines.push('');
   lines.push('> Auto-generated from command metadata');
   lines.push('');
 
   // Group by category
   for (const category of COMMAND_CATEGORIES) {
-    const categoryCommands = [...commands.entries()]
-      .filter(([_, meta]) => meta.category === category);
+    const categoryCommands = [...commands.entries()].filter(
+      ([_, meta]) => meta.category === category
+    );
 
     if (categoryCommands.length === 0) continue;
 
@@ -188,7 +194,7 @@ function generateMarkdown(commands: Map<string, CommandMetadata>): string {
 
 function generateJSON(commands: Map<string, CommandMetadata>): string {
   const output = {
-    $schema: 'https://hyperfixi.dev/schemas/commands.json',
+    $schema: 'https://lokascript.dev/schemas/commands.json',
     version: '1.0.0',
     generatedAt: new Date().toISOString(),
     categories: COMMAND_CATEGORIES,
@@ -201,22 +207,26 @@ function generateJSON(commands: Map<string, CommandMetadata>): string {
 #### 2.2 Output Formats
 
 **Markdown** (`docs/commands/REFERENCE.md`):
+
 - Human-readable documentation
 - Grouped by category
 - Examples with syntax highlighting
 
 **JSON** (`docs/commands/commands.json`):
+
 - IDE tooling integration
 - Programmatic access
 - Schema validation
 
 **TypeScript Types** (`src/types/generated-commands.d.ts`):
+
 - Type-safe command names
 - Autocomplete support
 
 #### 2.3 Integration with Build
 
 Add to `package.json`:
+
 ```json
 {
   "scripts": {
@@ -287,9 +297,10 @@ function analyzeFile(filePath: string, content: string): ExpressionFile {
   const issues: string[] = [];
 
   // Check for type registry imports
-  const hasRegistryImport = content.includes('type-registry') ||
-                            content.includes('inferExpressionType') ||
-                            content.includes('coerceToType');
+  const hasRegistryImport =
+    content.includes('type-registry') ||
+    content.includes('inferExpressionType') ||
+    content.includes('coerceToType');
 
   // Find inline type checks that should use registry
   const inlineTypeChecks = [
@@ -370,6 +381,7 @@ function generateReport(results: ExpressionFile[]): void {
 #### 3.2 Integration
 
 Add to CI/pre-commit:
+
 ```bash
 npx tsx scripts/analyze-expression-types.ts --strict
 ```
@@ -484,6 +496,7 @@ class CommandBuilderImpl<TInput, TOutput> implements CommandBuilder<TInput, TOut
 ```
 
 **Benefits**:
+
 - No experimental features required
 - Full TypeScript type inference
 - Chainable, readable API
@@ -507,6 +520,7 @@ const AddCommand = createCommand({
 ```
 
 **Benefits**:
+
 - Simple, explicit
 - Easy to understand
 - Good IDE support
@@ -526,12 +540,14 @@ const AddCommand = withMetadata({
 ```
 
 **Benefits**:
+
 - Preserves class structure
 - Composable
 
 ### Recommendation
 
 **Use Builder Pattern (4.1)** for new commands:
+
 - Most flexible
 - Best TypeScript support
 - No experimental features
@@ -543,14 +559,14 @@ Keep existing class-based commands for backward compatibility, but provide build
 
 ## Implementation Timeline
 
-| Phase | Task | Effort | Priority |
-|-------|------|--------|----------|
-| 1 | Expand side effects list | 2-4 hours | High |
-| 2a | Create doc generator script | 4 hours | Medium |
-| 2b | Generate markdown docs | 2 hours | Medium |
-| 2c | Generate JSON schema | 2 hours | Low |
-| 3 | Type coverage analyzer | 4 hours | Medium |
-| 4 | Command builder pattern | 1 day | Low |
+| Phase | Task                        | Effort    | Priority |
+| ----- | --------------------------- | --------- | -------- |
+| 1     | Expand side effects list    | 2-4 hours | High     |
+| 2a    | Create doc generator script | 4 hours   | Medium   |
+| 2b    | Generate markdown docs      | 2 hours   | Medium   |
+| 2c    | Generate JSON schema        | 2 hours   | Low      |
+| 3     | Type coverage analyzer      | 4 hours   | Medium   |
+| 4     | Command builder pattern     | 1 day     | Low      |
 
 **Total**: 3-5 days
 
@@ -568,6 +584,7 @@ Keep existing class-based commands for backward compatibility, but provide build
 ## Files to Create/Modify
 
 ### New Files
+
 - `packages/core/scripts/generate-command-docs.ts`
 - `packages/core/scripts/analyze-expression-types.ts`
 - `packages/core/src/commands/command-builder.ts`
@@ -575,6 +592,7 @@ Keep existing class-based commands for backward compatibility, but provide build
 - `docs/commands/commands.json` (generated)
 
 ### Modified Files
+
 - `packages/core/src/types/command-metadata.ts` (add side effects)
 - `packages/core/package.json` (add scripts)
 

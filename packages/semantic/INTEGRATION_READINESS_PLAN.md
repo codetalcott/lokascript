@@ -8,7 +8,7 @@
 
 ## Goal
 
-Prepare the semantic package for production integration with `@hyperfixi/core`, enabling multilingual hyperscript parsing with morphological support.
+Prepare the semantic package for production integration with `@lokascript/core`, enabling multilingual hyperscript parsing with morphological support.
 
 ---
 
@@ -28,6 +28,7 @@ Prepare the semantic package for production integration with `@hyperfixi/core`, 
 ### Phase 1: Complete Keyword Sync - COMPLETE
 
 All 13 tokenizers now have complete keyword coverage including:
+
 - Core commands (toggle, add, remove, show, hide, etc.)
 - Control flow (if, else, repeat, for, while, continue, halt)
 - Advanced (js, async, tell, default, init, behavior)
@@ -37,6 +38,7 @@ All 13 tokenizers now have complete keyword coverage including:
 ### Phase 2: Integration Tests - COMPLETE
 
 Integration tests created and passing:
+
 - `test/integration/core-integration.test.ts` (36 tests)
 - All 7 primary languages passing command parsing
 - Gallery patterns test coverage (34 tests)
@@ -50,10 +52,12 @@ Integration tests created and passing:
 **Objective**: Eliminate SemanticRole duplication between packages.
 
 **Current State**:
+
 - `packages/i18n/src/grammar/types.ts` defines SemanticRole (11 roles)
 - `packages/semantic/src/types.ts` defines SemanticRole (11 roles)
 
 **Tasks**:
+
 1. Compare role definitions
 2. Choose canonical source (recommendation: use i18n's definition)
 3. Update imports across packages
@@ -64,6 +68,7 @@ Integration tests created and passing:
 **Objective**: Ensure semantic parsing doesn't significantly impact performance.
 
 **Tasks**:
+
 1. Create benchmark comparing traditional vs semantic parsing
 2. Target: semantic parsing < 2x traditional parsing time
 3. Optimization if needed:
@@ -76,6 +81,7 @@ Integration tests created and passing:
 **Objective**: Document how to use semantic parsing integration.
 
 **Tasks**:
+
 1. Update package README with usage examples
 2. Document confidence thresholds
 3. Document supported languages (13 languages, 3 tiers)
@@ -86,6 +92,7 @@ Integration tests created and passing:
 **Objective**: Complete pre-integration checklist.
 
 **Checklist**:
+
 ```
 [x] All 13 tokenizers have complete keyword coverage
 [x] Integration tests pass for all primary languages
@@ -101,32 +108,36 @@ Integration tests created and passing:
 
 ## Success Criteria
 
-| Criterion | Status |
-|-----------|--------|
-| Zero keyword sync gaps across all languages | Complete (13 languages) |
-| Integration tests pass for tier-1 commands | Complete (7 languages) |
-| Single SemanticRole type shared between packages | Pending (optional) |
-| Performance overhead < 2x traditional parsing | Pending |
-| Documentation complete with usage examples | In Progress |
-| Browser demo working for all languages | Pending |
+| Criterion                                        | Status                  |
+| ------------------------------------------------ | ----------------------- |
+| Zero keyword sync gaps across all languages      | Complete (13 languages) |
+| Integration tests pass for tier-1 commands       | Complete (7 languages)  |
+| Single SemanticRole type shared between packages | Pending (optional)      |
+| Performance overhead < 2x traditional parsing    | Pending                 |
+| Documentation complete with usage examples       | In Progress             |
+| Browser demo working for all languages           | Pending                 |
 
 ---
 
 ## Files Summary
 
 ### Core Pattern Matching
+
 - `src/parser/pattern-matcher.ts` - Multi-token expression support
 - `src/parser/semantic-parser.ts` - Recursive body parsing
 
 ### Tokenizers
+
 - `src/tokenizers/base.ts` - Shared utilities including `isPossessiveMarker()`
 - `src/tokenizers/english.ts` - Method call detection
 
 ### Generators
+
 - `src/generators/language-profiles.ts` - 13 language profiles with then/end keywords
 - `src/generators/command-schemas.ts` - 45+ command schemas
 
 ### Types
+
 - `src/types.ts` - CompoundSemanticNode, SemanticParseResult types
 
 ---
@@ -134,6 +145,7 @@ Integration tests created and passing:
 ## Post-Integration
 
 After successful integration:
+
 1. Monitor for edge cases in production usage
 2. Gather feedback on confidence threshold tuning
 3. Consider unifying tokenizers between i18n and semantic packages

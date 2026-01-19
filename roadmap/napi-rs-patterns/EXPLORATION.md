@@ -1,10 +1,10 @@
-# napi-rs Patterns Exploration for HyperFixi
+# napi-rs Patterns Exploration for LokaScript
 
 ## Executive Summary
 
-This document explores how [napi-rs](https://github.com/napi-rs/napi-rs) patterns could enhance HyperFixi's performance and architecture. napi-rs is a framework for building compiled Node.js add-ons in Rust via Node-API, enabling significant performance improvements for compute-intensive JavaScript operations.
+This document explores how [napi-rs](https://github.com/napi-rs/napi-rs) patterns could enhance LokaScript's performance and architecture. napi-rs is a framework for building compiled Node.js add-ons in Rust via Node-API, enabling significant performance improvements for compute-intensive JavaScript operations.
 
-**Key Opportunity**: HyperFixi's parser and expression evaluator are ideal candidates for native optimization, with potential **40-60% performance improvements** in parsing and evaluation.
+**Key Opportunity**: LokaScript's parser and expression evaluator are ideal candidates for native optimization, with potential **40-60% performance improvements** in parsing and evaluation.
 
 ---
 
@@ -53,13 +53,14 @@ impl Parser {
 ```
 
 **Generated TypeScript Definitions** (automatic):
+
 ```typescript
-export function parseHyperscript(source: string): ParseResult
+export function parseHyperscript(source: string): ParseResult;
 
 export class HyperScriptParser {
-    constructor()
-    tokenize(source: string): Token[]
-    parseAsync(source: string): Promise<AST>
+  constructor();
+  tokenize(source: string): Token[];
+  parseAsync(source: string): Promise<AST>;
 }
 ```
 
@@ -96,25 +97,26 @@ impl Task for ParseTask {
 napi-rs enables prebuilt binaries for multiple platforms:
 
 ```
-@hyperfixi/native-parser-linux-x64-gnu
-@hyperfixi/native-parser-darwin-arm64
-@hyperfixi/native-parser-win32-x64-msvc
+@lokascript/native-parser-linux-x64-gnu
+@lokascript/native-parser-darwin-arm64
+@lokascript/native-parser-win32-x64-msvc
 ```
 
 Main package uses optional dependencies for platform selection:
+
 ```json
 {
   "optionalDependencies": {
-    "@hyperfixi/native-parser-linux-x64-gnu": "1.0.0",
-    "@hyperfixi/native-parser-darwin-arm64": "1.0.0",
-    "@hyperfixi/native-parser-win32-x64-msvc": "1.0.0"
+    "@lokascript/native-parser-linux-x64-gnu": "1.0.0",
+    "@lokascript/native-parser-darwin-arm64": "1.0.0",
+    "@lokascript/native-parser-win32-x64-msvc": "1.0.0"
   }
 }
 ```
 
 ---
 
-## 2. HyperFixi Optimization Targets
+## 2. LokaScript Optimization Targets
 
 Based on codebase analysis, these are the highest-impact areas for native optimization:
 
@@ -126,17 +128,18 @@ Based on codebase analysis, these are the highest-impact areas for native optimi
 ```typescript
 // Current JavaScript implementation
 export function tokenize(source: string): Token[] {
-    const tokens: Token[] = [];
-    let pos = 0;
-    while (pos < source.length) {
-        const char = source[pos];
-        // Complex matching logic...
-    }
-    return tokens;
+  const tokens: Token[] = [];
+  let pos = 0;
+  while (pos < source.length) {
+    const char = source[pos];
+    // Complex matching logic...
+  }
+  return tokens;
 }
 ```
 
 **Native Implementation Pattern**:
+
 ```rust
 #[napi(object)]
 pub struct Token {
@@ -174,6 +177,7 @@ async evaluateExpression(expr: Expression, ctx: Context): Promise<unknown> {
 ```
 
 **Native Implementation Pattern**:
+
 ```rust
 #[napi]
 pub struct ExpressionEvaluator {
@@ -206,6 +210,7 @@ impl ExpressionEvaluator {
 **Bottleneck**: Recursive descent with complex precedence climbing
 
 **Native Implementation Pattern**:
+
 ```rust
 #[napi(js_name = "NativeParser")]
 pub struct Parser {
@@ -242,6 +247,7 @@ impl Parser {
 **Current State**: `src/utils/performance.ts` - pooling with JavaScript Maps
 
 **Native Implementation Pattern**:
+
 ```rust
 use std::sync::Mutex;
 use std::collections::VecDeque;
@@ -279,7 +285,7 @@ impl NativePool<JsObject> {
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     HyperFixi Application                   │
+│                     LokaScript Application                   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -294,7 +300,7 @@ impl NativePool<JsObject> {
 │  ┌─────────┴────────────────┴────────────────┴─────────┐   │
 │  │                  Binding Layer                       │   │
 │  │  ┌─────────────────────────────────────────────────┐│   │
-│  │  │    @hyperfixi/native-core (napi-rs bindings)    ││   │
+│  │  │    @lokascript/native-core (napi-rs bindings)    ││   │
 │  │  │    - Auto-generated TypeScript definitions       ││   │
 │  │  │    - Platform-specific prebuilt binaries        ││   │
 │  │  └─────────────────────────────────────────────────┘│   │
@@ -319,6 +325,7 @@ impl NativePool<JsObject> {
 ### 3.2 Gradual Migration Strategy
 
 **Phase A: Tokenizer First (Low Risk, High Reward)**
+
 ```
 Week 1-2: Rust tokenizer with napi-rs bindings
 Week 3: Integration testing, benchmarks
@@ -326,6 +333,7 @@ Week 4: Feature flag rollout
 ```
 
 **Phase B: Parser (Medium Risk)**
+
 ```
 Week 5-6: Rust recursive descent parser
 Week 7: AST compatibility validation
@@ -333,6 +341,7 @@ Week 8: Full integration testing
 ```
 
 **Phase C: Expression Evaluator (Higher Risk)**
+
 ```
 Week 9-11: Native expression evaluation
 Week 12: DOM integration layer
@@ -341,6 +350,7 @@ Week 12: DOM integration layer
 ### 3.3 Fallback Architecture
 
 Always maintain JavaScript fallback for:
+
 - Browsers (WASM compilation needed separately)
 - Edge cases with native binary loading issues
 - Development/debugging scenarios
@@ -349,32 +359,32 @@ Always maintain JavaScript fallback for:
 // packages/core/src/parser/index.ts
 import type { Token } from './types';
 
-let nativeParser: typeof import('@hyperfixi/native-core') | null = null;
+let nativeParser: typeof import('@lokascript/native-core') | null = null;
 
 // Attempt native loader
 try {
-    nativeParser = require('@hyperfixi/native-core');
+  nativeParser = require('@lokascript/native-core');
 } catch {
-    console.debug('Native parser unavailable, using JavaScript fallback');
+  console.debug('Native parser unavailable, using JavaScript fallback');
 }
 
 export function tokenize(source: string): Token[] {
-    if (nativeParser) {
-        return nativeParser.tokenize(source);
-    }
-    // JavaScript fallback
-    return jsTokenize(source);
+  if (nativeParser) {
+    return nativeParser.tokenize(source);
+  }
+  // JavaScript fallback
+  return jsTokenize(source);
 }
 ```
 
 ---
 
-## 4. napi-rs Patterns Applied to HyperFixi
+## 4. napi-rs Patterns Applied to LokaScript
 
 ### 4.1 Pattern: Wrapper Types for Complex Structures
 
 ```rust
-// HyperFixi-specific AST wrapper
+// LokaScript-specific AST wrapper
 #[napi(object)]
 pub struct ASTNode {
     pub node_type: String,
@@ -491,22 +501,22 @@ For browser environments, napi-rs native code won't work. Options:
 
 ```rust
 // Shared core library
-// crates/hyperfixi-core/src/lib.rs
+// crates/lokascript-core/src/lib.rs
 pub fn tokenize(source: &str) -> Vec<Token> { /* ... */ }
 pub fn parse(tokens: &[Token]) -> AST { /* ... */ }
 
 // Node.js bindings (napi-rs)
-// crates/hyperfixi-napi/src/lib.rs
+// crates/lokascript-napi/src/lib.rs
 #[napi]
 pub fn tokenize(source: String) -> Vec<Token> {
-    hyperfixi_core::tokenize(&source)
+    lokascript_core::tokenize(&source)
 }
 
 // WASM bindings (wasm-bindgen)
-// crates/hyperfixi-wasm/src/lib.rs
+// crates/lokascript-wasm/src/lib.rs
 #[wasm_bindgen]
 pub fn tokenize(source: &str) -> JsValue {
-    let tokens = hyperfixi_core::tokenize(source);
+    let tokens = lokascript_core::tokenize(source);
     serde_wasm_bindgen::to_value(&tokens).unwrap()
 }
 ```
@@ -514,13 +524,13 @@ pub fn tokenize(source: &str) -> JsValue {
 ### 5.2 Isomorphic Package Structure
 
 ```
-@hyperfixi/native-core/
+@lokascript/native-core/
 ├── package.json
 ├── index.js           # Platform detection & loading
 ├── index.d.ts         # TypeScript definitions
 ├── wasm/
-│   ├── hyperfixi_wasm_bg.wasm
-│   └── hyperfixi_wasm.js
+│   ├── lokascript_wasm_bg.wasm
+│   └── lokascript_wasm.js
 └── native/
     ├── linux-x64-gnu/
     ├── darwin-arm64/
@@ -535,13 +545,13 @@ const isWorker = typeof WorkerGlobalScope !== 'undefined';
 let binding;
 
 if (isNode) {
-    // Load native binary
-    binding = require('./native/binding.node');
+  // Load native binary
+  binding = require('./native/binding.node');
 } else {
-    // Load WASM for browsers
-    const wasm = await import('./wasm/hyperfixi_wasm.js');
-    await wasm.default();
-    binding = wasm;
+  // Load WASM for browsers
+  const wasm = await import('./wasm/lokascript_wasm.js');
+  await wasm.default();
+  binding = wasm;
 }
 
 export const { tokenize, parse, evaluate } = binding;
@@ -554,11 +564,12 @@ export const { tokenize, parse, evaluate } = binding;
 ### Phase 1: Foundation (2-3 weeks)
 
 1. **Create Rust workspace**
+
    ```
    crates/
-   ├── hyperfixi-core/      # Pure Rust implementations
-   ├── hyperfixi-napi/      # Node.js bindings
-   └── hyperfixi-wasm/      # Browser bindings (future)
+   ├── lokascript-core/      # Pure Rust implementations
+   ├── lokascript-napi/      # Node.js bindings
+   └── lokascript-wasm/      # Browser bindings (future)
    ```
 
 2. **Implement native tokenizer**
@@ -603,14 +614,14 @@ export const { tokenize, parse, evaluate } = binding;
 
 ### Performance Improvements
 
-| Component | Current (JS) | Native (Rust) | Improvement |
-|-----------|-------------|---------------|-------------|
-| Tokenization | 15ms | 5ms | **67%** |
-| Parsing | 25ms | 10ms | **60%** |
-| Expression Eval | 8ms | 3ms | **62%** |
-| Total Init | 48ms | 18ms | **62%** |
+| Component       | Current (JS) | Native (Rust) | Improvement |
+| --------------- | ------------ | ------------- | ----------- |
+| Tokenization    | 15ms         | 5ms           | **67%**     |
+| Parsing         | 25ms         | 10ms          | **60%**     |
+| Expression Eval | 8ms          | 3ms           | **62%**     |
+| Total Init      | 48ms         | 18ms          | **62%**     |
 
-*Estimates based on typical napi-rs migration results*
+_Estimates based on typical napi-rs migration results_
 
 ### Bundle Size Impact
 
@@ -628,19 +639,19 @@ export const { tokenize, parse, evaluate } = binding;
 
 ## 8. Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Native build complexity | Medium | napi-rs CLI handles cross-compilation |
-| Platform coverage gaps | Low | JavaScript fallback always available |
-| AST compatibility | High | Extensive comparison testing |
-| Maintenance burden | Medium | Shared core library minimizes duplication |
-| Browser WASM size | Low | Lazy loading, code splitting |
+| Risk                    | Impact | Mitigation                                |
+| ----------------------- | ------ | ----------------------------------------- |
+| Native build complexity | Medium | napi-rs CLI handles cross-compilation     |
+| Platform coverage gaps  | Low    | JavaScript fallback always available      |
+| AST compatibility       | High   | Extensive comparison testing              |
+| Maintenance burden      | Medium | Shared core library minimizes duplication |
+| Browser WASM size       | Low    | Lazy loading, code splitting              |
 
 ---
 
 ## 9. Conclusion
 
-napi-rs patterns offer HyperFixi a path to significant performance improvements while maintaining the excellent developer experience of the current TypeScript codebase. The key patterns to adopt:
+napi-rs patterns offer LokaScript a path to significant performance improvements while maintaining the excellent developer experience of the current TypeScript codebase. The key patterns to adopt:
 
 1. **`#[napi]` macro** for seamless JavaScript binding generation
 2. **AsyncTask** for non-blocking heavy computations

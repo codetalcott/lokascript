@@ -1,7 +1,7 @@
 # Request Event Source Implementation Summary
 
 **Date:** 2026-01-17
-**Package:** `@hyperfixi/server-integration`
+**Package:** `@lokascript/server-integration`
 **Status:** ✅ Complete and tested (16/16 tests passing)
 
 ## What Was Implemented
@@ -77,7 +77,7 @@ Makes these variables available in hyperscript:
 ### ✅ Express Integration
 
 ```typescript
-import { setupHyperscriptRoutes } from '@hyperfixi/server-integration';
+import { setupHyperscriptRoutes } from '@lokascript/server-integration';
 
 await setupHyperscriptRoutes(app, { debug: true });
 ```
@@ -138,8 +138,8 @@ wrapExpressResponse(res): ServerResponse
 
 ```typescript
 import express from 'express';
-import { setupHyperscriptRoutes } from '@hyperfixi/server-integration';
-import { hyperscript } from '@hyperfixi/core';
+import { setupHyperscriptRoutes } from '@lokascript/server-integration';
+import { hyperscript } from '@lokascript/core';
 
 const app = express();
 app.use(express.json());
@@ -170,9 +170,9 @@ app.listen(3000);
 
 This implementation integrates with:
 
-1. **`@hyperfixi/core/registry`** - Uses the registry system for event sources and context providers
+1. **`@lokascript/core/registry`** - Uses the registry system for event sources and context providers
 2. **Express** - Full Express middleware support with adapters
-3. **HyperFixi Runtime** - Execution contexts and command system
+3. **LokaScript Runtime** - Execution contexts and command system
 4. **Vitest** - Comprehensive test coverage
 
 ## Performance Characteristics

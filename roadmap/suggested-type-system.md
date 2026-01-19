@@ -7,7 +7,7 @@
 
 ## Overview
 
-This document outlines a **strategic long-term approach** to fundamentally improve HyperFixi's type system using discriminated unions. This addresses the root cause of many TypeScript errors related to the loose `ASTNode` interface.
+This document outlines a **strategic long-term approach** to fundamentally improve LokaScript's type system using discriminated unions. This addresses the root cause of many TypeScript errors related to the loose `ASTNode` interface.
 
 ### Relationship to Current Work
 
@@ -21,261 +21,264 @@ Phase 1: Type System Design (Foundation)
 1.1 Create Base Node Types Hierarchy
 // packages/core/src/types/ast-nodes.ts (NEW FILE)
 
-/**
- * Base AST Node with required discriminator
- * All specific nodes extend this
- */
-interface BaseASTNode {
+/\*\*
+
+- Base AST Node with required discriminator
+- All specific nodes extend this
+  \*/
+  interface BaseASTNode {
   readonly type: string;
   readonly line?: number;
   readonly column?: number;
   readonly start?: number;
   readonly end?: number;
   readonly raw?: string;
-}
+  }
 
-/**
- * Expression Node Types (45+ types identified)
- */
+/\*\*
+
+- Expression Node Types (45+ types identified)
+  \*/
 
 // Literal types
 interface LiteralNode extends BaseASTNode {
-  readonly type: 'literal' | 'Literal';
-  readonly value: string | number | boolean | null;
+readonly type: 'literal' | 'Literal';
+readonly value: string | number | boolean | null;
 }
 
 interface StringNode extends BaseASTNode {
-  readonly type: 'string';
-  readonly value: string;
+readonly type: 'string';
+readonly value: string;
 }
 
 interface NumberNode extends BaseASTNode {
-  readonly type: 'number';
-  readonly value: number;
+readonly type: 'number';
+readonly value: number;
 }
 
 // Identifier types
 interface IdentifierNode extends BaseASTNode {
-  readonly type: 'identifier' | 'Identifier';
-  readonly name: string;
+readonly type: 'identifier' | 'Identifier';
+readonly name: string;
 }
 
 interface KeywordNode extends BaseASTNode {
-  readonly type: 'keyword';
-  readonly name: string;
+readonly type: 'keyword';
+readonly name: string;
 }
 
 // Expression types
 interface BinaryExpressionNode extends BaseASTNode {
-  readonly type: 'binaryExpression' | 'BinaryExpression';
-  readonly operator: string;
-  readonly left: ASTNode;
-  readonly right: ASTNode;
+readonly type: 'binaryExpression' | 'BinaryExpression';
+readonly operator: string;
+readonly left: ASTNode;
+readonly right: ASTNode;
 }
 
 interface UnaryExpressionNode extends BaseASTNode {
-  readonly type: 'unaryExpression' | 'UnaryExpression';
-  readonly operator: string;
-  readonly operand: ASTNode;
+readonly type: 'unaryExpression' | 'UnaryExpression';
+readonly operator: string;
+readonly operand: ASTNode;
 }
 
 interface MemberExpressionNode extends BaseASTNode {
-  readonly type: 'memberExpression' | 'MemberExpression';
-  readonly object: ASTNode;
-  readonly property: ASTNode;
-  readonly computed: boolean;
+readonly type: 'memberExpression' | 'MemberExpression';
+readonly object: ASTNode;
+readonly property: ASTNode;
+readonly computed: boolean;
 }
 
 interface CallExpressionNode extends BaseASTNode {
-  readonly type: 'callExpression' | 'CallExpression';
-  readonly callee: ASTNode;
-  readonly arguments: ASTNode[];
+readonly type: 'callExpression' | 'CallExpression';
+readonly callee: ASTNode;
+readonly arguments: ASTNode[];
 }
 
 // Property access types
 interface PropertyAccessNode extends BaseASTNode {
-  readonly type: 'propertyAccess';
-  readonly object: ASTNode;
-  readonly property: string | ASTNode;
+readonly type: 'propertyAccess';
+readonly object: ASTNode;
+readonly property: string | ASTNode;
 }
 
 interface PossessiveExpressionNode extends BaseASTNode {
-  readonly type: 'possessiveExpression' | 'PossessiveExpression';
-  readonly object: ASTNode;
-  readonly property: ASTNode;
+readonly type: 'possessiveExpression' | 'PossessiveExpression';
+readonly object: ASTNode;
+readonly property: ASTNode;
 }
 
 interface PropertyOfExpressionNode extends BaseASTNode {
-  readonly type: 'propertyOfExpression';
-  readonly property: ASTNode;
-  readonly object: ASTNode;
+readonly type: 'propertyOfExpression';
+readonly property: ASTNode;
+readonly object: ASTNode;
 }
 
 // Selector types
 interface SelectorNode extends BaseASTNode {
-  readonly type: 'selector' | 'Selector';
-  readonly value: string;
+readonly type: 'selector' | 'Selector';
+readonly value: string;
 }
 
 interface CssSelectorNode extends BaseASTNode {
-  readonly type: 'cssSelector';
-  readonly selector: string;
+readonly type: 'cssSelector';
+readonly selector: string;
 }
 
 interface QueryReferenceNode extends BaseASTNode {
-  readonly type: 'queryReference';
-  readonly selector: string;
+readonly type: 'queryReference';
+readonly selector: string;
 }
 
 interface AttributeSelectorNode extends BaseASTNode {
-  readonly type: 'attributeSelector';
-  readonly attribute: string;
-  readonly value?: string;
-  readonly operator?: string;
+readonly type: 'attributeSelector';
+readonly attribute: string;
+readonly value?: string;
+readonly operator?: string;
 }
 
 // Context types
 interface ContextReferenceNode extends BaseASTNode {
-  readonly type: 'me' | 'it' | 'you' | 'context_var';
-  readonly name?: string;
+readonly type: 'me' | 'it' | 'you' | 'context_var';
+readonly name?: string;
 }
 
 interface ContextPossessiveNode extends BaseASTNode {
-  readonly type: 'contextPossessive';
-  readonly context: 'me' | 'it' | 'you';
-  readonly property: string | ASTNode;
+readonly type: 'contextPossessive';
+readonly context: 'me' | 'it' | 'you';
+readonly property: string | ASTNode;
 }
 
 // Array/Object types
 interface ArrayLiteralNode extends BaseASTNode {
-  readonly type: 'arrayLiteral';
-  readonly elements: ASTNode[];
+readonly type: 'arrayLiteral';
+readonly elements: ASTNode[];
 }
 
 interface ArrayAccessNode extends BaseASTNode {
-  readonly type: 'arrayAccess';
-  readonly array: ASTNode;
-  readonly index: ASTNode;
+readonly type: 'arrayAccess';
+readonly array: ASTNode;
+readonly index: ASTNode;
 }
 
 interface ObjectLiteralNode extends BaseASTNode {
-  readonly type: 'objectLiteral';
-  readonly properties: Array<{
-    key: string | ASTNode;
-    value: ASTNode;
-  }>;
+readonly type: 'objectLiteral';
+readonly properties: Array<{
+key: string | ASTNode;
+value: ASTNode;
+}>;
 }
 
 // Template types
 interface TemplateLiteralNode extends BaseASTNode {
-  readonly type: 'templateLiteral' | 'template_literal';
-  readonly parts: Array<string | ASTNode>;
+readonly type: 'templateLiteral' | 'template_literal';
+readonly parts: Array<string | ASTNode>;
 }
 
 // Command types
 interface CommandNode extends BaseASTNode {
-  readonly type: 'command' | 'Command';
-  readonly name: string;
-  readonly args: ASTNode[];
-  readonly modifiers?: Record<string, ASTNode>;
+readonly type: 'command' | 'Command';
+readonly name: string;
+readonly args: ASTNode[];
+readonly modifiers?: Record<string, ASTNode>;
 }
 
 interface CommandSequenceNode extends BaseASTNode {
-  readonly type: 'CommandSequence';
-  readonly commands: CommandNode[];
+readonly type: 'CommandSequence';
+readonly commands: CommandNode[];
 }
 
 // Block types
 interface BlockNode extends BaseASTNode {
-  readonly type: 'block';
-  readonly body: ASTNode[];
+readonly type: 'block';
+readonly body: ASTNode[];
 }
 
 // Event types
 interface EventHandlerNode extends BaseASTNode {
-  readonly type: 'eventHandler' | 'EventHandler';
-  readonly event: string;
-  readonly body: ASTNode;
-  readonly filters?: Record<string, any>;
+readonly type: 'eventHandler' | 'EventHandler';
+readonly event: string;
+readonly body: ASTNode;
+readonly filters?: Record<string, any>;
 }
 
 // Special types
 interface AsExpressionNode extends BaseASTNode {
-  readonly type: 'asExpression';
-  readonly expression: ASTNode;
-  readonly targetType: string;
+readonly type: 'asExpression';
+readonly expression: ASTNode;
+readonly targetType: string;
 }
 
 interface ConditionalExpressionNode extends BaseASTNode {
-  readonly type: 'conditionalExpression';
-  readonly test: ASTNode;
-  readonly consequent: ASTNode;
-  readonly alternate?: ASTNode;
+readonly type: 'conditionalExpression';
+readonly test: ASTNode;
+readonly consequent: ASTNode;
+readonly alternate?: ASTNode;
 }
 
 interface PositionalExpressionNode extends BaseASTNode {
-  readonly type: 'positionalExpression';
-  readonly position: 'first' | 'last' | 'next' | 'previous';
-  readonly target?: ASTNode;
+readonly type: 'positionalExpression';
+readonly position: 'first' | 'last' | 'next' | 'previous';
+readonly target?: ASTNode;
 }
 
 interface BracketExpressionNode extends BaseASTNode {
-  readonly type: 'bracketExpression';
-  readonly expression: ASTNode;
+readonly type: 'bracketExpression';
+readonly expression: ASTNode;
 }
 
 interface DollarExpressionNode extends BaseASTNode {
-  readonly type: 'dollarExpression';
-  readonly expression: ASTNode;
+readonly type: 'dollarExpression';
+readonly expression: ASTNode;
 }
 
 interface AttributeAccessNode extends BaseASTNode {
-  readonly type: 'attributeAccess';
-  readonly object: ASTNode;
-  readonly attribute: string;
+readonly type: 'attributeAccess';
+readonly object: ASTNode;
+readonly attribute: string;
 }
 
 interface ClassReferenceNode extends BaseASTNode {
-  readonly type: 'class_reference';
-  readonly className: string;
+readonly type: 'class_reference';
+readonly className: string;
 }
 
 interface IdSelectorNode extends BaseASTNode {
-  readonly type: 'id_selector';
-  readonly id: string;
+readonly type: 'id_selector';
+readonly id: string;
 }
 
 interface ClassSelectorNode extends BaseASTNode {
-  readonly type: 'class_selector';
-  readonly className: string;
+readonly type: 'class_selector';
+readonly className: string;
 }
 
 interface OperatorNode extends BaseASTNode {
-  readonly type: 'operator';
-  readonly operator: string;
+readonly type: 'operator';
+readonly operator: string;
 }
 
 interface UnknownNode extends BaseASTNode {
-  readonly type: 'unknown';
-  readonly value?: any;
+readonly type: 'unknown';
+readonly value?: any;
 }
 
 interface EOFNode extends BaseASTNode {
-  readonly type: 'EOF';
+readonly type: 'EOF';
 }
 
 // Constructor type
 interface ConstructorCallNode extends BaseASTNode {
-  readonly type: 'constructorCall' | 'new';
-  readonly callee: ASTNode;
-  readonly arguments: ASTNode[];
+readonly type: 'constructorCall' | 'new';
+readonly callee: ASTNode;
+readonly arguments: ASTNode[];
 }
 
-/**
- * Discriminated Union of All Node Types
- * This is the key to proper type narrowing
- */
-export type ASTNode =
+/\*\*
+
+- Discriminated Union of All Node Types
+- This is the key to proper type narrowing
+  \*/
+  export type ASTNode =
   // Literals
   | LiteralNode
   | StringNode
@@ -329,152 +332,153 @@ export type ASTNode =
   | EOFNode;
 
 // Re-export for compatibility
-export type { 
-  LiteralNode,
-  IdentifierNode,
-  BinaryExpressionNode,
-  UnaryExpressionNode,
-  MemberExpressionNode,
-  CallExpressionNode,
-  PropertyAccessNode,
-  PossessiveExpressionNode,
-  CommandNode,
-  EventHandlerNode,
-  // ... all other types
+export type {
+LiteralNode,
+IdentifierNode,
+BinaryExpressionNode,
+UnaryExpressionNode,
+MemberExpressionNode,
+CallExpressionNode,
+PropertyAccessNode,
+PossessiveExpressionNode,
+CommandNode,
+EventHandlerNode,
+// ... all other types
 };
 1.2 Create Type Guard Utilities
 // packages/core/src/types/ast-guards.ts (NEW FILE)
 
-import type { ASTNode, LiteralNode, IdentifierNode, /* ... */ } from './ast-nodes';
+import type { ASTNode, LiteralNode, IdentifierNode, /_ ... _/ } from './ast-nodes';
 
-/**
- * Type guard utilities for safe AST node type narrowing
- */
+/\*\*
+
+- Type guard utilities for safe AST node type narrowing
+  \*/
 
 // Literal guards
 export function isLiteralNode(node: ASTNode): node is LiteralNode {
-  return node.type === 'literal' || node.type === 'Literal';
+return node.type === 'literal' || node.type === 'Literal';
 }
 
 export function isStringNode(node: ASTNode): node is StringNode {
-  return node.type === 'string';
+return node.type === 'string';
 }
 
 export function isNumberNode(node: ASTNode): node is NumberNode {
-  return node.type === 'number';
+return node.type === 'number';
 }
 
 // Identifier guards
 export function isIdentifierNode(node: ASTNode): node is IdentifierNode {
-  return node.type === 'identifier' || node.type === 'Identifier';
+return node.type === 'identifier' || node.type === 'Identifier';
 }
 
 export function isKeywordNode(node: ASTNode): node is KeywordNode {
-  return node.type === 'keyword';
+return node.type === 'keyword';
 }
 
 // Expression guards
 export function isBinaryExpressionNode(node: ASTNode): node is BinaryExpressionNode {
-  return node.type === 'binaryExpression' || node.type === 'BinaryExpression';
+return node.type === 'binaryExpression' || node.type === 'BinaryExpression';
 }
 
 export function isUnaryExpressionNode(node: ASTNode): node is UnaryExpressionNode {
-  return node.type === 'unaryExpression' || node.type === 'UnaryExpression';
+return node.type === 'unaryExpression' || node.type === 'UnaryExpression';
 }
 
 export function isMemberExpressionNode(node: ASTNode): node is MemberExpressionNode {
-  return node.type === 'memberExpression' || node.type === 'MemberExpression';
+return node.type === 'memberExpression' || node.type === 'MemberExpression';
 }
 
 export function isCallExpressionNode(node: ASTNode): node is CallExpressionNode {
-  return node.type === 'callExpression' || node.type === 'CallExpression';
+return node.type === 'callExpression' || node.type === 'CallExpression';
 }
 
 // Property access guards
 export function isPropertyAccessNode(node: ASTNode): node is PropertyAccessNode {
-  return node.type === 'propertyAccess';
+return node.type === 'propertyAccess';
 }
 
 export function isPossessiveExpressionNode(node: ASTNode): node is PossessiveExpressionNode {
-  return node.type === 'possessiveExpression' || node.type === 'PossessiveExpression';
+return node.type === 'possessiveExpression' || node.type === 'PossessiveExpression';
 }
 
 export function isPropertyOfExpressionNode(node: ASTNode): node is PropertyOfExpressionNode {
-  return node.type === 'propertyOfExpression';
+return node.type === 'propertyOfExpression';
 }
 
 // Selector guards
 export function isSelectorNode(node: ASTNode): node is SelectorNode {
-  return node.type === 'selector' || node.type === 'Selector';
+return node.type === 'selector' || node.type === 'Selector';
 }
 
 export function isCssSelectorNode(node: ASTNode): node is CssSelectorNode {
-  return node.type === 'cssSelector';
+return node.type === 'cssSelector';
 }
 
 export function isQueryReferenceNode(node: ASTNode): node is QueryReferenceNode {
-  return node.type === 'queryReference';
+return node.type === 'queryReference';
 }
 
 // Context guards
 export function isContextReferenceNode(node: ASTNode): node is ContextReferenceNode {
-  return ['me', 'it', 'you', 'context_var'].includes(node.type);
+return ['me', 'it', 'you', 'context_var'].includes(node.type);
 }
 
 export function isContextPossessiveNode(node: ASTNode): node is ContextPossessiveNode {
-  return node.type === 'contextPossessive';
+return node.type === 'contextPossessive';
 }
 
 // Command guards
 export function isCommandNode(node: ASTNode): node is CommandNode {
-  return node.type === 'command' || node.type === 'Command';
+return node.type === 'command' || node.type === 'Command';
 }
 
 export function isCommandSequenceNode(node: ASTNode): node is CommandSequenceNode {
-  return node.type === 'CommandSequence';
+return node.type === 'CommandSequence';
 }
 
 // Collection guards
 export function isArrayLiteralNode(node: ASTNode): node is ArrayLiteralNode {
-  return node.type === 'arrayLiteral';
+return node.type === 'arrayLiteral';
 }
 
 export function isObjectLiteralNode(node: ASTNode): node is ObjectLiteralNode {
-  return node.type === 'objectLiteral';
+return node.type === 'objectLiteral';
 }
 
 // Template guards
 export function isTemplateLiteralNode(node: ASTNode): node is TemplateLiteralNode {
-  return node.type === 'templateLiteral' || node.type === 'template_literal';
+return node.type === 'templateLiteral' || node.type === 'template_literal';
 }
 
 // Special guards
 export function isAsExpressionNode(node: ASTNode): node is AsExpressionNode {
-  return node.type === 'asExpression';
+return node.type === 'asExpression';
 }
 
 export function isConditionalExpressionNode(node: ASTNode): node is ConditionalExpressionNode {
-  return node.type === 'conditionalExpression';
+return node.type === 'conditionalExpression';
 }
 
 // Helper: check if node has specific properties
 export function hasProperty<K extends keyof any>(
-  node: ASTNode,
-  prop: K
+node: ASTNode,
+prop: K
 ): node is ASTNode & Record<K, unknown> {
-  return prop in node;
+return prop in node;
 }
 
 // Helper: safe property access
 export function getNodeProperty<T = unknown>(
-  node: ASTNode,
-  prop: string,
-  defaultValue?: T
+node: ASTNode,
+prop: string,
+defaultValue?: T
 ): T | undefined {
-  if (hasProperty(node, prop)) {
-    return (node as any)[prop] as T;
-  }
-  return defaultValue;
+if (hasProperty(node, prop)) {
+return (node as any)[prop] as T;
+}
+return defaultValue;
 }
 Phase 2: Migration Strategy
 2.1 Gradual Migration Path
@@ -500,48 +504,50 @@ Clean up temporary compatibility code
 Before:
 // Current code with 77 `as any` assertions
 if (arg.type === 'identifier' && (arg as any).name === 'to') {
-  toIndex = i;
+toIndex = i;
 }
 After:
 // Using type guards
 import { isIdentifierNode, getNodeProperty } from '../types/ast-guards';
 
 if (isIdentifierNode(arg) && arg.name === 'to') {
-  toIndex = i;
+toIndex = i;
 }
 Phase 3: Validation & Testing
 3.1 Type-Level Tests
-// packages/core/src/types/__tests__/ast-guards.test.ts
+// packages/core/src/types/**tests**/ast-guards.test.ts
 
 import { describe, it, expect } from 'vitest';
 import { isIdentifierNode, isMemberExpressionNode } from '../ast-guards';
 
 describe('AST Type Guards', () => {
-  it('should correctly identify identifier nodes', () => {
-    const node = { type: 'identifier', name: 'foo' };
-    expect(isIdentifierNode(node)).toBe(true);
-    
+it('should correctly identify identifier nodes', () => {
+const node = { type: 'identifier', name: 'foo' };
+expect(isIdentifierNode(node)).toBe(true);
+
     if (isIdentifierNode(node)) {
       // TypeScript should know node.name exists
       expect(node.name).toBe('foo');
     }
-  });
 
-  it('should correctly identify member expressions', () => {
-    const node = {
-      type: 'memberExpression',
-      object: { type: 'identifier', name: 'obj' },
-      property: { type: 'identifier', name: 'prop' },
-      computed: false
-    };
-    
+});
+
+it('should correctly identify member expressions', () => {
+const node = {
+type: 'memberExpression',
+object: { type: 'identifier', name: 'obj' },
+property: { type: 'identifier', name: 'prop' },
+computed: false
+};
+
     expect(isMemberExpressionNode(node)).toBe(true);
-    
+
     if (isMemberExpressionNode(node)) {
       expect(node.object).toBeDefined();
       expect(node.property).toBeDefined();
     }
-  });
+
+});
 });
 3.2 Runtime Tests
 // Ensure existing tests still pass

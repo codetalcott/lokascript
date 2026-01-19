@@ -1,68 +1,68 @@
-# HyperFixi Publication Plan
+# LokaScript Publication Plan
 
 ## Version Consistency Recommendations
 
 ### Current Status
 
-| Package                            | Current Version | Recommended | Rationale                         |
-| ---------------------------------- | --------------- | ----------- | --------------------------------- |
-| @hyperfixi/core                    | 2.0.0           | 2.0.0       | Main package, already established |
-| @hyperfixi/semantic                | 0.1.0           | 1.0.0       | Stable, 730+ tests passing        |
-| @hyperfixi/i18n                    | 0.1.0           | 1.0.0       | Stable, 424 tests passing         |
-| @hyperfixi/vite-plugin             | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @hyperfixi/mcp-server              | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @hyperfixi/types-browser           | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @hyperfixi/multi-tenant            | 0.1.0           | 0.5.0       | Functional but needs docs         |
-| @hyperfixi/server-integration      | 0.1.0           | 0.5.0       | Functional but experimental       |
-| @hyperfixi/ast-toolkit             | 0.1.0           | 0.3.0       | Working but needs polish          |
-| @hyperfixi/behaviors               | 0.1.0           | 0.3.0       | Working but needs polish          |
-| @hyperfixi/component-schema        | 0.2.0           | 0.3.0       | Align with others                 |
-| @hyperfixi/patterns-reference      | 0.1.0           | 0.3.0       | Functional support package        |
-| @hyperfixi/testing-framework       | 0.1.0           | 0.3.0       | Functional support package        |
-| @hyperfixi/template-integration    | 0.1.0           | 0.3.0       | Functional support package        |
-| @hyperfixi/analytics               | 0.1.0           | 0.2.0       | Early stage                       |
-| @hyperfixi/developer-tools         | 0.1.0           | 0.2.0       | Early stage                       |
-| @hyperfixi/progressive-enhancement | 0.1.0           | 0.2.0       | Early stage                       |
-| @hyperfixi/smart-bundling          | 0.1.0           | 0.2.0       | Early stage                       |
-| @hyperfixi/ssr-support             | 0.1.0           | 0.2.0       | Early stage                       |
-| @hyperfixi/tron-backend            | 0.1.0           | 0.2.0       | Experimental                      |
+| Package                             | Current Version | Recommended | Rationale                         |
+| ----------------------------------- | --------------- | ----------- | --------------------------------- |
+| @lokascript/core                    | 2.0.0           | 2.0.0       | Main package, already established |
+| @lokascript/semantic                | 0.1.0           | 1.0.0       | Stable, 730+ tests passing        |
+| @lokascript/i18n                    | 0.1.0           | 1.0.0       | Stable, 424 tests passing         |
+| @lokascript/vite-plugin             | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/mcp-server              | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/types-browser           | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/multi-tenant            | 0.1.0           | 0.5.0       | Functional but needs docs         |
+| @lokascript/server-integration      | 0.1.0           | 0.5.0       | Functional but experimental       |
+| @lokascript/ast-toolkit             | 0.1.0           | 0.3.0       | Working but needs polish          |
+| @lokascript/behaviors               | 0.1.0           | 0.3.0       | Working but needs polish          |
+| @lokascript/component-schema        | 0.2.0           | 0.3.0       | Align with others                 |
+| @lokascript/patterns-reference      | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/testing-framework       | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/template-integration    | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/analytics               | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/developer-tools         | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/progressive-enhancement | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/smart-bundling          | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/ssr-support             | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/tron-backend            | 0.1.0           | 0.2.0       | Experimental                      |
 
 ### Publication Priority
 
 #### Tier 1: Publish Immediately (Core Functionality)
 
-- @hyperfixi/core (2.0.0)
-- @hyperfixi/semantic (1.0.0)
-- @hyperfixi/i18n (1.0.0)
-- @hyperfixi/vite-plugin (1.0.0)
-- @hyperfixi/mcp-server (1.0.0)
-- @hyperfixi/types-browser (1.0.0)
+- @lokascript/core (2.0.0)
+- @lokascript/semantic (1.0.0)
+- @lokascript/i18n (1.0.0)
+- @lokascript/vite-plugin (1.0.0)
+- @lokascript/mcp-server (1.0.0)
+- @lokascript/types-browser (1.0.0)
 
 #### Tier 2: Publish After Review (Supporting Packages)
 
-- @hyperfixi/ast-toolkit (0.3.0)
-- @hyperfixi/behaviors (0.3.0)
-- @hyperfixi/component-schema (0.3.0)
-- @hyperfixi/patterns-reference (0.3.0)
-- @hyperfixi/testing-framework (0.3.0)
-- @hyperfixi/template-integration (0.3.0)
+- @lokascript/ast-toolkit (0.3.0)
+- @lokascript/behaviors (0.3.0)
+- @lokascript/component-schema (0.3.0)
+- @lokascript/patterns-reference (0.3.0)
+- @lokascript/testing-framework (0.3.0)
+- @lokascript/template-integration (0.3.0)
 
 #### Tier 3: Beta/Experimental (Hold for Now)
 
-- @hyperfixi/multi-tenant (0.5.0)
-- @hyperfixi/server-integration (0.5.0)
-- @hyperfixi/analytics (0.2.0)
-- @hyperfixi/developer-tools (0.2.0)
-- @hyperfixi/progressive-enhancement (0.2.0)
-- @hyperfixi/smart-bundling (0.2.0)
-- @hyperfixi/ssr-support (0.2.0)
-- @hyperfixi/tron-backend (0.2.0)
+- @lokascript/multi-tenant (0.5.0)
+- @lokascript/server-integration (0.5.0)
+- @lokascript/analytics (0.2.0)
+- @lokascript/developer-tools (0.2.0)
+- @lokascript/progressive-enhancement (0.2.0)
+- @lokascript/smart-bundling (0.2.0)
+- @lokascript/ssr-support (0.2.0)
+- @lokascript/tron-backend (0.2.0)
 
 ## Paid Feature Analysis
 
 ### High Commercial Potential (SaaS/Enterprise)
 
-#### 1. @hyperfixi/server-integration (🔥 Best Candidate)
+#### 1. @lokascript/server-integration (🔥 Best Candidate)
 
 **Revenue Model**: Tiered API service
 
@@ -81,7 +81,7 @@
 
 **Effort**: Low (infrastructure already built)
 
-#### 2. @hyperfixi/multi-tenant (🔥 Enterprise Feature)
+#### 2. @lokascript/multi-tenant (🔥 Enterprise Feature)
 
 **Revenue Model**: Enterprise add-on
 
@@ -98,7 +98,7 @@
 
 **Effort**: Low-Medium (core features exist, needs polish)
 
-#### 3. @hyperfixi/analytics (💎 Insights Service)
+#### 3. @lokascript/analytics (💎 Insights Service)
 
 **Revenue Model**: Add-on service
 
@@ -117,7 +117,7 @@
 
 ### Medium Commercial Potential
 
-#### 4. @hyperfixi/developer-tools
+#### 4. @lokascript/developer-tools
 
 **Revenue Model**: IDE Extensions + Cloud Services
 
@@ -127,7 +127,7 @@
 
 **Effort**: High (needs significant development)
 
-#### 5. @hyperfixi/smart-bundling
+#### 5. @lokascript/smart-bundling
 
 **Revenue Model**: Build optimization service
 
@@ -141,21 +141,21 @@
 
 These packages should remain open-source to build ecosystem:
 
-- @hyperfixi/core (core library)
-- @hyperfixi/semantic (multilingual support)
-- @hyperfixi/i18n (grammar transformation)
-- @hyperfixi/vite-plugin (developer experience)
-- @hyperfixi/mcp-server (LLM integration)
-- @hyperfixi/types-browser (TypeScript support)
-- @hyperfixi/ast-toolkit (extensibility)
-- @hyperfixi/patterns-reference (documentation)
-- @hyperfixi/testing-framework (quality assurance)
+- @lokascript/core (core library)
+- @lokascript/semantic (multilingual support)
+- @lokascript/i18n (grammar transformation)
+- @lokascript/vite-plugin (developer experience)
+- @lokascript/mcp-server (LLM integration)
+- @lokascript/types-browser (TypeScript support)
+- @lokascript/ast-toolkit (extensibility)
+- @lokascript/patterns-reference (documentation)
+- @lokascript/testing-framework (quality assurance)
 
 ## Recommended Monetization Strategy
 
 ### Phase 1: API Service (Months 1-3)
 
-1. Launch @hyperfixi/server-integration as hosted API
+1. Launch @lokascript/server-integration as hosted API
 2. Implement free tier with generous limits
 3. Add Pro tier for power users
 4. Focus on: Reliability, performance, documentation
@@ -164,8 +164,8 @@ These packages should remain open-source to build ecosystem:
 
 ### Phase 2: Enterprise Features (Months 4-6)
 
-1. Polish @hyperfixi/multi-tenant
-2. Add @hyperfixi/analytics
+1. Polish @lokascript/multi-tenant
+2. Add @lokascript/analytics
 3. Create Enterprise tier
 4. Build sales materials and case studies
 
@@ -173,9 +173,9 @@ These packages should remain open-source to build ecosystem:
 
 ### Phase 3: Developer Tools (Months 7-12)
 
-1. Build @hyperfixi/developer-tools (VS Code extension)
+1. Build @lokascript/developer-tools (VS Code extension)
 2. Create Team collaboration features
-3. Add @hyperfixi/smart-bundling optimization service
+3. Add @lokascript/smart-bundling optimization service
 
 **Target**: $20K MRR combined
 
@@ -193,7 +193,7 @@ These packages should remain open-source to build ecosystem:
 3. ⏳ Create CHANGELOG for each package
 4. ⏳ Verify README completeness
 5. ⏳ Add publish workflow to GitHub Actions
-6. ⏳ Set up npm organization (@hyperfixi)
+6. ⏳ Set up npm organization (@lokascript)
 7. ⏳ Publish Tier 1 packages
 8. ⏳ Deploy server-integration API (start with free tier)
 9. ⏳ Create landing page and documentation

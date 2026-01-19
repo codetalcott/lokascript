@@ -1,4 +1,4 @@
-# Publishing Readiness Plan: @hyperfixi/core and @hyperfixi/semantic
+# Publishing Readiness Plan: @lokascript/core and @lokascript/semantic
 
 **Date:** 2026-01-16
 **Status:** Ready for implementation
@@ -118,14 +118,14 @@ In `packages/core/package.json`, move from `dependencies` to `devDependencies`:
 
 ### Issue 3: File-path dependency won't work on npm
 
-`"@hyperfixi/semantic": "file:../semantic"` breaks when published.
+`"@lokascript/semantic": "file:../semantic"` breaks when published.
 
 ### Fix 3: Update after semantic is published
 
 After publishing semantic to npm, update to:
 
 ```json
-"@hyperfixi/semantic": "^0.1.0"
+"@lokascript/semantic": "^0.1.0"
 ```
 
 ---
@@ -186,13 +186,13 @@ Add to `packages/semantic/package.json`:
 ```json
 "repository": {
   "type": "git",
-  "url": "git+https://github.com/hyperfixi/hyperfixi.git",
+  "url": "git+https://github.com/codetalcott/hyperfixi.git",
   "directory": "packages/semantic"
 },
 "bugs": {
-  "url": "https://github.com/hyperfixi/hyperfixi/issues"
+  "url": "https://github.com/codetalcott/hyperfixi/issues"
 },
-"homepage": "https://github.com/hyperfixi/hyperfixi/tree/main/packages/semantic#readme",
+"homepage": "https://github.com/codetalcott/hyperfixi/tree/main/packages/semantic#readme",
 "engines": {
   "node": ">=18.0.0"
 },
@@ -240,7 +240,7 @@ npm publish --access public
 # 1. Edit package.json:
 #    - Remove ./parser and ./runtime exports
 #    - Move esbuild, jsdom, vite to devDependencies
-#    - Update @hyperfixi/semantic to "^0.1.0"
+#    - Update @lokascript/semantic to "^0.1.0"
 #    - Add LICENSE to files array
 
 # 2. Copy LICENSE
@@ -286,7 +286,7 @@ npm publish --access public
 ### Before publishing core
 
 - [ ] semantic is published to npm at version 0.1.0
-- [ ] `@hyperfixi/semantic` dependency updated to `^0.1.0`
+- [ ] `@lokascript/semantic` dependency updated to `^0.1.0`
 - [ ] Invalid `./parser` and `./runtime` exports removed
 - [ ] esbuild, jsdom, vite moved to devDependencies
 - [ ] `npm run typecheck --prefix packages/core` passes

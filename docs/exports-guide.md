@@ -1,13 +1,13 @@
-# Export Strategies in HyperFixi
+# Export Strategies in LokaScript
 
-This guide explains how to import and use HyperFixi packages in different environments (Node.js, bundlers, browsers) with optimal tree-shaking and type safety.
+This guide explains how to import and use LokaScript packages in different environments (Node.js, bundlers, browsers) with optimal tree-shaking and type safety.
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Core Package (@hyperfixi/core)](#core-package-hyperfixicore)
-- [Semantic Package (@hyperfixi/semantic)](#semantic-package-hyperfixisemantic)
-- [I18n Package (@hyperfixi/i18n)](#i18n-package-hyperfixii18n)
+- [Core Package (@lokascript/core)](#core-package-lokascriptcore)
+- [Semantic Package (@lokascript/semantic)](#semantic-package-lokascriptsemantic)
+- [I18n Package (@lokascript/i18n)](#i18n-package-lokascripti18n)
 - [Tree-Shaking Optimization](#tree-shaking-optimization)
 - [Migration Guide (v1 → v2)](#migration-guide-v1--v2)
 
@@ -19,85 +19,85 @@ This guide explains how to import and use HyperFixi packages in different enviro
 
 ```typescript
 // Core - Named imports (best tree-shaking)
-import { hyperscript, compile, execute, parse } from '@hyperfixi/core'
+import { hyperscript, compile, execute, parse } from '@lokascript/core';
 
 // Semantic - Multilingual parsing
-import { parse as semanticParse, translate } from '@hyperfixi/semantic'
+import { parse as semanticParse, translate } from '@lokascript/semantic';
 
 // I18n - Grammar transformation
-import { GrammarTransformer, translate as i18nTranslate } from '@hyperfixi/i18n'
+import { GrammarTransformer, translate as i18nTranslate } from '@lokascript/i18n';
 ```
 
 ### Browser (via CDN or local file)
 
 ```html
 <!-- Core - Full bundle (668KB) -->
-<script src="https://cdn.jsdelivr.net/npm/@hyperfixi/core/dist/hyperfixi-browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@lokascript/core/dist/lokascript-browser.js"></script>
 
 <!-- Semantic - Browser bundle (261KB) -->
-<script src="https://cdn.jsdelivr.net/npm/@hyperfixi/semantic/dist/hyperfixi-semantic.browser.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@lokascript/semantic/dist/lokascript-semantic.browser.global.js"></script>
 
 <!-- I18n - Browser bundle (68KB) -->
-<script src="https://cdn.jsdelivr.net/npm/@hyperfixi/i18n/dist/hyperfixi-i18n.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@lokascript/i18n/dist/lokascript-i18n.min.js"></script>
 
 <script>
   // Access via global variables
-  window.hyperfixi.execute('toggle .active')
-  window.HyperFixiSemantic.parse('トグル .active', 'ja')
-  window.HyperFixiI18n.translate('on click toggle .active', 'en', 'ja')
+  window.lokascript.execute('toggle .active');
+  window.LokaScriptSemantic.parse('トグル .active', 'ja');
+  window.LokaScriptI18n.translate('on click toggle .active', 'en', 'ja');
 </script>
 ```
 
 ---
 
-## Core Package (@hyperfixi/core)
+## Core Package (@lokascript/core)
 
-The main runtime and parser for HyperFixi/hyperscript.
+The main runtime and parser for LokaScript/hyperscript.
 
 ### Node.js / Bundlers
 
 #### Main API (Named Imports)
 
 ```typescript
-import { hyperscript } from '@hyperfixi/core'
+import { hyperscript } from '@lokascript/core';
 
 // Use the API object
-hyperscript.compile('on click toggle .active')
-hyperscript.execute('toggle .active', element)
-hyperscript.parse('set x to 5')
+hyperscript.compile('on click toggle .active');
+hyperscript.execute('toggle .active', element);
+hyperscript.parse('set x to 5');
 ```
 
 #### Individual Functions (Best Tree-Shaking)
 
 ```typescript
-import { compile, execute, parse, createRuntime } from '@hyperfixi/core'
+import { compile, execute, parse, createRuntime } from '@lokascript/core';
 
 // Use functions directly
-const ast = parse('toggle .active')
-const runtime = createRuntime()
-await execute('toggle .active', element)
+const ast = parse('toggle .active');
+const runtime = createRuntime();
+await execute('toggle .active', element);
 ```
 
 #### Subpath Imports (Granular Control)
 
 ```typescript
 // Parser only (no runtime)
-import { parse } from '@hyperfixi/core/parser'
+import { parse } from '@lokascript/core/parser';
 
 // Runtime only (no parser)
-import { createRuntime } from '@hyperfixi/core/runtime'
+import { createRuntime } from '@lokascript/core/runtime';
 
 // Specific commands
-import { ToggleCommand, AddCommand } from '@hyperfixi/core/commands'
+import { ToggleCommand, AddCommand } from '@lokascript/core/commands';
 
 // Specific expressions
-import { AsExpression, FirstExpression } from '@hyperfixi/core/expressions'
+import { AsExpression, FirstExpression } from '@lokascript/core/expressions';
 
 // Behaviors
-import { BoostedBehavior } from '@hyperfixi/core/behaviors'
+import { BoostedBehavior } from '@lokascript/core/behaviors';
 
 // Multilingual API
-import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
+import { MultilingualHyperscript } from '@lokascript/core/multilingual';
 ```
 
 ### Browser
@@ -105,13 +105,13 @@ import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
 #### Full Bundle (with parser)
 
 ```html
-<script src="node_modules/@hyperfixi/core/dist/hyperfixi-browser.js"></script>
+<script src="node_modules/@lokascript/core/dist/lokascript-browser.js"></script>
 <script>
-  // Global: window.hyperfixi
-  window.hyperfixi.execute('toggle .active')
+  // Global: window.lokascript
+  window.lokascript.execute('toggle .active');
 
   // Also available as: window._hyperscript (compatibility alias)
-  window._hyperscript.compile('on click add .highlight')
+  window._hyperscript.compile('on click add .highlight');
 </script>
 ```
 
@@ -120,11 +120,11 @@ import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
 #### Multilingual Bundle (without parser)
 
 ```html
-<script src="node_modules/@hyperfixi/core/dist/hyperfixi-multilingual.js"></script>
+<script src="node_modules/@lokascript/core/dist/lokascript-multilingual.js"></script>
 <script>
   // Smaller bundle, execution only
-  await window.hyperfixi.execute('토글 .active', 'ko')
-  await window.hyperfixi.execute('トグル .active', 'ja')
+  await window.lokascript.execute('토글 .active', 'ko')
+  await window.lokascript.execute('トグル .active', 'ja')
 </script>
 ```
 
@@ -133,7 +133,7 @@ import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
 #### Minimal Bundle
 
 ```html
-<script src="node_modules/@hyperfixi/core/dist/hyperfixi-browser-minimal.js"></script>
+<script src="node_modules/@lokascript/core/dist/lokascript-browser-minimal.js"></script>
 ```
 
 **Size:** 284 KB (core features only)
@@ -141,7 +141,7 @@ import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
 #### Standard Bundle
 
 ```html
-<script src="node_modules/@hyperfixi/core/dist/hyperfixi-browser-standard.js"></script>
+<script src="node_modules/@lokascript/core/dist/lokascript-browser-standard.js"></script>
 ```
 
 **Size:** 285 KB (balanced features)
@@ -158,21 +158,30 @@ import { MultilingualHyperscript } from '@hyperfixi/core/multilingual'
     },
     "./parser": { "types": "./dist/parser/index.d.ts", "import": "./dist/parser/index.mjs" },
     "./runtime": { "types": "./dist/runtime/index.d.ts", "import": "./dist/runtime/index.mjs" },
-    "./browser": { "default": "./dist/hyperfixi-browser.js" },
-    "./browser/multilingual": { "default": "./dist/hyperfixi-multilingual.js" },
-    "./browser/minimal": { "default": "./dist/hyperfixi-browser-minimal.js" },
-    "./browser/standard": { "default": "./dist/hyperfixi-browser-standard.js" },
+    "./browser": { "default": "./dist/lokascript-browser.js" },
+    "./browser/multilingual": { "default": "./dist/lokascript-multilingual.js" },
+    "./browser/minimal": { "default": "./dist/lokascript-browser-minimal.js" },
+    "./browser/standard": { "default": "./dist/lokascript-browser-standard.js" },
     "./commands": { "types": "./dist/commands/index.d.ts", "import": "./dist/commands/index.mjs" },
-    "./expressions": { "types": "./dist/expressions/index.d.ts", "import": "./dist/expressions/index.mjs" },
-    "./behaviors": { "types": "./dist/behaviors/index.d.ts", "import": "./dist/behaviors/index.mjs" },
-    "./multilingual": { "types": "./dist/multilingual/index.d.ts", "import": "./dist/multilingual/index.mjs" }
+    "./expressions": {
+      "types": "./dist/expressions/index.d.ts",
+      "import": "./dist/expressions/index.mjs"
+    },
+    "./behaviors": {
+      "types": "./dist/behaviors/index.d.ts",
+      "import": "./dist/behaviors/index.mjs"
+    },
+    "./multilingual": {
+      "types": "./dist/multilingual/index.d.ts",
+      "import": "./dist/multilingual/index.mjs"
+    }
   }
 }
 ```
 
 ---
 
-## Semantic Package (@hyperfixi/semantic)
+## Semantic Package (@lokascript/semantic)
 
 Semantic-first multilingual parsing for 13 languages.
 
@@ -181,43 +190,39 @@ Semantic-first multilingual parsing for 13 languages.
 #### Complete API (All Exports)
 
 ```typescript
-import { parse, translate, createSemanticAnalyzer } from '@hyperfixi/semantic'
+import { parse, translate, createSemanticAnalyzer } from '@lokascript/semantic';
 
 // Parse in any of 13 languages
-const result = parse('トグル .active', 'ja')
-const result2 = parse('alternar .active', 'es')
+const result = parse('トグル .active', 'ja');
+const result2 = parse('alternar .active', 'es');
 
 // Translate between languages
-const korean = translate('toggle .active', 'en', 'ko')
+const korean = translate('toggle .active', 'en', 'ko');
 
 // Create custom analyzer
-const analyzer = createSemanticAnalyzer()
+const analyzer = createSemanticAnalyzer();
 ```
 
 #### Type Definitions
 
 ```typescript
-import type {
-  SemanticNode,
-  SemanticValue,
-  TranslationResult
-} from '@hyperfixi/semantic'
+import type { SemanticNode, SemanticValue, TranslationResult } from '@lokascript/semantic';
 ```
 
 ### Browser (IIFE Bundle)
 
 ```html
-<script src="node_modules/@hyperfixi/semantic/dist/hyperfixi-semantic.browser.global.js"></script>
+<script src="node_modules/@lokascript/semantic/dist/lokascript-semantic.browser.global.js"></script>
 <script>
-  // Global: window.HyperFixiSemantic
-  const result = HyperFixiSemantic.parse('トグル .active', 'ja')
+  // Global: window.LokaScriptSemantic
+  const result = LokaScriptSemantic.parse('トグル .active', 'ja');
 
   // Get all translations
-  const translations = HyperFixiSemantic.getAllTranslations('toggle .active', 'en')
+  const translations = LokaScriptSemantic.getAllTranslations('toggle .active', 'en');
 
-  console.log(translations.ja) // 'トグル .active'
-  console.log(translations.ko) // '토글 .active'
-  console.log(translations.es) // 'alternar .active'
+  console.log(translations.ja); // 'トグル .active'
+  console.log(translations.ko); // '토글 .active'
+  console.log(translations.es); // 'alternar .active'
 </script>
 ```
 
@@ -234,7 +239,7 @@ import type {
       "require": "./dist/index.js"
     },
     "./browser": {
-      "default": "./dist/hyperfixi-semantic.browser.global.js"
+      "default": "./dist/lokascript-semantic.browser.global.js"
     }
   }
 }
@@ -244,59 +249,51 @@ import type {
 
 The semantic parser supports 13 languages with native word order:
 
-| Language | Code | Example |
-|----------|------|---------|
-| English | `en` | `toggle .active` |
-| Japanese | `ja` | `トグル .active` or `#button の .active を 切り替え` |
-| Spanish | `es` | `alternar .active` |
-| Korean | `ko` | `토글 .active` |
-| Arabic | `ar` | `بدّل .active` |
-| Turkish | `tr` | `değiştir .active` |
-| Chinese | `zh` | `切换 .active` |
-| Portuguese | `pt` | `alternar .active` |
-| French | `fr` | `basculer .active` |
-| German | `de` | `umschalten .active` |
-| Indonesian | `id` | `alihkan .active` |
-| Quechua | `qu` | `tikray .active` |
-| Swahili | `sw` | `geuza .active` |
+| Language   | Code | Example                                              |
+| ---------- | ---- | ---------------------------------------------------- |
+| English    | `en` | `toggle .active`                                     |
+| Japanese   | `ja` | `トグル .active` or `#button の .active を 切り替え` |
+| Spanish    | `es` | `alternar .active`                                   |
+| Korean     | `ko` | `토글 .active`                                       |
+| Arabic     | `ar` | `بدّل .active`                                       |
+| Turkish    | `tr` | `değiştir .active`                                   |
+| Chinese    | `zh` | `切换 .active`                                       |
+| Portuguese | `pt` | `alternar .active`                                   |
+| French     | `fr` | `basculer .active`                                   |
+| German     | `de` | `umschalten .active`                                 |
+| Indonesian | `id` | `alihkan .active`                                    |
+| Quechua    | `qu` | `tikray .active`                                     |
+| Swahili    | `sw` | `geuza .active`                                      |
 
 ---
 
-## I18n Package (@hyperfixi/i18n)
+## I18n Package (@lokascript/i18n)
 
 Grammar transformation for natural language word order (SOV, VSO, SVO).
 
 ### Node.js / Bundlers
 
 ```typescript
-import { GrammarTransformer, translate } from '@hyperfixi/i18n'
+import { GrammarTransformer, translate } from '@lokascript/i18n';
 
 // Transform to Japanese (SOV word order)
-const transformer = new GrammarTransformer()
-const japanese = transformer.transform(
-  'on click toggle .active',
-  'en',
-  'ja'
-)
+const transformer = new GrammarTransformer();
+const japanese = transformer.transform('on click toggle .active', 'en', 'ja');
 // Result: '#button を クリック で 切り替え'
 
 // Or use the convenience function
-const result = translate('toggle .active', 'en', 'ja')
+const result = translate('toggle .active', 'en', 'ja');
 ```
 
 ### Browser (UMD Bundle)
 
 ```html
-<script src="node_modules/@hyperfixi/i18n/dist/hyperfixi-i18n.min.js"></script>
+<script src="node_modules/@lokascript/i18n/dist/lokascript-i18n.min.js"></script>
 <script>
-  // Global: window.HyperFixiI18n
-  const japanese = HyperFixiI18n.translate(
-    'on click toggle .active',
-    'en',
-    'ja'
-  )
+  // Global: window.LokaScriptI18n
+  const japanese = LokaScriptI18n.translate('on click toggle .active', 'en', 'ja');
 
-  console.log(japanese) // クリック で .active を 切り替え
+  console.log(japanese); // クリック で .active を 切り替え
 </script>
 ```
 
@@ -338,9 +335,9 @@ const result = translate('toggle .active', 'en', 'ja')
 
 ```typescript
 // Bundlers can eliminate unused code
-import { compile, execute } from '@hyperfixi/core'
-import { parse } from '@hyperfixi/core/parser'
-import { ToggleCommand } from '@hyperfixi/core/commands'
+import { compile, execute } from '@lokascript/core';
+import { parse } from '@lokascript/core/parser';
+import { ToggleCommand } from '@lokascript/core/commands';
 ```
 
 **Result:** Only the functions you use are included in your bundle.
@@ -349,7 +346,7 @@ import { ToggleCommand } from '@hyperfixi/core/commands'
 
 ```typescript
 // Entire package gets bundled
-import * as hyperfixi from '@hyperfixi/core'
+import * as lokascript from '@lokascript/core';
 ```
 
 **Result:** Your bundle includes code you don't use.
@@ -358,36 +355,36 @@ import * as hyperfixi from '@hyperfixi/core'
 
 ```typescript
 // May break with internal refactoring
-import { parse } from '@hyperfixi/core/dist/parser/parser'
+import { parse } from '@lokascript/core/dist/parser/parser';
 ```
 
 **Result:** Bypasses package.json exports, fragile imports.
 
 ### Bundle Size Comparison
 
-Using `@hyperfixi/core` with different import strategies:
+Using `@lokascript/core` with different import strategies:
 
-| Import Strategy | Bundle Size | Reduction |
-|----------------|-------------|-----------|
-| `import * from '@hyperfixi/core'` | 668 KB | baseline |
-| Named imports (5 functions) | ~350 KB | 48% smaller |
-| Subpath imports (`/parser` only) | ~280 KB | 58% smaller |
-| Multilingual bundle (no parser) | 256 KB | 62% smaller |
+| Import Strategy                    | Bundle Size | Reduction   |
+| ---------------------------------- | ----------- | ----------- |
+| `import * from '@lokascript/core'` | 668 KB      | baseline    |
+| Named imports (5 functions)        | ~350 KB     | 48% smaller |
+| Subpath imports (`/parser` only)   | ~280 KB     | 58% smaller |
+| Multilingual bundle (no parser)    | 256 KB      | 62% smaller |
 
 ### Recommended Import Patterns
 
 ```typescript
 // For apps that compile hyperscript
-import { compile, createRuntime } from '@hyperfixi/core'
+import { compile, createRuntime } from '@lokascript/core';
 
 // For apps that only execute pre-compiled scripts
-import { execute, createRuntime } from '@hyperfixi/core/runtime'
+import { execute, createRuntime } from '@lokascript/core/runtime';
 
 // For tools that only parse (no execution)
-import { parse } from '@hyperfixi/core/parser'
+import { parse } from '@lokascript/core/parser';
 
 // For specific command usage
-import { ToggleCommand, AddCommand, RemoveCommand } from '@hyperfixi/core/commands'
+import { ToggleCommand, AddCommand, RemoveCommand } from '@lokascript/core/commands';
 ```
 
 ---
@@ -399,15 +396,15 @@ import { ToggleCommand, AddCommand, RemoveCommand } from '@hyperfixi/core/comman
 **v1 (Old):**
 
 ```typescript
-import hyperfixi from '@hyperfixi/core'  // ❌ No longer works
-import core from '@hyperfixi/core'       // ❌ No longer works
+import lokascript from '@lokascript/core'; // ❌ No longer works
+import core from '@lokascript/core'; // ❌ No longer works
 ```
 
 **v2 (New):**
 
 ```typescript
-import { hyperscript } from '@hyperfixi/core'  // ✅ Required
-import { hyperscript as hyperfixi } from '@hyperfixi/core'  // ✅ Alias
+import { hyperscript } from '@lokascript/core'; // ✅ Required
+import { hyperscript as lokascript } from '@lokascript/core'; // ✅ Alias
 ```
 
 ### Compatibility Alias
@@ -415,8 +412,8 @@ import { hyperscript as hyperfixi } from '@hyperfixi/core'  // ✅ Alias
 The `_hyperscript` export remains for backward compatibility:
 
 ```typescript
-import { _hyperscript } from '@hyperfixi/core'
-_hyperscript.compile('on click toggle .active')
+import { _hyperscript } from '@lokascript/core';
+_hyperscript.compile('on click toggle .active');
 ```
 
 ### Browser Migration
@@ -424,21 +421,21 @@ _hyperscript.compile('on click toggle .active')
 **v1 (Old):**
 
 ```html
-<script src="hyperfixi-core.js"></script>
+<script src="lokascript-core.js"></script>
 <script>
   // Default export available
-  const api = window.hyperfixi || window.default
+  const api = window.lokascript || window.default;
 </script>
 ```
 
 **v2 (New):**
 
 ```html
-<script src="hyperfixi-browser.js"></script>
+<script src="lokascript-browser.js"></script>
 <script>
   // Named export only
-  window.hyperfixi.execute('toggle .active')
-  window._hyperscript.compile('...')  // Compatibility alias
+  window.lokascript.execute('toggle .active');
+  window._hyperscript.compile('...'); // Compatibility alias
 </script>
 ```
 
@@ -461,10 +458,10 @@ Use a codemod to update imports automatically:
 
 ```bash
 # Find all default imports
-grep -r "import.*from '@hyperfixi/core'" src/ --include="*.ts"
+grep -r "import.*from '@lokascript/core'" src/ --include="*.ts"
 
 # Replace with named imports (manual or via sed/awk)
-sed -i '' 's/import hyperfixi from/import { hyperscript as hyperfixi } from/g' src/**/*.ts
+sed -i '' 's/import lokascript from/import { hyperscript as lokascript } from/g' src/**/*.ts
 ```
 
 ---
@@ -477,33 +474,33 @@ For full multilingual support with grammar transformation:
 
 ```typescript
 // All three packages working together
-import { hyperscript } from '@hyperfixi/core'
-import { parse } from '@hyperfixi/semantic'
-import { translate } from '@hyperfixi/i18n'
+import { hyperscript } from '@lokascript/core';
+import { parse } from '@lokascript/semantic';
+import { translate } from '@lokascript/i18n';
 
 // Parse natural language input
-const semanticNode = parse('#button の .active を 切り替え', 'ja')
+const semanticNode = parse('#button の .active を 切り替え', 'ja');
 
 // Transform to English
-const english = translate(semanticNode.toString(), 'ja', 'en')
+const english = translate(semanticNode.toString(), 'ja', 'en');
 
 // Compile and execute
-await hyperscript.execute(english, document.body)
+await hyperscript.execute(english, document.body);
 ```
 
 ### Browser Bundle Combination
 
 ```html
 <!-- Load all three packages -->
-<script src="hyperfixi-semantic.browser.global.js"></script>
-<script src="hyperfixi-multilingual.js"></script>
-<script src="hyperfixi-i18n.min.js"></script>
+<script src="lokascript-semantic.browser.global.js"></script>
+<script src="lokascript-multilingual.js"></script>
+<script src="lokascript-i18n.min.js"></script>
 
 <script>
   // Use together
-  const parsed = HyperFixiSemantic.parse('トグル .active', 'ja')
-  const english = HyperFixiI18n.translate(parsed.toString(), 'ja', 'en')
-  await hyperfixi.execute(english, document.body)
+  const parsed = LokaScriptSemantic.parse('トグル .active', 'ja')
+  const english = LokaScriptI18n.translate(parsed.toString(), 'ja', 'en')
+  await lokascript.execute(english, document.body)
 </script>
 ```
 
@@ -525,22 +522,14 @@ import type {
   ParseResult,
   ExecutionContext,
   CommandNode,
-  ASTNode
-} from '@hyperfixi/core'
+  ASTNode,
+} from '@lokascript/core';
 
 // Semantic types
-import type {
-  SemanticNode,
-  SemanticValue,
-  TranslationResult
-} from '@hyperfixi/semantic'
+import type { SemanticNode, SemanticValue, TranslationResult } from '@lokascript/semantic';
 
 // I18n types
-import type {
-  GrammarProfile,
-  TranslatorOptions,
-  SemanticRole
-} from '@hyperfixi/i18n'
+import type { GrammarProfile, TranslatorOptions, SemanticRole } from '@lokascript/i18n';
 ```
 
 ### Browser Global Types
@@ -548,7 +537,7 @@ import type {
 For TypeScript autocomplete in browser scripts, install type definitions:
 
 ```bash
-npm install --save-dev @hyperfixi/types-browser
+npm install --save-dev @lokascript/types-browser
 ```
 
 Then configure `tsconfig.json`:
@@ -556,7 +545,7 @@ Then configure `tsconfig.json`:
 ```json
 {
   "compilerOptions": {
-    "types": ["@hyperfixi/types-browser"]
+    "types": ["@lokascript/types-browser"]
   }
 }
 ```
@@ -564,10 +553,10 @@ Then configure `tsconfig.json`:
 Now you get autocomplete for browser globals:
 
 ```typescript
-// TypeScript knows about window.hyperfixi
-window.hyperfixi.execute('toggle .active')  // ✓ Type-safe
-window.HyperFixiSemantic.parse('...', 'ja')  // ✓ Type-safe
-window.HyperFixiI18n.translate('...', 'en', 'ja')  // ✓ Type-safe
+// TypeScript knows about window.lokascript
+window.lokascript.execute('toggle .active'); // ✓ Type-safe
+window.LokaScriptSemantic.parse('...', 'ja'); // ✓ Type-safe
+window.LokaScriptI18n.translate('...', 'en', 'ja'); // ✓ Type-safe
 ```
 
 ---
@@ -580,21 +569,21 @@ Better tree-shaking, explicit imports, IDE autocomplete, and consistency across 
 
 ### Can I still use default exports?
 
-No, default exports were removed in v2. Use `import { hyperscript } from '@hyperfixi/core'` instead.
+No, default exports were removed in v2. Use `import { hyperscript } from '@lokascript/core'` instead.
 
 ### Which bundle should I use in the browser?
 
-- **Full features:** `hyperfixi-browser.js` (668 KB)
-- **Multilingual execution:** `hyperfixi-multilingual.js` (256 KB, 62% smaller)
-- **Core features:** `hyperfixi-browser-minimal.js` (284 KB)
+- **Full features:** `lokascript-browser.js` (668 KB)
+- **Multilingual execution:** `lokascript-multilingual.js` (256 KB, 62% smaller)
+- **Core features:** `lokascript-browser-minimal.js` (284 KB)
 
 ### How do I optimize bundle size?
 
-Use subpath imports (`@hyperfixi/core/parser`, `@hyperfixi/core/runtime`) and named imports for only the functions you need.
+Use subpath imports (`@lokascript/core/parser`, `@lokascript/core/runtime`) and named imports for only the functions you need.
 
 ### Are there TypeScript definitions for browser globals?
 
-Yes, install `@hyperfixi/types-browser` for full IDE autocomplete in browser contexts.
+Yes, install `@lokascript/types-browser` for full IDE autocomplete in browser contexts.
 
 ### Can I use all three packages together?
 
@@ -604,6 +593,6 @@ Yes! Combine core (runtime), semantic (parsing), and i18n (grammar transformatio
 
 ## Support
 
-- **Documentation:** [https://github.com/hyperfixi/hyperfixi](https://github.com/hyperfixi/hyperfixi)
-- **Issues:** [https://github.com/hyperfixi/hyperfixi/issues](https://github.com/hyperfixi/hyperfixi/issues)
-- **npm:** [@hyperfixi/core](https://npmjs.com/package/@hyperfixi/core)
+- **Documentation:** [https://github.com/codetalcott/hyperfixi](https://github.com/codetalcott/hyperfixi)
+- **Issues:** [https://github.com/codetalcott/hyperfixi/issues](https://github.com/codetalcott/hyperfixi/issues)
+- **npm:** [@lokascript/core](https://npmjs.com/package/@lokascript/core)

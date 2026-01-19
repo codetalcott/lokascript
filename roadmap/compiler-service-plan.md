@@ -10,31 +10,31 @@ export class HyperfixiService {
   private server: Server;
   private compiler: HyperscriptCompiler;
   private cache: CompilationCache;
-  
+
   async start(port: number = 3000) {
     this.server = createServer({
       '/compile': this.handleCompile.bind(this),
       '/validate': this.handleValidate.bind(this),
       '/optimize': this.handleOptimize.bind(this),
-      '/batch': this.handleBatch.bind(this)
+      '/batch': this.handleBatch.bind(this),
     });
-    
+
     await this.server.listen(port);
   }
-  
+
   async handleCompile(req: Request): Promise<Response> {
     const { scripts, options } = await req.json();
-    
+
     // Check cache
     const cacheKey = this.getCacheKey(scripts, options);
     if (this.cache.has(cacheKey)) {
       return Response.json(this.cache.get(cacheKey));
     }
-    
+
     // Compile scripts
     const result = await this.compiler.compile(scripts, options);
     this.cache.set(cacheKey, result);
-    
+
     return Response.json(result);
   }
 }
@@ -45,8 +45,9 @@ export class HyperfixiService {
 Create lightweight client libraries for each language:
 
 #### Python Client
+
 ```python
-# hyperfixi-python
+# lokascript-python
 import requests
 import json
 from typing import Dict, List, Optional
@@ -55,13 +56,13 @@ class HyperfixiClient:
     def __init__(self, host: str = "localhost", port: int = 3000):
         self.base_url = f"http://{host}:{port}"
         self._cache = {}
-    
+
     def compile(self, scripts: Dict[str, str], options: Optional[Dict] = None) -> Dict:
         """Compile Hyperscript definitions"""
         cache_key = self._get_cache_key(scripts, options)
         if cache_key in self._cache:
             return self._cache[cache_key]
-        
+
         response = requests.post(
             f"{self.base_url}/compile",
             json={"scripts": scripts, "options": options or {}}
@@ -69,7 +70,7 @@ class HyperfixiClient:
         result = response.json()
         self._cache[cache_key] = result
         return result
-    
+
     def component(self, element: str, behavior: str, **attrs) -> Dict:
         """Create a component definition"""
         return {
@@ -80,23 +81,24 @@ class HyperfixiClient:
 
 # Django integration
 class HyperfixiMixin:
-    hyperfixi = HyperfixiClient()
-    
+    lokascript = HyperfixiClient()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Compile behaviors defined in the view
         if hasattr(self, 'hyperscript_behaviors'):
-            compiled = self.hyperfixi.compile(self.hyperscript_behaviors)
+            compiled = self.lokascript.compile(self.hyperscript_behaviors)
             context['hyperscript'] = compiled
-        
+
         return context
 ```
 
 #### Go Client
+
 ```go
-// hyperfixi-go
-package hyperfixi
+// lokascript-go
+package lokascript
 
 import (
     "bytes"
@@ -124,12 +126,12 @@ func (c *Client) Compile(scripts map[string]string, options map[string]interface
     if cached, ok := c.cache.Load(cacheKey); ok {
         return cached.(*CompileResult), nil
     }
-    
+
     payload, _ := json.Marshal(map[string]interface{}{
         "scripts": scripts,
         "options": options,
     })
-    
+
     resp, err := c.client.Post(
         c.BaseURL+"/compile",
         "application/json",
@@ -139,12 +141,12 @@ func (c *Client) Compile(scripts map[string]string, options map[string]interface
         return nil, err
     }
     defer resp.Body.Close()
-    
+
     var result CompileResult
     if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
         return nil, err
     }
-    
+
     c.cache.Store(cacheKey, &result)
     return &result, nil
 }
@@ -152,48 +154,46 @@ func (c *Client) Compile(scripts map[string]string, options map[string]interface
 // Gin integration
 func HyperfixiMiddleware(client *Client) gin.HandlerFunc {
     return func(c *gin.Context) {
-        c.Set("hyperfixi", client)
+        c.Set("lokascript", client)
         c.Next()
     }
 }
 ```
 
 #### Node.js/JavaScript Client
+
 ```javascript
-// hyperfixi-js
+// lokascript-js
 export class HyperfixiClient {
   constructor(host = 'localhost', port = 3000) {
     this.baseUrl = `http://${host}:${port}`;
     this.cache = new Map();
   }
-  
+
   async compile(scripts, options = {}) {
     const cacheKey = this.getCacheKey(scripts, options);
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
-    
+
     const response = await fetch(`${this.baseUrl}/compile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scripts, options })
+      body: JSON.stringify({ scripts, options }),
     });
-    
+
     const result = await response.json();
     this.cache.set(cacheKey, result);
     return result;
   }
-  
+
   // Express middleware
   static middleware(clientOptions = {}) {
-    const client = new HyperfixiClient(
-      clientOptions.host,
-      clientOptions.port
-    );
-    
+    const client = new HyperfixiClient(clientOptions.host, clientOptions.port);
+
     return (req, res, next) => {
-      req.hyperfixi = client;
-      res.locals.hyperfixi = client;
+      req.lokascript = client;
+      res.locals.lokascript = client;
       next();
     };
   }
@@ -207,13 +207,13 @@ Define a JSON-based format that all languages can produce:
 ```typescript
 // Universal Hyperfixi Component Definition
 interface HyperfixiDefinition {
-  version: "1.0";
+  version: '1.0';
   components: {
     [key: string]: {
       selector: string;
       behavior: string;
       attributes?: Record<string, any>;
-      children?: HyperfixiDefinition["components"];
+      children?: HyperfixiDefinition['components'];
     };
   };
   behaviors: {
@@ -223,7 +223,7 @@ interface HyperfixiDefinition {
   options?: {
     optimize?: boolean;
     minify?: boolean;
-    compatibility?: "modern" | "legacy";
+    compatibility?: 'modern' | 'legacy';
   };
 }
 ```
@@ -233,8 +233,9 @@ interface HyperfixiDefinition {
 Create builder patterns that feel native to each language:
 
 #### Python Builder
+
 ```python
-from hyperfixi import Builder
+from lokascript import Builder
 
 # Pythonic API
 page = Builder()
@@ -263,9 +264,10 @@ compiled = page.compile()
 ```
 
 #### Go Builder
+
 ```go
 // Go-style builder
-builder := hyperfixi.NewBuilder()
+builder := lokascript.NewBuilder()
 
 builder.Component("div#search-container", `
     on load
@@ -287,6 +289,7 @@ compiled, err := builder.Compile()
 ```
 
 #### JavaScript Builder
+
 ```javascript
 // JS/TS builder
 const builder = new HyperfixiBuilder();
@@ -294,7 +297,9 @@ const builder = new HyperfixiBuilder();
 builder
   .component('div#search-container')
   .on('load', 'focus on <input/> in me')
-  .behavior('search-enhanced', `
+  .behavior(
+    'search-enhanced',
+    `
     on keyup from <input/> in me
         if event.key is "Enter"
             send search-submit
@@ -302,7 +307,8 @@ builder
             debounce 300ms
             send search-preview
         end
-  `);
+  `
+  );
 
 // In route
 const compiled = await builder.compile();
@@ -313,10 +319,11 @@ const compiled = await builder.compile();
 Create idiomatic integrations for popular frameworks:
 
 #### Django Integration
+
 ```python
-# hyperfixi.contrib.django
+# lokascript.contrib.django
 from django.views.generic import TemplateView
-from hyperfixi import HyperfixiMixin
+from lokascript import HyperfixiMixin
 
 class HyperscriptView(HyperfixiMixin, TemplateView):
     def get_hyperscript_definitions(self):
@@ -328,7 +335,7 @@ class HyperscriptView(HyperfixiMixin, TemplateView):
                 }
             }
         }
-    
+
     def search_behavior(self):
         return """
             on keyup
@@ -340,38 +347,40 @@ class HyperscriptView(HyperfixiMixin, TemplateView):
 ```
 
 #### Express Integration
+
 ```javascript
-// hyperfixi-express
-app.use(hyperfixi.middleware());
+// lokascript-express
+app.use(lokascript.middleware());
 
 app.get('/products', async (req, res) => {
   const products = await getProducts();
-  
-  const hyperscript = await req.hyperfixi.compile({
+
+  const hyperscript = await req.lokascript.compile({
     components: {
       productList: {
         selector: '#product-list',
         behavior: `
           on product-selected from .product-card in me
             add .selected to event.target
-        `
-      }
-    }
+        `,
+      },
+    },
   });
-  
+
   res.render('products', { products, hyperscript });
 });
 ```
 
 #### Gin Integration
+
 ```go
-// hyperfixi-gin
+// lokascript-gin
 r := gin.Default()
-r.Use(hyperfixi.Middleware(client))
+r.Use(lokascript.Middleware(client))
 
 r.GET("/products", func(c *gin.Context) {
-    client := c.MustGet("hyperfixi").(*hyperfixi.Client)
-    
+    client := c.MustGet("lokascript").(*lokascript.Client)
+
     definitions := map[string]interface{}{
         "components": map[string]interface{}{
             "productList": map[string]interface{}{
@@ -383,9 +392,9 @@ r.GET("/products", func(c *gin.Context) {
             },
         },
     }
-    
+
     compiled, _ := client.Compile(definitions, nil)
-    
+
     c.HTML(200, "products.html", gin.H{
         "products":    products,
         "hyperscript": compiled,
@@ -399,16 +408,16 @@ For production builds, provide a CLI tool:
 
 ```bash
 # Compile Hyperscript files
-hyperfixi compile --input ./behaviors --output ./dist/scripts.js
+lokascript compile --input ./behaviors --output ./dist/scripts.js
 
 # Watch mode for development
-hyperfixi watch --input ./behaviors --output ./public/js
+lokascript watch --input ./behaviors --output ./public/js
 
 # Validate without compiling
-hyperfixi validate ./behaviors/**/*.hs
+lokascript validate ./behaviors/**/*.hs
 
 # Generate bindings for a language
-hyperfixi generate --language python --output ./hyperfixi_types.py
+lokascript generate --language python --output ./lokascript_types.py
 ```
 
 ### 7. **Configuration File**
@@ -416,29 +425,29 @@ hyperfixi generate --language python --output ./hyperfixi_types.py
 Support configuration files that work across languages:
 
 ```yaml
-# hyperfixi.yaml
+# lokascript.yaml
 version: 1.0
 compiler:
   service:
     host: localhost
     port: 3000
-    
+
 optimization:
   level: production
   minify: true
   compatibility: modern
-  
+
 behaviors:
   searchBox:
     file: ./behaviors/search.hs
     precompile: true
-    
+
   modal:
     file: ./behaviors/modal.hs
     lazy: true
-    
+
 output:
-  format: esm  # or 'iife', 'umd'
+  format: esm # or 'iife', 'umd'
   sourcemaps: true
 ```
 
@@ -451,25 +460,25 @@ Support hot reloading across all platforms:
 export class HyperfixiDevServer {
   private watcher: FSWatcher;
   private clients: Set<WebSocket>;
-  
+
   async start() {
     // Watch for Hyperscript file changes
     this.watcher = watch('./behaviors', {
       recursive: true,
-      filter: (f) => f.endsWith('.hs')
+      filter: f => f.endsWith('.hs'),
     });
-    
-    this.watcher.on('change', async (path) => {
+
+    this.watcher.on('change', async path => {
       const compiled = await this.compileFile(path);
-      
+
       // Notify all connected clients
       this.broadcast({
         type: 'update',
         path,
-        compiled
+        compiled,
       });
     });
-    
+
     // WebSocket server for hot reload
     this.startWebSocketServer();
   }
@@ -495,7 +504,7 @@ class HyperscriptComponent(TypedDict):
 ${this.generatePythonComponents(definitions)}
     `;
   }
-  
+
   generateGo(definitions: HyperfixiDefinition): string {
     return `
 package hyperscript
@@ -523,7 +532,6 @@ ${this.generateGoComponents(definitions)}
 
 This architecture allows teams to use Hyperfixi regardless of their backend choice while maintaining the benefits of your AST-based approach.
 
-
 This language-agnostic Hyperfixi architecture opens up fascinating possibilities! Let me explore some high-utility patterns that become possible:
 
 ## 1. **Universal Component Marketplace**
@@ -533,7 +541,7 @@ Since behaviors are language-agnostic, we can create a marketplace where develop
 ```typescript
 // Component Registry
 interface ComponentPackage {
-  name: "@hyperfixi/data-table";
+  name: "@lokascript/data-table";
   version: "1.0.0";
   behaviors: {
     sortable: string;
@@ -549,21 +557,21 @@ interface ComponentPackage {
   examples: Example[];
   compatibility: {
     browsers: string[];
-    hyperfixi: ">=0.5.0";
+    lokascript: ">=0.5.0";
   };
 }
 
 // Usage across any backend
-import { DataTable } from '@hyperfixi/data-table';
+import { DataTable } from '@lokascript/data-table';
 
 // Python
 table = DataTable(data=products, features=['sortable', 'filterable'])
 
 // Go
-table := hyperfixi.Use("@hyperfixi/data-table", data, []string{"sortable"})
+table := lokascript.Use("@lokascript/data-table", data, []string{"sortable"})
 
 // Node
-const table = await hyperfixi.import('@hyperfixi/data-table', {
+const table = await lokascript.import('@lokascript/data-table', {
   data: products,
   features: ['sortable', 'filterable']
 });
@@ -583,7 +591,7 @@ export class ProgressiveEnhancer {
         <input name="q" type="search" />
         <button type="submit">Search</button>
       </form>`,
-      
+
       // Level 1: Basic interactivity
       enhanced: `
         on submit
@@ -591,7 +599,7 @@ export class ProgressiveEnhancer {
           fetch action with method:method body:FormData
           put response into #results
       `,
-      
+
       // Level 2: Advanced features
       advanced: `
         behavior instant-search
@@ -603,7 +611,7 @@ export class ProgressiveEnhancer {
             end
         end
       `,
-      
+
       // Level 3: Offline-capable
       offline: `
         behavior offline-search
@@ -619,7 +627,7 @@ export class ProgressiveEnhancer {
               show cached results with .offline-indicator
             end
         end
-      `
+      `,
     };
   }
 }
@@ -635,7 +643,7 @@ interface TenantBehaviors {
   tenantId: string;
   customizations: {
     checkout: {
-      override: "default-checkout";
+      override: 'default-checkout';
       behavior: `
         on submit
           if #coupon-code.value is not empty
@@ -649,9 +657,9 @@ interface TenantBehaviors {
           submit with loading indicator
       `;
     };
-    
+
     productGallery: {
-      extend: "base-gallery";
+      extend: 'base-gallery';
       additions: `
         on image-zoom
           if tenant.config.zoom_style is "inline"
@@ -667,14 +675,17 @@ interface TenantBehaviors {
 // Runtime injection based on tenant
 app.get('/checkout', async (req, res) => {
   const tenant = await getTenant(req);
-  const behaviors = await hyperfixi.compile({
-    base: standardCheckout,
-    custom: tenant.behaviors.checkout
-  }, {
-    merge: true,
-    precedence: 'custom'
-  });
-  
+  const behaviors = await lokascript.compile(
+    {
+      base: standardCheckout,
+      custom: tenant.behaviors.checkout,
+    },
+    {
+      merge: true,
+      precedence: 'custom',
+    }
+  );
+
   res.render('checkout', { behaviors });
 });
 ```
@@ -687,7 +698,7 @@ Test different interaction patterns without deploying new code:
 // A/B Testing Framework
 export class BehaviorExperiment {
   constructor(private experimentId: string) {}
-  
+
   define() {
     return {
       control: `
@@ -695,39 +706,37 @@ export class BehaviorExperiment {
           add to cart
           show notification "Added to cart"
       `,
-      
+
       variantA: `
         on click on .add-to-cart
           add to cart with animation:bounce
           show modal with cart contents
           after 3s hide modal
       `,
-      
+
       variantB: `
         on click on .add-to-cart
           add to cart
           slide out cart sidebar
           highlight new item for 2s
-      `
+      `,
     };
   }
-  
+
   async track(event: string, properties: any) {
     // Track interaction patterns
     await analytics.track({
       experiment: this.experimentId,
       variant: this.getVariant(),
       event,
-      properties
+      properties,
     });
   }
 }
 
 // Server-side variant selection
 const variant = getExperimentVariant(user, 'cart-interaction-test');
-const behavior = await hyperfixi.compile(
-  experiments.cartTest[variant]
-);
+const behavior = await lokascript.compile(experiments.cartTest[variant]);
 ```
 
 ## 5. **Cross-Language Component Testing**
@@ -742,24 +751,24 @@ export class BehaviorTestSuite {
       { name: 'Python/Django', url: 'http://python-app:8000' },
       { name: 'Go/Gin', url: 'http://go-app:8080' },
       { name: 'Node/Express', url: 'http://node-app:3000' },
-      { name: 'Ruby/Rails', url: 'http://ruby-app:3001' }
+      { name: 'Ruby/Rails', url: 'http://ruby-app:3001' },
     ];
-    
+
     const results = await Promise.all(
-      implementations.map(async (impl) => {
+      implementations.map(async impl => {
         const page = await playwright.chromium.newPage();
         await page.goto(impl.url + '/test-page');
-        
+
         // Inject same behavior
-        await page.evaluate((behavior) => {
+        await page.evaluate(behavior => {
           window._hyperscript(behavior);
         }, behaviorDef);
-        
+
         // Run same test suite
         return this.runBehaviorTests(page, impl.name);
       })
     );
-    
+
     // Ensure consistent behavior across all platforms
     this.assertConsistentBehavior(results);
   }
@@ -775,35 +784,35 @@ Automatically optimize script delivery based on usage patterns:
 export class SmartBundler {
   async analyzePage(pageComponents: ComponentMap) {
     const analysis = {
-      critical: [],      // Above the fold
-      deferred: [],      // Below the fold
-      lazy: [],          // User-triggered
-      shared: []         // Cross-page components
+      critical: [], // Above the fold
+      deferred: [], // Below the fold
+      lazy: [], // User-triggered
+      shared: [], // Cross-page components
     };
-    
+
     // Analyze component usage
     for (const [id, component] of Object.entries(pageComponents)) {
       const usage = await this.analyzeUsage(component);
-      
+
       if (usage.isAboveFold) {
         analysis.critical.push(component);
       } else if (usage.triggeredByUser) {
         analysis.lazy.push({
           component,
           trigger: usage.trigger,
-          preload: usage.likelihood > 0.7
+          preload: usage.likelihood > 0.7,
         });
       }
     }
-    
+
     // Generate optimized bundles
     return {
       inline: await this.bundle(analysis.critical, { minify: true }),
       deferred: await this.bundle(analysis.deferred),
       lazy: analysis.lazy.map(item => ({
         url: this.generateLazyUrl(item.component),
-        trigger: this.compileTrigger(item.trigger)
-      }))
+        trigger: this.compileTrigger(item.trigger),
+      })),
     };
   }
 }
@@ -831,19 +840,19 @@ export class BehaviorAnalytics {
             trigger original behavior
           end
         end
-      `
+      `,
     };
   }
-  
+
   async generateInsights(tenantId: string) {
     const data = await this.queryEvents(tenantId);
-    
+
     return {
       unusedBehaviors: this.findUnusedBehaviors(data),
       commonPatterns: this.detectPatterns(data),
       errorProne: this.findErrorProneBehaviors(data),
       performanceIssues: this.detectSlowBehaviors(data),
-      recommendations: this.generateRecommendations(data)
+      recommendations: this.generateRecommendations(data),
     };
   }
 }
@@ -861,21 +870,21 @@ export class VisualBehaviorBuilder {
       switch (node.type) {
         case 'trigger':
           return `on ${node.event} from ${node.selector}`;
-        
+
         case 'condition':
           return `if ${node.condition}`;
-        
+
         case 'action':
           return this.compileAction(node.action);
-        
+
         case 'delay':
           return `wait ${node.duration}`;
       }
     });
-    
+
     return this.assembleHyperscript(nodes, flow.connections);
   }
-  
+
   async reverseEngineer(hyperscript: string): Promise<VisualFlow> {
     const ast = await this.parse(hyperscript);
     return this.astToVisualFlow(ast);
@@ -894,19 +903,19 @@ export class MicroFrontendOrchestrator {
     const microFrontends = [
       { name: 'header', url: 'http://header-service/fragment' },
       { name: 'product', url: 'http://product-service/fragment' },
-      { name: 'cart', url: 'http://cart-service/fragment' }
+      { name: 'cart', url: 'http://cart-service/fragment' },
     ];
-    
+
     // Fetch components in parallel
     const components = await Promise.all(
-      microFrontends.map(async (mf) => ({
+      microFrontends.map(async mf => ({
         name: mf.name,
-        ...await fetch(mf.url).then(r => r.json())
+        ...(await fetch(mf.url).then(r => r.json())),
       }))
     );
-    
+
     // Compile inter-component communication
-    const orchestration = await hyperfixi.compile({
+    const orchestration = await lokascript.compile({
       global: `
         behavior micro-frontend-bus
           on custom-event from any micro-frontend
@@ -919,10 +928,10 @@ export class MicroFrontendOrchestrator {
           end
         end
       `,
-      
-      bridges: this.generateBridges(components)
+
+      bridges: this.generateBridges(components),
     });
-    
+
     return this.assemblePage(components, orchestration);
   }
 }
@@ -937,7 +946,7 @@ Automatically enhance components with accessibility behaviors:
 export class A11yEnhancer {
   enhance(component: ComponentDef): EnhancedComponent {
     const enhancements = [];
-    
+
     // Analyze component for a11y opportunities
     if (component.type === 'modal') {
       enhancements.push(`
@@ -951,7 +960,7 @@ export class A11yEnhancer {
           restore focus to previous element
       `);
     }
-    
+
     if (component.hasForm) {
       enhancements.push(`
         on invalid from any input in me
@@ -965,11 +974,11 @@ export class A11yEnhancer {
           end
       `);
     }
-    
+
     return {
       ...component,
       behavior: this.mergeBehaviors(component.behavior, enhancements),
-      attributes: this.addAriaAttributes(component.attributes)
+      attributes: this.addAriaAttributes(component.attributes),
     };
   }
 }
@@ -988,19 +997,19 @@ export class HyperscriptBDD {
         when: (action: string) => ({
           then: (expectation: string) => ({
             test: async () => {
-              const compiled = await hyperfixi.compile(`
+              const compiled = await lokascript.compile(`
                 scenario "${description}"
                   given ${setup}
                   when ${action}
                   then ${expectation}
                 end
               `);
-              
+
               return this.executeScenario(compiled);
-            }
-          })
-        })
-      })
+            },
+          }),
+        }),
+      }),
     };
   }
 }

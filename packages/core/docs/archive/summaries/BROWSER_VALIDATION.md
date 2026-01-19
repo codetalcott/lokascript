@@ -15,39 +15,47 @@ We've identified a critical issue where unit tests and integration tests can pas
 ### Examples We've Encountered
 
 **Parser Bug with `my.property` Syntax**:
+
 - ❌ Unit tests: Never caught the bug (no tests for dot syntax on context vars)
 - ❌ Integration tests: Passed because they used space syntax (`my className`)
 - ✅ Real browser: FAILED with "Invalid target type: undefined, property name '.'"
 
 **Build Output Validation**:
+
 - ❌ Tests: Ran against source files, never tested the actual browser bundle
 - ✅ Browser: Used the compiled bundle which had different behavior
 
 ## The Solution: Multi-Layer Validation
 
 ### Layer 1: Unit Tests (Vitest + Happy-DOM)
+
 **Purpose**: Fast feedback on individual functions and modules
 **Command**: `npm test`
 **Coverage**: Expression evaluation, command logic, parser rules
 **Limitations**:
+
 - Doesn't catch browser-specific issues
 - Doesn't validate compiled bundle
 - May miss integration problems
 
 ### Layer 2: Browser Integration Tests (Playwright)
+
 **Purpose**: Validate actual browser behavior with real DOM
 **Command**: `npm run test:browser`
-**Coverage**: Full _hyperscript compatibility suite (81 test files)
+**Coverage**: Full \_hyperscript compatibility suite (81 test files)
 **Limitations**:
+
 - Takes 2+ minutes to run
 - Doesn't test cookbook examples specifically
 - Verbose output hard to parse
 
 ### Layer 3: Cookbook Validation (NEW - Browser Reality Check)
+
 **Purpose**: Validate that cookbook examples actually work in browsers
 **Command**: `npm run test:cookbook`
 **Coverage**: All cookbook demo pages with real-world usage patterns
 **Advantages**:
+
 - ✅ Tests actual browser bundle (not source)
 - ✅ Tests real DOM (not mocked)
 - ✅ Fast (<10 seconds)
@@ -62,8 +70,9 @@ Location: `validate-cookbook-demos.mjs`
 ### What It Checks
 
 For each cookbook demo page:
+
 1. **Loads**: Can the page load without 404s?
-2. **HyperFixi Available**: Is `window.hyperfixi` defined?
+2. **LokaScript Available**: Is `window.lokascript` defined?
 3. **Initialization**: Do examples initialize without errors?
 4. **Console Errors**: Are there any JavaScript errors?
 5. **DOM State**: Are elements in expected states (e.g., indeterminate checkboxes)?
@@ -77,7 +86,7 @@ For each cookbook demo page:
    - Fade and remove
 
 2. **Cookbook Comparison** (`cookbook/cookbook-comparison-test.html`)
-   - Side-by-side comparison of _hyperscript vs HyperFixi
+   - Side-by-side comparison of \_hyperscript vs LokaScript
    - Multiple cookbook examples
 
 3. **Compound Examples** (`compound-examples.html`)
@@ -136,6 +145,7 @@ npm run build:browser && npm run test:browser
 **"If it doesn't work in the browser, it doesn't work."**
 
 No matter how many unit tests pass, the ultimate validation is:
+
 1. Build the browser bundle
 2. Load it in a real browser
 3. Test the actual user-facing behavior
@@ -172,12 +182,14 @@ To add a new demo page to validation:
 ## Current Status (2025-11-12)
 
 ✅ **All cookbook demos passing (100%)**
+
 - Complete Demo: 4/4 checks
 - Cookbook Comparison: 3/3 checks
 - Compound Examples: 3/3 checks
 - Zero console errors
 
 Recent fixes:
+
 - Parser bug with `my.property` syntax fixed
 - Browser bundle path corrected in compound-examples.html
 - test-nav.js 404 fixed

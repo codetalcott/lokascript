@@ -8,15 +8,15 @@ This plan is structured in phases, moving from project setup to a final, publish
 
 The goal of this phase is to create a professional, modern TypeScript project environment configured for building a tree-shakable library.
 
-* **Step 1: Initialize the Project**
-  * Create a new directory: `mkdir hyperfixi`
-  * Initialize a Node.js project: `npm init -y`
-  * Install core dependencies: `npm install fixi.js hyperscript.org`
-  * Install development dependencies: `npm install -D typescript rollup @rollup/plugin-typescript @rollup/plugin-node-resolve rollup-plugin-terser`
+- **Step 1: Initialize the Project**
+  - Create a new directory: `mkdir lokascript`
+  - Initialize a Node.js project: `npm init -y`
+  - Install core dependencies: `npm install fixi.js hyperscript.org`
+  - Install development dependencies: `npm install -D typescript rollup @rollup/plugin-typescript @rollup/plugin-node-resolve rollup-plugin-terser`
 
-* **Step 2: Configure TypeScript**
-  * Create a `tsconfig.json` file.
-  * Configure it for modern, tree-shakable library output:
+- **Step 2: Configure TypeScript**
+  - Create a `tsconfig.json` file.
+  - Configure it for modern, tree-shakable library output:
 
         ```json
         {
@@ -36,9 +36,9 @@ The goal of this phase is to create a professional, modern TypeScript project en
         }
         ```
 
-* **Step 3: Configure the Bundler (Rollup)**
-  * Create a `rollup.config.mjs` file.
-  * Set up configurations to output multiple formats (ESM for bundlers, UMD for browsers):
+- **Step 3: Configure the Bundler (Rollup)**
+  - Create a `rollup.config.mjs` file.
+  - Set up configurations to output multiple formats (ESM for bundlers, UMD for browsers):
 
         ```javascript
         import typescript from '@rollup/plugin-typescript';
@@ -54,7 +54,7 @@ The goal of this phase is to create a professional, modern TypeScript project en
               sourcemap: true,
             },
             {
-              file: 'dist/hyperfixi.min.js', // For <script> tags
+              file: 'dist/lokascript.min.js', // For <script> tags
               format: 'umd',
               name: 'hyperscriptFixi', // Global variable name
               plugins: [terser()],
@@ -65,10 +65,10 @@ The goal of this phase is to create a professional, modern TypeScript project en
         };
         ```
 
-* **Step 4: Set Up Project Structure**
-  * `src/`: Main source code will live here.
-  * `dist/`: Bundled output will go here (ignored by git).
-  * `examples/`: HTML files for manual testing and demonstration.
+- **Step 4: Set Up Project Structure**
+  - `src/`: Main source code will live here.
+  - `dist/`: Bundled output will go here (ignored by git).
+  - `examples/`: HTML files for manual testing and demonstration.
 
 ---
 
@@ -76,11 +76,11 @@ The goal of this phase is to create a professional, modern TypeScript project en
 
 This is the most critical design phase. We'll implement the logic that understands our `fetch` command's grammar.
 
-* **Step 5: Create the Main Entry Point (`src/index.ts`)**
-  * This file will import Hyperscript and register our custom command.
+- **Step 5: Create the Main Entry Point (`src/index.ts`)**
+  - This file will import Hyperscript and register our custom command.
 
-* **Step 6: Design the Command Registration**
-  * In `src/index.ts`, use Hyperscript's `addCommand` API.
+- **Step 6: Design the Command Registration**
+  - In `src/index.ts`, use Hyperscript's `addCommand` API.
 
         ```typescript
         import { _hyperscript } from 'hyperscript.org';
@@ -90,22 +90,22 @@ This is the most critical design phase. We'll implement the logic that understan
         });
         ```
 
-* **Step 7: Implement the Syntax Parser**
-  * Inside the `addCommand` callback, implement a state machine to parse the tokens.
-  * **Parse URL:** The first argument is always the URL. Use `parser.parseElementExpression()` to allow for dynamic URLs.
-  * **Detect Syntax Form:** "Peek" at the next token.
-    * If it's `with`, branch to the "Extended Syntax" parser.
-    * If it's a placement keyword (`replace`, `put`, `append`, `prepend`), `and`, or `then`, branch to the "Shorthand Syntax" parser.
-  * **Build the Shorthand Parser:**
-    * If the token is `and`, consume it.
-    * Parse the placement keyword (e.g., `tokens.matchToken('replace')`).
-    * If placement is `put`, consume the next token (`into`).
-    * If placement is `append` or `prepend`, consume the next token (`to`).
-    * Parse the target CSS selector using `parser.parseElementExpression()`.
-  * **Build the Extended Parser:**
-    * Consume the `with` token.
-    * Loop: Parse option keys (`method`, `body`, etc.), consume the colon, and parse the option value with `parser.parseElementExpression()`. Store these in an `options` object. Continue until `then` or the end of the expression.
-  * **Parser Output:** The parser should create a single, structured `command` object that contains all the parsed information (e.g., `{ url, placement, target, options: { method, body, ... } }`).
+- **Step 7: Implement the Syntax Parser**
+  - Inside the `addCommand` callback, implement a state machine to parse the tokens.
+  - **Parse URL:** The first argument is always the URL. Use `parser.parseElementExpression()` to allow for dynamic URLs.
+  - **Detect Syntax Form:** "Peek" at the next token.
+    - If it's `with`, branch to the "Extended Syntax" parser.
+    - If it's a placement keyword (`replace`, `put`, `append`, `prepend`), `and`, or `then`, branch to the "Shorthand Syntax" parser.
+  - **Build the Shorthand Parser:**
+    - If the token is `and`, consume it.
+    - Parse the placement keyword (e.g., `tokens.matchToken('replace')`).
+    - If placement is `put`, consume the next token (`into`).
+    - If placement is `append` or `prepend`, consume the next token (`to`).
+    - Parse the target CSS selector using `parser.parseElementExpression()`.
+  - **Build the Extended Parser:**
+    - Consume the `with` token.
+    - Loop: Parse option keys (`method`, `body`, etc.), consume the colon, and parse the option value with `parser.parseElementExpression()`. Store these in an `options` object. Continue until `then` or the end of the expression.
+  - **Parser Output:** The parser should create a single, structured `command` object that contains all the parsed information (e.g., `{ url, placement, target, options: { method, body, ... } }`).
 
 ---
 
@@ -113,27 +113,27 @@ This is the most critical design phase. We'll implement the logic that understan
 
 With the syntax parsed, we now execute the logic by wrapping Fixi.js.
 
-* **Step 8: Implement the Runtime Logic**
-  * The parser, upon completion, calls `runtime.addStep()`. The function passed to `addStep` is what executes when the event fires.
-  * This function will receive the `command` object created by the parser.
+- **Step 8: Implement the Runtime Logic**
+  - The parser, upon completion, calls `runtime.addStep()`. The function passed to `addStep` is what executes when the event fires.
+  - This function will receive the `command` object created by the parser.
 
-* **Step 9: Translate Our Syntax to Fixi.js Options**
-  * Inside the runtime step, import `doRequest` from `fixi.js`.
-  * Create a `fixiOptions` object.
-  * Map the parsed `command` object to `fixiOptions`:
-    * `fixiOptions.url = command.url`
-    * `fixiOptions.method = command.options.method || 'GET'`
-    * `fixiOptions.body = command.options.body`
-    * Translate our placement keywords to Fixi's `swap` option:
-      * `put into` -> `swap: 'innerHTML'`
-      * `replace` -> `swap: 'outerHTML'`
-      * `append to` -> `swap: 'beforeend'`
-      * `prepend to` -> `swap: 'afterbegin'`
-    * `fixiOptions.target = command.target`
+- **Step 9: Translate Our Syntax to Fixi.js Options**
+  - Inside the runtime step, import `doRequest` from `fixi.js`.
+  - Create a `fixiOptions` object.
+  - Map the parsed `command` object to `fixiOptions`:
+    - `fixiOptions.url = command.url`
+    - `fixiOptions.method = command.options.method || 'GET'`
+    - `fixiOptions.body = command.options.body`
+    - Translate our placement keywords to Fixi's `swap` option:
+      - `put into` -> `swap: 'innerHTML'`
+      - `replace` -> `swap: 'outerHTML'`
+      - `append to` -> `swap: 'beforeend'`
+      - `prepend to` -> `swap: 'afterbegin'`
+    - `fixiOptions.target = command.target`
 
-* **Step 10: Execute the Request and Handle the Result**
-  * Call `const response = await doRequest(fixiOptions)`.
-  * Make the server's response available to subsequent `then` clauses in Hyperscript by calling `runtime.setIt(response)`.
+- **Step 10: Execute the Request and Handle the Result**
+  - Call `const response = await doRequest(fixiOptions)`.
+  - Make the server's response available to subsequent `then` clauses in Hyperscript by calling `runtime.setIt(response)`.
 
 ---
 
@@ -141,13 +141,13 @@ With the syntax parsed, we now execute the logic by wrapping Fixi.js.
 
 Make the library robust and unlock the advanced event-driven patterns.
 
-* **Step 11: Implement Error Handling**
-  * Wrap the `doRequest` call in a `try...catch` block.
-  * On failure, `send` a custom DOM event like `fixi:error` from the element, including the error details. This makes failures observable: `<div _="on click fetch /bad/url on fixi:error log it.detail">`.
+- **Step 11: Implement Error Handling**
+  - Wrap the `doRequest` call in a `try...catch` block.
+  - On failure, `send` a custom DOM event like `fixi:error` from the element, including the error details. This makes failures observable: `<div _="on click fetch /bad/url on fixi:error log it.detail">`.
 
-* **Step 12: Implement Event Broadcasting**
-  * Add `broadcast` or `trigger` as a recognized option in the extended syntax parser.
-  * In the runtime, if this option is present, `send` the specified custom event to the specified target (e.g., `body`) after a successful fetch. Pass the response as a detail.
+- **Step 12: Implement Event Broadcasting**
+  - Add `broadcast` or `trigger` as a recognized option in the extended syntax parser.
+  - In the runtime, if this option is present, `send` the specified custom event to the specified target (e.g., `body`) after a successful fetch. Pass the response as a detail.
 
 ---
 
@@ -155,9 +155,9 @@ Make the library robust and unlock the advanced event-driven patterns.
 
 A library is only as good as its types and its ease of use.
 
-* **Step 13: Create TypeScript Definitions for Users**
-  * Create a file `src/types.d.ts`.
-  * Use `declare global` to augment Hyperscript's namespace, providing autocomplete and type safety for the `fetch` command in supported editors.
+- **Step 13: Create TypeScript Definitions for Users**
+  - Create a file `src/types.d.ts`.
+  - Use `declare global` to augment Hyperscript's namespace, providing autocomplete and type safety for the `fetch` command in supported editors.
 
         ```typescript
         declare global {
@@ -175,18 +175,18 @@ A library is only as good as its types and its ease of use.
 
 Package and present the library for the world.
 
-* **Step 14: Write Comprehensive Documentation**
-  * Create a high-quality `README.md`.
-  * Include:
-    * A compelling introduction.
-    * Installation and usage instructions.
-    * A detailed **Syntax Guide** covering both shorthand and extended forms with clear examples.
-    * An **API / Options** table.
-    * A section on **Advanced Patterns** (error handling, event broadcasting).
+- **Step 14: Write Comprehensive Documentation**
+  - Create a high-quality `README.md`.
+  - Include:
+    - A compelling introduction.
+    - Installation and usage instructions.
+    - A detailed **Syntax Guide** covering both shorthand and extended forms with clear examples.
+    - An **API / Options** table.
+    - A section on **Advanced Patterns** (error handling, event broadcasting).
 
-* **Step 15: Publish to npm**
-  * Ensure `package.json` has the correct `main`, `module`, and `types` fields pointing to the `dist/` files.
-  * Run `npm publish` to share your creation with the community.
+- **Step 15: Publish to npm**
+  - Ensure `package.json` has the correct `main`, `module`, and `types` fields pointing to the `dist/` files.
+  - Run `npm publish` to share your creation with the community.
 
 ## Overview
 
@@ -217,24 +217,20 @@ A key aspect of this integration is to move away from using Fixi.js's `fx-` attr
 Instead of the standard Fixi.js approach:
 
 ```html
-<button fx-action="/clicked" fx-trigger="click" fx-target="#result">
-  Click Me
-</button>
+<button fx-action="/clicked" fx-trigger="click" fx-target="#result">Click Me</button>
 ```
 
 The integrated syntax would utilize Hyperscript's `on` event handler to call a custom command that wraps Fixi.js's core `doRequest` function:
 
 ```html
-<button _="on click call fixi.get('/clicked') then put it into #result">
-  Click Me
-</button>
+<button _="on click call fixi.get('/clicked') then put it into #result">Click Me</button>
 ```
 
 This approach offers several advantages:
 
-* **Readability:** The Hyperscript version is arguably more explicit and easier to understand for those familiar with the syntax.
-* **Flexibility:** Hyperscript's feature set, such as conditionals and loops, can be combined with Fixi.js actions.
-* **Consistency:** All client-side logic is handled through a single, consistent syntax.
+- **Readability:** The Hyperscript version is arguably more explicit and easier to understand for those familiar with the syntax.
+- **Flexibility:** Hyperscript's feature set, such as conditionals and loops, can be combined with Fixi.js actions.
+- **Consistency:** All client-side logic is handled through a single, consistent syntax.
 
 ---
 
@@ -274,7 +270,7 @@ _hyperscript.addCommand('get', (parser, runtime, tokens) => {
     // ... parsing logic for target, etc.
     runtime.addStep(async () => {
       const urlValue = await url.evaluate();
-      fixiHttp.get(urlValue, /* target */);
+      fixiHttp.get(urlValue /* target */);
     });
   }
 });

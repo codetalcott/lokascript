@@ -1,8 +1,8 @@
-# HyperFixi Type System Unification Plan
+# LokaScript Type System Unification Plan
 
 ## 🎯 Executive Summary
 
-**Objective**: Resolve architectural type conflicts across HyperFixi's codebase to eliminate TypeScript errors and establish a unified, maintainable type foundation.
+**Objective**: Resolve architectural type conflicts across LokaScript's codebase to eliminate TypeScript errors and establish a unified, maintainable type foundation.
 
 **Current State**: Significant architectural type conflicts with multiple definitions of core types, import path inconsistencies, and ValidationError interface divergence across the codebase.
 
@@ -11,6 +11,7 @@
 ## 📊 Critical Architectural Issues Identified
 
 ### **Type System Fragmentation**
+
 - **Multiple type definition files** with overlapping responsibilities (`base-types.ts`, `core.ts`, `enhanced-core.ts`, `enhanced-expressions.ts`)
 - **Conflicting ValidationError interfaces** across different packages
 - **Import path inconsistencies** (`.js` imports for `.ts` files)
@@ -18,6 +19,7 @@
 - **Heavy any type usage** undermining type safety goals
 
 ### **Core Problem Analysis**
+
 1. **Import Resolution Failures**: Files importing `.js` extensions for `.ts` files causing module resolution errors
 2. **ValidationError Interface Divergence**: Different shapes expected across codebase (some with `suggestions`, others with `suggestion`)
 3. **Type Definition Conflicts**: Same types defined differently in multiple files (e.g., `HyperScriptValue`, `EvaluationType`)
@@ -31,6 +33,7 @@
 ### 1.1 Establish Single Source of Truth
 
 **Consolidate Type Definitions:**
+
 ```typescript
 // Create unified type system in src/types/unified-types.ts
 export interface UnifiedValidationError {
@@ -49,10 +52,20 @@ export interface UnifiedValidationResult<T = unknown> {
 }
 
 // Consolidate all value types
-export type UnifiedHyperScriptValueType = 
-  | 'string' | 'number' | 'boolean' | 'element' | 'element-list' 
-  | 'array' | 'object' | 'promise' | 'fragment' | 'null' 
-  | 'undefined' | 'function' | 'event';
+export type UnifiedHyperScriptValueType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'element'
+  | 'element-list'
+  | 'array'
+  | 'object'
+  | 'promise'
+  | 'fragment'
+  | 'null'
+  | 'undefined'
+  | 'function'
+  | 'event';
 
 // Consolidate execution context
 export interface UnifiedExecutionContext {
@@ -75,6 +88,7 @@ export interface UnifiedExecutionContext {
 ```
 
 **Migration Strategy:**
+
 1. Create `src/types/unified-types.ts` as authoritative source
 2. Gradually migrate all files to import from unified types
 3. Deprecate fragmented type definition files
@@ -83,6 +97,7 @@ export interface UnifiedExecutionContext {
 ### 1.2 Fix Import Path Structure
 
 **Resolve Import Inconsistencies:**
+
 ```typescript
 // Fix all imports to use correct .ts extensions in development
 // and proper module resolution for build
@@ -95,6 +110,7 @@ import type { UnifiedValidationResult } from './unified-types.js';
 ```
 
 **Implementation:**
+
 1. **Audit all import statements** across codebase
 2. **Fix .js imports** to reference actual .ts files
 3. **Update tsconfig.json** module resolution settings
@@ -103,16 +119,14 @@ import type { UnifiedValidationResult } from './unified-types.js';
 ### 1.3 StandardizeValidationError Interface
 
 **Unify ValidationError Usage:**
+
 ```typescript
 // Convert all validation patterns to unified interface
 class UnifiedValidator {
-  static validateInput<T>(
-    input: unknown,
-    schema: z.ZodSchema<T>
-  ): UnifiedValidationResult<T> {
+  static validateInput<T>(input: unknown, schema: z.ZodSchema<T>): UnifiedValidationResult<T> {
     try {
       const parsed = schema.safeParse(input);
-      
+
       if (!parsed.success) {
         return {
           isValid: false,
@@ -122,11 +136,11 @@ class UnifiedValidator {
             suggestions: [
               'Check input structure',
               'Verify all required properties are provided',
-              'Ensure property types match schema'
+              'Ensure property types match schema',
             ],
-            path: err.path.join('.')
+            path: err.path.join('.'),
           })),
-          suggestions: ['Review input format and try again']
+          suggestions: ['Review input format and try again'],
         };
       }
 
@@ -134,17 +148,19 @@ class UnifiedValidator {
         isValid: true,
         errors: [],
         suggestions: [],
-        data: parsed.data
+        data: parsed.data,
       };
     } catch (error) {
       return {
         isValid: false,
-        errors: [{
-          type: 'runtime-error' as const,
-          message: 'Validation failed with exception',
-          suggestions: ['Check input structure and types']
-        }],
-        suggestions: ['Verify input is in correct format']
+        errors: [
+          {
+            type: 'runtime-error' as const,
+            message: 'Validation failed with exception',
+            suggestions: ['Check input structure and types'],
+          },
+        ],
+        suggestions: ['Verify input is in correct format'],
       };
     }
   }
@@ -156,47 +172,48 @@ class UnifiedValidator {
 ### 2.1 Create Migration Adapters
 
 **Bridge Legacy and Unified Types:**
+
 ```typescript
 // src/types/migration-adapters.ts
 export class TypeMigrationAdapter {
   // Convert legacy ValidationResult to unified format
-  static adaptValidationResult(
-    legacy: any
-  ): UnifiedValidationResult {
+  static adaptValidationResult(legacy: any): UnifiedValidationResult {
     if ('success' in legacy) {
       // Legacy {success, data, error} format
       return {
         isValid: legacy.success,
         errors: legacy.error ? [this.adaptError(legacy.error)] : [],
         suggestions: legacy.suggestions || [],
-        data: legacy.data
+        data: legacy.data,
       };
     }
-    
+
     if ('isValid' in legacy) {
       // Already in unified format, just ensure suggestions is array
       return {
         ...legacy,
         errors: legacy.errors.map((err: any) => ({
           ...err,
-          suggestions: Array.isArray(err.suggestions) 
-            ? err.suggestions 
-            : err.suggestions 
-              ? [err.suggestions] 
-              : []
-        }))
+          suggestions: Array.isArray(err.suggestions)
+            ? err.suggestions
+            : err.suggestions
+              ? [err.suggestions]
+              : [],
+        })),
       };
     }
-    
+
     // Unknown format, return error
     return {
       isValid: false,
-      errors: [{
-        type: 'runtime-error',
-        message: 'Unknown validation result format',
-        suggestions: ['Use UnifiedValidationResult interface']
-      }],
-      suggestions: ['Migrate to unified type system']
+      errors: [
+        {
+          type: 'runtime-error',
+          message: 'Unknown validation result format',
+          suggestions: ['Use UnifiedValidationResult interface'],
+        },
+      ],
+      suggestions: ['Migrate to unified type system'],
     };
   }
 
@@ -212,7 +229,7 @@ export class TypeMigrationAdapter {
             ? [error.suggestions]
             : ['Check error details'],
       path: error.path,
-      code: error.code
+      code: error.code,
     };
   }
 }
@@ -221,6 +238,7 @@ export class TypeMigrationAdapter {
 ### 2.2 Remove Any Types Systematically
 
 **Replace Any with Proper Types:**
+
 ```typescript
 // BEFORE: Heavy any usage
 function processCommand(command: any): any {
@@ -251,6 +269,7 @@ function processCommand<TInput, TOutput>(
 ### 2.3 Fix Generic Type Constraints
 
 **Correct Interface Implementations:**
+
 ```typescript
 // BEFORE: Incorrect generic usage
 export class EnhancedAdditionExpression implements BaseTypedExpression<BinaryOperationInput, number> {
@@ -258,7 +277,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<BinaryOpe
 // AFTER: Correct generic usage based on actual interface
 export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
   async evaluate(
-    context: UnifiedExecutionContext, 
+    context: UnifiedExecutionContext,
     input: unknown
   ): Promise<UnifiedValidationResult<number>> {
     // Implementation with proper typing
@@ -271,6 +290,7 @@ export class EnhancedAdditionExpression implements BaseTypedExpression<number> {
 ### 3.1 Establish Clear Module Boundaries
 
 **Reorganize Type System:**
+
 ```
 src/types/
 ├── unified-types.ts           # Core unified types
@@ -283,25 +303,22 @@ src/types/
 ```
 
 **Clear Export Strategy:**
+
 ```typescript
 // src/types/index.ts - Single point of entry
 export type {
   UnifiedValidationError,
   UnifiedValidationResult,
   UnifiedHyperScriptValueType,
-  UnifiedExecutionContext
+  UnifiedExecutionContext,
 } from './unified-types.js';
 
-export type {
-  TypedCommand,
-  CommandCategory,
-  CommandMetadata
-} from './command-types.js';
+export type { TypedCommand, CommandCategory, CommandMetadata } from './command-types.js';
 
 export type {
   TypedExpression,
   ExpressionCategory,
-  ExpressionMetadata
+  ExpressionMetadata,
 } from './expression-types.js';
 
 // Migration support (temporary)
@@ -311,6 +328,7 @@ export { TypeMigrationAdapter } from './migration-adapters.js';
 ### 3.2 Establish Import Conventions
 
 **Standardized Import Patterns:**
+
 ```typescript
 // All internal imports use relative paths with .js extension
 import type { UnifiedValidationResult } from '../types/index.js';
@@ -327,6 +345,7 @@ import type { SomeType } from './module.js';
 ### 4.1 Systematic Migration Implementation
 
 **File-by-File Migration Process:**
+
 1. **Audit current imports** in each file
 2. **Replace with unified type imports**
 3. **Update interface implementations**
@@ -337,6 +356,7 @@ import type { SomeType } from './module.js';
 ### 4.2 Comprehensive Testing Strategy
 
 **Type Safety Validation:**
+
 ```typescript
 // Test unified type system
 describe('Unified Type System', () => {
@@ -345,9 +365,9 @@ describe('Unified Type System', () => {
       isValid: true,
       errors: [],
       suggestions: [],
-      data: 'test'
+      data: 'test',
     };
-    
+
     expect(result.isValid).toBe(true);
     expect(result.errors).toHaveLength(0);
     expect(result.suggestions).toBeInstanceOf(Array);
@@ -359,10 +379,10 @@ describe('Unified Type System', () => {
       error: {
         type: 'validation-error',
         message: 'Invalid input',
-        suggestion: 'Fix the input'
-      }
+        suggestion: 'Fix the input',
+      },
     };
-    
+
     const unified = TypeMigrationAdapter.adaptValidationResult(legacy);
     expect(unified.isValid).toBe(false);
     expect(unified.errors[0].suggestions).toBeInstanceOf(Array);
@@ -373,6 +393,7 @@ describe('Unified Type System', () => {
 ### 4.3 Build System Configuration
 
 **TypeScript Configuration Updates:**
+
 ```json
 // tsconfig.json
 {
@@ -394,6 +415,7 @@ describe('Unified Type System', () => {
 ### 5.1 Comprehensive Type Checking
 
 **Validation Steps:**
+
 1. **Run TypeScript compiler** with strict mode
 2. **Execute all tests** with new type system
 3. **Validate import paths** are correct
@@ -403,11 +425,12 @@ describe('Unified Type System', () => {
 ### 5.2 Performance Optimization
 
 **Type System Performance:**
+
 ```typescript
 // Optimize validation performance
 class OptimizedValidator {
   private static schemaCache = new Map<string, z.ZodSchema>();
-  
+
   static validateWithCache<T>(
     input: unknown,
     schemaKey: string,
@@ -418,7 +441,7 @@ class OptimizedValidator {
       schema = schemaFactory();
       this.schemaCache.set(schemaKey, schema);
     }
-    
+
     return UnifiedValidator.validateInput(input, schema as z.ZodSchema<T>);
   }
 }
@@ -427,12 +450,14 @@ class OptimizedValidator {
 ## 📊 Success Metrics
 
 ### Type Safety Metrics
+
 - **Zero TypeScript compilation errors**
 - **Zero any type usage** in core interfaces
 - **100% validation interface consistency**
 - **Complete import path resolution**
 
 ### Performance Metrics
+
 - **Sub-10ms validation times** for common operations
 - **Zero runtime type errors** in production
 - **95%+ test coverage** for type system
@@ -440,29 +465,32 @@ class OptimizedValidator {
 
 ## 🚀 Implementation Timeline
 
-| Phase | Duration | Focus | Deliverables |
-|-------|----------|-------|-------------|
-| **Phase 1** | Week 1 | Type Consolidation | Unified type definitions, import fixes |
-| **Phase 2** | Week 2 | Compatibility Layer | Migration adapters, any type removal |
-| **Phase 3** | Week 3 | Module Reorganization | Clear module boundaries, export strategy |
-| **Phase 4** | Week 4 | Implementation | File migration, comprehensive testing |
-| **Phase 5** | Week 5 | Validation | Type checking, performance optimization |
+| Phase       | Duration | Focus                 | Deliverables                             |
+| ----------- | -------- | --------------------- | ---------------------------------------- |
+| **Phase 1** | Week 1   | Type Consolidation    | Unified type definitions, import fixes   |
+| **Phase 2** | Week 2   | Compatibility Layer   | Migration adapters, any type removal     |
+| **Phase 3** | Week 3   | Module Reorganization | Clear module boundaries, export strategy |
+| **Phase 4** | Week 4   | Implementation        | File migration, comprehensive testing    |
+| **Phase 5** | Week 5   | Validation            | Type checking, performance optimization  |
 
 ## 🎯 Expected Outcomes
 
 ### For Development Team
+
 - **Unified type system** across all packages
 - **Consistent development experience** with predictable types
 - **Faster development velocity** through better type inference
 - **Reduced debugging time** with comprehensive type safety
 
 ### For Codebase Health
+
 - **Zero architectural type conflicts**
 - **Maintainable type system** with clear ownership
 - **Scalable foundation** for future enhancements
 - **Improved code quality** through type enforcement
 
 ### For Long-term Success
+
 - **Future-proof architecture** ready for new features
 - **Clear migration path** for external integrations
 - **Comprehensive documentation** for type system usage
@@ -473,13 +501,15 @@ This plan systematically addresses the root causes of architectural type conflic
 ## 📈 Progress Update: Phase 4 TypeScript Error Resolution
 
 ### ✅ **Recent Achievements (Phase 4 Completion)**
+
 - **Error Reduction**: Successfully reduced TypeScript errors from ~1000 to **917 errors** (83+ errors resolved)
 - **HyperScriptValueType Issues**: Resolved import path conflicts and type assignment issues in event command files
-- **Argument Type Safety**: Fixed undefined argument issues in `send.ts` and `trigger.ts` 
+- **Argument Type Safety**: Fixed undefined argument issues in `send.ts` and `trigger.ts`
 - **Error Type Standardization**: Corrected invalid error type literals (`'missing-target'` → `'missing-argument'`)
 - **Context Property Alignment**: Fixed missing `result` property usage by migrating to `context.it`
 
 ### 🔧 **Immediate Next Steps (High Priority)**
+
 Based on latest diagnostics, the following critical issues require immediate attention:
 
 1. **Import Resolution Failures** (Critical):
@@ -496,18 +526,21 @@ Based on latest diagnostics, the following critical issues require immediate att
    - Unused error variables need underscore prefixing
 
 ### 🎯 **Phase 5 Focus Areas (Revised)**
+
 1. **Type System Unification**: Resolve ValidationError interface conflicts and standardize on unified types
 2. **Import/Export Resolution**: Fix circular dependencies and missing type definitions
 3. **Command Type Safety**: Complete EvaluationResult standardization across all command implementations
 4. **Systematic Error Reduction**: Continue proven methodology with realistic progress tracking
 
 ### 📊 **Corrected Progress Assessment**
+
 - **Actual Current Progress**: ~8% reduction from peak error count (1000+ → 917 errors)
 - **Target**: Achieve sub-800 errors through type system consolidation
 - **Quality**: Maintained zero regressions in modified files while expanding fixes
 - **Methodology**: Proven systematic approach with accurate progress tracking requires continuation
 
 ### 📊 **Final Success Metrics**
+
 - **TypeScript Compilation**: ✅ **CLEAN** - Zero errors across all core package files
 - **Type Safety**: ✅ **COMPLETE** - All files pass strict TypeScript checks
 - **Import Resolution**: ✅ **RESOLVED** - All module imports working correctly

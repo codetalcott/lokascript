@@ -9,7 +9,9 @@
 ## 🔍 Investigation Summary
 
 ### Problem Description
-The full official _hyperscript test suite (`full-official-suite.spec.ts`) was running extremely slowly:
+
+The full official \_hyperscript test suite (`full-official-suite.spec.ts`) was running extremely slowly:
+
 - Only processed ~3-4 files in 90 seconds
 - Estimated 30-40+ minutes to complete all 81 files
 - Would timeout even with 10-minute limit
@@ -34,7 +36,7 @@ The full official _hyperscript test suite (`full-official-suite.spec.ts`) was ru
    - Checked `official-test-suite.html`
    - **FOUND**: It's just a redirect page!
    - Redirects to `/src/compatibility/hyperscript-tests/test-runner.html`
-   - **Does not load any _hyperscript or HyperFixi code**
+   - **Does not load any \_hyperscript or LokaScript code**
 
 ---
 
@@ -43,23 +45,27 @@ The full official _hyperscript test suite (`full-official-suite.spec.ts`) was ru
 ### Issue 1: Wrong Page URL
 
 **Current (WRONG):**
+
 ```typescript
 await page.goto('http://127.0.0.1:3000/official-test-suite.html');
 ```
 
 **This page:**
+
 - Is just HTML with a redirect script
 - Never defines `window._hyperscript`
-- Never loads HyperFixi bundle
+- Never loads LokaScript bundle
 - Redirects after 3 seconds to actual test runner
 
 **Correct:**
+
 ```typescript
 await page.goto('http://127.0.0.1:3000/src/compatibility/hyperscript-tests/test-runner.html');
 ```
 
 **This page:**
-- Loads `/dist/hyperfixi-browser.js`
+
+- Loads `/dist/lokascript-browser.js`
 - Sets up test utilities
 - Provides `evalHyperScript()` helper
 - Ready for testing
@@ -69,7 +75,7 @@ await page.goto('http://127.0.0.1:3000/src/compatibility/hyperscript-tests/test-
 The test extraction regex on lines 79-83 of `full-official-suite.spec.ts` uses nested quantifiers:
 
 ```typescript
-/it\s*\(\s*["']([^"']+)["']\s*,\s*function\s*\(\s*\)\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/g
+/it\s*\(\s*["']([^"']+)["']\s*,\s*function\s*\(\s*\)\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/g;
 ```
 
 The pattern `[^}]*(?:\{[^}]*\}[^}]*)*` can cause exponential time complexity with nested braces.
@@ -85,6 +91,7 @@ The pattern `[^}]*(?:\{[^}]*\}[^}]*)*` can cause exponential time complexity wit
 **File:** `full-official-suite.spec.ts`
 
 **Lines to change:**
+
 ```typescript
 // BEFORE (line ~16 and anywhere else used)
 await page.goto('http://127.0.0.1:3000/official-test-suite.html');
@@ -111,11 +118,13 @@ Then only extract detailed test cases when needed.
 ## 📊 Expected Impact
 
 **Before Fix:**
+
 - Test suite: 30-40+ minutes (estimated)
 - Cause: 60s timeout × ~81 files = ~81 minutes potential
 - Actual: Would hit 10-minute playwright timeout first
 
 **After Fix:**
+
 - Test suite: 5-10 minutes (estimated)
 - Each file processes in seconds instead of timing out
 - Should complete within 10-minute timeout
@@ -140,12 +149,14 @@ Then only extract detailed test cases when needed.
 ## 📁 Files Involved
 
 ### Files to Fix
+
 1. **`packages/core/src/compatibility/browser-tests/full-official-suite.spec.ts`**
    - Line ~16: Change page.goto() URL
    - Line ~17: Change waitForFunction() check
    - Lines 79-83: (Optional) Simplify regex
 
 ### Debug Files Created
+
 2. **`packages/core/src/compatibility/browser-tests/debug-expressions-only.spec.ts`**
    - Debug test runner with timing logs
    - Can be deleted after fix verified

@@ -10,6 +10,7 @@
 ## Overview
 
 Phase 2 builds on Phase 1's lazy loading foundation by implementing:
+
 1. **Dynamic imports** for commands (replace `require()` with `import()`)
 2. **Lazy expression evaluator** with on-demand category loading
 3. **Expression tiers** (core/common/optional) for granular optimization
@@ -21,6 +22,7 @@ Phase 2 builds on Phase 1's lazy loading foundation by implementing:
 ### Expression Categories (22 total)
 
 From `src/expressions/`:
+
 ```
 ✓ references/      - me, you, it, CSS selectors (CORE)
 ✓ logical/         - comparisons, boolean logic (CORE)
@@ -49,11 +51,13 @@ From `src/expressions/`:
 ### Current Bundle Breakdown
 
 **Current Implementation** (Phase 1):
+
 - Commands: Lazy loaded (require-based) ✅
 - Expressions: All imported upfront (~1.5MB source) ❌
 - Total minimal bundle: 83KB gzipped
 
 **Phase 2 Target**:
+
 - Commands: Dynamic imports (async loading) ✅
 - Expressions: Lazy loaded by tier ✅
 - Expected minimal bundle: 50-60KB gzipped
@@ -67,6 +71,7 @@ From `src/expressions/`:
 **File**: `src/runtime/command-adapter.ts`
 
 **Current** (synchronous require):
+
 ```typescript
 private loadCommand(name: string): any {
   const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
@@ -76,6 +81,7 @@ private loadCommand(name: string): any {
 ```
 
 **Target** (async dynamic import):
+
 ```typescript
 private async loadCommand(name: string): Promise<any> {
   const module = await import('../commands/command-registry');
@@ -85,6 +91,7 @@ private async loadCommand(name: string): Promise<any> {
 ```
 
 **Impact**:
+
 - True code splitting (commands in separate chunks)
 - Reduces initial bundle by ~40-60KB for minimal bundle
 - Commands loaded on first use (~1-2ms delay)
@@ -104,31 +111,44 @@ private async loadCommand(name: string): Promise<any> {
 export const EXPRESSION_TIERS = {
   // CORE - Always loaded (required for any hyperscript)
   core: [
-    'references',   // me, you, it, CSS selectors
-    'logical',      // comparisons, boolean logic
-    'special'       // literals, math operators
+    'references', // me, you, it, CSS selectors
+    'logical', // comparisons, boolean logic
+    'special', // literals, math operators
   ],
 
   // COMMON - High usage (loaded for most apps)
   common: [
-    'properties',   // possessive syntax
-    'conversion',   // as keyword
-    'comparison'    // matches, contains
+    'properties', // possessive syntax
+    'conversion', // as keyword
+    'comparison', // matches, contains
   ],
 
   // OPTIONAL - Low usage (loaded on demand)
   optional: [
-    'positional', 'mathematical', 'function-calls', 'form',
-    'array', 'time', 'possessive', 'object', 'in', 'string',
-    'some', 'symbol', 'not', 'as', 'property', 'advanced'
-  ]
+    'positional',
+    'mathematical',
+    'function-calls',
+    'form',
+    'array',
+    'time',
+    'possessive',
+    'object',
+    'in',
+    'string',
+    'some',
+    'symbol',
+    'not',
+    'as',
+    'property',
+    'advanced',
+  ],
 } as const;
 
 export type ExpressionTier = keyof typeof EXPRESSION_TIERS;
 export type ExpressionCategory =
-  | typeof EXPRESSION_TIERS.core[number]
-  | typeof EXPRESSION_TIERS.common[number]
-  | typeof EXPRESSION_TIERS.optional[number];
+  | (typeof EXPRESSION_TIERS.core)[number]
+  | (typeof EXPRESSION_TIERS.common)[number]
+  | (typeof EXPRESSION_TIERS.optional)[number];
 ```
 
 ---
@@ -243,28 +263,28 @@ export class LazyExpressionEvaluator {
     // Map node types to categories
     const typeToCategory: Record<string, string> = {
       // References
-      'me': 'references',
-      'you': 'references',
-      'it': 'references',
-      'cssReference': 'references',
-      'queryRef': 'references',
+      me: 'references',
+      you: 'references',
+      it: 'references',
+      cssReference: 'references',
+      queryRef: 'references',
 
       // Logical
-      'comparison': 'logical',
-      'binaryExpression': 'logical',
-      'logicalExpression': 'logical',
+      comparison: 'logical',
+      binaryExpression: 'logical',
+      logicalExpression: 'logical',
 
       // Special
-      'literal': 'special',
-      'numberLiteral': 'special',
-      'stringLiteral': 'special',
+      literal: 'special',
+      numberLiteral: 'special',
+      stringLiteral: 'special',
 
       // Properties
-      'possessive': 'properties',
-      'attributeRef': 'properties',
+      possessive: 'properties',
+      attributeRef: 'properties',
 
       // Conversion
-      'asExpression': 'conversion',
+      asExpression: 'conversion',
 
       // And more...
     };
@@ -281,6 +301,7 @@ export class LazyExpressionEvaluator {
 **File**: `src/runtime/runtime.ts`
 
 **Changes**:
+
 ```typescript
 import { LazyExpressionEvaluator } from '../core/lazy-expression-evaluator';
 
@@ -295,6 +316,7 @@ constructor(options: RuntimeOptions = {}) {
 ```
 
 **New RuntimeOptions**:
+
 ```typescript
 export interface RuntimeOptions {
   // ...existing options...
@@ -314,28 +336,31 @@ export interface RuntimeOptions {
 ### Task 5: Update Browser Bundles 📦
 
 **Minimal Bundle** - Core expressions only:
+
 ```typescript
 const runtime = new Runtime({
   lazyLoad: true,
   commands: MINIMAL_COMMANDS,
-  expressionPreload: 'core'  // NEW: Only load core expressions
+  expressionPreload: 'core', // NEW: Only load core expressions
 });
 ```
 
 **Standard Bundle** - Common expressions:
+
 ```typescript
 const runtime = new Runtime({
   lazyLoad: true,
   commands: STANDARD_COMMANDS,
-  expressionPreload: 'common'  // NEW: Load core + common
+  expressionPreload: 'common', // NEW: Load core + common
 });
 ```
 
 **Full Bundle** - All expressions (legacy):
+
 ```typescript
 const runtime = new Runtime({
-  lazyLoad: false,  // Legacy eager loading
-  expressionPreload: 'all'  // Load everything
+  lazyLoad: false, // Legacy eager loading
+  expressionPreload: 'all', // Load everything
 });
 ```
 
@@ -344,6 +369,7 @@ const runtime = new Runtime({
 ## Expected Bundle Sizes
 
 ### Before Phase 2 (Current)
+
 ```
 Minimal:  83KB gzipped (all expressions loaded)
 Standard: 83KB gzipped (all expressions loaded)
@@ -351,6 +377,7 @@ Full:     193KB gzipped (all commands + expressions)
 ```
 
 ### After Phase 2 (Target)
+
 ```
 Minimal:  50-60KB gzipped (core expressions only)
   - Commands: 8 (lazy loaded)
@@ -375,16 +402,19 @@ Full:     180-190KB gzipped (all expressions, dynamic chunks)
 ### Latency Trade-offs
 
 **Command loading** (first use):
+
 - Before: Synchronous (~0.1ms)
 - After: Async dynamic import (~1-2ms)
 - Impact: Negligible for user experience
 
 **Expression loading** (first use):
+
 - Core: Pre-loaded (0ms)
 - Common: On-demand (~2-3ms first time)
 - Optional: On-demand (~2-3ms first time)
 
 **Mitigation**: Warmup API
+
 ```typescript
 // Preload specific categories
 await runtime.warmupExpressions(['positional', 'mathematical']);
@@ -395,12 +425,14 @@ await runtime.warmupExpressions(['positional', 'mathematical']);
 ## Rollout Strategy
 
 ### Week 1: Infrastructure
+
 - [x] Day 1-2: Convert commands to dynamic imports
 - [x] Day 2-3: Create expression tier system
 - [x] Day 3-4: Implement LazyExpressionEvaluator
 - [ ] Day 4-5: Update Runtime integration
 
 ### Week 2: Testing & Validation
+
 - [ ] Day 1-2: Update browser bundles
 - [ ] Day 2-3: Comprehensive testing
 - [ ] Day 3-4: Bundle size verification
@@ -415,21 +447,21 @@ await runtime.warmupExpressions(['positional', 'mathematical']);
 **No changes required!** Lazy expression loading is automatic:
 
 ```typescript
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 
 // Default (core expressions preloaded, common/optional lazy)
 const runtime = new Runtime();
 
 // Explicit (recommended for production)
 const runtime = new Runtime({
-  expressionPreload: 'core',  // Minimal bundle
-  commands: ['add', 'remove', 'toggle']
+  expressionPreload: 'core', // Minimal bundle
+  commands: ['add', 'remove', 'toggle'],
 });
 
 // Full compatibility (legacy behavior)
 const runtime = new Runtime({
   expressionPreload: 'all',
-  lazyLoad: false
+  lazyLoad: false,
 });
 ```
 
@@ -439,13 +471,13 @@ const runtime = new Runtime({
 
 ```html
 <!-- Minimal (50-60KB gzipped) - Core expressions -->
-<script src="dist/hyperfixi-browser-minimal.js"></script>
+<script src="dist/lokascript-browser-minimal.js"></script>
 
 <!-- Standard (100-110KB gzipped) - Common expressions -->
-<script src="dist/hyperfixi-browser-standard.js"></script>
+<script src="dist/lokascript-browser-standard.js"></script>
 
 <!-- Full (190KB gzipped) - All expressions -->
-<script src="dist/hyperfixi-browser.js"></script>
+<script src="dist/lokascript-browser.js"></script>
 ```
 
 ---
@@ -453,16 +485,19 @@ const runtime = new Runtime({
 ## Testing Strategy
 
 ### 1. Unit Tests
+
 - LazyExpressionEvaluator category loading
 - Dynamic import resolution
 - Expression registry management
 
 ### 2. Integration Tests
+
 - Command execution with async loading
 - Expression evaluation with lazy categories
 - Mixed sync/async operations
 
 ### 3. Bundle Size Tests
+
 ```bash
 # Verify sizes
 npm run build:browser:all
@@ -475,6 +510,7 @@ npm run size:analysis
 ```
 
 ### 4. Performance Tests
+
 - Measure lazy load latency
 - Verify warmup API effectiveness
 - Check memory usage
@@ -484,22 +520,28 @@ npm run size:analysis
 ## Risks & Mitigation
 
 ### Risk 1: Async Breaking Changes
+
 **Risk**: Dynamic imports change command loading from sync to async
 **Mitigation**:
+
 - Maintain backward compatibility with eager loading option
 - Deprecation warnings for 2 versions before removal
 - Comprehensive testing
 
 ### Risk 2: Expression Category Mapping
+
 **Risk**: Incorrect node type → category mapping
 **Mitigation**:
+
 - Fallback to loading all categories if mapping fails
 - Extensive testing of all expression types
 - Warning logs for unmapped types
 
 ### Risk 3: Build Complexity
+
 **Risk**: Dynamic imports complicate build configuration
 **Mitigation**:
+
 - Test build in multiple environments
 - Document rollup/webpack configuration requirements
 - Provide troubleshooting guide

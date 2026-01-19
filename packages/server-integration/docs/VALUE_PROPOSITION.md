@@ -1,8 +1,8 @@
-# HyperFixi Server Integration: Value Proposition Analysis
+# LokaScript Server Integration: Value Proposition Analysis
 
 ## Executive Summary
 
-The `@hyperfixi/server-integration` package transforms hyperscript from a client-side scripting language into a managed compilation service with enterprise SaaS infrastructure. This document analyzes the current value proposition, identifies gaps, and recommends improvements to maximize commercial viability.
+The `@lokascript/server-integration` package transforms hyperscript from a client-side scripting language into a managed compilation service with enterprise SaaS infrastructure. This document analyzes the current value proposition, identifies gaps, and recommends improvements to maximize commercial viability.
 
 ---
 
@@ -12,39 +12,39 @@ The `@hyperfixi/server-integration` package transforms hyperscript from a client
 
 #### For Individual Developers
 
-| Value | Description | Quantified Benefit |
-|-------|-------------|-------------------|
-| **Smaller bundles** | Ship 15KB runtime vs 250KB full parser | 94% reduction in JS payload |
-| **Zero config** | API call replaces build tooling | Skip webpack/vite plugin setup |
-| **Dynamic compilation** | Compile user-generated or CMS content | Enable no-code builders |
-| **Multi-language** | Author in 13 native languages | Accessibility for non-English teams |
+| Value                   | Description                            | Quantified Benefit                  |
+| ----------------------- | -------------------------------------- | ----------------------------------- |
+| **Smaller bundles**     | Ship 15KB runtime vs 250KB full parser | 94% reduction in JS payload         |
+| **Zero config**         | API call replaces build tooling        | Skip webpack/vite plugin setup      |
+| **Dynamic compilation** | Compile user-generated or CMS content  | Enable no-code builders             |
+| **Multi-language**      | Author in 13 native languages          | Accessibility for non-English teams |
 
 #### For Organizations
 
-| Value | Description | Quantified Benefit |
-|-------|-------------|-------------------|
-| **Source protection** | Compiled JS only reaches client | IP protection for proprietary UI |
-| **Usage analytics** | Track commands, patterns, errors | Data-driven training & optimization |
-| **Audit trail** | Every request logged with metadata | SOC 2 / HIPAA compliance support |
-| **Turnkey billing** | Stripe integration included | 2-4 weeks dev time saved |
+| Value                 | Description                        | Quantified Benefit                  |
+| --------------------- | ---------------------------------- | ----------------------------------- |
+| **Source protection** | Compiled JS only reaches client    | IP protection for proprietary UI    |
+| **Usage analytics**   | Track commands, patterns, errors   | Data-driven training & optimization |
+| **Audit trail**       | Every request logged with metadata | SOC 2 / HIPAA compliance support    |
+| **Turnkey billing**   | Stripe integration included        | 2-4 weeks dev time saved            |
 
 #### For Platform Providers
 
-| Value | Description | Quantified Benefit |
-|-------|-------------|-------------------|
-| **White-label ready** | Multi-tenant API key isolation | Resell to your customers |
-| **Flexible pricing** | Subscription, usage-based, or hybrid | Match your business model |
-| **Self-host option** | Deploy on your infrastructure | Enterprise sales enablement |
+| Value                 | Description                          | Quantified Benefit          |
+| --------------------- | ------------------------------------ | --------------------------- |
+| **White-label ready** | Multi-tenant API key isolation       | Resell to your customers    |
+| **Flexible pricing**  | Subscription, usage-based, or hybrid | Match your business model   |
+| **Self-host option**  | Deploy on your infrastructure        | Enterprise sales enablement |
 
 ### 1.2 Competitive Landscape
 
-| Approach | Bundle Size | Dynamic Content | Source Protection | Multi-Language | Analytics |
-|----------|-------------|-----------------|-------------------|----------------|-----------|
-| Client-side hyperscript | Large | Yes | No | No | No |
-| Build-time (esbuild/vite) | Small | No | Partial | No | No |
-| **HyperFixi API** | Small | Yes | Yes | Yes | Yes |
+| Approach                  | Bundle Size | Dynamic Content | Source Protection | Multi-Language | Analytics |
+| ------------------------- | ----------- | --------------- | ----------------- | -------------- | --------- |
+| Client-side hyperscript   | Large       | Yes             | No                | No             | No        |
+| Build-time (esbuild/vite) | Small       | No              | Partial           | No             | No        |
+| **LokaScript API**        | Small       | Yes             | Yes               | Yes            | Yes       |
 
-**Positioning**: HyperFixi API is the only solution combining runtime flexibility with build-time efficiency, plus enterprise features.
+**Positioning**: LokaScript API is the only solution combining runtime flexibility with build-time efficiency, plus enterprise features.
 
 ---
 
@@ -52,34 +52,34 @@ The `@hyperfixi/server-integration` package transforms hyperscript from a client
 
 ### 2.1 Missing Features (High Impact)
 
-| Gap | Impact | Effort | Priority |
-|-----|--------|--------|----------|
-| No client SDK | Developers write fetch boilerplate | Low | P0 |
-| No caching layer | Repeated compilations waste compute | Medium | P0 |
-| In-memory rate limits | State lost on restart, can't scale horizontally | Medium | P1 |
-| No WebSocket support | Can't push compiled updates to clients | Medium | P1 |
-| Single framework (Express) | Excludes Fastify, Hono, Bun users | Medium | P2 |
+| Gap                        | Impact                                          | Effort | Priority |
+| -------------------------- | ----------------------------------------------- | ------ | -------- |
+| No client SDK              | Developers write fetch boilerplate              | Low    | P0       |
+| No caching layer           | Repeated compilations waste compute             | Medium | P0       |
+| In-memory rate limits      | State lost on restart, can't scale horizontally | Medium | P1       |
+| No WebSocket support       | Can't push compiled updates to clients          | Medium | P1       |
+| Single framework (Express) | Excludes Fastify, Hono, Bun users               | Medium | P2       |
 
 ### 2.2 Missing Integrations (Market Expansion)
 
-| Integration | Target Market | Effort | Priority |
-|-------------|---------------|--------|----------|
-| Django/Python | Python web developers | Medium | P1 |
-| Rails/Ruby | Ruby ecosystem | Medium | P2 |
-| Laravel/PHP | PHP ecosystem | Medium | P2 |
-| Bun native | Performance-focused JS developers | Low | P1 |
-| Deno Deploy | Edge deployment users | Low | P2 |
-| Cloudflare Workers | Edge/serverless users | Medium | P1 |
+| Integration        | Target Market                     | Effort | Priority |
+| ------------------ | --------------------------------- | ------ | -------- |
+| Django/Python      | Python web developers             | Medium | P1       |
+| Rails/Ruby         | Ruby ecosystem                    | Medium | P2       |
+| Laravel/PHP        | PHP ecosystem                     | Medium | P2       |
+| Bun native         | Performance-focused JS developers | Low    | P1       |
+| Deno Deploy        | Edge deployment users             | Low    | P2       |
+| Cloudflare Workers | Edge/serverless users             | Medium | P1       |
 
 ### 2.3 Missing Enterprise Features
 
-| Feature | Enterprise Need | Effort | Priority |
-|---------|-----------------|--------|----------|
-| SSO/SAML | Corporate identity | High | P2 |
-| Admin dashboard | Usage visibility, key management | High | P2 |
-| Compilation previews | Validate before deploy | Low | P1 |
-| Batch compilation API | CI/CD integration | Low | P0 |
-| Versioned output | Rollback compiled scripts | Medium | P2 |
+| Feature               | Enterprise Need                  | Effort | Priority |
+| --------------------- | -------------------------------- | ------ | -------- |
+| SSO/SAML              | Corporate identity               | High   | P2       |
+| Admin dashboard       | Usage visibility, key management | High   | P2       |
+| Compilation previews  | Validate before deploy           | Low    | P1       |
+| Batch compilation API | CI/CD integration                | Low    | P0       |
+| Versioned output      | Rollback compiled scripts        | Medium | P2       |
 
 ---
 
@@ -90,10 +90,10 @@ The `@hyperfixi/server-integration` package transforms hyperscript from a client
 #### 3.1.1 TypeScript Client SDK
 
 ```typescript
-// @hyperfixi/client
-import { HyperFixi } from '@hyperfixi/client';
+// @lokascript/client
+import { LokaScript } from '@lokascript/client';
 
-const hfx = new HyperFixi({ apiKey: 'hfx_...' });
+const hfx = new LokaScript({ apiKey: 'hfx_...' });
 
 // Simple compilation
 const result = await hfx.compile({
@@ -112,8 +112,9 @@ const batch = await hfx.compileBatch([
 ```
 
 **Deliverables**:
+
 - `packages/client/` - TypeScript SDK with automatic retries, caching
-- Published to npm as `@hyperfixi/client`
+- Published to npm as `@lokascript/client`
 - Browser and Node.js compatible
 
 #### 3.1.2 Redis Cache Adapter
@@ -136,6 +137,7 @@ const service = new HyperfixiService({
 ```
 
 **Benefits**:
+
 - 10-100x faster for repeated compilations
 - Shared cache across API instances
 - Reduces compute costs
@@ -163,9 +165,10 @@ POST /api/compile/batch
 #### 3.2.1 Platform Adapters
 
 **Bun Native Server**
+
 ```typescript
-// @hyperfixi/adapter-bun
-import { createBunHandler } from '@hyperfixi/adapter-bun';
+// @lokascript/adapter-bun
+import { createBunHandler } from '@lokascript/adapter-bun';
 
 Bun.serve({
   port: 3000,
@@ -174,9 +177,10 @@ Bun.serve({
 ```
 
 **Cloudflare Workers**
+
 ```typescript
-// @hyperfixi/adapter-cloudflare
-import { createWorkerHandler } from '@hyperfixi/adapter-cloudflare';
+// @lokascript/adapter-cloudflare
+import { createWorkerHandler } from '@lokascript/adapter-cloudflare';
 
 export default {
   fetch: createWorkerHandler({
@@ -187,27 +191,28 @@ export default {
 ```
 
 **Fastify Plugin**
+
 ```typescript
-// @hyperfixi/adapter-fastify
+// @lokascript/adapter-fastify
 import fastify from 'fastify';
-import { hyperfixiPlugin } from '@hyperfixi/adapter-fastify';
+import { lokascriptPlugin } from '@lokascript/adapter-fastify';
 
 const app = fastify();
-app.register(hyperfixiPlugin, { db, stripe, salt });
+app.register(lokascriptPlugin, { db, stripe, salt });
 ```
 
 #### 3.2.2 Django Integration
 
 ```python
-# hyperfixi-django
-from hyperfixi import HyperFixiClient
+# lokascript-django
+from lokascript import LokaScriptClient
 
 # settings.py
 HYPERFIXI_API_KEY = 'hfx_...'
 HYPERFIXI_CACHE = 'default'  # Use Django cache
 
 # views.py
-from hyperfixi.django import compile_hyperscript
+from lokascript.django import compile_hyperscript
 
 def my_view(request):
     compiled = compile_hyperscript({
@@ -216,22 +221,24 @@ def my_view(request):
     return render(request, 'template.html', {'scripts': compiled})
 
 # Template tag
-{% load hyperfixi %}
+{% load lokascript %}
 {% hyperscript "on click toggle .active" %}
 ```
 
-**Package**: `hyperfixi-django` on PyPI
+**Package**: `lokascript-django` on PyPI
 
 #### 3.2.3 WebSocket Compilation Stream
 
 ```typescript
 // Client
-const ws = new WebSocket('wss://api.hyperfixi.dev/ws');
-ws.send(JSON.stringify({
-  action: 'compile',
-  scripts: { main: '...' }
-}));
-ws.onmessage = (e) => {
+const ws = new WebSocket('wss://api.lokascript.dev/ws');
+ws.send(
+  JSON.stringify({
+    action: 'compile',
+    scripts: { main: '...' },
+  })
+);
+ws.onmessage = e => {
   const { compiled } = JSON.parse(e.data);
   // Hot-reload compiled script
 };
@@ -244,6 +251,7 @@ ws.onmessage = (e) => {
 #### 3.3.1 Admin Dashboard
 
 React-based dashboard for:
+
 - API key management (create, revoke, rotate)
 - Usage analytics (charts, exports)
 - Team management (invite members, assign roles)
@@ -256,6 +264,7 @@ POST /api/preview
 ```
 
 Returns:
+
 - Compiled JavaScript (non-minified)
 - AST visualization
 - Detected patterns and commands
@@ -289,6 +298,7 @@ POST /api/ai/generate
 ```
 
 **Response**:
+
 ```json
 {
   "script": "on click from #submit validate() then add .loading to me then fetch /api/submit { method: 'POST', body: closest <form/> } then remove .loading from me",
@@ -312,6 +322,7 @@ POST /api/ai/debug
 ```
 
 **Response**:
+
 ```json
 {
   "diagnosis": "The 'on me' syntax is incorrect. Use 'on me' only as an event source, not a target.",
@@ -327,6 +338,7 @@ POST /api/ai/optimize
 ```
 
 Analyzes scripts and suggests:
+
 - Combining redundant event handlers
 - Using more efficient selectors
 - Replacing verbose patterns with idioms
@@ -339,6 +351,7 @@ POST /api/ai/migrate
 ```
 
 Converts from:
+
 - jQuery → hyperscript
 - Alpine.js → hyperscript
 - Vanilla JS → hyperscript
@@ -347,7 +360,7 @@ Converts from:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                 HyperFixi API                    │
+│                 LokaScript API                    │
 ├─────────────────────────────────────────────────┤
 │  /api/compile     │  /api/ai/generate           │
 │  /api/preview     │  /api/ai/debug              │
@@ -366,12 +379,12 @@ Converts from:
 
 ### 4.3 Pricing Model for AI Features
 
-| Tier | AI Requests/Month | Cost |
-|------|-------------------|------|
-| Free | 10 | $0 |
-| Pro | 100 | Included |
-| Team | 1,000 | Included |
-| AI Add-on | Unlimited | +$29/mo |
+| Tier      | AI Requests/Month | Cost     |
+| --------- | ----------------- | -------- |
+| Free      | 10                | $0       |
+| Pro       | 100               | Included |
+| Team      | 1,000             | Included |
+| AI Add-on | Unlimited         | +$29/mo  |
 
 ---
 
@@ -379,35 +392,35 @@ Converts from:
 
 ### 5.1 JavaScript/TypeScript Ecosystem
 
-| Package | Platform | Status | Priority |
-|---------|----------|--------|----------|
-| `@hyperfixi/client` | Browser/Node | Planned | P0 |
-| `@hyperfixi/adapter-express` | Express.js | Exists (refactor) | P1 |
-| `@hyperfixi/adapter-fastify` | Fastify | Planned | P1 |
-| `@hyperfixi/adapter-hono` | Hono | Planned | P1 |
-| `@hyperfixi/adapter-bun` | Bun | Planned | P1 |
-| `@hyperfixi/adapter-cloudflare` | CF Workers | Planned | P1 |
-| `@hyperfixi/adapter-deno` | Deno Deploy | Planned | P2 |
-| `@hyperfixi/vite-plugin` | Vite | Planned | P2 |
-| `@hyperfixi/next-plugin` | Next.js | Planned | P2 |
+| Package                          | Platform     | Status            | Priority |
+| -------------------------------- | ------------ | ----------------- | -------- |
+| `@lokascript/client`             | Browser/Node | Planned           | P0       |
+| `@lokascript/adapter-express`    | Express.js   | Exists (refactor) | P1       |
+| `@lokascript/adapter-fastify`    | Fastify      | Planned           | P1       |
+| `@lokascript/adapter-hono`       | Hono         | Planned           | P1       |
+| `@lokascript/adapter-bun`        | Bun          | Planned           | P1       |
+| `@lokascript/adapter-cloudflare` | CF Workers   | Planned           | P1       |
+| `@lokascript/adapter-deno`       | Deno Deploy  | Planned           | P2       |
+| `@lokascript/vite-plugin`        | Vite         | Planned           | P2       |
+| `@lokascript/next-plugin`        | Next.js      | Planned           | P2       |
 
 ### 5.2 Python Ecosystem
 
-| Package | Framework | Status | Priority |
-|---------|-----------|--------|----------|
-| `hyperfixi` | Python client | Planned | P1 |
-| `hyperfixi-django` | Django | Planned | P1 |
-| `hyperfixi-flask` | Flask | Planned | P2 |
-| `hyperfixi-fastapi` | FastAPI | Planned | P2 |
+| Package              | Framework     | Status  | Priority |
+| -------------------- | ------------- | ------- | -------- |
+| `lokascript`         | Python client | Planned | P1       |
+| `lokascript-django`  | Django        | Planned | P1       |
+| `lokascript-flask`   | Flask         | Planned | P2       |
+| `lokascript-fastapi` | FastAPI       | Planned | P2       |
 
 ### 5.3 Other Ecosystems
 
-| Package | Framework | Status | Priority |
-|---------|-----------|--------|----------|
-| `hyperfixi-rails` | Ruby on Rails | Planned | P2 |
-| `hyperfixi-laravel` | Laravel (PHP) | Planned | P2 |
-| `hyperfixi-phoenix` | Phoenix (Elixir) | Planned | P3 |
-| `hyperfixi-go` | Go client | Planned | P3 |
+| Package              | Framework        | Status  | Priority |
+| -------------------- | ---------------- | ------- | -------- |
+| `lokascript-rails`   | Ruby on Rails    | Planned | P2       |
+| `lokascript-laravel` | Laravel (PHP)    | Planned | P2       |
+| `lokascript-phoenix` | Phoenix (Elixir) | Planned | P3       |
+| `lokascript-go`      | Go client        | Planned | P3       |
 
 ---
 
@@ -415,60 +428,65 @@ Converts from:
 
 ### 6.1 Pricing Tiers (Proposed)
 
-| Tier | Price | Compiles/Mo | Rate Limit | Features |
-|------|-------|-------------|------------|----------|
-| Free | $0 | 1,000 | 60/min | Basic compilation |
-| Pro | $29/mo | Unlimited | 600/min | + Caching, analytics |
-| Team | $99/mo | Unlimited | 3,000/min | + Multi-user, SSO |
-| Enterprise | Custom | Unlimited | Custom | + Self-host, SLA |
-| AI Add-on | +$29/mo | - | - | AI generation/debug |
+| Tier       | Price   | Compiles/Mo | Rate Limit | Features             |
+| ---------- | ------- | ----------- | ---------- | -------------------- |
+| Free       | $0      | 1,000       | 60/min     | Basic compilation    |
+| Pro        | $29/mo  | Unlimited   | 600/min    | + Caching, analytics |
+| Team       | $99/mo  | Unlimited   | 3,000/min  | + Multi-user, SSO    |
+| Enterprise | Custom  | Unlimited   | Custom     | + Self-host, SLA     |
+| AI Add-on  | +$29/mo | -           | -          | AI generation/debug  |
 
 ### 6.2 Target Markets
 
-| Segment | Size Estimate | Conversion Target |
-|---------|---------------|-------------------|
-| Hyperscript users | ~5,000 | 5% → 250 paid |
-| HTMX ecosystem | ~50,000 | 1% → 500 paid |
-| No-code builders | ~10,000 | 2% → 200 paid |
-| Enterprise (white-label) | ~100 | 10% → 10 contracts |
+| Segment                  | Size Estimate | Conversion Target  |
+| ------------------------ | ------------- | ------------------ |
+| Hyperscript users        | ~5,000        | 5% → 250 paid      |
+| HTMX ecosystem           | ~50,000       | 1% → 500 paid      |
+| No-code builders         | ~10,000       | 2% → 200 paid      |
+| Enterprise (white-label) | ~100          | 10% → 10 contracts |
 
 ### 6.3 Revenue Scenarios (Year 1)
 
-| Scenario | Pro Users | Team Users | Enterprise | MRR |
-|----------|-----------|------------|------------|-----|
-| Conservative | 100 | 20 | 2 | $5,880 |
-| Moderate | 300 | 50 | 5 | $15,370 |
-| Optimistic | 500 | 100 | 10 | $27,400 |
+| Scenario     | Pro Users | Team Users | Enterprise | MRR     |
+| ------------ | --------- | ---------- | ---------- | ------- |
+| Conservative | 100       | 20         | 2          | $5,880  |
+| Moderate     | 300       | 50         | 5          | $15,370 |
+| Optimistic   | 500       | 100        | 10         | $27,400 |
 
 ---
 
 ## Part 7: Implementation Roadmap
 
 ### Phase 1: Foundation (Weeks 1-4)
-- [ ] TypeScript client SDK (`@hyperfixi/client`)
+
+- [ ] TypeScript client SDK (`@lokascript/client`)
 - [ ] Redis cache adapter
 - [ ] Batch compilation endpoint
 - [ ] Migration runner for database
 
 ### Phase 2: Platform Expansion (Weeks 5-8)
+
 - [ ] Bun adapter
 - [ ] Cloudflare Workers adapter
 - [ ] Fastify adapter
 - [ ] Python client library
 
 ### Phase 3: Enterprise Features (Weeks 9-12)
+
 - [ ] Admin dashboard (React)
 - [ ] WebSocket compilation stream
 - [ ] Compilation preview endpoint
 - [ ] Django integration
 
 ### Phase 4: AI Integration (Weeks 13-16)
+
 - [ ] LLM orchestration layer
 - [ ] Natural language → hyperscript
 - [ ] Debugging agent
 - [ ] Pattern optimization
 
 ### Phase 5: Market Expansion (Ongoing)
+
 - [ ] Additional framework integrations
 - [ ] Enterprise sales materials
 - [ ] Partner program for agencies
@@ -479,26 +497,26 @@ Converts from:
 
 ### Direct Competitors
 
-None identified. HyperFixi occupies a unique position as a compilation-as-a-service for hyperscript.
+None identified. LokaScript occupies a unique position as a compilation-as-a-service for hyperscript.
 
 ### Indirect Competitors
 
-| Product | Overlap | Differentiation |
-|---------|---------|-----------------|
-| Alpine.js | Declarative JS | HyperFixi: natural language syntax, multi-language |
-| Stimulus | HTML-driven | HyperFixi: no controller classes, more expressive |
-| HTMX | Server-driven UI | HyperFixi: complements HTMX, adds client-side logic |
+| Product   | Overlap          | Differentiation                                      |
+| --------- | ---------------- | ---------------------------------------------------- |
+| Alpine.js | Declarative JS   | LokaScript: natural language syntax, multi-language  |
+| Stimulus  | HTML-driven      | LokaScript: no controller classes, more expressive   |
+| HTMX      | Server-driven UI | LokaScript: complements HTMX, adds client-side logic |
 
 ### Adjacent Opportunities
 
-| Product | Opportunity |
-|---------|-------------|
-| **Webflow** | Plugin for custom interactions |
-| **Framer** | Integration for advanced behaviors |
-| **Notion** | Custom block behaviors |
-| **Retool** | Internal tool scripting |
+| Product     | Opportunity                        |
+| ----------- | ---------------------------------- |
+| **Webflow** | Plugin for custom interactions     |
+| **Framer**  | Integration for advanced behaviors |
+| **Notion**  | Custom block behaviors             |
+| **Retool**  | Internal tool scripting            |
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: December 2024*
+_Document Version: 1.0_
+_Last Updated: December 2024_

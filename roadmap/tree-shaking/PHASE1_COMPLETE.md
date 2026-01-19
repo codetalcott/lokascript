@@ -13,6 +13,7 @@ Successfully created RuntimeBase - a tree-shakable runtime foundation with **zer
 ## What Was Accomplished
 
 ### 1. RuntimeBase Created
+
 **File**: `packages/core/src/runtime/runtime-base.ts` (617 lines)
 
 - ✅ Zero command imports (only types and core infrastructure)
@@ -25,6 +26,7 @@ Successfully created RuntimeBase - a tree-shakable runtime foundation with **zer
 - ✅ Complete executeEventHandler implementation
 
 ### 2. Export Added
+
 **File**: `packages/core/src/index.ts`
 
 ```typescript
@@ -36,6 +38,7 @@ export { RuntimeBase, type RuntimeBaseOptions } from './runtime/runtime-base';
 - ✅ Ready for external consumption
 
 ### 3. Complete Observer Implementations
+
 Copied from original Runtime:
 
 - **setupMutationObserver()** - 45 lines, full attribute change detection
@@ -47,6 +50,7 @@ Copied from original Runtime:
 ## Validation Results
 
 ### TypeScript Compilation
+
 ```bash
 ✅ RuntimeBase: 0 errors (compiles cleanly)
 ✅ Runtime: Same pre-existing errors (untouched)
@@ -54,6 +58,7 @@ Copied from original Runtime:
 ```
 
 ### Bundle Analysis
+
 ```bash
 ✅ RuntimeBase exported in dist/index.mjs (line 31502: class definition)
 ✅ RuntimeBase exported in API (line 38717: export list)
@@ -61,6 +66,7 @@ Copied from original Runtime:
 ```
 
 ### Impact Assessment
+
 ```bash
 ✅ Runtime.ts: 0 lines changed (100% untouched)
 ✅ Existing tests: No changes required
@@ -72,6 +78,7 @@ Copied from original Runtime:
 ## Architecture Comparison
 
 ### Before Phase 1
+
 ```
 Runtime (2,956 lines)
 ├── 45+ command imports (lines 16-68)
@@ -85,6 +92,7 @@ Result: 511KB bundle, not tree-shakable
 ```
 
 ### After Phase 1
+
 ```
 Runtime (2,956 lines) - UNCHANGED ✅
 ├── Same 45+ command imports
@@ -109,7 +117,7 @@ Result: RuntimeBase ready for tree-shaking
 
 ```typescript
 export class RuntimeBase {
-  protected registry: EnhancedCommandRegistry;      // Injected
+  protected registry: EnhancedCommandRegistry; // Injected
   protected expressionEvaluator: ExpressionEvaluator; // Injected or default
   protected behaviorRegistry: Map<string, any>;
   protected behaviorAPI: any;
@@ -123,35 +131,48 @@ export class RuntimeBase {
   }
 
   // Core methods (all generic, no command knowledge)
-  async execute(node: ASTNode, context: ExecutionContext): Promise<unknown>
-  protected async processCommand(node: CommandNode, context: ExecutionContext)
-  protected async executeEventHandler(node: EventHandlerNode, context: ExecutionContext)
-  protected async executeBehaviorDefinition(node: any, context: ExecutionContext)
-  protected async installBehaviorOnElement(behaviorName: string, element: HTMLElement, parameters: Record<string, any>)
+  async execute(node: ASTNode, context: ExecutionContext): Promise<unknown>;
+  protected async processCommand(node: CommandNode, context: ExecutionContext);
+  protected async executeEventHandler(node: EventHandlerNode, context: ExecutionContext);
+  protected async executeBehaviorDefinition(node: any, context: ExecutionContext);
+  protected async installBehaviorOnElement(
+    behaviorName: string,
+    element: HTMLElement,
+    parameters: Record<string, any>
+  );
 
   // Helper methods
-  protected async evaluateExpression(node: ASTNode, context: ExecutionContext)
-  protected async executeProgram(node: any, context: ExecutionContext)
-  protected async executeBlock(node: any, context: ExecutionContext)
-  protected async executeCommandSequence(node: { commands: ASTNode[] }, context: ExecutionContext)
-  protected async executeObjectLiteral(node: any, context: ExecutionContext)
-  protected setupMutationObserver(targets: HTMLElement[], attr: string, commands: ASTNode[], context: ExecutionContext)
-  protected async setupChangeObserver(watchTarget: ASTNode, commands: ASTNode[], context: ExecutionContext)
-  protected queryElements(selector: string, context: ExecutionContext): HTMLElement[]
-  protected isElement(obj: unknown): obj is HTMLElement
+  protected async evaluateExpression(node: ASTNode, context: ExecutionContext);
+  protected async executeProgram(node: any, context: ExecutionContext);
+  protected async executeBlock(node: any, context: ExecutionContext);
+  protected async executeCommandSequence(node: { commands: ASTNode[] }, context: ExecutionContext);
+  protected async executeObjectLiteral(node: any, context: ExecutionContext);
+  protected setupMutationObserver(
+    targets: HTMLElement[],
+    attr: string,
+    commands: ASTNode[],
+    context: ExecutionContext
+  );
+  protected async setupChangeObserver(
+    watchTarget: ASTNode,
+    commands: ASTNode[],
+    context: ExecutionContext
+  );
+  protected queryElements(selector: string, context: ExecutionContext): HTMLElement[];
+  protected isElement(obj: unknown): obj is HTMLElement;
 }
 ```
 
 ### Key Differences from Runtime
 
-| Feature | Runtime | RuntimeBase |
-|---------|---------|-------------|
-| Command imports | 45+ static imports | 0 imports ✅ |
-| Command execution | Switch statements, specific logic | Generic registry delegation ✅ |
-| Argument parsing | Command-specific (819 lines) | Delegated to adapters ✅ |
-| Tree-shakable | ❌ No | ✅ Yes |
-| Bundle impact | Always includes all commands | Only includes registered commands ✅ |
-| Backward compatible | N/A | ✅ Fully compatible |
+| Feature             | Runtime                           | RuntimeBase                          |
+| ------------------- | --------------------------------- | ------------------------------------ |
+| Command imports     | 45+ static imports                | 0 imports ✅                         |
+| Command execution   | Switch statements, specific logic | Generic registry delegation ✅       |
+| Argument parsing    | Command-specific (819 lines)      | Delegated to adapters ✅             |
+| Tree-shakable       | ❌ No                             | ✅ Yes                               |
+| Bundle impact       | Always includes all commands      | Only includes registered commands ✅ |
+| Backward compatible | N/A                               | ✅ Fully compatible                  |
 
 ---
 
@@ -160,6 +181,7 @@ export class RuntimeBase {
 Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands:
 
 ### Week 1: Core Commands
+
 1. HideCommand with parseInput()
 2. ShowCommand with parseInput()
 3. AddCommand with parseInput()
@@ -169,6 +191,7 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 **Gate 2**: Test these 5 commands with RuntimeBase before proceeding
 
 ### Success Criteria for Gate 2
+
 - [ ] All 5 core commands work with RuntimeBase
 - [ ] Unit tests pass for each command
 - [ ] No behavioral differences vs Runtime
@@ -179,13 +202,16 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 ## Files Created/Modified
 
 ### Created
+
 - ✅ `packages/core/src/runtime/runtime-base.ts` (617 lines)
 - ✅ `roadmap/tree-shaking/PHASE1_COMPLETE.md` (this file)
 
 ### Modified
+
 - ✅ `packages/core/src/index.ts` (+1 line: RuntimeBase export)
 
 ### Untouched (Verified)
+
 - ✅ `packages/core/src/runtime/runtime.ts` (0 changes)
 - ✅ All command files (0 changes)
 - ✅ All test files (0 changes)
@@ -195,13 +221,13 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 
 ## Risk Assessment
 
-| Risk | Status | Mitigation |
-|------|--------|-----------|
-| Breaking changes | ✅ **ZERO** | Runtime untouched, RuntimeBase is additive only |
-| TypeScript errors | ✅ **ZERO** | RuntimeBase compiles cleanly |
-| Test failures | ✅ **ZERO** | No existing tests modified |
-| Bundle size increase | ✅ **ZERO** | RuntimeBase not used yet (opt-in) |
-| Runtime impact | ✅ **ZERO** | Runtime functionality unchanged |
+| Risk                 | Status      | Mitigation                                      |
+| -------------------- | ----------- | ----------------------------------------------- |
+| Breaking changes     | ✅ **ZERO** | Runtime untouched, RuntimeBase is additive only |
+| TypeScript errors    | ✅ **ZERO** | RuntimeBase compiles cleanly                    |
+| Test failures        | ✅ **ZERO** | No existing tests modified                      |
+| Bundle size increase | ✅ **ZERO** | RuntimeBase not used yet (opt-in)               |
+| Runtime impact       | ✅ **ZERO** | Runtime functionality unchanged                 |
 
 ---
 
@@ -225,16 +251,19 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 ## Performance Metrics
 
 ### Bundle Size (Current - Baseline)
+
 - **Minimal bundle**: 213KB (46.4KB gzipped) - Using MinimalRuntime
 - **Standard bundle**: 264KB (57.1KB gzipped) - Using partial commands
 - **Full bundle**: 511KB (112KB gzipped) - Using Runtime with all commands
 
 ### Bundle Size (Expected After Phase 7)
+
 - **Minimal bundle**: ~120KB (35KB gzipped) - **43% reduction** ✅
 - **Standard bundle**: ~200KB (50KB gzipped) - **24% reduction** ✅
 - **Full bundle**: 511KB (112KB gzipped) - Unchanged (backward compatible)
 
 ### Phase 1 Impact
+
 - **Current impact**: 0KB increase (RuntimeBase not used yet)
 - **Preparation**: Foundation ready for 43% bundle reduction
 
@@ -243,6 +272,7 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 ## Code Quality Metrics
 
 ### RuntimeBase Statistics
+
 - **Total lines**: 617
 - **Class definition**: 1
 - **Methods**: 15 (all protected except constructor)
@@ -251,6 +281,7 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 - **Cyclomatic complexity**: Low (generic delegation pattern)
 
 ### Test Coverage
+
 - **RuntimeBase unit tests**: Pending (Phase 5)
 - **Integration tests**: Pending (Phase 6)
 - **Existing tests**: All passing (unchanged)
@@ -262,10 +293,10 @@ Now that RuntimeBase exists, Phase 2 will add `parseInput()` methods to commands
 ### How to Use RuntimeBase (For Future Reference)
 
 ```typescript
-import { RuntimeBase } from '@hyperfixi/core';
-import { EnhancedCommandRegistry } from '@hyperfixi/core/runtime/command-adapter';
-import { createHideCommand } from '@hyperfixi/core/commands/dom/hide';
-import { createShowCommand } from '@hyperfixi/core/commands/dom/show';
+import { RuntimeBase } from '@lokascript/core';
+import { EnhancedCommandRegistry } from '@lokascript/core/runtime/command-adapter';
+import { createHideCommand } from '@lokascript/core/commands/dom/hide';
+import { createShowCommand } from '@lokascript/core/commands/dom/show';
 
 // Create registry
 const registry = new EnhancedCommandRegistry();
@@ -286,11 +317,13 @@ await runtime.execute(astNode, context);
 ### Why Phase 1 Matters
 
 Before Phase 1:
+
 - Want minimal bundle? Must fork entire Runtime class
 - Can't tree-shake commands
 - All 45 commands always included
 
 After Phase 1:
+
 - RuntimeBase provides clean foundation
 - Commands can be selectively registered
 - Tree-shaking works automatically

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document tracks technical debt in the HyperFixi project and provides a strategy for incremental improvement without blocking development velocity.
+This document tracks technical debt in the LokaScript project and provides a strategy for incremental improvement without blocking development velocity.
 
 **Last Updated:** 2026-01-16
 **Status:** All TypeScript errors fixed ✓ | ESLint warnings reduced by 82.7%

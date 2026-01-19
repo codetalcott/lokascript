@@ -1,10 +1,10 @@
-# @hyperfixi/developer-tools
+# @lokascript/developer-tools
 
-CLI tools and APIs for HyperFixi development, including project scaffolding, code analysis, visual building, and debugging.
+CLI tools and APIs for LokaScript development, including project scaffolding, code analysis, visual building, and debugging.
 
 ## Features
 
-- **CLI Commands** - Full-featured command-line interface (`hyperfixi` / `hfx`)
+- **CLI Commands** - Full-featured command-line interface (`lokascript` / `hfx`)
 - **Project Scaffolding** - Create projects from templates (basic, multi-tenant, analytics)
 - **Code Analyzer** - Static analysis with issue detection and suggestions
 - **Visual Builder** - Web-based component builder with live preview
@@ -12,12 +12,12 @@ CLI tools and APIs for HyperFixi development, including project scaffolding, cod
 - **Bundle Analyzer** - Analyze build output for optimization opportunities
 - **Performance Profiler** - Profile hyperscript execution and identify bottlenecks
 - **Debugger** - WebSocket-based debugging with breakpoints and variable inspection
-- **Version Migration** - Migrate between HyperFixi versions with backup support
+- **Version Migration** - Migrate between LokaScript versions with backup support
 
 ## Installation
 
 ```bash
-npm install @hyperfixi/developer-tools
+npm install @lokascript/developer-tools
 ```
 
 ## Quick Start
@@ -26,19 +26,19 @@ npm install @hyperfixi/developer-tools
 
 ```bash
 # Create a new project
-npx hyperfixi create my-app
+npx lokascript create my-app
 
 # Analyze code
-npx hyperfixi analyze ./src
+npx lokascript analyze ./src
 
 # Start development server
-npx hyperfixi dev
+npx lokascript dev
 
 # Build for production
-npx hyperfixi build
+npx lokascript build
 
 # Start visual builder
-npx hyperfixi builder
+npx lokascript builder
 ```
 
 ### Programmatic API
@@ -50,7 +50,7 @@ import {
   startDevServer,
   BundleAnalyzer,
   HyperScriptProfiler,
-} from '@hyperfixi/developer-tools';
+} from '@lokascript/developer-tools';
 
 // Analyze a project
 const results = await analyzeProject('./src', { recursive: true });
@@ -64,26 +64,26 @@ const server = await startDevServer({ port: 3000, livereload: true });
 
 ## CLI Command Reference
 
-| Command | Description | Options |
-|---------|-------------|---------|
-| `create <name>` | Create new project | `--template`, `--typescript`, `--git` |
-| `generate:component <name>` | Generate component | `--category`, `--typescript` |
-| `analyze [path]` | Analyze hyperscript code | `--format`, `--output`, `--recursive` |
-| `dev` | Start dev server | `--port`, `--host`, `--no-livereload` |
-| `build` | Build for production | `--output`, `--minify`, `--sourcemap` |
-| `builder` | Start visual builder | `--port`, `--no-open` |
-| `test` | Run tests | `--watch`, `--coverage`, `--browser` |
-| `migrate <from> <to>` | Version migration | `--dry-run`, `--backup` |
-| `doctor` | Check project health | - |
-| `template list` | List templates | - |
-| `template create <name>` | Create template | `--description` |
+| Command                     | Description              | Options                               |
+| --------------------------- | ------------------------ | ------------------------------------- |
+| `create <name>`             | Create new project       | `--template`, `--typescript`, `--git` |
+| `generate:component <name>` | Generate component       | `--category`, `--typescript`          |
+| `analyze [path]`            | Analyze hyperscript code | `--format`, `--output`, `--recursive` |
+| `dev`                       | Start dev server         | `--port`, `--host`, `--no-livereload` |
+| `build`                     | Build for production     | `--output`, `--minify`, `--sourcemap` |
+| `builder`                   | Start visual builder     | `--port`, `--no-open`                 |
+| `test`                      | Run tests                | `--watch`, `--coverage`, `--browser`  |
+| `migrate <from> <to>`       | Version migration        | `--dry-run`, `--backup`               |
+| `doctor`                    | Check project health     | -                                     |
+| `template list`             | List templates           | -                                     |
+| `template create <name>`    | Create template          | `--description`                       |
 
 ## API Reference
 
 ### Analyzer
 
 ```typescript
-import { analyzeProject, analyzeFile, generateReport } from '@hyperfixi/developer-tools';
+import { analyzeProject, analyzeFile, generateReport } from '@lokascript/developer-tools';
 
 // Analyze entire project
 const results = await analyzeProject('./src', {
@@ -102,7 +102,7 @@ const report = generateReport(results, { format: 'detailed' });
 ### Generator
 
 ```typescript
-import { createProject, createComponent, createTemplate } from '@hyperfixi/developer-tools';
+import { createProject, createComponent, createTemplate } from '@lokascript/developer-tools';
 
 // Create project with features
 await createProject('my-app', {
@@ -122,12 +122,14 @@ await createComponent('button', {
 ### Visual Builder
 
 ```typescript
-import { VisualBuilderServer } from '@hyperfixi/developer-tools';
+import { VisualBuilderServer } from '@lokascript/developer-tools';
 
 const builder = new VisualBuilderServer({
   port: 8000,
   livereload: true,
-  components: [/* your component definitions */],
+  components: [
+    /* your component definitions */
+  ],
 });
 
 await builder.start();
@@ -136,7 +138,7 @@ await builder.start();
 ### Bundle Analyzer
 
 ```typescript
-import { BundleAnalyzer, analyzeBundle } from '@hyperfixi/developer-tools';
+import { BundleAnalyzer, analyzeBundle } from '@lokascript/developer-tools';
 
 // Analyze esbuild output
 const analysis = await analyzeBundle(esbuildMetafile);
@@ -151,7 +153,7 @@ const treemap = new BundleAnalyzer().generateTreemap(analysis);
 ### Profiler
 
 ```typescript
-import { HyperScriptProfiler, profile } from '@hyperfixi/developer-tools';
+import { HyperScriptProfiler, profile } from '@lokascript/developer-tools';
 
 // Quick profile
 const result = await profile('on click toggle .active');
@@ -170,7 +172,7 @@ const comparison = await profiler.compare([
 ### Debugger
 
 ```typescript
-import { HyperScriptDebugger, createDebugger } from '@hyperfixi/developer-tools';
+import { HyperScriptDebugger, createDebugger } from '@lokascript/developer-tools';
 
 const debugger = createDebugger({ port: 9229 });
 
@@ -189,7 +191,7 @@ debugger.on('paused', (event) => {
 ### Migrator
 
 ```typescript
-import { HyperFixiMigrator, migrate } from '@hyperfixi/developer-tools';
+import { LokaScriptMigrator, migrate } from '@lokascript/developer-tools';
 
 // Simple migration
 const result = await migrate('0.1.0', '0.2.0', {
@@ -204,13 +206,15 @@ console.log(result.warnings);
 ### Builder Storage
 
 ```typescript
-import { BuilderStorage, createProject } from '@hyperfixi/developer-tools';
+import { BuilderStorage, createProject } from '@lokascript/developer-tools';
 
 const storage = new BuilderStorage();
 
 // Save project
 const project = createProject('My Components', {
-  components: [/* ... */],
+  components: [
+    /* ... */
+  ],
 });
 await storage.saveProject(project);
 
@@ -230,7 +234,7 @@ import {
   quickStartAnalyzer,
   quickStartBuilder,
   quickStartGenerator,
-} from '@hyperfixi/developer-tools';
+} from '@lokascript/developer-tools';
 
 // Analyzer with health scoring
 const analyzer = quickStartAnalyzer();

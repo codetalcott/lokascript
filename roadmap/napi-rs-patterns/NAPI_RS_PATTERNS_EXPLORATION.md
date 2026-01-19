@@ -1,8 +1,8 @@
-# NAPI-RS Architecture Patterns: Exploration for HyperFixi
+# NAPI-RS Architecture Patterns: Exploration for LokaScript
 
 ## Executive Summary
 
-This document explores how HyperFixi could adopt architectural patterns from [napi-rs](https://github.com/napi-rs/napi-rs), a framework for building Node.js addons in Rust. While HyperFixi is a pure TypeScript/JavaScript project (no native bindings), napi-rs's design philosophy offers valuable patterns that could enhance HyperFixi's architecture.
+This document explores how LokaScript could adopt architectural patterns from [napi-rs](https://github.com/napi-rs/napi-rs), a framework for building Node.js addons in Rust. While LokaScript is a pure TypeScript/JavaScript project (no native bindings), napi-rs's design philosophy offers valuable patterns that could enhance LokaScript's architecture.
 
 **Key Insight**: The patterns that make napi-rs successful—macro-based code generation, systematic type mapping, zero-boilerplate APIs, and TypeScript-first design—are applicable beyond FFI contexts.
 
@@ -28,6 +28,7 @@ pub fn fibonacci(n: u32) -> u32 {
 ```
 
 **Design Principles**:
+
 1. **Declaration over implementation** - Describe what, not how
 2. **Compile-time code generation** - Zero runtime overhead
 3. **Type safety guaranteed** - Mismatches caught at build time
@@ -37,14 +38,14 @@ pub fn fibonacci(n: u32) -> u32 {
 
 napi-rs maintains a clear mapping table between Rust and JavaScript types:
 
-| Rust Type | JavaScript Type |
-|-----------|-----------------|
-| `u32/i32/i64/f64` | `number` |
-| `String/&str` | `string` |
-| `Vec<T>` | `Array<T>` |
-| `HashMap<K,V>` | `Object` |
-| `Result<T>` | throws or returns `T` |
-| `Option<T>` | `T \| null` |
+| Rust Type         | JavaScript Type       |
+| ----------------- | --------------------- |
+| `u32/i32/i64/f64` | `number`              |
+| `String/&str`     | `string`              |
+| `Vec<T>`          | `Array<T>`            |
+| `HashMap<K,V>`    | `Object`              |
+| `Result<T>`       | throws or returns `T` |
+| `Option<T>`       | `T \| null`           |
 
 This systematic approach eliminates ad-hoc conversion code throughout the codebase.
 
@@ -58,17 +59,18 @@ pub async fn read_file_async(path: String) -> Result<Buffer> {
 ```
 
 Async functions automatically:
+
 - Return JavaScript Promises
 - Integrate with the event loop
 - Handle errors via rejection
 
 ---
 
-## 2. HyperFixi's Current Architecture
+## 2. LokaScript's Current Architecture
 
 ### 2.1 Command Pattern (V2)
 
-HyperFixi commands follow a consistent but verbose pattern:
+LokaScript commands follow a consistent but verbose pattern:
 
 ```typescript
 class SetCommandV2 implements CommandImplementation<SetInput, SetOutput> {
@@ -80,7 +82,11 @@ class SetCommandV2 implements CommandImplementation<SetInput, SetOutput> {
     // ... more metadata
   };
 
-  async parseInput(raw: unknown, evaluator: ExpressionEvaluator, ctx: ExecutionContext): Promise<SetInput> {
+  async parseInput(
+    raw: unknown,
+    evaluator: ExpressionEvaluator,
+    ctx: ExecutionContext
+  ): Promise<SetInput> {
     // Manual parsing logic - ~50 lines
   }
 
@@ -99,6 +105,7 @@ export function createSetCommand(): SetCommandV2 {
 ```
 
 **Current Boilerplate Per Command**:
+
 - Class definition with interface implementation
 - Metadata object
 - `parseInput()` method (often repetitive patterns)
@@ -155,6 +162,7 @@ class SetCommand {
 ```
 
 **What the Decorator Generates**:
+
 1. `parseInput()` implementation from `@input` schema
 2. `validate()` implementation from schema constraints
 3. TypeScript interface for `SetInput`
@@ -162,6 +170,7 @@ class SetCommand {
 5. Documentation/metadata extraction
 
 **Benefits**:
+
 - **~60% code reduction** per command (estimated)
 - **Consistent parsing** - All commands parse inputs the same way
 - **Self-documenting** - Schema IS the documentation
@@ -181,13 +190,13 @@ const expressionTypes = defineExpressionTypes({
   string: {
     nodeType: 'string',
     jsType: 'string',
-    evaluate: (node) => node.value,
+    evaluate: node => node.value,
   },
 
   number: {
     nodeType: 'number',
     jsType: 'number',
-    evaluate: (node) => Number(node.value),
+    evaluate: node => Number(node.value),
   },
 
   // Complex types with dependencies
@@ -199,9 +208,9 @@ const expressionTypes = defineExpressionTypes({
       return scope?.querySelectorAll(node.selector);
     },
     coerceTo: {
-      'Element': (result) => result?.[0] ?? null,
-      'Element[]': (result) => Array.from(result ?? []),
-      'boolean': (result) => result?.length > 0,
+      Element: result => result?.[0] ?? null,
+      'Element[]': result => Array.from(result ?? []),
+      boolean: result => result?.length > 0,
     },
   },
 
@@ -221,6 +230,7 @@ const expressionTypes = defineExpressionTypes({
 ```
 
 **Benefits**:
+
 - **Single source of truth** for expression types
 - **Automatic type coercion** between expression results
 - **Generated TypeScript types** for all expressions
@@ -251,6 +261,7 @@ class SetCommand {
 ```
 
 **Benefits**:
+
 - **Syntax IS documentation** - No separate docs needed
 - **Automatic parser generation** - No manual parsing code
 - **Syntax validation** - Schema violations caught at build time
@@ -299,7 +310,7 @@ Final Bundle (Rollup)
 3. **Custom Rollup Plugin**
    - Integrate with existing build
    - Process files before bundling
-   - HyperFixi already uses Rollup
+   - LokaScript already uses Rollup
 
 4. **Standalone Generator Script**
    - Run before build (`npm run generate`)
@@ -316,11 +327,11 @@ Final Bundle (Rollup)
 
 **Inspiration**: napi-rs's Rust performance
 
-HyperFixi could adopt a **hybrid architecture** with performance-critical code in Rust/WASM:
+LokaScript could adopt a **hybrid architecture** with performance-critical code in Rust/WASM:
 
 ```
 ┌─────────────────────────────────────────────┐
-│              HyperFixi API                   │
+│              LokaScript API                   │
 │         (TypeScript - unchanged)             │
 └─────────────────────────────────────────────┘
                     │
@@ -340,17 +351,19 @@ HyperFixi could adopt a **hybrid architecture** with performance-critical code i
 ```
 
 **Candidates for WASM**:
+
 1. **Tokenizer** (3,308 lines) - Hot path, simple logic, ideal for WASM
 2. **Expression Parser** (2,445 lines) - CPU-intensive, well-defined grammar
 3. **AST Analysis** - Visitor patterns, tree traversal
 
 **Implementation Strategy**:
+
 ```typescript
 // Feature detection with fallback
 const tokenizer = await (async () => {
   if (typeof WebAssembly !== 'undefined') {
     try {
-      const wasm = await import('@hyperfixi/tokenizer-wasm');
+      const wasm = await import('@lokascript/tokenizer-wasm');
       return wasm.createTokenizer();
     } catch {
       // WASM load failed, use JS fallback
@@ -361,6 +374,7 @@ const tokenizer = await (async () => {
 ```
 
 **Benefits**:
+
 - **2-10x performance** for parsing-heavy workloads
 - **Same API** - WASM is an implementation detail
 - **Graceful fallback** - JS version always available
@@ -370,7 +384,7 @@ const tokenizer = await (async () => {
 
 **Inspiration**: napi-rs's 18+ platform support
 
-HyperFixi could generate multiple output targets from single source:
+LokaScript could generate multiple output targets from single source:
 
 ```typescript
 // Single source definition
@@ -410,7 +424,7 @@ const myPlugin: SetCommandPlugin = {
   beforeSet(input) {
     console.log(`Setting ${input.target} to ${input.value}`);
     return input; // TypeScript knows the shape
-  }
+  },
 };
 ```
 
@@ -462,16 +476,19 @@ const myPlugin: SetCommandPlugin = {
 ## 6. Risk Analysis
 
 ### Low Risk Patterns
+
 - Expression type registry (additive, no breaking changes)
 - Metadata standardization (documentation improvement)
 - Generated TypeScript types (tooling enhancement)
 
 ### Medium Risk Patterns
+
 - Decorator-based commands (requires decorator support)
 - Build-time generation (new build step)
 - Schema-driven parsing (significant refactor)
 
 ### Higher Risk Patterns
+
 - WASM integration (new language, tooling complexity)
 - Multi-target generation (maintenance burden)
 - Syntax DSL (domain-specific language design)
@@ -480,20 +497,20 @@ const myPlugin: SetCommandPlugin = {
 
 ## 7. Comparison Matrix
 
-| Pattern | napi-rs | HyperFixi Current | HyperFixi Proposed |
-|---------|---------|-------------------|-------------------|
-| Code Generation | Proc macros | Manual | Decorators + Build step |
-| Type Mapping | Systematic table | Ad-hoc | Type registry |
-| Async Support | Native Futures | Promise-based | ✓ (already good) |
-| TypeScript | Auto-generated | Manual | Auto-generated |
-| Multi-platform | 18+ platforms | Browser + Node | Target generation |
-| Performance Layer | Native Rust | Pure JS | Optional WASM |
+| Pattern           | napi-rs          | LokaScript Current | LokaScript Proposed     |
+| ----------------- | ---------------- | ------------------ | ----------------------- |
+| Code Generation   | Proc macros      | Manual             | Decorators + Build step |
+| Type Mapping      | Systematic table | Ad-hoc             | Type registry           |
+| Async Support     | Native Futures   | Promise-based      | ✓ (already good)        |
+| TypeScript        | Auto-generated   | Manual             | Auto-generated          |
+| Multi-platform    | 18+ platforms    | Browser + Node     | Target generation       |
+| Performance Layer | Native Rust      | Pure JS            | Optional WASM           |
 
 ---
 
 ## 8. Conclusion
 
-napi-rs's success comes from three core principles that HyperFixi can adopt:
+napi-rs's success comes from three core principles that LokaScript can adopt:
 
 1. **Declaration over implementation** - Express intent, generate details
 2. **Systematic type handling** - Consistent patterns eliminate bugs

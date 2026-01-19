@@ -46,7 +46,7 @@ export async function renderPage(request: Request) {
   const compiledScripts = await compileHyperscripts(pageScripts);
 
   // Render template with integrated scripts
-  return renderTemplate("page.html", {
+  return renderTemplate('page.html', {
     scripts: compiledScripts,
     data: await fetchPageData(),
   });
@@ -60,24 +60,18 @@ Extend your template compiler to handle inline Hyperscript directives:
 ```html
 <!-- Enhanced template syntax -->
 <div class="search-container">
-  <input
-    id="search"
-    type="text"
-    _="{{scripts.searchBehavior}}"
-  />
+  <input id="search" type="text" _="{{scripts.searchBehavior}}" />
   <div id="results">
     <!-- Server-rendered initial results -->
     {{#each results}}
-    <div class="result-item" _="on click add .selected to me">
-      {{title}}
-    </div>
+    <div class="result-item" _="on click add .selected to me">{{title}}</div>
     {{/each}}
   </div>
 </div>
 
 <!-- Or use template directives -->
-@hyperscript searchBehavior on keyup if the event's key is "Enter" fetch
-/api/search put the result into <#results/> @end
+@hyperscript searchBehavior on keyup if the event's key is "Enter" fetch /api/search put the result
+into <#results/> @end
 
 <input id="search" _="install searchBehavior" />
 ```
@@ -102,7 +96,7 @@ export class ServerHyperscriptProcessor {
 
       // Validate with LSP
       const diagnostics = this.lsp.astToLSPDiagnostics(ast);
-      if (diagnostics.some((d) => d.severity === DiagnosticSeverity.Error)) {
+      if (diagnostics.some(d => d.severity === DiagnosticSeverity.Error)) {
         throw new Error(`Script ${name} has errors`);
       }
 
@@ -130,8 +124,7 @@ export class ServerHyperscriptProcessor {
 
   // Extract selectors for prefetching/prerendering
   private extractSelectors(ast: ASTNode): string[] {
-    return findNodes(ast, (node) => node.type === "Selector")
-      .map((node) => (node as any).value);
+    return findNodes(ast, node => node.type === 'Selector').map(node => (node as any).value);
   }
 }
 ```
@@ -152,9 +145,7 @@ export class HyperscriptTemplateEngine {
     const { html, scripts } = await this.extractScripts(template);
 
     // Phase 2: Process scripts through AST pipeline
-    const processedScripts = await this.scriptProcessor.processViewScripts(
-      scripts,
-    );
+    const processedScripts = await this.scriptProcessor.processViewScripts(scripts);
 
     // Phase 3: Inject optimized scripts back into HTML
     const enhanced = await this.injectScripts(html, processedScripts);
@@ -178,10 +169,7 @@ export class HyperscriptTemplateEngine {
     return { html, scripts };
   }
 
-  private async injectScripts(
-    html: string,
-    scripts: ProcessedScripts,
-  ): Promise<string> {
+  private async injectScripts(html: string, scripts: ProcessedScripts): Promise<string> {
     // Inject as inline scripts or data attributes
     return html.replace(/<!-- hyperscript:(\w+) -->/g, (match, name) => {
       const script = scripts[name];
@@ -204,7 +192,7 @@ Here's how you could integrate this with Django:
 ```python
 # Django view
 from django.shortcuts import render
-from hyperfixi import HyperscriptProcessor
+from lokascript import HyperscriptProcessor
 
 def product_list(request):
     # Define view-specific behaviors
@@ -216,26 +204,26 @@ def product_list(request):
                 on click send product-selected(productId: my @data-product-id) to document
             end
         ''',
-        
+
         'infinite_scroll': '''
             on intersection(intersecting) from bottom
                 if intersecting
-                    fetch /api/products?page={my @data-next-page} 
+                    fetch /api/products?page={my @data-next-page}
                     put it at the end of <#product-list/>
                     increment my @data-next-page
         '''
     }
-    
+
     # Process scripts through Hyperfixi
     processor = HyperscriptProcessor()
     compiled_scripts = processor.compile_for_view(scripts)
-    
+
     context = {
         'products': Product.objects.all()[:20],
         'scripts': compiled_scripts,
         'next_page': 2
     }
-    
+
     return render(request, 'products/list.html', context)
 ```
 
@@ -244,17 +232,9 @@ def product_list(request):
 ```html
 <!-- Django template with Hyperscript -->
 {% extends "base.html" %} {% block content %}
-<div
-  id="product-list"
-  data-next-page="{{ next_page }}"
-  _="{{ scripts.infinite_scroll }}"
->
+<div id="product-list" data-next-page="{{ next_page }}" _="{{ scripts.infinite_scroll }}">
   {% for product in products %}
-  <div
-    class="product-card"
-    data-product-id="{{ product.id }}"
-    _="install product-card"
-  >
+  <div class="product-card" data-product-id="{{ product.id }}" _="install product-card">
     <h3>{{ product.name }}</h3>
     <p>{{ product.price }}</p>
   </div>
@@ -285,7 +265,7 @@ export class ServerHyperscriptExtension {
 
     // Provide completions in template files
     vscode.languages.registerCompletionItemProvider(
-      { pattern: "**/*.{html,django,jinja2}" },
+      { pattern: '**/*.{html,django,jinja2}' },
       {
         provideCompletionItems(document, position) {
           // Detect if we're in a hyperscript context
@@ -293,13 +273,13 @@ export class ServerHyperscriptExtension {
             return provider.getCompletions(document, position);
           }
         },
-      },
+      }
     );
 
     // Live validation
     vscode.languages.registerDiagnosticProvider(
-      { pattern: "**/*.{html,django,jinja2}" },
-      new HyperscriptDiagnosticProvider(),
+      { pattern: '**/*.{html,django,jinja2}' },
+      new HyperscriptDiagnosticProvider()
     );
   }
 }
@@ -339,12 +319,12 @@ def get():
     canvas.isDrawingMode = true;
     canvas.freeDrawingBrush.color = '#3CDD8C';
     canvas.freeDrawingBrush.width = 10;
-    
+
     document.getElementById('color-picker').onchange = function() {
         canvas.freeDrawingBrush.color = this.value;
     };
     """
-    
+
     return Div(
         Canvas(id="canvas", width="800", height="600"),
         Input(type="color", id="color-picker", value="#3CDD8C"),
@@ -368,7 +348,7 @@ export class HyperscriptHandler {
     const pageDefinition = {
       components: {
         searchBox: {
-          element: "input#search",
+          element: 'input#search',
           behavior: `
             on keyup
               if the event's key is "Enter"
@@ -379,13 +359,13 @@ export class HyperscriptHandler {
               end
           `,
           attributes: {
-            type: "text",
-            placeholder: "Search...",
+            type: 'text',
+            placeholder: 'Search...',
           },
         },
 
         resultsList: {
-          element: "div#results",
+          element: 'div#results',
           behavior: `
             on search-submit from #search
               fetch /api/search with {query: #search.value}
@@ -418,7 +398,7 @@ export class HyperscriptHandler {
     const compiled = await this.compilePageDefinition(pageDefinition);
 
     // Render with template engine
-    return this.renderTemplate("page", {
+    return this.renderTemplate('page', {
       components: compiled.components,
       scripts: compiled.scripts,
       data: await this.fetchData(request),
@@ -463,7 +443,7 @@ pattern:
 export class HyperscriptX {
   constructor(
     private template: string,
-    private params: Record<string, any> = {},
+    private params: Record<string, any> = {}
   ) {}
 
   async render(context: ExecutionContext): Promise<string> {
@@ -483,9 +463,9 @@ async function productHandler(request: Request) {
   const products = await fetchProducts();
 
   return {
-    products: products.map((product) => ({
-      element: "div.product-card",
-      attributes: { "data-id": product.id },
+    products: products.map(product => ({
+      element: 'div.product-card',
+      attributes: { 'data-id': product.id },
       script: new HyperscriptX(
         `
         on click
@@ -497,7 +477,7 @@ async function productHandler(request: Request) {
         {
           productId: product.id,
           price: product.price,
-        },
+        }
       ),
     })),
   };
@@ -565,7 +545,7 @@ async function dashboardHandler() {
     lists: {
       taskList: {
         behavior: ComponentBehaviors.sortable({
-          handle: ".drag-handle",
+          handle: '.drag-handle',
         }),
         items: await fetchTasks(),
       },
@@ -582,15 +562,11 @@ Create a template engine that processes Hyperscript alongside HTML:
 <!-- Template file with embedded Hyperscript -->
 <template id="search-component">
   <div class="search-container" _="install search-enhanced">
-    <input 
-      type="text" 
-      id="search"
-      _="{{behaviors.searchInput}}"
-    />
+    <input type="text" id="search" _="{{behaviors.searchInput}}" />
     <div id="suggestions" _="{{behaviors.suggestions}}"></div>
     <div id="results"></div>
   </div>
-  
+
   <script type="text/hyperscript">
     behavior search-enhanced
       {{globalBehavior}}
@@ -608,9 +584,7 @@ export class ServerHyperscriptPipeline {
     const scripts = await this.extractScripts(handler);
 
     // Parse all scripts
-    const asts = await Promise.all(
-      scripts.map((script) => this.parser.parse(script)),
-    );
+    const asts = await Promise.all(scripts.map(script => this.parser.parse(script)));
 
     // Analyze dependencies
     const analysis = await this.analyzer.analyzeDependencies(asts);
@@ -640,11 +614,11 @@ export class ServerHyperscriptPipeline {
 ### 7. **Django/Flask Integration Example**
 
 ```python
-from hyperfixi import HyperscriptHandler, behaviors
+from lokascript import HyperscriptHandler, behaviors
 
 class ProductListView(HyperscriptHandler):
     template_name = 'products/list.html'
-    
+
     def get_hyperscript_context(self):
         return {
             'behaviors': {
@@ -657,7 +631,7 @@ class ProductListView(HyperscriptHandler):
                             send product-deselected(id: my @data-id)
                         end
                 ''',
-                
+
                 'infinite_scroll': '''
                     on intersection(intersecting) from bottom
                         if intersecting and not my @data-loading
@@ -669,10 +643,10 @@ class ProductListView(HyperscriptHandler):
                         end
                 '''
             },
-            
+
             'components': self.build_components()
         }
-    
+
     def build_components(self):
         products = self.get_products()
         return [

@@ -18,11 +18,11 @@
 
 ### Bundle Sizes - Actual vs Expected
 
-| Bundle Type | Actual Size | Actual (gzipped) | Expected (gzipped) | Gap |
-|-------------|-------------|------------------|-------------------|-----|
-| **Full** | 511 KB | 112 KB | ~130 KB | ✅ -14% (better) |
-| **Standard** | 447 KB | 100 KB | ~70 KB | ❌ +43% (worse) |
-| **Minimal** | 447 KB | 100 KB | ~60 KB | ❌ +67% (worse) |
+| Bundle Type  | Actual Size | Actual (gzipped) | Expected (gzipped) | Gap              |
+| ------------ | ----------- | ---------------- | ------------------ | ---------------- |
+| **Full**     | 511 KB      | 112 KB           | ~130 KB            | ✅ -14% (better) |
+| **Standard** | 447 KB      | 100 KB           | ~70 KB             | ❌ +43% (worse)  |
+| **Minimal**  | 447 KB      | 100 KB           | ~60 KB             | ❌ +67% (worse)  |
 
 ### Critical Discovery
 
@@ -43,12 +43,13 @@ import { createRemoveCommand } from '../commands/dom/remove';
 ```
 
 **Why this breaks tree-shaking:**
+
 1. Browser bundle imports `Runtime` class
 2. Runtime imports ALL commands at module level
 3. Rollup includes all transitive imports
 4. Result: All commands bundled regardless of runtime configuration
 
-**Key Insight**: `lazyLoad` option controls *runtime* behavior (when commands are registered), not *bundle* behavior (what code is included).
+**Key Insight**: `lazyLoad` option controls _runtime_ behavior (when commands are registered), not _bundle_ behavior (what code is included).
 
 ---
 
@@ -57,6 +58,7 @@ import { createRemoveCommand } from '../commands/dom/remove';
 ### 1. TREE_SHAKING_ANALYSIS.md
 
 Comprehensive technical analysis including:
+
 - Root cause investigation
 - Verification steps
 - Three solution approaches with pros/cons
@@ -66,6 +68,7 @@ Comprehensive technical analysis including:
 ### 2. Updated TREE_SHAKING_GUIDE.md
 
 Added prominent warnings:
+
 - ⚠️ Current limitations section at top
 - Realistic size expectations
 - Reference to analysis document
@@ -81,6 +84,7 @@ Added prominent warnings:
 Create dedicated runtime classes without static command imports:
 
 **Structure:**
+
 ```
 src/runtime/
   ├── runtime-base.ts      # Core runtime (no commands)
@@ -90,6 +94,7 @@ src/runtime/
 ```
 
 **Benefits:**
+
 - ✅ True tree-shaking (only imports needed commands)
 - ✅ Clean separation of concerns
 - ✅ Can achieve 60-70% size reduction
@@ -102,11 +107,13 @@ src/runtime/
 Use `import()` for lazy command loading at runtime.
 
 **Benefits:**
+
 - ✅ True code-splitting
 - ✅ Smallest initial bundle
 - ✅ Works with existing architecture
 
 **Drawbacks:**
+
 - ⚠️ Async complexity
 - ⚠️ First-use loading delay
 - ⚠️ Requires network requests
@@ -118,10 +125,12 @@ Use `import()` for lazy command loading at runtime.
 Create standalone factory functions per preset.
 
 **Benefits:**
+
 - ✅ True tree-shaking
 - ✅ No Runtime refactoring
 
 **Drawbacks:**
+
 - ⚠️ Duplicates runtime logic
 - ⚠️ Harder to maintain
 
@@ -153,6 +162,7 @@ Create standalone factory functions per preset.
 ### Immediate (Phase 2)
 
 **Option A**: Implement Solution 1 (Separate Runtime Classes)
+
 - Extract RuntimeBase from Runtime
 - Create MinimalRuntime with 8 command imports
 - Create StandardRuntime with 20 command imports
@@ -160,6 +170,7 @@ Create standalone factory functions per preset.
 - Verify bundle sizes achieve expected reductions
 
 **Option B**: Implement Solution 2 (Dynamic Imports)
+
 - Add dynamic import support to EnhancedCommandRegistry
 - Update lazyLoad implementation to use `import()`
 - Test async loading behavior
@@ -208,7 +219,7 @@ After implementing chosen solution, validate:
 
 ## Conclusion
 
-Phase 1 successfully identified why tree-shaking isn't working as expected. The architecture *supports* tree-shaking (modular exports, ES modules), but the implementation *prevents* it (static imports in Runtime class).
+Phase 1 successfully identified why tree-shaking isn't working as expected. The architecture _supports_ tree-shaking (modular exports, ES modules), but the implementation _prevents_ it (static imports in Runtime class).
 
 **The good news**: We have clear solutions and a path forward. The modular command architecture is solid - we just need to refactor how Runtime imports commands.
 
@@ -221,5 +232,5 @@ Phase 1 successfully identified why tree-shaking isn't working as expected. The 
 - ✅ [TREE_SHAKING_ANALYSIS.md](./TREE_SHAKING_ANALYSIS.md) - Technical analysis
 - ✅ [TREE_SHAKING_GUIDE.md](./TREE_SHAKING_GUIDE.md) - Updated user guide
 - ✅ [TREE_SHAKING_PHASE1_SUMMARY.md](./TREE_SHAKING_PHASE1_SUMMARY.md) - This document
-- ✅ Built bundles in `dist/hyperfixi-browser-*.js`
+- ✅ Built bundles in `dist/lokascript-browser-*.js`
 - ✅ Bundle size measurements documented

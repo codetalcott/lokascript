@@ -1,6 +1,6 @@
 # Examples
 
-Real-world usage patterns and examples for HyperFixi.
+Real-world usage patterns and examples for LokaScript.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ Real-world usage patterns and examples for HyperFixi.
 ### Show/Hide Elements
 
 ```typescript
-import { hyperscript } from 'hyperfixi';
+import { hyperscript } from 'lokascript';
 
 const button = document.getElementById('toggleButton');
 const panel = document.getElementById('panel');
@@ -492,7 +492,7 @@ class StateStore {
   }
 }
 
-// Usage with HyperFixi
+// Usage with LokaScript
 const store = new StateStore();
 
 // Counter component
@@ -544,7 +544,7 @@ async function safeExecute(code: string, context: any, fallbackAction?: () => vo
   try {
     return await hyperscript.eval(code, context);
   } catch (error) {
-    console.error('HyperFixi execution failed:', error);
+    console.error('LokaScript execution failed:', error);
 
     // Show error state
     const errorContext = hyperscript.createContext(context.me);
@@ -715,4 +715,4 @@ searchInput?.addEventListener('input', event => {
 
 ---
 
-These examples demonstrate real-world usage patterns for HyperFixi. For more advanced scenarios and integration patterns, see the [Advanced Guide](./ADVANCED.md).
+These examples demonstrate real-world usage patterns for LokaScript. For more advanced scenarios and integration patterns, see the [Advanced Guide](./ADVANCED.md).

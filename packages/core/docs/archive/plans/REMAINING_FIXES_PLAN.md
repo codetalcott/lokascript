@@ -10,19 +10,20 @@
 
 After completing Phases 1-7 of test failure resolution, 3 failures remain in `core-system.test.ts`:
 
-| Test | Expression | Current Error | Root Cause |
-|------|------------|---------------|------------|
-| null and undefined correctly | `nonexistent?.property` | `Unexpected token: ?` | Missing `?.` operator |
-| DOM element queries | `.test-item` | `result.textContent` is undefined | CSS selector returns wrong type |
-| element attribute access | `[data-test]'s @data-test` | Returns `null` | Possessive `@attr` evaluation |
+| Test                         | Expression                 | Current Error                     | Root Cause                      |
+| ---------------------------- | -------------------------- | --------------------------------- | ------------------------------- |
+| null and undefined correctly | `nonexistent?.property`    | `Unexpected token: ?`             | Missing `?.` operator           |
+| DOM element queries          | `.test-item`               | `result.textContent` is undefined | CSS selector returns wrong type |
+| element attribute access     | `[data-test]'s @data-test` | Returns `null`                    | Possessive `@attr` evaluation   |
 
 ---
 
 ## Fix 1: Optional Chaining `?.` Operator
 
 **Test Case**:
+
 ```javascript
-evalHyperScript('nonexistent?.property') // Expected: undefined (not error)
+evalHyperScript('nonexistent?.property'); // Expected: undefined (not error)
 ```
 
 **Current Behavior**: `Unexpected token: ? at position 1`
@@ -30,6 +31,7 @@ evalHyperScript('nonexistent?.property') // Expected: undefined (not error)
 ### Implementation Steps
 
 #### Step 1: Tokenizer - Recognize `?.` as single token
+
 **File**: `packages/core/src/parser/tokenizer.ts`
 
 ```typescript
@@ -49,9 +51,11 @@ if (char === '?') {
 ```
 
 #### Step 2: Parser - Handle `?.` in property access
+
 **File**: `packages/core/src/parser/expression-parser.ts`
 
 In `parsePropertyAccess()` or `parsePostfixExpression()`:
+
 ```typescript
 // Check for optional chaining
 if (token.type === TokenType.OPERATOR && token.value === '?.') {
@@ -68,6 +72,7 @@ if (token.type === TokenType.OPERATOR && token.value === '?.') {
 ```
 
 #### Step 3: Evaluator - Handle `optionalChain` AST node
+
 **File**: `packages/core/src/parser/expression-parser.ts`
 
 ```typescript
@@ -97,6 +102,7 @@ async function evaluateOptionalChain(node: any, context: ExecutionContext): Prom
 ## Fix 2: DOM Element Queries
 
 **Test Case**:
+
 ```javascript
 testContainer.innerHTML = '<div class="test-item">content</div>';
 const result = await evalHyperScript('.test-item');
@@ -108,18 +114,23 @@ expect(result.textContent).toBe('content');
 ### Root Cause Analysis
 
 The CSS selector `.test-item` is being parsed and evaluated, but:
+
 1. The evaluator may not have access to the test's `document`
 2. Or it's returning a different type than expected
 
 ### Implementation Steps
 
 #### Step 1: Verify CSS selector evaluation
+
 Check `evaluateCSSSelectorExpression()` in `expression-parser.ts`:
+
 - Does it use `document.querySelector()`?
 - Is `document` available in the test environment?
 
 #### Step 2: Ensure document context is passed
+
 The test setup appends elements to `document.body`, so the document should be available. The issue might be:
+
 - Selector returning NodeList instead of single element
 - Selector evaluation returning the selector string instead of querying
 
@@ -133,6 +144,7 @@ The test setup appends elements to `document.body`, so the document should be av
 ## Fix 3: Possessive with `@attribute`
 
 **Test Case**:
+
 ```javascript
 testContainer.innerHTML = '<div data-test="attribute-value">content</div>';
 const result = await evalHyperScript("[data-test]'s @data-test");
@@ -144,6 +156,7 @@ expect(result).toBe('attribute-value');
 ### Root Cause Analysis
 
 Tokenization works correctly (verified):
+
 - `[` → operator
 - `data-test` → identifier
 - `]` → operator
@@ -155,9 +168,11 @@ The issue is in evaluation - the possessive with `@` attribute isn't resolving t
 ### Implementation Steps
 
 #### Step 1: Check possessive evaluation
+
 **File**: `packages/core/src/parser/expression-parser.ts`
 
 Look at `evaluatePossessive()` or property access evaluation:
+
 ```typescript
 // Current likely handles:
 // element's property → element.property
@@ -168,6 +183,7 @@ Look at `evaluatePossessive()` or property access evaluation:
 ```
 
 #### Step 2: Add attribute access in possessive evaluation
+
 ```typescript
 async function evaluatePossessive(node: any, context: ExecutionContext): Promise<any> {
   const object = await evaluateASTNode(node.object, context);
@@ -194,11 +210,11 @@ async function evaluatePossessive(node: any, context: ExecutionContext): Promise
 
 ## Implementation Priority
 
-| Fix | Complexity | Dependencies | Priority |
-|-----|-----------|--------------|----------|
-| 3. Possessive @attr | Low | None | 1st |
-| 1. Optional chaining | Medium | None | 2nd |
-| 2. DOM queries | Low-Medium | May need debugging | 3rd |
+| Fix                  | Complexity | Dependencies       | Priority |
+| -------------------- | ---------- | ------------------ | -------- |
+| 3. Possessive @attr  | Low        | None               | 1st      |
+| 1. Optional chaining | Medium     | None               | 2nd      |
+| 2. DOM queries       | Low-Medium | May need debugging | 3rd      |
 
 **Recommended order**: Fix 3 → Fix 1 → Fix 2
 
@@ -207,8 +223,9 @@ async function evaluatePossessive(node: any, context: ExecutionContext): Promise
 ## Verification
 
 After each fix, run:
+
 ```bash
-npm test --workspace=@hyperfixi/core -- --run src/validation/core-system.test.ts
+npm test --workspace=@lokascript/core -- --run src/validation/core-system.test.ts
 ```
 
 Target: 0 failures (currently 3)

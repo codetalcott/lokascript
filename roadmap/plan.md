@@ -1,4 +1,4 @@
-# HyperFixi: Simple & Compatible Hyperscript Implementation
+# LokaScript: Simple & Compatible Hyperscript Implementation
 
 ## Philosophy: Simplicity First
 
@@ -10,7 +10,7 @@ that works exactly like the original, with modern TypeScript benefits.
 
 ## Current Status 🎉 **COMPLETE ECOSYSTEM**
 
-**HyperFixi is now a complete, production-ready hyperscript ecosystem with server-side integration, advanced tooling, and comprehensive internationalization!**
+**LokaScript is now a complete, production-ready hyperscript ecosystem with server-side integration, advanced tooling, and comprehensive internationalization!**
 
 ### ✅ **Client-Side System** (Phase 1-3 Complete) + 🔧 **TypeScript Nearly Complete**
 

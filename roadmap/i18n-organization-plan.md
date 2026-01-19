@@ -7,7 +7,7 @@ This document outlines how to properly organize internationalization (i18n) code
 ## Proposed Structure
 
 ```
-hyperfixi/
+lokascript/
 ├── packages/
 │   ├── i18n/                      # Core i18n package
 │   │   ├── src/
@@ -120,7 +120,7 @@ export interface TranslationOptions {
 // packages/i18n/src/translator.ts
 export class HyperscriptTranslator {
   constructor(config: I18nConfig);
-  
+
   translate(text: string, options: TranslationOptions): string;
   translateAST(ast: ASTNode, targetLocale: string): ASTNode;
   validateDictionary(locale: string): ValidationResult;
@@ -143,7 +143,7 @@ export const es: Dictionary = {
     end: 'fin',
     // ... complete dictionary
   },
-  
+
   // Modifiers
   modifiers: {
     to: 'a',
@@ -152,14 +152,14 @@ export const es: Dictionary = {
     with: 'con',
     // ...
   },
-  
+
   // Events
   events: {
     click: 'clic',
     change: 'cambio',
     hover: 'flotar',
     // ...
-  }
+  },
 };
 ```
 
@@ -169,35 +169,29 @@ export const es: Dictionary = {
 // packages/lsp/src/providers/i18n-provider.ts
 export class I18nLanguageProvider {
   private translator: HyperscriptTranslator;
-  
+
   constructor(locale: string) {
     this.translator = new HyperscriptTranslator({ locale });
   }
-  
-  async provideCompletions(
-    document: TextDocument,
-    position: Position
-  ): Promise<CompletionItem[]> {
+
+  async provideCompletions(document: TextDocument, position: Position): Promise<CompletionItem[]> {
     const context = this.getContext(document, position);
     return this.translator.getCompletions(context);
   }
-  
-  async provideHover(
-    document: TextDocument,
-    position: Position
-  ): Promise<Hover | null> {
+
+  async provideHover(document: TextDocument, position: Position): Promise<Hover | null> {
     const word = this.getWordAt(document, position);
     const translation = this.translator.getTranslation(word);
-    
+
     if (translation) {
       return {
         contents: {
           kind: 'markdown',
-          value: `**${word}** → \`${translation}\``
-        }
+          value: `**${word}** → \`${translation}\``,
+        },
       };
     }
-    
+
     return null;
   }
 }
@@ -210,17 +204,17 @@ export class I18nLanguageProvider {
 export function hyperscriptI18nPlugin(options: I18nPluginOptions) {
   return {
     name: 'hyperscript-i18n',
-    
+
     transform(code: string, id: string) {
       if (id.endsWith('.html')) {
         return transformHyperscriptI18n(code, options);
       }
     },
-    
+
     configureServer(server) {
       // Add middleware for runtime translation
       server.middlewares.use(i18nMiddleware(options));
-    }
+    },
   };
 }
 ```
@@ -232,12 +226,12 @@ export function hyperscriptI18nPlugin(options: I18nPluginOptions) {
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { HyperscriptTranslator } from '@hyperfixi/i18n';
+import { HyperscriptTranslator } from '@lokascript/i18n';
 
 const program = new Command();
 
 program
-  .name('hyperfixi-translate')
+  .name('lokascript-translate')
   .description('Translate hyperscript between languages')
   .version('1.0.0');
 
@@ -249,12 +243,12 @@ program
     const translator = new HyperscriptTranslator({
       locale: options.from
     });
-    
+
     const content = await fs.readFile(input, 'utf8');
     const translated = translator.translate(content, {
       to: options.to
     });
-    
+
     await fs.writeFile(output, translated);
   });
 
@@ -269,31 +263,30 @@ program.parse();
 // packages/ast-toolkit/src/i18n/parser.ts
 export class I18nAwareParser extends Parser {
   private translator: HyperscriptTranslator;
-  
+
   constructor(locale: string = 'en') {
     super();
     this.translator = new HyperscriptTranslator({ locale });
   }
-  
+
   parse(source: string): ASTNode {
     // Detect source language
     const detectedLocale = this.translator.detectLanguage(source);
-    
+
     // Translate to English for parsing if needed
-    const englishSource = detectedLocale !== 'en'
-      ? this.translator.translate(source, { to: 'en' })
-      : source;
-    
+    const englishSource =
+      detectedLocale !== 'en' ? this.translator.translate(source, { to: 'en' }) : source;
+
     // Parse English hyperscript
     const ast = super.parse(englishSource);
-    
+
     // Attach locale metadata
     ast.metadata = {
       ...ast.metadata,
       sourceLocale: detectedLocale,
-      isTranslated: detectedLocale !== 'en'
+      isTranslated: detectedLocale !== 'en',
     };
-    
+
     return ast;
   }
 }
@@ -305,21 +298,21 @@ export class I18nAwareParser extends Parser {
 // packages/core/src/i18n/runtime.ts
 export class I18nRuntime {
   private translator: HyperscriptTranslator;
-  
+
   enableI18n(config: I18nConfig) {
     this.translator = new HyperscriptTranslator(config);
-    
+
     // Override attribute processing
     this.interceptAttributeProcessing((element, attrValue) => {
       const locale = this.detectElementLocale(element);
-      
+
       if (locale && locale !== 'en') {
         return this.translator.translate(attrValue, {
           from: locale,
-          to: 'en'
+          to: 'en',
         });
       }
-      
+
       return attrValue;
     });
   }
@@ -335,11 +328,12 @@ export class I18nRuntime {
 describe('HyperscriptTranslator', () => {
   it('should translate Spanish to English', () => {
     const translator = new HyperscriptTranslator({ locale: 'es' });
-    
-    expect(translator.translate('en clic alternar .activo', { to: 'en' }))
-      .toBe('on click toggle .activo');
+
+    expect(translator.translate('en clic alternar .activo', { to: 'en' })).toBe(
+      'on click toggle .activo'
+    );
   });
-  
+
   it('should handle nested expressions', () => {
     const input = `
       si verdadero entonces
@@ -348,7 +342,7 @@ describe('HyperscriptTranslator', () => {
         establecer x a 10
       fin
     `;
-    
+
     const expected = `
       if true then
         set x to 5
@@ -356,9 +350,8 @@ describe('HyperscriptTranslator', () => {
         set x to 10
       end
     `;
-    
-    expect(translator.translate(input, { to: 'en' }))
-      .toBe(expected);
+
+    expect(translator.translate(input, { to: 'en' })).toBe(expected);
   });
 });
 ```
@@ -371,22 +364,19 @@ describe('I18n Integration', () => {
   it('should work with parser', async () => {
     const parser = new I18nAwareParser('es');
     const ast = parser.parse('en clic alternar .activo');
-    
+
     expect(ast.type).toBe('Program');
     expect(ast.metadata.sourceLocale).toBe('es');
   });
-  
+
   it('should work with LSP', async () => {
     const provider = new I18nLanguageProvider('ko');
-    const completions = await provider.provideCompletions(
-      document,
-      position
-    );
-    
+    const completions = await provider.provideCompletions(document, position);
+
     expect(completions).toContainEqual(
       expect.objectContaining({
         label: '클릭',
-        detail: 'click'
+        detail: 'click',
       })
     );
   });
@@ -396,24 +386,28 @@ describe('I18n Integration', () => {
 ## Migration Plan
 
 ### Phase 1: Core Package (Week 1)
+
 1. Create `packages/i18n` structure
 2. Move existing i18n code to package
 3. Implement core translator
 4. Add initial dictionaries (es, ko, zh)
 
 ### Phase 2: Integration (Week 2)
+
 1. Update parser for i18n awareness
 2. Add LSP i18n providers
 3. Create build tool plugins
 4. Update runtime for i18n support
 
 ### Phase 3: Tooling (Week 3)
+
 1. Create CLI translation tool
 2. Add dictionary validation scripts
 3. Build documentation generator
 4. Create playground examples
 
 ### Phase 4: Extended Languages (Week 4)
+
 1. Add more language dictionaries
 2. Implement RTL support
 3. Add pluralization rules
@@ -422,7 +416,7 @@ describe('I18n Integration', () => {
 ## Benefits
 
 1. **Clean Separation**: I18n code isolated in dedicated package
-2. **Reusability**: All packages can import from `@hyperfixi/i18n`
+2. **Reusability**: All packages can import from `@lokascript/i18n`
 3. **Type Safety**: Full TypeScript support with generated types
 4. **Extensibility**: Easy to add new languages
 5. **Tool Integration**: Works with all build tools
@@ -431,7 +425,7 @@ describe('I18n Integration', () => {
 
 ## Community Contribution
 
-```markdown
+````markdown
 # Contributing Translations
 
 1. Fork the repository
@@ -456,6 +450,9 @@ export const locale: Dictionary = {
   // ... other categories
 };
 ```
+````
+
 ```
 
 This organization ensures that i18n is a first-class citizen in Hyperfixi while maintaining clean architecture and enabling easy community contributions.
+```

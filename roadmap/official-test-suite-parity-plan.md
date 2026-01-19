@@ -1,8 +1,8 @@
-# Official _hyperscript Test Suite Parity Plan
+# Official \_hyperscript Test Suite Parity Plan
 
 **Created**: January 22, 2025\
 **Status**: Phase 1 - Real Testing Pattern Established\
-**Goal**: Achieve 100% compatibility with official _hyperscript test suite (83
+**Goal**: Achieve 100% compatibility with official \_hyperscript test suite (83
 files)\
 **Current Progress**: 70% expressions, 100% commands (subset tested), 0% core
 infrastructure
@@ -12,7 +12,7 @@ infrastructure
 We have successfully established a testing pattern that produces accurate
 compatibility metrics. Our successful command compatibility tests (100% pass
 rate) can be systematically reproduced across all 83 official test files to
-achieve true _hyperscript parity.
+achieve true \_hyperscript parity.
 
 ## 📊 Current Real Test Results
 
@@ -52,7 +52,7 @@ achieve true _hyperscript parity.
 ```typescript
 // Missing implementations to reach 100% expression parity
 - Boolean/Logical: Implement `and`, `or`, `not` operators
-- Type Conversion: Implement `as` keyword system  
+- Type Conversion: Implement `as` keyword system
 - Comparison: Fix remaining 2 comparison operations (status: complete)
 ```
 
@@ -126,7 +126,7 @@ src/compatibility/commands/
 src/compatibility/features/
 ├── behavior-system.test.ts      # behavior - reusable behaviors
 ├── function-definitions.test.ts # def - function definitions
-├── initialization.test.ts       # init - element initialization  
+├── initialization.test.ts       # init - element initialization
 ├── event-handling.test.ts       # on - event binding (expand current)
 ├── variable-setting.test.ts     # set - top-level variables
 ├── javascript-integration.test.ts # js - inline JavaScript
@@ -178,7 +178,7 @@ src/compatibility/core/
 
 1. **Parser Compatibility**: Ensure our parser handles all official syntax
    patterns
-2. **Runtime Compatibility**: Verify execution behavior matches _hyperscript
+2. **Runtime Compatibility**: Verify execution behavior matches \_hyperscript
    exactly
 3. **Error Handling**: Match official error messages and handling
 4. **Security**: Implement XSS protection and security features
@@ -194,7 +194,7 @@ npm run dashboard:generate    # Generate compatibility report
 
 # Target metrics by phase end:
 Phase 1: Expressions     100% (33/33 categories)
-Phase 2: Commands        100% (30/30 categories) 
+Phase 2: Commands        100% (30/30 categories)
 Phase 3: Features        100% (8/8 categories)
 Phase 4: Core           100% (10/10 categories)
 FINAL:  Overall         100% (81/83 total files)
@@ -226,17 +226,17 @@ FINAL:  Overall         100% (81/83 total files)
 
 ```typescript
 // src/compatibility/{category}/{test-name}.test.ts
-import { hyperscript } from "../api/hyperscript-api.js";
+import { hyperscript } from '../api/hyperscript-api.js';
 
 const evalHyperScript = async (code: string, context?: any) => {
   return await hyperscript.run(code, context);
 };
 
-describe("Official {Category} Compatibility", () => {
-  it("should handle {specific pattern} correctly", async () => {
+describe('Official {Category} Compatibility', () => {
+  it('should handle {specific pattern} correctly', async () => {
     const tests = [
       // Real patterns from official test files
-      { expr: "pattern", expected: result },
+      { expr: 'pattern', expected: result },
     ];
 
     let passed = 0;
@@ -247,9 +247,7 @@ describe("Official {Category} Compatibility", () => {
           console.log(`✅ ${test.expr} = ${result}`);
           passed++;
         } else {
-          console.log(
-            `❌ ${test.expr}: Expected ${test.expected}, got ${result}`,
-          );
+          console.log(`❌ ${test.expr}: Expected ${test.expected}, got ${result}`);
         }
       } catch (error) {
         console.log(`❌ ${test.expr}: Error - ${error.message}`);
@@ -322,7 +320,7 @@ describe("Official {Category} Compatibility", () => {
 
 - **Week 7**: Full test suite integration and optimization
 - **Week 8**: Documentation, performance tuning, edge case fixes
-- **Target**: 100% overall _hyperscript parity (83/83 files)
+- **Target**: 100% overall \_hyperscript parity (83/83 files)
 
 ## 🚀 Getting Started
 
@@ -333,7 +331,7 @@ describe("Official {Category} Compatibility", () => {
    ```bash
    # Create test file with failing boolean patterns
    npm test src/compatibility/expressions/boolean-logical.test.ts
-   # Implement and, or, not operators  
+   # Implement and, or, not operators
    # Validate 100% pass rate
    ```
 
@@ -341,7 +339,7 @@ describe("Official {Category} Compatibility", () => {
 
    ```bash
    # Create test file with "as" keyword patterns
-   npm test src/compatibility/expressions/type-conversion.test.ts  
+   npm test src/compatibility/expressions/type-conversion.test.ts
    # Implement as keyword system
    # Validate 100% pass rate
    ```
@@ -356,17 +354,17 @@ describe("Official {Category} Compatibility", () => {
 
 ### Success Definition
 
-**100% Official _hyperscript Parity Achieved When**:
+**100% Official \_hyperscript Parity Achieved When**:
 
 - ✅ All 83 official test files achieve 95%+ compatibility
-- ✅ Real-world _hyperscript examples run identically in HyperFixi
-- ✅ Performance benchmarks meet or exceed _hyperscript
-- ✅ Error messages and handling match _hyperscript exactly
+- ✅ Real-world \_hyperscript examples run identically in LokaScript
+- ✅ Performance benchmarks meet or exceed \_hyperscript
+- ✅ Error messages and handling match \_hyperscript exactly
 - ✅ Security features and XSS protection implemented
 - ✅ Documentation demonstrates full compatibility
 
 ---
 
 **This plan transforms our 70% simulated compatibility into measurable,
-achievable 100% real _hyperscript parity through systematic real testing and
+achievable 100% real \_hyperscript parity through systematic real testing and
 implementation.**

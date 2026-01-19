@@ -49,7 +49,7 @@
 ```typescript
 // ✅ All Critical & Priority 2 Commands Implemented via LSP-Integrated TDD
 ✅ put        // Content insertion - CRITICAL
-✅ set        // Variable assignment - CRITICAL  
+✅ set        // Variable assignment - CRITICAL
 ✅ if/else    // Conditional execution - CRITICAL
 ✅ repeat     // Loops and iteration - CRITICAL
 ✅ append     // Content insertion - HIGH
@@ -89,7 +89,7 @@
 - pick       // Array selection
 - measure    // Element measurements
 
-// Advanced Features  
+// Advanced Features
 - transition // CSS transitions
 - settle     // Async settling
 - render     // Template rendering
@@ -126,7 +126,7 @@
 - array destructuring
 - collection operations
 
-// Object Operations (Priority 2)  
+// Object Operations (Priority 2)
 - object destructuring
 - dynamic property access
 - object methods
@@ -162,7 +162,8 @@
 ```typescript
 -worker - // Web worker support
   socket - // WebSocket integration
-  event - source; // Server-sent events
+  event -
+  source; // Server-sent events
 ```
 
 ## 🧪 TDD Implementation Strategy
@@ -189,7 +190,7 @@
 // TDD Pattern: src/commands/control-flow/
 └── if.test.ts      // Complex branching tests
     ├── "should execute then branch when condition true"
-    ├── "should execute else branch when condition false"  
+    ├── "should execute else branch when condition false"
     ├── "should handle nested if statements"
     ├── "should support 'else if' chaining"
 └── if.ts           // Control flow implementation
@@ -221,7 +222,7 @@
     ├── "should handle string methods (split, trim, etc.)"
 └── index.ts        // String expression implementations
 
-// TDD Pattern: src/expressions/time/  
+// TDD Pattern: src/expressions/time/
 └── index.test.ts   // Time parsing tests
     ├── "should parse '2s' as 2000 milliseconds"
     ├── "should parse '500ms' as 500 milliseconds"
@@ -284,35 +285,35 @@
 ### **Command Testing Pattern (Following hide.test.ts)**
 
 ```typescript
-describe("CommandName Command", () => {
+describe('CommandName Command', () => {
   let command: CommandNameCommand;
   let testElement: HTMLElement;
   let context: ExecutionContext;
 
   beforeEach(() => {
     command = new CommandNameCommand();
-    testElement = createTestElement("<div>Test</div>");
+    testElement = createTestElement('<div>Test</div>');
     context = createContext(testElement);
   });
 
-  describe("Command Properties", () => {
-    it("should have correct metadata", () => {
-      expect(command.name).toBe("commandName");
-      expect(command.syntax).toBe("commandName <args>");
+  describe('Command Properties', () => {
+    it('should have correct metadata', () => {
+      expect(command.name).toBe('commandName');
+      expect(command.syntax).toBe('commandName <args>');
       expect(command.isBlocking).toBe(true / false);
     });
   });
 
-  describe("Core Functionality", () => {
-    it("should perform primary operation", async () => {
+  describe('Core Functionality', () => {
+    it('should perform primary operation', async () => {
       // Arrange: Set up test conditions
       // Act: Execute command
       // Assert: Verify expected outcomes
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle invalid inputs gracefully", async () => {
+  describe('Edge Cases', () => {
+    it('should handle invalid inputs gracefully', async () => {
       // Test error conditions and edge cases
     });
   });
@@ -322,21 +323,23 @@ describe("CommandName Command", () => {
 ### **Expression Testing Pattern (Following logical/index.test.ts)**
 
 ```typescript
-describe("ExpressionCategory Expressions", () => {
+describe('ExpressionCategory Expressions', () => {
   let context: ExecutionContext;
 
   beforeEach(() => {
     context = createContext();
   });
 
-  describe("expressionName", () => {
-    it("should evaluate basic cases", async () => {
+  describe('expressionName', () => {
+    it('should evaluate basic cases', async () => {
       const result = await expressionImpl.evaluate(context, ...args);
       expect(result).toBe(expectedValue);
     });
 
-    it("should validate arguments", () => {
-      const error = expressionImpl.validate([/* invalid args */]);
+    it('should validate arguments', () => {
+      const error = expressionImpl.validate([
+        /* invalid args */
+      ]);
       expect(error).toBeTruthy();
     });
   });
@@ -346,7 +349,7 @@ describe("ExpressionCategory Expressions", () => {
 ### **Feature Testing Pattern (Following on.test.ts)**
 
 ```typescript
-describe("FeatureName Feature", () => {
+describe('FeatureName Feature', () => {
   let feature: FeatureNameFeature;
   let context: ExecutionContext;
 
@@ -355,14 +358,14 @@ describe("FeatureName Feature", () => {
     context = createContext();
   });
 
-  describe("Feature Registration", () => {
-    it("should register feature correctly", () => {
+  describe('Feature Registration', () => {
+    it('should register feature correctly', () => {
       // Test feature installation
     });
   });
 
-  describe("Feature Execution", () => {
-    it("should execute feature logic", async () => {
+  describe('Feature Execution', () => {
+    it('should execute feature logic', async () => {
       // Test feature behavior
     });
   });
@@ -376,7 +379,7 @@ describe("FeatureName Feature", () => {
 ```bash
 # Priority Order (TDD First)
 1. put command      - Content insertion (CRITICAL)
-2. set command      - Variable assignment (CRITICAL)  
+2. set command      - Variable assignment (CRITICAL)
 3. append command   - Content addition (HIGH)
 4. make command     - Element creation (HIGH)
 5. call command     - Function execution (HIGH)
@@ -387,7 +390,7 @@ describe("FeatureName Feature", () => {
 ### **Week 3-4: Control Flow**
 
 ```bash
-# Priority Order  
+# Priority Order
 1. if/else commands - Conditional execution (CRITICAL)
 2. repeat command   - Loops and iteration (CRITICAL)
 3. break/continue   - Loop control (HIGH)
@@ -401,7 +404,7 @@ describe("FeatureName Feature", () => {
 ```bash
 # Priority Order
 1. String operations - Template literals, regex (HIGH)
-2. Time expressions  - Time parsing (2s, 500ms) (HIGH)  
+2. Time expressions  - Time parsing (2s, 500ms) (HIGH)
 3. Array operations  - Array methods, destructuring (MEDIUM)
 4. Object operations - Object methods, dynamic access (MEDIUM)
 
@@ -439,12 +442,12 @@ touch src/commands/content/put.ts
 
 ```typescript
 // src/commands/content/put.test.ts - Write failing tests first
-describe("Put Command", () => {
-  it("should put text into element innerHTML", async () => {
+describe('Put Command', () => {
+  it('should put text into element innerHTML', async () => {
     // This test will fail until we implement put.ts
     const putCommand = new PutCommand();
-    await putCommand.execute(context, "Hello World", targetElement);
-    expect(targetElement.innerHTML).toBe("Hello World");
+    await putCommand.execute(context, 'Hello World', targetElement);
+    expect(targetElement.innerHTML).toBe('Hello World');
   });
 });
 
@@ -457,7 +460,7 @@ describe("Put Command", () => {
 ```bash
 # Follow red-green-refactor cycle for each feature:
 1. Write comprehensive failing tests
-2. Implement minimal code to pass tests  
+2. Implement minimal code to pass tests
 3. Refactor for clean code and performance
 4. Add integration tests
 5. Update documentation
@@ -491,7 +494,7 @@ describe("Put Command", () => {
 
 ### **Current Implementation Analysis**
 
-Based on detailed analysis comparing hyperfixi/core against hyperscript-lsp
+Based on detailed analysis comparing lokascript/core against hyperscript-lsp
 database:
 
 - **Foundation strength**: Excellent modular architecture and testing
@@ -504,7 +507,7 @@ database:
 This systematic TDD approach ensures we build a robust, well-tested, and
 complete hyperscript implementation that matches the full specification while
 maintaining the modular architecture and high code quality standards already
-established in hyperfixi/core.
+established in lokascript/core.
 
 ---
 

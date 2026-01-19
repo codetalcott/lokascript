@@ -1,16 +1,16 @@
-# Contributing to HyperFixi
+# Contributing to LokaScript
 
-Thank you for your interest in contributing to HyperFixi! This document provides guidelines and technical information for contributors.
+Thank you for your interest in contributing to LokaScript! This document provides guidelines and technical information for contributors.
 
 ## Build System Rationale
 
-HyperFixi uses **different build tools for different packages** based on their specific needs.
+LokaScript uses **different build tools for different packages** based on their specific needs.
 
-| Package                 | Build Tool(s)                      | Rationale                                                                                                                                      |
-| ----------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@hyperfixi/core**     | Rollup                             | Complex multi-bundle builds (9 browser bundles). Rollup provides fine-grained control over IIFE, UMD, ESM formats with excellent tree-shaking. |
-| **@hyperfixi/semantic** | tsup (Node) + tsup IIFE (browser)  | Simple, fast builds. tsup's zero-config approach works well for straightforward needs.                                                         |
-| **@hyperfixi/i18n**     | tsup (Node) + Rollup UMD (browser) | Hybrid: tsup for fast Node.js builds, Rollup UMD for browser compatibility.                                                                    |
+| Package                  | Build Tool(s)                      | Rationale                                                                                                                                      |
+| ------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **@lokascript/core**     | Rollup                             | Complex multi-bundle builds (9 browser bundles). Rollup provides fine-grained control over IIFE, UMD, ESM formats with excellent tree-shaking. |
+| **@lokascript/semantic** | tsup (Node) + tsup IIFE (browser)  | Simple, fast builds. tsup's zero-config approach works well for straightforward needs.                                                         |
+| **@lokascript/i18n**     | tsup (Node) + Rollup UMD (browser) | Hybrid: tsup for fast Node.js builds, Rollup UMD for browser compatibility.                                                                    |
 
 **Why Not Standardize?** Each tool is optimized for its package's specific requirements. The inconsistency is deliberate and beneficial.
 
@@ -32,7 +32,7 @@ npm run clean:test
 
 ## Adding a New Language
 
-HyperFixi has two systems for multilingual support. Most contributions will use the semantic package.
+LokaScript has two systems for multilingual support. Most contributions will use the semantic package.
 
 ### Semantic Parsing (Recommended)
 

@@ -7,7 +7,9 @@ This directory contains a comprehensive assessment of your code comparison and o
 ## Documents in This Assessment
 
 ### 1. **ANALYSIS_SUMMARY.md** ← START HERE
+
 Quick reference guide showing:
+
 - What works well in your current tools
 - What's missing or broken
 - Impact of each issue
@@ -16,7 +18,9 @@ Quick reference guide showing:
 **Reading time:** 5 minutes
 
 ### 2. **ANALYSIS_QUICK_FIX.md** ← IMPLEMENT FIRST
+
 Concrete 30-minute fix for the most critical issue:
+
 - Commands discovery only finds ~25 commands instead of 43
 - Shows exact code changes needed
 - Validation checklist
@@ -25,7 +29,9 @@ Concrete 30-minute fix for the most critical issue:
 **Value:** HIGH - Fixes analysis scope
 
 ### 3. **COMPARISON_ANALYSIS_ASSESSMENT.md** ← DETAILED EVALUATION
+
 Deep dive into what the tools do well and don't do:
+
 - Current state of each analysis script
 - 6 specific issues identified
 - 5 enhancement recommendations with impact analysis
@@ -36,7 +42,9 @@ Deep dive into what the tools do well and don't do:
 **Audience:** Technical review
 
 ### 4. **ANALYSIS_ENHANCEMENT_PLAN.md** ← IMPLEMENTATION ROADMAP
+
 Step-by-step enhancement plan with code snippets:
+
 - Phase 1: Fix command discovery (30 min) + Add minified metrics (1 hour)
 - Phase 2: Create bundle composition analyzer (2-3 hours)
 - Phase 2b: Update orchestrator (30 min)
@@ -68,29 +76,32 @@ scripts/analysis/comparison/
 
 ### Critical Issues 🔴
 
-| Issue | Impact | Fix Time | Docs |
-|-------|--------|----------|------|
-| Command discovery only finds v1 | Analysis incomplete | 30 min | QUICK_FIX.md |
-| No minified size metrics | Can't compare to production | 1 hour | ENHANCEMENT_PLAN.md |
-| No bundle composition analysis | Don't know where bloat is | 2-3 hours | ENHANCEMENT_PLAN.md |
-| Optimization progress not tracked | Can't verify if changes helped | 1 hour | ENHANCEMENT_PLAN.md |
-| No category-based targeting | Can't prioritize next work | 1.5 hours | ENHANCEMENT_PLAN.md |
+| Issue                             | Impact                         | Fix Time  | Docs                |
+| --------------------------------- | ------------------------------ | --------- | ------------------- |
+| Command discovery only finds v1   | Analysis incomplete            | 30 min    | QUICK_FIX.md        |
+| No minified size metrics          | Can't compare to production    | 1 hour    | ENHANCEMENT_PLAN.md |
+| No bundle composition analysis    | Don't know where bloat is      | 2-3 hours | ENHANCEMENT_PLAN.md |
+| Optimization progress not tracked | Can't verify if changes helped | 1 hour    | ENHANCEMENT_PLAN.md |
+| No category-based targeting       | Can't prioritize next work     | 1.5 hours | ENHANCEMENT_PLAN.md |
 
 ---
 
 ## Quick Start (Pick One)
 
 ### I want to fix it NOW (30 minutes)
+
 → Read **ANALYSIS_QUICK_FIX.md**
 → Make the changes
 → Run: `node scripts/analysis/comparison/compare-implementations.mjs`
 
 ### I want to understand what's wrong first
+
 → Read **ANALYSIS_SUMMARY.md** (5 min overview)
 → Read **COMPARISON_ANALYSIS_ASSESSMENT.md** (15 min detailed)
 → Decide on phases
 
 ### I want the full implementation plan
+
 → Read **ANALYSIS_ENHANCEMENT_PLAN.md**
 → Choose phases based on priority
 → Copy code snippets and adapt
@@ -100,6 +111,7 @@ scripts/analysis/comparison/
 ## What Gets Fixed At Each Phase
 
 ### Phase 1: Fix Command Discovery (30 min)
+
 ```
 BEFORE:  ❌ Analyzes only ~25 commands
 AFTER:   ✅ Analyzes all 43 commands
@@ -107,6 +119,7 @@ REVEALS: Which optimizations actually worked
 ```
 
 ### Phase 1b: Add Minified Metrics (1 hour)
+
 ```
 BEFORE:  ❌ Uses source lines (not realistic)
 AFTER:   ✅ Shows minified size per command
@@ -114,6 +127,7 @@ REVEALS: Which commands are heavy in production
 ```
 
 ### Phase 2: Bundle Composition (2-3 hours)
+
 ```
 BEFORE:  ❌ "Bundle is 664 KB" (what takes space?)
 AFTER:   ✅ Runtime: 50 KB, Parser: 125 KB, Commands: 380 KB, etc.
@@ -121,6 +135,7 @@ REVEALS: Where to focus optimization efforts
 ```
 
 ### Phase 3: Optimization Tracking (1 hour)
+
 ```
 BEFORE:  ❌ "We optimized 5 commands" (did it help?)
 AFTER:   ✅ Shows before/after metrics for each optimization
@@ -158,14 +173,14 @@ START
 
 ## Key Metrics These Tools Should Track
 
-| Metric | Current | How Tools Measure | Value |
-|--------|---------|------------------|-------|
-| **Bundle Size** | 664 KB | Actual file size | Baseline |
-| **Code Ratio** | 2.97x | HyperFixi lines vs Original | Optimization impact |
-| **Minified Size** | Unknown | Remove whitespace/comments | Production reality |
-| **Top Offenders** | repeat, set, default, make, toggle | Line count comparison | Prioritization |
-| **Optimization Verification** | Untracked | Before/after metrics | Progress visibility |
-| **Next Targets** | Hard to identify | Category-based analysis | Roadmap planning |
+| Metric                        | Current                            | How Tools Measure            | Value               |
+| ----------------------------- | ---------------------------------- | ---------------------------- | ------------------- |
+| **Bundle Size**               | 664 KB                             | Actual file size             | Baseline            |
+| **Code Ratio**                | 2.97x                              | LokaScript lines vs Original | Optimization impact |
+| **Minified Size**             | Unknown                            | Remove whitespace/comments   | Production reality  |
+| **Top Offenders**             | repeat, set, default, make, toggle | Line count comparison        | Prioritization      |
+| **Optimization Verification** | Untracked                          | Before/after metrics         | Progress visibility |
+| **Next Targets**              | Hard to identify                   | Category-based analysis      | Roadmap planning    |
 
 ---
 
@@ -193,16 +208,19 @@ node scripts/analysis/comparison/analyze-bundle-composition.mjs
 ## Success Criteria
 
 ### Phase 1 Success
+
 - [ ] Analysis finds all 43 commands (not just ~25)
 - [ ] Command metrics match files in commands-v2/
 - [ ] Code ratio reflects actual implementations
 
 ### Phase 2 Success
+
 - [ ] Bundle breakdown available (runtime, parser, commands, etc.)
 - [ ] Can identify which components take space
 - [ ] Minified size estimates available
 
 ### Phase 3 Success
+
 - [ ] Optimization history tracked
 - [ ] Can see before/after for each change
 - [ ] Progress visible in snapshots
@@ -212,9 +230,11 @@ node scripts/analysis/comparison/analyze-bundle-composition.mjs
 ## Files Modified / Created
 
 ### Modified
+
 - `scripts/analysis/comparison/extract-command-metrics.mjs` (QUICK_FIX)
 
 ### Created
+
 - `scripts/analysis/comparison/analyze-bundle-composition.mjs` (Phase 2)
 - Analysis output reports in `analysis-output/` directory
 
@@ -263,6 +283,7 @@ Commit bb5bc56: Consolidate command implementations for bundle size reduction
 ## Questions?
 
 Each document is self-contained:
+
 - Want code? → ANALYSIS_QUICK_FIX.md and ANALYSIS_ENHANCEMENT_PLAN.md
 - Want context? → COMPARISON_ANALYSIS_ASSESSMENT.md
 - Want overview? → ANALYSIS_SUMMARY.md

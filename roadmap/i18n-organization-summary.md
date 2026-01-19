@@ -14,27 +14,32 @@ Created a dedicated internationalization package with:
 ### 2. **Key Components**
 
 #### Translator (`src/translator.ts`)
+
 - Bidirectional translation between any supported languages
 - Language detection capabilities
 - Token-based translation preserving code structure
 - Support for preserving original text as attributes
 
 #### Dictionaries (`src/dictionaries/`)
+
 - Spanish (es): Complete translation mapping
 - Korean (ko): Full keyword support
 - Chinese (zh): Simplified Chinese translations
 - Structured by categories: commands, modifiers, events, logical, temporal, values, attributes
 
 #### Validators (`src/validators/`)
+
 - Schema-based validation ensuring dictionary completeness
 - Language-specific validation (gender consistency, honorific levels, character sets)
 - Coverage reporting for translation completeness
 
 #### Utils (`src/utils/`)
+
 - **Tokenizer**: Parses hyperscript preserving structure
 - **Locale**: Language detection, locale parsing, RTL support
 
 #### Plugins (`src/plugins/`)
+
 - **Vite Plugin**: Transform hyperscript during development/build
 - **Webpack Plugin**: Production build transformation
 - Support for HTML, Vue, and Svelte files
@@ -58,26 +63,31 @@ The i18n package is designed to integrate with:
 ## Benefits of This Organization
 
 ### 1. **Clean Architecture**
+
 - I18n is completely isolated in its own package
 - No pollution of core hyperscript logic
 - Easy to maintain and test independently
 
 ### 2. **Reusability**
-- All Hyperfixi packages can import `@hyperfixi/i18n`
+
+- All Hyperfixi packages can import `@lokascript/i18n`
 - Shared types and utilities
 - Consistent translation across the ecosystem
 
 ### 3. **Extensibility**
+
 - Adding new languages is straightforward
 - Community can contribute dictionaries easily
 - Plugin system for different build tools
 
 ### 4. **Performance**
+
 - Translation happens at build time by default
 - No runtime overhead for production
 - Optional runtime translation for development
 
 ### 5. **Type Safety**
+
 - Full TypeScript support throughout
 - Validated dictionary structures
 - Type-safe translation options
@@ -85,29 +95,32 @@ The i18n package is designed to integrate with:
 ## Usage Examples
 
 ### Basic Translation
+
 ```typescript
-import { HyperscriptTranslator } from '@hyperfixi/i18n';
+import { HyperscriptTranslator } from '@lokascript/i18n';
 
 const translator = new HyperscriptTranslator({ locale: 'es' });
 const english = translator.translate('en clic alternar .activo', { to: 'en' });
 ```
 
 ### Build Integration
+
 ```typescript
 // vite.config.ts
-import { hyperscriptI18nVitePlugin } from '@hyperfixi/i18n/plugins/vite';
+import { hyperscriptI18nVitePlugin } from '@lokascript/i18n/plugins/vite';
 
 export default {
   plugins: [
     hyperscriptI18nVitePlugin({
       sourceLocale: 'es',
-      targetLocale: 'en'
-    })
-  ]
+      targetLocale: 'en',
+    }),
+  ],
 };
 ```
 
 ### Adding a New Language
+
 ```typescript
 // packages/i18n/src/dictionaries/fr.ts
 export const fr: Dictionary = {
@@ -115,7 +128,7 @@ export const fr: Dictionary = {
     on: 'sur',
     click: 'cliquer',
     // ... complete dictionary
-  }
+  },
 };
 ```
 

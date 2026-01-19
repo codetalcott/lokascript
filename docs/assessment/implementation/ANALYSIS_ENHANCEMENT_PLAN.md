@@ -7,6 +7,7 @@
 **File:** `scripts/analysis/comparison/extract-command-metrics.mjs`
 
 **Issue:** Currently only searches `packages/core/src/commands` but commands are now in:
+
 - `packages/core/src/commands-v2/` (43 current implementations, tree-shakeable)
 - `packages/core/src/commands/` (legacy, decorator-based)
 
@@ -26,7 +27,7 @@ const HYPERFIXI_COMMAND_DIRS = [
 async function findAllCommandFiles() {
   const allFiles = [];
   for (const dir of HYPERFIXI_COMMAND_DIRS) {
-    allFiles.push(...await findCommandFiles(dir));
+    allFiles.push(...(await findCommandFiles(dir)));
   }
   // Deduplicate by command name
   const seen = new Set();
@@ -47,7 +48,7 @@ async function findAllCommandFiles() {
 
 **New data point:** Current analysis uses source lines, not actual bundle impact
 
-**Addition to extractHyperFixiCommand():**
+**Addition to extractLokaScriptCommand():**
 
 ```javascript
 // After existing metrics extraction (line 254):
@@ -74,10 +75,10 @@ return {
 function estimateMinifiedSize(content) {
   // Remove comments, whitespace, shrink names
   let minified = content
-    .replace(/\/\*[\s\S]*?\*\//g, '')      // Block comments
-    .replace(/\/\/.*/g, '')                 // Line comments
-    .replace(/\s+/g, ' ')                   // Normalize whitespace
-    .replace(/\s*([{}();,:])\s*/g, '$1');   // Remove spaces around syntax
+    .replace(/\/\*[\s\S]*?\*\//g, '') // Block comments
+    .replace(/\/\/.*/g, '') // Line comments
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/\s*([{}();,:])\s*/g, '$1'); // Remove spaces around syntax
 
   return minified.length;
 }
@@ -185,19 +186,19 @@ async function analyzeComponent(component, patterns) {
  */
 async function analyzeBundles() {
   const bundles = {
-    'hyperfixi-browser.js': {
-      path: 'packages/core/dist/hyperfixi-browser.js',
+    'lokascript-browser.js': {
+      path: 'packages/core/dist/lokascript-browser.js',
       includes: ['runtime', 'parser', 'commands', 'expressions', 'features'],
       description: 'Full bundle with parser (everything)',
     },
-    'hyperfixi-multilingual.js': {
-      path: 'packages/core/dist/hyperfixi-multilingual.js',
+    'lokascript-multilingual.js': {
+      path: 'packages/core/dist/lokascript-multilingual.js',
       includes: ['runtime', 'commands', 'expressions', 'features'],
       excludes: ['parser', 'semantic', 'i18n'],
       description: 'Without parser (no parsing, only runtime execution)',
     },
-    'hyperfixi-semantic.browser.global.js': {
-      path: 'packages/semantic/dist/hyperfixi-semantic.browser.global.js',
+    'lokascript-semantic.browser.global.js': {
+      path: 'packages/semantic/dist/lokascript-semantic.browser.global.js',
       includes: ['semantic'],
       description: 'Semantic parser only (13 languages, no hyperscript commands)',
     },
@@ -303,7 +304,9 @@ async function main() {
     console.log('\n' + '─'.repeat(80));
     console.log('Duplication Analysis:');
     console.log(`  Estimated duplicate code: ${duplication.estimatedDuplicate}`);
-    console.log(`  Consolidation targets:\n    • ${duplication.consolidationTargets.join('\n    • ')}`);
+    console.log(
+      `  Consolidation targets:\n    • ${duplication.consolidationTargets.join('\n    • ')}`
+    );
 
     console.log('\n' + '═'.repeat(80));
     console.log(`Full report: ${reportPath}`);
@@ -339,7 +342,7 @@ const report = {
   summary,
   metrics,
   patterns,
-  composition,  // NEW
+  composition, // NEW
 };
 ```
 
@@ -398,8 +401,9 @@ function verifyOptimizations(summary, optimizations) {
 
   for (const opt of optimizations) {
     const targetCommands = opt.commands;
-    const found = summary.commandComparison.matchedCommands
-      .filter(c => targetCommands.includes(c.name));
+    const found = summary.commandComparison.matchedCommands.filter(c =>
+      targetCommands.includes(c.name)
+    );
 
     verified.push({
       ...opt,
@@ -462,10 +466,10 @@ After Phase 1 updates, these metrics should be automatically tracked:
 ## Expected Improvements
 
 | After Phase | Bundle Size | Code Ratio | Tracked | Actionable |
-|-------------|-------------|-----------|---------|-----------|
-| Current | 664 KB | 2.97x | No | No |
-| Phase 1 | ? | ? | Yes | Yes |
-| Phase 2 | ? | <2.8x | Yes | Yes |
-| Phase 3 | ? | <2.5x | Yes | Yes |
+| ----------- | ----------- | ---------- | ------- | ---------- |
+| Current     | 664 KB      | 2.97x      | No      | No         |
+| Phase 1     | ?           | ?          | Yes     | Yes        |
+| Phase 2     | ?           | <2.8x      | Yes     | Yes        |
+| Phase 3     | ?           | <2.5x      | Yes     | Yes        |
 
 **Phase 1 will reveal the actual baseline** - the 2.97x ratio may already be better given recent optimizations.

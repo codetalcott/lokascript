@@ -9,21 +9,24 @@
 
 ## Overview
 
-Phase 2 successfully implemented lazy expression loading and async dynamic imports for the HyperFixi command/expression system. While browser IIFE bundles maintain the same size due to bundler constraints, the changes provide significant benefits for NPM package users and runtime performance.
+Phase 2 successfully implemented lazy expression loading and async dynamic imports for the LokaScript command/expression system. While browser IIFE bundles maintain the same size due to bundler constraints, the changes provide significant benefits for NPM package users and runtime performance.
 
 ---
 
 ## Implementation Summary
 
 ### ✅ Task 1: Expression Tiers Configuration
+
 **File**: `src/expressions/expression-tiers.ts`
 
 Created tier-based categorization system:
+
 - **CORE** (3 categories): references, logical, special
 - **COMMON** (2 categories): properties, conversion
 - **OPTIONAL** (1 category): positional
 
 **Benefits**:
+
 - Clear categorization for lazy loading
 - Type-safe tier definitions
 - Helper utilities for tier management
@@ -31,9 +34,11 @@ Created tier-based categorization system:
 ---
 
 ### ✅ Task 2: Lazy Expression Evaluator
+
 **File**: `src/core/lazy-expression-evaluator.ts`
 
 **Key Features**:
+
 - Dynamic import-based expression loading
 - Tier-based preloading strategies (core, common, all, none)
 - On-demand category loading with caching
@@ -41,6 +46,7 @@ Created tier-based categorization system:
 - Compatible interface with ExpressionEvaluator
 
 **Implementation Details**:
+
 ```typescript
 export class LazyExpressionEvaluator {
   private loadedCategories = new Set<string>();
@@ -66,14 +72,17 @@ export class LazyExpressionEvaluator {
 ---
 
 ### ✅ Task 3: Async Command Loading
+
 **File**: `src/runtime/command-adapter.ts`
 
 Converted LazyCommandRegistry from `require()` to `import()`:
+
 - All methods now async (`getAdapter()`, `loadCommand()`, etc.)
 - True dynamic import support
 - Better code splitting potential
 
 **Before** (Phase 1):
+
 ```typescript
 private loadCommand(name: string): any {
   const { ENHANCED_COMMAND_FACTORIES } = require('../commands/command-registry');
@@ -82,6 +91,7 @@ private loadCommand(name: string): any {
 ```
 
 **After** (Phase 2):
+
 ```typescript
 private async loadCommand(name: string): Promise<any> {
   const module = await import('../commands/command-registry');
@@ -93,18 +103,21 @@ private async loadCommand(name: string): Promise<any> {
 ---
 
 ### ✅ Task 4: Runtime Integration
+
 **File**: `src/runtime/runtime.ts`
 
 **New RuntimeOptions**:
+
 ```typescript
 export interface RuntimeOptions {
   lazyLoad?: boolean;
   commands?: string[];
-  expressionPreload?: 'core' | 'common' | 'all' | 'none';  // NEW
+  expressionPreload?: 'core' | 'common' | 'all' | 'none'; // NEW
 }
 ```
 
 **Runtime Constructor**:
+
 ```typescript
 constructor(options: RuntimeOptions = {}) {
   this.options = {
@@ -129,23 +142,25 @@ constructor(options: RuntimeOptions = {}) {
 ### ✅ Task 5: Browser Bundle Updates
 
 **Minimal Bundle**:
+
 ```typescript
 export function createMinimalRuntime() {
   return new Runtime({
     lazyLoad: true,
     commands: MINIMAL_COMMANDS,
-    expressionPreload: 'core'  // Only essential expressions
+    expressionPreload: 'core', // Only essential expressions
   });
 }
 ```
 
 **Standard Bundle**:
+
 ```typescript
 export function createStandardRuntime() {
   return new Runtime({
     lazyLoad: true,
     commands: STANDARD_COMMANDS,
-    expressionPreload: 'common'  // Core + common expressions
+    expressionPreload: 'common', // Core + common expressions
   });
 }
 ```
@@ -167,6 +182,7 @@ Full:     194 KB gzipped (1.3 MB raw)
 ```
 
 **Findings**:
+
 - ⚠️ **Same sizes as Phase 1** - Dynamic imports are inlined for IIFE compatibility
 - ✅ **Runtime benefits** - Lazy expression registration improves initialization speed
 - ❌ **No code splitting** - IIFE format bundles everything together
@@ -181,16 +197,19 @@ Browser IIFE bundles use `inlineDynamicImports: true` in Rollup config, which bu
 For users importing from NPM with their own bundler:
 
 **Minimal App** (uses core expressions only):
+
 - Expected: 50-60 KB gzipped (**30-35% reduction**)
 - Bundler creates separate chunks for common/optional expressions
 - Only core expressions included in initial bundle
 
 **Standard App** (uses core + common expressions):
+
 - Expected: 70-80 KB gzipped (**15-20% reduction**)
 - Optional expressions split into separate chunks
 - Loaded on-demand if used
 
 **Full App** (uses all expressions):
+
 - Expected: 180-190 KB gzipped (**2-5% reduction from tree-shaking**)
 - All expressions available, but in optimized chunks
 
@@ -201,7 +220,9 @@ For users importing from NPM with their own bundler:
 Even without code splitting, Phase 2 provides runtime benefits:
 
 ### 1. Faster Initialization
+
 **Before** (Eager registration):
+
 ```typescript
 constructor() {
   // Register ALL 6 categories immediately (870 lines of expressions)
@@ -210,6 +231,7 @@ constructor() {
 ```
 
 **After** (Lazy registration):
+
 ```typescript
 constructor(options) {
   // Preload only 'core' tier (3 categories, ~300 lines)
@@ -223,11 +245,13 @@ constructor(options) {
 **Result**: ~60% faster runtime initialization for minimal apps
 
 ### 2. Memory Efficiency
+
 - Only loaded expressions consume memory
 - Expression registry grows on-demand
 - Better for memory-constrained environments
 
 ### 3. Warmup API
+
 ```typescript
 // Preload specific expressions before they're needed
 await runtime.expressionEvaluator.warmupExpressions(['positional', 'mathematical']);
@@ -238,7 +262,9 @@ await runtime.expressionEvaluator.warmupExpressions(['positional', 'mathematical
 ## Migration Impact
 
 ### Breaking Changes
+
 **None** - All changes are backward compatible:
+
 - Default behavior: `lazyLoad: true`, `expressionPreload: 'core'`
 - Legacy mode: Set `lazyLoad: false` for old behavior
 - Existing code continues working without changes
@@ -246,27 +272,28 @@ await runtime.expressionEvaluator.warmupExpressions(['positional', 'mathematical
 ### For NPM Package Users
 
 **Optimal Usage**:
+
 ```typescript
-import { Runtime } from '@hyperfixi/core';
+import { Runtime } from '@lokascript/core';
 
 // Minimal bundle (core expressions only)
 const runtime = new Runtime({
   lazyLoad: true,
   commands: ['add', 'remove', 'toggle', 'put', 'set'],
-  expressionPreload: 'core'
+  expressionPreload: 'core',
 });
 
 // Standard bundle (core + common expressions)
 const runtime = new Runtime({
   lazyLoad: true,
   commands: STANDARD_COMMANDS,
-  expressionPreload: 'common'
+  expressionPreload: 'common',
 });
 
 // Full compatibility (all expressions, legacy mode)
 const runtime = new Runtime({
   lazyLoad: false,
-  expressionPreload: 'all'
+  expressionPreload: 'all',
 });
 ```
 
@@ -275,18 +302,21 @@ const runtime = new Runtime({
 ## Technical Achievements
 
 ### Code Quality
+
 - ✅ Zero TypeScript errors
 - ✅ Full backward compatibility
 - ✅ Consistent async/await patterns
 - ✅ Proper type definitions throughout
 
 ### Architecture Improvements
+
 - ✅ Cleaner separation of concerns (tiers)
 - ✅ More testable (mocked imports)
 - ✅ Better tree-shaking support
 - ✅ Improved runtime performance
 
 ### Developer Experience
+
 - ✅ Clear tier categorization
 - ✅ Flexible preload strategies
 - ✅ Warmup API for optimization
@@ -297,6 +327,7 @@ const runtime = new Runtime({
 ## Next Steps & Recommendations
 
 ### Immediate (Optional)
+
 1. **ES Module Browser Bundles**: Create separate ES module bundles without `inlineDynamicImports` for modern browsers
    - Would enable true code splitting for `<script type="module">` usage
    - Expected 30-50% size reduction for minimal bundle
@@ -304,6 +335,7 @@ const runtime = new Runtime({
 2. **Bundle Analysis Tool**: Update `analyze-usage.mjs` to recommend expression preload options
 
 ### Future Enhancements
+
 1. **Expression Usage Tracking**: Monitor which expressions are actually used in production
 2. **Auto-tier Adjustment**: Automatically adjust tiers based on real-world usage data
 3. **Granular Expression Loading**: Load individual expressions instead of entire categories
@@ -326,11 +358,13 @@ The implementation is **production-ready** with **zero breaking changes** and **
 ## Files Changed
 
 **New Files** (3):
+
 - `src/expressions/expression-tiers.ts` - Tier configuration (125 lines)
 - `src/core/lazy-expression-evaluator.ts` - Lazy evaluator (633 lines)
 - `roadmap/phase-2-completion-summary.md` - This document
 
 **Modified Files** (5):
+
 - `src/runtime/command-adapter.ts` - Async command loading
 - `src/runtime/runtime.ts` - Expression preload option
 - `src/compatibility/browser-bundle-minimal.ts` - Core tier usage

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying the HyperFixi API to production environments.
+This guide covers deploying the LokaScript API to production environments.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ Create a `.env` file or configure these in your deployment platform:
 
 ```bash
 # Required
-DATABASE_URL=postgresql://user:password@host:5432/hyperfixi
+DATABASE_URL=postgresql://user:password@host:5432/lokascript
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 API_KEY_SALT=your-secure-random-string-minimum-32-chars
@@ -42,7 +42,7 @@ openssl rand -hex 32
 ### 1. Create Database
 
 ```bash
-createdb hyperfixi
+createdb lokascript
 ```
 
 ### 2. Apply Schema
@@ -58,6 +58,7 @@ psql $DATABASE_URL -c "\dt"
 ```
 
 Expected tables:
+
 - `migrations`
 - `users`
 - `api_keys`
@@ -72,7 +73,7 @@ Expected tables:
 
 In Stripe Dashboard > Developers > Webhooks:
 
-1. Add endpoint: `https://api.hyperfixi.dev/webhooks/stripe`
+1. Add endpoint: `https://api.lokascript.dev/webhooks/stripe`
 2. Select events:
    - `customer.subscription.created`
    - `customer.subscription.updated`
@@ -86,12 +87,14 @@ In Stripe Dashboard > Developers > Webhooks:
 Create products in Stripe:
 
 **Pro Plan:**
-- Product: "HyperFixi Pro"
+
+- Product: "LokaScript Pro"
 - Price: $29/month (metered or fixed)
 - Copy price ID to `STRIPE_PRO_PRICE_ID`
 
 **Team Plan:**
-- Product: "HyperFixi Team"
+
+- Product: "LokaScript Team"
 - Price: $99/month
 - Copy price ID to `STRIPE_TEAM_PRICE_ID`
 
@@ -100,7 +103,7 @@ Create products in Stripe:
 For usage-based billing:
 
 1. Go to Billing > Meters
-2. Create meter: "HyperFixi Compiles"
+2. Create meter: "LokaScript Compiles"
 3. Copy meter ID to `STRIPE_METER_ID`
 
 ## Docker Deployment
@@ -131,9 +134,9 @@ services:
   api:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/hyperfixi
+      - DATABASE_URL=postgresql://postgres:password@db:5432/lokascript
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - API_KEY_SALT=${API_KEY_SALT}
@@ -148,7 +151,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     environment:
-      - POSTGRES_DB=hyperfixi
+      - POSTGRES_DB=lokascript
       - POSTGRES_PASSWORD=password
     restart: unless-stopped
 
@@ -161,7 +164,7 @@ volumes:
 ```bash
 # Build
 npm run build
-docker build -t hyperfixi-api .
+docker build -t lokascript-api .
 
 # Run
 docker-compose up -d
@@ -175,64 +178,64 @@ docker-compose up -d
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hyperfixi-api
+  name: lokascript-api
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: hyperfixi-api
+      app: lokascript-api
   template:
     metadata:
       labels:
-        app: hyperfixi-api
+        app: lokascript-api
     spec:
       containers:
-      - name: api
-        image: your-registry/hyperfixi-api:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: hyperfixi-secrets
-              key: database-url
-        - name: STRIPE_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: hyperfixi-secrets
-              key: stripe-secret-key
-        - name: STRIPE_WEBHOOK_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: hyperfixi-secrets
-              key: stripe-webhook-secret
-        - name: API_KEY_SALT
-          valueFrom:
-            secretKeyRef:
-              name: hyperfixi-secrets
-              key: api-key-salt
-        - name: NODE_ENV
-          value: "production"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: api
+          image: your-registry/lokascript-api:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: lokascript-secrets
+                  key: database-url
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lokascript-secrets
+                  key: stripe-secret-key
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lokascript-secrets
+                  key: stripe-webhook-secret
+            - name: API_KEY_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: lokascript-secrets
+                  key: api-key-salt
+            - name: NODE_ENV
+              value: 'production'
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ### service.yaml
@@ -241,13 +244,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hyperfixi-api
+  name: lokascript-api
 spec:
   selector:
-    app: hyperfixi-api
+    app: lokascript-api
   ports:
-  - port: 80
-    targetPort: 3000
+    - port: 80
+      targetPort: 3000
   type: LoadBalancer
 ```
 
@@ -305,7 +308,7 @@ fly deploy
 ### Health Check
 
 ```bash
-curl https://api.hyperfixi.dev/health
+curl https://api.lokascript.dev/health
 ```
 
 ### Key Metrics to Monitor
@@ -334,7 +337,7 @@ The API is stateless and can scale horizontally:
 docker-compose up -d --scale api=3
 
 # Kubernetes
-kubectl scale deployment hyperfixi-api --replicas=5
+kubectl scale deployment lokascript-api --replicas=5
 ```
 
 ### Database Scaling
@@ -349,6 +352,7 @@ For high load:
 ### Caching
 
 Consider adding Redis for:
+
 - Rate limit state (currently in-memory)
 - Compilation cache (cache compiled output by input hash)
 
@@ -367,6 +371,7 @@ psql $DATABASE_URL < backup.sql
 ### Automated Backups
 
 Most cloud databases (RDS, Cloud SQL, Render) provide automated backups. Enable:
+
 - Daily automated backups
 - Point-in-time recovery
 - 7-day retention minimum
@@ -376,21 +381,25 @@ Most cloud databases (RDS, Cloud SQL, Render) provide automated backups. Enable:
 ### Common Issues
 
 **"Connection refused" to database**
+
 - Check `DATABASE_URL` format
 - Verify database is running
 - Check network/firewall rules
 
 **"Invalid signature" on webhooks**
+
 - Verify `STRIPE_WEBHOOK_SECRET` matches Stripe dashboard
 - Ensure raw body parsing for webhook endpoint
 - Check Stripe webhook logs
 
 **"API key not found"**
+
 - Verify key starts with `hfx_`
 - Check `API_KEY_SALT` matches when key was created
 - Query database: `SELECT * FROM api_keys WHERE key_prefix = 'hfx_xxx...'`
 
 **High memory usage**
+
 - Check for memory leaks in compilation cache
 - Reduce connection pool size
 - Enable GC logging: `node --expose-gc dist/server/index.js`

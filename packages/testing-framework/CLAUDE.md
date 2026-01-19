@@ -1,6 +1,6 @@
 # Testing Framework - CLAUDE.md
 
-This package provides a comprehensive testing framework for HyperFixi applications with multi-environment support.
+This package provides a comprehensive testing framework for LokaScript applications with multi-environment support.
 
 ## Package Overview
 
@@ -26,12 +26,12 @@ npm run build --prefix packages/testing-framework
 
 ## Main Files
 
-| File | Purpose |
-|------|---------|
-| `src/index.ts` | Main exports, describe/it/test functions |
-| `src/runner.ts` | Test runner implementation |
-| `src/assertions.ts` | Assertion library |
-| `src/types.ts` | Type definitions |
+| File                | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| `src/index.ts`      | Main exports, describe/it/test functions |
+| `src/runner.ts`     | Test runner implementation               |
+| `src/assertions.ts` | Assertion library                        |
+| `src/types.ts`      | Type definitions                         |
 
 ## Basic Usage
 
@@ -45,14 +45,14 @@ import {
   beforeEach,
   afterEach,
   runTests,
-} from '@hyperfixi/testing-framework';
+} from '@lokascript/testing-framework';
 
 describe('My Test Suite', () => {
   beforeEach(() => {
     // Setup before each test
   });
 
-  it('should do something', async (ctx) => {
+  it('should do something', async ctx => {
     // Test code
     expect(true).toBe(true);
   });
@@ -70,13 +70,13 @@ const results = await runTests();
 
 ```typescript
 const config: Partial<TestConfig> = {
-  environment: 'jsdom',      // 'jsdom' | 'browser' | 'node'
-  browser: 'chromium',       // 'chromium' | 'firefox' | 'webkit'
-  timeout: 5000,             // Test timeout in ms
-  retries: 0,                // Retry count for failed tests
-  parallel: false,           // Run tests in parallel
-  maxWorkers: 1,             // Max parallel workers
-  headless: true,            // Run browser headlessly
+  environment: 'jsdom', // 'jsdom' | 'browser' | 'node'
+  browser: 'chromium', // 'chromium' | 'firefox' | 'webkit'
+  timeout: 5000, // Test timeout in ms
+  retries: 0, // Retry count for failed tests
+  parallel: false, // Run tests in parallel
+  maxWorkers: 1, // Max parallel workers
+  headless: true, // Run browser headlessly
   viewport: { width: 1280, height: 720 },
   coverage: {
     enabled: false,
@@ -90,7 +90,7 @@ const config: Partial<TestConfig> = {
 ## Mocking
 
 ```typescript
-import { createMock, createSpy } from '@hyperfixi/testing-framework';
+import { createMock, createSpy } from '@lokascript/testing-framework';
 
 // Create a mock function
 const mockFn = createMock();
@@ -106,14 +106,14 @@ spy.mockRestore(); // Restore original
 ## Fixtures
 
 ```typescript
-import { fixture } from '@hyperfixi/testing-framework';
+import { fixture } from '@lokascript/testing-framework';
 
 const dbFixture = fixture(
   'database',
   async () => {
     return await createTestDatabase();
   },
-  async (db) => {
+  async db => {
     await db.close();
   }
 );
@@ -124,12 +124,12 @@ const db = await dbFixture.create();
 await dbFixture.destroy(db);
 ```
 
-## HyperFixi Integration
+## LokaScript Integration
 
 ```typescript
-import { createHyperFixiTestContext } from '@hyperfixi/testing-framework';
+import { createLokaScriptTestContext } from '@lokascript/testing-framework';
 
-const ctx = createHyperFixiTestContext(hyperfixi);
+const ctx = createLokaScriptTestContext(lokascript);
 
 // Test compilation
 const { success, result } = await ctx.testCompilation('on click toggle .active');
@@ -145,7 +145,7 @@ const { executed, compiled } = await ctx.testExecution(
 ## Quick Start
 
 ```typescript
-import { quickStartTesting } from '@hyperfixi/testing-framework';
+import { quickStartTesting } from '@lokascript/testing-framework';
 
 const { run, clear } = await quickStartTesting({
   environment: 'jsdom',
@@ -160,6 +160,7 @@ const results = await run();
 ## Exports
 
 ### Functions
+
 - `describe` / `describe_skip` / `describe_only` - Test suites
 - `it` / `test` / `it_skip` / `it_only` - Test cases
 - `beforeAll` / `afterAll` / `beforeEach` / `afterEach` - Hooks
@@ -167,10 +168,11 @@ const results = await run();
 - `fixture` / `createMock` / `createSpy` - Utilities
 - `waitFor` - Async waiting
 - `createPageObject` - E2E page objects
-- `createHyperFixiTestContext` - HyperFixi integration
+- `createLokaScriptTestContext` - LokaScript integration
 - `quickStartTesting` - Quick setup
 
 ### Types
+
 - `TestSuite`, `TestCase`, `TestContext`, `TestConfig`
 - `TestResult`, `TestStatus`, `TestError`
 - `ExpectAPI`, `AssertAPI`, `MockFunction`, `SpyFunction`

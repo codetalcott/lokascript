@@ -1,4 +1,4 @@
-# @hyperfixi/mcp-server
+# @lokascript/mcp-server
 
 MCP (Model Context Protocol) server for hyperscript development assistance. Provides 22 tools and 5 resources for code analysis, pattern lookup, validation, semantic parsing, language documentation, and LSP-compatible features with full multilingual support.
 
@@ -15,7 +15,7 @@ npm run build
 ### Using npx
 
 ```bash
-npx @hyperfixi/mcp-server
+npx @lokascript/mcp-server
 ```
 
 ## Claude Desktop Configuration
@@ -25,9 +25,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ```json
 {
   "mcpServers": {
-    "hyperfixi": {
+    "lokascript": {
       "command": "node",
-      "args": ["/path/to/hyperfixi/packages/mcp-server/dist/index.js"]
+      "args": ["/path/to/lokascript/packages/mcp-server/dist/index.js"]
     }
   }
 }
@@ -38,8 +38,8 @@ Or if installed globally:
 ```json
 {
   "mcpServers": {
-    "hyperfixi": {
-      "command": "hyperfixi-mcp"
+    "lokascript": {
+      "command": "lokascript-mcp"
     }
   }
 }
@@ -49,60 +49,60 @@ Or if installed globally:
 
 ### Validation Tools
 
-| Tool | Description |
-|------|-------------|
-| `validate_hyperscript` | Validate syntax with semantic analysis, detect errors and warnings |
-| `suggest_command` | Suggest the best command for a task |
-| `get_bundle_config` | Get recommended Vite plugin configuration |
-| `parse_multilingual` | Parse hyperscript in any supported language with confidence scoring |
-| `translate_to_english` | Translate hyperscript from any language to English |
-| `explain_in_language` | Comprehensive code explanation with grammar, roles, and translations |
+| Tool                   | Description                                                          |
+| ---------------------- | -------------------------------------------------------------------- |
+| `validate_hyperscript` | Validate syntax with semantic analysis, detect errors and warnings   |
+| `suggest_command`      | Suggest the best command for a task                                  |
+| `get_bundle_config`    | Get recommended Vite plugin configuration                            |
+| `parse_multilingual`   | Parse hyperscript in any supported language with confidence scoring  |
+| `translate_to_english` | Translate hyperscript from any language to English                   |
+| `explain_in_language`  | Comprehensive code explanation with grammar, roles, and translations |
 
 ### Pattern Tools
 
-| Tool | Description |
-|------|-------------|
-| `get_examples` | Get few-shot examples for a task |
-| `search_patterns` | Search pattern database |
-| `translate_hyperscript` | Translate between 13 languages |
-| `get_pattern_stats` | Get database statistics |
+| Tool                    | Description                      |
+| ----------------------- | -------------------------------- |
+| `get_examples`          | Get few-shot examples for a task |
+| `search_patterns`       | Search pattern database          |
+| `translate_hyperscript` | Translate between 13 languages   |
+| `get_pattern_stats`     | Get database statistics          |
 
 ### Analysis Tools
 
-| Tool | Description |
-|------|-------------|
+| Tool                 | Description                                       |
+| -------------------- | ------------------------------------------------- |
 | `analyze_complexity` | Calculate cyclomatic, cognitive, Halstead metrics |
-| `analyze_metrics` | Comprehensive code analysis |
-| `explain_code` | Natural language code explanation |
-| `recognize_intent` | Classify code purpose |
+| `analyze_metrics`    | Comprehensive code analysis                       |
+| `explain_code`       | Natural language code explanation                 |
+| `recognize_intent`   | Classify code purpose                             |
 
 ### LSP Bridge Tools
 
-| Tool | Description |
-|------|-------------|
-| `get_diagnostics` | LSP-compatible error/warning diagnostics |
-| `get_completions` | Context-aware code completions |
-| `get_hover_info` | Hover documentation |
-| `get_document_symbols` | Document outline symbols |
+| Tool                   | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `get_diagnostics`      | LSP-compatible error/warning diagnostics |
+| `get_completions`      | Context-aware code completions           |
+| `get_hover_info`       | Hover documentation                      |
+| `get_document_symbols` | Document outline symbols                 |
 
 ### Language Documentation Tools
 
-| Tool | Description |
-|------|-------------|
-| `get_command_docs` | Get documentation for a specific hyperscript command |
-| `get_expression_docs` | Get documentation for expression types |
+| Tool                       | Description                                                           |
+| -------------------------- | --------------------------------------------------------------------- |
+| `get_command_docs`         | Get documentation for a specific hyperscript command                  |
+| `get_expression_docs`      | Get documentation for expression types                                |
 | `search_language_elements` | Search across all language elements (commands, expressions, keywords) |
-| `suggest_best_practices` | Analyze code and suggest improvements |
+| `suggest_best_practices`   | Analyze code and suggest improvements                                 |
 
 ## Available Resources (5)
 
-| URI | Description |
-|-----|-------------|
-| `hyperscript://docs/commands` | Command reference (markdown) |
-| `hyperscript://docs/expressions` | Expression syntax guide |
-| `hyperscript://docs/events` | Event handling reference |
-| `hyperscript://examples/common` | Common patterns |
-| `hyperscript://languages` | 13 supported languages (JSON) |
+| URI                              | Description                   |
+| -------------------------------- | ----------------------------- |
+| `hyperscript://docs/commands`    | Command reference (markdown)  |
+| `hyperscript://docs/expressions` | Expression syntax guide       |
+| `hyperscript://docs/events`      | Event handling reference      |
+| `hyperscript://examples/common`  | Common patterns               |
+| `hyperscript://languages`        | 13 supported languages (JSON) |
 
 ## Example Usage
 
@@ -202,61 +202,61 @@ Claude: [uses explain_in_language with sourceLanguage: 'ko']
 
 The MCP server supports hyperscript in 21+ languages:
 
-| Language | Code | Example |
-|----------|------|---------|
-| English | `en` | `toggle .active` |
-| Japanese | `ja` | `.active を 切り替え` |
-| Korean | `ko` | `.active 를 토글` |
-| Spanish | `es` | `alternar .active` |
-| Arabic | `ar` | `تبديل .active` |
-| Chinese | `zh` | `切换 .active` |
-| Portuguese | `pt` | `alternar .active` |
-| French | `fr` | `basculer .active` |
-| German | `de` | `umschalten .active` |
-| Turkish | `tr` | `.active değiştir` |
-| And more... | | |
+| Language    | Code | Example               |
+| ----------- | ---- | --------------------- |
+| English     | `en` | `toggle .active`      |
+| Japanese    | `ja` | `.active を 切り替え` |
+| Korean      | `ko` | `.active 를 토글`     |
+| Spanish     | `es` | `alternar .active`    |
+| Arabic      | `ar` | `تبديل .active`       |
+| Chinese     | `zh` | `切换 .active`        |
+| Portuguese  | `pt` | `alternar .active`    |
+| French      | `fr` | `basculer .active`    |
+| German      | `de` | `umschalten .active`  |
+| Turkish     | `tr` | `.active değiştir`    |
+| And more... |      |                       |
 
 ## Tool Dependencies & Fallback Behavior
 
 Each tool has different package requirements. All tools work without optional packages by using built-in fallbacks:
 
-| Tool | Required Package | Fallback Behavior |
-|------|-----------------|-------------------|
-| `validate_hyperscript` | - | Full functionality (built-in) |
-| `suggest_command` | - | Full functionality (built-in) |
-| `get_bundle_config` | - | Full functionality (built-in) |
-| `parse_multilingual` | `@hyperfixi/semantic` | Returns error (no fallback) |
-| `translate_to_english` | `@hyperfixi/semantic` | Returns error (no fallback) |
-| `explain_in_language` | `@hyperfixi/semantic` | Returns error (no fallback) |
-| `analyze_complexity` | `@hyperfixi/ast-toolkit` | Simple regex-based metrics |
-| `analyze_metrics` | `@hyperfixi/ast-toolkit` | Simple regex-based metrics |
-| `explain_code` | `@hyperfixi/ast-toolkit` | Pattern-based explanation |
-| `recognize_intent` | `@hyperfixi/ast-toolkit` | Pattern-based intent detection |
-| `get_examples` | `@hyperfixi/patterns-reference` | Built-in example patterns |
-| `search_patterns` | `@hyperfixi/patterns-reference` | Built-in pattern search |
-| `translate_hyperscript` | `@hyperfixi/semantic` | Returns error (no fallback) |
-| `get_pattern_stats` | `@hyperfixi/patterns-reference` | Basic statistics |
-| `get_diagnostics` | `@hyperfixi/semantic` (optional) | Regex-based diagnostics |
-| `get_completions` | `@hyperfixi/semantic` (optional) | English-only completions |
-| `get_hover_info` | - | Built-in documentation |
-| `get_document_symbols` | - | Regex-based extraction |
-| `get_command_docs` | `@hyperfixi/patterns-reference` | Built-in command docs |
-| `get_expression_docs` | `@hyperfixi/patterns-reference` | Returns error (needs migration) |
-| `search_language_elements` | `@hyperfixi/patterns-reference` | Built-in search |
-| `suggest_best_practices` | - | Full functionality (built-in rules) |
+| Tool                       | Required Package                  | Fallback Behavior                   |
+| -------------------------- | --------------------------------- | ----------------------------------- |
+| `validate_hyperscript`     | -                                 | Full functionality (built-in)       |
+| `suggest_command`          | -                                 | Full functionality (built-in)       |
+| `get_bundle_config`        | -                                 | Full functionality (built-in)       |
+| `parse_multilingual`       | `@lokascript/semantic`            | Returns error (no fallback)         |
+| `translate_to_english`     | `@lokascript/semantic`            | Returns error (no fallback)         |
+| `explain_in_language`      | `@lokascript/semantic`            | Returns error (no fallback)         |
+| `analyze_complexity`       | `@lokascript/ast-toolkit`         | Simple regex-based metrics          |
+| `analyze_metrics`          | `@lokascript/ast-toolkit`         | Simple regex-based metrics          |
+| `explain_code`             | `@lokascript/ast-toolkit`         | Pattern-based explanation           |
+| `recognize_intent`         | `@lokascript/ast-toolkit`         | Pattern-based intent detection      |
+| `get_examples`             | `@lokascript/patterns-reference`  | Built-in example patterns           |
+| `search_patterns`          | `@lokascript/patterns-reference`  | Built-in pattern search             |
+| `translate_hyperscript`    | `@lokascript/semantic`            | Returns error (no fallback)         |
+| `get_pattern_stats`        | `@lokascript/patterns-reference`  | Basic statistics                    |
+| `get_diagnostics`          | `@lokascript/semantic` (optional) | Regex-based diagnostics             |
+| `get_completions`          | `@lokascript/semantic` (optional) | English-only completions            |
+| `get_hover_info`           | -                                 | Built-in documentation              |
+| `get_document_symbols`     | -                                 | Regex-based extraction              |
+| `get_command_docs`         | `@lokascript/patterns-reference`  | Built-in command docs               |
+| `get_expression_docs`      | `@lokascript/patterns-reference`  | Returns error (needs migration)     |
+| `search_language_elements` | `@lokascript/patterns-reference`  | Built-in search                     |
+| `suggest_best_practices`   | -                                 | Full functionality (built-in rules) |
 
 ### Installation Options
 
 **Minimal (validation only):**
 
 ```bash
-npm install @hyperfixi/mcp-server
+npm install @lokascript/mcp-server
 ```
 
 **Recommended (full features):**
 
 ```bash
-npm install @hyperfixi/mcp-server @hyperfixi/semantic @hyperfixi/ast-toolkit @hyperfixi/patterns-reference
+npm install @lokascript/mcp-server @lokascript/semantic @lokascript/ast-toolkit @lokascript/patterns-reference
 ```
 
 ## Development

@@ -1,4 +1,4 @@
-# HyperFixi API Redesign Proposal
+# LokaScript API Redesign Proposal
 
 ## Current Issues
 

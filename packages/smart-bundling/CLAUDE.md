@@ -1,6 +1,6 @@
 # Smart Bundling - CLAUDE.md
 
-This package provides intelligent bundling based on usage patterns and performance optimization for HyperFixi applications.
+This package provides intelligent bundling based on usage patterns and performance optimization for LokaScript applications.
 
 ## Package Overview
 
@@ -24,14 +24,14 @@ npm run build --prefix packages/smart-bundling
 
 ## Main Files
 
-| File | Purpose |
-|------|---------|
-| `src/analyzer.ts` | Usage pattern analysis (~25KB) |
-| `src/optimizer.ts` | Bundle optimization (~16KB) |
-| `src/bundler.ts` | Smart bundler implementation (~17KB) |
-| `src/quick-start.ts` | Quick start utilities (~12KB) |
-| `src/types.ts` | Type definitions |
-| `src/index.ts` | Package exports |
+| File                 | Purpose                              |
+| -------------------- | ------------------------------------ |
+| `src/analyzer.ts`    | Usage pattern analysis (~25KB)       |
+| `src/optimizer.ts`   | Bundle optimization (~16KB)          |
+| `src/bundler.ts`     | Smart bundler implementation (~17KB) |
+| `src/quick-start.ts` | Quick start utilities (~12KB)        |
+| `src/types.ts`       | Type definitions                     |
+| `src/index.ts`       | Package exports                      |
 
 ## Usage
 
@@ -40,8 +40,8 @@ import {
   UsageAnalyzer,
   SmartBundler,
   quickBundle,
-  productionBundle
-} from '@hyperfixi/smart-bundling';
+  productionBundle,
+} from '@lokascript/smart-bundling';
 
 // Analyze project usage
 const analyzer = new UsageAnalyzer();

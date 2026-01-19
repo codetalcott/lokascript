@@ -10,28 +10,30 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 
 ## File Location
 
-**New V2 Standalone**: `/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands-v2/async/fetch.ts`
-**V1 Reference**: `/Users/williamtalcott/projects/hyperfixi/packages/core/src/commands/async/fetch.ts`
+**New V2 Standalone**: `/Users/williamtalcott/projects/lokascript/packages/core/src/commands-v2/async/fetch.ts`
+**V1 Reference**: `/Users/williamtalcott/projects/lokascript/packages/core/src/commands/async/fetch.ts`
 
 ## Implementation Metrics
 
-| Metric | V1 | V2 Standalone | Change |
-|--------|----|--------------:|--------|
-| **Total Lines** | 416 | 632 | +216 (+52%) |
-| **Runtime Imports** | 2 (v, z validators) | 0 | -2 ✅ |
-| **Type-only Imports** | 5 | 4 | -1 |
-| **Inline Utilities** | 0 | 5 | +5 ✅ |
-| **Tree-shakable** | ❌ No | ✅ Yes | **ACHIEVED** |
+| Metric                | V1                  | V2 Standalone | Change       |
+| --------------------- | ------------------- | ------------: | ------------ |
+| **Total Lines**       | 416                 |           632 | +216 (+52%)  |
+| **Runtime Imports**   | 2 (v, z validators) |             0 | -2 ✅        |
+| **Type-only Imports** | 5                   |             4 | -1           |
+| **Inline Utilities**  | 0                   |             5 | +5 ✅        |
+| **Tree-shakable**     | ❌ No               |        ✅ Yes | **ACHIEVED** |
 
 ### Import Analysis
 
 **V1 Dependencies** (REMOVED):
+
 ```typescript
 ❌ import { v, z } from '../../validation/lightweight-validators';
 ❌ import type { TypedCommandImplementation, ... } // V1-specific types
 ```
 
 **V2 Type-only Imports** (Zero Runtime):
+
 ```typescript
 ✅ import type { Command } from '../../types/command-types';
 ✅ import type { ExecutionContext, TypedExecutionContext } from '../../types/core';
@@ -44,6 +46,7 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 ## Feature Parity Verification
 
 ### ✅ HTTP Methods (100% Preserved)
+
 - [x] GET (default)
 - [x] POST
 - [x] PUT
@@ -52,6 +55,7 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 - [x] All other HTTP methods
 
 ### ✅ Response Types (100% + 2 additions)
+
 - [x] text (default)
 - [x] json
 - [x] html
@@ -60,6 +64,7 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 - [x] **arrayBuffer** (NEW in V2)
 
 ### ✅ Request Options (100% Preserved)
+
 - [x] method
 - [x] headers (Headers object support)
 - [x] body (FormData, Blob, ArrayBuffer, URLSearchParams, JSON)
@@ -73,6 +78,7 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 - [x] timeout (custom extension)
 
 ### ✅ Lifecycle Events (100% Preserved)
+
 - [x] fetch:beforeRequest (allows header modification)
 - [x] fetch:afterResponse (allows response mutation)
 - [x] fetch:afterRequest (final result)
@@ -80,6 +86,7 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 - [x] hyperscript:beforeFetch (legacy support)
 
 ### ✅ Advanced Features (100% Preserved)
+
 - [x] Abort support via 'fetch:abort' event
 - [x] Timeout handling
 - [x] Template literals for dynamic URLs
@@ -92,18 +99,23 @@ Successfully converted FetchCommand from V1-extending to standalone V2 implement
 All V1 dependencies replaced with inline implementations:
 
 ### 1. `parseURL()` (~17 lines)
+
 **Handles**:
+
 - String literals: `"/api/data"`
 - Variables: `apiUrl`
 - Template literals: `` `/api/user/${userId}` ``
 - Concatenation: `"/api/user/" + userId`
 
 **Validation**:
+
 - Type checking (must be string)
 - Empty check
 
 ### 2. `parseResponseType()` (~35 lines)
+
 **Handles**:
+
 - as json → 'json'
 - as html → 'html'
 - as text → 'text'
@@ -112,17 +124,21 @@ All V1 dependencies replaced with inline implementations:
 - as arrayBuffer → 'arrayBuffer' (NEW)
 
 **Features**:
+
 - Identifier extraction (no evaluation)
 - Validation against valid types
 - Default: 'text'
 
 ### 3. `parseRequestOptions()` (~61 lines)
+
 **Handles**:
+
 - All Fetch API RequestInit properties
 - Custom timeout property
 - Delegates to parseHeaders() and parseBody()
 
 **Properties**:
+
 - method (uppercase conversion)
 - headers → Headers object
 - body → appropriate format
@@ -130,33 +146,43 @@ All V1 dependencies replaced with inline implementations:
 - referrer, referrerPolicy, integrity
 
 ### 4. `parseHeaders()` (~14 lines)
+
 **Handles**:
+
 - Headers instance (pass through)
 - Plain object → Headers conversion
 
 ### 5. `parseBody()` (~30 lines)
+
 **Handles**:
+
 - String (pass through)
 - FormData, Blob, ArrayBuffer, URLSearchParams (pass through)
 - Object → JSON.stringify()
 - null/undefined → null
 
 ### 6. `handleResponse()` (~48 lines)
+
 **Handles**:
+
 - Response type switching
 - Error handling for parsing failures
 - All 6 response types
 
-**Note**: Returns non-2xx responses as successful (matches _hyperscript behavior)
+**Note**: Returns non-2xx responses as successful (matches \_hyperscript behavior)
 
 ### 7. `parseHTML()` (~18 lines)
+
 **Handles**:
+
 - DOMParser for safe parsing
 - DocumentFragment creation
 - Single element extraction
 
 ### 8. `dispatchEvent()` (~8 lines)
+
 **Handles**:
+
 - CustomEvent creation
 - Bubbling + cancelable
 - Detail payload
@@ -164,6 +190,7 @@ All V1 dependencies replaced with inline implementations:
 ## Syntax Support
 
 ### Basic Patterns
+
 ```hyperscript
 fetch "/api/data"                              # GET, returns text
 fetch "/api/users" as json                     # GET, parse JSON
@@ -173,6 +200,7 @@ fetch "/api/binary" as arrayBuffer             # GET, return ArrayBuffer (NEW)
 ```
 
 ### Request Configuration
+
 ```hyperscript
 fetch "/api/save" with method:"POST"
 fetch "/api/upload" with { method:"POST", body:formData }
@@ -184,6 +212,7 @@ fetch "/api/data" with {
 ```
 
 ### Advanced Features
+
 ```hyperscript
 fetch "/slow" with timeout:5000                # 5 second timeout
 fetch apiUrl                                   # Variable URL
@@ -194,6 +223,7 @@ fetch `/api/user/${userId}`                    # Template literal
 ## Error Handling
 
 ### Network Errors
+
 ```javascript
 // Abort handling
 throw new Error(`Fetch aborted for ${url}`);
@@ -206,6 +236,7 @@ throw new Error(`Fetch failed for ${url}: ${error.message}`);
 ```
 
 ### Parsing Errors
+
 ```javascript
 // JSON parsing error
 throw new Error(`Failed to parse JSON response: ${error.message}`);
@@ -215,6 +246,7 @@ throw new Error(`Failed to parse HTML response: ${error.message}`);
 ```
 
 ### Validation Errors
+
 ```javascript
 // URL validation
 throw new Error('fetch: URL cannot be empty');
@@ -224,12 +256,15 @@ throw new Error(`fetch: URL must be a string, got ${typeof value}`);
 throw new Error('fetch: "with" options must be an object');
 
 // Response type validation
-throw new Error(`fetch: invalid response type "${typeName}" (valid: text, json, html, response, blob, arrayBuffer)`);
+throw new Error(
+  `fetch: invalid response type "${typeName}" (valid: text, json, html, response, blob, arrayBuffer)`
+);
 ```
 
 ## Architecture Improvements
 
 ### V1 Architecture (TypedCommandImplementation)
+
 ```typescript
 export class FetchCommand implements TypedCommandImplementation<...> {
   readonly inputSchema = FetchCommandInputSchema; // Zod validation
@@ -245,12 +280,14 @@ export class FetchCommand implements TypedCommandImplementation<...> {
 ```
 
 **Issues**:
+
 - Missing parseInput() (relies on V1 Runtime)
 - Zod validation dependency
 - Returns EvaluationResult wrapper
 - Heavy metadata (production check required)
 
 ### V2 Architecture (Standalone Command)
+
 ```typescript
 export class FetchCommand implements Command<FetchCommandInput, FetchCommandOutput> {
   readonly name = 'fetch';
@@ -272,6 +309,7 @@ export class FetchCommand implements Command<FetchCommandInput, FetchCommandOutp
 ```
 
 **Improvements**:
+
 - ✅ parseInput() implemented (zero Runtime dependency)
 - ✅ Zero Zod dependency (inline validation)
 - ✅ Returns direct FetchCommandOutput
@@ -298,6 +336,7 @@ export class FetchCommand implements Command<FetchCommandInput, FetchCommandOutp
 ## Bundle Impact
 
 **Estimated Bundle Sizes**:
+
 - V2 Standalone: ~5-6 KB (fetch.ts only)
 - V1 with dependencies: ~230 KB (full V1 runtime + validators)
 
@@ -306,6 +345,7 @@ export class FetchCommand implements Command<FetchCommandInput, FetchCommandOutp
 ## Week 4 Progress
 
 **Completed Standalone Commands** (11/16):
+
 1. ✅ hide
 2. ✅ show
 3. ✅ add
@@ -319,6 +359,7 @@ export class FetchCommand implements Command<FetchCommandInput, FetchCommandOutp
 11. ✅ **fetch** (THIS SESSION)
 
 **Remaining Commands** (5/16):
+
 - [ ] go (navigation)
 - [ ] call (function invocation)
 - [ ] trigger (event dispatching)
@@ -433,11 +474,13 @@ const runtime = new RuntimeBase({
 ## Code Examples
 
 ### Basic GET Request
+
 ```hyperscript
 fetch "/api/users" as json
 ```
 
 ### POST Request with Options
+
 ```hyperscript
 fetch "/api/save" with {
   method: "POST",
@@ -447,17 +490,20 @@ fetch "/api/save" with {
 ```
 
 ### Fetch with Timeout
+
 ```hyperscript
 fetch "/slow-endpoint" with timeout:5000
 ```
 
 ### Fetch Binary Data (NEW)
+
 ```hyperscript
 fetch "/api/file.pdf" as blob
 fetch "/api/binary-data" as arrayBuffer
 ```
 
 ### Fetch HTML Fragment
+
 ```hyperscript
 fetch "/partial.html" as html
 ```

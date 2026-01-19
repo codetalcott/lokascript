@@ -4,11 +4,11 @@ This file provides guidance to Claude Code when working with the patterns-refere
 
 ## Package Overview
 
-The `@hyperfixi/patterns-reference` package provides a queryable SQLite database for hyperscript patterns, multilingual translations, and LLM few-shot learning examples.
+The `@lokascript/patterns-reference` package provides a queryable SQLite database for hyperscript patterns, multilingual translations, and LLM few-shot learning examples.
 
 ### Key Value Propositions
 
-1. **For HyperFixi Users**: Searchable pattern library with examples for all commands
+1. **For LokaScript Users**: Searchable pattern library with examples for all commands
 2. **For Developers**: Clean API for querying patterns and translations
 3. **For LLM Code Agents**: 212+ few-shot examples for hyperscript code generation
 
@@ -18,13 +18,13 @@ The `@hyperfixi/patterns-reference` package provides a queryable SQLite database
 packages/patterns-reference/
 ├── src/
 │   ├── api/              # Pattern, translation, LLM query APIs
-│   ├── adapters/         # LLM adapter for @hyperfixi/core integration
+│   ├── adapters/         # LLM adapter for @lokascript/core integration
 │   ├── database/         # SQLite connection management
-│   ├── registry/         # Patterns provider for @hyperfixi/semantic
+│   ├── registry/         # Patterns provider for @lokascript/semantic
 │   ├── sync/             # Sync stubs (actual logic in scripts/)
 │   ├── types.ts          # Type definitions
 │   ├── index.ts          # Main exports
-│   └── semantic-bridge.ts # Bridge to @hyperfixi/semantic registry
+│   └── semantic-bridge.ts # Bridge to @lokascript/semantic registry
 ├── scripts/
 │   ├── init-db.ts        # Database initialization with 53 seed patterns
 │   ├── sync-translations.ts # Generate translations for 13 languages
@@ -57,47 +57,49 @@ npm run build              # Build package
 
 After running `npm run populate`:
 
-| Table | Rows | Description |
-|-------|------|-------------|
-| code_examples | 53 | Patterns covering all hyperscript commands |
-| pattern_translations | 689 | 53 patterns × 13 languages |
-| llm_examples | 212 | Few-shot examples with quality scores |
+| Table                | Rows | Description                                |
+| -------------------- | ---- | ------------------------------------------ |
+| code_examples        | 53   | Patterns covering all hyperscript commands |
+| pattern_translations | 689  | 53 patterns × 13 languages                 |
+| llm_examples         | 212  | Few-shot examples with quality scores      |
 
 ### Supported Languages (13)
 
-| Word Order | Languages |
-|------------|-----------|
-| SVO | en, es, fr, pt, id, sw, zh |
-| SOV | ja, ko, tr, qu |
-| VSO | ar |
-| V2 | de |
+| Word Order | Languages                  |
+| ---------- | -------------------------- |
+| SVO        | en, es, fr, pt, id, sw, zh |
+| SOV        | ja, ko, tr, qu             |
+| VSO        | ar                         |
+| V2         | de                         |
 
 ## Integration Points
 
-### 1. @hyperfixi/semantic Integration
+### 1. @lokascript/semantic Integration
 
 The package provides patterns to the semantic registry:
 
 ```typescript
-import { initializeSemanticIntegration } from '@hyperfixi/patterns-reference';
+import { initializeSemanticIntegration } from '@lokascript/patterns-reference';
 
 await initializeSemanticIntegration();
 // Patterns now available in semantic parser
 ```
 
 Key files:
+
 - [semantic-bridge.ts](src/semantic-bridge.ts) - Bridge module
 - [registry/patterns-provider.ts](src/registry/patterns-provider.ts) - Database provider
 
-### 2. @hyperfixi/core Integration
+### 2. @lokascript/core Integration
 
 The package provides a unified LLM adapter:
 
 ```typescript
-import { findRelevantExamples, buildFewShotContextSync } from '@hyperfixi/patterns-reference';
+import { findRelevantExamples, buildFewShotContextSync } from '@lokascript/patterns-reference';
 ```
 
 Key files:
+
 - [adapters/llm-adapter.ts](src/adapters/llm-adapter.ts) - Unified adapter
 - Replaces deprecated [core/context/llm-examples-query.ts](../core/src/context/llm-examples-query.ts)
 
@@ -108,6 +110,7 @@ Key files:
 3. Run `npm run validate:fix` to verify patterns
 
 Pattern structure:
+
 ```typescript
 {
   id: 'pattern-id',           // Unique kebab-case ID
@@ -129,21 +132,22 @@ Pattern structure:
 ## CI/CD
 
 GitHub Actions workflow at `.github/workflows/patterns-reference.yml`:
+
 - Runs on changes to `packages/patterns-reference/**`
 - Tests: typecheck, vitest, populate, validate
 - Build: Creates dist artifacts
 
 ## Key Files Reference
 
-| File | Purpose |
-|------|---------|
-| [src/index.ts](src/index.ts) | Main exports and factory function |
-| [src/api/patterns.ts](src/api/patterns.ts) | Pattern query functions |
-| [src/api/translations.ts](src/api/translations.ts) | Translation query functions |
-| [src/api/llm.ts](src/api/llm.ts) | LLM example query functions |
-| [src/adapters/llm-adapter.ts](src/adapters/llm-adapter.ts) | Unified LLM adapter |
-| [src/semantic-bridge.ts](src/semantic-bridge.ts) | Semantic registry integration |
-| [scripts/init-db.ts](scripts/init-db.ts) | Database schema and seed data |
+| File                                                       | Purpose                           |
+| ---------------------------------------------------------- | --------------------------------- |
+| [src/index.ts](src/index.ts)                               | Main exports and factory function |
+| [src/api/patterns.ts](src/api/patterns.ts)                 | Pattern query functions           |
+| [src/api/translations.ts](src/api/translations.ts)         | Translation query functions       |
+| [src/api/llm.ts](src/api/llm.ts)                           | LLM example query functions       |
+| [src/adapters/llm-adapter.ts](src/adapters/llm-adapter.ts) | Unified LLM adapter               |
+| [src/semantic-bridge.ts](src/semantic-bridge.ts)           | Semantic registry integration     |
+| [scripts/init-db.ts](scripts/init-db.ts)                   | Database schema and seed data     |
 
 ## Testing
 
@@ -160,10 +164,13 @@ src/database/connection.test.ts # 11 tests
 ## Common Issues
 
 ### Database not found
+
 Run `npm run populate` to create the database.
 
 ### Validation failures
+
 Check for unbalanced quotes/brackets in translations. Run `npm run validate --verbose` for details.
 
-### TypeScript errors with @hyperfixi/semantic
+### TypeScript errors with @lokascript/semantic
+
 The semantic-bridge.ts uses `as any` cast for dynamic imports since the semantic package may not have the latest types.

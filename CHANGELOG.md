@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to HyperFixi will be documented in this file.
+All notable changes to LokaScript will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed deprecated methods: `evalHyperScript()`, `evalHyperScriptAsync()`, `evalHyperScriptSmart()`, `compileMultilingual()`, `run()`, `createChildContext()`, `isValidHyperscript()`
 - Unified API around v2 methods: `compile()`, `compileSync()`, `eval()`, `validate()`, `createContext()`
-- Updated browser type definitions in `@hyperfixi/types-browser`
+- Updated browser type definitions in `@lokascript/types-browser`
 
 **Code Quality Improvements** (Post-v2.0.0 Cleanup):
 
@@ -306,7 +306,7 @@ end
 
 ### Initial Release
 
-Complete HyperScript/HyperFixi ecosystem with:
+Complete HyperScript/LokaScript ecosystem with:
 
 - ✅ Expression System (388 tests)
 - ✅ Command System (142 tests)
@@ -321,5 +321,5 @@ See [roadmap/plan.md](roadmap/plan.md) for complete feature list.
 
 ---
 
-[1.1.0]: https://github.com/codetalcott/hyperfixi/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/codetalcott/hyperfixi/releases/tag/v1.0.0
+[1.1.0]: https://github.com/codetalcott/lokascript/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/codetalcott/lokascript/releases/tag/v1.0.0

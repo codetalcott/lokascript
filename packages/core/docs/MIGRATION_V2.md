@@ -1,6 +1,6 @@
 # Migration Guide: API v1 → v2
 
-This guide helps you migrate from the legacy HyperFixi API (v1) to the new API v2.
+This guide helps you migrate from the legacy LokaScript API (v1) to the new API v2.
 
 ## Overview
 
@@ -275,7 +275,7 @@ Update your imports to include new v2 types:
 **v1:**
 
 ```typescript
-import { hyperscript, type CompilationResult, type ExecutionContext } from 'hyperfixi';
+import { hyperscript, type CompilationResult, type ExecutionContext } from 'lokascript';
 ```
 
 **v2:**
@@ -290,7 +290,7 @@ import {
   type ExecutionContext,
   // Legacy types still available for gradual migration
   type CompilationResult,
-} from 'hyperfixi';
+} from 'lokascript';
 ```
 
 ## Deprecation Timeline
@@ -331,4 +331,4 @@ find . -name "*.ts" -exec sed -i '' 's/result\.compilationTime/result.meta.timeM
 
 - See [API.md](./API.md) for complete v2 API reference
 - Check [EXAMPLES.md](./EXAMPLES.md) for usage examples
-- Report issues at https://github.com/codetalcott/hyperfixi/issues
+- Report issues at https://github.com/codetalcott/lokascript/issues

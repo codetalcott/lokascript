@@ -1,4 +1,4 @@
-# HyperFixi Test Infrastructure Improvements
+# LokaScript Test Infrastructure Improvements
 
 **Date**: October 28, 2025
 **Status**: ✅ Complete
@@ -20,15 +20,15 @@ Fixed critical gaps in browser testing infrastructure that were causing all comm
 
 ```typescript
 // NEW EXPORTS ADDED:
-hyperfixi.createContext()      // Create execution contexts
-hyperfixi.createRuntime()      // Create custom runtimes
-hyperfixi.compile()            // Compile hyperscript to AST
-hyperfixi.execute()            // Execute AST nodes
-hyperfixi.run()                // Compile and execute
-hyperfixi.Parser               // Parser class for advanced usage
-hyperfixi.Runtime              // Runtime class for advanced usage
-hyperfixi.tokenize()           // Tokenizer for debugging
-hyperfixi.attributeProcessor   // Manual DOM processing control
+lokascript.createContext(); // Create execution contexts
+lokascript.createRuntime(); // Create custom runtimes
+lokascript.compile(); // Compile hyperscript to AST
+lokascript.execute(); // Execute AST nodes
+lokascript.run(); // Compile and execute
+lokascript.Parser; // Parser class for advanced usage
+lokascript.Runtime; // Runtime class for advanced usage
+lokascript.tokenize(); // Tokenizer for debugging
+lokascript.attributeProcessor; // Manual DOM processing control
 ```
 
 **Impact**: Tests can now use the real implementation APIs instead of custom workarounds
@@ -40,6 +40,7 @@ hyperfixi.attributeProcessor   // Manual DOM processing control
 **NEW FILE**: Quick validation dashboard built specifically for Claude Code development cycles
 
 **Features**:
+
 - ✅ Auto-runs all tests on load
 - ✅ Visual pass/fail indicators
 - ✅ Real-time summary statistics
@@ -48,6 +49,7 @@ hyperfixi.attributeProcessor   // Manual DOM processing control
 - ✅ One-click test runners
 
 **Categories**:
+
 1. SET Command Tests
 2. PUT Command Tests
 3. LOG Command Tests
@@ -62,19 +64,21 @@ hyperfixi.attributeProcessor   // Manual DOM processing control
 ### 3. **Test Infrastructure Updates**
 
 **Before**: Custom sync helpers that bypassed real implementation
+
 ```javascript
 // OLD - Custom implementation
-window.executeSetCommand = function(command, context) {
-    const match = command.match(/^set\s+(.+)\s+to\s+(.+)$/);
-    // ... custom parsing logic
+window.executeSetCommand = function (command, context) {
+  const match = command.match(/^set\s+(.+)\s+to\s+(.+)$/);
+  // ... custom parsing logic
 };
 ```
 
-**After**: Uses real hyperfixi APIs
+**After**: Uses real lokascript APIs
+
 ```javascript
 // NEW - Real implementation
-const context = hyperfixi.createContext(element);
-await hyperfixi.evalHyperScript('set my innerHTML to "test"', context);
+const context = lokascript.createContext(element);
+await lokascript.evalHyperScript('set my innerHTML to "test"', context);
 ```
 
 **Impact**: Tests now validate the actual implementation, not test-specific workarounds
@@ -85,12 +89,12 @@ await hyperfixi.evalHyperScript('set my innerHTML to "test"', context);
 
 ### Live Test Pages Available
 
-| Page | URL | Purpose |
-|------|-----|---------|
-| **Test Dashboard** | http://127.0.0.1:3000/test-dashboard.html | Quick validation (NEW) |
-| Official Test Suite | http://127.0.0.1:3000/official-test-suite.html | Complete _hyperscript compatibility |
-| Live Demo | http://127.0.0.1:3000/live-demo.html | Progressive feature testing |
-| Compatibility Test | http://127.0.0.1:3000/compatibility-test.html | Side-by-side comparison |
+| Page                | URL                                            | Purpose                              |
+| ------------------- | ---------------------------------------------- | ------------------------------------ |
+| **Test Dashboard**  | http://127.0.0.1:3000/test-dashboard.html      | Quick validation (NEW)               |
+| Official Test Suite | http://127.0.0.1:3000/official-test-suite.html | Complete \_hyperscript compatibility |
+| Live Demo           | http://127.0.0.1:3000/live-demo.html           | Progressive feature testing          |
+| Compatibility Test  | http://127.0.0.1:3000/compatibility-test.html  | Side-by-side comparison              |
 
 ### Test Results (Expected)
 
@@ -118,15 +122,16 @@ Based on the fixes:
 
 ```javascript
 // In browser console:
-runCommandTests()    // Test only commands (SET, PUT, LOG, DOM)
-runExpressionTests() // Test only expressions and context
-runAllTests()        // Run everything
-clearResults()       // Reset and start fresh
+runCommandTests(); // Test only commands (SET, PUT, LOG, DOM)
+runExpressionTests(); // Test only expressions and context
+runAllTests(); // Run everything
+clearResults(); // Reset and start fresh
 ```
 
 ### Debug Failing Tests
 
 Each failed test shows:
+
 - ❌ Test name
 - Error message
 - Code snippet that failed
@@ -137,17 +142,17 @@ Each failed test shows:
 ```javascript
 // Create context for element
 const element = document.querySelector('#myDiv');
-const context = hyperfixi.createContext(element);
+const context = lokascript.createContext(element);
 
 // Execute hyperscript
-await hyperfixi.evalHyperScript('set my innerHTML to "test"', context);
+await lokascript.evalHyperScript('set my innerHTML to "test"', context);
 
 // Check result
 console.log(element.innerHTML); // "test"
 
 // Access context variables
 console.log(context.locals.get('x')); // undefined
-await hyperfixi.evalHyperScript('set x to 42', context);
+await lokascript.evalHyperScript('set x to 42', context);
 console.log(context.locals.get('x')); // 42
 ```
 
@@ -197,6 +202,7 @@ These were already working correctly:
 **File**: `packages/core/src/compatibility/browser-bundle.ts`
 
 **Added Imports**:
+
 ```typescript
 import { Parser } from '../parser/parser';
 import { Runtime } from '../runtime/runtime';
@@ -204,8 +210,9 @@ import { tokenize } from '../parser/tokenizer';
 ```
 
 **Added Exports**:
+
 ```typescript
-const hyperfixi = {
+const lokascript = {
   // ... existing exports ...
   Parser,
   Runtime,
@@ -239,7 +246,7 @@ const hyperfixi = {
 2. **Source Maps**: Better debugging in browser DevTools
 3. **Test Persistence**: Save/load test results across sessions
 4. **Performance Metrics**: Track execution time for each test
-5. **Comparison Mode**: Side-by-side with official _hyperscript
+5. **Comparison Mode**: Side-by-side with official \_hyperscript
 6. **Export Results**: Download test results as JSON/CSV
 
 ### For Test Coverage
@@ -285,11 +292,13 @@ const hyperfixi = {
 **Official Tests**: http://127.0.0.1:3000/official-test-suite.html
 
 **To restart server**:
+
 ```bash
 npx http-server packages/core -p 3000 -c-1
 ```
 
 **To rebuild bundle**:
+
 ```bash
 npm run build:browser --prefix packages/core
 ```
@@ -297,4 +306,4 @@ npm run build:browser --prefix packages/core
 ---
 
 **Generated by Claude Code** 🤖
-*Improving HyperFixi testing infrastructure for rapid development cycles*
+_Improving LokaScript testing infrastructure for rapid development cycles_
