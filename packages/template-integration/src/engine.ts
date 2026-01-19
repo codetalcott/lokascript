@@ -21,7 +21,7 @@ import { TemplateCompiler } from './compiler';
 /**
  * Complete template engine with caching and component registry
  */
-export class HyperFixiTemplateEngine implements TemplateEngine {
+export class LokaScriptTemplateEngine implements TemplateEngine {
   private parser: TemplateParser;
   private compiler: TemplateCompiler;
   private registry: ComponentRegistry;
@@ -291,7 +291,7 @@ export class HyperFixiTemplateEngine implements TemplateEngine {
 /**
  * Default template engine instance
  */
-export const templateEngine = new HyperFixiTemplateEngine();
+export const templateEngine = new LokaScriptTemplateEngine();
 
 /**
  * Convenience functions
@@ -313,6 +313,6 @@ export async function renderTemplate(
 
 export async function createTemplateEngine(
   options?: TemplateOptions
-): Promise<HyperFixiTemplateEngine> {
-  return new HyperFixiTemplateEngine(options);
+): Promise<LokaScriptTemplateEngine> {
+  return new LokaScriptTemplateEngine(options);
 }

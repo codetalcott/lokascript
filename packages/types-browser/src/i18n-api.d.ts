@@ -2,7 +2,7 @@
  * Type definitions for @hyperfixi/i18n browser global (window.HyperFixiI18n)
  */
 
-export interface HyperFixiI18nAPI {
+export interface LokaScriptI18nAPI {
   /**
    * Translate hyperscript with grammar transformation
    */

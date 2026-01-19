@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { HyperFixiSSREngine } from './engine';
+import { LokaScriptSSREngine } from './engine';
 import { SSRContext, SSROptions } from './types';
 import { createComponent } from '@hyperfixi/component-schema';
 
-describe('HyperFixiSSREngine', () => {
-  let engine: HyperFixiSSREngine;
+describe('LokaScriptSSREngine', () => {
+  let engine: LokaScriptSSREngine;
 
   beforeEach(() => {
-    engine = new HyperFixiSSREngine();
+    engine = new LokaScriptSSREngine();
   });
 
   describe('basic rendering', () => {

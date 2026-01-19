@@ -32,6 +32,7 @@ import {
   formatIssuesAsStrings,
 } from '../../validation/partial-warning-formatter';
 import type { PartialValidationResult } from '../../validation/partial-validation-types';
+import { dispatchLokaScriptEvent } from '../helpers/event-helpers';
 
 // ============================================================================
 // Types
@@ -304,11 +305,8 @@ export class ProcessPartialsCommand implements DecoratedCommand {
 
     (context as any).it = result!;
 
-    window.dispatchEvent(
-      new CustomEvent('hyperfixi:partials', {
-        detail: result!,
-      })
-    );
+    // Dispatch lifecycle event with backward compatibility (lokascript: + hyperfixi:)
+    dispatchLokaScriptEvent(window, 'partials', result!);
 
     if (result!.errors.length > 0) {
       console.warn('Some partials failed to process:', result!.errors);

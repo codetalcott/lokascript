@@ -101,3 +101,33 @@ export function dispatchCustomEvent(
   target.dispatchEvent(event);
   return event;
 }
+
+/**
+ * Dispatch a LokaScript lifecycle event with backward compatibility
+ *
+ * Dispatches both the new lokascript: prefixed event and the legacy hyperfixi: event
+ * for backward compatibility during migration period.
+ *
+ * @param target - Target element or EventTarget
+ * @param eventName - Event name without prefix (e.g., 'pushurl', 'boosted')
+ * @param detail - Event detail data
+ * @param options - Event options
+ * @returns Object with both dispatched events
+ */
+export function dispatchLokaScriptEvent(
+  target: EventTarget,
+  eventName: string,
+  detail: unknown = {},
+  options: EventOptions = {}
+): { lokascript: CustomEvent; hyperfixi: CustomEvent } {
+  // Dispatch new lokascript: event
+  const lokascriptEvent = dispatchCustomEvent(target, `lokascript:${eventName}`, detail, options);
+
+  // Dispatch legacy hyperfixi: event for backward compatibility
+  const hyperfixiEvent = dispatchCustomEvent(target, `hyperfixi:${eventName}`, detail, options);
+
+  return {
+    lokascript: lokascriptEvent,
+    hyperfixi: hyperfixiEvent,
+  };
+}

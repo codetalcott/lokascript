@@ -2,14 +2,14 @@
  * Type guards for browser globals
  */
 
-import type { HyperFixiCoreAPI } from './core-api';
-import type { HyperFixiSemanticAPI } from './semantic-api';
-import type { HyperFixiI18nAPI } from './i18n-api';
+import type { LokaScriptCoreAPI } from './core-api';
+import type { LokaScriptSemanticAPI } from './semantic-api';
+import type { LokaScriptI18nAPI } from './i18n-api';
 
 /**
  * Check if window.hyperfixi is available and properly typed
  */
-export function isHyperFixiCoreAvailable(obj?: any): obj is HyperFixiCoreAPI {
+export function isHyperFixiCoreAvailable(obj?: any): obj is LokaScriptCoreAPI {
   return (
     typeof obj === 'object' &&
     obj !== null &&
@@ -21,7 +21,7 @@ export function isHyperFixiCoreAvailable(obj?: any): obj is HyperFixiCoreAPI {
 /**
  * Check if window.HyperFixiSemantic is available
  */
-export function isHyperFixiSemanticAvailable(obj?: any): obj is HyperFixiSemanticAPI {
+export function isHyperFixiSemanticAvailable(obj?: any): obj is LokaScriptSemanticAPI {
   return (
     typeof obj === 'object' &&
     obj !== null &&
@@ -33,7 +33,7 @@ export function isHyperFixiSemanticAvailable(obj?: any): obj is HyperFixiSemanti
 /**
  * Check if window.HyperFixiI18n is available
  */
-export function isHyperFixiI18nAvailable(obj?: any): obj is HyperFixiI18nAPI {
+export function isHyperFixiI18nAvailable(obj?: any): obj is LokaScriptI18nAPI {
   return (
     typeof obj === 'object' &&
     obj !== null &&
@@ -45,7 +45,7 @@ export function isHyperFixiI18nAvailable(obj?: any): obj is HyperFixiI18nAPI {
 /**
  * Safe access to window.hyperfixi with type checking
  */
-export function getHyperFixiCore(): HyperFixiCoreAPI | null {
+export function getHyperFixiCore(): LokaScriptCoreAPI | null {
   if (typeof window !== 'undefined' && isHyperFixiCoreAvailable(window.hyperfixi)) {
     return window.hyperfixi;
   }
@@ -55,7 +55,7 @@ export function getHyperFixiCore(): HyperFixiCoreAPI | null {
 /**
  * Safe access to window.HyperFixiSemantic with type checking
  */
-export function getHyperFixiSemantic(): HyperFixiSemanticAPI | null {
+export function getHyperFixiSemantic(): LokaScriptSemanticAPI | null {
   if (typeof window !== 'undefined' && isHyperFixiSemanticAvailable(window.HyperFixiSemantic)) {
     return window.HyperFixiSemantic;
   }
@@ -65,7 +65,7 @@ export function getHyperFixiSemantic(): HyperFixiSemanticAPI | null {
 /**
  * Safe access to window.HyperFixiI18n with type checking
  */
-export function getHyperFixiI18n(): HyperFixiI18nAPI | null {
+export function getHyperFixiI18n(): LokaScriptI18nAPI | null {
   if (typeof window !== 'undefined' && isHyperFixiI18nAvailable(window.HyperFixiI18n)) {
     return window.HyperFixiI18n;
   }

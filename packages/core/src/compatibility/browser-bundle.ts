@@ -1,11 +1,11 @@
 /**
- * HyperFixi Full Browser Bundle
+ * LokaScript Full Browser Bundle
  * Includes ALL commands and features (40+ commands)
  *
  * This is the complete bundle for maximum compatibility.
  * For smaller bundle sizes, consider:
- * - hyperfixi-browser-minimal.js (~50-60KB gzipped, 8 commands, core expressions)
- * - hyperfixi-browser-standard.js (~100-110KB gzipped, 20 commands, core+common expressions)
+ * - lokascript-browser-minimal.js (~50-60KB gzipped, 8 commands, core expressions)
+ * - lokascript-browser-standard.js (~100-110KB gzipped, 20 commands, core+common expressions)
  *
  * Phase 2 optimization notes:
  * - When using createRuntime(), specify expressionPreload option:
@@ -50,8 +50,8 @@ import {
 // Import CompileResult type for browser bundle
 import type { CompileResult } from '../api/hyperscript-api';
 
-// HyperFixi Browser API Type
-interface HyperFixiBrowserAPI {
+// LokaScript Browser API Type
+interface LokaScriptBrowserAPI {
   evalHyperScript: typeof evalHyperScript;
   evalHyperScriptAsync: typeof evalHyperScriptAsync;
   evalHyperScriptSmart: typeof evalHyperScriptSmart;
@@ -104,9 +104,9 @@ interface HyperFixiBrowserAPI {
 declare global {
   interface Window {
     // Primary: lokascript (new name)
-    lokascript: HyperFixiBrowserAPI;
+    lokascript: LokaScriptBrowserAPI;
     // Compatibility: hyperfixi (deprecated, use lokascript)
-    hyperfixi: HyperFixiBrowserAPI;
+    hyperfixi: LokaScriptBrowserAPI;
     // Also expose as direct globals for test compatibility
     evalHyperScript: typeof evalHyperScript;
     evalHyperScriptAsync: typeof evalHyperScriptAsync;
@@ -115,7 +115,7 @@ declare global {
 }
 
 // Main browser API - matches _hyperscript signature
-const hyperfixi = {
+const lokascriptAPI = {
   // Core evaluation functions
   evalHyperScript,
   evalHyperScriptAsync,
@@ -126,7 +126,7 @@ const hyperfixi = {
 
   // Full hyperscript API for advanced usage
   compile: (code: string) => {
-    debug.parse('BROWSER-BUNDLE: hyperfixi.compile() called', { code });
+    debug.parse('BROWSER-BUNDLE: lokascript.compile() called', { code });
     const result = hyperscript.compileSync(code);
     debug.parse('BROWSER-BUNDLE: hyperscript.compileSync() returned', { result });
 
@@ -164,7 +164,7 @@ const hyperfixi = {
     }
     return Promise.resolve();
   },
-  process: (element: Element | Document) => hyperfixi.processNode(element), // Alias
+  process: (element: Element | Document) => lokascriptAPI.processNode(element), // Alias
 
   // Attribute processor for manual control
   attributeProcessor: defaultAttributeProcessor,
@@ -227,7 +227,7 @@ const hyperfixi = {
   },
 
   // Global configuration for parsing behavior
-  // Use: hyperfixi.config.semantic = false to disable semantic parsing
+  // Use: lokascript.config.semantic = false to disable semantic parsing
   config,
 
   // Runtime hooks for analytics, logging, debugging, etc.
@@ -237,7 +237,7 @@ const hyperfixi = {
   getRegisteredHooks: hyperscript.getRegisteredHooks,
 
   // Version info
-  version: '1.0.0-full',
+  version: '2.0.0-full',
 };
 
 // Export to global for browser testing
@@ -246,9 +246,9 @@ if (typeof window !== 'undefined') {
   // This ensures it happens before attribute processing
 
   // Primary: lokascript (new name reflecting multilingual world/realm scope)
-  window.lokascript = hyperfixi;
+  window.lokascript = lokascriptAPI;
   // Compatibility: hyperfixi (deprecated, use lokascript)
-  window.hyperfixi = hyperfixi;
+  window.hyperfixi = lokascriptAPI;
 
   // Also expose functions as direct globals for test compatibility
   // This allows tests to use `evalHyperScript()` directly instead of `hyperfixi.evalHyperScript()`
@@ -268,4 +268,4 @@ if (typeof window !== 'undefined') {
 }
 
 // Export as default for IIFE
-export default hyperfixi;
+export default lokascriptAPI;

@@ -5,7 +5,7 @@
 /**
  * HyperFixi i18n/Grammar transformation API on window.HyperFixiI18n
  */
-export interface HyperFixiI18nAPI {
+export interface LokaScriptI18nAPI {
   /**
    * Transform hyperscript statement from one language word order to another
    *

@@ -361,9 +361,9 @@ program
     const spinner = ora(`Migrating from ${from} to ${to}...`).start();
 
     try {
-      const { HyperFixiMigrator } = await import('./migrator');
+      const { LokaScriptMigrator } = await import('./migrator');
 
-      const migrator = new HyperFixiMigrator({
+      const migrator = new LokaScriptMigrator({
         dryRun: options.dryRun,
         backup: options.backup,
         verbose: options.verbose,

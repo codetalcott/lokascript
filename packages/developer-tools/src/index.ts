@@ -72,7 +72,7 @@ export type { BuilderProject, ProjectSummary, StorageConfig } from './builder-st
 export { BundleAnalyzer, analyzeBundle, analyzeBundleFiles } from './bundle-analyzer';
 export type { TreemapNode, AnalyzerOptions } from './bundle-analyzer';
 
-export { HyperFixiMigrator, migrate, createMigrationRule } from './migrator';
+export { LokaScriptMigrator, migrate, createMigrationRule } from './migrator';
 export type {
   MigrationConfig,
   MigrationRule,

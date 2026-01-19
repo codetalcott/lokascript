@@ -76,13 +76,13 @@ export interface BehaviorSchema {
 export interface BehaviorModule {
   source: string;
   metadata: BehaviorSchema;
-  register: (hyperfixi?: HyperFixiInstance) => Promise<void>;
+  register: (hyperfixi?: LokaScriptInstance) => Promise<void>;
 }
 
 /**
  * Minimal HyperFixi instance interface for behavior registration.
  */
-export interface HyperFixiInstance {
+export interface LokaScriptInstance {
   compile: (
     code: string,
     options?: { disableSemanticParsing?: boolean }

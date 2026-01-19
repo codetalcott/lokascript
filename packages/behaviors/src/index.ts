@@ -82,7 +82,7 @@ export type {
   ParameterSchema,
   EventSchema,
   BehaviorModule,
-  HyperFixiInstance,
+  LokaScriptInstance,
 } from './schemas/types';
 
 // =============================================================================
@@ -157,7 +157,7 @@ import { registerRemovable } from './behaviors/removable';
 import { registerToggleable } from './behaviors/toggleable';
 import { registerSortable } from './behaviors/sortable';
 import { registerResizable } from './behaviors/resizable';
-import type { HyperFixiInstance } from './schemas/types';
+import type { LokaScriptInstance } from './schemas/types';
 
 /**
  * Register all behaviors with HyperFixi.
@@ -171,7 +171,7 @@ import type { HyperFixiInstance } from './schemas/types';
  * await registerAll();
  * ```
  */
-export async function registerAll(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerAll(hyperfixi?: LokaScriptInstance): Promise<void> {
   await Promise.all([
     registerDraggable(hyperfixi),
     registerRemovable(hyperfixi),

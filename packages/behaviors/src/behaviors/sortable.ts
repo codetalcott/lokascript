@@ -14,7 +14,7 @@
  */
 
 import { sortableSchema } from '../schemas/sortable.schema';
-import type { HyperFixiInstance } from '../schemas/types';
+import type { LokaScriptInstance } from '../schemas/types';
 
 // Re-export schema-derived values for backwards compatibility
 export const sortableSource = sortableSchema.source;
@@ -23,7 +23,7 @@ export const sortableMetadata = sortableSchema;
 /**
  * Register the Sortable behavior with HyperFixi.
  */
-export async function registerSortable(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerSortable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).hyperfixi : null);
 
   if (!hf) {

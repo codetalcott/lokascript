@@ -21,7 +21,7 @@ export {
   quickStartAnalytics,
   integrateWithHyperFixi,
   createTrackedCompile,
-  type HyperFixiIntegrationOptions,
+  type LokaScriptIntegrationOptions,
   VERSION,
   DEFAULT_ANALYTICS_CONFIG,
 } from './index';

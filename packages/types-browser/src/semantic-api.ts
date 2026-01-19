@@ -20,7 +20,7 @@ export type SupportedLanguage =
 /**
  * HyperFixi semantic parser API exposed on window.HyperFixiSemantic
  */
-export interface HyperFixiSemanticAPI {
+export interface LokaScriptSemanticAPI {
   /**
    * Parse hyperscript in any supported language to semantic representation
    *

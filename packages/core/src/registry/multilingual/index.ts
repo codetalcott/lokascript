@@ -31,7 +31,7 @@
  *   registry.use(plugin);
  */
 
-import type { HyperFixiPlugin, ContextProviderFn } from '../index';
+import type { LokaScriptPlugin, ContextProviderFn } from '../index';
 import type { CommandWithParseInput } from '../../runtime/command-adapter';
 import type { EventSource } from '../event-source-registry';
 
@@ -314,7 +314,7 @@ export class KeywordAliasRegistry {
  */
 export function createMultilingualServerPlugin(
   options: MultilingualServerPluginOptions = {}
-): HyperFixiPlugin & { keywordRegistry: KeywordAliasRegistry } {
+): LokaScriptPlugin & { keywordRegistry: KeywordAliasRegistry } {
   const languages = options.languages ?? [
     'en',
     'ja',

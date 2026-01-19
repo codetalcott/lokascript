@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  HyperFixiTemplateEngine,
+  LokaScriptTemplateEngine,
   compileTemplate,
   renderTemplate,
   createTemplateEngine,
@@ -9,10 +9,10 @@ import { createComponent, createCollection } from '@hyperfixi/component-schema';
 import { TemplateContext } from './types';
 
 describe('Template Integration Tests', () => {
-  let engine: HyperFixiTemplateEngine;
+  let engine: LokaScriptTemplateEngine;
 
   beforeEach(async () => {
-    engine = new HyperFixiTemplateEngine();
+    engine = new LokaScriptTemplateEngine();
 
     // Register common components for testing
     await setupTestComponents(engine);
@@ -532,7 +532,7 @@ describe('Template Integration Tests', () => {
 });
 
 // Helper function to set up test components
-async function setupTestComponents(engine: HyperFixiTemplateEngine) {
+async function setupTestComponents(engine: LokaScriptTemplateEngine) {
   // Basic UI components
   const button = createComponent('button', 'Button', 'on click log "clicked"');
   button.template = {

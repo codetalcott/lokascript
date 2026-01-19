@@ -134,7 +134,7 @@ export function emitSemanticParseEvent(detail: SemanticParseEventDetail): void {
 
   // Dispatch event for UI panels
   if (debugEventTarget) {
-    const event = new CustomEvent('hyperfixi:semantic:parse', {
+    const event = new CustomEvent('lokascript:semantic:parse', {
       detail,
       bubbles: true,
     });
@@ -148,7 +148,7 @@ export function emitSemanticParseEvent(detail: SemanticParseEventDetail): void {
 export function emitParseCompleteEvent(detail: ParseCompleteEventDetail): void {
   if (!debugEnabled || !debugEventTarget) return;
 
-  const event = new CustomEvent('hyperfixi:parse:complete', {
+  const event = new CustomEvent('lokascript:parse:complete', {
     detail,
     bubbles: true,
   });

@@ -18,7 +18,7 @@
  */
 
 import { draggableSchema } from '../schemas/draggable.schema';
-import type { HyperFixiInstance } from '../schemas/types';
+import type { LokaScriptInstance } from '../schemas/types';
 
 // Re-export schema-derived values for backwards compatibility
 export const draggableSource = draggableSchema.source;
@@ -27,7 +27,7 @@ export const draggableMetadata = draggableSchema;
 /**
  * Register the Draggable behavior with HyperFixi.
  */
-export async function registerDraggable(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerDraggable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).hyperfixi : null);
 
   if (!hf) {

@@ -116,7 +116,7 @@ const MIGRATION_RULES: Record<string, MigrationRule[]> = {
 /**
  * HyperFixi Migrator class
  */
-export class HyperFixiMigrator {
+export class LokaScriptMigrator {
   private config: Required<MigrationConfig>;
 
   constructor(config: MigrationConfig = {}) {
@@ -457,8 +457,8 @@ export async function migrate(
   to: string,
   config?: MigrationConfig
 ): Promise<MigrationResult> {
-  const migrator = new HyperFixiMigrator(config);
+  const migrator = new LokaScriptMigrator(config);
   return migrator.migrate(from, to);
 }
 
-export default HyperFixiMigrator;
+export default LokaScriptMigrator;

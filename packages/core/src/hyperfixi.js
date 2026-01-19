@@ -1,9 +1,9 @@
-// HyperFixi: Complete _hyperscript + fixi.js integration
+// LokaScript: Complete _hyperscript + fixi.js integration (formerly HyperFixi)
 // Implements unified fetch syntax with full fixi event compatibility
 (function() {
     'use strict';
-    
-    console.log('🔧 Loading HyperFixi integration...');
+
+    console.log('🔧 Loading LokaScript integration...');
     
     // Ensure dependencies are loaded
     if (typeof _hyperscript === 'undefined') {

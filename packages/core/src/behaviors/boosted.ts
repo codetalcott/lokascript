@@ -50,6 +50,7 @@ import { withViewTransition, isViewTransitionsSupported } from '../lib/view-tran
 import { isExternalUrl } from '../commands/helpers/url-validation';
 import { isHTMLElement } from '../utils/element-check';
 import type { SwapStrategy } from '../commands/dom/swap';
+import { dispatchLokaScriptEvent } from '../commands/helpers/event-helpers';
 
 // ============================================================================
 // Types
@@ -264,12 +265,8 @@ export function createBoosted(config: BoostedConfig): BoostedInstance {
         await onAfterSwap(url, html);
       }
 
-      // Dispatch event for monitoring
-      window.dispatchEvent(
-        new CustomEvent('hyperfixi:boosted', {
-          detail: { url, method, strategy, target },
-        })
-      );
+      // Dispatch lifecycle event with backward compatibility (lokascript: + hyperfixi:)
+      dispatchLokaScriptEvent(window, 'boosted', { url, method, strategy, target });
     } catch (error) {
       targetElement.classList.remove('hx-swapping');
       container.classList.remove('hx-boosting');

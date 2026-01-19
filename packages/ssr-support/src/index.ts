@@ -6,7 +6,7 @@
 
 // Core SSR engine
 export {
-  HyperFixiSSREngine,
+  LokaScriptSSREngine,
   ssrEngine,
   renderSSR,
   generateHydrationScript,
@@ -14,7 +14,7 @@ export {
 } from './engine';
 
 // Static site generation
-export { HyperFixiStaticGenerator } from './static-generator';
+export { LokaScriptStaticGenerator } from './static-generator';
 
 // SEO utilities
 export { SEOGenerator } from './seo';

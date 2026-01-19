@@ -34,6 +34,7 @@ import { executeSwap } from '../lib/swap-executor';
 import { withViewTransition, isViewTransitionsSupported } from '../lib/view-transitions';
 import { isHTMLElement } from '../utils/element-check';
 import type { SwapStrategy } from '../commands/dom/swap';
+import { dispatchLokaScriptEvent } from '../commands/helpers/event-helpers';
 
 // ============================================================================
 // Types
@@ -165,12 +166,8 @@ export function createHistorySwap(config: HistorySwapConfig): HistorySwapInstanc
         await onAfterSwap(url, html);
       }
 
-      // Dispatch event for monitoring
-      window.dispatchEvent(
-        new CustomEvent('hyperfixi:historyswap', {
-          detail: { url, strategy, target },
-        })
-      );
+      // Dispatch lifecycle event with backward compatibility (lokascript: + hyperfixi:)
+      dispatchLokaScriptEvent(window, 'historyswap', { url, strategy, target });
     } catch (error) {
       targetElement.classList.remove('hx-swapping');
 

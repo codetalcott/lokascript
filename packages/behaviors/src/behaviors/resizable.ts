@@ -13,7 +13,7 @@
  */
 
 import { resizableSchema } from '../schemas/resizable.schema';
-import type { HyperFixiInstance } from '../schemas/types';
+import type { LokaScriptInstance } from '../schemas/types';
 
 // Re-export schema-derived values for backwards compatibility
 export const resizableSource = resizableSchema.source;
@@ -22,7 +22,7 @@ export const resizableMetadata = resizableSchema;
 /**
  * Register the Resizable behavior with HyperFixi.
  */
-export async function registerResizable(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerResizable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).hyperfixi : null);
 
   if (!hf) {

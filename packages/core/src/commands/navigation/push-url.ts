@@ -22,6 +22,7 @@ import {
   type CommandMetadata,
 } from '../decorators';
 import { parseUrlArguments, type UrlCommandInput } from '../helpers/url-argument-parser';
+import { dispatchLokaScriptEvent } from '../helpers/event-helpers';
 
 /**
  * History operation mode
@@ -101,12 +102,9 @@ export class HistoryCommand implements DecoratedCommand {
       document.title = title;
     }
 
-    const eventName = mode === 'push' ? 'hyperfixi:pushurl' : 'hyperfixi:replaceurl';
-    window.dispatchEvent(
-      new CustomEvent(eventName, {
-        detail: { url, title, state },
-      })
-    );
+    // Dispatch lifecycle event with backward compatibility (lokascript: + hyperfixi:)
+    const eventName = mode === 'push' ? 'pushurl' : 'replaceurl';
+    dispatchLokaScriptEvent(window, eventName, { url, title, state });
 
     return { url, title, mode };
   }

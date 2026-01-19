@@ -5,7 +5,7 @@
 /**
  * HyperFixi core API exposed on window.hyperfixi
  */
-export interface HyperFixiCoreAPI {
+export interface LokaScriptCoreAPI {
   // ==================== API v2 (Recommended) ====================
 
   /**

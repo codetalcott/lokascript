@@ -1,11 +1,11 @@
-import { HyperFixiSSREngine } from './engine';
+import { LokaScriptSSREngine } from './engine';
 import { SSRContext, SSROptions, SSRMiddleware } from './types';
 
 /**
  * Express.js middleware for SSR
  */
 export function createExpressSSRMiddleware(
-  engine: HyperFixiSSREngine,
+  engine: LokaScriptSSREngine,
   options: {
     templatePath?: string;
     ssrOptions?: SSROptions;
@@ -54,7 +54,7 @@ export function createExpressSSRMiddleware(
  * Koa.js middleware for SSR
  */
 export function createKoaSSRMiddleware(
-  engine: HyperFixiSSREngine,
+  engine: LokaScriptSSREngine,
   options: {
     templatePath?: string;
     ssrOptions?: SSROptions;
@@ -95,7 +95,7 @@ export function createKoaSSRMiddleware(
  * Fastify plugin for SSR
  */
 export function createFastifySSRPlugin(
-  engine: HyperFixiSSREngine,
+  engine: LokaScriptSSREngine,
   options: {
     templatePath?: string;
     ssrOptions?: SSROptions;
@@ -138,7 +138,7 @@ export function createFastifySSRPlugin(
  * Next.js API route handler for SSR
  */
 export function createNextSSRHandler(
-  engine: HyperFixiSSREngine,
+  engine: LokaScriptSSREngine,
   options: {
     ssrOptions?: SSROptions;
     contextExtractor?: (req: any, res: any) => SSRContext;
@@ -373,7 +373,7 @@ function escapeHtml(text: string): string {
  * Configuration helper for SSR middleware
  */
 export interface SSRMiddlewareConfig {
-  engine?: HyperFixiSSREngine;
+  engine?: LokaScriptSSREngine;
   cache?: 'memory' | 'redis' | 'tiered';
   templateDir?: string;
   staticDir?: string;
@@ -382,7 +382,7 @@ export interface SSRMiddlewareConfig {
 }
 
 export function configureSSRMiddleware(config: SSRMiddlewareConfig = {}) {
-  const engine = config.engine || new HyperFixiSSREngine();
+  const engine = config.engine || new LokaScriptSSREngine();
 
   // Configure cache if specified
   if (config.cache) {

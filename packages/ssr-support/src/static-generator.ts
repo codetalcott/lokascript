@@ -8,16 +8,16 @@ import {
   SSRContext,
   SSROptions,
 } from './types';
-import { HyperFixiSSREngine } from './engine';
+import { LokaScriptSSREngine } from './engine';
 
 /**
  * Static site generator for HyperFixi applications
  */
-export class HyperFixiStaticGenerator implements StaticGenerator {
-  private ssrEngine: HyperFixiSSREngine;
+export class LokaScriptStaticGenerator implements StaticGenerator {
+  private ssrEngine: LokaScriptSSREngine;
 
-  constructor(ssrEngine?: HyperFixiSSREngine) {
-    this.ssrEngine = ssrEngine ?? new HyperFixiSSREngine();
+  constructor(ssrEngine?: LokaScriptSSREngine) {
+    this.ssrEngine = ssrEngine ?? new LokaScriptSSREngine();
   }
 
   /**

@@ -354,7 +354,7 @@ export async function quickStartAnalytics(options: {
 /**
  * Type for HyperFixi runtime with hooks support
  */
-interface HyperFixiRuntime {
+interface LokaScriptRuntime {
   registerHooks(name: string, hooks: RuntimeHooks): void;
   unregisterHooks(name: string): boolean;
 }
@@ -385,7 +385,7 @@ interface HookContext {
 /**
  * Integration options for HyperFixi analytics
  */
-export interface HyperFixiIntegrationOptions {
+export interface LokaScriptIntegrationOptions {
   /**
    * Whether to track execution timing
    * @default true
@@ -405,7 +405,7 @@ export interface HyperFixiIntegrationOptions {
   maxScriptLength?: number;
 }
 
-const DEFAULT_INTEGRATION_OPTIONS: HyperFixiIntegrationOptions = {
+const DEFAULT_INTEGRATION_OPTIONS: LokaScriptIntegrationOptions = {
   trackTiming: true,
   includeScriptContent: false,
   maxScriptLength: 500,
@@ -461,9 +461,9 @@ function summarizeResult(result: unknown): string | undefined {
  * ```
  */
 export function integrateWithHyperFixi(
-  runtime: HyperFixiRuntime,
+  runtime: LokaScriptRuntime,
   analytics: ReturnType<typeof createAnalyticsSystem>,
-  options: HyperFixiIntegrationOptions = {}
+  options: LokaScriptIntegrationOptions = {}
 ): () => void {
   const opts = { ...DEFAULT_INTEGRATION_OPTIONS, ...options };
   const HOOK_NAME = 'hyperfixi-analytics';

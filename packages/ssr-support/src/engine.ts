@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import { ComponentDefinition } from '@hyperfixi/component-schema';
-import { HyperFixiTemplateEngine, TemplateContext } from '@hyperfixi/template-integration';
+import { LokaScriptTemplateEngine, TemplateContext } from '@hyperfixi/template-integration';
 import {
   CompilationResult,
   SSREngine,
@@ -19,15 +19,15 @@ import { SEOGenerator } from './seo';
 /**
  * HyperFixi Server-Side Rendering Engine
  */
-export class HyperFixiSSREngine implements SSREngine {
-  private templateEngine: HyperFixiTemplateEngine;
+export class LokaScriptSSREngine implements SSREngine {
+  private templateEngine: LokaScriptTemplateEngine;
   private criticalCSS: CriticalCSSExtractor;
   private seoGenerator: SEOGenerator;
   private cache?: SSRCache;
   private components: Map<string, ComponentDefinition> = new Map();
 
   constructor() {
-    this.templateEngine = new HyperFixiTemplateEngine({
+    this.templateEngine = new LokaScriptTemplateEngine({
       target: 'server',
       minify: false, // Will be handled at SSR level
     });
@@ -437,7 +437,7 @@ export class HyperFixiSSREngine implements SSREngine {
 /**
  * Default SSR engine instance
  */
-export const ssrEngine = new HyperFixiSSREngine();
+export const ssrEngine = new LokaScriptSSREngine();
 
 /**
  * Convenience functions

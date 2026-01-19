@@ -1,13 +1,13 @@
 /**
- * Global type augmentation for HyperFixi browser APIs
+ * Global type augmentation for LokaScript browser APIs
  *
  * This file augments the Window and globalThis interfaces to include
- * HyperFixi global variables, providing IDE autocomplete and type safety.
+ * LokaScript global variables, providing IDE autocomplete and type safety.
  */
 
-import type { HyperFixiCoreAPI } from './core-api';
-import type { HyperFixiSemanticAPI } from './semantic-api';
-import type { HyperFixiI18nAPI } from './i18n-api';
+import type { LokaScriptCoreAPI } from './core-api';
+import type { LokaScriptSemanticAPI } from './semantic-api';
+import type { LokaScriptI18nAPI } from './i18n-api';
 
 declare global {
   /**
@@ -20,7 +20,7 @@ declare global {
      * Etymology: "loka" (Sanskrit/Indo-European: "world/realm/universe")
      * Reflects the multilingual scope - 23 languages with SOV/VSO/SVO grammar.
      *
-     * Loaded from: hyperfixi-browser.js or hyperfixi-multilingual.js
+     * Loaded from: lokascript-browser.js or lokascript-multilingual.js
      *
      * @example
      * ```typescript
@@ -29,14 +29,14 @@ declare global {
      * await lokascript.execute('トグル .active', 'ja')
      * ```
      */
-    lokascript: HyperFixiCoreAPI;
+    lokascript: LokaScriptCoreAPI;
 
     /**
      * HyperFixi Core - Main hyperscript runtime and parser
      *
      * @deprecated Use `lokascript` instead
      *
-     * Loaded from: hyperfixi-browser.js or hyperfixi-multilingual.js
+     * Loaded from: lokascript-browser.js or lokascript-multilingual.js
      *
      * @example
      * ```typescript
@@ -44,7 +44,7 @@ declare global {
      * window.hyperfixi.compile('on click add .highlight')
      * ```
      */
-    hyperfixi: HyperFixiCoreAPI;
+    hyperfixi: LokaScriptCoreAPI;
 
     /**
      * Compatibility alias for official _hyperscript API compatibility
@@ -54,43 +54,43 @@ declare global {
      * window._hyperscript.compile('on click toggle .active')
      * ```
      */
-    _hyperscript: HyperFixiCoreAPI;
+    _hyperscript: LokaScriptCoreAPI;
 
     /**
-     * HyperFixi Semantic - Multilingual semantic parsing (13 languages)
+     * LokaScript Semantic - Multilingual semantic parsing (23 languages)
      *
-     * Loaded from: hyperfixi-semantic.browser.global.js
+     * Loaded from: lokascript-semantic.browser.global.js
      *
      * @example
      * ```typescript
-     * const result = window.HyperFixiSemantic.parse('トグル .active', 'ja')
-     * const korean = window.HyperFixiSemantic.translate('toggle .active', 'en', 'ko')
+     * const result = window.LokaScriptSemantic.parse('トグル .active', 'ja')
+     * const korean = window.LokaScriptSemantic.translate('toggle .active', 'en', 'ko')
      * ```
      */
-    HyperFixiSemantic: HyperFixiSemanticAPI;
+    LokaScriptSemantic: LokaScriptSemanticAPI;
 
     /**
-     * HyperFixi I18n - Grammar transformation for natural language word order
+     * LokaScript I18n - Grammar transformation for natural language word order
      *
-     * Loaded from: hyperfixi-i18n.min.js
+     * Loaded from: lokascript-i18n.min.js
      *
      * @example
      * ```typescript
-     * const japanese = window.HyperFixiI18n.translate('on click toggle .active', 'en', 'ja')
+     * const japanese = window.LokaScriptI18n.translate('on click toggle .active', 'en', 'ja')
      * // Result: 'クリック で .active を 切り替え' (SOV word order)
      * ```
      */
-    HyperFixiI18n: HyperFixiI18nAPI;
+    LokaScriptI18n: LokaScriptI18nAPI;
   }
 
   /**
    * globalThis interface augmentation (same as Window for browser contexts)
    */
-  var lokascript: HyperFixiCoreAPI;
-  var hyperfixi: HyperFixiCoreAPI;
-  var _hyperscript: HyperFixiCoreAPI;
-  var HyperFixiSemantic: HyperFixiSemanticAPI;
-  var HyperFixiI18n: HyperFixiI18nAPI;
+  var lokascript: LokaScriptCoreAPI;
+  var hyperfixi: LokaScriptCoreAPI;
+  var _hyperscript: LokaScriptCoreAPI;
+  var LokaScriptSemantic: LokaScriptSemanticAPI;
+  var LokaScriptI18n: LokaScriptI18nAPI;
 }
 
 // This export ensures the file is treated as a module

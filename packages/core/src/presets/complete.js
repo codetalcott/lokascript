@@ -20,14 +20,14 @@ class DebugEventHandler extends createFixiEventHandler().constructor {
     
     async handleBeforeEvents(element, cfg) {
         if (this.debugMode) {
-            console.log('🔧 HyperFixi: Configuring request', { url: cfg.url, method: cfg.method });
+            console.log('🔧 LokaScript: Configuring request', { url: cfg.url, method: cfg.method });
         }
         return super.handleBeforeEvents(element, cfg);
     }
     
     async handleAfterEvents(element, cfg) {
         if (this.debugMode) {
-            console.log('📨 HyperFixi: Response received', { 
+            console.log('📨 LokaScript: Response received', { 
                 status: cfg.response?.status,
                 textLength: cfg.text?.length 
             });
@@ -37,7 +37,7 @@ class DebugEventHandler extends createFixiEventHandler().constructor {
     
     handleSwappedEvents(element, cfg) {
         if (this.debugMode) {
-            console.log('🎯 HyperFixi: DOM updated', { 
+            console.log('🎯 LokaScript: DOM updated', { 
                 swap: cfg.swap,
                 targetTag: cfg.target?.tagName 
             });
@@ -47,7 +47,7 @@ class DebugEventHandler extends createFixiEventHandler().constructor {
     
     handleErrorEvents(element, error, cfg, command) {
         if (this.debugMode) {
-            console.error('❌ HyperFixi: Request failed', error);
+            console.error('❌ LokaScript: Request failed', error);
         }
         super.handleErrorEvents(element, error, cfg, command);
     }

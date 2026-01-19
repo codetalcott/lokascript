@@ -11,12 +11,12 @@ export { registerToggleable, toggleableSource, toggleableMetadata } from './beha
 
 import { registerDraggable } from './behaviors/draggable';
 import { registerToggleable } from './behaviors/toggleable';
-import type { HyperFixiInstance } from './schemas/types';
+import type { LokaScriptInstance } from './schemas/types';
 
 /**
  * Register all core tier behaviors.
  */
-export async function registerCore(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerCore(hyperfixi?: LokaScriptInstance): Promise<void> {
   await Promise.all([registerDraggable(hyperfixi), registerToggleable(hyperfixi)]);
 }
 

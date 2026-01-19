@@ -210,7 +210,7 @@ describe('HistoryCommand (push-url)', () => {
 
       expect(mockDispatchEvent).toHaveBeenCalled();
       const call = mockDispatchEvent.mock.calls[0][0];
-      expect(call.type).toBe('hyperfixi:pushurl');
+      expect(call.type).toBe('lokascript:pushurl');
       expect(call.detail.url).toBe('/path');
     });
 
@@ -256,7 +256,7 @@ describe('HistoryCommand (push-url)', () => {
 
       expect(mockDispatchEvent).toHaveBeenCalled();
       const call = mockDispatchEvent.mock.calls[0][0];
-      expect(call.type).toBe('hyperfixi:replaceurl');
+      expect(call.type).toBe('lokascript:replaceurl');
     });
   });
 

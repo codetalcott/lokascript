@@ -23,7 +23,7 @@ import {
   eventSources,
   context,
   definePlugin,
-  type HyperFixiPlugin,
+  type LokaScriptPlugin,
 } from './index';
 import type { ExecutionContext } from '../types/core';
 
@@ -463,7 +463,7 @@ describe('Unified Registry', () => {
         execute: vi.fn(),
       };
 
-      const plugin: HyperFixiPlugin = {
+      const plugin: LokaScriptPlugin = {
         name: 'test-plugin',
         commands: [mockCommand as any],
       };
@@ -477,7 +477,7 @@ describe('Unified Registry', () => {
       const registry = createRegistry();
       const source = createMockEventSource('plugin-source');
 
-      const plugin: HyperFixiPlugin = {
+      const plugin: LokaScriptPlugin = {
         name: 'test-plugin',
         eventSources: [source],
       };
@@ -490,7 +490,7 @@ describe('Unified Registry', () => {
     it('should install plugin context providers', () => {
       const registry = createRegistry();
 
-      const plugin: HyperFixiPlugin = {
+      const plugin: LokaScriptPlugin = {
         name: 'test-plugin',
         contextProviders: [{ name: 'custom', provide: () => 'custom-value' }],
       };
@@ -504,7 +504,7 @@ describe('Unified Registry', () => {
       const registry = createRegistry();
       const setupFn = vi.fn();
 
-      const plugin: HyperFixiPlugin = {
+      const plugin: LokaScriptPlugin = {
         name: 'test-plugin',
         setup: setupFn,
       };
@@ -518,7 +518,7 @@ describe('Unified Registry', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const registry = createRegistry();
 
-      const plugin: HyperFixiPlugin = {
+      const plugin: LokaScriptPlugin = {
         name: 'test-plugin',
       };
 

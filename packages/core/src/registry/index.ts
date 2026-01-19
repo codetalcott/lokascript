@@ -82,7 +82,7 @@ import type { ContextProviderFn, ContextProviderOptions } from './context-provid
  * - eventSources: Register custom event sources (request, websocket, etc.)
  * - context: Register dynamic context providers
  */
-export interface HyperFixiRegistry {
+export interface LokaScriptRegistry {
   /** Command registry for registering custom commands */
   readonly commands: CommandRegistryV2;
 
@@ -95,7 +95,7 @@ export interface HyperFixiRegistry {
   /**
    * Register a plugin that can add commands, event sources, and context providers
    */
-  use(plugin: HyperFixiPlugin): void;
+  use(plugin: LokaScriptPlugin): void;
 
   /**
    * Reset all registries to default state
@@ -109,7 +109,7 @@ export interface HyperFixiRegistry {
  * Plugins can register multiple commands, event sources, and context providers
  * in a single installation.
  */
-export interface HyperFixiPlugin {
+export interface LokaScriptPlugin {
   /** Plugin name */
   name: string;
 
@@ -132,12 +132,12 @@ export interface HyperFixiPlugin {
   /**
    * Optional setup function called when plugin is installed
    */
-  setup?(registry: HyperFixiRegistry): void | Promise<void>;
+  setup?(registry: LokaScriptRegistry): void | Promise<void>;
 
   /**
    * Optional teardown function called when plugin is uninstalled
    */
-  teardown?(registry: HyperFixiRegistry): void | Promise<void>;
+  teardown?(registry: LokaScriptRegistry): void | Promise<void>;
 }
 
 /**
@@ -147,21 +147,21 @@ export function createRegistry(options?: {
   commands?: CommandRegistryV2;
   eventSources?: EventSourceRegistry;
   context?: ContextProviderRegistry;
-}): HyperFixiRegistry {
+}): LokaScriptRegistry {
   const commands = options?.commands ?? new CommandRegistryV2();
   const eventSources = options?.eventSources ?? createEventSourceRegistry();
   const context = options?.context ?? createContextProviderRegistry();
 
   const installedPlugins = new Set<string>();
 
-  const registry: HyperFixiRegistry = {
+  const registry: LokaScriptRegistry = {
     commands,
     eventSources,
     context,
 
-    use(plugin: HyperFixiPlugin): void {
+    use(plugin: LokaScriptPlugin): void {
       if (installedPlugins.has(plugin.name)) {
-        console.warn(`[HyperFixiRegistry] Plugin '${plugin.name}' is already installed`);
+        console.warn(`[LokaScriptRegistry] Plugin '${plugin.name}' is already installed`);
         return;
       }
 
@@ -205,12 +205,12 @@ export function createRegistry(options?: {
 /**
  * Default global registry instance
  */
-let defaultRegistry: HyperFixiRegistry | null = null;
+let defaultRegistry: LokaScriptRegistry | null = null;
 
 /**
  * Get the default registry (creates one if needed)
  */
-export function getDefaultRegistry(): HyperFixiRegistry {
+export function getDefaultRegistry(): LokaScriptRegistry {
   if (!defaultRegistry) {
     defaultRegistry = createRegistry();
   }
@@ -313,7 +313,7 @@ export const context = {
  *     ],
  *   });
  */
-export function definePlugin(plugin: HyperFixiPlugin): HyperFixiPlugin {
+export function definePlugin(plugin: LokaScriptPlugin): LokaScriptPlugin {
   return plugin;
 }
 

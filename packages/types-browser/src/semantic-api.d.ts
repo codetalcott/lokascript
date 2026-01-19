@@ -2,7 +2,7 @@
  * Type definitions for @hyperfixi/semantic browser global (window.HyperFixiSemantic)
  */
 
-export interface HyperFixiSemanticAPI {
+export interface LokaScriptSemanticAPI {
   /**
    * Parse hyperscript in any supported language
    */

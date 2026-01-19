@@ -139,7 +139,7 @@ export interface RuntimeOptions {
 /**
  * Unified runtime API returned by createRuntime().
  */
-export interface HyperFixiRuntime {
+export interface LokaScriptRuntime {
   /**
    * The underlying RuntimeBase instance.
    */
@@ -237,7 +237,7 @@ export function createTreeShakeableRuntime(
  * as category objects, and an optional parser.
  *
  * @param options Runtime configuration
- * @returns HyperFixiRuntime instance with run(), execute(), and parse() methods
+ * @returns LokaScriptRuntime instance with run(), execute(), and parse() methods
  *
  * @example
  * ```typescript
@@ -260,7 +260,7 @@ export function createTreeShakeableRuntime(
  * await hyperfixi.execute(ast, { me: element });
  * ```
  */
-export function createRuntime(options: RuntimeOptions): HyperFixiRuntime {
+export function createRuntime(options: RuntimeOptions): LokaScriptRuntime {
   // Create expression evaluator from provided categories
   const expressionEvaluator = options.expressions
     ? new ConfigurableExpressionEvaluator(options.expressions)
@@ -328,5 +328,5 @@ export function createRuntime(options: RuntimeOptions): HyperFixiRuntime {
   };
 }
 
-// Re-export types for convenience (RuntimeOptions and HyperFixiRuntime already exported above)
+// Re-export types for convenience (RuntimeOptions and LokaScriptRuntime already exported above)
 export type { BaseExpressionEvaluator, ParserInterface };

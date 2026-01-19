@@ -78,7 +78,7 @@ import { hybridParser as parser } from '../parser/hybrid-parser';
 // =============================================================================
 // STEP 4: Create the runtime with your selected components
 // =============================================================================
-import { createRuntime, type HyperFixiRuntime } from '../runtime/runtime-factory';
+import { createRuntime, type LokaScriptRuntime } from '../runtime/runtime-factory';
 import { ConfigurableExpressionEvaluator } from '../core/configurable-expression-evaluator';
 
 // List of command factories to register
@@ -88,7 +88,7 @@ const commandFactories = [toggle, add, remove, show, hide, set, log, send];
 const expressionCategories = [references, logical, special];
 
 // Create the runtime
-const hyperfixi: HyperFixiRuntime = createRuntime({
+const hyperfixi: LokaScriptRuntime = createRuntime({
   commands: commandFactories,
   expressions: expressionCategories,
   parser: parser,

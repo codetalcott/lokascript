@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { HyperFixiTemplateEngine } from './engine';
+import { LokaScriptTemplateEngine } from './engine';
 import { TemplateOptions, TemplateContext } from './types';
 import { createComponent } from '@hyperfixi/component-schema';
 
-describe('HyperFixiTemplateEngine', () => {
-  let engine: HyperFixiTemplateEngine;
+describe('LokaScriptTemplateEngine', () => {
+  let engine: LokaScriptTemplateEngine;
 
   beforeEach(() => {
-    engine = new HyperFixiTemplateEngine();
+    engine = new LokaScriptTemplateEngine();
   });
 
   describe('compilation with caching', () => {

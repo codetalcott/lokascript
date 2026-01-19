@@ -13,7 +13,7 @@
  */
 
 import { removableSchema } from '../schemas/removable.schema';
-import type { HyperFixiInstance } from '../schemas/types';
+import type { LokaScriptInstance } from '../schemas/types';
 
 // Re-export schema-derived values for backwards compatibility
 export const removableSource = removableSchema.source;
@@ -22,7 +22,7 @@ export const removableMetadata = removableSchema;
 /**
  * Register the Removable behavior with HyperFixi.
  */
-export async function registerRemovable(hyperfixi?: HyperFixiInstance): Promise<void> {
+export async function registerRemovable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).hyperfixi : null);
 
   if (!hf) {

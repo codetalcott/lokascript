@@ -73,13 +73,13 @@ import {
 import { hybridParser } from '../parser/hybrid-parser';
 
 // Runtime factory
-import { createRuntime, type HyperFixiRuntime } from '../runtime/runtime-factory';
+import { createRuntime, type LokaScriptRuntime } from '../runtime/runtime-factory';
 
 // =============================================================================
 // CREATE RUNTIME - Tree-shaken to only include TextShelf commands
 // =============================================================================
 
-const hyperfixi: HyperFixiRuntime = createRuntime({
+const hyperfixi: LokaScriptRuntime = createRuntime({
   commands: [
     // DOM (5)
     toggle,

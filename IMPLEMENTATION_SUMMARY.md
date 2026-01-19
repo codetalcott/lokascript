@@ -195,7 +195,12 @@ All core libraries should remain open-source:
 - [x] GitHub Actions workflows tested
 - [x] npm organization (@lokascript) set up
 - [x] NPM_TOKEN added to GitHub secrets
-- [ ] Rebrand from HyperFixi to LokaScript (in progress)
+- [ ] Rebrand from HyperFixi to LokaScript
+  - [x] Phase 1: Package names and dependencies
+  - [x] Phase 2: Browser globals, class names, and event names
+  - [ ] Phase 3: Documentation (README, CHANGELOG, etc.)
+  - [ ] Phase 4: Examples and HTML files
+  - [ ] Phase 5: Verification and testing
 - [ ] Pre-publish check workflow run (green)
 - [ ] Dry-run publish successful
 

@@ -8,7 +8,7 @@
 export { TemplateParser } from './parser';
 export { TemplateCompiler } from './compiler';
 export {
-  HyperFixiTemplateEngine,
+  LokaScriptTemplateEngine,
   templateEngine,
   compileTemplate,
   renderTemplate,

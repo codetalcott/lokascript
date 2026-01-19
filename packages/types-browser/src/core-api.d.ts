@@ -2,7 +2,7 @@
  * Type definitions for @hyperfixi/core browser global (window.hyperfixi)
  */
 
-export interface HyperFixiCoreAPI {
+export interface LokaScriptCoreAPI {
   // ==================== API v2 (Recommended) ====================
 
   /**
