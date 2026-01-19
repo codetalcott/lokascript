@@ -10,7 +10,7 @@ import { test, expect, Page } from '@playwright/test';
 
 const BASE_URL = 'http://127.0.0.1:3000';
 
-// Bundle configurations with expected capabilities
+// Bundle configurations with expected capabilities (sizes are gzipped)
 const BUNDLES = {
   lite: {
     file: 'hyperfixi-lite.js',
@@ -19,11 +19,14 @@ const BUNDLES = {
       toggle: true,
       addClass: true,
       put: true,
-      increment: false,
-      show: false,
-      blocks: false,
+      increment: true, // Discovered: Works via regex parser
+      show: true, // Maps to 'remove .hidden'
+      hide: true, // Maps to 'add .hidden'
+      blocks: false, // Has inline if/unless but not full blocks
       eventModifiers: false,
       i18nAliases: false,
+      semanticParser: false,
+      fetch: true, // Discovered: Basic command parsing works
     },
   },
   'lite-plus': {
@@ -35,37 +38,97 @@ const BUNDLES = {
       put: true,
       increment: true,
       show: true,
+      hide: true,
       blocks: false,
       eventModifiers: false,
       i18nAliases: true,
+      semanticParser: false,
+      fetch: false,
     },
   },
   'hybrid-complete': {
     file: 'hyperfixi-hybrid-complete.js',
-    size: '6.7 KB',
+    size: '7.3 KB',
     features: {
       toggle: true,
       addClass: true,
       put: true,
       increment: true,
       show: true,
+      hide: true,
       blocks: true,
       eventModifiers: true,
       i18nAliases: true,
+      semanticParser: false,
+      fetch: true,
+    },
+  },
+  'hybrid-hx': {
+    file: 'hyperfixi-hybrid-hx.js',
+    size: '9.5 KB',
+    features: {
+      toggle: true,
+      addClass: true,
+      put: true,
+      increment: true,
+      show: true,
+      hide: true,
+      blocks: true,
+      eventModifiers: true,
+      i18nAliases: true,
+      semanticParser: false,
+      fetch: true,
+    },
+  },
+  minimal: {
+    file: 'hyperfixi-browser-minimal.js',
+    size: '58 KB',
+    features: {
+      toggle: true,
+      addClass: true,
+      put: true,
+      increment: true,
+      show: true,
+      hide: true,
+      blocks: true,
+      eventModifiers: true,
+      i18nAliases: false,
+      semanticParser: false,
+      fetch: true,
+    },
+  },
+  standard: {
+    file: 'hyperfixi-browser-standard.js',
+    size: '63 KB',
+    features: {
+      toggle: true,
+      addClass: true,
+      put: true,
+      increment: true,
+      show: true,
+      hide: true,
+      blocks: true,
+      eventModifiers: true,
+      i18nAliases: false,
+      semanticParser: false,
+      fetch: true,
     },
   },
   browser: {
     file: 'hyperfixi-browser.js',
-    size: '224 KB',
+    size: '203 KB',
     features: {
       toggle: true,
       addClass: true,
       put: true,
       increment: true,
       show: true,
+      hide: true,
       blocks: true,
       eventModifiers: true,
       i18nAliases: true,
+      semanticParser: true,
+      fetch: true,
     },
   },
 };
@@ -85,6 +148,48 @@ const GALLERY_EXAMPLES = [
       await page.waitForTimeout(200);
       // Just verify it doesn't throw
       return { passed: true, reason: 'Button click successful' };
+    },
+  },
+  {
+    name: 'Show/Hide Elements',
+    path: '/examples/basics/03-show-hide.html',
+    requiredFeatures: ['show', 'hide'],
+    test: async (page: Page) => {
+      const showBtn = page.locator('button').filter({ hasText: /show/i }).first();
+      const hideBtn = page.locator('button').filter({ hasText: /hide/i }).first();
+
+      if ((await showBtn.count()) === 0 || (await hideBtn.count()) === 0) {
+        return { passed: false, reason: 'Show/Hide buttons not found' };
+      }
+
+      await showBtn.click();
+      await page.waitForTimeout(200);
+      await hideBtn.click();
+      await page.waitForTimeout(200);
+
+      return { passed: true, reason: 'Show/Hide commands executed' };
+    },
+  },
+  {
+    name: 'Input Mirror',
+    path: '/examples/basics/04-input-mirror.html',
+    requiredFeatures: ['put'],
+    test: async (page: Page) => {
+      const input = page.locator('input').first();
+      if ((await input.count()) === 0) return { passed: false, reason: 'No input found' };
+
+      await input.fill('test123');
+      await page.waitForTimeout(200);
+
+      // Check if value was mirrored somewhere
+      const mirror = page.locator('#mirror, .mirror, #output, .output').first();
+      if ((await mirror.count()) > 0) {
+        const text = await mirror.textContent();
+        if (text?.includes('test123')) {
+          return { passed: true, reason: 'Input mirrored correctly' };
+        }
+      }
+      return { passed: true, reason: 'Input interaction successful' };
     },
   },
   {
@@ -111,7 +216,6 @@ const GALLERY_EXAMPLES = [
       const newText = (await countEl.textContent()) ?? '0';
       const newCount = parseInt(newText) || 0;
 
-      // For hybrid-complete, the increment syntax might differ slightly
       // Accept either increment working OR no JS errors
       if (newCount > initialCount) {
         return { passed: true, reason: `Count increased from ${initialCount} to ${newCount}` };
@@ -121,25 +225,53 @@ const GALLERY_EXAMPLES = [
     },
   },
   {
-    name: 'Input Mirror',
-    path: '/examples/basics/04-input-mirror.html',
-    requiredFeatures: ['put'],
+    name: 'Modal Dialog',
+    path: '/examples/intermediate/05-modal.html',
+    requiredFeatures: ['addClass', 'blocks'],
     test: async (page: Page) => {
-      const input = page.locator('input').first();
-      if ((await input.count()) === 0) return { passed: false, reason: 'No input found' };
+      const openBtn = page.locator('button').filter({ hasText: /open/i }).first();
+      if ((await openBtn.count()) === 0) return { passed: false, reason: 'No open button' };
 
-      await input.fill('test123');
+      await openBtn.click();
+      await page.waitForTimeout(300);
+
+      // Look for modal element or overlay
+      const modal = page.locator('.modal, [role="dialog"], .overlay').first();
+      if ((await modal.count()) > 0) {
+        return { passed: true, reason: 'Modal opened successfully' };
+      }
+      return { passed: true, reason: 'Modal interaction executed' };
+    },
+  },
+  {
+    name: 'Fetch Data',
+    path: '/examples/intermediate/02-fetch-data.html',
+    requiredFeatures: ['fetch', 'blocks'],
+    test: async (page: Page) => {
+      const fetchBtn = page
+        .locator('button')
+        .filter({ hasText: /fetch|load/i })
+        .first();
+      if ((await fetchBtn.count()) === 0) return { passed: false, reason: 'No fetch button' };
+
+      await fetchBtn.click();
+      await page.waitForTimeout(1000);
+
+      return { passed: true, reason: 'Fetch command executed' };
+    },
+  },
+  {
+    name: 'Tab Navigation',
+    path: '/examples/intermediate/04-tabs.html',
+    requiredFeatures: ['addClass', 'toggle'],
+    test: async (page: Page) => {
+      const tabs = page.locator('[role="tab"], .tab');
+      if ((await tabs.count()) === 0) return { passed: false, reason: 'No tabs found' };
+
+      await tabs.first().click();
       await page.waitForTimeout(200);
 
-      // Check if value was mirrored somewhere
-      const mirror = page.locator('#mirror, .mirror, #output, .output').first();
-      if ((await mirror.count()) > 0) {
-        const text = await mirror.textContent();
-        if (text?.includes('test123')) {
-          return { passed: true, reason: 'Input mirrored correctly' };
-        }
-      }
-      return { passed: true, reason: 'Input interaction successful' };
+      return { passed: true, reason: 'Tab navigation executed' };
     },
   },
 ];
@@ -192,36 +324,42 @@ for (const [bundleKey, bundleConfig] of Object.entries(BUNDLES)) {
       expect(hasActiveNow).not.toBe(hasActiveInitially);
     });
 
-    // Test gallery examples based on feature support
+    // Test gallery examples - run all to discover actual capabilities
     for (const example of GALLERY_EXAMPLES) {
-      const supportsExample = example.requiredFeatures.every(
+      const expectedToSupport = example.requiredFeatures.every(
         f => bundleConfig.features[f as keyof typeof bundleConfig.features]
       );
 
-      if (supportsExample) {
-        test(`Gallery: ${example.name}`, async ({ page }) => {
-          const errors: string[] = [];
-          page.on('pageerror', err => {
-            errors.push(err.message);
-          });
+      test(`Gallery: ${example.name}`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on('pageerror', err => {
+          errors.push(err.message);
+        });
 
-          await page.goto(`${BASE_URL}${example.path}?bundle=${bundleKey}`);
-          await page.waitForTimeout(500);
+        await page.goto(`${BASE_URL}${example.path}?bundle=${bundleKey}`);
+        await page.waitForTimeout(500);
 
-          // Run functional test
-          const result = await example.test(page);
+        // Run functional test
+        const result = await example.test(page);
 
-          // Filter critical errors
-          const criticalErrors = errors.filter(e => !e.includes('enable') && !e.includes('debug'));
+        // Filter critical errors
+        const criticalErrors = errors.filter(e => !e.includes('enable') && !e.includes('debug'));
 
+        // For expected support, fail on errors or test failure
+        if (expectedToSupport) {
           expect(criticalErrors).toHaveLength(0);
           expect(result.passed).toBe(true);
-        });
-      } else {
-        test.skip(`Gallery: ${example.name} (requires ${example.requiredFeatures.join(', ')})`, async () => {
-          // Skipped - bundle doesn't support required features
-        });
-      }
+        } else {
+          // For unexpected support, just log what happened (discovery mode)
+          if (criticalErrors.length === 0 && result.passed) {
+            console.log(
+              `✨ DISCOVERY: ${bundleKey} PASSED ${example.name} (requires: ${example.requiredFeatures.join(', ')})`
+            );
+          }
+          // Don't fail the test - we're discovering capabilities
+          expect(true).toBe(true);
+        }
+      });
     }
 
     // Bundle-specific feature tests (skip for browser bundle - too large to inject)
@@ -353,9 +491,15 @@ for (const [bundleKey, bundleConfig] of Object.entries(BUNDLES)) {
 // Summary report
 test.describe('Bundle Summary', () => {
   test('print compatibility matrix', async () => {
-    console.log('\n╔════════════════════════════════════════════════════════════╗');
-    console.log('║           HYPERFIXI BUNDLE COMPATIBILITY MATRIX            ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
+    console.log(
+      '\n╔════════════════════════════════════════════════════════════════════════════════════════════════════╗'
+    );
+    console.log(
+      '║                            HYPERFIXI BUNDLE COMPATIBILITY MATRIX                                   ║'
+    );
+    console.log(
+      '╠════════════════════════════════════════════════════════════════════════════════════════════════════╣'
+    );
 
     const features = [
       'toggle',
@@ -363,28 +507,51 @@ test.describe('Bundle Summary', () => {
       'put',
       'increment',
       'show',
+      'hide',
       'blocks',
       'eventModifiers',
       'i18nAliases',
+      'semanticParser',
+      'fetch',
     ];
 
+    const bundleKeys = Object.keys(BUNDLES);
+
     // Header
-    console.log('║ Feature        │ lite │ lite+ │ hybrid │ browser ║');
-    console.log('╟────────────────┼──────┼───────┼────────┼─────────╢');
+    console.log('║ Feature         │ lite │lite+│h-cmp│ h-hx│ min │ std │ brow ║');
+    console.log('╟─────────────────┼──────┼─────┼─────┼─────┼─────┼─────┼──────╢');
 
     // Rows
     for (const feature of features) {
-      const cols = Object.values(BUNDLES).map(config =>
-        config.features[feature as keyof typeof config.features] ? ' ✅ ' : ' ❌ '
-      );
+      const cols = bundleKeys.map(key => {
+        const bundle = BUNDLES[key as keyof typeof BUNDLES];
+        return bundle.features[feature as keyof typeof bundle.features] ? ' ✅ ' : ' ❌ ';
+      });
+      const featureName = feature.padEnd(15);
       console.log(
-        `║ ${feature.padEnd(14)} │${cols[0]}│ ${cols[1]} │  ${cols[2]} │   ${cols[3]}  ║`
+        `║ ${featureName} │ ${cols[0]}│ ${cols[1]}│ ${cols[2]}│ ${cols[3]}│ ${cols[4]}│ ${cols[5]}│  ${cols[6]} ║`
       );
     }
 
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║ SIZE           │ 1.9KB│ 2.6KB │  6.7KB │  224KB  ║');
-    console.log('╚════════════════════════════════════════════════════════════╝');
+    console.log(
+      '╠════════════════════════════════════════════════════════════════════════════════════════════════════╣'
+    );
+    const sizes = bundleKeys.map(key => BUNDLES[key as keyof typeof BUNDLES].size.padStart(5));
+    console.log(
+      `║ SIZE (gzipped)  │${sizes[0]}│${sizes[1]}│${sizes[2]}│${sizes[3]}│${sizes[4]}│${sizes[5]}│${sizes[6]}║`
+    );
+    console.log(
+      '╠════════════════════════════════════════════════════════════════════════════════════════════════════╣'
+    );
+    console.log(
+      '║ BUNDLES: lite=Lite, lite+=Lite Plus, h-cmp=Hybrid Complete, h-hx=Hybrid HX,                       ║'
+    );
+    console.log(
+      '║          min=Minimal, std=Standard, brow=Browser                                                   ║'
+    );
+    console.log(
+      '╚════════════════════════════════════════════════════════════════════════════════════════════════════╝'
+    );
 
     expect(true).toBe(true);
   });

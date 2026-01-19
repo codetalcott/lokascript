@@ -118,7 +118,6 @@ VITEST_HTML=1 npm test --prefix packages/core
 npx http-server . -p 3000 -c-1
 
 # Test pages:
-# http://127.0.0.1:3000/packages/core/test-dashboard.html       # Auto-running tests
 # http://127.0.0.1:3000/examples/multilingual/index.html        # Grammar demo (i18n)
 # http://127.0.0.1:3000/examples/multilingual/semantic-demo.html # Semantic parser demo (23 languages)
 # http://127.0.0.1:3000/packages/core/compatibility-test.html   # Side-by-side comparison
@@ -209,7 +208,19 @@ npm test --prefix packages/core -- --run src/expressions/logical.test.ts
 
 # Playwright for browser tests - MUST run from packages/core directory
 cd packages/core && npx playwright test --grep "Grammar Transformation"
+
+# Bundle compatibility matrix - tests all bundles against gallery examples
+cd packages/core && npx playwright test src/compatibility/browser-tests/bundle-compatibility.spec.ts
 ```
+
+**Bundle Test Matrix:**
+
+The bundle compatibility test suite automatically tests all 7 bundles against gallery examples to verify which features work with each bundle size. Tests run in "discovery mode" - bundles are tested against examples they're not expected to support, logging any unexpected successes.
+
+- Location: `packages/core/src/compatibility/browser-tests/bundle-compatibility.spec.ts`
+- Tests: Toggle, show/hide, input mirroring, counter, modals, fetch, tabs, blocks, event modifiers
+- Bundles: lite (1.9 KB), lite-plus (2.6 KB), hybrid-complete (7.3 KB), hybrid-hx (9.5 KB), minimal (58 KB), standard (63 KB), browser (203 KB)
+- Prints ASCII compatibility matrix showing feature support across all bundles
 
 ### Adding a New Command
 

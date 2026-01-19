@@ -19,12 +19,12 @@
 (function () {
   'use strict';
 
-  // Bundle configurations
+  // Bundle configurations (sizes are gzipped)
   const BUNDLES = {
     'browser': {
       name: 'Full Bundle',
       file: 'hyperfixi-browser.js',
-      size: '687 KB',
+      size: '203 KB',
       description: 'Complete bundle with semantic parser, all commands, i18n support',
       features: ['43 commands', 'semantic parser', 'i18n', 'debug tools'],
       color: '#667eea'
@@ -32,10 +32,18 @@
     'hybrid-complete': {
       name: 'Hybrid Complete',
       file: 'hyperfixi-hybrid-complete.js',
-      size: '6.7 KB',
+      size: '7.3 KB',
       description: 'Full AST parser with blocks, expressions, event modifiers',
       features: ['21 commands', 'full parser', 'blocks', 'i18n aliases'],
       color: '#10b981'
+    },
+    'hybrid-hx': {
+      name: 'Hybrid HX',
+      file: 'hyperfixi-hybrid-hx.js',
+      size: '9.5 KB',
+      description: 'Hybrid Complete + htmx attribute compatibility',
+      features: ['21 commands', 'htmx attrs', 'hx-on:*', 'lifecycle events'],
+      color: '#3b82f6'
     },
     'lite': {
       name: 'Lite Bundle',
@@ -56,7 +64,7 @@
     'standard': {
       name: 'Standard Bundle',
       file: 'hyperfixi-browser-standard.js',
-      size: '268 KB',
+      size: '63 KB',
       description: 'Standard features without semantic parser',
       features: ['43 commands', 'traditional parser'],
       color: '#8b5cf6'
@@ -64,7 +72,7 @@
     'minimal': {
       name: 'Minimal Bundle',
       file: 'hyperfixi-browser-minimal.js',
-      size: '250 KB',
+      size: '58 KB',
       description: 'Minimal feature set',
       features: ['core commands', 'traditional parser'],
       color: '#ec4899'
@@ -72,34 +80,10 @@
     'multilingual': {
       name: 'Multilingual Bundle',
       file: 'hyperfixi-multilingual.js',
-      size: '249 KB',
+      size: '64 KB',
       description: 'Requires semantic package loaded separately!',
       features: ['needs semantic.js', 'i18n', '13 languages'],
       color: '#f59e0b'
-    },
-    'semantic-complete': {
-      name: 'Semantic Complete',
-      file: 'hyperfixi-semantic-complete.js',
-      size: '505 KB',
-      description: 'Full multilingual with semantic parser bundled',
-      features: ['self-contained', 'semantic parser', '13 languages'],
-      color: '#14b8a6'
-    },
-    'dev': {
-      name: 'Dev Bundle',
-      file: 'hyperfixi-browser.dev.js',
-      size: '610 KB',
-      description: 'Development bundle with extra logging',
-      features: ['43 commands', 'source maps', 'debug mode'],
-      color: '#6366f1'
-    },
-    'prod': {
-      name: 'Production Bundle',
-      file: 'hyperfixi-browser.prod.js',
-      size: '673 KB',
-      description: 'Production-optimized bundle',
-      features: ['43 commands', 'minified', 'no debug'],
-      color: '#22c55e'
     }
   };
 

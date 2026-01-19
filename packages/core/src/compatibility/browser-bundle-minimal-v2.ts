@@ -6,8 +6,9 @@
  * - createCoreExpressionEvaluator (only 3 expression categories)
  * - Only the 8 commands needed for minimal functionality
  *
- * Commands included (8 minimal):
+ * Commands included (10 minimal):
  * - add, remove, toggle (DOM manipulation)
+ * - show, hide (visibility control)
  * - put (content insertion)
  * - set (variable assignment)
  * - log (debugging)
@@ -30,10 +31,12 @@ import { createCoreExpressionEvaluator } from '../expressions/bundles/core-expre
 import { createMinimalAttributeProcessor } from '../dom/minimal-attribute-processor';
 import { createContext, ensureContext } from '../core/context';
 
-// Import ONLY the 8 minimal commands (true tree-shaking!)
+// Import ONLY the 10 minimal commands (true tree-shaking!)
 import { createAddCommand } from '../commands/dom/add';
 import { createRemoveCommand } from '../commands/dom/remove';
 import { createToggleCommand } from '../commands/dom/toggle';
+import { createShowCommand } from '../commands/dom/show';
+import { createHideCommand } from '../commands/dom/hide';
 import { createPutCommand } from '../commands/dom/put';
 import { createSetCommand } from '../commands/data/set';
 import { createSendCommand } from '../commands/events/send';
@@ -46,6 +49,8 @@ const runtime = createTreeShakeableRuntime(
     createAddCommand(),
     createRemoveCommand(),
     createToggleCommand(),
+    createShowCommand(),
+    createHideCommand(),
     createPutCommand(),
     createSetCommand(),
     createSendCommand(),
@@ -82,7 +87,7 @@ const api = {
   createContext,
   attributeProcessor,
   version: '1.1.0-minimal-v2-tree-shakeable',
-  commands: ['add', 'remove', 'toggle', 'put', 'set', 'send', 'log', 'wait'],
+  commands: ['add', 'remove', 'toggle', 'show', 'hide', 'put', 'set', 'send', 'log', 'wait'],
 
   /**
    * Evaluate hyperscript code (convenience method)
