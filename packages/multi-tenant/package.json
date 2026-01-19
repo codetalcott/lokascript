@@ -1,6 +1,7 @@
 {
   "name": "@hyperfixi/multi-tenant",
   "version": "0.1.0",
+  "private": true,
   "description": "Multi-tenant behavior customization and tenant isolation for HyperFixi applications",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

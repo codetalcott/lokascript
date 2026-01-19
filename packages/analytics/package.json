@@ -1,6 +1,7 @@
 {
   "name": "@hyperfixi/analytics",
   "version": "0.1.0",
+  "private": true,
   "description": "Behavior analytics and instrumentation for HyperFixi applications",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
