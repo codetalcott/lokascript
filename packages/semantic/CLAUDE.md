@@ -123,6 +123,33 @@ Each parse result includes a confidence score (0-1):
 - `0.5-0.7`: Medium confidence, may need fallback
 - `< 0.5`: Low confidence, use traditional parser
 
+### Scope: Commands Only (Not Expression Operators)
+
+The semantic package handles **command parsing** (45 action types like `toggle`, `add`, `put`, `fetch`), not expression operators. Comparison and logical operators are handled by the core package's expression parser.
+
+| Handled by Semantic Package | Handled by Core Expression Parser |
+| --------------------------- | --------------------------------- |
+| `toggle .active`            | `has`, `have` (class checking)    |
+| `add .clicked to me`        | `contains`, `matches`             |
+| `put 'hello' into #output`  | `is`, `is not`                    |
+| `fetch /api/data`           | `exists`, `equals`                |
+
+**Why this separation?**
+
+- **Commands** are actions with semantic roles (patient, destination, source)
+- **Operators** are used in boolean expressions within conditionals
+- The core parser's expression evaluator handles operator precedence
+
+**Example:**
+
+```javascript
+// "if me has .active then toggle .highlight" breaks down as:
+// - "me has .active" → Core expression parser (comparison)
+// - "toggle .highlight" → Semantic package (command)
+```
+
+This is why adding `has`/`have` operators to the core package does **not** require corresponding changes to the semantic package.
+
 ## Adding a New Language
 
 **Recommended: Use the CLI tool** to scaffold all files and update indexes automatically:

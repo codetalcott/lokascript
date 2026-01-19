@@ -168,7 +168,8 @@ export const ukrainianDictionary: Dictionary = {
     else: 'інакше',
     otherwise: 'в_іншому_випадку',
     end: 'кінець',
-    has: 'має',
+    has: 'має', // third-person: він/вона має
+    have: 'маю', // first-person: я маю
     isNot: 'не_є',
     empty: 'порожній',
   },

@@ -168,6 +168,8 @@ export const malayDictionary: Dictionary = {
     contains: 'mengandungi',
     includes: 'termasuk',
     equals: 'sama',
+    has: 'ada', // possession verb (context-based)
+    have: 'ada', // same for first/third person
     then: 'kemudian',
     else: 'kalau_tidak',
     otherwise: 'jika_tidak',

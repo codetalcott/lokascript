@@ -147,6 +147,8 @@ export const sw: Dictionary = {
     contains: 'ina',
     includes: 'pamoja',
     equals: 'sawa',
+    has: 'ana', // third-person: yeye ana
+    have: 'nina', // first-person: mimi nina
     then: 'kisha',
     else: 'sivyo',
     otherwise: 'vinginevyo',

@@ -151,6 +151,8 @@ export const en: Dictionary = {
     contains: 'contains',
     includes: 'includes',
     equals: 'equals',
+    has: 'has', // third-person: "it has .class", "#element has .class"
+    have: 'have', // first-person: "I have .class"
     then: 'then',
     else: 'else',
     otherwise: 'otherwise',

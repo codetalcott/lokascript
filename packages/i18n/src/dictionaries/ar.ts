@@ -147,6 +147,8 @@ export const ar: Dictionary = {
     contains: 'يحتوي',
     includes: 'يشمل',
     equals: 'يساوي',
+    has: 'لديه', // third-person: he/it has
+    have: 'لدي', // first-person: I have
     then: 'ثم',
     else: 'وإلا',
     otherwise: 'خلاف ذلك',

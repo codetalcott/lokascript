@@ -168,6 +168,8 @@ export const tagalogDictionary: Dictionary = {
     contains: 'naglalaman',
     includes: 'kasama',
     equals: 'katumbas',
+    has: 'may', // possession verb (context-based)
+    have: 'may', // same for first/third person in Tagalog
     then: 'pagkatapos',
     else: 'kung_hindi',
     otherwise: 'kung_hindi_man',

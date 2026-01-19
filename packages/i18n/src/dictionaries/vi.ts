@@ -142,6 +142,8 @@ export const vi: Dictionary = {
     contains: 'chứa',
     matches: 'khớp',
     exists: 'tồn tại',
+    has: 'có', // possession verb (context-based)
+    have: 'có', // same for first/third person
     empty: 'trống',
     true: 'đúng',
     false: 'sai',

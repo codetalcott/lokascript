@@ -147,6 +147,8 @@ export const ja: Dictionary = {
     contains: '含む',
     includes: '含める',
     equals: '等しい',
+    has: 'ある', // existence verb (context-based)
+    have: 'ある', // same verb for first/third person
     then: 'それから',
     else: 'そうでなければ',
     otherwise: 'そうでなければ',

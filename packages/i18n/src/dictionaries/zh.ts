@@ -147,6 +147,8 @@ export const zh: Dictionary = {
     contains: '包含',
     includes: '包括',
     equals: '等于',
+    has: '有', // universal "have"
+    have: '有', // same character for first/third person
     then: '那么',
     else: '否则',
     otherwise: '要不然',

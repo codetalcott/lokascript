@@ -99,6 +99,8 @@ export const bengaliDictionary: Dictionary = {
     or: 'অথবা',
     is: 'হয়',
     exists: 'আছে',
+    has: 'আছে', // possession verb (context-based)
+    have: 'আছি', // first-person: আমার আছি
     empty: 'খালি',
     true: 'সত্য',
     false: 'মিথ্যা',

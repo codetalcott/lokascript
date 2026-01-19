@@ -147,6 +147,8 @@ export const it: Dictionary = {
     contains: 'contiene',
     includes: 'include',
     equals: 'uguale',
+    has: 'ha', // third-person: lui/lei ha
+    have: 'ho', // first-person: io ho
     then: 'allora',
     else: 'altrimenti',
     otherwise: 'altrimenti',

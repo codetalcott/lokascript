@@ -153,6 +153,8 @@ export const pl: Dictionary = {
     contains: 'zawiera',
     includes: 'obejmuje',
     equals: 'równa się',
+    has: 'ma', // third-person: on/ona ma
+    have: 'mam', // first-person: ja mam
     then: 'wtedy',
     else: 'inaczej',
     otherwise: 'wpp',

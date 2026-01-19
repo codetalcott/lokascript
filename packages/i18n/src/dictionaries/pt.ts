@@ -151,6 +151,8 @@ export const pt: Dictionary = {
     contains: 'contém',
     includes: 'inclui',
     equals: 'igual',
+    has: 'tem', // third-person: ele/ela tem
+    have: 'tenho', // first-person: eu tenho
     then: 'então',
     else: 'senão',
     otherwise: 'caso_contrário', // REVIEW: native speaker

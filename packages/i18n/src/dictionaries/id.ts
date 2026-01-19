@@ -147,6 +147,8 @@ export const id: Dictionary = {
     contains: 'berisi',
     includes: 'termasuk',
     equals: 'sama',
+    has: 'punya', // possession verb (context-based)
+    have: 'punya', // same for first/third person
     then: 'lalu',
     else: 'lainnya',
     otherwise: 'sebaliknya',

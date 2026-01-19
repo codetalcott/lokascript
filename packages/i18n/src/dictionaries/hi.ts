@@ -168,7 +168,8 @@ export const hindiDictionary: Dictionary = {
     else: 'वरना',
     otherwise: 'अन्यथा',
     end: 'समाप्त',
-    has: 'है',
+    has: 'है', // existence verb (context-based)
+    have: 'है', // same verb for first/third person
     isNot: 'नहीं_है',
     empty: 'खाली',
   },

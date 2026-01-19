@@ -147,6 +147,8 @@ export const fr: Dictionary = {
     contains: 'contient',
     includes: 'inclut',
     equals: 'égale',
+    has: 'a', // third-person: il/elle a
+    have: 'ai', // first-person: j'ai
     then: 'alors',
     else: 'sinon',
     otherwise: 'autrement',

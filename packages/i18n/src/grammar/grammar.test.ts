@@ -949,3 +949,105 @@ describe('Line Structure Preservation', () => {
     }
   });
 });
+
+// =============================================================================
+// Has/Have Operator Translation Tests
+// =============================================================================
+
+describe('Has/Have Operator Translations', () => {
+  describe('Dictionary Entries', () => {
+    // Import dictionaries to verify has/have entries exist
+    it('should have has/have in English dictionary', async () => {
+      const { en } = await import('../dictionaries/en');
+      expect(en.logical.has).toBe('has');
+      expect(en.logical.have).toBe('have');
+    });
+
+    it('should have has/have in Spanish dictionary', async () => {
+      const { es } = await import('../dictionaries/es');
+      expect(es.logical.has).toBe('tiene'); // third-person
+      expect(es.logical.have).toBe('tengo'); // first-person
+    });
+
+    it('should have has/have in Japanese dictionary', async () => {
+      const { ja } = await import('../dictionaries/ja');
+      expect(ja.logical.has).toBe('ある');
+      expect(ja.logical.have).toBe('ある');
+    });
+
+    it('should have has/have in German dictionary', async () => {
+      const { de } = await import('../dictionaries/de');
+      expect(de.logical.has).toBe('hat'); // third-person
+      expect(de.logical.have).toBe('habe'); // first-person
+    });
+
+    it('should have has/have in French dictionary', async () => {
+      const { fr } = await import('../dictionaries/fr');
+      expect(fr.logical.has).toBe('a'); // third-person
+      expect(fr.logical.have).toBe('ai'); // first-person
+    });
+
+    it('should have has/have in Korean dictionary', async () => {
+      const { ko } = await import('../dictionaries/ko');
+      expect(ko.logical.has).toBe('있다');
+      expect(ko.logical.have).toBe('있다');
+    });
+
+    it('should have has/have in Chinese dictionary', async () => {
+      const { zh } = await import('../dictionaries/zh');
+      expect(zh.logical.has).toBe('有');
+      expect(zh.logical.have).toBe('有');
+    });
+
+    it('should have has/have in Arabic dictionary', async () => {
+      const { ar } = await import('../dictionaries/ar');
+      expect(ar.logical.has).toBe('لديه'); // third-person
+      expect(ar.logical.have).toBe('لدي'); // first-person
+    });
+  });
+
+  describe('Conjugating Languages', () => {
+    // Languages that have different forms for has (3rd person) vs have (1st person)
+    const conjugatingLanguages = [
+      { code: 'es', has: 'tiene', have: 'tengo' },
+      { code: 'de', has: 'hat', have: 'habe' },
+      { code: 'fr', has: 'a', have: 'ai' },
+      { code: 'pt', has: 'tem', have: 'tenho' },
+      { code: 'it', has: 'ha', have: 'ho' },
+      { code: 'pl', has: 'ma', have: 'mam' },
+    ];
+
+    for (const lang of conjugatingLanguages) {
+      it(`should have different has/have forms in ${lang.code}`, async () => {
+        const dict = await import(`../dictionaries/${lang.code}`);
+        const dictionary = Object.values(dict)[0] as { logical: { has: string; have: string } };
+        expect(dictionary.logical.has).toBe(lang.has);
+        expect(dictionary.logical.have).toBe(lang.have);
+      });
+    }
+  });
+
+  describe('Non-Conjugating Languages', () => {
+    // Languages that use the same form for both has and have
+    const sameFormLanguages = [
+      { code: 'ja', form: 'ある' },
+      { code: 'ko', form: '있다' },
+      { code: 'zh', form: '有' },
+      { code: 'tr', form: 'var' },
+      { code: 'id', form: 'punya' },
+      { code: 'vi', form: 'có' },
+      { code: 'th', form: 'มี' },
+      { code: 'tl', form: 'may' },
+      { code: 'ms', form: 'ada' },
+    ];
+
+    for (const lang of sameFormLanguages) {
+      it(`should have same has/have form in ${lang.code}`, async () => {
+        const dict = await import(`../dictionaries/${lang.code}`);
+        const dictionary = Object.values(dict)[0] as { logical: { has: string; have: string } };
+        expect(dictionary.logical.has).toBe(lang.form);
+        expect(dictionary.logical.have).toBe(lang.form);
+      });
+    }
+  });
+});

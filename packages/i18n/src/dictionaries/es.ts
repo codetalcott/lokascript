@@ -147,6 +147,8 @@ export const es: Dictionary = {
     contains: 'contiene',
     includes: 'incluye',
     equals: 'iguala',
+    has: 'tiene', // third-person: él/ella tiene
+    have: 'tengo', // first-person: yo tengo
     then: 'entonces',
     else: 'sino',
     otherwise: 'delocontrario',

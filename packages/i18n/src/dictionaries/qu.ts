@@ -147,6 +147,8 @@ export const qu: Dictionary = {
     contains: 'ukupi_kan',
     includes: 'churasqa',
     equals: 'kikin',
+    has: 'kachkan', // existence suffix (context-based)
+    have: 'kachkani', // first-person with suffix
     then: 'chayqa',
     else: 'mana_chayqa',
     otherwise: 'huk_kaqpi',

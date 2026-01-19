@@ -99,6 +99,8 @@ export const thaiDictionary: Dictionary = {
     or: 'หรือ',
     is: 'เป็น',
     exists: 'มีอยู่',
+    has: 'มี', // possession verb (context-based)
+    have: 'มี', // same for first/third person
     empty: 'ว่าง',
     true: 'จริง',
     false: 'เท็จ',

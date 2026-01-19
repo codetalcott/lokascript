@@ -147,6 +147,8 @@ export const de: Dictionary = {
     contains: 'enthält',
     includes: 'beinhaltet',
     equals: 'gleicht',
+    has: 'hat', // third-person: es hat
+    have: 'habe', // first-person: ich habe
     then: 'dann',
     else: 'sonst',
     otherwise: 'andernfalls',

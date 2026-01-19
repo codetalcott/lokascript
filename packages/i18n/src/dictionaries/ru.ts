@@ -168,7 +168,8 @@ export const russianDictionary: Dictionary = {
     else: 'иначе',
     otherwise: 'в_противном_случае',
     end: 'конец',
-    has: 'имеет',
+    has: 'имеет', // third-person: он/она имеет
+    have: 'имею', // first-person: я имею
     isNot: 'не_есть',
     empty: 'пустой',
   },

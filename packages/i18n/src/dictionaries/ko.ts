@@ -147,6 +147,8 @@ export const ko: Dictionary = {
     contains: '포함',
     includes: '포함하다',
     equals: '같다',
+    has: '있다', // existence verb (context-based)
+    have: '있다', // same verb for first/third person
     then: '그러면',
     else: '아니면',
     otherwise: '그렇지않으면',

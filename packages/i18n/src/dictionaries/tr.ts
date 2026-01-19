@@ -147,6 +147,8 @@ export const tr: Dictionary = {
     contains: 'içerir',
     includes: 'dahil',
     equals: 'eşittir',
+    has: 'var', // existence marker (context-based)
+    have: 'var', // same for first/third person in Turkish
     then: 'sonra',
     else: 'yoksa',
     otherwise: 'aksi_halde',
