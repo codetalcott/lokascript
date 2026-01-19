@@ -1,0 +1,46 @@
+# Test files within source (src/ is published for TypeScript support)
+*.test.ts
+*.spec.ts
+*.test.js
+*.spec.js
+src/**/*.test.ts
+src/**/*.spec.ts
+__tests__/
+src/__test-utils__/
+
+# Build artifacts
+.rollup.cache/
+tsconfig.tsbuildinfo
+tsconfig.*.tsbuildinfo
+
+# Development files
+.syncthing*
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Test outputs
+coverage/
+.vitest/
+playwright-report/
+test-results/
+
+# Documentation (kept in repo, not in package)
+docs/
+*.md
+!README.md
+
+# Config files
+.eslintrc*
+.prettierrc*
+vitest.config.*
+playwright.config.*
+tsup.config.*
+rollup.config.*

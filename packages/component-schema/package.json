@@ -78,5 +78,8 @@
       "import": "./schemas/index.json",
       "require": "./schemas/index.json"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
