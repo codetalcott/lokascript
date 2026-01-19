@@ -62,10 +62,9 @@ function enableHtmxCompatibility(options: HtmxCompatOptions = {}): void {
     await hybridComplete.execute(code, element);
   });
 
-  // Also process standard hyperscript attributes if enabled
-  if (processHyperscript) {
-    hybridComplete.process();
-  }
+  // Note: Don't call hybridComplete.process() here - hybrid-complete
+  // auto-initializes on DOMContentLoaded, so calling process() again
+  // would double-process elements and break event handlers
 
   if (options.debug) {
     console.log('[hyperfixi-hx] htmx compatibility enabled');
