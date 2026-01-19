@@ -218,8 +218,8 @@ describe('Conditional Types', () => {
         target: {},
       };
 
-      // Should be assignable to universal
-      const universalPayload: EventSourcePayload = nodePayload;
+      // Should be assignable to universal (explicit cast for testing)
+      const universalPayload: EventSourcePayload = nodePayload as unknown as EventSourcePayload;
 
       expect(universalPayload.type).toBe('request');
     });

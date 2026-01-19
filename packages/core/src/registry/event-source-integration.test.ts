@@ -30,7 +30,9 @@ function createMockContext(): ExecutionContext {
   };
 }
 
-function createMockEventSource(name: string): EventSource {
+function createMockEventSource(
+  name: string
+): EventSource & { trigger: (event: string, data: any) => void } {
   const subscriptions = new Map<string, EventSourceSubscription>();
   let subscriptionCounter = 0;
 
@@ -101,7 +103,7 @@ describe('Parser Integration', () => {
     const result = parse(code, { registryIntegration: integration });
 
     expect(result.success).toBe(true);
-    if (result.success) {
+    if (result.success && result.node) {
       // For a single event handler, result.node IS the eventHandler node
       const handler = result.node;
       expect(handler.type).toBe('eventHandler');
@@ -124,7 +126,7 @@ describe('Parser Integration', () => {
     const result = parse(code, { registryIntegration: integration });
 
     expect(result.success).toBe(true);
-    if (result.success) {
+    if (result.success && result.node) {
       // For a single event handler, result.node IS the eventHandler node
       const handler = result.node;
       expect(handler.type).toBe('eventHandler');
@@ -151,7 +153,7 @@ describe('Parser Integration', () => {
     const result = parse(code, { registryIntegration: integration });
 
     expect(result.success).toBe(true);
-    if (result.success) {
+    if (result.success && result.node) {
       // For a single event handler, result.node IS the eventHandler node
       const handler = result.node;
       expect(handler.type).toBe('eventHandler');
@@ -166,7 +168,7 @@ describe('Parser Integration', () => {
     const result = parse(code);
 
     expect(result.success).toBe(true);
-    if (result.success) {
+    if (result.success && result.node) {
       // For a single event handler, result.node IS the eventHandler node
       const handler = result.node;
       expect(handler).toBeDefined();
