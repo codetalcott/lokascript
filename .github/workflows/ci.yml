@@ -206,8 +206,14 @@ jobs:
       - name: Build i18n package (dependency of core)
         run: npm run build --prefix packages/i18n
 
-      - name: Build browser bundles
-        run: npm run build:browser --prefix packages/core
+      - name: Build semantic browser bundles (dependency of multilingual tests)
+        run: npm run build:browser --prefix packages/semantic
+
+      - name: Build browser bundles for tests
+        run: |
+          npm run build:browser:hybrid-complete --prefix packages/core
+          npm run build:browser:classic-i18n --prefix packages/core
+          npm run build:browser:multilingual --prefix packages/core
 
       - name: Run Playwright tests
         run: npx playwright test --project=quick

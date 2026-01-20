@@ -777,7 +777,7 @@ const SEED_EXAMPLES: SeedExample[] = [
   {
     id: 'window-keydown',
     title: 'Window Keydown Handler',
-    raw_code: 'on keydown[key=="s" and ctrlKey] from window halt call saveDocument()',
+    raw_code: 'on keydown[key=="s"] from window if event.ctrlKey halt call saveDocument() end',
     description: 'Handle Ctrl+S globally',
     feature: 'window-events',
   },
@@ -933,7 +933,7 @@ const SEED_EXAMPLES: SeedExample[] = [
   {
     id: 'event-key-combo',
     title: 'Key Combination',
-    raw_code: 'on keydown[key=="Enter" and shiftKey] call submitAndContinue()',
+    raw_code: 'on keydown[key=="Enter"] if event.shiftKey call submitAndContinue() end',
     description: 'Handle Shift+Enter key combo',
     feature: 'events',
   },
