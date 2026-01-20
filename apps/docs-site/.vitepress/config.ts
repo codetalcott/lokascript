@@ -61,7 +61,6 @@ export default defineConfig({
         {
           text: 'Introduction',
           items: [
-            { text: 'What is HyperFixi?', link: '/en/guide/what-is-hyperfixi' },
             { text: 'Getting Started', link: '/en/guide/' },
             { text: 'Installation', link: '/en/guide/installation' },
             { text: 'Bundle Selection', link: '/en/guide/bundles' }
@@ -128,24 +127,15 @@ export default defineConfig({
           text: 'Core Packages',
           items: [
             { text: 'Overview', link: '/en/packages/' },
-            { text: '@hyperfixi/core', link: '/en/packages/core' },
-            { text: '@hyperfixi/semantic', link: '/en/packages/semantic' },
-            { text: '@hyperfixi/i18n', link: '/en/packages/i18n' }
+            { text: '@lokascript/core', link: '/en/packages/core' },
+            { text: '@lokascript/semantic', link: '/en/packages/semantic' },
+            { text: '@lokascript/i18n', link: '/en/packages/i18n' }
           ]
         },
         {
           text: 'Build Tools',
           items: [
-            { text: '@hyperfixi/vite-plugin', link: '/en/packages/vite-plugin' },
-            { text: '@hyperfixi/smart-bundling', link: '/en/packages/smart-bundling' }
-          ]
-        },
-        {
-          text: 'Server Integration',
-          items: [
-            { text: '@hyperfixi/server-integration', link: '/en/packages/server-integration' },
-            { text: '@hyperfixi/ssr-support', link: '/en/packages/ssr-support' },
-            { text: 'hyperfixi-python', link: '/en/packages/hyperfixi-python' }
+            { text: '@lokascript/vite-plugin', link: '/en/packages/vite-plugin' }
           ]
         }
       ],
@@ -171,28 +161,16 @@ export default defineConfig({
           text: 'Advanced Patterns',
           items: [
             { text: 'Fade and Remove', link: '/en/cookbook/fade-remove' },
-            { text: 'State Machine', link: '/en/cookbook/state-machine' }
+            { text: 'Fetch Data', link: '/en/cookbook/fetch-data' }
           ]
         }
       ],
 
       '/en/contributing/': [
         {
-          text: 'Architecture',
+          text: 'Contributing',
           items: [
-            { text: 'Overview', link: '/en/contributing/' },
-            { text: 'Monorepo Structure', link: '/en/contributing/architecture' },
-            { text: 'Parser Design', link: '/en/contributing/parser' },
-            { text: 'Runtime System', link: '/en/contributing/runtime' }
-          ]
-        },
-        {
-          text: 'Development',
-          items: [
-            { text: 'Setting Up', link: '/en/contributing/setup' },
-            { text: 'Testing Guide', link: '/en/contributing/testing' },
-            { text: 'Adding Commands', link: '/en/contributing/adding-commands' },
-            { text: 'Adding Languages', link: '/en/contributing/adding-languages' }
+            { text: 'Overview', link: '/en/contributing/' }
           ]
         }
       ]

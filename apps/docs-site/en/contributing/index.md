@@ -60,18 +60,12 @@ npm run typecheck --prefix packages/core
 npm run build:browser --prefix packages/core
 ```
 
-## Contributor Guides
+## Key Areas
 
-### Architecture
-- [Monorepo Structure](/en/contributing/architecture) - Package organization
-- [Parser Design](/en/contributing/parser) - How the parser works
-- [Runtime System](/en/contributing/runtime) - Command execution
-
-### Development
-- [Setting Up](/en/contributing/setup) - Development environment
-- [Testing Guide](/en/contributing/testing) - Writing and running tests
-- [Adding Commands](/en/contributing/adding-commands) - Create new commands
-- [Adding Languages](/en/contributing/adding-languages) - i18n language support
+- **Core Package**: Main runtime with 43 commands and expression parser
+- **Semantic Package**: Multilingual parser supporting 23 languages
+- **i18n Package**: Grammar transformation for SOV/VSO languages
+- **Vite Plugin**: Automatic bundle generation based on usage
 
 ## Code Style
 
