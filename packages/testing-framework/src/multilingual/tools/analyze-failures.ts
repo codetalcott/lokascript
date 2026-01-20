@@ -189,8 +189,8 @@ function generateRecommendations(analyzer: FailureAnalyzer, results: ParseResult
   output += '═══════════════════════════════════════════════════════════════\n\n';
 
   // Language-specific recommendations
-  const sovLanguages = ['ja', 'ko', 'tr'];
-  const vsoLanguages = ['ar'];
+  const sovLanguages: LanguageCode[] = ['ja', 'ko', 'tr'];
+  const vsoLanguages: LanguageCode[] = ['ar'];
   const sovFailures = sovLanguages.filter(
     lang => byLanguage[lang] && byLanguage[lang].failures > byLanguage[lang].totalPatterns * 0.3
   );
