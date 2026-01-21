@@ -206,6 +206,9 @@ jobs:
       - name: Build i18n package (dependency of core)
         run: npm run build --prefix packages/i18n
 
+      - name: Build developer-tools package
+        run: npm run build --prefix packages/developer-tools
+
       - name: Build semantic browser bundles (dependency of multilingual tests)
         run: npm run build:browser --prefix packages/semantic
 
