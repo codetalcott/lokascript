@@ -684,9 +684,6 @@ export async function createProject(options: ScaffoldOptions): Promise<void> {
   if (features.includes('analytics')) {
     await addDependency(projectPath, '@lokascript/analytics', '^0.1.0');
   }
-  if (features.includes('progressive-enhancement')) {
-    await addDependency(projectPath, '@lokascript/progressive-enhancement', '^0.1.0');
-  }
   if (features.includes('i18n')) {
     await addDependency(projectPath, '@lokascript/i18n', '^0.1.0');
   }

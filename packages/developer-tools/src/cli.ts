@@ -68,7 +68,6 @@ program
             choices: [
               { name: 'Multi-tenant support', value: 'multi-tenant' },
               { name: 'Analytics', value: 'analytics' },
-              { name: 'Progressive enhancement', value: 'progressive-enhancement' },
               { name: 'Internationalization', value: 'i18n' },
               { name: 'SSR support', value: 'ssr' },
             ],
