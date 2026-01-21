@@ -1,5 +1,6 @@
 {
   "name": "@lokascript/ast-toolkit",
+  "private": true,
   "version": "1.0.0",
   "description": "Advanced AST toolkit for hyperscript with AI-friendly APIs",
   "type": "module",
