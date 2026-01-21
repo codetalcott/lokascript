@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'HyperFixi',
+  title: 'LokaScript',
   description: 'Complete hyperscript ecosystem with multilingual i18n support',
 
   // Multi-language configuration
@@ -43,7 +43,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/hyperfixi/hyperfixi' }
+      { icon: 'github', link: 'https://github.com/codetalcott/lokascript' }
     ],
 
     // Navigation

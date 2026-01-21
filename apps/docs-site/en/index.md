@@ -2,8 +2,8 @@
 layout: home
 
 hero:
-  name: "HyperFixi"
-  text: "Hyperscript for Everyone"
+  name: 'LokaScript'
+  text: 'Hyperscript for Everyone'
   tagline: Write interactive UI behaviors in your native language with 43 commands, 13 supported languages, and flexible bundle options.
   actions:
     - theme: brand
@@ -11,7 +11,7 @@ hero:
       link: /en/guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/hyperfixi/hyperfixi
+      link: https://github.com/codetalcott/lokascript
 
 features:
   - icon: 🌍
@@ -44,44 +44,42 @@ import HyperscriptPlayground from '../.vitepress/theme/components/HyperscriptPla
 ### CDN (Simplest)
 
 ```html
-<script src="https://unpkg.com/@hyperfixi/core/dist/hyperfixi-browser.js"></script>
+<script src="https://unpkg.com/@lokascript/core/dist/lokascript-browser.js"></script>
 
-<button _="on click toggle .active on me">
-  Click me
-</button>
+<button _="on click toggle .active on me">Click me</button>
 ```
 
 ### npm + Vite (Recommended)
 
 ```bash
-npm install @hyperfixi/core @hyperfixi/vite-plugin
+npm install @lokascript/core @lokascript/vite-plugin
 ```
 
 ```js
 // vite.config.js
-import { hyperfixi } from '@hyperfixi/vite-plugin'
+import { hyperfixi } from '@lokascript/vite-plugin';
 
 export default {
-  plugins: [hyperfixi()]
-}
+  plugins: [hyperfixi()],
+};
 ```
 
 ```js
 // main.js
-import 'hyperfixi'
+import 'hyperfixi';
 ```
 
 ## Bundle Options
 
-| Bundle | Size | Commands | Use Case |
-|--------|------|----------|----------|
-| `hyperfixi-lite.js` | 1.9 KB | 8 | Minimal interactions |
-| `hyperfixi-hybrid-complete.js` | 6.7 KB | 21+ | Most projects |
-| `hyperfixi-browser.js` | 224 KB | 43 | Full features |
+| Bundle                          | Size   | Commands | Use Case             |
+| ------------------------------- | ------ | -------- | -------------------- |
+| `lokascript-lite.js`            | 1.9 KB | 8        | Minimal interactions |
+| `lokascript-hybrid-complete.js` | 6.7 KB | 21+      | Most projects        |
+| `lokascript-browser.js`         | 224 KB | 43       | Full features        |
 
 ## Write in Your Language
 
-HyperFixi supports writing hyperscript in 13 languages with natural grammar:
+LokaScript supports writing hyperscript in 13 languages with natural grammar:
 
 ```
 English (SVO):  on click toggle .active on me

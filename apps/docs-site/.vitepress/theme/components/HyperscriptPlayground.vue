@@ -43,12 +43,12 @@ async function runCode() {
   isRunning.value = true
 
   try {
-    // Check if hyperfixi is available globally (loaded via CDN in production)
-    const hyperfixi = (window as any).hyperfixi
+    // Check if lokascript is available globally (loaded via CDN in production)
+    const lokascript = (window as any).lokascript
 
-    if (!hyperfixi) {
+    if (!lokascript) {
       // Fallback: Just show what would happen
-      output.value = `Code ready: "${code.value}"\n\nTo see live execution, the HyperFixi runtime must be loaded.`
+      output.value = `Code ready: "${code.value}"\n\nTo see live execution, the LokaScript runtime must be loaded.`
 
       // Still update the preview HTML to show the attribute
       if (previewEl.value) {
@@ -64,8 +64,8 @@ async function runCode() {
       // Inject the hyperscript code into the _ attribute
       previewEl.value.innerHTML = html.replace(/(_=["'][^"']*["']|>)/, `_="${code.value}"$1`)
 
-      // Process with HyperFixi
-      await hyperfixi.processNode(previewEl.value)
+      // Process with LokaScript
+      await lokascript.processNode(previewEl.value)
       output.value = 'Hyperscript is now active. Try clicking the button!'
     }
   } catch (e: any) {

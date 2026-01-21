@@ -1,22 +1,22 @@
 # API Reference
 
-This section provides detailed documentation for the HyperFixi API.
+This section provides detailed documentation for the LokaScript API.
 
 ## Core API
 
-The main entry point for HyperFixi is the `hyperscript` object:
+The main entry point for LokaScript is the `hyperscript` object:
 
 ```js
-import { hyperscript } from '@hyperfixi/core'
+import { hyperscript } from '@lokascript/core';
 
 // Process all hyperscript attributes in the DOM
-hyperscript.processNode(document.body)
+hyperscript.processNode(document.body);
 
 // Compile a hyperscript string to an executable
-const executable = hyperscript.compile('on click toggle .active')
+const executable = hyperscript.compile('on click toggle .active');
 
 // Execute hyperscript code directly
-await hyperscript.execute('toggle .active on #myElement')
+await hyperscript.execute('toggle .active on #myElement');
 ```
 
 ## API Sections
@@ -29,7 +29,7 @@ await hyperscript.execute('toggle .active on #myElement')
 
 ### Commands
 
-HyperFixi includes 43 commands organized by category:
+LokaScript includes 43 commands organized by category:
 
 - [DOM Commands](/en/api/commands/dom) - `toggle`, `add`, `remove`, `put`, `set`
 - [Control Flow](/en/api/commands/control-flow) - `if`, `repeat`, `for`, `while`
@@ -46,11 +46,13 @@ HyperFixi includes 43 commands organized by category:
 ## Quick Example
 
 ```html
-<button _="on click
+<button
+  _="on click
   add .loading to me
   fetch /api/data as json
   put result.message into #output
-  remove .loading from me">
+  remove .loading from me"
+>
   Load Data
 </button>
 ```

@@ -1,6 +1,6 @@
 # Cookbook
 
-Practical recipes and patterns for common UI interactions with HyperFixi.
+Practical recipes and patterns for common UI interactions with LokaScript.
 
 ## Getting Started
 

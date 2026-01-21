@@ -1,16 +1,16 @@
 # Contributing
 
-Welcome to the HyperFixi contributor guide. This section covers architecture, development setup, and how to contribute.
+Welcome to the LokaScript contributor guide. This section covers architecture, development setup, and how to contribute.
 
 ## Quick Links
 
-- [GitHub Repository](https://github.com/hyperfixi/hyperfixi)
-- [Issue Tracker](https://github.com/hyperfixi/hyperfixi/issues)
-- [MIT License](https://github.com/hyperfixi/hyperfixi/blob/main/LICENSE)
+- [GitHub Repository](https://github.com/codetalcott/lokascript)
+- [Issue Tracker](https://github.com/codetalcott/lokascript/issues)
+- [MIT License](https://github.com/codetalcott/lokascript/blob/main/LICENSE)
 
 ## Architecture Overview
 
-HyperFixi is a monorepo with 22 packages:
+LokaScript is a monorepo with 22 packages:
 
 ```
 hyperfixi/
@@ -30,7 +30,7 @@ hyperfixi/
 
 ```bash
 # Clone the repository
-git clone https://github.com/hyperfixi/hyperfixi.git
+git clone https://github.com/codetalcott/lokascript.git
 cd hyperfixi
 
 # Install dependencies
