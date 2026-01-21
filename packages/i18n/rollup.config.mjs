@@ -1,9 +1,9 @@
 /**
- * Rollup config for @hyperfixi/i18n browser bundle
+ * Rollup config for @lokascript/i18n browser bundle
  *
  * Generates:
- * - dist/hyperfixi-i18n.min.js (UMD, minified) - Global: HyperFixiI18n
- * - dist/hyperfixi-i18n.mjs (ESM) - For modern bundlers
+ * - dist/lokascript-i18n.min.js (UMD, minified) - Global: LokaScriptI18n
+ * - dist/lokascript-i18n.mjs (ESM) - For modern bundlers
  */
 
 import typescript from '@rollup/plugin-typescript';
@@ -14,14 +14,14 @@ export default {
   input: 'src/browser.ts',
   output: [
     {
-      file: 'dist/hyperfixi-i18n.mjs',
+      file: 'dist/lokascript-i18n.mjs',
       format: 'es',
       sourcemap: true,
     },
     {
-      file: 'dist/hyperfixi-i18n.min.js',
+      file: 'dist/lokascript-i18n.min.js',
       format: 'umd',
-      name: 'HyperFixiI18n',
+      name: 'LokaScriptI18n',
       plugins: [terser()],
       sourcemap: true,
     },

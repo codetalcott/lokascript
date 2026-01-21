@@ -18,7 +18,7 @@
     },
     "./browser/multilingual": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/hyperfixi-multilingual.js"
+      "default": "./dist/lokascript-multilingual.js"
     },
     "./browser/minimal": {
       "types": "./dist/index.d.ts",

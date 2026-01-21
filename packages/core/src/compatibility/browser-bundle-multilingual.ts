@@ -112,15 +112,15 @@ import { createRenderCommand } from '../commands/templates/render';
 // Semantic Module Access (from browser global)
 // =============================================================================
 
-// In browser environment, use the already-loaded HyperFixiSemantic global
+// In browser environment, use the already-loaded LokaScriptSemantic global
 function getSemanticModule(): typeof import('@lokascript/semantic') {
-  if (typeof window !== 'undefined' && (window as any).HyperFixiSemantic) {
-    return (window as any).HyperFixiSemantic;
+  if (typeof window !== 'undefined' && (window as any).LokaScriptSemantic) {
+    return (window as any).LokaScriptSemantic;
   }
   throw new Error(
-    'HyperFixiSemantic not found. Load the semantic bundle before the multilingual bundle:\n' +
-      '<script src="hyperfixi-semantic.browser.global.js"></script>\n' +
-      '<script src="hyperfixi-multilingual.js"></script>'
+    'LokaScriptSemantic not found. Load the semantic bundle before the multilingual bundle:\n' +
+      '<script src="lokascript-semantic.browser.global.js"></script>\n' +
+      '<script src="lokascript-multilingual.js"></script>'
   );
 }
 

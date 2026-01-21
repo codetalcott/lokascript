@@ -141,7 +141,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "build:browser": "tsup src/browser.ts --format iife --global-name HyperFixiSemantic --minify",
+    "build:browser": "tsup src/browser.ts --format iife --global-name LokaScriptSemantic --minify",
     "dev": "tsup --watch",
     "test": "vitest",
     "test:run": "vitest run",

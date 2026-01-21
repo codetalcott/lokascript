@@ -7,18 +7,18 @@ import terser from '@rollup/plugin-terser';
  * Rollup config for multilingual bundle
  *
  * This bundle excludes the core parser (~240 KB) and uses
- * @hyperfixi/semantic for parsing instead.
+ * @lokascript/semantic for parsing instead.
  *
  * Expected size: ~200-280 KB (vs 663 KB full bundle)
  */
 export default {
   input: 'src/compatibility/browser-bundle-multilingual.ts',
   output: {
-    file: 'dist/hyperfixi-multilingual.js',
+    file: 'dist/lokascript-multilingual.js',
     format: 'iife',
-    // Use internal name to avoid overwriting window.hyperfixi
-    // The bundle sets window.hyperfixi internally
-    name: '_hyperfixiMultilingualInternal',
+    // Use internal name to avoid overwriting window.lokascript
+    // The bundle sets window.lokascript internally
+    name: '_lokascriptMultilingualInternal',
     sourcemap: true,
     inlineDynamicImports: true,
   },
