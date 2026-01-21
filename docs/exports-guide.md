@@ -593,6 +593,6 @@ Yes! Combine core (runtime), semantic (parsing), and i18n (grammar transformatio
 
 ## Support
 
-- **Documentation:** [https://github.com/codetalcott/hyperfixi](https://github.com/codetalcott/hyperfixi)
-- **Issues:** [https://github.com/codetalcott/hyperfixi/issues](https://github.com/codetalcott/hyperfixi/issues)
+- **Documentation:** [https://github.com/codetalcott/lokascript](https://github.com/codetalcott/lokascript)
+- **Issues:** [https://github.com/codetalcott/lokascript/issues](https://github.com/codetalcott/lokascript/issues)
 - **npm:** [@lokascript/core](https://npmjs.com/package/@lokascript/core)

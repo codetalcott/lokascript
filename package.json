@@ -94,12 +94,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyperfixi/hyperfixi.git"
+    "url": "git+https://github.com/codetalcott/lokascript.git"
   },
   "bugs": {
-    "url": "https://github.com/hyperfixi/hyperfixi/issues"
+    "url": "https://github.com/codetalcott/lokascript/issues"
   },
-  "homepage": "https://github.com/hyperfixi/hyperfixi#readme",
+  "homepage": "https://github.com/codetalcott/lokascript#readme",
   "engines": {
     "node": ">=18.0.0"
   }

@@ -1,7 +1,7 @@
 # LokaScript
 
-[![CI](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml/badge.svg)](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/codetalcott/hyperfixi/graph/badge.svg)](https://codecov.io/gh/codetalcott/hyperfixi)
+[![CI](https://github.com/codetalcott/lokascript/actions/workflows/ci.yml/badge.svg)](https://github.com/codetalcott/lokascript/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/codetalcott/lokascript/graph/badge.svg)](https://codecov.io/gh/codetalcott/lokascript)
 [![npm version](https://img.shields.io/npm/v/@lokascript/core.svg)](https://www.npmjs.com/package/@lokascript/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

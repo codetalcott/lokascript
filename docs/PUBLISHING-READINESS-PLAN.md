@@ -186,13 +186,13 @@ Add to `packages/semantic/package.json`:
 ```json
 "repository": {
   "type": "git",
-  "url": "git+https://github.com/codetalcott/hyperfixi.git",
+  "url": "git+https://github.com/codetalcott/lokascript.git",
   "directory": "packages/semantic"
 },
 "bugs": {
-  "url": "https://github.com/codetalcott/hyperfixi/issues"
+  "url": "https://github.com/codetalcott/lokascript/issues"
 },
-"homepage": "https://github.com/codetalcott/hyperfixi/tree/main/packages/semantic#readme",
+"homepage": "https://github.com/codetalcott/lokascript/tree/main/packages/semantic#readme",
 "engines": {
   "node": ">=18.0.0"
 },

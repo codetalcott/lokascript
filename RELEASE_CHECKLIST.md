@@ -86,7 +86,7 @@ See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) for detailed instructions.
   git push origin v1.0.0
   ```
 
-- [ ] Created GitHub release at: https://github.com/codetalcott/hyperfixi/releases/new
+- [ ] Created GitHub release at: https://github.com/codetalcott/lokascript/releases/new
   - [ ] Added release notes from CHANGELOG.md
   - [ ] Attached browser bundles
   - [ ] Published release
@@ -114,7 +114,7 @@ npm unpublish @lokascript/PACKAGE@1.0.0
 
 ---
 
-**Started**: ****\_\_\_****
-**Completed**: ****\_\_\_****
-**Duration**: ****\_\_\_****
-**Released by**: ****\_\_\_****
+**Started**: \***\*\_\_\_\*\***
+**Completed**: \***\*\_\_\_\*\***
+**Duration**: \***\*\_\_\_\*\***
+**Released by**: \***\*\_\_\_\*\***

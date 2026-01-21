@@ -390,7 +390,7 @@ Go to GitHub and create a release:
 
 ```bash
 # Open GitHub releases page
-open https://github.com/codetalcott/hyperfixi/releases/new
+open https://github.com/codetalcott/lokascript/releases/new
 
 # Or use gh CLI:
 gh release create v1.0.0 \
@@ -443,9 +443,9 @@ npm install @lokascript/core
 
 ## 📚 Documentation
 
-- [README](https://github.com/codetalcott/hyperfixi#readme)
-- [CLAUDE.md](https://github.com/codetalcott/hyperfixi/blob/main/CLAUDE.md)
-- [Language Bundles](https://github.com/codetalcott/hyperfixi/blob/main/packages/semantic/LANGUAGE_BUNDLES.md)
+- [README](https://github.com/codetalcott/lokascript#readme)
+- [CLAUDE.md](https://github.com/codetalcott/lokascript/blob/main/CLAUDE.md)
+- [Language Bundles](https://github.com/codetalcott/lokascript/blob/main/packages/semantic/LANGUAGE_BUNDLES.md)
 
 ## 🌍 Supported Languages
 
@@ -460,7 +460,7 @@ English, Spanish, French, German, Portuguese, Japanese, Korean, Chinese, Arabic,
 | Standard        | 63 KB  | Full command set          |
 | Browser         | 203 KB | Everything + parser       |
 
-See [CHANGELOG.md](https://github.com/codetalcott/hyperfixi/blob/main/CHANGELOG.md) for complete details.
+See [CHANGELOG.md](https://github.com/codetalcott/lokascript/blob/main/CHANGELOG.md) for complete details.
 
 ```
 
@@ -489,7 +489,7 @@ Consider announcing on:
 
 After release, monitor:
 - [ ] npm download stats: `npm view @lokascript/core`
-- [ ] GitHub issues: https://github.com/codetalcott/hyperfixi/issues
+- [ ] GitHub issues: https://github.com/codetalcott/lokascript/issues
 - [ ] npm package page: https://www.npmjs.com/package/@lokascript/core
 - [ ] CDN availability: https://unpkg.com/@lokascript/core@1.0.0/
 

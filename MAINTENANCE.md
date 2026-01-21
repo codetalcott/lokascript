@@ -467,7 +467,7 @@ git add . && git commit -m "fix: reset versions to 1.0.0"
 
 ## Support
 
-- **Issues**: https://github.com/codetalcott/hyperfixi/issues
+- **Issues**: https://github.com/codetalcott/lokascript/issues
 - **Discussions**: GitHub Discussions
 - **Claude Code**: Use `/help` command
 
@@ -475,4 +475,4 @@ git add . && git commit -m "fix: reset versions to 1.0.0"
 
 **Maintained by**: LokaScript Core Team
 **License**: MIT
-**Repository**: https://github.com/codetalcott/hyperfixi
+**Repository**: https://github.com/codetalcott/lokascript

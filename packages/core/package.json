@@ -232,13 +232,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyperfixi/hyperfixi.git",
+    "url": "git+https://github.com/codetalcott/lokascript.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/hyperfixi/hyperfixi/issues"
+    "url": "https://github.com/codetalcott/lokascript/issues"
   },
-  "homepage": "https://github.com/hyperfixi/hyperfixi/tree/main/packages/core#readme",
+  "homepage": "https://github.com/codetalcott/lokascript/tree/main/packages/core#readme",
   "engines": {
     "node": ">=18.0.0"
   },

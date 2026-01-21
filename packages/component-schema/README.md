@@ -555,5 +555,5 @@ MIT License - see LICENSE file for details.
 ## Support
 
 - **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/codetalcott/hyperfixi/issues)
+- **Issues**: [GitHub Issues](https://github.com/codetalcott/lokascript/issues)
 - **NPM Package**: [npmjs.com/package/@lokascript/component-schema](https://www.npmjs.com/package/@lokascript/component-schema)

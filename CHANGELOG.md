@@ -83,5 +83,5 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ---
 
-[Unreleased]: https://github.com/codetalcott/hyperfixi/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/codetalcott/hyperfixi/releases/tag/v1.0.0
+[Unreleased]: https://github.com/codetalcott/lokascript/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/codetalcott/lokascript/releases/tag/v1.0.0

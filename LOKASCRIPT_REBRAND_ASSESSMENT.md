@@ -87,7 +87,7 @@ window.hyperfixi (deprecated alias for migration)
 **Scope**: GitHub organization, CI/CD, badges
 
 ```
-Current:  github.com/codetalcott/hyperfixi
+Current:  github.com/codetalcott/lokascript
 Target:   github.com/lokascript/lokascript (or similar)
 
 Updates needed:
@@ -549,7 +549,7 @@ find . -name "*.md" -not -path "*/node_modules/*" \
 
 - **npm organization**: https://www.npmjs.com/org/create
 - **Domain management**: lokascript.org, lokascript.com
-- **Repository**: github.com/codetalcott/hyperfixi (current)
+- **Repository**: github.com/codetalcott/lokascript (current)
 - **Package references**: 873 files, ~6,313 occurrences
 - **Import statements**: 206 files
 - **Browser globals**: 44 references
