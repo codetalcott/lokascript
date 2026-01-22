@@ -2,7 +2,8 @@
  * JSON Reporter - Structured JSON output for programmatic consumption
  */
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { Reporter, TestConfig, LanguageCode, LanguageResults, TestResults } from '../types';
 
 /**
@@ -58,6 +59,11 @@ export class JSONReporter implements Reporter {
         timestamp: new Date().toISOString(),
       },
     };
+
+    // Ensure output directory exists
+    const dir = dirname(this.outputPath);
+    mkdirSync(dir, { recursive: true });
+
     writeFileSync(this.outputPath, JSON.stringify(errorResult, null, 2));
   }
 
@@ -68,6 +74,10 @@ export class JSONReporter implements Reporter {
     if (!this.results) {
       throw new Error('No results to write');
     }
+
+    // Ensure output directory exists
+    const dir = dirname(this.outputPath);
+    mkdirSync(dir, { recursive: true });
 
     const json = JSON.stringify(this.results, null, 2);
     writeFileSync(this.outputPath, json);
