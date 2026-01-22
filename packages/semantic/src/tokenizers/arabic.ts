@@ -195,13 +195,16 @@ const PREPOSITIONS = new Set([
 // =============================================================================
 
 /**
- * Extra keywords not covered by the profile:
+ * Extra keywords not covered by the profile.
+ *
+ * SIMPLIFIED: Following the Tagalog/Hindi model of minimal EXTRAS.
+ * Command synonyms and spelling variants should be in profile alternatives,
+ * not duplicated here. Only includes:
  * - Literals (true, false, null, undefined)
  * - Positional words
  * - Event names
  * - Time units
- * - Temporal conjunctions
- * - Additional synonyms and spelling variants
+ * - References not in profile
  */
 const ARABIC_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -239,13 +242,8 @@ const ARABIC_EXTRAS: KeywordEntry[] = [
   { native: 'تحميل', normalized: 'load' },
   { native: 'تمرير', normalized: 'scroll' },
 
-  // References
-  { native: 'أنا', normalized: 'me' },
-  { native: 'هو', normalized: 'it' },
+  // References (feminine "it" not in profile)
   { native: 'هي', normalized: 'it' },
-  { native: 'النتيجة', normalized: 'result' },
-  { native: 'الحدث', normalized: 'event' },
-  { native: 'الهدف', normalized: 'target' },
 
   // Time units
   { native: 'ثانية', normalized: 's' },
@@ -258,43 +256,12 @@ const ARABIC_EXTRAS: KeywordEntry[] = [
 
   // Note: Temporal markers (عندما, حينما, etc.) are in TEMPORAL_MARKERS map
   // with formality metadata, not in ARABIC_EXTRAS
-
-  // Additional spelling variants (without diacritics)
-  { native: 'بدل', normalized: 'toggle' },
-  { native: 'غير', normalized: 'toggle' },
-  { native: 'اضف', normalized: 'add' },
-  { native: 'ازل', normalized: 'remove' },
-  { native: 'اضع', normalized: 'put' },
-  { native: 'يضع', normalized: 'put' },
-  { native: 'اجعل', normalized: 'put' },
-  { native: 'عين', normalized: 'set' },
-  { native: 'زد', normalized: 'increment' },
-  { native: 'ارفع', normalized: 'increment' },
-  { native: 'انقص', normalized: 'decrement' },
-  { native: 'قلل', normalized: 'decrement' },
-  { native: 'سجل', normalized: 'log' },
-  { native: 'اظهر', normalized: 'show' },
-  { native: 'اعرض', normalized: 'show' },
-  { native: 'اخف', normalized: 'hide' },
-  { native: 'اخفي', normalized: 'hide' },
-  { native: 'شغل', normalized: 'trigger' },
-  { native: 'ارسل', normalized: 'send' },
-  { native: 'ركز', normalized: 'focus' },
-  { native: 'شوش', normalized: 'blur' },
-  { native: 'اذا', normalized: 'if' },
-  { native: 'لو', normalized: 'if' },
-  { native: 'والا', normalized: 'else' },
-  { native: 'توقف', normalized: 'halt' },
-  { native: 'انسخ', normalized: 'clone' },
-
-  // Control flow helpers
-  { native: 'إذن', normalized: 'then' },
-  { native: 'فإن', normalized: 'then' },
-  { native: 'نهاية', normalized: 'end' },
-
-  // Modifiers
-  { native: 'قبل', normalized: 'before' },
-  { native: 'بعد', normalized: 'after' },
+  //
+  // Command spelling variants are now in the profile alternatives:
+  // - toggle: بدل, غيّر, غير (in profile)
+  // - add: اضف, زِد (in profile)
+  // - remove: أزل, امسح (in profile)
+  // - etc.
 ];
 
 // =============================================================================

@@ -231,13 +231,19 @@ const PARTICLE_ROLES = new Map<string, ParticleMetadata>([
 // =============================================================================
 
 /**
- * Extra keywords not covered by the profile:
+ * Extra keywords not covered by the profile.
+ *
+ * SIMPLIFIED: Following the Tagalog/Hindi model of minimal EXTRAS.
+ * Removed attached particle+verb compounds (를토글, 을토글, etc.) that create
+ * parsing ambiguity. Japanese tokenizer explicitly avoids these - we follow suit.
+ *
+ * Only includes:
  * - Literals (true, false, null, undefined)
  * - Positional words
  * - Event names
- * - Attached particle forms (native idioms)
- * - Conditional event forms
  * - Time units
+ * - References not in profile
+ * - Logical operators
  */
 const KOREAN_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -267,25 +273,9 @@ const KOREAN_EXTRAS: KeywordEntry[] = [
   { native: '마우스오버', normalized: 'mouseover' },
   { native: '마우스아웃', normalized: 'mouseout' },
 
-  // References (additional forms)
+  // References (additional forms not in profile)
   { native: '내', normalized: 'my' },
   { native: '그것의', normalized: 'its' },
-
-  // Conditional event forms (native idioms)
-  { native: '하면', normalized: 'on' },
-  { native: '으면', normalized: 'on' },
-  { native: '면', normalized: 'on' },
-  { native: '할때', normalized: 'on' },
-  { native: '할 때', normalized: 'on' },
-  { native: '을때', normalized: 'on' },
-  { native: '을 때', normalized: 'on' },
-  { native: '하니까', normalized: 'on' },
-  { native: '니까', normalized: 'on' },
-
-  // Control flow helpers
-  { native: '그러면', normalized: 'then' },
-  { native: '그렇지않으면', normalized: 'otherwise' },
-  { native: '중단', normalized: 'break' },
 
   // Logical
   { native: '그리고', normalized: 'and' },
@@ -293,38 +283,16 @@ const KOREAN_EXTRAS: KeywordEntry[] = [
   { native: '아니', normalized: 'not' },
   { native: '이다', normalized: 'is' },
 
-  // Command overrides (ensure correct mapping when profile has multiple meanings)
-  { native: '추가', normalized: 'add' }, // Profile may have this as 'append'
-
-  // Attached particle forms (native idioms - particle + verb without space)
-  // Object particle 를 (after vowel)
-  { native: '를토글', normalized: 'toggle' },
-  { native: '를전환', normalized: 'toggle' },
-  { native: '를추가', normalized: 'add' },
-  { native: '를제거', normalized: 'remove' },
-  { native: '를삭제', normalized: 'remove' },
-  { native: '를증가', normalized: 'increment' },
-  { native: '를감소', normalized: 'decrement' },
-  { native: '를표시', normalized: 'show' },
-  { native: '를숨기다', normalized: 'hide' },
-  { native: '를설정', normalized: 'set' },
-  // Object particle 을 (after consonant)
-  { native: '을토글', normalized: 'toggle' },
-  { native: '을전환', normalized: 'toggle' },
-  { native: '을추가', normalized: 'add' },
-  { native: '을제거', normalized: 'remove' },
-  { native: '을삭제', normalized: 'remove' },
-  { native: '을증가', normalized: 'increment' },
-  { native: '을감소', normalized: 'decrement' },
-  { native: '을표시', normalized: 'show' },
-  { native: '을숨기다', normalized: 'hide' },
-  { native: '을설정', normalized: 'set' },
-
   // Time units
   { native: '초', normalized: 's' },
   { native: '밀리초', normalized: 'ms' },
   { native: '분', normalized: 'm' },
   { native: '시간', normalized: 'h' },
+
+  // Note: Attached particle+verb forms (를토글, 을토글, etc.) are intentionally
+  // NOT included because they cause ambiguous parsing. The separate particle + verb
+  // pattern (를 + 토글) is preferred for consistent semantic analysis.
+  // This follows the same approach as the Japanese tokenizer.
 ];
 
 // =============================================================================

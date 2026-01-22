@@ -1,8 +1,8 @@
 /**
  * Turkish Decrement Patterns
  *
- * Hand-crafted patterns for "decrement" command.
- * Turkish: counter azalt (SOV order)
+ * Strategy: Return empty array to rely on auto-generated patterns from profile.
+ * This follows the Tagalog model which achieves 100% pass rate with pure generation.
  */
 
 import type { LanguagePattern } from '../../types';
@@ -11,38 +11,5 @@ import type { LanguagePattern } from '../../types';
  * Get Turkish decrement patterns.
  */
 export function getDecrementPatternsTr(): LanguagePattern[] {
-  return [
-    {
-      id: 'decrement-tr-full',
-      language: 'tr',
-      command: 'decrement',
-      priority: 100,
-      template: {
-        format: '{patient} azalt',
-        tokens: [
-          { type: 'role', role: 'patient', expectedTypes: ['selector', 'reference', 'expression'] },
-          { type: 'literal', value: 'azalt', alternatives: ['azaltmak', 'düşür', 'decrement'] },
-        ],
-      },
-      extraction: {
-        patient: { position: 0 },
-      },
-    },
-    {
-      id: 'decrement-tr-svo',
-      language: 'tr',
-      command: 'decrement',
-      priority: 90,
-      template: {
-        format: 'azalt {patient}',
-        tokens: [
-          { type: 'literal', value: 'azalt', alternatives: ['azaltmak'] },
-          { type: 'role', role: 'patient', expectedTypes: ['selector', 'reference', 'expression'] },
-        ],
-      },
-      extraction: {
-        patient: { position: 1 },
-      },
-    },
-  ];
+  return [];
 }

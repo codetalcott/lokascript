@@ -1,7 +1,8 @@
 /**
  * Arabic Take Patterns
  *
- * Tree-shakeable: Only included when Arabic is imported.
+ * Strategy: Return empty array to rely on auto-generated patterns from profile.
+ * This follows the Tagalog model which achieves 100% pass rate with pure generation.
  */
 
 import type { LanguagePattern } from '../../types';
@@ -10,42 +11,5 @@ import type { LanguagePattern } from '../../types';
  * Get Arabic take patterns.
  */
 export function getTakePatternsAr(): LanguagePattern[] {
-  return [
-    {
-      id: 'take-ar-full',
-      language: 'ar',
-      command: 'take',
-      priority: 110,
-      template: {
-        format: 'خذ {patient} من {source}',
-        tokens: [
-          { type: 'literal', value: 'خذ', alternatives: ['احصل'] },
-          { type: 'role', role: 'patient' },
-          { type: 'literal', value: 'من' },
-          { type: 'role', role: 'source' },
-        ],
-      },
-      extraction: {
-        patient: { position: 1 },
-        source: { marker: 'من' },
-      },
-    },
-    {
-      id: 'take-ar-source-only',
-      language: 'ar',
-      command: 'take',
-      priority: 100,
-      template: {
-        format: 'خذ من {source}',
-        tokens: [
-          { type: 'literal', value: 'خذ', alternatives: ['احصل'] },
-          { type: 'literal', value: 'من' },
-          { type: 'role', role: 'source' },
-        ],
-      },
-      extraction: {
-        source: { marker: 'من' },
-      },
-    },
-  ];
+  return [];
 }

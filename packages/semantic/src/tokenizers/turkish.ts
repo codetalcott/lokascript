@@ -96,13 +96,17 @@ const CASE_SUFFIXES = new Set([
 // =============================================================================
 
 /**
- * Extra keywords not covered by the profile:
+ * Extra keywords not covered by the profile.
+ *
+ * SIMPLIFIED: Following the Tagalog/Hindi model of minimal EXTRAS.
+ * Command synonyms and diacritic-free variants should be in profile alternatives,
+ * not duplicated here. Only includes:
  * - Literals (true, false, null, undefined)
  * - Positional words
  * - Event names
  * - Time units
- * - Diacritic-free variants
- * - Additional synonyms
+ * - References not in profile
+ * - Logical operators
  */
 const TURKISH_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -149,15 +153,9 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'tuş_bırak', normalized: 'keyup' },
   { native: 'tus_birak', normalized: 'keyup' },
 
-  // References
-  { native: 'ben', normalized: 'me' },
+  // References (possessive forms not in profile)
   { native: 'benim', normalized: 'my' },
-  { native: 'o', normalized: 'it' },
   { native: 'onun', normalized: 'its' },
-  { native: 'sonuç', normalized: 'result' },
-  { native: 'sonuc', normalized: 'result' },
-  { native: 'olay', normalized: 'event' },
-  { native: 'hedef', normalized: 'target' },
 
   // Time units
   { native: 'saniye', normalized: 's' },
@@ -171,61 +169,8 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'değil', normalized: 'not' },
   { native: 'degil', normalized: 'not' },
 
-  // Event triggers (on)
-  { native: 'üzerinde', normalized: 'on' },
-  { native: 'uzerinde', normalized: 'on' },
-  { native: 'olduğunda', normalized: 'on' },
-  { native: 'oldugunda', normalized: 'on' },
-
-  // Command overrides (ensure correct mapping when profile has multiple meanings)
-  { native: 'ekle', normalized: 'add' }, // Profile may have this as 'append'
-  { native: 'değiştir', normalized: 'toggle' }, // Profile has this as 'swap'
-
-  // Diacritic-free variants of commands
-  { native: 'değistir', normalized: 'toggle' },
-  { native: 'kaldir', normalized: 'remove' },
-  { native: 'yerlestir', normalized: 'put' },
-  { native: 'olustur', normalized: 'make' },
-  { native: 'artir', normalized: 'increment' },
-  { native: 'yazdir', normalized: 'log' },
-  { native: 'goster', normalized: 'show' },
-  { native: 'gecis', normalized: 'transition' },
-  { native: 'atesle', normalized: 'trigger' },
-  { native: 'gonder', normalized: 'send' },
-  { native: 'bulaniklastir', normalized: 'blur' },
-  { native: 'odak_kaldir', normalized: 'blur' },
-  { native: 'yonlendir', normalized: 'go' },
-  { native: 'cek', normalized: 'fetch' },
-  { native: 'yerles', normalized: 'settle' },
-  { native: 'eger', normalized: 'if' },
-  { native: 'degilse', normalized: 'else' },
-  { native: 'firlat', normalized: 'throw' },
-  { native: 'cagir', normalized: 'call' },
-  { native: 'don', normalized: 'return' },
-  { native: 'dondur', normalized: 'return' },
-  { native: 'eszamansiz', normalized: 'async' },
-  { native: 'soyle', normalized: 'tell' },
-  { native: 'varsayilan', normalized: 'default' },
-  { native: 'baslat', normalized: 'init' },
-  { native: 'basla', normalized: 'init' },
-  { native: 'davranis', normalized: 'behavior' },
-  { native: 'yukle', normalized: 'install' },
-  { native: 'olc', normalized: 'measure' },
-  { native: 'icine', normalized: 'into' },
-  { native: 'once', normalized: 'before' },
-  { native: 'icin', normalized: 'for' },
-
-  // Colloquial forms
-  { native: 'al', normalized: 'get' },
-  { native: 'yap', normalized: 'set' },
-
-  // Control flow helpers
-  { native: 'o_zaman', normalized: 'then' },
-  { native: 'bitir', normalized: 'end' },
-
-  // Case suffix modifiers
-  { native: '-den', normalized: 'from' },
-  { native: '-dan', normalized: 'from' },
+  // Note: Command synonyms and diacritic-free variants should be in profile alternatives.
+  // Event triggers (üzerinde, olduğunda) should be in profile as 'on' alternatives.
 ];
 
 // =============================================================================
