@@ -2513,8 +2513,8 @@ export class Parser {
       // Parse parameter list
       if (!this.check(')')) {
         do {
-          // Phase 8: Use predicate-based consume
-          const paramToken = this.consumeIdentifier('Expected parameter name');
+          // Allow command names as parameter names - context determines meaning
+          const paramToken = this.consumeIdentifierLike('Expected parameter name');
           parameters.push(paramToken.value);
         } while (this.match(','));
       }
@@ -3668,6 +3668,14 @@ export class Parser {
    */
   private consumeIdentifier(message: string): Token {
     return this.consumePredicate(isIdentifier, message);
+  }
+
+  /**
+   * Consume an identifier-like token (any identifier, including commands/keywords)
+   * Used in contexts where commands/keywords are valid identifiers (e.g., parameters)
+   */
+  private consumeIdentifierLike(message: string): Token {
+    return this.consumePredicate(isIdentifierLike, message);
   }
 
   /**
