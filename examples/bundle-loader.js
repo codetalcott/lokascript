@@ -88,13 +88,42 @@
   script.async = false;
 
   script.onerror = function () {
-    console.error(`[HyperFixi] Failed to load bundle: ${bundleKey}`);
-    console.error('Falling back to browser bundle...');
+    console.error(`[HyperFixi] Failed to load bundle: ${bundleKey} (${BUNDLES[bundleKey]})`);
+    console.error(`[HyperFixi] Attempted path: ${script.src}`);
 
-    // Fallback to default bundle
-    const fallback = document.createElement('script');
-    fallback.src = getBundlePath().replace(BUNDLES[bundleKey], BUNDLES['browser']);
-    document.head.appendChild(fallback);
+    // IMPORTANT: Only fall back if we're not already trying to load the browser bundle.
+    // If the browser bundle itself fails (e.g., server not ready, file missing),
+    // attempting fallback would just try to load the same file again, causing an
+    // infinite loop of errors. Instead, we provide diagnostic information.
+    if (bundleKey !== 'browser') {
+      console.error('[HyperFixi] Falling back to browser bundle...');
+
+      // Fallback to default bundle
+      const fallback = document.createElement('script');
+      const browserPath = getBundlePath().replace(BUNDLES[bundleKey], BUNDLES['browser']);
+      fallback.src = browserPath;
+
+      fallback.onerror = function () {
+        console.error('[HyperFixi] CRITICAL: Failed to load fallback browser bundle!');
+        console.error(`[HyperFixi] Attempted fallback path: ${browserPath}`);
+        console.error('[HyperFixi] Please check that packages/core/dist/hyperfixi-browser.js exists');
+      };
+
+      fallback.onload = function () {
+        console.log('[HyperFixi] Successfully loaded fallback browser bundle');
+        window.dispatchEvent(new CustomEvent('hyperfixi:bundle-loaded', {
+          detail: { bundle: 'browser', file: BUNDLES['browser'], fallback: true }
+        }));
+      };
+
+      document.head.appendChild(fallback);
+    } else {
+      console.error('[HyperFixi] CRITICAL: Browser bundle failed to load - no fallback available!');
+      console.error('[HyperFixi] Please verify:');
+      console.error('  1. Server is running from project root');
+      console.error('  2. packages/core/dist/hyperfixi-browser.js exists');
+      console.error('  3. File permissions are correct');
+    }
   };
 
   script.onload = function () {
