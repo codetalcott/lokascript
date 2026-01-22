@@ -41,11 +41,13 @@ examples/
 ### Viewing the Gallery
 
 1. **Start HTTP Server** (from project root):
+
    ```bash
    npx http-server -p 3000 -c-1
    ```
 
 2. **Open in Browser**:
+
    ```
    http://localhost:3000/examples/index.html
    ```
@@ -68,6 +70,7 @@ open http://localhost:3000/examples/basics/05-counter.html
 **Start here if you're new to hyperscript!**
 
 Learn fundamental patterns:
+
 - Event handling (`on click`, `on input`)
 - DOM manipulation (`put`, `toggle`, `show/hide`)
 - Element selection (CSS selectors: `#id`, `.class`)
@@ -81,6 +84,7 @@ Learn fundamental patterns:
 **Ready for more complex patterns?**
 
 Explore real-world features:
+
 - Form handling and validation
 - AJAX/Fetch requests
 - CSS transitions and animations
@@ -95,6 +99,7 @@ Explore real-world features:
 **Master complex hyperscript patterns!**
 
 Build sophisticated interactions:
+
 - Custom behaviors (reusable components)
 - Drag-and-drop with event loops
 - State machines and transitions
@@ -107,9 +112,11 @@ Build sophisticated interactions:
 ## 🎨 Featured Examples
 
 ### 🌈 Color Cycling (Advanced)
+
 **File:** `advanced/01-color-cycling.html`
 
 Demonstrates:
+
 - Event-driven loops (`repeat until event`)
 - CSS transitions
 - Global scope access (`Math.random()`)
@@ -127,9 +134,11 @@ end
 ```
 
 ### 🖱️ Draggable Elements (Advanced)
+
 **File:** `advanced/02-draggable.html`
 
 Demonstrates:
+
 - Reusable behaviors
 - Custom events and hooks
 - Element measurement
@@ -157,6 +166,7 @@ Want to see multiple advanced examples on one page?
 **Visit:** [compound-examples.html](../compound-examples.html)
 
 This page combines:
+
 - Color cycling with HSL animation
 - Draggable behavior with custom events
 - Live metrics display
@@ -169,6 +179,7 @@ Perfect for testing multiple patterns together!
 ### Adding New Examples
 
 1. **Create HTML file** in appropriate directory:
+
    ```bash
    # Create new example
    touch examples/basics/06-my-example.html
@@ -192,21 +203,21 @@ Perfect for testing multiple patterns together!
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Example Title - HyperFixi Examples</title>
     <!-- Styles -->
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <!-- Breadcrumb -->
-        <!-- Title & Description -->
-        <!-- Tags -->
-        <!-- Interactive Demo -->
-        <!-- Code Explanation -->
-        <!-- Navigation -->
+      <!-- Breadcrumb -->
+      <!-- Title & Description -->
+      <!-- Tags -->
+      <!-- Interactive Demo -->
+      <!-- Code Explanation -->
+      <!-- Navigation -->
     </div>
-    <script src="../../packages/core/dist/hyperfixi-browser.js"></script>
-</body>
+    <script src="../../packages/core/dist/lokascript-browser.js"></script>
+  </body>
 </html>
 ```
 
@@ -228,24 +239,28 @@ Perfect for testing multiple patterns together!
 ## 🌟 Pattern Categories
 
 ### Event Handling
+
 - Click, hover, input, focus events
 - Event delegation
 - Event conditions and filtering
 - Custom events
 
 ### DOM Manipulation
+
 - Content updates (`put`, `append`)
 - Class management (`add`, `remove`, `toggle`)
 - Visibility (`show`, `hide`)
 - Style manipulation
 
 ### Control Flow
+
 - Conditionals (`if`, `unless`)
 - Loops (`repeat`, `repeat until`)
 - Waiting (`wait`)
 - Event-driven loops
 
 ### Advanced Features
+
 - Behaviors (reusable components)
 - Transitions and animations
 - Form handling
@@ -255,15 +270,19 @@ Perfect for testing multiple patterns together!
 ## 🔍 Finding Examples by Feature
 
 ### Want to learn about `fetch`?
+
 → See: `intermediate/02-fetch-data.html`
 
 ### Need drag-and-drop?
+
 → See: `advanced/02-draggable.html` or `advanced/03-sortable-list.html`
 
 ### Looking for form validation?
+
 → See: `intermediate/01-form-validation.html`
 
 ### Want smooth animations?
+
 → See: `intermediate/03-fade-effects.html` or `advanced/01-color-cycling.html`
 
 ## 💡 Pro Tips
@@ -290,6 +309,6 @@ These examples are part of the HyperFixi project and follow the same license.
 ---
 
 **Built with ❤️ using HyperFixi**
-100% _hyperscript compatible • TypeScript powered • Production ready
+100% \_hyperscript compatible • TypeScript powered • Production ready
 
 **Questions?** Check the [main documentation](../packages/core/docs/) or open an issue!

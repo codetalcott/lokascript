@@ -26,13 +26,13 @@ npx rollup -c rollup.browser-custom.config.mjs
 
 ## Bundle Size Comparison
 
-| Bundle | Commands | Gzipped Size |
-|--------|----------|--------------|
-| Minimal | 3 | ~4 KB |
-| Forms | 10 | ~5 KB |
-| Animation | 8 | ~5 KB |
-| TextShelf | 10 | ~6 KB |
-| Hybrid Complete | 21 | ~7 KB |
+| Bundle          | Commands | Gzipped Size |
+| --------------- | -------- | ------------ |
+| Minimal         | 3        | ~4 KB        |
+| Forms           | 10       | ~5 KB        |
+| Animation       | 8        | ~5 KB        |
+| TextShelf       | 10       | ~6 KB        |
+| Hybrid Complete | 21       | ~7 KB        |
 
 ## Config File Format
 
@@ -50,19 +50,20 @@ npx rollup -c rollup.browser-custom.config.mjs
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | string | required | Bundle name (used in comments and errors) |
-| `commands` | string[] | required | List of commands to include |
-| `blocks` | string[] | `[]` | Block commands: `if`, `repeat`, `for`, `while`, `fetch` |
-| `output` | string | required | Output TypeScript file path (any location) |
-| `htmxIntegration` | boolean | `false` | Add `htmx:afterSettle` listener |
-| `positionalExpressions` | boolean | `false` | Include `first`, `last`, `next`, `previous`, `closest`, `parent` |
-| `globalName` | string | `"hyperfixi"` | Global variable name |
+| Option                  | Type     | Default       | Description                                                      |
+| ----------------------- | -------- | ------------- | ---------------------------------------------------------------- |
+| `name`                  | string   | required      | Bundle name (used in comments and errors)                        |
+| `commands`              | string[] | required      | List of commands to include                                      |
+| `blocks`                | string[] | `[]`          | Block commands: `if`, `repeat`, `for`, `while`, `fetch`          |
+| `output`                | string   | required      | Output TypeScript file path (any location)                       |
+| `htmxIntegration`       | boolean  | `false`       | Add `htmx:afterSettle` listener                                  |
+| `positionalExpressions` | boolean  | `false`       | Include `first`, `last`, `next`, `previous`, `closest`, `parent` |
+| `globalName`            | string   | `"hyperfixi"` | Global variable name                                             |
 
 ## Available Commands
 
 ### DOM Commands
+
 - `toggle` - Toggle CSS classes
 - `add` - Add CSS classes
 - `remove` - Remove elements
@@ -73,31 +74,37 @@ npx rollup -c rollup.browser-custom.config.mjs
 - `append` - Append content
 
 ### Data Commands
+
 - `set` - Set variables or properties
 - `get` - Get values
 - `increment` - Increment numeric values
 - `decrement` - Decrement numeric values
 
 ### Animation Commands
+
 - `transition` - CSS transitions
 - `wait` - Delay execution
 - `take` - Take class from siblings
 
 ### Event Commands
+
 - `send` - Dispatch custom events
 - `trigger` - Alias for send
 - `log` - Console logging
 
 ### Navigation Commands
+
 - `go` - Navigate (back, forward, URL, scroll)
 
 ### Execution Commands
+
 - `call` - Call functions
 - `return` - Return from handlers
 - `focus` - Focus elements
 - `blur` - Blur elements
 
 ### Control Flow Commands
+
 - `break` - Exit from a loop
 - `continue` - Skip to next loop iteration
 
@@ -114,7 +121,7 @@ The following commands require the full runtime and are not available in generat
 - **Animation (advanced)**: `settle`, `measure`
 - **Behaviors**: `install`
 
-If you need these commands, use the full `hyperfixi-browser.js` bundle instead.
+If you need these commands, use the full `lokascript-browser.js` bundle instead.
 
 ## CLI Options
 
@@ -151,30 +158,31 @@ Without `--strict`, unknown commands are silently skipped with a warning.
 
 Block commands enable control flow:
 
-| Block | Description | Example |
-|-------|-------------|---------|
-| `if` | Conditional execution | `if me has .active then hide me end` |
-| `repeat` | Loop N times | `repeat 3 times add .pulse end` |
-| `for` | Iterate over elements | `for each item in .items toggle .active on item end` |
-| `while` | Loop while condition | `while :count < 10 increment :count end` |
-| `fetch` | HTTP requests | `fetch /api/data as json then put result into #output end` |
+| Block    | Description           | Example                                                    |
+| -------- | --------------------- | ---------------------------------------------------------- |
+| `if`     | Conditional execution | `if me has .active then hide me end`                       |
+| `repeat` | Loop N times          | `repeat 3 times add .pulse end`                            |
+| `for`    | Iterate over elements | `for each item in .items toggle .active on item end`       |
+| `while`  | Loop while condition  | `while :count < 10 increment :count end`                   |
+| `fetch`  | HTTP requests         | `fetch /api/data as json then put result into #output end` |
 
 ## Positional Expressions
 
 When enabled, supports these selectors:
 
-| Expression | Description |
-|------------|-------------|
-| `first in .items` | First matching element |
-| `last in .items` | Last matching element |
-| `next <selector>` | Next sibling matching selector |
+| Expression            | Description                        |
+| --------------------- | ---------------------------------- |
+| `first in .items`     | First matching element             |
+| `last in .items`      | Last matching element              |
+| `next <selector>`     | Next sibling matching selector     |
 | `previous <selector>` | Previous sibling matching selector |
-| `closest <selector>` | Closest ancestor matching selector |
-| `parent` | Direct parent element |
+| `closest <selector>`  | Closest ancestor matching selector |
+| `parent`              | Direct parent element              |
 
 ## Example Configs
 
 ### Minimal (3 commands, ~4 KB)
+
 ```json
 {
   "name": "Minimal",
@@ -184,6 +192,7 @@ When enabled, supports these selectors:
 ```
 
 ### Forms (10 commands, ~5 KB)
+
 ```json
 {
   "name": "Forms",
@@ -194,6 +203,7 @@ When enabled, supports these selectors:
 ```
 
 ### Animation (8 commands, ~5 KB)
+
 ```json
 {
   "name": "Animation",
@@ -217,13 +227,13 @@ export default {
   output: {
     file: 'dist/hyperfixi-mybundle.js',
     format: 'iife',
-    name: 'hyperfixi'
+    name: 'hyperfixi',
   },
   plugins: [
     nodeResolve({ browser: true }),
     typescript({ declaration: false }),
-    terser({ compress: { passes: 3 } })
-  ]
+    terser({ compress: { passes: 3 } }),
+  ],
 };
 ```
 

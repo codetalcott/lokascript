@@ -34,7 +34,7 @@ npm run build && npm run typecheck && npm test
 2. **Browser Bundles** (core, i18n, behaviors)
    - Built with `rollup`
    - Output: Multiple bundle sizes and formats
-   - Examples: hyperfixi-browser.js, hyperfixi-i18n.min.js
+   - Examples: lokascript-browser.js, lokascript-i18n.min.js
 
 3. **Hybrid Packages** (core, i18n)
    - Build both TypeScript AND browser bundles
@@ -316,8 +316,8 @@ After any build, verify:
 2. **Browser bundles exist:**
 
    ```bash
-   ls packages/core/dist/hyperfixi-*.js
-   ls packages/i18n/dist/hyperfixi-i18n*.js
+   ls packages/core/dist/lokascript-*.js
+   ls packages/i18n/dist/lokascript-i18n*.js
    ```
 
 3. **No build errors in logs**

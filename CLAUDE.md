@@ -21,7 +21,7 @@ packages/
 │   │   ├── commands/         # 43 command implementations
 │   │   ├── commands-v2/      # Standalone command modules (tree-shakeable)
 │   │   └── expressions/      # 6 expression categories (references, logical, etc.)
-│   └── dist/                 # Built bundles (hyperfixi-browser.js)
+│   └── dist/                 # Built bundles (lokascript-browser.js)
 │
 ├── i18n/           # Internationalization (23 languages + grammar transformation)
 │   ├── src/
@@ -521,22 +521,22 @@ lokascript({
 
 | Bundle                                          | Global                  | Size (gzip) | Use Case                 |
 | ----------------------------------------------- | ----------------------- | ----------- | ------------------------ |
-| `packages/core/dist/hyperfixi-browser.js`       | `window.hyperfixi`      | 203.5 KB    | Full bundle with parser  |
+| `packages/core/dist/lokascript-browser.js`      | `window.lokascript`     | 203.5 KB    | Full bundle with parser  |
 | `packages/core/dist/lokascript-multilingual.js` | `window.lokascript`     | 64.3 KB     | Multilingual (no parser) |
 | `packages/i18n/dist/lokascript-i18n.min.js`     | `window.LokaScriptI18n` | 35.0 KB     | Grammar transformation   |
 
-> **Note**: `lokascript-multilingual.js` and `lokascript-i18n.min.js` still use old naming and will be renamed to `hyperfixi-*` in a future release.
+> **Note**: Backward-compatible aliases (`hyperfixi-*.js`) are available in v1.1.0 but will be removed in v2.0.0. See [MIGRATION.md](MIGRATION.md).
 
 ### Lite Bundles (Size-Optimized)
 
 For projects prioritizing bundle size over features:
 
-| Bundle                         | Size (gzip) | Commands  | Features                                      |
-| ------------------------------ | ----------- | --------- | --------------------------------------------- |
-| `hyperfixi-lite.js`            | 1.9 KB      | 8         | Regex parser, basic commands                  |
-| `hyperfixi-lite-plus.js`       | 2.6 KB      | 14        | Regex parser, more commands, i18n aliases     |
-| `hyperfixi-hybrid-complete.js` | 7.3 KB      | 21+blocks | Full AST parser, expressions, event modifiers |
-| `hyperfixi-hybrid-hx.js`       | 9.7 KB      | 21+blocks | hybrid-complete + htmx attribute support      |
+| Bundle                          | Size (gzip) | Commands  | Features                                      |
+| ------------------------------- | ----------- | --------- | --------------------------------------------- |
+| `lokascript-lite.js`            | 1.9 KB      | 8         | Regex parser, basic commands                  |
+| `lokascript-lite-plus.js`       | 2.6 KB      | 14        | Regex parser, more commands, i18n aliases     |
+| `lokascript-hybrid-complete.js` | 7.3 KB      | 21+blocks | Full AST parser, expressions, event modifiers |
+| `lokascript-hybrid-hx.js`       | 9.7 KB      | 21+blocks | hybrid-complete + htmx attribute support      |
 
 **Hybrid Complete** (~85% hyperscript coverage) is recommended - it supports:
 
@@ -676,7 +676,7 @@ For developers writing hyperscript in their native language:
 ### Full Bundle Usage
 
 ```html
-<script src="hyperfixi-browser.js"></script>
+<script src="lokascript-browser.js"></script>
 <script src="lokascript-i18n.min.js"></script>
 <script src="lokascript-semantic.browser.global.js"></script>
 <script>
