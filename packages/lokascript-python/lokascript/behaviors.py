@@ -42,7 +42,7 @@ class BehaviorRegistry:
     using get_all() or get_script_tag().
 
     Example:
-        from hyperfixi import behavior
+        from lokascript import behavior
 
         @behavior("Removable")
         def removable():

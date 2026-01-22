@@ -2,7 +2,7 @@
 
 import pytest
 
-from hyperfixi.core import hs, hs_attr, escape_hyperscript
+from lokascript.core import hs, hs_attr, escape_hyperscript
 
 
 class TestHs:

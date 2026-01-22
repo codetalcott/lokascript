@@ -58,7 +58,7 @@ def hs(script: str, *, validate: bool = True, **variables: Any) -> str:
 
     # Basic validation if enabled
     if validate:
-        from hyperfixi.validator import validate_basic
+        from lokascript.validator import validate_basic
         validation = validate_basic(result)
         if not validation.valid:
             # In debug mode, we could raise an error

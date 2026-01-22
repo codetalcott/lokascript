@@ -13,7 +13,7 @@ import json
 import subprocess
 from typing import TYPE_CHECKING
 
-from hyperfixi.validator import ValidationResult, validate_basic
+from lokascript.validator import ValidationResult, validate_basic
 
 if TYPE_CHECKING:
     pass
@@ -34,7 +34,7 @@ def validate_full(script: str, *, timeout: float = 5.0) -> ValidationResult:
     """
     try:
         result = subprocess.run(
-            ["npx", "hyperfixi", "validate", "--json"],
+            ["npx", "lokascript", "validate", "--json"],
             input=script,
             capture_output=True,
             text=True,
@@ -97,7 +97,7 @@ def is_cli_available() -> bool:
     """
     try:
         result = subprocess.run(
-            ["npx", "hyperfixi", "--version"],
+            ["npx", "lokascript", "--version"],
             capture_output=True,
             text=True,
             timeout=5.0,

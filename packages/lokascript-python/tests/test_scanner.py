@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from hyperfixi.scanner import (
+from lokascript.scanner import (
     Scanner,
     FileUsage,
     AggregatedUsage,

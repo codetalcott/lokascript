@@ -36,8 +36,8 @@ from typing import TYPE_CHECKING
 from django import template
 from django.utils.safestring import mark_safe
 
-from hyperfixi.behaviors import BehaviorRegistry
-from hyperfixi.validator import validate_basic
+from lokascript.behaviors import BehaviorRegistry
+from lokascript.validator import validate_basic
 
 if TYPE_CHECKING:
     from django.template import Context

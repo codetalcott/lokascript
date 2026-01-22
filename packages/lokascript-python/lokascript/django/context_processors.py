@@ -8,7 +8,7 @@ Usage in settings.py:
         'OPTIONS': {
             'context_processors': [
                 # ...
-                'hyperfixi.django.context_processors.hyperscript',
+                'lokascript.django.context_processors.hyperscript',
             ],
         },
     }]
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hyperfixi.core import hs
+from lokascript.core import hs
 
 if TYPE_CHECKING:
     from django.http import HttpRequest

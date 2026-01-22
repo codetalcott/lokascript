@@ -1,6 +1,6 @@
 import 'hyperfixi';
 
 console.log('=== Vite Plugin Test ===');
-console.log('hyperfixi loaded:', window.hyperfixi);
-console.log('Commands in bundle:', window.hyperfixi?.commands);
-console.log('Parser:', window.hyperfixi?.parserName);
+console.log('hyperfixi loaded:', window.lokascript);
+console.log('Commands in bundle:', window.lokascript?.commands);
+console.log('Parser:', window.lokascript?.parserName);

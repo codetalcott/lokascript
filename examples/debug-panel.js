@@ -448,9 +448,9 @@
    * Update statistics display
    */
   function updateStats() {
-    if (typeof window.hyperfixi === 'undefined' || !window.hyperfixi.semanticDebug) return;
+    if (typeof window.lokascript === 'undefined' || !window.lokascript.semanticDebug) return;
 
-    const stats = window.hyperfixi.semanticDebug.getStats();
+    const stats = window.lokascript.semanticDebug.getStats();
 
     const totalEl = document.getElementById('hf-stat-total');
     const semanticEl = document.getElementById('hf-stat-semantic');
@@ -499,22 +499,22 @@
    */
   function init() {
     // Wait for hyperfixi to be available
-    if (typeof window.hyperfixi === 'undefined') {
+    if (typeof window.lokascript === 'undefined') {
       setTimeout(init, 100);
       return;
     }
 
     // Enable debug events (if semantic debugging is available)
-    if (window.hyperfixi.semanticDebug?.enable) {
-      window.hyperfixi.semanticDebug.enable();
+    if (window.lokascript.semanticDebug?.enable) {
+      window.lokascript.semanticDebug.enable();
     }
 
     // Listen for future parse events
     window.addEventListener('hyperfixi:semantic:parse', handleParseEvent);
 
     // Replay any events that occurred before panel initialized
-    if (window.hyperfixi.semanticDebug?.getEventHistory) {
-      const history = window.hyperfixi.semanticDebug.getEventHistory();
+    if (window.lokascript.semanticDebug?.getEventHistory) {
+      const history = window.lokascript.semanticDebug.getEventHistory();
       history.forEach(event => {
         eventLog.unshift(event);
       });
@@ -566,8 +566,8 @@
 
     clear() {
       eventLog = [];
-      if (window.hyperfixi?.semanticDebug) {
-        window.hyperfixi.semanticDebug.resetStats();
+      if (window.lokascript?.semanticDebug) {
+        window.lokascript.semanticDebug.resetStats();
       }
       updateLog();
       updateStats();

@@ -6,7 +6,7 @@ DEBUG = True
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
-    "hyperfixi.django",
+    "lokascript.django",
 ]
 
 DATABASES = {

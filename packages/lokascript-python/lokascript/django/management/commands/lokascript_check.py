@@ -16,7 +16,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import engines
 
-from hyperfixi.validator import validate, validate_basic
+from lokascript.validator import validate, validate_basic
 
 if TYPE_CHECKING:
     from argparse import ArgumentParser

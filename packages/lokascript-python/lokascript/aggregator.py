@@ -4,8 +4,8 @@ Hyperscript usage aggregator.
 Collects and aggregates hyperscript usage across all scanned files.
 
 Example:
-    from hyperfixi.scanner import Scanner
-    from hyperfixi.aggregator import Aggregator
+    from lokascript.scanner import Scanner
+    from lokascript.aggregator import Aggregator
 
     scanner = Scanner()
     aggregator = Aggregator()
@@ -22,7 +22,7 @@ Example:
 
 from __future__ import annotations
 
-from hyperfixi.scanner import FileUsage, AggregatedUsage
+from lokascript.scanner import FileUsage, AggregatedUsage
 
 
 class Aggregator:

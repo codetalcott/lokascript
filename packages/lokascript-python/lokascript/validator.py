@@ -155,7 +155,7 @@ def validate(script: str, *, full: bool = False) -> ValidationResult:
     """
     if full:
         try:
-            from hyperfixi.cli_validator import validate_full
+            from lokascript.cli_validator import validate_full
 
             return validate_full(script)
         except ImportError:

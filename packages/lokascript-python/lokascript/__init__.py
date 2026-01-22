@@ -5,11 +5,11 @@ Provides template tags, view helpers, validation, and template scanning
 for hyperscript in Python web frameworks.
 """
 
-from hyperfixi.core import hs
-from hyperfixi.validator import validate, validate_basic, ValidationResult
-from hyperfixi.behaviors import behavior, BehaviorRegistry
-from hyperfixi.scanner import Scanner, FileUsage, AggregatedUsage
-from hyperfixi.aggregator import Aggregator
+from lokascript.core import hs
+from lokascript.validator import validate, validate_basic, ValidationResult
+from lokascript.behaviors import behavior, BehaviorRegistry
+from lokascript.scanner import Scanner, FileUsage, AggregatedUsage
+from lokascript.aggregator import Aggregator
 
 __version__ = "0.1.0"
 __all__ = [

@@ -2,7 +2,7 @@
 
 import pytest
 
-from hyperfixi.validator import (
+from lokascript.validator import (
     ValidationResult,
     validate_basic,
     validate,

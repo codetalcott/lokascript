@@ -5,7 +5,7 @@ Scans Django templates and other files for hyperscript usage, detecting
 which commands, blocks, and positional expressions are used.
 
 Example:
-    from hyperfixi.scanner import Scanner
+    from lokascript.scanner import Scanner
 
     scanner = Scanner()
     usage = scanner.scan_file(Path("templates/base.html"))

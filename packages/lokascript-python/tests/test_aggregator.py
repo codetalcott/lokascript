@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from hyperfixi.scanner import FileUsage
-from hyperfixi.aggregator import Aggregator
+from lokascript.scanner import FileUsage
+from lokascript.aggregator import Aggregator
 
 
 class TestAggregator:

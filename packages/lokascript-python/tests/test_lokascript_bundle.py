@@ -49,7 +49,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test JSON output contains expected fields."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             stdout=out,
@@ -64,7 +64,7 @@ class TestHyperfixiBundleCommand(TestCase):
         assert "name" in config
         assert "commands" in config
         assert "globalName" in config
-        assert config["globalName"] == "hyperfixi"
+        assert config["globalName"] == "lokascript"
         assert "toggle" in config["commands"]
         assert "add" in config["commands"]
         assert "remove" in config["commands"]
@@ -73,7 +73,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test summary output is human-readable."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="summary",
             stdout=out,
@@ -89,7 +89,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test JS config output is valid JavaScript."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="js-config",
             stdout=out,
@@ -106,7 +106,7 @@ class TestHyperfixiBundleCommand(TestCase):
             output_path = Path(outdir) / "bundle-config.json"
             out = StringIO()
             call_command(
-                "hyperfixi_bundle",
+                "lokascript_bundle",
                 str(self.template_dir),
                 output=str(output_path),
                 stdout=out,
@@ -120,7 +120,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test --extra-commands adds commands."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             extra_commands="fetch,wait",
@@ -139,7 +139,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test --extra-blocks adds blocks."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             extra_blocks="if,repeat",
@@ -159,7 +159,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test --htmx adds htmxIntegration."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             htmx=True,
@@ -177,7 +177,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test --positional adds positionalExpressions."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             positional=True,
@@ -196,7 +196,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test HYPERFIXI settings are respected."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             stdout=out,
@@ -220,7 +220,7 @@ class TestHyperfixiBundleCommand(TestCase):
 
             out = StringIO()
             call_command(
-                "hyperfixi_bundle",
+                "lokascript_bundle",
                 empty_dir,
                 stdout=out,
             )
@@ -232,7 +232,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test --name sets bundle name."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             name="MyCustomBundle",
@@ -255,7 +255,7 @@ class TestHyperfixiBundleCommand(TestCase):
 
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             stdout=out,
@@ -278,7 +278,7 @@ class TestHyperfixiBundleCommand(TestCase):
 
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             stdout=out,
@@ -295,7 +295,7 @@ class TestHyperfixiBundleCommand(TestCase):
         """Test that _meta includes file count."""
         out = StringIO()
         call_command(
-            "hyperfixi_bundle",
+            "lokascript_bundle",
             str(self.template_dir),
             format="json",
             stdout=out,

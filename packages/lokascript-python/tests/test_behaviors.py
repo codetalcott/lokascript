@@ -2,7 +2,7 @@
 
 import pytest
 
-from hyperfixi.behaviors import Behavior, BehaviorRegistry, behavior
+from lokascript.behaviors import Behavior, BehaviorRegistry, behavior
 
 
 class TestBehavior:

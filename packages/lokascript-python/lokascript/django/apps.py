@@ -8,7 +8,7 @@ from django.apps import AppConfig
 class HyperfixiConfig(AppConfig):
     """Configuration for the hyperfixi Django app."""
 
-    name = "hyperfixi.django"
+    name = "lokascript.django"
     verbose_name = "HyperFixi"
     default_auto_field = "django.db.models.BigAutoField"
 
@@ -20,7 +20,7 @@ class HyperfixiConfig(AppConfig):
         """
         from django.conf import settings
 
-        from hyperfixi.behaviors import BehaviorRegistry
+        from lokascript.behaviors import BehaviorRegistry
 
         # Load behaviors from settings if configured
         hyperfixi_settings = getattr(settings, "HYPERFIXI", {})

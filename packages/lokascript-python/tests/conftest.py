@@ -2,7 +2,7 @@
 
 import pytest
 
-from hyperfixi.behaviors import BehaviorRegistry
+from lokascript.behaviors import BehaviorRegistry
 
 
 @pytest.fixture(autouse=True)

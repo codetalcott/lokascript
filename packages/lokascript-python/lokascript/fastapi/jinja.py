@@ -6,7 +6,7 @@ Provides template functions for hyperscript in FastAPI/Starlette applications.
 Usage:
     from fastapi import FastAPI
     from fastapi.templating import Jinja2Templates
-    from hyperfixi.fastapi import setup_jinja
+    from lokascript.fastapi import setup_jinja
 
     app = FastAPI()
     templates = Jinja2Templates(directory="templates")
@@ -21,9 +21,9 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING, Any
 
-from hyperfixi.behaviors import BehaviorRegistry
-from hyperfixi.core import hs as hs_core
-from hyperfixi.validator import validate_basic
+from lokascript.behaviors import BehaviorRegistry
+from lokascript.core import hs as hs_core
+from lokascript.validator import validate_basic
 
 if TYPE_CHECKING:
     from jinja2 import Environment
@@ -128,7 +128,7 @@ def setup_jinja(env: Environment) -> None:
 
     Example:
         from fastapi.templating import Jinja2Templates
-        from hyperfixi.fastapi import setup_jinja
+        from lokascript.fastapi import setup_jinja
 
         templates = Jinja2Templates(directory="templates")
         setup_jinja(templates.env)
