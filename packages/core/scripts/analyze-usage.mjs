@@ -19,14 +19,14 @@ const __dirname = path.dirname(__filename);
 const BUNDLES = {
   minimal: {
     name: 'Minimal',
-    file: 'hyperfixi-browser-minimal.js',
+    file: 'lokascript-browser-minimal.js',
     size: '~60KB gzipped',
     commands: ['add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log'],
     description: 'Essential commands for simple interactive UIs'
   },
   standard: {
     name: 'Standard',
-    file: 'hyperfixi-browser-standard.js',
+    file: 'lokascript-browser-standard.js',
     size: '~120KB gzipped',
     commands: [
       'add', 'remove', 'toggle', 'put', 'set', 'if', 'send', 'log',
@@ -37,7 +37,7 @@ const BUNDLES = {
   },
   full: {
     name: 'Full',
-    file: 'hyperfixi-browser.js',
+    file: 'lokascript-browser.js',
     size: '~192KB gzipped',
     commands: '*', // All commands
     description: 'Complete command set for maximum compatibility'

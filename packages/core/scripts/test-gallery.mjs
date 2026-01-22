@@ -24,7 +24,7 @@ const BASE_URL = 'http://127.0.0.1:3000';
 // Bundle configurations with expected capabilities
 const BUNDLES = {
   'lite': {
-    file: 'hyperfixi-lite.js',
+    file: 'lokascript-lite.js',
     size: '1.9 KB',
     features: {
       toggle: true,
@@ -38,7 +38,7 @@ const BUNDLES = {
     }
   },
   'lite-plus': {
-    file: 'hyperfixi-lite-plus.js',
+    file: 'lokascript-lite-plus.js',
     size: '2.6 KB',
     features: {
       toggle: true,
@@ -52,7 +52,7 @@ const BUNDLES = {
     }
   },
   'hybrid-complete': {
-    file: 'hyperfixi-hybrid-complete.js',
+    file: 'lokascript-hybrid-complete.js',
     size: '6.7 KB',
     features: {
       toggle: true,
@@ -66,7 +66,7 @@ const BUNDLES = {
     }
   },
   'browser': {
-    file: 'hyperfixi-browser.js',
+    file: 'lokascript-browser.js',
     size: '224 KB',
     features: {
       toggle: true,

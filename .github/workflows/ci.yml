@@ -281,7 +281,7 @@ jobs:
           echo "| Bundle | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|---------|" >> $GITHUB_STEP_SUMMARY
 
-          for file in packages/core/dist/hyperfixi-*.js; do
+          for file in packages/core/dist/lokascript-*.js; do
             if [[ -f "$file" && ! "$file" == *.map ]]; then
               filename=$(basename "$file")
               size=$(wc -c < "$file" | tr -d ' ')
@@ -314,8 +314,8 @@ jobs:
           MAX_HYBRID_COMPLETE=15000   # 15KB gzipped
           MAX_BROWSER_FULL=150000     # 150KB gzipped
 
-          hybrid_file="packages/core/dist/hyperfixi-hybrid-complete.js"
-          browser_file="packages/core/dist/hyperfixi-browser.js"
+          hybrid_file="packages/core/dist/lokascript-hybrid-complete.js"
+          browser_file="packages/core/dist/lokascript-browser.js"
 
           if [[ -f "$hybrid_file" ]]; then
             hybrid_size=$(gzip -c "$hybrid_file" | wc -c | tr -d ' ')
