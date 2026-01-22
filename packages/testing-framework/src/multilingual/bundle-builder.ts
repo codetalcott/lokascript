@@ -27,15 +27,28 @@ const PREDEFINED_BUNDLES = new Map<string, LanguageCode[]>([
   ['browser-ar', ['ar']], // Arabic only
   ['browser-ko', ['ko']], // Korean only
   ['browser-zh', ['zh']], // Chinese only
+  ['browser-qu', ['qu']], // Quechua only
+  ['browser-sw', ['sw']], // Swahili only
+  ['browser-tr', ['tr']], // Turkish only
+  ['browser-pt', ['pt']], // Portuguese only
+  ['browser-fr', ['fr']], // French only
+  ['browser-de', ['de']], // German only
+  ['browser-id', ['id']], // Indonesian only
+  ['browser-core', []], // Core bundle (language-agnostic)
+  ['browser-lazy', []], // Lazy-loading bundle
+  ['browser-en-tr', ['en', 'tr']], // English + Turkish
+  ['browser-es-en', ['es', 'en']], // Spanish + English
 ]);
 
 /**
  * Get bundle path in semantic package
  */
 function getBundlePath(bundleName: string): string {
-  // Resolve from this file's location: testing-framework/src/multilingual -> project root
-  const projectRoot = join(__dirname, '../../../..');
-  const semanticRoot = join(projectRoot, 'packages/semantic');
+  // Resolve from this file's location: testing-framework/src/multilingual
+  // __dirname = /path/to/hyperfixi/packages/testing-framework/src/multilingual
+  // Go up 3 levels to project root, then into packages/semantic
+  const projectRoot = join(__dirname, '../../..');
+  const semanticRoot = join(projectRoot, 'semantic');
   // Bundle naming: browser-{group}.{group}.global.js
   const group = bundleName.replace('browser-', '');
   return join(semanticRoot, 'dist', `${bundleName}.${group}.global.js`);

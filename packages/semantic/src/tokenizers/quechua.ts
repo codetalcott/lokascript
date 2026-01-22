@@ -82,6 +82,7 @@ const QUECHUA_EXTRAS: KeywordEntry[] = [
 
   // Events
   { native: 'llikllay', normalized: 'click' },
+  { native: 'ñitiy', normalized: 'click' },
   { native: 'click', normalized: 'click' },
   { native: 'yaykuy', normalized: 'input' },
   { native: 'llave uray', normalized: 'keydown' },
@@ -172,8 +173,18 @@ export class QuechuaTokenizer extends BaseTokenizer {
 
         const selectorToken = this.trySelector(input, pos);
         if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
+          // Check if selector has a Quechua suffix attached
+          const selectorWithSuffix = this.splitSelectorSuffix(selectorToken);
+          if (selectorWithSuffix.length === 2) {
+            // Selector + suffix: push both tokens
+            tokens.push(selectorWithSuffix[0]);
+            tokens.push(selectorWithSuffix[1]);
+            pos = selectorWithSuffix[1].position.end;
+          } else {
+            // Just selector: push as-is
+            tokens.push(selectorToken);
+            pos = selectorToken.position.end;
+          }
           continue;
         }
       }
@@ -270,6 +281,43 @@ export class QuechuaTokenizer extends BaseTokenizer {
       }
     }
     return null;
+  }
+
+  /**
+   * Split a selector token if it has a Quechua suffix attached.
+   * E.g., ".openta" -> [".open", "-ta"]
+   * Returns array with 1 token (no suffix) or 2 tokens (selector + suffix)
+   */
+  private splitSelectorSuffix(selectorToken: LanguageToken): LanguageToken[] {
+    const text = selectorToken.value;
+
+    // Check if selector ends with any known suffix
+    for (const suffix of SUFFIXES) {
+      if (text.toLowerCase().endsWith(suffix)) {
+        const baseEnd = text.length - suffix.length;
+        const base = text.slice(0, baseEnd);
+        const suffixPart = text.slice(baseEnd);
+
+        // Create base selector token
+        const baseToken = createToken(
+          base,
+          'selector',
+          createPosition(selectorToken.position.start, selectorToken.position.start + baseEnd)
+        );
+
+        // Create suffix particle token
+        const suffixToken = createToken(
+          suffixPart,
+          'particle',
+          createPosition(selectorToken.position.start + baseEnd, selectorToken.position.end)
+        );
+
+        return [baseToken, suffixToken];
+      }
+    }
+
+    // No suffix found, return original token
+    return [selectorToken];
   }
 
   private extractWord(input: string, startPos: number): LanguageToken | null {

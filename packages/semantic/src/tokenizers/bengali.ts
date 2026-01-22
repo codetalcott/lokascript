@@ -176,22 +176,8 @@ export class BengaliTokenizer extends BaseTokenizer {
         const startPos = pos;
         let word = '';
 
-        while (pos < input.length && (isBengali(input[pos]) || input[pos] === ' ')) {
-          if (input[pos] === ' ') {
-            // Check if next char is Bengali (compound word)
-            if (pos + 1 < input.length && isBengali(input[pos + 1])) {
-              const rest = input.slice(pos);
-              const compound = [' করুন', ' ফেলুন', ' দিন', ' না হলে', ' যে যান'].find(c =>
-                rest.startsWith(c)
-              );
-              if (compound) {
-                word += compound;
-                pos += compound.length;
-                continue;
-              }
-            }
-            break;
-          }
+        // Extract word without including spaces (let parser handle multi-word patterns)
+        while (pos < input.length && isBengali(input[pos])) {
           word += input[pos];
           pos++;
         }
