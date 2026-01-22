@@ -136,6 +136,9 @@ test-ast-check.js
 /tools/debug/
 /console-logs/
 
+# Local documentation (not tracked)
+/docs/MULTILINGUAL_BEHAVIORS_FEASIBILITY.md
+
 # VitePress
 **/.vitepress/cache/
 **/.vitepress/dist/
