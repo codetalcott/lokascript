@@ -99,7 +99,7 @@ const PARTICLE_ROLES = new Map<string, ParticleMetadata>([
   ['まで', { role: 'destination', confidence: 0.75, description: 'until/boundary marker' }],
   ['へ', { role: 'destination', confidence: 0.9, description: 'direction marker' }],
   ['と', { role: 'style', confidence: 0.7, description: 'with/and marker' }],
-  ['の', { role: 'patient', confidence: 0.6, description: 'possessive marker' }],
+  ['の', { role: 'destination', confidence: 0.75, description: 'possessive/destination marker' }],
   ['が', { role: 'agent', confidence: 0.85, description: 'subject marker' }],
   ['は', { role: 'agent', confidence: 0.75, description: 'topic marker' }],
   ['も', { role: 'patient', confidence: 0.65, description: 'also/too marker' }],
@@ -165,6 +165,8 @@ const JAPANESE_EXTRAS: KeywordEntry[] = [
   { native: 'もし', normalized: 'if' }, // Starts with particle も, needs explicit entry
   { native: 'ならば', normalized: 'then' },
   { native: 'なら', normalized: 'then' },
+  { native: 'それから', normalized: 'then' }, // Chain connector
+  { native: 'そして', normalized: 'and' }, // Alternative connector
 
   // Time units
   { native: '秒', normalized: 's' },

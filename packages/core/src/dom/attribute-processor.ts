@@ -104,6 +104,15 @@ export class AttributeProcessor {
     });
     await Promise.all(processPromises);
     debug.parse('ATTR: All elements processed');
+
+    // Dispatch completion event for testing
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('lokascript:initialized', {
+          detail: { scriptsProcessed: scriptTags.length, elementsProcessed: elements.length },
+        })
+      );
+    }
   }
 
   /**

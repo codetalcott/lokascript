@@ -286,5 +286,15 @@
   <!-- Load LokaScript and Behaviors -->
   <script src="../../packages/core/dist/lokascript-browser.js"></script>
   <script src="../../packages/behaviors/dist/all.browser.global.js"></script>
+
+  <!-- Debug logging for tests -->
+  <script>
+    window.__hyperfixi_debug = [];
+
+    // Listen for actual initialization completion
+    window.addEventListener('lokascript:initialized', () => {
+      window.__hyperfixi_debug.push('init() completed');
+    });
+  </script>
 </body>
 </html>

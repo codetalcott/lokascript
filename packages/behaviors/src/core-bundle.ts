@@ -21,6 +21,6 @@ export async function registerCore(hyperfixi?: LokaScriptInstance): Promise<void
 }
 
 // Auto-register when loaded in browser
-if (typeof window !== 'undefined' && (window as any).hyperfixi) {
+if (typeof window !== 'undefined' && (window as any).lokascript) {
   registerCore().catch(console.error);
 }

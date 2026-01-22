@@ -1,5 +1,5 @@
 /**
- * Prism.js + prism-hyperfixi Loader for HyperFixi Examples Gallery
+ * Prism.js + prism-hyperscript-i18n Loader for LokaScript Examples Gallery
  *
  * Auto-highlights code blocks with Prism's hyperscript language support.
  * Handles both pure hyperscript and HTML with embedded hyperscript.
@@ -14,7 +14,7 @@
 
   const PRISM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js';
 
-  // Calculate path to prism-hyperfixi based on current location
+  // Calculate path to prism-hyperscript-i18n based on current location
   function getPrismHyperfixiPath() {
     const path = window.location.pathname;
 
@@ -24,18 +24,18 @@
 
       if (depth === 0) {
         // examples/index.html
-        return '../packages/developer-tools/dist/prism-hyperfixi/browser.mjs';
+        return '../packages/developer-tools/dist/prism-hyperscript-i18n/browser.mjs';
       } else if (depth === 1) {
         // examples/basics/01-hello.html
-        return '../../packages/developer-tools/dist/prism-hyperfixi/browser.mjs';
+        return '../../packages/developer-tools/dist/prism-hyperscript-i18n/browser.mjs';
       } else {
         // deeper nesting
-        return '../'.repeat(depth + 1) + 'packages/developer-tools/dist/prism-hyperfixi/browser.mjs';
+        return '../'.repeat(depth + 1) + 'packages/developer-tools/dist/prism-hyperscript-i18n/browser.mjs';
       }
     }
 
     // Fallback
-    return '/packages/developer-tools/dist/prism-hyperfixi/browser.mjs';
+    return '/packages/developer-tools/dist/prism-hyperscript-i18n/browser.mjs';
   }
 
   // Load Prism from CDN
@@ -53,7 +53,7 @@
     });
   }
 
-  // Load prism-hyperfixi plugin
+  // Load prism-hyperscript-i18n plugin
   function loadPrismHyperfixi() {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
@@ -63,7 +63,7 @@
         // Brief delay to ensure registration completes
         setTimeout(resolve, 50);
       };
-      script.onerror = () => reject(new Error('Failed to load prism-hyperfixi'));
+      script.onerror = () => reject(new Error('Failed to load prism-hyperscript-i18n'));
       document.head.appendChild(script);
     });
   }
@@ -108,7 +108,7 @@
     const contentType = detectContentType(text);
 
     if (contentType === 'hyperscript' && window.Prism.languages.hyperscript) {
-      // Pure hyperscript - highlight with prism-hyperfixi
+      // Pure hyperscript - highlight with prism-hyperscript-i18n
       codeElement.textContent = text;
       codeElement.classList.add('language-hyperscript');
       window.Prism.highlightElement(codeElement);
@@ -130,12 +130,12 @@
       window.Prism.highlightElement(codeElement);
 
       // Post-process: enhance _="..." attribute values with hyperscript highlighting
-      enhanceHyperfixiAttributes(codeElement);
+      enhanceHyperscriptAttributes(codeElement);
     }
   }
 
   // Enhance _="..." attribute values in already-highlighted HTML
-  function enhanceHyperfixiAttributes(element) {
+  function enhanceHyperscriptAttributes(element) {
     if (!window.Prism.languages.hyperscript) return;
 
     // Find string tokens that contain hyperscript

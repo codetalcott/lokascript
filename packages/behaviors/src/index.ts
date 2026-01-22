@@ -192,23 +192,23 @@ export async function registerAll(hyperfixi?: LokaScriptInstance): Promise<void>
 export let ready: Promise<void> | null = null;
 
 // Auto-register all behaviors when loaded in browser with hyperfixi available
-if (typeof window !== 'undefined' && (window as any).hyperfixi) {
+if (typeof window !== 'undefined' && (window as any).lokascript) {
   ready = registerAll();
 
-  (window as any).__hyperfixi_behaviors_ready = ready;
+  (window as any).__lokascript_behaviors_ready = ready;
 
   ready.then(() => {
-    const hyperfixi = (window as any).hyperfixi;
-    const savedPromise = (window as any).__hyperfixi_behaviors_ready;
-    delete (window as any).__hyperfixi_behaviors_ready;
+    const hyperfixi = (window as any).lokascript;
+    const savedPromise = (window as any).__lokascript_behaviors_ready;
+    delete (window as any).__lokascript_behaviors_ready;
 
     if (hyperfixi.attributeProcessor?.scanAndProcessAll) {
       hyperfixi.attributeProcessor.scanAndProcessAll().finally(() => {
-        (window as any).__hyperfixi_behaviors_ready = savedPromise;
+        (window as any).__lokascript_behaviors_ready = savedPromise;
       });
     } else if (hyperfixi.processNode) {
       hyperfixi.processNode(document);
-      (window as any).__hyperfixi_behaviors_ready = savedPromise;
+      (window as any).__lokascript_behaviors_ready = savedPromise;
     }
   });
 }

@@ -23,7 +23,7 @@ export const toggleableMetadata = toggleableSchema;
  * Register the Toggleable behavior with HyperFixi.
  */
 export async function registerToggleable(hyperfixi?: LokaScriptInstance): Promise<void> {
-  const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).hyperfixi : null);
+  const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).lokascript : null);
 
   if (!hf) {
     throw new Error(
@@ -31,9 +31,9 @@ export async function registerToggleable(hyperfixi?: LokaScriptInstance): Promis
     );
   }
 
-  const result = hf.compile(toggleableSchema.source, { disableSemanticParsing: true });
+  const result = hf.compile(toggleableSchema.source, { traditional: true });
 
-  if (!result.success) {
+  if (!result.ok) {
     throw new Error(`Failed to compile Toggleable behavior: ${JSON.stringify(result.errors)}`);
   }
 
@@ -42,7 +42,7 @@ export async function registerToggleable(hyperfixi?: LokaScriptInstance): Promis
 }
 
 // Auto-register when loaded as a script tag
-if (typeof window !== 'undefined' && (window as any).hyperfixi) {
+if (typeof window !== 'undefined' && (window as any).lokascript) {
   registerToggleable().catch(console.error);
 }
 
