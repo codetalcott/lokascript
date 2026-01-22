@@ -19,7 +19,23 @@ import type {
 import { ASTVisitor, visit, findNodes, calculateComplexity } from '@lokascript/ast-toolkit';
 import type { ASTNode } from '@lokascript/ast-toolkit';
 
-// Core compilation result interface (compatible with @lokascript/core)
+// Core compilation result interface (matches @lokascript/core API v2)
+interface CoreCompileResult {
+  ok: boolean;
+  ast?: ASTNode;
+  errors?: Array<{
+    message: string;
+    line?: number;
+    column?: number;
+  }>;
+  meta?: {
+    parser: string;
+    language: string;
+    timeMs: number;
+  };
+}
+
+// Internal interface for our compiler
 interface CoreCompilationResult {
   success: boolean;
   ast?: ASTNode;
@@ -35,7 +51,7 @@ interface CoreCompilationResult {
 
 // Optional: Dynamic import of @lokascript/core for AST-based compilation
 // This allows the package to work without requiring core to be built
-let hyperscriptCore: { compile: (code: string) => CoreCompilationResult } | null = null;
+let hyperscriptCore: { compileSync: (code: string) => CoreCompileResult } | null = null;
 
 async function tryLoadCore(): Promise<boolean> {
   if (hyperscriptCore !== null) return true;
@@ -196,7 +212,22 @@ export class HyperscriptCompiler {
     }
 
     try {
-      return hyperscriptCore.compile(script);
+      // Use the new API v2 (compileSync returns {ok, ast?, errors?, meta})
+      const result = hyperscriptCore.compileSync(script);
+
+      // Map to our internal interface
+      return {
+        success: result.ok,
+        ast: result.ast,
+        errors: (result.errors || []).map(e => ({
+          name: 'ParseError',
+          message: e.message,
+          line: e.line || 1,
+          column: e.column || 1,
+        })),
+        tokens: [],
+        compilationTime: result.meta?.timeMs || 0,
+      };
     } catch (error) {
       // If parsing throws, return a failure result
       return {
@@ -365,7 +396,21 @@ export class HyperscriptCompiler {
 
     // Calculate complexity using ast-toolkit
     const complexityMetrics = calculateComplexity(ast);
-    metadata.complexity = Math.max(1, complexityMetrics.cyclomatic);
+    let astComplexity = Math.max(1, complexityMetrics.cyclomatic);
+
+    // Also calculate complexity from script text (hyperscript-specific constructs)
+    let textComplexity =
+      metadata.events.length +
+      metadata.commands.length +
+      (metadata.selectors.length > 0 ? 1 : 0) +
+      (script.includes('if ') || script.includes('if\n') ? 2 : 0) +
+      (script.includes('else') ? 1 : 0) +
+      (script.includes('repeat') ? 2 : 0) +
+      (script.includes('wait') ? 1 : 0) +
+      (script.includes('fetch') ? 1 : 0);
+
+    // Use the higher of the two complexity measures
+    metadata.complexity = Math.max(1, astComplexity, textComplexity);
 
     return metadata;
   }

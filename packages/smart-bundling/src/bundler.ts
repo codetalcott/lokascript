@@ -429,7 +429,7 @@ export class SmartBundler {
 
     // Add minification if enabled
     if (config.output.minify) {
-      const { terser } = await import('rollup-plugin-terser');
+      const terser = (await import('@rollup/plugin-terser')).default;
       plugins.push(terser());
     }
 

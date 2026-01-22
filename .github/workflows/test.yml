@@ -79,6 +79,12 @@ jobs:
       - name: Build i18n package (dependency)
         run: npm run build --prefix packages/i18n
 
+      - name: Build core package (dependency of testing-framework)
+        run: npm run build --prefix packages/core
+
+      - name: Build patterns-reference package (dependency of testing-framework)
+        run: npm run build --prefix packages/patterns-reference
+
       - name: Populate patterns database
         run: npm run populate --prefix packages/patterns-reference
 
@@ -140,6 +146,12 @@ jobs:
 
       - name: Build i18n package (dependency)
         run: npm run build --prefix packages/i18n
+
+      - name: Build core package (dependency of patterns-reference)
+        run: npm run build --prefix packages/core
+
+      - name: Build patterns-reference package (dependency of ast-toolkit)
+        run: npm run build --prefix packages/patterns-reference
 
       - name: Build ast-toolkit package (dependency of developer-tools)
         run: npm run build --prefix packages/ast-toolkit
