@@ -226,6 +226,7 @@ jobs:
 
       - name: Build browser bundles for tests
         run: |
+          npm run build:browser --prefix packages/core
           npm run build:browser:hybrid-complete --prefix packages/core
           npm run build:browser:classic-i18n --prefix packages/core
           npm run build:browser:multilingual --prefix packages/core
