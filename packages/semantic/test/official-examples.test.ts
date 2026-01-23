@@ -314,10 +314,10 @@ describe('Multilingual Equivalents of Official Examples', () => {
       expect(node.action).toBe('toggle');
     });
 
-    it('Turkish: .red değiştir', () => {
-      expect(canParse('.red değiştir', 'tr')).toBe(true);
+    it('Turkish: .red i değiştir', () => {
+      expect(canParse('.red i değiştir', 'tr')).toBe(true);
 
-      const node = parse('.red değiştir', 'tr');
+      const node = parse('.red i değiştir', 'tr');
       expect(node.action).toBe('toggle');
     });
   });
@@ -724,11 +724,11 @@ describe('Newly Wired Commands', () => {
       expect(node.roles.get('patient')?.value).toBe(5);
     });
 
-    it('Japanese: :x に 5 を 設定', () => {
-      // Generated pattern: {destination} に {patient} を 設定
-      expect(canParse(':x に 5 を 設定', 'ja')).toBe(true);
+    it('Japanese: :x を 5 に 設定', () => {
+      // Generated pattern: {destination} を {patient} に 設定
+      expect(canParse(':x を 5 に 設定', 'ja')).toBe(true);
 
-      const node = parse(':x に 5 を 設定', 'ja');
+      const node = parse(':x を 5 に 設定', 'ja');
       expect(node.action).toBe('set');
     });
 
@@ -740,27 +740,27 @@ describe('Newly Wired Commands', () => {
       expect(node.action).toBe('set');
     });
 
-    it('Arabic: اضبط على :x 5', () => {
-      // Generated pattern: اضبط على {destination} {patient}
-      expect(canParse('اضبط على :x 5', 'ar')).toBe(true);
+    it('Arabic: عيّن :x إلى 5', () => {
+      // Generated pattern: عيّن {destination} إلى {patient}
+      expect(canParse('عيّن :x إلى 5', 'ar')).toBe(true);
 
-      const node = parse('اضبط على :x 5', 'ar');
+      const node = parse('عيّن :x إلى 5', 'ar');
       expect(node.action).toBe('set');
     });
 
-    it('Korean: :x 에 5 을 설정', () => {
-      // Generated pattern: {destination} 에 {patient} 을 설정
-      expect(canParse(':x 에 5 을 설정', 'ko')).toBe(true);
+    it('Korean: :x 를 5 으로 설정', () => {
+      // Generated pattern: {destination} 를 {patient} 으로 설정
+      expect(canParse(':x 를 5 으로 설정', 'ko')).toBe(true);
 
-      const node = parse(':x 에 5 을 설정', 'ko');
+      const node = parse(':x 를 5 으로 설정', 'ko');
       expect(node.action).toBe('set');
     });
 
-    it('Turkish: :x e 5 i ayarla', () => {
-      // Generated pattern: {destination} e {patient} i ayarla
-      expect(canParse(':x e 5 i ayarla', 'tr')).toBe(true);
+    it('Turkish: :x i 5 e ayarla', () => {
+      // Generated pattern: {destination} i {patient} e ayarla
+      expect(canParse(':x i 5 e ayarla', 'tr')).toBe(true);
 
-      const node = parse(':x e 5 i ayarla', 'tr');
+      const node = parse(':x i 5 e ayarla', 'tr');
       expect(node.action).toBe('set');
     });
   });

@@ -172,16 +172,19 @@ describe('Toggle Pattern Comparison', () => {
       const generated = generatePattern(toggleSchema, japaneseProfile);
       const handCrafted = findHandCraftedPattern('ja', 'toggle', togglePatterns);
 
-      // Both should have を particle
+      // Generated pattern should have を particle
       const genWo = generated.template.tokens.find(
         (t) => t.type === 'literal' && t.value === 'を'
       );
-      const hcWo = handCrafted?.template.tokens.find(
-        (t) => t.type === 'literal' && t.value === 'を'
-      );
-
       expect(genWo).toBeDefined();
-      expect(hcWo).toBeDefined();
+
+      // Hand-crafted pattern is optional (Japanese now uses generated patterns)
+      if (handCrafted) {
+        const hcWo = handCrafted.template.tokens.find(
+          (t) => t.type === 'literal' && t.value === 'を'
+        );
+        expect(hcWo).toBeDefined();
+      }
     });
   });
 

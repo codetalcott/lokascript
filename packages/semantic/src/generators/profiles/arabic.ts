@@ -63,20 +63,20 @@ export const arabicProfile: LanguageProfile = {
     put: { primary: 'ضع', alternatives: ['اجعل'], normalized: 'put' },
     append: { primary: 'ألحق', normalized: 'append' },
     prepend: { primary: 'سبق', normalized: 'prepend' },
-    take: { primary: 'خذ', alternatives: ['احصل'], normalized: 'take' },
+    take: { primary: 'خذ', normalized: 'take' }, // Removed احصل to avoid collision with get
     make: { primary: 'اصنع', alternatives: ['أنشئ'], normalized: 'make' },
     clone: { primary: 'استنسخ', alternatives: ['انسخ'], normalized: 'clone' },
     swap: { primary: 'استبدل', alternatives: ['تبادل'], normalized: 'swap' },
     morph: { primary: 'حوّل', alternatives: ['غيّر'], normalized: 'morph' },
     // Variable operations
     set: { primary: 'اضبط', alternatives: ['عيّن', 'حدد'], normalized: 'set' },
-    get: { primary: 'احصل', alternatives: ['خذ'], normalized: 'get' },
+    get: { primary: 'احصل', normalized: 'get' }, // Removed خذ to avoid collision with take
     increment: { primary: 'زِد', alternatives: ['زد', 'ارفع'], normalized: 'increment' },
     decrement: { primary: 'أنقص', alternatives: ['انقص', 'قلل'], normalized: 'decrement' },
     log: { primary: 'سجل', normalized: 'log' },
     // Visibility
     show: { primary: 'اظهر', alternatives: ['أظهر', 'اعرض'], normalized: 'show' },
-    hide: { primary: 'اخف', alternatives: ['أخفِ', 'اخفي'], normalized: 'hide' },
+    hide: { primary: 'اخف', alternatives: ['أخفِ', 'اخفي', 'أخف'], normalized: 'hide' }, // Added hamza variant
     transition: { primary: 'انتقال', alternatives: ['انتقل'], normalized: 'transition' },
     // Events
     on: { primary: 'على', alternatives: ['عند', 'لدى', 'حين'], normalized: 'on' },

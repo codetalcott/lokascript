@@ -55,7 +55,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '切换 .active',
     ko: '.active 를 토글',
     ar: 'بدّل .active',
-    tr: '.active değiştir',
+    tr: '.active i değiştir',  // Accusative marker required
     id: 'alihkan .active',
     bn: 'toggle .active',  // Bengali - placeholder
     hi: 'toggle .active',  // Hindi - placeholder
@@ -80,7 +80,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '添加 .highlight',
     ko: '.highlight 를 추가',
     ar: 'أضف .highlight',
-    tr: '.highlight ekle',
+    tr: '.highlight i ekle',  // Accusative marker required
     id: 'tambah .highlight',
     bn: 'add .highlight',
     hi: 'add .highlight',
@@ -105,7 +105,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '移除 .highlight',
     ko: '.highlight 를 제거',
     ar: 'احذف .highlight',
-    tr: '.highlight kaldır',
+    tr: '.highlight i kaldır',  // Accusative marker required
     id: 'hapus .highlight',
     bn: 'remove .highlight',
     hi: 'remove .highlight',
@@ -155,7 +155,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '设置 x 为 10',
     ko: 'x 를 10 으로 설정',
     ar: 'عيّن x إلى 10',
-    tr: 'x yi 10 yap',
+    tr: 'x i 10 e ayarla',  // Use primary keyword + proper markers
     id: 'atur x ke 10',
     bn: 'set x to 10',
     hi: 'set x to 10',
@@ -180,7 +180,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '获取 #element',
     ko: '#element 를 가져오기',
     ar: 'احصل على #element',
-    tr: '#element al',
+    tr: '#element i al',  // Accusative marker required
     id: 'dapatkan #element',
     bn: 'get #element',
     hi: 'get #element',
@@ -205,7 +205,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '显示 #modal',
     ko: '#modal 를 보이기',
     ar: 'أظهر #modal',
-    tr: '#modal göster',
+    tr: '#modal i göster',  // Accusative marker required
     id: 'tampilkan #modal',
     bn: 'show #modal',
     hi: 'show #modal',
@@ -230,7 +230,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '隐藏 #modal',
     ko: '#modal 를 숨기기',
     ar: 'أخف #modal',
-    tr: '#modal gizle',
+    tr: '#modal i gizle',  // Accusative marker required
     id: 'sembunyikan #modal',
     bn: 'hide #modal',
     hi: 'hide #modal',
@@ -255,7 +255,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '增加 counter',
     ko: 'counter 를 증가',
     ar: 'زِد counter',
-    tr: 'counter artır',
+    tr: 'counter i artır',  // Accusative marker required
     id: 'tingkatkan counter',
     bn: 'increment counter',
     hi: 'increment counter',
@@ -280,7 +280,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     zh: '减少 counter',
     ko: 'counter 를 감소',
     ar: 'أنقص counter',
-    tr: 'counter azalt',
+    tr: 'counter i azalt',  // Accusative marker required
     id: 'turunkan counter',
     bn: 'decrement counter',
     hi: 'decrement counter',

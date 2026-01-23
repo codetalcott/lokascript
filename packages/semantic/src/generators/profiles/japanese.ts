@@ -44,7 +44,7 @@ export const japaneseProfile: LanguageProfile = {
   },
   roleMarkers: {
     patient: { primary: 'を', position: 'after' },
-    destination: { primary: 'に', alternatives: ['へ', 'で'], position: 'after' },
+    destination: { primary: 'に', alternatives: ['へ', 'で', 'の'], position: 'after' },
     source: { primary: 'から', position: 'after' },
     style: { primary: 'で', position: 'after' },
     event: { primary: 'を', position: 'after' }, // Event as object marker
@@ -68,7 +68,7 @@ export const japaneseProfile: LanguageProfile = {
       alternatives: ['先頭に追加', 'プリペンド'],
       normalized: 'prepend',
     },
-    take: { primary: '取る', alternatives: ['取得'], normalized: 'take' },
+    take: { primary: '取る', normalized: 'take' }, // Removed 取得 (belongs to get)
     make: { primary: '作る', alternatives: ['作成'], normalized: 'make' },
     clone: { primary: '複製', alternatives: ['クローン'], normalized: 'clone' },
     swap: { primary: '交換', alternatives: ['スワップ', '入れ替え'], normalized: 'swap' },

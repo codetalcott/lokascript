@@ -237,8 +237,8 @@ describe('Core Integration', () => {
 
   describe('Turkish Integration', () => {
     describe('toggle command', () => {
-      it('parses ".active değiştir" (simple form)', () => {
-        const result = analyzer.analyze('.active değiştir', 'tr');
+      it('parses ".active i değiştir" (with accusative marker)', () => {
+        const result = analyzer.analyze('.active i değiştir', 'tr');
 
         expect(result.confidence).toBeGreaterThan(0);
         expect(result.command?.name).toBe('toggle');
@@ -470,7 +470,7 @@ describe('Integration Coverage Report', () => {
       ar: { input: 'بدّل .active', command: 'toggle' },
       es: { input: 'alternar .active', command: 'toggle' },
       ko: { input: '.active 를 토글', command: 'toggle' },
-      tr: { input: '.active değiştir', command: 'toggle' }, // without accusative marker
+      tr: { input: '.active i değiştir', command: 'toggle' }, // with accusative marker
       zh: { input: '切换 .active', command: 'toggle' }, // Chinese toggle
     };
 

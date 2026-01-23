@@ -45,8 +45,16 @@ export const turkishProfile: LanguageProfile = {
     },
   },
   roleMarkers: {
-    patient: { primary: 'i', alternatives: ['ı', 'u', 'ü'], position: 'after' }, // Accusative
-    destination: { primary: 'e', alternatives: ['a', 'de', 'da', 'te', 'ta'], position: 'after' }, // Dative/Locative
+    patient: {
+      primary: 'i',
+      alternatives: ['ı', 'u', 'ü', 'yi', 'yı', 'yu', 'yü', 'ni', 'nı', 'nu', 'nü'],
+      position: 'after',
+    }, // Accusative (with buffer consonants y/n)
+    destination: {
+      primary: 'e',
+      alternatives: ['a', 'ye', 'ya', 'ne', 'na', 'de', 'da', 'te', 'ta'],
+      position: 'after',
+    }, // Dative/Locative (with buffer consonants)
     source: { primary: 'den', alternatives: ['dan', 'ten', 'tan'], position: 'after' }, // Ablative
     style: { primary: 'le', alternatives: ['la', 'yle', 'yla'], position: 'after' }, // Instrumental
     event: { primary: 'i', alternatives: ['ı', 'u', 'ü'], position: 'after' }, // Event as accusative
@@ -59,10 +67,10 @@ export const turkishProfile: LanguageProfile = {
     // Content operations
     put: { primary: 'koy', normalized: 'put' },
     append: { primary: 'ekle', normalized: 'append' },
-    take: { primary: 'al', normalized: 'take' },
+    take: { primary: 'tut', normalized: 'take' }, // al removed to avoid collision with get
     make: { primary: 'yap', normalized: 'make' },
     clone: { primary: 'kopyala', normalized: 'clone' },
-    swap: { primary: 'değiştir', alternatives: ['takas'], normalized: 'swap' },
+    swap: { primary: 'takas', normalized: 'swap' }, // Removed değiştir alternative to avoid collision with toggle
     morph: { primary: 'dönüştür', alternatives: ['şekil değiştir'], normalized: 'morph' },
     // Variable operations
     set: { primary: 'ayarla', alternatives: ['yap', 'belirle'], normalized: 'set' },

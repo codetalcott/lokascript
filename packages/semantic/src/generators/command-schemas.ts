@@ -254,7 +254,7 @@ export const putSchema: CommandSchema = {
       required: true,
       expectedTypes: ['literal', 'selector', 'reference', 'expression'],
       svoPosition: 1,
-      sovPosition: 2,
+      sovPosition: 1, // SOV: patient comes first (を marker)
     },
     {
       role: 'destination',
@@ -262,7 +262,7 @@ export const putSchema: CommandSchema = {
       required: true,
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
-      sovPosition: 1,
+      sovPosition: 2, // SOV: destination comes second (に/에/a marker)
     },
   ],
   // Runtime error documentation
@@ -324,13 +324,18 @@ export const setSchema: CommandSchema = {
       role: 'destination',
       description: 'The property or variable to set',
       required: true,
-      expectedTypes: ['selector', 'reference'],
+      expectedTypes: ['selector', 'reference', 'expression'],
       svoPosition: 1,
       sovPosition: 1,
       // Override destination marker for English (remove 'on', use no marker)
-      // Other languages keep their default destination markers
+      // SOV languages swap markers: variable gets patient marker (を/를/i)
+      // Arabic (VSO): no marker before variable
       markerOverride: {
         en: '', // No marker before destination in English: "set :x to 5"
+        ja: 'を', // "x を 10 に 設定" - variable gets object marker
+        ko: '를', // "x 를 10 으로 설정" - variable gets object marker
+        tr: 'i', // "x i 10 e ayarla" - variable gets accusative marker
+        ar: '', // "عيّن x إلى 10" - no marker before variable
       },
     },
     {
@@ -341,7 +346,8 @@ export const setSchema: CommandSchema = {
       svoPosition: 2,
       sovPosition: 2,
       // Override patient marker for SVO languages with their native prepositions
-      // SOV languages (Korean, Japanese, Turkish) use their default object markers
+      // SOV languages swap markers: value gets destination marker (に/으로/e)
+      // Arabic (VSO): إلى preposition before value
       markerOverride: {
         en: 'to', // "set :x to 5"
         es: 'a', // "establecer x a 10"
@@ -349,6 +355,10 @@ export const setSchema: CommandSchema = {
         fr: 'à', // "définir x à 10"
         de: 'auf', // "setze x auf 10"
         id: 'ke', // "atur x ke 10"
+        ja: 'に', // "x を 10 に 設定" - value gets destination marker
+        ko: '으로', // "x 를 10 으로 설정" - value gets manner/instrument marker
+        tr: 'e', // "x i 10 e ayarla" - value gets dative marker
+        ar: 'إلى', // "عيّن x إلى 10" - value gets preposition "to"
       },
     },
   ],
@@ -716,18 +726,19 @@ export const getCommandSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference', 'expression'],
       svoPosition: 1,
       sovPosition: 2,
-      // No marker before source for simple GET pattern: "get #element" not "get from #element"
+      // Marker overrides for GET pattern
+      // SOV languages use object markers, SVO languages have no marker
       markerOverride: {
         en: '',
         es: '',
         pt: '',
         fr: '',
         de: '',
-        ja: '',
+        ja: 'を', // Japanese object marker: #element を 取得
         zh: '',
-        ko: '',
-        ar: '',
-        tr: '',
+        ko: '를', // Korean object marker: #element 를 가져오기
+        ar: 'على', // Arabic preposition: احصل على #element
+        tr: 'i', // Turkish accusative: #element i al
         id: '',
       },
     },

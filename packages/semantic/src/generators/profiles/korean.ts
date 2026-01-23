@@ -45,7 +45,7 @@ export const koreanProfile: LanguageProfile = {
   },
   roleMarkers: {
     patient: { primary: '을', alternatives: ['를'], position: 'after' },
-    destination: { primary: '에', alternatives: ['으로', '로', '에서'], position: 'after' },
+    destination: { primary: '에', alternatives: ['으로', '로', '에서', '의'], position: 'after' },
     source: { primary: '에서', alternatives: ['부터'], position: 'after' },
     style: { primary: '로', alternatives: ['으로'], position: 'after' },
     event: { primary: '을', alternatives: ['를'], position: 'after' }, // Event as object marker

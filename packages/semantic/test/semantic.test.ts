@@ -222,29 +222,30 @@ describe('Conjugated Verb Parsing', () => {
   });
 
   describe('Turkish conjugations', () => {
-    it('should parse infinitive: "değiştirmek .active"', () => {
-      const node = parse('değiştirmek .active', 'tr');
+    // Turkish is SOV: patient + accusative marker + verb
+    it('should parse infinitive: ".active i değiştirmek"', () => {
+      const node = parse('.active i değiştirmek', 'tr');
 
       expect(node.action).toBe('toggle');
       expect(node.roles.get('patient')?.value).toBe('.active');
     });
 
-    it('should parse present continuous: "değiştiriyor .active"', () => {
-      const node = parse('değiştiriyor .active', 'tr');
+    it('should parse present continuous: ".active i değiştiriyor"', () => {
+      const node = parse('.active i değiştiriyor', 'tr');
 
       expect(node.action).toBe('toggle');
       expect(node.roles.get('patient')?.value).toBe('.active');
     });
 
-    it('should parse past tense: "değiştirdi .active"', () => {
-      const node = parse('değiştirdi .active', 'tr');
+    it('should parse past tense: ".active i değiştirdi"', () => {
+      const node = parse('.active i değiştirdi', 'tr');
 
       expect(node.action).toBe('toggle');
       expect(node.roles.get('patient')?.value).toBe('.active');
     });
 
-    it('should parse 1sg present: "değiştiriyorum .active"', () => {
-      const node = parse('değiştiriyorum .active', 'tr');
+    it('should parse 1sg present: ".active i değiştiriyorum"', () => {
+      const node = parse('.active i değiştiriyorum', 'tr');
 
       expect(node.action).toBe('toggle');
       expect(node.roles.get('patient')?.value).toBe('.active');

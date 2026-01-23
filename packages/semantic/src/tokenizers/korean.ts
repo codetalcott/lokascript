@@ -496,6 +496,19 @@ export class KoreanTokenizer extends BaseTokenizer {
       }
       if (!allKorean) continue;
 
+      // If this candidate starting at the beginning is a particle, return null
+      // to let the main tokenize loop handle it as a particle
+      // This prevents roleMarker keywords from overriding particle classification
+      if (PARTICLES.has(candidate) && startPos === startPos) {
+        // Check if this particle-like candidate is at a word boundary (standalone)
+        const afterCandidate = startPos + len;
+        const nextChar = afterCandidate < input.length ? input[afterCandidate] : '';
+        if (nextChar === '' || isWhitespace(nextChar) || !isKorean(nextChar)) {
+          return null; // Let main loop handle as particle
+        }
+        // Otherwise it's part of a larger word, continue checking
+      }
+
       // O(1) Map lookup instead of O(n) array search
       const keywordEntry = this.lookupKeyword(candidate);
       if (keywordEntry) {
@@ -519,6 +532,12 @@ export class KoreanTokenizer extends BaseTokenizer {
     while (pos < input.length) {
       const char = input[pos];
       const nextChar = pos + 1 < input.length ? input[pos + 1] : '';
+
+      // If we're at a particle with no content yet, return null to let main loop handle it
+      // This ensures particles like 를, 를 in #count를증가 are separated properly
+      if (word.length === 0 && SINGLE_CHAR_PARTICLES.has(char)) {
+        return null;
+      }
 
       // Stop at single-char particles only if:
       // 1. We have content already
@@ -561,6 +580,12 @@ export class KoreanTokenizer extends BaseTokenizer {
     }
 
     if (!word) return null;
+
+    // If the word is a particle, return null to let the main tokenize loop handle it
+    // This prevents roleMarker keywords from overriding particle classification
+    if (PARTICLES.has(word)) {
+      return null;
+    }
 
     // O(1) Map lookup instead of O(n) array search
     const keywordEntry = this.lookupKeyword(word);

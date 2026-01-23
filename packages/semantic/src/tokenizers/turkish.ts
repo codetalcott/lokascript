@@ -320,15 +320,21 @@ export class TurkishTokenizer extends BaseTokenizer {
 
     const lowerWord = word.toLowerCase();
 
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lowerWord);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
+    // Check if it's a case suffix (particle) first
+    // This prevents roleMarker keywords from overriding particle classification
+    if (CASE_SUFFIXES.has(lowerWord)) {
+      return createToken(word, 'particle', createPosition(startPos, pos));
     }
 
     // Check if it's a postposition
     if (POSTPOSITIONS.has(lowerWord)) {
       return createToken(word, 'particle', createPosition(startPos, pos));
+    }
+
+    // O(1) Map lookup instead of O(n) array search
+    const keywordEntry = this.lookupKeyword(lowerWord);
+    if (keywordEntry) {
+      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
     }
 
     // Try morphological normalization for conjugated forms
