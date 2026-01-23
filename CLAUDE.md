@@ -133,14 +133,14 @@ As of 2026-01-23, all CI testing has been consolidated into a single `.github/wo
 
 - **Shared build artifacts**: Packages are built once and shared across all jobs (40% faster)
 - **Parallel execution**: 8 jobs run in parallel after build completes
-- **Matrix testing**: Node 18, 20, 22
+- **Node 24 LTS**: Active LTS release (EOL April 2028)
 - **Smart failure handling**: Known failures (behaviors, SOV/VSO languages) marked with `continue-on-error`
 
 **Jobs:**
 
 1. `build` - Build all packages once, upload artifacts
 2. `lint-typecheck` - ESLint + TypeScript checks
-3. `unit-tests` - Vitest tests across Node matrix
+3. `unit-tests` - Vitest tests on Node 24
 4. `coverage` - Code coverage reports (Codecov)
 5. `browser-tests` - Playwright browser tests
 6. `multilingual-validation` - Test 20 languages (23 total, 3 experimental)

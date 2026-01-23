@@ -20,7 +20,7 @@ These workflows were consolidated into the main `ci.yml` workflow on 2026-01-23 
 
 **Where it went**: All functionality moved to `ci.yml` jobs:
 
-- `unit-tests` job (Node 18, 20, 22 matrix)
+- `unit-tests` job (Node 24 LTS)
 - `coverage` job
 - `multilingual-validation` job
 - `browser-tests` job

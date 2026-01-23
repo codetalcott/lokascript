@@ -55,10 +55,9 @@ build (runs once)
 - ESLint for core, semantic, i18n, vite-plugin
 - TypeScript checks for all packages
 
-#### 3. Unit Tests (15 min, matrix)
+#### 3. Unit Tests (15 min)
 
-- Tests all packages on Node 18, 20, 22
-- Runs in parallel across matrix
+- Tests all packages on Node 24 (Active LTS)
 
 #### 4. Coverage (20 min)
 
@@ -90,13 +89,14 @@ build (runs once)
 
 ## Performance Improvements
 
-| Metric             | Before      | After      | Improvement   |
-| ------------------ | ----------- | ---------- | ------------- |
-| **Workflows**      | 7 files     | 3 files    | 57% reduction |
-| **Total Jobs**     | 16 jobs     | 8 jobs     | 50% reduction |
-| **CI Time**        | 25-35 min   | 15-20 min  | 40% faster    |
-| **Package Builds** | 5+ times    | 1 time     | 80% reduction |
-| **Duplication**    | 60% overlap | 0% overlap | Eliminated    |
+| Metric             | Before       | After      | Improvement   |
+| ------------------ | ------------ | ---------- | ------------- |
+| **Workflows**      | 7 files      | 3 files    | 57% reduction |
+| **Total Jobs**     | 16 jobs      | 8 jobs     | 50% reduction |
+| **CI Time**        | 25-35 min    | 15-20 min  | 40% faster    |
+| **Package Builds** | 5+ times     | 1 time     | 80% reduction |
+| **Duplication**    | 60% overlap  | 0% overlap | Eliminated    |
+| **Node Versions**  | 3 (18,20,22) | 1 (24 LTS) | 67% reduction |
 
 ---
 
@@ -156,7 +156,7 @@ required_status_checks:
 # New (recommended)
 required_status_checks:
   - "Lint & Typecheck"
-  - "Unit Tests (Node 20)"
+  - "Unit Tests"
   - "Browser Tests"
 ```
 
@@ -201,7 +201,7 @@ These jobs are marked to not fail CI but still run for visibility:
 Currently testing on:
 
 - ✅ Ubuntu (Linux)
-- ✅ Node 18, 20, 22
+- ✅ Node 24 (Active LTS, EOL April 2028)
 - ✅ Chromium browser
 
 Not currently testing:

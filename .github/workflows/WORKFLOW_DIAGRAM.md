@@ -80,11 +80,11 @@ Problems:
     ┌────────┐      ┌────────┐     ┌────────┐    ┌────────┐  ┌────────┐
     │ Lint & │      │  Unit  │     │Coverage│    │Browser │  │Multi-  │
     │Typechk │      │ Tests  │     │        │    │ Tests  │  │lingual │
-    │        │      │Matrix: │     │        │    │        │  │        │
-    │Downloads│     │18,20,22│     │Downloads│   │Downloads│ │Downloads│
-    │artifacts│     │        │     │artifacts│   │artifacts│ │artifacts│
-    │        │      │Downloads│    │        │    │        │  │        │
+    │        │      │Node 24 │     │        │    │        │  │        │
+    │Downloads│     │        │     │Downloads│   │Downloads│ │Downloads│
+    │artifacts│     │Downloads│    │artifacts│   │artifacts│ │artifacts│
     │        │      │artifacts│    │        │    │        │  │        │
+    │        │      │        │     │        │    │        │  │        │
     └────────┘      └────────┘     └────────┘    └────────┘  └────────┘
 
          │               │               │              │           │
@@ -148,9 +148,9 @@ Benefits:
     │Download │       │Download │      │Download │       │
     │artifacts│       │artifacts│      │artifacts│       │
     │         │       │         │      │         │       │
-    │✓ ESLint │       │✓ Node 18│      │✓ Core   │       │
-    │✓ TypeChk│       │✓ Node 20│      │✓ Semant │       │
-    │         │       │✓ Node 22│      │✓ i18n   │       │
+    │✓ ESLint │       │✓ Node 24│      │✓ Core   │       │
+    │✓ TypeChk│       │         │      │✓ Semant │       │
+    │         │       │         │      │✓ i18n   │       │
     │         │       │         │      │         │       │
     │         │       │✓ core   │      │↑ Codecov│       │
     │         │       │✓ semant │      │         │       │
@@ -252,16 +252,17 @@ Savings: 56 minutes of build time per CI run! 🚀
 
 ## Comparison Table
 
-| Aspect               | Before      | After      | Improvement   |
-| -------------------- | ----------- | ---------- | ------------- |
-| **Workflow Files**   | 7           | 3          | 57% fewer     |
-| **Total Jobs**       | 16          | 8          | 50% fewer     |
-| **Package Builds**   | 5+ per run  | 1 per run  | 80% reduction |
-| **CI Duration**      | 25-35 min   | 15-20 min  | 40% faster    |
-| **Duplication**      | 60% overlap | 0% overlap | Eliminated    |
-| **Artifact Sharing** | None        | All jobs   | New feature   |
-| **Parallel Jobs**    | Limited     | 7 jobs     | 7× parallel   |
-| **Maintenance**      | Complex     | Simple     | Much easier   |
+| Aspect               | Before       | After      | Improvement   |
+| -------------------- | ------------ | ---------- | ------------- |
+| **Workflow Files**   | 7            | 3          | 57% fewer     |
+| **Total Jobs**       | 16           | 8          | 50% fewer     |
+| **Package Builds**   | 5+ per run   | 1 per run  | 80% reduction |
+| **CI Duration**      | 25-35 min    | 15-20 min  | 40% faster    |
+| **Duplication**      | 60% overlap  | 0% overlap | Eliminated    |
+| **Artifact Sharing** | None         | All jobs   | New feature   |
+| **Parallel Jobs**    | Limited      | 7 jobs     | 7× parallel   |
+| **Node Versions**    | 3 (18,20,22) | 1 (24 LTS) | 67% reduction |
+| **Maintenance**      | Complex      | Simple     | Much easier   |
 
 ## Timeline Visualization
 
