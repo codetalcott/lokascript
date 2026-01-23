@@ -5,29 +5,33 @@
 [![npm version](https://img.shields.io/npm/v/@lokascript/core.svg)](https://www.npmjs.com/package/@lokascript/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-DOM scripting in Japanese, Korean, Arabic, Spanish—23 languages total.
+A modular, tree-shakeable implementation of [\_hyperscript](https://hyperscript.org) with optional multilingual support.
 
-A multilingual extension of [\_hyperscript](https://hyperscript.org) by Carson Gross et al.
+**Use it as:**
+
+- **Pure hyperscript** - Fully typed, tree-shakeable, 8-912 KB bundles
+- **With multilingual** - DOM scripting in Japanese, Korean, Arabic, Spanish, and 19 other languages
 
 ## About This Project
 
-This is an experiment in finding a path toward multiple hyperscript dialects—each supporting native idiomatic patterns for different languages. It's not intended to replace \_hyperscript, but to explore what multilingual scripting could look like.
+LokaScript is a **fully-featured hyperscript implementation** with two key additions:
 
-Hyperscript's readability is its key selling point. But that readability assumes you think in English. This project asks: what if `on click toggle .active` could feel equally natural in Japanese, Arabic, or Korean?
+1. **Modern architecture**: Tree-shakeable modules, TypeScript types, and configurable bundles (8 KB - 912 KB)
+2. **Optional multilingual support**: Use hyperscript in ~20 languages with native word order and grammar
 
-One approach to internationalization would be to treat English hyperscript as the canonical language and others as translations from it. We're trying something different by parsing all languages into a common semantic representation. We think this can unlock hyperscript's strength for speakers of almost any language.
+The core is a complete hyperscript runtime and parser that works independently. The multilingual features are opt-in for projects that need them.
 
-### Why Multilingual Hyperscript?
+### Why Multilingual?
 
-Three iterations to get here:
+Hyperscript's readability is its key selling point. But that readability assumes you think in English. We explored what it would take to make `on click toggle .active` feel equally natural in Japanese, Arabic, or Korean.
 
-1. **Keyword translation**: `toggle` → `alternar` (Spanish), `トグル` (Japanese). Results read awkwardly—English grammar through foreign vocabulary.
+**Approach**: Semantic role mapping. The parser identifies what each part represents (patient, destination, instrument, etc.), then generates language-specific output with proper word order:
 
-2. **Grammar order transformation**: Languages structure differently—SVO (English), SOV (Japanese, Korean, Turkish), VSO (Arabic). Added transformations so `on click toggle .active` becomes `クリック で .active を トグル` with proper Japanese word order. Better, but still not idiomatic.
+- **English (SVO)**: `on click toggle .active`
+- **Japanese (SOV)**: `クリック で .active を トグル`
+- **Arabic (VSO)**: `بدّل .active عند النقر`
 
-3. **Semantic role mapping**: Built a parser that identifies what each part of a command represents (agent, patient, instrument, etc.), then generates language-specific idiomatic output. This requires handwritten idiom support per language—practical only with LLM assistance or community contribution.
-
-The result is more complex than original hyperscript. To keep bundle size reasonable, it's fully modular—load only the languages and commands you need.
+This requires language-specific patterns for each command. The multilingual packages are **fully optional**—use core hyperscript without them, or load only the languages you need.
 
 ## Current Status
 
@@ -44,15 +48,27 @@ The result is more complex than original hyperscript. To keep bundle size reason
 
 ### Bundle Sizes
 
-The full bundle is large because it includes 23 language tokenizers, grammar transformation, and the complete AST parser. Most projects should use the hybrid bundle or vite-plugin for automatic tree-shaking.
+**Core bundles** (pure hyperscript, no multilingual):
 
-| Bundle                        | Size   | Use Case                           |
-| ----------------------------- | ------ | ---------------------------------- |
-| lokascript-lite.js            | 8 KB   | Minimal (8 commands, regex parser) |
-| lokascript-hybrid-complete.js | 28 KB  | Recommended (~85% coverage)        |
-| lokascript-browser.js         | 912 KB | Everything (rarely needed)         |
-| Semantic (English only)       | 84 KB  | Single-language parsing            |
-| Semantic (all 23 languages)   | 260 KB | Full multilingual                  |
+| Bundle                        | Size   | Use Case                                    |
+| ----------------------------- | ------ | ------------------------------------------- |
+| lokascript-lite.js            | 8 KB   | Minimal (8 commands, regex parser)          |
+| lokascript-hybrid-complete.js | 28 KB  | **Recommended** (~85% hyperscript coverage) |
+| lokascript-browser-minimal.js | 271 KB | Full parser + 10 commands (no multilingual) |
+| lokascript-browser.js         | 912 KB | Everything (includes all 23 languages)      |
+
+**Semantic bundles** (optional, for multilingual support):
+
+| Bundle                      | Size   | Use Case                                |
+| --------------------------- | ------ | --------------------------------------- |
+| Semantic (English only)     | 84 KB  | Multilingual parsing (English only)     |
+| Semantic (all 23 languages) | 260 KB | Multilingual parsing (all 23 languages) |
+
+**Most projects should use:**
+
+- **Browser/CDN**: `lokascript-hybrid-complete.js` (28 KB)
+- **Vite/bundler**: `@lokascript/vite-plugin` for automatic tree-shaking
+- **Node.js**: Import specific commands/expressions for optimal tree-shaking
 
 ## Quick Start
 
@@ -80,10 +96,56 @@ export default {
 
 The plugin scans your files for `_="..."` attributes and generates a minimal bundle with only the commands you use.
 
-### Multilingual Usage
+## Usage Modes
+
+LokaScript can be used in three ways:
+
+### 1. Standalone Hyperscript (No Multilingual)
+
+Pure hyperscript with full TypeScript types and tree-shakeable architecture:
 
 ```typescript
-import { MultilingualHyperscript } from '@lokascript/core';
+import { lokascript } from '@lokascript/core';
+
+// V2 API - clean, typed
+const result = lokascript.compileSync('toggle .active');
+await lokascript.eval('toggle .active', element);
+```
+
+**Tree-shakeable**: Import only what you need:
+
+```typescript
+import { createRuntime } from '@lokascript/core/runtime';
+import { toggle, add, remove } from '@lokascript/core/commands';
+import { references, logical } from '@lokascript/core/expressions';
+
+const hyperscript = createRuntime({
+  commands: [toggle, add, remove],
+  expressions: [references, logical],
+});
+
+await hyperscript.run('toggle .active', element);
+```
+
+### 2. Vite Plugin (Auto Tree-Shaking)
+
+The plugin scans your files and generates minimal bundles automatically:
+
+```javascript
+// vite.config.js
+import { lokascript } from '@lokascript/vite-plugin';
+
+export default {
+  plugins: [lokascript()],
+};
+```
+
+### 3. Multilingual (Optional)
+
+Add support for 23 languages when needed:
+
+```typescript
+import { MultilingualHyperscript } from '@lokascript/core/multilingual';
 
 const ml = new MultilingualHyperscript();
 await ml.initialize();
