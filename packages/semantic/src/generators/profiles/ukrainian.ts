@@ -173,6 +173,12 @@ export const ukrainianProfile: LanguageProfile = {
       normalized: 'blur',
       form: 'infinitive',
     },
+    // Common event names (for event handler patterns)
+    click: { primary: 'кліку', alternatives: ['клік', 'натисканні'], normalized: 'click' },
+    hover: { primary: 'наведенні', alternatives: ['наведення'], normalized: 'hover' },
+    submit: { primary: 'відправці', alternatives: ['відправка'], normalized: 'submit' },
+    input: { primary: 'введенні', alternatives: ['введення'], normalized: 'input' },
+    change: { primary: 'зміні', alternatives: ['зміна'], normalized: 'change' },
     // Navigation
     go: {
       primary: 'перейти',
@@ -266,5 +272,10 @@ export const ukrainianProfile: LanguageProfile = {
   eventHandler: {
     keyword: { primary: 'при', alternatives: ['коли'], normalized: 'on' },
     sourceMarker: { primary: 'на', alternatives: ['в', 'при'], position: 'before' },
+    // Event marker: при (at/on/upon), used in SVO pattern
+    // Pattern: при [event] [verb] [patient] на [destination?]
+    // Example: при кліку перемкнути .active на #button
+    eventMarker: { primary: 'при', alternatives: ['коли'], position: 'before' },
+    temporalMarkers: ['коли', 'якщо'], // temporal conjunctions (when, if)
   },
 };
