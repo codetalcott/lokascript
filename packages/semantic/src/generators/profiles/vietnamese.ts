@@ -86,6 +86,12 @@ export const vietnameseProfile: LanguageProfile = {
     // DOM focus
     focus: { primary: 'tập trung', normalized: 'focus' },
     blur: { primary: 'mất tập trung', normalized: 'blur' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'nhấp', alternatives: ['bấm'], normalized: 'click' },
+    hover: { primary: 'di chuột', alternatives: ['rê chuột'], normalized: 'hover' },
+    submit: { primary: 'gửi', alternatives: ['nộp'], normalized: 'submit' },
+    input: { primary: 'nhập', alternatives: ['nhập liệu'], normalized: 'input' },
+    change: { primary: 'thay đổi', alternatives: ['đổi'], normalized: 'change' },
     // Navigation
     go: { primary: 'đi đến', alternatives: ['đi'], normalized: 'go' },
     // Async
@@ -129,5 +135,10 @@ export const vietnameseProfile: LanguageProfile = {
   eventHandler: {
     keyword: { primary: 'khi', alternatives: ['lúc', 'trên'], normalized: 'on' },
     sourceMarker: { primary: 'trên', alternatives: ['tại'], position: 'before' },
+    // Event marker: khi (when), used in SVO pattern
+    // Pattern: khi [event] [verb] [patient] vào [destination?]
+    // Example: khi nhấp chuyển đổi .active vào #button
+    eventMarker: { primary: 'khi', alternatives: ['lúc'], position: 'before' },
+    temporalMarkers: ['khi', 'lúc'], // temporal conjunctions (when)
   },
 };

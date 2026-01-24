@@ -325,6 +325,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ คลิก สลับ .active ใน #button',
     zh: '当 点击 切换 .active 在 #button',
     es: 'al clic alternar .active en #button',
+    vi: 'khi nhấp chuyển đổi .active vào #button',
     en: 'on click toggle .active on #button',
   },
 
@@ -340,6 +341,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ ส่ง สลับ .loading',
     zh: '当 提交 切换 .loading',
     es: 'al envío alternar .loading',
+    vi: 'khi gửi chuyển đổi .loading',
     en: 'on submit toggle .loading',
   },
 
@@ -356,6 +358,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ โฮเวอร์ เพิ่ม .highlight',
     zh: '当 悬停 添加 .highlight',
     es: 'al sobrevolar agregar .highlight',
+    vi: 'khi di chuột thêm .highlight',
     en: 'on hover add .highlight',
   },
 
@@ -371,6 +374,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ คลิก ลบ .error',
     zh: '当 点击 移除 .error',
     es: 'al clic quitar .error',
+    vi: 'khi nhấp xóa .error',
     en: 'on click remove .error',
   },
 
@@ -387,6 +391,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ โฟกัส แสดง #tooltip',
     zh: '当 聚焦 显示 #tooltip',
     es: 'al enfocar mostrar #tooltip',
+    vi: 'khi tập trung hiển thị #tooltip',
     en: 'on focus show #tooltip',
   },
 
@@ -402,6 +407,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ เบลอ ซ่อน #tooltip',
     zh: '当 失焦 隐藏 #tooltip',
     es: 'al desenfocar ocultar #tooltip',
+    vi: 'khi mất tập trung ẩn #tooltip',
     en: 'on blur hide #tooltip',
   },
 
@@ -418,6 +424,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ คลิก เพิ่มค่า #counter',
     zh: '当 点击 增加 #counter',
     es: 'al clic incrementar #counter',
+    vi: 'khi nhấp tăng #counter',
     en: 'on click increment #counter',
   },
 
@@ -433,6 +440,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ คลิก ลดค่า #counter',
     zh: '当 点击 减少 #counter',
     es: 'al clic decrementar #counter',
+    vi: 'khi nhấp giảm #counter',
     en: 'on click decrement #counter',
   },
 
@@ -449,6 +457,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ ป้อน ใส่ "test" ใน #output',
     zh: '当 输入 放置 "test" 在 #output',
     es: 'al entrada poner "test" en #output',
+    vi: 'khi nhập đặt "test" vào #output',
     en: 'on input put "test" into #output',
   },
 
@@ -464,6 +473,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ เปลี่ยน ตั้ง x เป็น 10',
     zh: '当 改变 设置 x 为 10',
     es: 'al cambio establecer x a 10',
+    vi: 'khi thay đổi gán x thành 10',
     en: 'on change set x to 10',
   },
 
@@ -480,6 +490,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ คลิก สลับ .active ใน #button',
     zh: '当 点击 切换 .active 在 #button',
     es: 'al clic alternar .active en #button',
+    vi: 'khi nhấp chuyển đổi .active vào #button',
     en: 'on click toggle .active on #button',
   },
 
@@ -495,6 +506,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     th: 'เมื่อ โฮเวอร์ เพิ่ม .hover ใน #element',
     zh: '当 悬停 添加 .hover 在 #element',
     es: 'al sobrevolar agregar .hover en #element',
+    vi: 'khi di chuột thêm .hover vào #element',
     en: 'on hover add .hover to #element',
   },
 
@@ -539,7 +551,7 @@ export type EventHandlerTestCase = keyof typeof EVENT_HANDLER_TEST_CASES;
  */
 export function getEventHandlerTestCase(
   testCase: EventHandlerTestCase,
-  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'en'
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'en'
 ): string | undefined {
   return EVENT_HANDLER_TEST_CASES[testCase][language];
 }
@@ -548,7 +560,7 @@ export function getEventHandlerTestCase(
  * Get all event handler test cases for a language.
  */
 export function getEventHandlerTestCasesForLanguage(
-  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'en'
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'en'
 ): Record<string, string> {
   const cases: Record<string, string> = {};
   for (const [testName, testValues] of Object.entries(EVENT_HANDLER_TEST_CASES)) {
