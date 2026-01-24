@@ -273,6 +273,14 @@ export class TurkishTokenizer extends BaseTokenizer {
         continue;
       }
 
+      // Try multi-word phrases first (e.g., "üzerine gelme", "fare üzerinde")
+      const phraseToken = this.tryMultiWordPhrase(input, pos);
+      if (phraseToken) {
+        tokens.push(phraseToken);
+        pos = phraseToken.position.end;
+        continue;
+      }
+
       // Try Turkish word
       if (isTurkishLetter(input[pos])) {
         const wordToken = this.extractTurkishWord(input, pos);
@@ -301,6 +309,42 @@ export class TurkishTokenizer extends BaseTokenizer {
     if (/^\d/.test(token)) return 'literal';
 
     return 'identifier';
+  }
+
+  /**
+   * Try to match multi-word phrases that function as single units.
+   * Multi-word phrases are included in profileKeywords and sorted longest-first,
+   * so they'll be matched before their constituent words.
+   *
+   * Examples: "üzerine gelme" (hover), "fare üzerinde" (mouseover)
+   */
+  private tryMultiWordPhrase(input: string, pos: number): LanguageToken | null {
+    // Check against multi-word entries in profileKeywords (sorted longest-first)
+    for (const entry of this.profileKeywords) {
+      // Only check multi-word phrases (contain space)
+      if (!entry.native.includes(' ')) continue;
+
+      const phrase = entry.native;
+      const candidate = input.slice(pos, pos + phrase.length).toLowerCase();
+      if (candidate === phrase.toLowerCase()) {
+        // Check word boundary
+        const nextPos = pos + phrase.length;
+        if (
+          nextPos >= input.length ||
+          isWhitespace(input[nextPos]) ||
+          !isTurkishLetter(input[nextPos])
+        ) {
+          return createToken(
+            input.slice(pos, pos + phrase.length),
+            'keyword',
+            createPosition(pos, nextPos),
+            entry.normalized
+          );
+        }
+      }
+    }
+
+    return null;
   }
 
   /**

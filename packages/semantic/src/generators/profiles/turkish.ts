@@ -87,8 +87,14 @@ export const turkishProfile: LanguageProfile = {
     trigger: { primary: 'tetikle', normalized: 'trigger' },
     send: { primary: 'gönder', normalized: 'send' },
     // DOM focus
-    focus: { primary: 'odak', normalized: 'focus' },
-    blur: { primary: 'bulanık', normalized: 'blur' },
+    focus: { primary: 'odak', alternatives: ['odaklanma'], normalized: 'focus' },
+    blur: { primary: 'bulanık', alternatives: ['bulanıklık'], normalized: 'blur' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'tıklama', alternatives: ['tıkla'], normalized: 'click' },
+    hover: { primary: 'üzerine gelme', alternatives: ['üzerinde gezinme'], normalized: 'hover' },
+    submit: { primary: 'gönderme', alternatives: ['gönder'], normalized: 'submit' },
+    input: { primary: 'giriş', alternatives: ['girdi'], normalized: 'input' },
+    change: { primary: 'değişiklik', alternatives: ['değişim'], normalized: 'change' },
     // Navigation
     go: { primary: 'git', normalized: 'go' },
     // Async

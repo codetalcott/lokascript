@@ -112,7 +112,16 @@ export class PatternMatcher {
     captured: Map<SemanticRole, SemanticValue>
   ): boolean {
     // Skip leading conjunctions for Arabic (proclitics: و, ف, ول, وب, etc.)
-    if (this.currentProfile?.code === 'ar') {
+    // BUT NOT if the pattern explicitly expects a conjunction (proclitic patterns)
+    const firstPatternToken = patternTokens[0];
+    const patternExpectsConjunction =
+      firstPatternToken?.type === 'literal' &&
+      (firstPatternToken.value === 'and' ||
+        firstPatternToken.value === 'then' ||
+        firstPatternToken.alternatives?.includes('and') ||
+        firstPatternToken.alternatives?.includes('then'));
+
+    if (this.currentProfile?.code === 'ar' && !patternExpectsConjunction) {
       while (tokens.peek()?.kind === 'conjunction') {
         tokens.advance();
       }
