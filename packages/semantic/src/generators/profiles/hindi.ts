@@ -95,7 +95,13 @@ export const hindiProfile: LanguageProfile = {
     send: { primary: 'भेजें', alternatives: ['भेज'], normalized: 'send' },
     // DOM focus
     focus: { primary: 'फोकस', alternatives: ['केंद्रित'], normalized: 'focus' },
-    blur: { primary: 'धुंधला', alternatives: [], normalized: 'blur' },
+    blur: { primary: 'धुंधला', alternatives: ['फोकस_हटाएं'], normalized: 'blur' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'क्लिक', normalized: 'click' },
+    hover: { primary: 'होवर', alternatives: ['ऊपर_रखें'], normalized: 'hover' },
+    submit: { primary: 'सबमिट', alternatives: ['जमा'], normalized: 'submit' },
+    input: { primary: 'इनपुट', alternatives: ['दर्ज'], normalized: 'input' },
+    change: { primary: 'बदलाव', alternatives: ['परिवर्तन'], normalized: 'change' },
     // Navigation
     go: { primary: 'जाएं', alternatives: ['जा'], normalized: 'go' },
     // Async
@@ -142,5 +148,10 @@ export const hindiProfile: LanguageProfile = {
   eventHandler: {
     keyword: { primary: 'पर', alternatives: ['में', 'जब'], normalized: 'on' },
     sourceMarker: { primary: 'से', position: 'after' },
+    // Event marker: पर (at/on), used in SOV pattern
+    // Pattern: [event] पर [destination का?] [patient] को [action]
+    // Example: क्लिक पर #button का .active को टॉगल
+    eventMarker: { primary: 'पर', alternatives: ['में'], position: 'after' },
+    temporalMarkers: ['जब', 'जब भी'], // temporal conjunctions (when, whenever)
   },
 };
