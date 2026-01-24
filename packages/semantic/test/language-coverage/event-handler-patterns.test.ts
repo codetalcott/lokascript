@@ -1,7 +1,7 @@
 /**
  * Event Handler Pattern Tests
  *
- * Tests full-form patterns with event handlers for the 13 languages with varied word order:
+ * Tests full-form patterns with event handlers for the 14 languages with varied word order:
  * - Japanese (ja): SOV, particles, no spaces
  * - Korean (ko): SOV, agglutinative, vowel harmony
  * - Turkish (tr): SOV, vowel harmony, case suffixes
@@ -15,6 +15,7 @@
  * - Spanish (es): SVO, prepositions, Latin script
  * - Vietnamese (vi): SVO, prepositions, Latin script with diacritics
  * - Indonesian (id): SVO, prepositions, Latin script, agglutinative
+ * - German (de): SVO, prepositions, Latin script, case system
  *
  * These tests verify that the parser can handle complete real-world patterns,
  * not just abbreviated command-only forms.
@@ -29,7 +30,7 @@ import {
   type EventHandlerTestCase,
 } from './test-cases';
 
-const TARGET_LANGUAGES = ['ja', 'ko', 'tr', 'ar', 'hi', 'bn', 'ru', 'uk', 'th', 'zh', 'es', 'vi', 'id'] as const;
+const TARGET_LANGUAGES = ['ja', 'ko', 'tr', 'ar', 'hi', 'bn', 'ru', 'uk', 'th', 'zh', 'es', 'vi', 'id', 'de'] as const;
 type TargetLanguage = typeof TARGET_LANGUAGES[number];
 
 // =============================================================================
@@ -186,6 +187,7 @@ describe('Baseline Metrics (Phase 1.1)', () => {
       es: { total: 0, passed: 0, failed: 0 },
       vi: { total: 0, passed: 0, failed: 0 },
       id: { total: 0, passed: 0, failed: 0 },
+      de: { total: 0, passed: 0, failed: 0 },
     };
 
     for (const lang of TARGET_LANGUAGES) {
@@ -240,6 +242,7 @@ describe('Baseline Metrics (Phase 1.1)', () => {
       es: [],
       vi: [],
       id: [],
+      de: [],
     };
 
     for (const lang of TARGET_LANGUAGES) {

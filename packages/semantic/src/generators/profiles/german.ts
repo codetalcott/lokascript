@@ -113,14 +113,25 @@ export const germanProfile: LanguageProfile = {
     into: { primary: 'hinein', normalized: 'into' },
     before: { primary: 'vor', normalized: 'before' },
     after: { primary: 'nach', normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'Klick', alternatives: ['Klicken'], normalized: 'click' },
+    hover: { primary: 'Hover', alternatives: ['Schweben'], normalized: 'hover' },
+    submit: { primary: 'Absenden', alternatives: ['Senden'], normalized: 'submit' },
+    input: { primary: 'Eingabe', normalized: 'input' },
+    change: { primary: 'Änderung', alternatives: ['Ändern'], normalized: 'change' },
     // Event modifiers (for repeat until event)
     until: { primary: 'bis', normalized: 'until' },
     event: { primary: 'Ereignis', alternatives: ['Event'], normalized: 'event' },
     from: { primary: 'von', alternatives: ['aus'], normalized: 'from' },
   },
   eventHandler: {
-    keyword: { primary: 'bei', alternatives: ['auf'] },
+    keyword: { primary: 'bei', alternatives: ['auf'], normalized: 'on' },
     sourceMarker: { primary: 'von', alternatives: ['aus'], position: 'before' },
     conditionalKeyword: { primary: 'wenn', alternatives: ['falls'] },
+    // Event marker: bei (at/on), used in SVO pattern
+    // Pattern: bei [event] [verb] [patient] auf [destination?]
+    // Example: bei Klick umschalten .active auf #button
+    eventMarker: { primary: 'bei', alternatives: ['beim'], position: 'before' },
+    temporalMarkers: ['wenn', 'bei'], // temporal conjunctions (when, at)
   },
 };
