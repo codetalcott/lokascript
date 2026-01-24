@@ -108,15 +108,20 @@ export interface LanguageProfile {
 
 /**
  * Configuration for event handler pattern generation.
- * Used by simple SVO languages that don't need hand-crafted patterns.
+ * Supports both SVO and SOV/VSO languages.
  */
 export interface EventHandlerConfig {
-  /** Primary event keyword (e.g., 'on', 'bei', 'sur') */
-  readonly keyword: KeywordTranslation;
+  /** Primary event keyword (e.g., 'on', 'bei', 'sur') for SVO */
+  readonly keyword?: KeywordTranslation;
   /** Source filter marker (e.g., 'from', 'von', 'de') */
-  readonly sourceMarker: RoleMarker;
+  readonly sourceMarker?: RoleMarker;
   /** Conditional keyword (e.g., 'when', 'wenn', 'quand') */
   readonly conditionalKeyword?: KeywordTranslation;
+
+  /** Event marker for SOV/VSO languages (e.g., で (Japanese), 할 때 (Korean), da (Turkish), عند (Arabic)) */
+  readonly eventMarker?: RoleMarker;
+  /** Temporal/conditional markers that can optionally appear with events */
+  readonly temporalMarkers?: string[];
 }
 
 /**

@@ -129,4 +129,12 @@ export const turkishProfile: LanguageProfile = {
     event: { primary: 'olay', normalized: 'event' },
     from: { primary: '-den', alternatives: ['-dan'], normalized: 'from' },
   },
+  eventHandler: {
+    // Event marker: da/de/ta/te (locative case suffix with vowel harmony), used in SOV pattern
+    // Pattern: [event] da [patient] i [action]
+    // Example: tıklama da .active i değiştir
+    // Note: Vowel harmony variants (da/de/ta/te) should be handled by vowel harmony expansion
+    eventMarker: { primary: 'da', alternatives: ['de', 'ta', 'te'], position: 'after' },
+    temporalMarkers: ['dığında', 'diğinde'], // temporal converb suffixes (when)
+  },
 };

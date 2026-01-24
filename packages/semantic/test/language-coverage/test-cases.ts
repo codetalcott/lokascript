@@ -295,6 +295,180 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
 };
 
 /**
+ * Full-form test cases with event handlers.
+ *
+ * These test complete patterns including event triggers, which better reflect
+ * real-world usage. Focus on the 4 languages with low pass rates:
+ * - Japanese (ja): SOV, particles, no spaces
+ * - Korean (ko): SOV, agglutinative, vowel harmony
+ * - Turkish (tr): SOV, vowel harmony, case suffixes
+ * - Arabic (ar): VSO, RTL, proclitics
+ */
+export const EVENT_HANDLER_TEST_CASES = {
+  // Toggle with event handlers
+  'toggle-on-click': {
+    ja: 'クリック で #button の .active を 切り替え',
+    ko: '클릭 할 때 #button 의 .active 를 토글',
+    tr: 'tıklama da #button ın .active i değiştir',
+    ar: 'عند النقر على #button بدّل .active',
+    en: 'on click toggle .active on #button',
+  },
+
+  'toggle-on-submit': {
+    ja: '送信 で .loading を 切り替え',
+    ko: '제출 할 때 .loading 을 토글',
+    tr: 'gönderme de .loading i değiştir',
+    ar: 'عند الإرسال بدّل .loading',
+    en: 'on submit toggle .loading',
+  },
+
+  // Add/Remove with event handlers
+  'add-on-hover': {
+    ja: 'ホバー で .highlight を 追加',
+    ko: '호버 할 때 .highlight 를 추가',
+    tr: 'üzerine gelme de .highlight i ekle',
+    ar: 'عند التحويم أضف .highlight',
+    en: 'on hover add .highlight',
+  },
+
+  'remove-on-click': {
+    ja: 'クリック で .error を 削除',
+    ko: '클릭 할 때 .error 를 제거',
+    tr: 'tıklama da .error i kaldır',
+    ar: 'عند النقر احذف .error',
+    en: 'on click remove .error',
+  },
+
+  // Show/Hide with event handlers
+  'show-on-focus': {
+    ja: 'フォーカス で #tooltip を 表示',
+    ko: '포커스 할 때 #tooltip 를 보이기',
+    tr: 'odaklanma da #tooltip i göster',
+    ar: 'عند التركيز أظهر #tooltip',
+    en: 'on focus show #tooltip',
+  },
+
+  'hide-on-blur': {
+    ja: 'ブラー で #tooltip を 非表示',
+    ko: '블러 할 때 #tooltip 를 숨기기',
+    tr: 'bulanıklık da #tooltip i gizle',
+    ar: 'عند عدم التركيز أخف #tooltip',
+    en: 'on blur hide #tooltip',
+  },
+
+  // Increment/Decrement with event handlers
+  'increment-on-click': {
+    ja: 'クリック で #counter を 増加',
+    ko: '클릭 할 때 #counter 를 증가',
+    tr: 'tıklama da #counter i artır',
+    ar: 'عند النقر زِد #counter',
+    en: 'on click increment #counter',
+  },
+
+  'decrement-on-click': {
+    ja: 'クリック で #counter を 減少',
+    ko: '클릭 할 때 #counter 를 감소',
+    tr: 'tıklama da #counter i azalt',
+    ar: 'عند النقر أنقص #counter',
+    en: 'on click decrement #counter',
+  },
+
+  // Put/Set with event handlers
+  'put-on-input': {
+    ja: '入力 で "test" を #output に 入れる',
+    ko: '입력 할 때 "test" 를 #output 에 넣기',
+    tr: 'giriş de "test" i #output a koy',
+    ar: 'عند الإدخال ضع "test" في #output',
+    en: 'on input put "test" into #output',
+  },
+
+  'set-on-change': {
+    ja: '変更 で x を 10 に 設定',
+    ko: '변경 할 때 x 를 10 으로 설정',
+    tr: 'değişiklik de x i 10 e ayarla',
+    ar: 'عند التغيير عيّن x إلى 10',
+    en: 'on change set x to 10',
+  },
+
+  // Complex patterns with multiple roles
+  'toggle-with-destination': {
+    ja: 'クリック で #button に .active を 切り替え',
+    ko: '클릭 할 때 #button 에 .active 를 토글',
+    tr: 'tıklama da #button e .active i değiştir',
+    ar: 'عند النقر بدّل .active على #button',
+    en: 'on click toggle .active on #button',
+  },
+
+  'add-with-destination': {
+    ja: 'ホバー で #element に .hover を 追加',
+    ko: '호버 할 때 #element 에 .hover 를 추가',
+    tr: 'üzerine gelme de #element e .hover i ekle',
+    ar: 'عند التحويم أضف .hover إلى #element',
+    en: 'on hover add .hover to #element',
+  },
+
+  // Compact forms (no spaces) - particularly challenging for Korean/Japanese
+  'toggle-compact-ko': {
+    ko: '클릭할때 .active를토글',
+    en: 'on click toggle .active',
+  },
+
+  'add-compact-ja': {
+    ja: 'クリックで.highlightを追加',
+    en: 'on click add .highlight',
+  },
+
+  // Vowel harmony variants for Turkish
+  'toggle-with-back-vowel': {
+    tr: 'tıklama da buton u değiştir', // back vowel: u
+    en: 'on click toggle button',
+  },
+
+  'toggle-with-front-vowel': {
+    tr: 'tıklama da düğme yi değiştir', // front vowel: ü
+    en: 'on click toggle button',
+  },
+
+  // Arabic with proclitics (و, ف attached)
+  'toggle-with-proclitic-wa': {
+    ar: 'والنقر بدّل .active', // و (and) attached to النقر (click)
+    en: 'and click toggle .active',
+  },
+
+  'add-with-proclitic-fa': {
+    ar: 'فالتحويم أضف .highlight', // ف (then) attached to التحويم (hover)
+    en: 'then hover add .highlight',
+  },
+} as const;
+
+export type EventHandlerTestCase = keyof typeof EVENT_HANDLER_TEST_CASES;
+
+/**
+ * Get event handler test case by name and language.
+ */
+export function getEventHandlerTestCase(
+  testCase: EventHandlerTestCase,
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'en'
+): string | undefined {
+  return EVENT_HANDLER_TEST_CASES[testCase][language];
+}
+
+/**
+ * Get all event handler test cases for a language.
+ */
+export function getEventHandlerTestCasesForLanguage(
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'en'
+): Record<string, string> {
+  const cases: Record<string, string> = {};
+  for (const [testName, testValues] of Object.entries(EVENT_HANDLER_TEST_CASES)) {
+    if (language in testValues) {
+      cases[testName] = testValues[language as keyof typeof testValues] as string;
+    }
+  }
+  return cases;
+}
+
+/**
  * Get test case for a specific command and language.
  */
 export function getTestCase(command: CoreCommand, language: SupportedLanguage): string {

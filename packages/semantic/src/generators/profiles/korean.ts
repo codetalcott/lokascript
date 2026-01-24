@@ -80,6 +80,12 @@ export const koreanProfile: LanguageProfile = {
     // DOM focus
     focus: { primary: '포커스', normalized: 'focus' },
     blur: { primary: '블러', normalized: 'blur' },
+    // Common event names (for event handler patterns)
+    click: { primary: '클릭', normalized: 'click' },
+    hover: { primary: '호버', normalized: 'hover' },
+    submit: { primary: '제출', normalized: 'submit' },
+    input: { primary: '입력', normalized: 'input' },
+    change: { primary: '변경', normalized: 'change' },
     // Navigation
     go: { primary: '이동', normalized: 'go' },
     // Async
@@ -123,5 +129,12 @@ export const koreanProfile: LanguageProfile = {
   tokenization: {
     particles: ['을', '를', '이', '가', '은', '는', '에', '에서', '으로', '로', '와', '과', '도'],
     boundaryStrategy: 'space',
+  },
+  eventHandler: {
+    // Event marker: 할 때 (when/at the time of), used in SOV pattern
+    // Pattern: [event] 할 때 [destination] 의 [patient] 를 [action]
+    // Example: 클릭 할 때 #button 의 .active 를 토글
+    eventMarker: { primary: '할 때', alternatives: ['때', '에'], position: 'after' },
+    temporalMarkers: ['할 때', '때'], // temporal markers
   },
 };

@@ -167,8 +167,16 @@ export function generatePatternsForLanguage(
       continue;
     }
 
+    // Generate simple command patterns
     const variants = generatePatternVariants(schema, profile, config);
     patterns.push(...variants);
+
+    // Generate event handler patterns (on [event] [command] [patient])
+    // Only generate for languages with eventHandler configuration
+    if (profile.eventHandler?.eventMarker) {
+      const eventHandlerPatterns = generateEventHandlerPatterns(schema, profile, config);
+      patterns.push(...eventHandlerPatterns);
+    }
   }
 
   return patterns;
@@ -225,6 +233,223 @@ export function generateAllPatterns(
   }
 
   return patterns;
+}
+
+/**
+ * Generate event handler patterns for a command in a specific language.
+ *
+ * Creates patterns that wrap commands with event handlers (e.g., "on click toggle .active").
+ * Automatically handles SOV, SVO, and VSO word orders based on language profile.
+ *
+ * @param commandSchema - The command to wrap (toggle, add, remove, etc.)
+ * @param profile - Language profile with eventHandler configuration
+ * @param config - Generator configuration
+ * @returns Array of event handler patterns (empty if profile lacks eventHandler config)
+ */
+export function generateEventHandlerPatterns(
+  commandSchema: CommandSchema,
+  profile: LanguageProfile,
+  config: GeneratorConfig = defaultConfig
+): LanguagePattern[] {
+  // Only generate if profile has eventHandler configuration
+  if (!profile.eventHandler || !profile.eventHandler.eventMarker) {
+    return [];
+  }
+
+  const patterns: LanguagePattern[] = [];
+  const eventMarker = profile.eventHandler.eventMarker;
+  const keyword = profile.keywords[commandSchema.action];
+
+  if (!keyword) {
+    return []; // No translation for this command
+  }
+
+  // Build command verb token with alternatives
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+
+  // Build event marker token with alternatives
+  const eventMarkerToken: PatternToken = eventMarker.alternatives
+    ? { type: 'literal', value: eventMarker.primary, alternatives: eventMarker.alternatives }
+    : { type: 'literal', value: eventMarker.primary };
+
+  // Generate pattern based on word order
+  if (profile.wordOrder === 'SOV') {
+    // SOV: [event] [eventMarker] [destination? destMarker?] [patient] [patientMarker] [verb]
+    // Japanese: クリック で #button の .active を 切り替え
+    // Korean: 클릭 할 때 #button 의 .active 를 토글
+    // Turkish: tıklama da #button ın .active i değiştir
+
+    patterns.push(
+      generateSOVEventHandlerPattern(commandSchema, profile, keyword, eventMarker, config)
+    );
+  } else if (profile.wordOrder === 'VSO') {
+    // VSO: [eventMarker] [event] [verb] [patient] [على destination?]
+    // Arabic: عند النقر بدّل .active على #button
+
+    patterns.push(
+      generateVSOEventHandlerPattern(commandSchema, profile, keyword, eventMarker, config)
+    );
+  } else {
+    // SVO: [eventMarker] [event] [verb] [patient] [على destination?]
+    // (Same structure as VSO for event handlers, just different default word order for other contexts)
+
+    patterns.push(
+      generateVSOEventHandlerPattern(commandSchema, profile, keyword, eventMarker, config)
+    );
+  }
+
+  return patterns;
+}
+
+/**
+ * Generate SOV event handler pattern (Japanese, Korean, Turkish).
+ */
+function generateSOVEventHandlerPattern(
+  commandSchema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: KeywordTranslation,
+  eventMarker: RoleMarker,
+  config: GeneratorConfig
+): LanguagePattern {
+  const tokens: PatternToken[] = [];
+
+  // Event role
+  tokens.push({ type: 'role', role: 'event', optional: false });
+
+  // Event marker (after event in SOV)
+  // Handle multi-word markers like Korean "할 때" by splitting into separate tokens
+  if (eventMarker.position === 'after') {
+    const markerWords = eventMarker.primary.split(/\s+/);
+    if (markerWords.length > 1) {
+      // Multi-word marker: create a token for each word
+      for (const word of markerWords) {
+        tokens.push({ type: 'literal', value: word });
+      }
+    } else {
+      // Single-word marker: include alternatives
+      const markerToken: PatternToken = eventMarker.alternatives
+        ? { type: 'literal', value: eventMarker.primary, alternatives: eventMarker.alternatives }
+        : { type: 'literal', value: eventMarker.primary };
+      tokens.push(markerToken);
+    }
+  }
+
+  // Optional destination with its marker
+  const destMarker = profile.roleMarkers.destination;
+  if (destMarker) {
+    tokens.push({
+      type: 'group',
+      optional: true,
+      tokens: [
+        { type: 'role', role: 'destination', optional: true },
+        destMarker.alternatives
+          ? { type: 'literal', value: destMarker.primary, alternatives: destMarker.alternatives }
+          : { type: 'literal', value: destMarker.primary },
+      ],
+    });
+  }
+
+  // Patient role
+  tokens.push({ type: 'role', role: 'patient', optional: false });
+
+  // Patient marker (postposition/particle after patient)
+  const patientMarker = profile.roleMarkers.patient;
+  if (patientMarker) {
+    const patMarkerToken: PatternToken = patientMarker.alternatives
+      ? { type: 'literal', value: patientMarker.primary, alternatives: patientMarker.alternatives }
+      : { type: 'literal', value: patientMarker.primary };
+    tokens.push(patMarkerToken);
+  }
+
+  // Command verb at end (SOV)
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+  tokens.push(verbToken);
+
+  return {
+    id: `${commandSchema.action}-event-${profile.code}-sov`,
+    language: profile.code,
+    command: 'on', // This is an event handler pattern
+    priority: (config.basePriority ?? 100) + 50, // Higher priority than simple commands
+    template: {
+      format: `{event} ${eventMarker.primary} {destination?} {patient} ${patientMarker?.primary || ''} ${keyword.primary}`,
+      tokens,
+    },
+    extraction: {
+      action: { value: commandSchema.action }, // Extract the wrapped command
+      event: { fromRole: 'event' },
+      patient: { fromRole: 'patient' },
+      destination: { fromRole: 'destination', default: { type: 'reference', value: 'me' } },
+    },
+  };
+}
+
+/**
+ * Generate VSO event handler pattern (Arabic).
+ */
+function generateVSOEventHandlerPattern(
+  commandSchema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: KeywordTranslation,
+  eventMarker: RoleMarker,
+  config: GeneratorConfig
+): LanguagePattern {
+  const tokens: PatternToken[] = [];
+
+  // Event marker (before event in VSO)
+  if (eventMarker.position === 'before') {
+    const markerToken: PatternToken = eventMarker.alternatives
+      ? { type: 'literal', value: eventMarker.primary, alternatives: eventMarker.alternatives }
+      : { type: 'literal', value: eventMarker.primary };
+    tokens.push(markerToken);
+  }
+
+  // Event role
+  tokens.push({ type: 'role', role: 'event', optional: false });
+
+  // Command verb (verb comes early in VSO)
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+  tokens.push(verbToken);
+
+  // Patient role
+  tokens.push({ type: 'role', role: 'patient', optional: false });
+
+  // Optional destination with preposition
+  const destMarker = profile.roleMarkers.destination;
+  if (destMarker) {
+    tokens.push({
+      type: 'group',
+      optional: true,
+      tokens: [
+        destMarker.alternatives
+          ? { type: 'literal', value: destMarker.primary, alternatives: destMarker.alternatives }
+          : { type: 'literal', value: destMarker.primary },
+        { type: 'role', role: 'destination', optional: true },
+      ],
+    });
+  }
+
+  return {
+    id: `${commandSchema.action}-event-${profile.code}-vso`,
+    language: profile.code,
+    command: 'on', // This is an event handler pattern
+    priority: (config.basePriority ?? 100) + 50, // Higher priority than simple commands
+    template: {
+      format: `${eventMarker.primary} {event} ${keyword.primary} {patient} ${destMarker?.primary || ''} {destination?}`,
+      tokens,
+    },
+    extraction: {
+      action: { value: commandSchema.action }, // Extract the wrapped command
+      event: { fromRole: 'event' },
+      patient: { fromRole: 'patient' },
+      destination: { fromRole: 'destination', default: { type: 'reference', value: 'me' } },
+    },
+  };
 }
 
 // =============================================================================
