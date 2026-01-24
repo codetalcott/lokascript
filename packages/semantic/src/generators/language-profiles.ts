@@ -36,6 +36,7 @@ export { chineseProfile } from './profiles/chinese';
 export { englishProfile } from './profiles/english';
 export { frenchProfile } from './profiles/french';
 export { germanProfile } from './profiles/german';
+export { hebrewProfile } from './profiles/hebrew';
 export { hindiProfile } from './profiles/hindi';
 export { indonesianProfile } from './profiles/indonesian';
 export { italianProfile } from './profiles/italian';
@@ -61,6 +62,7 @@ import { chineseProfile } from './profiles/chinese';
 import { englishProfile } from './profiles/english';
 import { frenchProfile } from './profiles/french';
 import { germanProfile } from './profiles/german';
+import { hebrewProfile } from './profiles/hebrew';
 import { hindiProfile } from './profiles/hindi';
 import { indonesianProfile } from './profiles/indonesian';
 import { italianProfile } from './profiles/italian';
@@ -95,6 +97,7 @@ export const languageProfiles: Record<string, LanguageProfile> = {
   en: englishProfile,
   fr: frenchProfile,
   de: germanProfile,
+  he: hebrewProfile,
   hi: hindiProfile,
   id: indonesianProfile,
   it: italianProfile,

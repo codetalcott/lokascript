@@ -185,6 +185,7 @@ const handcraftedLanguages = [
   'th',
   'ms',
   'tl',
+  'he',
 ];
 
 /**

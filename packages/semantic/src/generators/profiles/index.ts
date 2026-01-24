@@ -27,6 +27,7 @@ export { chineseProfile } from './chinese';
 export { englishProfile } from './english';
 export { frenchProfile } from './french';
 export { germanProfile } from './german';
+export { hebrewProfile } from './hebrew';
 export { hindiProfile } from './hindi';
 export { indonesianProfile } from './indonesian';
 export { italianProfile } from './italian';

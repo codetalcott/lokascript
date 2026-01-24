@@ -10,9 +10,9 @@
  * The parser should accept these as valid input.
  */
 
-// All supported languages (23 total)
+// All supported languages (24 total)
 export const ALL_LANGUAGES = [
-  'ar', 'bn', 'de', 'en', 'es', 'fr', 'hi', 'id', 'it', 'ja', 'ko', 'ms',
+  'ar', 'bn', 'de', 'en', 'es', 'fr', 'he', 'hi', 'id', 'it', 'ja', 'ko', 'ms',
   'pl', 'pt', 'qu', 'ru', 'sw', 'th', 'tl', 'tr', 'uk', 'vi', 'zh',
 ] as const;
 
@@ -58,6 +58,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '.active i değiştir',  // Accusative marker required
     id: 'alihkan .active',
     bn: 'toggle .active',  // Bengali - placeholder
+    he: 'החלף .active',  // Hebrew
     hi: 'toggle .active',  // Hindi - placeholder
     ms: 'toggle .active',  // Malay - placeholder
     qu: 'toggle .active',  // Quechua - placeholder
@@ -83,6 +84,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '.highlight i ekle',  // Accusative marker required
     id: 'tambah .highlight',
     bn: 'add .highlight',
+    he: 'הוסף .highlight',  // Hebrew
     hi: 'add .highlight',
     ms: 'tambah .highlight',
     qu: 'add .highlight',
@@ -108,6 +110,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '.highlight i kaldır',  // Accusative marker required
     id: 'hapus .highlight',
     bn: 'remove .highlight',
+    he: 'הסר .highlight',  // Hebrew
     hi: 'remove .highlight',
     ms: 'buang .highlight',
     qu: 'remove .highlight',
@@ -133,6 +136,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '"merhaba" yi #output a koy',
     id: 'taruh "halo" ke dalam #output',
     bn: 'put "hello" into #output',
+    he: 'שים "שלום" לתוך #output',  // Hebrew
     hi: 'put "hello" into #output',
     ms: 'letak "hello" ke #output',
     qu: 'put "hello" into #output',
@@ -158,6 +162,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: 'x i 10 e ayarla',  // Use primary keyword + proper markers
     id: 'atur x ke 10',
     bn: 'set x to 10',
+    he: 'קבע x ל 10',  // Hebrew
     hi: 'set x to 10',
     ms: 'set x ke 10',
     qu: 'set x to 10',
@@ -183,6 +188,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '#element i al',  // Accusative marker required
     id: 'dapatkan #element',
     bn: 'get #element',
+    he: 'קבל #element',  // Hebrew
     hi: 'get #element',
     ms: 'dapatkan #element',
     qu: 'get #element',
@@ -208,6 +214,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '#modal i göster',  // Accusative marker required
     id: 'tampilkan #modal',
     bn: 'show #modal',
+    he: 'הראה #modal',  // Hebrew
     hi: 'show #modal',
     ms: 'tunjuk #modal',
     qu: 'show #modal',
@@ -233,6 +240,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: '#modal i gizle',  // Accusative marker required
     id: 'sembunyikan #modal',
     bn: 'hide #modal',
+    he: 'הסתר #modal',  // Hebrew
     hi: 'hide #modal',
     ms: 'sembunyi #modal',
     qu: 'hide #modal',
@@ -258,6 +266,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: 'counter i artır',  // Accusative marker required
     id: 'tingkatkan counter',
     bn: 'increment counter',
+    he: 'הגדל counter',  // Hebrew
     hi: 'increment counter',
     ms: 'tambah counter',
     qu: 'increment counter',
@@ -283,6 +292,7 @@ export const TEST_CASES: Record<CoreCommand, Record<SupportedLanguage, string>> 
     tr: 'counter i azalt',  // Accusative marker required
     id: 'turunkan counter',
     bn: 'decrement counter',
+    he: 'הקטן counter',  // Hebrew
     hi: 'decrement counter',
     ms: 'kurang counter',
     qu: 'decrement counter',
@@ -332,6 +342,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al clic commutare .active su #button',
     pt: 'ao clique alternar .active em #button',
     pl: 'przy kliknięciu przełącz .active na #button',
+    he: 'בלחיצה החלף .active על #button',  // Hebrew
     en: 'on click toggle .active on #button',
   },
 
@@ -354,6 +365,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al invio commutare .loading',
     pt: 'ao envio alternar .loading',
     pl: 'przy wysłaniu przełącz .loading',
+    he: 'בשליחה החלף .loading',  // Hebrew
     en: 'on submit toggle .loading',
   },
 
@@ -377,6 +389,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al passaggio aggiungere .highlight',
     pt: 'ao sobrevoar adicionar .highlight',
     pl: 'przy najechaniu dodaj .highlight',
+    he: 'בריחוף הוסף .highlight',  // Hebrew
     en: 'on hover add .highlight',
   },
 
@@ -399,6 +412,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al clic rimuovere .error',
     pt: 'ao clique remover .error',
     pl: 'przy kliknięciu usuń .error',
+    he: 'בלחיצה הסר .error',  // Hebrew
     en: 'on click remove .error',
   },
 
@@ -422,6 +436,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al focus mostrare #tooltip',
     pt: 'ao focus mostrar #tooltip',
     pl: 'przy skupieniu pokaż #tooltip',
+    he: 'במיקוד הראה #tooltip',  // Hebrew
     en: 'on focus show #tooltip',
   },
 
@@ -444,6 +459,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al blur nascondere #tooltip',
     pt: 'ao blur ocultar #tooltip',
     pl: 'przy rozmyciu ukryj #tooltip',
+    he: 'בטשטוש הסתר #tooltip',  // Hebrew
     en: 'on blur hide #tooltip',
   },
 
@@ -467,6 +483,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al clic incrementare #counter',
     pt: 'ao clique incrementar #counter',
     pl: 'przy kliknięciu zwiększ #counter',
+    he: 'בלחיצה הגדל #counter',  // Hebrew
     en: 'on click increment #counter',
   },
 
@@ -489,6 +506,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al clic decrementare #counter',
     pt: 'ao clique decrementar #counter',
     pl: 'przy kliknięciu zmniejsz #counter',
+    he: 'בלחיצה הקטן #counter',  // Hebrew
     en: 'on click decrement #counter',
   },
 
@@ -512,6 +530,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al inserimento mettere "test" in #output',
     pt: 'ao entrada colocar "test" em #output',
     pl: 'przy wprowadzeniu umieść "test" do #output',
+    he: 'בהזנה שים "test" לתוך #output',  // Hebrew
     en: 'on input put "test" into #output',
   },
 
@@ -534,6 +553,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al cambio impostare x a 10',
     pt: 'ao alteração definir x para 10',
     pl: 'przy zmianie ustaw x na 10',
+    he: 'בשינוי קבע x ל 10',  // Hebrew
     en: 'on change set x to 10',
   },
 
@@ -557,6 +577,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al clic commutare .active su #button',
     pt: 'ao clique alternar .active em #button',
     pl: 'przy kliknięciu przełącz .active na #button',
+    he: 'בלחיצה החלף .active על #button',  // Hebrew
     en: 'on click toggle .active on #button',
   },
 
@@ -579,6 +600,7 @@ export const EVENT_HANDLER_TEST_CASES = {
     it: 'al passaggio aggiungere .hover su #element',
     pt: 'ao sobrevoar adicionar .hover em #element',
     pl: 'przy najechaniu dodaj .hover na #element',
+    he: 'בריחוף הוסף .hover אל #element',  // Hebrew
     en: 'on hover add .hover to #element',
   },
 
@@ -623,7 +645,7 @@ export type EventHandlerTestCase = keyof typeof EVENT_HANDLER_TEST_CASES;
  */
 export function getEventHandlerTestCase(
   testCase: EventHandlerTestCase,
-  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'en'
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'he' | 'en'
 ): string | undefined {
   return EVENT_HANDLER_TEST_CASES[testCase][language];
 }
@@ -632,7 +654,7 @@ export function getEventHandlerTestCase(
  * Get all event handler test cases for a language.
  */
 export function getEventHandlerTestCasesForLanguage(
-  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'en'
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'he' | 'en'
 ): Record<string, string> {
   const cases: Record<string, string> = {};
   for (const [testName, testValues] of Object.entries(EVENT_HANDLER_TEST_CASES)) {

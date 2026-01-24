@@ -85,6 +85,7 @@ export { vietnameseTokenizer } from './vietnamese';
 export { polishTokenizer } from './polish';
 export { russianTokenizer } from './russian';
 export { ukrainianTokenizer } from './ukrainian';
+export { hebrewTokenizer } from './he';
 export { hindiTokenizer } from './hindi';
 export { bengaliTokenizer } from './bengali';
 export { thaiTokenizer } from './thai';
