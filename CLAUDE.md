@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**LokaScript** is a complete \_hyperscript ecosystem with server-side compilation, multi-language i18n (23 languages including SOV/VSO grammar transformation), semantic-first multilingual parsing, and comprehensive developer tooling.
+**LokaScript** is a complete \_hyperscript ecosystem with server-side compilation, multi-language i18n (24 languages including SOV/VSO grammar transformation), semantic-first multilingual parsing, and comprehensive developer tooling.
 
-- **2838+ tests** passing across all suites
+- **8100+ tests** passing across all suites
 - **203 KB** browser bundle (gzipped, 39% reduction from original)
 - **~85%** compatibility with official \_hyperscript
 
@@ -23,16 +23,16 @@ packages/
 │   │   └── expressions/      # 6 expression categories (references, logical, etc.)
 │   └── dist/                 # Built bundles (lokascript-browser.js)
 │
-├── i18n/           # Internationalization (23 languages + grammar transformation)
+├── i18n/           # Internationalization (24 languages + grammar transformation)
 │   ├── src/
 │   │   ├── grammar/          # SOV/VSO word order transformation
 │   │   ├── dictionaries/     # Per-language keyword dictionaries
 │   │   └── parser/           # Multilingual keyword providers
 │   └── dist/                 # Built bundles (lokascript-i18n.min.js)
 │
-├── semantic/       # Semantic-first multilingual parsing (23 languages)
+├── semantic/       # Semantic-first multilingual parsing (24 languages)
 │   ├── src/
-│   │   ├── tokenizers/       # Language-specific tokenizers (ar, bn, de, en, es, fr, hi, id, it, ja, ko, ms, pl, pt, qu, ru, sw, th, tl, tr, uk, vi, zh)
+│   │   ├── tokenizers/       # Language-specific tokenizers (ar, bn, de, en, es, fr, he, hi, id, it, ja, ko, ms, pl, pt, qu, ru, sw, th, tl, tr, uk, vi, zh)
 │   │   ├── generators/       # Pattern generation from command schemas
 │   │   ├── parser/           # Semantic parser with confidence scoring
 │   │   └── explicit/         # Language-agnostic intermediate representation
@@ -61,7 +61,7 @@ npm run test:quick --prefix packages/core           # Build + test (<10 sec)
 npm run test:comprehensive --prefix packages/core   # Full browser suite
 
 # Unit tests
-npm test --prefix packages/core                     # Run vitest (2700+ tests)
+npm test --prefix packages/core                     # Run vitest (4500+ tests)
 npm test --prefix packages/core -- --run src/expressions/  # Test specific module
 
 # Build
@@ -90,7 +90,7 @@ npm run typecheck --prefix packages/i18n
 
 ```bash
 # Tests
-npm test --prefix packages/semantic                     # Run vitest (730+ tests)
+npm test --prefix packages/semantic                     # Run vitest (3100+ tests)
 npm test --prefix packages/semantic -- --run            # Single run
 
 # Build
@@ -119,7 +119,7 @@ npx http-server . -p 3000 -c-1
 
 # Test pages:
 # http://127.0.0.1:3000/examples/multilingual/index.html        # Grammar demo (i18n)
-# http://127.0.0.1:3000/examples/multilingual/semantic-demo.html # Semantic parser demo (23 languages)
+# http://127.0.0.1:3000/examples/multilingual/semantic-demo.html # Semantic parser demo (24 languages)
 # http://127.0.0.1:3000/packages/core/compatibility-test.html   # Side-by-side comparison
 ```
 
@@ -205,7 +205,7 @@ import { MultilingualHyperscript } from '@lokascript/core';
 const ml = new MultilingualHyperscript();
 await ml.initialize();
 
-// Parse from any of 23 languages
+// Parse from any of 24 languages
 const node = await ml.parse('#button の .active を 切り替え', 'ja');
 
 // Translate between any languages
@@ -216,7 +216,7 @@ Key files:
 
 - `packages/core/src/multilingual/index.ts` - `MultilingualHyperscript` unified API
 - `packages/core/src/multilingual/bridge.ts` - `SemanticGrammarBridge` integration layer
-- `packages/semantic/src/tokenizers/` - 13 language tokenizers
+- `packages/semantic/src/tokenizers/` - 24 language tokenizers
 - `packages/semantic/src/parser/semantic-parser.ts` - Main semantic parser
 - `packages/semantic/CLAUDE.md` - Package-specific documentation
 
@@ -524,7 +524,7 @@ See [TYPE_SAFETY_DESIGN.md](TYPE_SAFETY_DESIGN.md) for implementation details.
 | `packages/i18n/src/grammar/transformer.ts`        | GrammarTransformer class                    |
 | `packages/i18n/src/browser.ts`                    | Browser bundle exports                      |
 | `packages/semantic/src/parser/semantic-parser.ts` | Semantic parser                             |
-| `packages/semantic/src/tokenizers/`               | 13 language tokenizers                      |
+| `packages/semantic/src/tokenizers/`               | 24 language tokenizers                      |
 | `packages/core/src/api/hyperscript-api.ts`        | Main API implementation (v2)                |
 | `packages/core/docs/API.md`                       | API documentation                           |
 | `roadmap/plan.md`                                 | Development context and status              |
@@ -686,7 +686,7 @@ See [bundle-configs/README.md](packages/core/bundle-configs/README.md) for full 
 
 | Bundle                                    | Global                        | Size (gzip) | Languages          |
 | ----------------------------------------- | ----------------------------- | ----------- | ------------------ |
-| `browser.global.js`                       | `LokaScriptSemantic`          | 61 KB       | All 13             |
+| `browser.global.js`                       | `LokaScriptSemantic`          | 90 KB       | All 24             |
 | `browser-priority.priority.global.js`     | `LokaScriptSemanticPriority`  | 48 KB       | 11 priority        |
 | `browser-western.western.global.js`       | `LokaScriptSemanticWestern`   | 30 KB       | en, es, pt, fr, de |
 | `browser-east-asian.east-asian.global.js` | `LokaScriptSemanticEastAsian` | 24 KB       | ja, zh, ko         |
@@ -705,7 +705,7 @@ For developers writing hyperscript in their native language:
 <script src="lokascript-semantic.browser.global.js"></script>
 <script src="lokascript-multilingual.js"></script>
 <script>
-  // Execute in any of 13 supported languages
+  // Execute in any of 24 supported languages
   await lokascript.execute('토글 .active', 'ko');      // Korean
   await lokascript.execute('トグル .active', 'ja');    // Japanese
   await lokascript.execute('alternar .active', 'es');  // Spanish
@@ -727,7 +727,7 @@ For developers writing hyperscript in their native language:
   // Grammar transformation (i18n)
   const result = LokaScriptI18n.translate('on click toggle .active', 'en', 'ja');
 
-  // Semantic parsing (23 languages)
+  // Semantic parsing (24 languages)
   const parsed = LokaScriptSemantic.parse('トグル .active', 'ja');
   const translations = LokaScriptSemantic.getAllTranslations('toggle .active', 'en');
 </script>

@@ -52,20 +52,38 @@ const LANGUAGES = {
   id: { name: 'Indonesian', profile: 'indonesianProfile', tokenizer: 'indonesianTokenizer' },
   qu: { name: 'Quechua', profile: 'quechuaProfile', tokenizer: 'quechuaTokenizer' },
   sw: { name: 'Swahili', profile: 'swahiliProfile', tokenizer: 'swahiliTokenizer' },
+  // Additional languages (added 2026-01-24)
+  it: { name: 'Italian', profile: 'italianProfile', tokenizer: 'italianTokenizer' },
+  ru: { name: 'Russian', profile: 'russianProfile', tokenizer: 'russianTokenizer' },
+  pl: { name: 'Polish', profile: 'polishProfile', tokenizer: 'polishTokenizer' },
+  hi: { name: 'Hindi', profile: 'hindiProfile', tokenizer: 'hindiTokenizer' },
+  th: { name: 'Thai', profile: 'thaiProfile', tokenizer: 'thaiTokenizer' },
+  vi: { name: 'Vietnamese', profile: 'vietnameseProfile', tokenizer: 'vietnameseTokenizer' },
+  uk: { name: 'Ukrainian', profile: 'ukrainianProfile', tokenizer: 'ukrainianTokenizer' },
+  bn: { name: 'Bengali', profile: 'bengaliProfile', tokenizer: 'bengaliTokenizer' },
+  tl: { name: 'Tagalog', profile: 'tagalogProfile', tokenizer: 'tagalogTokenizer' },
+  he: { name: 'Hebrew', profile: 'hebrewProfile', tokenizer: 'hebrewTokenizer' },
+  ms: { name: 'Malay', profile: 'malayProfile', tokenizer: 'malayTokenizer' },
 };
 
 // Predefined language groups
 const LANGUAGE_GROUPS = {
-  western: ['en', 'es', 'pt', 'fr', 'de'],
-  'east-asian': ['ja', 'zh', 'ko'],
+  western: ['en', 'es', 'pt', 'fr', 'de', 'it'],
+  'east-asian': ['ja', 'zh', 'ko', 'th', 'vi'],
+  'south-asian': ['hi', 'bn'],
+  slavic: ['ru', 'pl', 'uk'],
+  semitic: ['ar', 'he'],
   priority: ['en', 'es', 'pt', 'fr', 'de', 'ja', 'zh', 'ko', 'ar', 'tr', 'id'],
-  all: ['en', 'es', 'pt', 'fr', 'de', 'ja', 'zh', 'ko', 'ar', 'tr', 'id', 'qu', 'sw'],
+  all: ['en', 'es', 'pt', 'fr', 'de', 'ja', 'zh', 'ko', 'ar', 'tr', 'id', 'qu', 'sw', 'it', 'ru', 'pl', 'hi', 'th', 'vi', 'uk', 'bn', 'tl', 'he', 'ms'],
 };
 
 // Approximate bundle sizes (KB) for each language - based on actual measurements
 const SIZES = {
   en: 25, es: 22, ja: 28, ar: 24, ko: 22, zh: 20,
   tr: 20, pt: 22, fr: 22, de: 24, id: 18, qu: 16, sw: 18,
+  // Additional languages (estimated based on similar languages)
+  it: 22, ru: 24, pl: 22, hi: 26, th: 24, vi: 20,
+  uk: 24, bn: 26, tl: 20, he: 24, ms: 18,
   base: 45, // Core parsing infrastructure
 };
 
@@ -141,10 +159,13 @@ Options:
   --help, -h     Show this help message
 
 Language Groups:
-  western        en, es, pt, fr, de (~30 KB gzip)
-  east-asian     ja, zh, ko (~24 KB gzip)
+  western        en, es, pt, fr, de, it (~35 KB gzip)
+  east-asian     ja, zh, ko, th, vi (~40 KB gzip)
+  south-asian    hi, bn (~30 KB gzip)
+  slavic         ru, pl, uk (~35 KB gzip)
+  semitic        ar, he (~30 KB gzip)
   priority       11 priority languages (~48 KB gzip)
-  all            All 13 languages (~61 KB gzip)
+  all            All 24 languages (~90 KB gzip)
 
 Examples:
   node scripts/generate-bundle.mjs es              # Spanish-only
@@ -228,7 +249,11 @@ function printSizeEstimate(languages) {
 const TOKENIZER_FILE_MAP = {
   en: 'english', es: 'spanish', ja: 'japanese', ar: 'arabic',
   ko: 'korean', zh: 'chinese', tr: 'turkish', pt: 'portuguese',
-  fr: 'french', de: 'german', id: 'indonesian', qu: 'quechua', sw: 'swahili'
+  fr: 'french', de: 'german', id: 'indonesian', qu: 'quechua', sw: 'swahili',
+  // Additional languages
+  it: 'italian', ru: 'russian', pl: 'polish', hi: 'hindi',
+  th: 'thai', vi: 'vietnamese', uk: 'ukrainian', bn: 'bengali',
+  tl: 'tl', he: 'he', ms: 'ms'
 };
 
 function generateEntryPoint(languages) {

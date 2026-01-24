@@ -327,7 +327,8 @@ jobs:
           cd packages/testing-framework
           # Excluding QU (Quechua), BN (Bengali), MS (Malay) - need more development
           # All languages now pass at 100% (JA, KO, TR, AR all fixed as of Jan 2026)
-          npx tsx src/multilingual/cli.ts --languages ar,de,en,es,fr,hi,id,it,ja,ko,pl,pt,ru,sw,th,tl,tr,uk,vi,zh --full --bundle browser-priority
+          # Hebrew (HE) added Jan 2026 after configuration fix
+          npx tsx src/multilingual/cli.ts --languages ar,de,en,es,fr,he,hi,id,it,ja,ko,pl,pt,ru,sw,th,tl,tr,uk,vi,zh --full --bundle browser-priority
         continue-on-error: true # Shell spawning issues in CI environment may cause failures
 
       - name: Upload test results
