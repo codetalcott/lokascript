@@ -168,6 +168,12 @@ export const russianProfile: LanguageProfile = {
       form: 'infinitive',
     },
     blur: { primary: 'размыть', alternatives: ['размой'], normalized: 'blur', form: 'infinitive' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'клик', alternatives: ['клике', 'нажатии'], normalized: 'click' },
+    hover: { primary: 'наведении', alternatives: ['наведение'], normalized: 'hover' },
+    submit: { primary: 'отправке', alternatives: ['отправка'], normalized: 'submit' },
+    input: { primary: 'вводе', alternatives: ['ввод'], normalized: 'input' },
+    change: { primary: 'изменении', alternatives: ['изменение'], normalized: 'change' },
     // Navigation
     go: {
       primary: 'перейти',
@@ -256,5 +262,10 @@ export const russianProfile: LanguageProfile = {
   eventHandler: {
     keyword: { primary: 'при', alternatives: ['когда'], normalized: 'on' },
     sourceMarker: { primary: 'на', alternatives: ['в', 'при'], position: 'before' },
+    // Event marker: при (at/on/upon), used in SVO pattern
+    // Pattern: при [event] [verb] [patient] на [destination?]
+    // Example: при клике переключить .active на #button
+    eventMarker: { primary: 'при', alternatives: ['когда'], position: 'before' },
+    temporalMarkers: ['когда', 'если'], // temporal conjunctions (when, if)
   },
 };
