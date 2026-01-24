@@ -78,6 +78,12 @@ export const chineseProfile: LanguageProfile = {
     // DOM focus
     focus: { primary: '聚焦', normalized: 'focus' },
     blur: { primary: '失焦', normalized: 'blur' },
+    // Common event names (for event handler patterns)
+    click: { primary: '点击', normalized: 'click' },
+    hover: { primary: '悬停', alternatives: ['悬浮'], normalized: 'hover' },
+    submit: { primary: '提交', normalized: 'submit' },
+    input: { primary: '输入', normalized: 'input' },
+    change: { primary: '改变', alternatives: ['变化'], normalized: 'change' },
     // Navigation
     go: { primary: '前往', normalized: 'go' },
     // Async
@@ -120,5 +126,14 @@ export const chineseProfile: LanguageProfile = {
   },
   tokenization: {
     boundaryStrategy: 'character',
+  },
+  eventHandler: {
+    keyword: { primary: '当', alternatives: ['在...时'], normalized: 'on' },
+    sourceMarker: { primary: '从', position: 'before' },
+    // Event marker: 当 (when), used in SVO pattern
+    // Pattern: 当 [event] [verb] [patient] 在 [destination?]
+    // Example: 当 点击 切换 .active 在 #button
+    eventMarker: { primary: '当', alternatives: ['在'], position: 'before' },
+    temporalMarkers: ['当', '在...时'], // temporal conjunctions (when)
   },
 };
