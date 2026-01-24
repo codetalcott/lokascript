@@ -328,6 +328,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhấp chuyển đổi .active vào #button',
     id: 'saat klik alihkan .active pada #button',
     de: 'bei Klick umschalten .active auf #button',
+    fr: 'au clic basculer .active sur #button',
+    it: 'al clic commutare .active su #button',
+    pt: 'ao clique alternar .active em #button',
+    pl: 'przy kliknięciu przełącz .active na #button',
     en: 'on click toggle .active on #button',
   },
 
@@ -346,6 +350,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi gửi chuyển đổi .loading',
     id: 'saat kirim alihkan .loading',
     de: 'bei Absenden umschalten .loading',
+    fr: 'au soumission basculer .loading',
+    it: 'al invio commutare .loading',
+    pt: 'ao envio alternar .loading',
+    pl: 'przy wysłaniu przełącz .loading',
     en: 'on submit toggle .loading',
   },
 
@@ -365,6 +373,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi di chuột thêm .highlight',
     id: 'saat hover tambah .highlight',
     de: 'bei Hover hinzufügen .highlight',
+    fr: 'au survol ajouter .highlight',
+    it: 'al passaggio aggiungere .highlight',
+    pt: 'ao sobrevoar adicionar .highlight',
+    pl: 'przy najechaniu dodaj .highlight',
     en: 'on hover add .highlight',
   },
 
@@ -383,6 +395,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhấp xóa .error',
     id: 'saat klik hapus .error',
     de: 'bei Klick entfernen .error',
+    fr: 'au clic supprimer .error',
+    it: 'al clic rimuovere .error',
+    pt: 'ao clique remover .error',
+    pl: 'przy kliknięciu usuń .error',
     en: 'on click remove .error',
   },
 
@@ -402,6 +418,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi tập trung hiển thị #tooltip',
     id: 'saat fokus tampilkan #tooltip',
     de: 'bei Fokus zeigen #tooltip',
+    fr: 'au focus montrer #tooltip',
+    it: 'al focus mostrare #tooltip',
+    pt: 'ao focus mostrar #tooltip',
+    pl: 'przy skupieniu pokaż #tooltip',
     en: 'on focus show #tooltip',
   },
 
@@ -420,6 +440,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi mất tập trung ẩn #tooltip',
     id: 'saat blur sembunyikan #tooltip',
     de: 'bei Defokus verbergen #tooltip',
+    fr: 'au blur cacher #tooltip',
+    it: 'al blur nascondere #tooltip',
+    pt: 'ao blur ocultar #tooltip',
+    pl: 'przy rozmyciu ukryj #tooltip',
     en: 'on blur hide #tooltip',
   },
 
@@ -439,6 +463,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhấp tăng #counter',
     id: 'saat klik tingkatkan #counter',
     de: 'bei Klick erhöhen #counter',
+    fr: 'au clic incrémenter #counter',
+    it: 'al clic incrementare #counter',
+    pt: 'ao clique incrementar #counter',
+    pl: 'przy kliknięciu zwiększ #counter',
     en: 'on click increment #counter',
   },
 
@@ -457,6 +485,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhấp giảm #counter',
     id: 'saat klik turunkan #counter',
     de: 'bei Klick verringern #counter',
+    fr: 'au clic décrémenter #counter',
+    it: 'al clic decrementare #counter',
+    pt: 'ao clique decrementar #counter',
+    pl: 'przy kliknięciu zmniejsz #counter',
     en: 'on click decrement #counter',
   },
 
@@ -476,6 +508,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhập đặt "test" vào #output',
     id: 'saat masuk taruh "test" pada #output',
     de: 'bei Eingabe setzen "test" auf #output',
+    fr: 'au saisie mettre "test" dans #output',
+    it: 'al inserimento mettere "test" in #output',
+    pt: 'ao entrada colocar "test" em #output',
+    pl: 'przy wprowadzeniu umieść "test" do #output',
     en: 'on input put "test" into #output',
   },
 
@@ -494,6 +530,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi thay đổi gán x thành 10',
     id: 'saat ubah atur x ke 10',
     de: 'bei Änderung festlegen x auf 10',
+    fr: 'au changement définir x à 10',
+    it: 'al cambio impostare x a 10',
+    pt: 'ao alteração definir x para 10',
+    pl: 'przy zmianie ustaw x na 10',
     en: 'on change set x to 10',
   },
 
@@ -513,6 +553,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi nhấp chuyển đổi .active vào #button',
     id: 'saat klik alihkan .active pada #button',
     de: 'bei Klick umschalten .active auf #button',
+    fr: 'au clic basculer .active sur #button',
+    it: 'al clic commutare .active su #button',
+    pt: 'ao clique alternar .active em #button',
+    pl: 'przy kliknięciu przełącz .active na #button',
     en: 'on click toggle .active on #button',
   },
 
@@ -531,6 +575,10 @@ export const EVENT_HANDLER_TEST_CASES = {
     vi: 'khi di chuột thêm .hover vào #element',
     id: 'saat hover tambah .hover pada #element',
     de: 'bei Hover hinzufügen .hover auf #element',
+    fr: 'au survol ajouter .hover sur #element',
+    it: 'al passaggio aggiungere .hover su #element',
+    pt: 'ao sobrevoar adicionar .hover em #element',
+    pl: 'przy najechaniu dodaj .hover na #element',
     en: 'on hover add .hover to #element',
   },
 
@@ -575,7 +623,7 @@ export type EventHandlerTestCase = keyof typeof EVENT_HANDLER_TEST_CASES;
  */
 export function getEventHandlerTestCase(
   testCase: EventHandlerTestCase,
-  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'en'
+  language: 'ja' | 'ko' | 'tr' | 'ar' | 'hi' | 'bn' | 'ru' | 'uk' | 'th' | 'zh' | 'es' | 'vi' | 'id' | 'de' | 'fr' | 'it' | 'pt' | 'pl' | 'en'
 ): string | undefined {
   return EVENT_HANDLER_TEST_CASES[testCase][language];
 }

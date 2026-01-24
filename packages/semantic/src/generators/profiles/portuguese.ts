@@ -107,9 +107,25 @@ export const portugueseProfile: LanguageProfile = {
     into: { primary: 'em', alternatives: ['dentro de'], normalized: 'into' },
     before: { primary: 'antes', normalized: 'before' },
     after: { primary: 'depois', normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'clique', alternatives: ['clicar'], normalized: 'click' },
+    hover: { primary: 'sobrevoar', alternatives: ['passar'], normalized: 'hover' },
+    submit: { primary: 'envio', alternatives: ['submeter'], normalized: 'submit' },
+    input: { primary: 'entrada', alternatives: ['inserção'], normalized: 'input' },
+    change: { primary: 'alteração', alternatives: ['mudança'], normalized: 'change' },
     // Event modifiers (for repeat until event)
     until: { primary: 'até', normalized: 'until' },
     event: { primary: 'evento', normalized: 'event' },
     from: { primary: 'de', alternatives: ['desde'], normalized: 'from' },
+  },
+  eventHandler: {
+    keyword: { primary: 'em', alternatives: ['ao', 'quando'], normalized: 'on' },
+    sourceMarker: { primary: 'de', alternatives: ['desde'], position: 'before' },
+    conditionalKeyword: { primary: 'quando', alternatives: ['se'] },
+    // Event marker: ao (at/upon), used in SVO pattern
+    // Pattern: ao [event] [verb] [patient] em [destination?]
+    // Example: ao clique alternar .active em #button
+    eventMarker: { primary: 'ao', alternatives: ['no'], position: 'before' },
+    temporalMarkers: ['quando', 'ao'], // temporal conjunctions (when)
   },
 };

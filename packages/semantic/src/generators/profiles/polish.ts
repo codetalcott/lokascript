@@ -237,6 +237,12 @@ export const polishProfile: LanguageProfile = {
     into: { primary: 'do', alternatives: ['w'], normalized: 'into' },
     before: { primary: 'przed', normalized: 'before' },
     after: { primary: 'po', normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'kliknięciu', alternatives: ['klikniecie', 'klik'], normalized: 'click' },
+    hover: { primary: 'najechaniu', alternatives: ['hover'], normalized: 'hover' },
+    submit: { primary: 'wysłaniu', alternatives: ['wyslaniu', 'submit'], normalized: 'submit' },
+    input: { primary: 'wprowadzeniu', alternatives: ['input'], normalized: 'input' },
+    change: { primary: 'zmianie', alternatives: ['zmiana'], normalized: 'change' },
     // Event modifiers
     until: { primary: 'aż', alternatives: ['az', 'do'], normalized: 'until' },
     event: { primary: 'zdarzenie', normalized: 'event' },
@@ -245,5 +251,11 @@ export const polishProfile: LanguageProfile = {
   eventHandler: {
     keyword: { primary: 'gdy', alternatives: ['kiedy', 'przy', 'na'], normalized: 'on' },
     sourceMarker: { primary: 'na', alternatives: ['w', 'przy'], position: 'before' },
+    conditionalKeyword: { primary: 'kiedy', alternatives: ['gdy', 'jeśli'] },
+    // Event marker: przy (at/on), used in SVO pattern
+    // Pattern: przy [event] [verb] [patient] na [destination?]
+    // Example: przy kliknięciu przełącz .active na #button
+    eventMarker: { primary: 'przy', alternatives: ['na'], position: 'before' },
+    temporalMarkers: ['kiedy', 'gdy', 'przy'], // temporal conjunctions (when, at)
   },
 };

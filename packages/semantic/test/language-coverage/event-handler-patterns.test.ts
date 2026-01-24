@@ -30,7 +30,7 @@ import {
   type EventHandlerTestCase,
 } from './test-cases';
 
-const TARGET_LANGUAGES = ['ja', 'ko', 'tr', 'ar', 'hi', 'bn', 'ru', 'uk', 'th', 'zh', 'es', 'vi', 'id', 'de'] as const;
+const TARGET_LANGUAGES = ['ja', 'ko', 'tr', 'ar', 'hi', 'bn', 'ru', 'uk', 'th', 'zh', 'es', 'vi', 'id', 'de', 'fr', 'it', 'pt', 'pl'] as const;
 type TargetLanguage = typeof TARGET_LANGUAGES[number];
 
 // =============================================================================
@@ -188,6 +188,10 @@ describe('Baseline Metrics (Phase 1.1)', () => {
       vi: { total: 0, passed: 0, failed: 0 },
       id: { total: 0, passed: 0, failed: 0 },
       de: { total: 0, passed: 0, failed: 0 },
+      fr: { total: 0, passed: 0, failed: 0 },
+      it: { total: 0, passed: 0, failed: 0 },
+      pt: { total: 0, passed: 0, failed: 0 },
+      pl: { total: 0, passed: 0, failed: 0 },
     };
 
     for (const lang of TARGET_LANGUAGES) {
@@ -243,6 +247,10 @@ describe('Baseline Metrics (Phase 1.1)', () => {
       vi: [],
       id: [],
       de: [],
+      fr: [],
+      it: [],
+      pt: [],
+      pl: [],
     };
 
     for (const lang of TARGET_LANGUAGES) {

@@ -112,14 +112,25 @@ export const frenchProfile: LanguageProfile = {
     into: { primary: 'dans', normalized: 'into' },
     before: { primary: 'avant', normalized: 'before' },
     after: { primary: 'après', normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'clic', alternatives: ['clique'], normalized: 'click' },
+    hover: { primary: 'survol', alternatives: ['survoler'], normalized: 'hover' },
+    submit: { primary: 'soumission', alternatives: ['soumettre'], normalized: 'submit' },
+    input: { primary: 'saisie', alternatives: ['entrée'], normalized: 'input' },
+    change: { primary: 'changement', alternatives: ['modifier'], normalized: 'change' },
     // Event modifiers (for repeat until event)
     until: { primary: "jusqu'à", alternatives: ['jusque'], normalized: 'until' },
     event: { primary: 'événement', normalized: 'event' },
     from: { primary: 'de', alternatives: ['depuis'], normalized: 'from' },
   },
   eventHandler: {
-    keyword: { primary: 'sur', alternatives: ['lors'] },
+    keyword: { primary: 'sur', alternatives: ['lors'], normalized: 'on' },
     sourceMarker: { primary: 'de', alternatives: ['depuis'], position: 'before' },
     conditionalKeyword: { primary: 'quand', alternatives: ['lorsque'] },
+    // Event marker: au (at/upon), used in SVO pattern
+    // Pattern: au [event] [verb] [patient] sur [destination?]
+    // Example: au clic basculer .active sur #button
+    eventMarker: { primary: 'au', alternatives: ['lors du', 'lors de'], position: 'before' },
+    temporalMarkers: ['quand', 'lorsque'], // temporal conjunctions (when)
   },
 };

@@ -131,9 +131,25 @@ export const italianProfile: LanguageProfile = {
     into: { primary: 'in', alternatives: ['dentro'], normalized: 'into' },
     before: { primary: 'prima', normalized: 'before' },
     after: { primary: 'dopo', normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'clic', alternatives: ['clicca'], normalized: 'click' },
+    hover: { primary: 'passaggio', alternatives: ['sorvolo'], normalized: 'hover' },
+    submit: { primary: 'invio', alternatives: ['inviare'], normalized: 'submit' },
+    input: { primary: 'inserimento', alternatives: ['input'], normalized: 'input' },
+    change: { primary: 'cambio', alternatives: ['cambiamento'], normalized: 'change' },
     // Event modifiers
     until: { primary: 'fino', normalized: 'until' },
     event: { primary: 'evento', normalized: 'event' },
     from: { primary: 'da', alternatives: ['di'], normalized: 'from' },
+  },
+  eventHandler: {
+    keyword: { primary: 'su', alternatives: ['al', 'quando'], normalized: 'on' },
+    sourceMarker: { primary: 'da', alternatives: ['di'], position: 'before' },
+    conditionalKeyword: { primary: 'quando', alternatives: ['se'] },
+    // Event marker: al (at/upon), used in SVO pattern
+    // Pattern: al [event] [verb] [patient] su [destination?]
+    // Example: al clic commutare .active su #button
+    eventMarker: { primary: 'al', alternatives: ['allo', 'alla'], position: 'before' },
+    temporalMarkers: ['quando', 'al'], // temporal conjunctions (when)
   },
 };
