@@ -112,14 +112,25 @@ export const indonesianProfile: LanguageProfile = {
     into: { primary: 'ke dalam', normalized: 'into' },
     before: { primary: 'sebelum', normalized: 'before' },
     after: { primary: 'sesudah', alternatives: ['setelah'], normalized: 'after' },
+    // Common event names (for event handler patterns)
+    click: { primary: 'klik', alternatives: ['tekan'], normalized: 'click' },
+    hover: { primary: 'hover', alternatives: ['arahkan'], normalized: 'hover' },
+    submit: { primary: 'kirim', alternatives: ['submit'], normalized: 'submit' },
+    input: { primary: 'masuk', alternatives: ['input'], normalized: 'input' },
+    change: { primary: 'ubah', alternatives: ['berubah'], normalized: 'change' },
     // Event modifiers (for repeat until event)
     until: { primary: 'sampai', normalized: 'until' },
     event: { primary: 'peristiwa', alternatives: ['event'], normalized: 'event' },
     from: { primary: 'dari', normalized: 'from' },
   },
   eventHandler: {
-    keyword: { primary: 'pada', alternatives: ['ketika', 'saat'] },
+    keyword: { primary: 'pada', alternatives: ['ketika', 'saat'], normalized: 'on' },
     sourceMarker: { primary: 'dari', position: 'before' },
     conditionalKeyword: { primary: 'ketika', alternatives: ['saat', 'waktu'] },
+    // Event marker: saat (when), used in SVO pattern
+    // Pattern: saat [event] [verb] [patient] pada [destination?]
+    // Example: saat klik alihkan .active pada #button
+    eventMarker: { primary: 'saat', alternatives: ['ketika'], position: 'before' },
+    temporalMarkers: ['ketika', 'saat'], // temporal conjunctions (when)
   },
 };
