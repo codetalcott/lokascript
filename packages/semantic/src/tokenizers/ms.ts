@@ -54,10 +54,13 @@ const MALAY_EXTRAS: KeywordEntry[] = [
   // Events
   { native: 'klik', normalized: 'click' },
   { native: 'berubah', normalized: 'change' },
+  { native: 'ubah', normalized: 'change' }, // Alternative for change
   { native: 'hantar', normalized: 'submit' },
   { native: 'input', normalized: 'input' },
+  { native: 'masuk', normalized: 'input' }, // Alternative for input (means "enter")
   { native: 'muat', normalized: 'load' },
   { native: 'tatal', normalized: 'scroll' },
+  { native: 'hover', normalized: 'hover' }, // English loanword commonly used
 ];
 
 // =============================================================================

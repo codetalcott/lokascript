@@ -237,6 +237,14 @@ export class QuechuaTokenizer extends BaseTokenizer {
       }
 
       if (isQuechuaLetter(input[pos])) {
+        // Try multi-word keywords first (e.g., "mana qhawachiy" = blur)
+        const multiWordToken = this.tryMultiWordKeyword(input, pos);
+        if (multiWordToken) {
+          tokens.push(multiWordToken);
+          pos = multiWordToken.position.end;
+          continue;
+        }
+
         const wordToken = this.extractWord(input, pos);
         if (wordToken) {
           tokens.push(wordToken);
@@ -318,6 +326,49 @@ export class QuechuaTokenizer extends BaseTokenizer {
 
     // No suffix found, return original token
     return [selectorToken];
+  }
+
+  /**
+   * Try to match multi-word keywords that should be treated as a single unit.
+   * E.g., "mana qhawachiy" (not focus = blur)
+   */
+  private tryMultiWordKeyword(input: string, pos: number): LanguageToken | null {
+    // Multi-word keywords (longest first)
+    const multiWordKeywords: Array<{ pattern: string; normalized: string }> = [
+      { pattern: 'mana qhawachiy', normalized: 'blur' },
+      { pattern: 'mana qhaway', normalized: 'blur' },
+      { pattern: 'mana riqsisqa', normalized: 'undefined' },
+      { pattern: 'mana waqtalla', normalized: 'async' },
+      { pattern: 'ñawpaq kaq', normalized: 'previous' },
+      { pattern: 'aswan qayllaqa', normalized: 'closest' },
+      { pattern: 'llave uray', normalized: 'keydown' },
+      { pattern: 'llave hawa', normalized: 'keyup' },
+      { pattern: 'mausiri yayku', normalized: 'mouseover' },
+      { pattern: 'mausiri lluqsi', normalized: 'mouseout' },
+      { pattern: 'waranqa sikundu', normalized: 'ms' },
+    ];
+
+    const inputLower = input.toLowerCase();
+    for (const { pattern, normalized } of multiWordKeywords) {
+      if (inputLower.slice(pos, pos + pattern.length) === pattern) {
+        // Check that it's followed by whitespace or end of input
+        const endPos = pos + pattern.length;
+        if (
+          endPos >= input.length ||
+          isWhitespace(input[endPos]) ||
+          !isQuechuaLetter(input[endPos])
+        ) {
+          return createToken(
+            input.slice(pos, endPos),
+            'keyword',
+            createPosition(pos, endPos),
+            normalized
+          );
+        }
+      }
+    }
+
+    return null;
   }
 
   private extractWord(input: string, startPos: number): LanguageToken | null {

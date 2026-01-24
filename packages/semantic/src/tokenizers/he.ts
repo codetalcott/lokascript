@@ -64,6 +64,35 @@ const CONJUNCTIONS = new Map<string, string>([
 ]);
 
 /**
+ * Hebrew event marker prefixes that attach to event names.
+ * These indicate "on/at/when" an event occurs.
+ */
+const EVENT_MARKER_PREFIXES = new Map<string, string>([
+  ['ב', 'on'], // b' - "at/in/on" (event marker)
+  ['כ', 'when'], // k' - "as/when" (temporal)
+]);
+
+/**
+ * Hebrew event names that can follow event marker prefixes.
+ */
+const EVENT_NAMES = new Set([
+  'לחיצה', // click
+  'קליק', // click (loanword)
+  'שליחה', // submit
+  'הגשה', // submit (alternative)
+  'ריחוף', // hover
+  'מעבר', // hover/transition
+  'שינוי', // change
+  'עדכון', // update/change
+  'קלט', // input
+  'הזנה', // input (alternative)
+  'מיקוד', // focus
+  'טשטוש', // blur
+  'טעינה', // load
+  'גלילה', // scroll
+]);
+
+/**
  * Hebrew prepositions (standalone).
  */
 const PREPOSITIONS = new Set([
@@ -243,6 +272,15 @@ export class HebrewTokenizer extends BaseTokenizer {
 
       // Try Hebrew word (with prefix detection)
       if (isHebrew(input[pos])) {
+        // Check for event marker prefix (ב, כ) attached to event name
+        const eventMarkerResult = this.tryEventMarkerPrefix(input, pos);
+        if (eventMarkerResult) {
+          tokens.push(eventMarkerResult.marker);
+          tokens.push(eventMarkerResult.event);
+          pos = eventMarkerResult.event.position.end;
+          continue;
+        }
+
         // Check for conjunction prefix (ו) attached to following word
         const prefixResult = this.tryPrefixConjunction(input, pos);
         if (prefixResult) {
@@ -369,6 +407,64 @@ export class HebrewTokenizer extends BaseTokenizer {
       return {
         conjunction: createToken(char, 'conjunction', createPosition(pos, nextPos), conjEntry),
       };
+    }
+
+    return null;
+  }
+
+  /**
+   * Try to extract an event marker prefix (ב, כ) attached to an event name.
+   *
+   * Hebrew event markers attach directly to event names without space:
+   * - בלחיצה → ב + לחיצה (on + click)
+   * - כשינוי → כ + שינוי (when + change)
+   *
+   * Returns both the marker token and the event name token if successful.
+   */
+  private tryEventMarkerPrefix(
+    input: string,
+    pos: number
+  ): { marker: LanguageToken; event: LanguageToken } | null {
+    const char = input[pos];
+    const markerNormalized = EVENT_MARKER_PREFIXES.get(char);
+
+    if (!markerNormalized) return null;
+
+    // Check if there's a following Hebrew character
+    const nextPos = pos + 1;
+    if (nextPos >= input.length || !isHebrew(input[nextPos])) {
+      return null;
+    }
+
+    // Extract the word after the prefix
+    let wordEnd = nextPos;
+    while (wordEnd < input.length && isHebrew(input[wordEnd])) {
+      wordEnd++;
+    }
+    const afterPrefix = input.slice(nextPos, wordEnd);
+
+    // Check if it's a known event name
+    if (EVENT_NAMES.has(afterPrefix)) {
+      // Found event marker + event name: split into two tokens
+      const markerToken = createToken(
+        char,
+        'keyword',
+        createPosition(pos, nextPos),
+        markerNormalized // normalized to 'on' or 'when'
+      );
+
+      // Look up the event name to get its normalized form
+      const eventKeywordEntry = this.lookupKeyword(afterPrefix);
+      const eventToken = eventKeywordEntry
+        ? createToken(
+            afterPrefix,
+            'keyword',
+            createPosition(nextPos, wordEnd),
+            eventKeywordEntry.normalized
+          )
+        : createToken(afterPrefix, 'keyword', createPosition(nextPos, wordEnd));
+
+      return { marker: markerToken, event: eventToken };
     }
 
     return null;
