@@ -104,6 +104,12 @@ jobs:
           name: build-artifacts
           path: .
 
+      - name: Debug artifact download
+        run: |
+          echo "=== Checking artifact download ==="
+          ls -la packages/semantic/dist/ | head -10 || echo "packages/semantic/dist/ not found"
+          ls -la packages/core/dist/ | head -5 || echo "packages/core/dist/ not found"
+
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
