@@ -105,7 +105,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Run ESLint (public packages)
         run: |
@@ -151,7 +151,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Test core
         run: npm test --prefix packages/core -- --run
@@ -197,7 +197,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Generate coverage - core
         run: npm run test:coverage --prefix packages/core
@@ -267,7 +267,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Run Playwright tests
         run: npx playwright test --project=quick
@@ -311,7 +311,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Populate patterns database
         run: npm run populate --prefix packages/patterns-reference
@@ -368,7 +368,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Analyze bundle sizes
         run: |
@@ -468,7 +468,7 @@ jobs:
           path: packages/
 
       - name: Rebuild workspace links
-        run: npm install --workspace-concurrency=1
+        run: npm install
 
       - name: Run benchmarks
         run: npm run bench:run --prefix packages/core
