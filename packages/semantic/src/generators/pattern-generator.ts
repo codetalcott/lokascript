@@ -304,6 +304,24 @@ export function generateEventHandlerPatterns(
           )
         );
       }
+
+      // Add simple pattern (no patient required, defaults to 'me')
+      // Supports: クリック で 増加 (click on increment)
+      patterns.push(
+        generateSOVSimpleEventHandlerPattern(commandSchema, profile, keyword, eventMarker, config)
+      );
+
+      // Add temporal pattern if temporalMarkers defined
+      // Supports: クリック の 時 .active を 切り替え (click's time toggle .active)
+      const temporalPattern = generateSOVTemporalEventHandlerPattern(
+        commandSchema,
+        profile,
+        keyword,
+        config
+      );
+      if (temporalPattern) {
+        patterns.push(temporalPattern);
+      }
     }
   } else if (profile.wordOrder === 'VSO') {
     if (hasTwoRequiredRoles) {
@@ -524,6 +542,141 @@ function generateSOVCompactEventHandlerPattern(
       event: { fromRole: 'event' },
       patient: { fromRole: 'patient' },
       destination: { fromRole: 'destination', default: { type: 'reference', value: 'me' } },
+    },
+  };
+}
+
+/**
+ * Generate SOV simple event handler pattern (patient optional, defaults to 'me').
+ *
+ * Supports patterns like:
+ * - Japanese: クリック で 増加 (click on increment)
+ * - Korean: 클릭 할 때 증가 (click when increment)
+ * - Turkish: tıklama da artır (click on increment)
+ *
+ * The patient is not explicitly specified - it defaults to 'me' (current element).
+ */
+function generateSOVSimpleEventHandlerPattern(
+  commandSchema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: KeywordTranslation,
+  eventMarker: RoleMarker,
+  config: GeneratorConfig
+): LanguagePattern {
+  const tokens: PatternToken[] = [];
+
+  // Event role
+  tokens.push({ type: 'role', role: 'event', optional: false });
+
+  // Event marker (after event in SOV)
+  if (eventMarker.position === 'after') {
+    const markerWords = eventMarker.primary.split(/\s+/);
+    if (markerWords.length > 1) {
+      // Multi-word marker: create a token for each word
+      for (const word of markerWords) {
+        tokens.push({ type: 'literal', value: word });
+      }
+    } else {
+      const markerToken: PatternToken = eventMarker.alternatives
+        ? { type: 'literal', value: eventMarker.primary, alternatives: eventMarker.alternatives }
+        : { type: 'literal', value: eventMarker.primary };
+      tokens.push(markerToken);
+    }
+  }
+
+  // Command verb at end (SOV) - no patient required
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+  tokens.push(verbToken);
+
+  return {
+    id: `${commandSchema.action}-event-${profile.code}-sov-simple`,
+    language: profile.code,
+    command: 'on',
+    priority: (config.basePriority ?? 100) + 48, // Lower than full pattern (50) but higher than base
+    template: {
+      format: `{event} ${eventMarker.primary} ${keyword.primary}`,
+      tokens,
+    },
+    extraction: {
+      action: { value: commandSchema.action },
+      event: { fromRole: 'event' },
+      patient: { default: { type: 'reference', value: 'me' } }, // Default to 'me'
+    },
+  };
+}
+
+/**
+ * Generate SOV temporal event handler pattern.
+ *
+ * Supports patterns with temporal markers like:
+ * - Japanese: クリック 時 .active を 切り替え (click time toggle .active)
+ * - Japanese: クリック の 時 .active を 切り替え (click's time toggle .active)
+ *
+ * Uses profile.eventHandler.temporalMarkers for language-specific temporal words.
+ */
+function generateSOVTemporalEventHandlerPattern(
+  commandSchema: CommandSchema,
+  profile: LanguageProfile,
+  keyword: KeywordTranslation,
+  config: GeneratorConfig
+): LanguagePattern | null {
+  const temporalMarkers = profile.eventHandler?.temporalMarkers;
+  if (!temporalMarkers || temporalMarkers.length === 0) return null;
+
+  const tokens: PatternToken[] = [];
+
+  // Event role
+  tokens.push({ type: 'role', role: 'event', optional: false });
+
+  // Optional possessive marker (の in Japanese)
+  if (profile.possessive?.marker) {
+    tokens.push({
+      type: 'group',
+      optional: true,
+      tokens: [{ type: 'literal', value: profile.possessive.marker }],
+    });
+  }
+
+  // Temporal marker (時, とき in Japanese)
+  tokens.push({
+    type: 'literal',
+    value: temporalMarkers[0],
+    alternatives: temporalMarkers.slice(1),
+  });
+
+  // Patient role
+  tokens.push({ type: 'role', role: 'patient', optional: false });
+
+  // Patient marker
+  const patientMarker = profile.roleMarkers.patient;
+  if (patientMarker?.primary) {
+    const patMarkerToken: PatternToken = patientMarker.alternatives
+      ? { type: 'literal', value: patientMarker.primary, alternatives: patientMarker.alternatives }
+      : { type: 'literal', value: patientMarker.primary };
+    tokens.push(patMarkerToken);
+  }
+
+  // Command verb at end
+  const verbToken: PatternToken = keyword.alternatives
+    ? { type: 'literal', value: keyword.primary, alternatives: keyword.alternatives }
+    : { type: 'literal', value: keyword.primary };
+  tokens.push(verbToken);
+
+  return {
+    id: `${commandSchema.action}-event-${profile.code}-sov-temporal`,
+    language: profile.code,
+    command: 'on',
+    priority: (config.basePriority ?? 100) + 49, // Between simple and full pattern
+    template: {
+      format: `{event} ${temporalMarkers[0]} {patient} ${keyword.primary}`,
+      tokens,
+    },
+    extraction: {
+      action: { value: commandSchema.action },
+      event: { fromRole: 'event' },
+      patient: { fromRole: 'patient' },
     },
   };
 }

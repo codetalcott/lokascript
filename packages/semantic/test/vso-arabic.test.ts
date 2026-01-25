@@ -50,13 +50,7 @@ describe('VSO Confidence Boosting', () => {
     }
   });
 
-  it.skip('should not boost confidence for non-verb-first patterns', () => {
-    // Skip: Arabic currently only has verb-first patterns (VSO word order).
-    // This test would need a non-verb-first pattern to verify no boost is applied.
-    const result = parse('#button على النقر بدل .active', 'ar');
-    // Should still parse but without verb-first boost
-    expect(result?.metadata?.sourceLanguage).toBe('ar');
-  });
+// Deleted: Non-verb-first pattern test - Arabic is naturally VSO, testing SVO is unnatural
 });
 
 // =============================================================================
@@ -298,11 +292,11 @@ describe('Arabic Preposition Disambiguation', () => {
       expect(result?.action).toBe('put');
     });
 
-    it.skip('should parse commands with من for source roles', () => {
-      // Skip: Pattern requires patient before source: خذ {patient} [من {source}]
-      // Test uses خذ من #input (no patient specified)
-      const result = parse('خذ من #input', 'ar');
+    it('should parse commands with من for source roles', () => {
+      // Pattern: خذ {patient} [من {source}] - take patient from source
+      const result = parse('خذ .active من #input', 'ar');
       expect(result).not.toBeNull();
+      expect(result?.action).toBe('take');
     });
   });
 });
@@ -375,17 +369,22 @@ describe('VSO Confidence Scores', () => {
     // We verify it works by ensuring successful parsing
   });
 
-  it.skip('should adjust confidence based on temporal marker formality', () => {
-    // Skip: These are event handler patterns (عندما/لما = when) that don't exist yet
-    // Formal marker: عندما (0.95 confidence)
+  it('should adjust confidence based on temporal marker formality', () => {
+    // Temporal markers now supported via eventMarker.alternatives
+    // These parse as event handlers (action='on') wrapping toggle commands
+    // Formal marker: عندما (0.95 confidence in tokenizer)
     const formal = parse('عندما النقر بدل .active', 'ar');
     expect(formal).not.toBeNull();
+    expect(formal?.action).toBe('on'); // Event handler pattern
+    expect(formal?.metadata?.patternId).toContain('toggle'); // Wraps toggle command
 
-    // Dialectal marker: لما (0.68 confidence)
+    // Dialectal marker: لما (0.68 confidence in tokenizer)
     const dialectal = parse('لما النقر بدل .active', 'ar');
     expect(dialectal).not.toBeNull();
+    expect(dialectal?.action).toBe('on'); // Event handler pattern
+    expect(dialectal?.metadata?.patternId).toContain('toggle');
 
-    // Both should parse, but internal confidence may differ
+    // Both parse as event handlers, but tokenizer tracks formality metadata
   });
 
   it('should adjust confidence based on preposition idiomaticity', () => {

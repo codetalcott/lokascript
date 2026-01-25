@@ -159,22 +159,23 @@ describe('Japanese Event Handler Patterns', () => {
    * These tests verify the event handler structure is correct.
    */
   describe('standard patterns (baseline)', () => {
-    // Skip: These patterns require hand-crafted event handler patterns for Japanese.
-    // Japanese uses event-first patterns (event で action) which the generator doesn't support.
-    // Use conditional patterns like クリックしたら instead.
-    it.skip('should parse "クリック で 増加" as event handler', () => {
+    // Now supported via generateSOVSimpleEventHandlerPattern
+    it('should parse "クリック で 増加" as event handler', () => {
       const node = parse('クリック で 増加', 'ja');
-      // Event handlers have action='on' - the body is separate
+      // Event handlers have action='on' - the wrapped command is in metadata
       expect(node.action).toBe('on');
       // Check event role is present
       expect(node.roles.has('event')).toBe(true);
+      expect(node.metadata?.patternId).toContain('increment');
     });
 
-    it.skip('should parse "クリック の 時 .active を 切り替え" as event handler', () => {
+    // Now supported via generateSOVTemporalEventHandlerPattern
+    it('should parse "クリック の 時 .active を 切り替え" as event handler', () => {
       const node = parse('クリック の 時 .active を 切り替え', 'ja');
       // Event handler patterns return action='on'
       expect(node.action).toBe('on');
       expect(node.roles.has('event')).toBe(true);
+      expect(node.metadata?.patternId).toContain('toggle');
     });
   });
 

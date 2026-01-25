@@ -132,8 +132,13 @@ export const arabicProfile: LanguageProfile = {
     // Event marker: عند (at/upon), used in VSO pattern
     // Pattern: عند [event] [action] [patient] [على destination]
     // Example: عند النقر بدّل .active على #button
-    eventMarker: { primary: 'عند', alternatives: ['في', 'لدى'], position: 'before' },
-    temporalMarkers: ['عندما', 'حين', 'لمّا'], // temporal conjunctions (when)
+    // Includes temporal conjunctions (عندما = formal "when", حين = neutral, لمّا = dialectal)
+    eventMarker: {
+      primary: 'عند',
+      alternatives: ['في', 'لدى', 'عندما', 'حين', 'حينما', 'لمّا', 'لما'],
+      position: 'before',
+    },
+    temporalMarkers: ['عندما', 'حين', 'لمّا'], // kept for reference/documentation
     // Negation marker: عدم (not/lack of), used for negated events
     // Pattern: عند عدم [event] [action] [patient]
     // Example: عند عدم التركيز أخف #tooltip = "on blur hide #tooltip"
