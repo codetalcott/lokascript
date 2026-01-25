@@ -102,13 +102,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
-
-      - name: Debug artifact download
-        run: |
-          echo "=== Checking artifact download ==="
-          ls -la packages/semantic/dist/ | head -10 || echo "packages/semantic/dist/ not found"
-          ls -la packages/core/dist/ | head -5 || echo "packages/core/dist/ not found"
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -157,7 +151,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -206,7 +200,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -279,7 +273,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -326,7 +320,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -386,7 +380,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
@@ -489,7 +483,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: .
+          path: packages
 
       - name: Rebuild workspace links
         run: |
