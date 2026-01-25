@@ -193,6 +193,9 @@ jobs:
       - name: Test vite-plugin
         run: npm test --prefix packages/vite-plugin -- --run
 
+      - name: Initialize patterns-reference database
+        run: npm run db:init --prefix packages/patterns-reference
+
       - name: Test patterns-reference
         run: npm test --prefix packages/patterns-reference -- --run
 
