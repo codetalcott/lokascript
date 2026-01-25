@@ -99,25 +99,25 @@ export async function handlePatternTool(
   name: string,
   args: Record<string, unknown>
 ): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
+  // Try to import patterns-reference
+  let patternsRef: any;
   try {
-    // Try to import patterns-reference
-    let patternsRef: any;
-    try {
-      patternsRef = await import('@lokascript/patterns-reference');
-    } catch {
-      // Fall back to built-in examples
-      return handleWithBuiltinExamples(name, args);
-    }
+    patternsRef = await import('@lokascript/patterns-reference');
+  } catch {
+    // Fall back to built-in examples if package not available
+    return handleWithBuiltinExamples(name, args);
+  }
 
-    switch (name) {
-      case 'get_examples': {
-        const prompt = args.prompt as string;
-        const language = (args.language as string) || 'en';
-        const limit = (args.limit as number) || 5;
+  switch (name) {
+    case 'get_examples': {
+      const prompt = args.prompt as string;
+      const language = (args.language as string) || 'en';
+      const limit = (args.limit as number) || 5;
 
+      try {
         const examples = await patternsRef.getLLMExamples(prompt, language, limit);
 
-        if (examples.length === 0) {
+        if (!examples || examples.length === 0) {
           return handleWithBuiltinExamples(name, args);
         }
 
@@ -141,23 +141,30 @@ export async function handlePatternTool(
             },
           ],
         };
+      } catch {
+        // Database error (e.g., table doesn't exist) - fall back to built-in
+        return handleWithBuiltinExamples(name, args);
       }
+    }
 
-      case 'search_patterns': {
-        const query = args.query as string;
-        const category = args.category as string | undefined;
-        const limit = (args.limit as number) || 10;
+    case 'search_patterns': {
+      const query = args.query as string;
+      const category = args.category as string | undefined;
+      const limit = (args.limit as number) || 10;
 
+      try {
         const ref = patternsRef.createPatternsReference({ readonly: true });
         let patterns;
 
-        if (category) {
-          patterns = await ref.getPatternsByCategory(category);
-        } else {
-          patterns = await ref.searchPatterns(query, { limit });
+        try {
+          if (category) {
+            patterns = await ref.getPatternsByCategory(category);
+          } else {
+            patterns = await ref.searchPatterns(query, { limit });
+          }
+        } finally {
+          ref.close();
         }
-
-        ref.close();
 
         return {
           content: [
@@ -180,57 +187,55 @@ export async function handlePatternTool(
             },
           ],
         };
+      } catch {
+        // Database error - fall back to built-in
+        return handleWithBuiltinExamples(name, args);
       }
+    }
 
-      case 'translate_hyperscript': {
-        const code = args.code as string;
-        const fromLanguage = args.fromLanguage as string;
-        const toLanguage = args.toLanguage as string;
+    case 'translate_hyperscript': {
+      const code = args.code as string;
+      const fromLanguage = args.fromLanguage as string;
+      const toLanguage = args.toLanguage as string;
 
-        // Try semantic package for translation
-        try {
-          const semantic = await import('@lokascript/semantic');
-          const translated = await semantic.translate(code, fromLanguage, toLanguage);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    original: code,
-                    translated,
-                    fromLanguage,
-                    toLanguage,
-                  },
-                  null,
-                  2
-                ),
-              },
-            ],
-          };
-        } catch {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify({
-                  error: 'Translation requires @lokascript/semantic package',
+      // Try semantic package for translation
+      try {
+        const semantic = await import('@lokascript/semantic');
+        const translated = await semantic.translate(code, fromLanguage, toLanguage);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
                   original: code,
+                  translated,
                   fromLanguage,
                   toLanguage,
-                }),
-              },
-            ],
-            isError: true,
-          };
-        }
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch {
+        return handleWithBuiltinExamples(name, args);
       }
+    }
 
-      case 'get_pattern_stats': {
+    case 'get_pattern_stats': {
+      try {
         const ref = patternsRef.createPatternsReference({ readonly: true });
-        const stats = await ref.getStats();
-        const llmStats = await patternsRef.getLLMStats();
-        ref.close();
+        let stats;
+        let llmStats;
+
+        try {
+          stats = await ref.getStats();
+          llmStats = await patternsRef.getLLMStats();
+        } finally {
+          ref.close();
+        }
 
         return {
           content: [
@@ -262,24 +267,17 @@ export async function handlePatternTool(
             },
           ],
         };
+      } catch {
+        // Database error - fall back to built-in
+        return handleWithBuiltinExamples(name, args);
       }
-
-      default:
-        return {
-          content: [{ type: 'text', text: `Unknown pattern tool: ${name}` }],
-          isError: true,
-        };
     }
-  } catch (error) {
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Error in ${name}: ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-      isError: true,
-    };
+
+    default:
+      return {
+        content: [{ type: 'text', text: `Unknown pattern tool: ${name}` }],
+        isError: true,
+      };
   }
 }
 
