@@ -106,10 +106,16 @@ jobs:
 
       - name: Verify artifact extraction
         run: |
+          echo "=== Current directory ==="
+          pwd
           echo "=== Checking semantic dist files ==="
-          ls -la packages/semantic/dist/ | head -10
-          echo "=== Checking for type declarations ==="
-          ls packages/semantic/dist/*.d.ts | head -5
+          ls -la packages/semantic/dist/ | head -20
+          echo "=== Checking for index.d.ts ==="
+          ls -la packages/semantic/dist/index* || echo "No index files found!"
+          echo "=== Checking all .d.ts files ==="
+          find packages/semantic/dist -name "*.d.ts" -type f
+          echo "=== Checking workspace symlink ==="
+          ls -la node_modules/@lokascript/ 2>/dev/null || echo "No @lokascript symlinks yet"
 
       - name: Rebuild workspace links
         run: |
