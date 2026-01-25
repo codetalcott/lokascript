@@ -37,52 +37,58 @@ export function generateEventHandlerPatterns(profile: LanguageProfile): Language
 
   // Pattern 1: Standard - "{keyword} {event}"
   // e.g., "bei click", "sur click"
-  patterns.push({
-    id: `event-${lang}-standard`,
-    language: lang,
-    command: 'on',
-    priority: 100,
-    template: {
-      format: `${eh.keyword.primary} {event}`,
-      tokens: [
-        literalToken(eh.keyword.primary, eh.keyword.alternatives),
-        { type: 'role', role: 'event' },
-      ],
-    },
-    extraction: {
-      event: { position: 1 },
-    },
-  });
+  // Only generate if keyword is defined
+  if (eh.keyword) {
+    patterns.push({
+      id: `event-${lang}-standard`,
+      language: lang,
+      command: 'on',
+      priority: 100,
+      template: {
+        format: `${eh.keyword.primary} {event}`,
+        tokens: [
+          literalToken(eh.keyword.primary, eh.keyword.alternatives),
+          { type: 'role', role: 'event' },
+        ],
+      },
+      extraction: {
+        event: { position: 1 },
+      },
+    });
 
-  // Pattern 2: With source - "{keyword} {event} {sourceMarker} {source}"
-  // e.g., "bei click von #button", "sur click de #button"
-  const sourceMarkerValue = eh.sourceMarker.primary;
-  const sourceExtraction: { marker: string; markerAlternatives?: string[] } = {
-    marker: sourceMarkerValue,
-  };
-  if (eh.sourceMarker.alternatives && eh.sourceMarker.alternatives.length > 0) {
-    sourceExtraction.markerAlternatives = eh.sourceMarker.alternatives;
+    // Pattern 2: With source - "{keyword} {event} {sourceMarker} {source}"
+    // e.g., "bei click von #button", "sur click de #button"
+    // Only generate if both keyword and sourceMarker are defined
+    if (eh.sourceMarker) {
+      const sourceMarkerValue = eh.sourceMarker.primary;
+      const sourceExtraction: { marker: string; markerAlternatives?: string[] } = {
+        marker: sourceMarkerValue,
+      };
+      if (eh.sourceMarker.alternatives && eh.sourceMarker.alternatives.length > 0) {
+        sourceExtraction.markerAlternatives = eh.sourceMarker.alternatives;
+      }
+
+      patterns.push({
+        id: `event-${lang}-source`,
+        language: lang,
+        command: 'on',
+        priority: 110, // Higher priority for more specific pattern
+        template: {
+          format: `${eh.keyword.primary} {event} ${sourceMarkerValue} {source}`,
+          tokens: [
+            literalToken(eh.keyword.primary, eh.keyword.alternatives),
+            { type: 'role', role: 'event' },
+            literalToken(sourceMarkerValue, eh.sourceMarker.alternatives),
+            { type: 'role', role: 'source' },
+          ],
+        },
+        extraction: {
+          event: { position: 1 },
+          source: sourceExtraction,
+        },
+      });
+    }
   }
-
-  patterns.push({
-    id: `event-${lang}-source`,
-    language: lang,
-    command: 'on',
-    priority: 110, // Higher priority for more specific pattern
-    template: {
-      format: `${eh.keyword.primary} {event} ${sourceMarkerValue} {source}`,
-      tokens: [
-        literalToken(eh.keyword.primary, eh.keyword.alternatives),
-        { type: 'role', role: 'event' },
-        literalToken(sourceMarkerValue, eh.sourceMarker.alternatives),
-        { type: 'role', role: 'source' },
-      ],
-    },
-    extraction: {
-      event: { position: 1 },
-      source: sourceExtraction,
-    },
-  });
 
   // Pattern 3: Conditional (if defined) - "{conditionalKeyword} {event}"
   // e.g., "wenn click", "quand click"

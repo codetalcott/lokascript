@@ -24,7 +24,7 @@ import {
 // ========== Test Utilities ==========
 
 class MockEventTarget extends EventTarget {
-  dispatchEvent(event: Event): boolean {
+  override dispatchEvent(event: Event): boolean {
     return super.dispatchEvent(event);
   }
 }

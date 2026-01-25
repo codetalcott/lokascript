@@ -204,9 +204,15 @@ describe('View Transitions API Integration', () => {
     it('should execute transitions sequentially', async () => {
       const executionOrder: number[] = [];
 
-      const callback1 = vi.fn(() => executionOrder.push(1));
-      const callback2 = vi.fn(() => executionOrder.push(2));
-      const callback3 = vi.fn(() => executionOrder.push(3));
+      const callback1 = vi.fn(() => {
+        executionOrder.push(1);
+      });
+      const callback2 = vi.fn(() => {
+        executionOrder.push(2);
+      });
+      const callback3 = vi.fn(() => {
+        executionOrder.push(3);
+      });
 
       const promises = [
         withViewTransition(callback1),
@@ -222,7 +228,7 @@ describe('View Transitions API Integration', () => {
     it('should report pending transition count', async () => {
       expect(getPendingTransitionCount()).toBe(0);
 
-      const slowCallback = () => new Promise(resolve => setTimeout(resolve, 100));
+      const slowCallback = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 100));
 
       withViewTransition(slowCallback);
       withViewTransition(slowCallback);
@@ -234,7 +240,7 @@ describe('View Transitions API Integration', () => {
     it('should report transitioning status', async () => {
       expect(isTransitioning()).toBe(false);
 
-      const slowCallback = () => new Promise(resolve => setTimeout(resolve, 50));
+      const slowCallback = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 50));
 
       const promise = withViewTransition(slowCallback);
 
@@ -412,7 +418,9 @@ describe('View Transitions API Integration', () => {
       const results: number[] = [];
 
       const promises = Array.from({ length: 10 }, (_, i) =>
-        withViewTransition(() => results.push(i))
+        withViewTransition(() => {
+          results.push(i);
+        })
       );
 
       await Promise.all(promises);

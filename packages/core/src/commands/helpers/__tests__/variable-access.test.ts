@@ -150,7 +150,7 @@ describe('Variable Access Helpers', () => {
 
       it('should get value from variables map', () => {
         const context = createMockContext();
-        context.variables.set('data', 'test');
+        context.variables!.set('data', 'test');
 
         expect(getVariableValue('data', context)).toBe('test');
       });
@@ -180,7 +180,7 @@ describe('Variable Access Helpers', () => {
 
       it('should fall back to variables map', () => {
         const context = createMockContext();
-        context.variables.set('value', 'variables');
+        context.variables!.set('value', 'variables');
 
         expect(getVariableValue('value', context)).toBe('variables');
       });
@@ -243,11 +243,11 @@ describe('Variable Access Helpers', () => {
 
       it('should update existing variable in variables map', () => {
         const context = createMockContext();
-        context.variables.set('data', 'old');
+        context.variables!.set('data', 'old');
 
         setVariableValue('data', 'new', context);
 
-        expect(context.variables.get('data')).toBe('new');
+        expect(context.variables!.get('data')).toBe('new');
       });
     });
 

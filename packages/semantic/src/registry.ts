@@ -94,7 +94,7 @@ let patternGenerator: ((profile: LanguageProfile) => LanguagePattern[]) | null =
  * Deep merge two objects, with variant values overriding base values.
  * Arrays are replaced, not merged.
  */
-function deepMerge<T extends Record<string, unknown>>(base: T, variant: Partial<T>): T {
+function deepMerge<T extends object>(base: T, variant: Partial<T>): T {
   const result = { ...base } as T;
 
   for (const key of Object.keys(variant) as (keyof T)[]) {
@@ -115,8 +115,8 @@ function deepMerge<T extends Record<string, unknown>>(base: T, variant: Partial<
       !Array.isArray(baseValue)
     ) {
       result[key] = deepMerge(
-        baseValue as Record<string, unknown>,
-        variantValue as Record<string, unknown>
+        baseValue as object,
+        variantValue as Partial<typeof baseValue>
       ) as T[keyof T];
     } else {
       // Replace value (including arrays)

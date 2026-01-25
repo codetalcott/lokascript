@@ -35,7 +35,7 @@ function createMockContext(): TypedExecutionContext {
 }
 
 function createMockExecuteCommands() {
-  return vi.fn(async (_commands: unknown, _context: TypedExecutionContext) => {
+  return vi.fn(async (_commands: unknown, _context: TypedExecutionContext): Promise<unknown> => {
     return undefined;
   });
 }
@@ -213,7 +213,7 @@ describe('Loop Executor Helper', () => {
       it('should update index variable each iteration', async () => {
         const indices: number[] = [];
 
-        executeCommands.mockImplementation(() => {
+        executeCommands.mockImplementation(async () => {
           indices.push(context.locals.get('i') as number);
         });
 
