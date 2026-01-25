@@ -9,9 +9,10 @@ LokaScript offers multiple bundle sizes. Choose based on what features you need 
 | **lite**            | 1.9 KB      | 8          | Toggle, show/hide, basic interactions |
 | **lite-plus**       | 2.6 KB      | 14         | Basic + form handling, i18n aliases   |
 | **hybrid-complete** | 7.3 KB      | 21+ blocks | Most projects (recommended)           |
-| **hybrid-hx**       | 9.5 KB      | 21+ blocks | hybrid-complete + htmx compatibility  |
+| **hybrid-hx**       | 9.7 KB      | 21+ blocks | hybrid-complete + htmx compatibility  |
+| **minimal**         | 58 KB       | 43         | Full commands, focused build          |
 | **standard**        | 63 KB       | 43         | Full command set                      |
-| **browser**         | 224 KB      | 43         | Full bundle with parser               |
+| **browser**         | 203 KB      | 43         | Full bundle with parser               |
 
 ## Which Bundle Should I Use?
 
@@ -83,7 +84,7 @@ When you need everything, including:
 <!-- Hybrid HX (9.5 KB) -->
 <script src="https://unpkg.com/@lokascript/core/dist/lokascript-hybrid-hx.js"></script>
 
-<!-- Full Browser Bundle (224 KB) -->
+<!-- Full Browser Bundle (203 KB) -->
 <script src="https://unpkg.com/@lokascript/core/dist/lokascript-browser.js"></script>
 ```
 
@@ -115,21 +116,22 @@ lokascript({
 
 ## Feature Matrix
 
-| Feature                  | lite | lite-plus | hybrid-complete | browser |
-| ------------------------ | ---- | --------- | --------------- | ------- |
-| toggle, add, remove      | ✓    | ✓         | ✓               | ✓       |
-| show, hide               | ✓    | ✓         | ✓               | ✓       |
-| set, get, put            | ✓    | ✓         | ✓               | ✓       |
-| increment, decrement     | ✓    | ✓         | ✓               | ✓       |
-| wait                     | -    | ✓         | ✓               | ✓       |
-| fetch                    | -    | -         | ✓               | ✓       |
-| if/else blocks           | -    | -         | ✓               | ✓       |
-| repeat, for each         | -    | -         | ✓               | ✓       |
-| Event modifiers          | -    | -         | ✓               | ✓       |
-| Positional (first, last) | -    | -         | ✓               | ✓       |
-| Method chaining          | -    | -         | ✓               | ✓       |
-| Behaviors                | -    | -         | -               | ✓       |
-| Full parser              | -    | -         | -               | ✓       |
+| Feature                  | lite | lite-plus | hybrid-complete | hybrid-hx | browser |
+| ------------------------ | ---- | --------- | --------------- | --------- | ------- |
+| toggle, add, remove      | ✓    | ✓         | ✓               | ✓         | ✓       |
+| show, hide               | ✓    | ✓         | ✓               | ✓         | ✓       |
+| set, get, put            | ✓    | ✓         | ✓               | ✓         | ✓       |
+| increment, decrement     | ✓    | ✓         | ✓               | ✓         | ✓       |
+| wait                     | -    | ✓         | ✓               | ✓         | ✓       |
+| fetch                    | -    | -         | ✓               | ✓         | ✓       |
+| if/else blocks           | -    | -         | ✓               | ✓         | ✓       |
+| repeat, for each         | -    | -         | ✓               | ✓         | ✓       |
+| Event modifiers          | -    | -         | ✓               | ✓         | ✓       |
+| Positional (first, last) | -    | -         | ✓               | ✓         | ✓       |
+| Method chaining          | -    | -         | ✓               | ✓         | ✓       |
+| htmx attributes          | -    | -         | -               | ✓         | -       |
+| Behaviors                | -    | -         | -               | -         | ✓       |
+| Full parser              | -    | -         | -               | -         | ✓       |
 
 ## Next Steps
 

@@ -185,14 +185,34 @@ Iterate over collections.
 | `send`    | Dispatch custom event    |
 | `trigger` | Trigger event on element |
 
+### Navigation
+
+| Command       | Description               |
+| ------------- | ------------------------- |
+| `go`          | Navigate, scroll, history |
+| `push url`    | Add URL to history        |
+| `replace url` | Replace URL in history    |
+
+### Data
+
+| Command   | Description             |
+| --------- | ----------------------- |
+| `bind`    | Two-way data binding    |
+| `persist` | Save to browser storage |
+| `default` | Set value if undefined  |
+
 ### Utility
 
-| Command  | Description         |
-| -------- | ------------------- |
-| `log`    | Log to console      |
-| `call`   | Call a function     |
-| `return` | Return from handler |
-| `throw`  | Throw an error      |
+| Command  | Description               |
+| -------- | ------------------------- |
+| `log`    | Log to console            |
+| `beep!`  | Debug with type info      |
+| `copy`   | Copy to clipboard         |
+| `tell`   | Execute in target context |
+| `pick`   | Random selection          |
+| `call`   | Call a function           |
+| `return` | Return from handler       |
+| `throw`  | Throw an error            |
 
 ## Next Steps
 

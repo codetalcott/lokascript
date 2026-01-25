@@ -165,24 +165,6 @@ Create new DOM elements or class instances.
 </button>
 ```
 
-## Focus
-
-### `focus`
-
-Set focus to an element.
-
-```html
-<button _="on click focus #search-input">Focus Search</button>
-```
-
-### `blur`
-
-Remove focus from an element.
-
-```html
-<button _="on click blur #input">Blur Input</button>
-```
-
 ## Command Chaining
 
 Commands can be chained with `then`:
@@ -215,8 +197,6 @@ Commands can be chained with `then`:
 | `set`    | Set property                      | `set me.innerHTML to 'x'` |
 | `get`    | Get value                         | `get #input.value`        |
 | `make`   | Create element                    | `make a <div/>`           |
-| `focus`  | Focus element                     | `focus #input`            |
-| `blur`   | Blur element                      | `blur #input`             |
 
 ## Next Steps
 

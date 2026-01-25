@@ -1,6 +1,6 @@
 # @lokascript/semantic
 
-Semantic-first multilingual parser for LokaScript. Parses hyperscript from 23 languages into executable code.
+Semantic-first multilingual parser for LokaScript. Parses hyperscript from 24 languages into executable code.
 
 ## Installation
 
@@ -28,14 +28,16 @@ if (result.canParse) {
 }
 ```
 
-## Supported Languages (23)
+## Supported Languages (24)
 
 | Tier                       | Languages                                                                             |
 | -------------------------- | ------------------------------------------------------------------------------------- |
 | **Tier 1** (native idioms) | English, Japanese, Korean, Spanish, Chinese                                           |
-| **Tier 2** (full grammar)  | Arabic, Turkish, German, French, Portuguese                                           |
+| **Tier 2** (full grammar)  | Arabic, Hebrew, Turkish, German, French, Portuguese                                   |
 | **Tier 3** (functional)    | Indonesian, Quechua, Swahili                                                          |
 | **Additional**             | Bengali, Hindi, Italian, Malay, Polish, Russian, Thai, Tagalog, Ukrainian, Vietnamese |
+
+Regional variants (e.g., es-MX for Mexican Spanish) are also supported via the language variant system.
 
 ## Bundle Selection
 
@@ -57,7 +59,7 @@ Choose the smallest bundle that covers your languages:
 | `browser-western.western.global.js`       | ~30 KB | en, es, pt, fr, de | `LokaScriptSemanticWestern`   |
 | `browser-east-asian.east-asian.global.js` | ~24 KB | ja, zh, ko         | `LokaScriptSemanticEastAsian` |
 | `browser-priority.priority.global.js`     | ~48 KB | 11 languages       | `LokaScriptSemanticPriority`  |
-| `browser.global.js`                       | ~61 KB | All 23             | `LokaScriptSemantic`          |
+| `browser.global.js`                       | ~90 KB | All 24             | `LokaScriptSemantic`          |
 
 ### Lazy Loading (~15 KB initial)
 

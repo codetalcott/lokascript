@@ -89,6 +89,13 @@ export default defineConfig({
             { text: 'Vite Plugin', link: '/en/guide/vite-plugin' },
             { text: 'Custom Bundles', link: '/en/guide/custom-bundles' }
           ]
+        },
+        {
+          text: 'Advanced',
+          items: [
+            { text: 'Debugging', link: '/en/guide/debugging' },
+            { text: 'htmx Compatibility', link: '/en/guide/htmx-compatibility' }
+          ]
         }
       ],
 
@@ -108,7 +115,10 @@ export default defineConfig({
             { text: 'DOM Commands', link: '/en/api/commands/dom' },
             { text: 'Control Flow', link: '/en/api/commands/control-flow' },
             { text: 'Animation', link: '/en/api/commands/animation' },
-            { text: 'Async Commands', link: '/en/api/commands/async' }
+            { text: 'Async Commands', link: '/en/api/commands/async' },
+            { text: 'Navigation', link: '/en/api/commands/navigation' },
+            { text: 'Data Commands', link: '/en/api/commands/data' },
+            { text: 'Utility Commands', link: '/en/api/commands/utility' }
           ]
         },
         {
@@ -117,6 +127,8 @@ export default defineConfig({
             { text: 'Selectors', link: '/en/api/expressions/selectors' },
             { text: 'Positional', link: '/en/api/expressions/positional' },
             { text: 'Properties', link: '/en/api/expressions/properties' },
+            { text: 'Logical', link: '/en/api/expressions/logical' },
+            { text: 'Strings', link: '/en/api/expressions/strings' },
             { text: 'Type Conversion', link: '/en/api/expressions/conversion' }
           ]
         }
