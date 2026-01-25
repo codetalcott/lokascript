@@ -21,8 +21,11 @@ import type {
 /**
  * Event emitter for tenant events
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventListener = (...args: any[]) => void;
+
 class TenantEventEmitter {
-  private listeners: Map<keyof TenantEvents, Set<Function>> = new Map();
+  private listeners: Map<keyof TenantEvents, Set<EventListener>> = new Map();
 
   on<K extends keyof TenantEvents>(event: K, listener: (data: TenantEvents[K]) => void): void {
     if (!this.listeners.has(event)) {
@@ -175,12 +178,13 @@ export class TenantManager {
             }
           }
           break;
-        case 'custom':
+        case 'custom': {
           const customId = await identifier.resolver(request);
           if (customId) {
             tenant = await this.config.tenantResolver.resolveTenantById(customId);
           }
           break;
+        }
       }
 
       // Cache result if found

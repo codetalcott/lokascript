@@ -111,10 +111,11 @@ class TronAdapterFactory implements ITronAdapterFactory {
 
   async create(backend: BackendType, config?: Partial<TronAdapterConfig>): Promise<ITronAdapter> {
     switch (backend) {
-      case 'nodejs':
+      case 'nodejs': {
         const adapter = new NodeTronAdapter(config);
         await adapter.initialize();
         return adapter;
+      }
 
       case 'go':
         throw new Error(

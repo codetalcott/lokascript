@@ -8,6 +8,9 @@ import type { Request, Response } from 'express';
 import type { WebSocket } from 'ws';
 import type { ComponentDefinition } from '../types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventHandler = (...args: any[]) => void;
+
 // ========== Express Mocks ==========
 
 export interface MockResponse extends Partial<Response> {
@@ -83,7 +86,7 @@ export interface MockWebSocket extends Partial<WebSocket> {
 }
 
 export function createMockWebSocket(): MockWebSocket {
-  const eventHandlers: Record<string, Function[]> = {};
+  const eventHandlers: Record<string, EventHandler[]> = {};
 
   const ws: MockWebSocket = {
     _messages: [],
@@ -97,7 +100,7 @@ export function createMockWebSocket(): MockWebSocket {
       this._closed = true;
       eventHandlers['close']?.forEach(h => h());
     }),
-    on: vi.fn((event: string, handler: Function) => {
+    on: vi.fn((event: string, handler: EventHandler) => {
       eventHandlers[event] = eventHandlers[event] || [];
       eventHandlers[event].push(handler);
       return ws;
@@ -123,10 +126,10 @@ export interface MockWebSocketServer {
 
 export function createMockWebSocketServer(): MockWebSocketServer {
   const clients = new Set<MockWebSocket>();
-  const eventHandlers: Record<string, Function[]> = {};
+  const eventHandlers: Record<string, EventHandler[]> = {};
 
   return {
-    on: vi.fn((event: string, handler: Function) => {
+    on: vi.fn((event: string, handler: EventHandler) => {
       eventHandlers[event] = eventHandlers[event] || [];
       eventHandlers[event].push(handler);
     }),
@@ -252,10 +255,10 @@ export interface MockChokidar {
 export function createMockChokidar(): MockChokidar {
   return {
     watch: vi.fn(() => {
-      const eventHandlers: Record<string, Function[]> = {};
+      const eventHandlers: Record<string, EventHandler[]> = {};
 
       const watcher: MockChokidarWatcher = {
-        on: vi.fn((event: string, handler: Function) => {
+        on: vi.fn((event: string, handler: EventHandler) => {
           eventHandlers[event] = eventHandlers[event] || [];
           eventHandlers[event].push(handler);
           return watcher;
@@ -353,16 +356,16 @@ export interface MockHttpServer {
 }
 
 export function createMockHttpServer(): MockHttpServer {
-  const eventHandlers: Record<string, Function[]> = {};
+  const eventHandlers: Record<string, EventHandler[]> = {};
 
   return {
-    listen: vi.fn((port: number, host: string, callback?: Function) => {
+    listen: vi.fn((port: number, host: string, callback?: EventHandler) => {
       setTimeout(() => callback?.(), 0);
     }),
-    close: vi.fn((callback?: Function) => {
+    close: vi.fn((callback?: EventHandler) => {
       setTimeout(() => callback?.(), 0);
     }),
-    on: vi.fn((event: string, handler: Function) => {
+    on: vi.fn((event: string, handler: EventHandler) => {
       eventHandlers[event] = eventHandlers[event] || [];
       eventHandlers[event].push(handler);
     }),
@@ -384,9 +387,9 @@ export interface MockChildProcess {
 export function createMockChildProcess(exitCode = 0): MockChildProcess {
   return {
     spawn: vi.fn((cmd: string, args: string[], options?: any) => {
-      const eventHandlers: Record<string, Function[]> = {};
+      const eventHandlers: Record<string, EventHandler[]> = {};
       return {
-        on: vi.fn((event: string, handler: Function) => {
+        on: vi.fn((event: string, handler: EventHandler) => {
           eventHandlers[event] = eventHandlers[event] || [];
           eventHandlers[event].push(handler);
           if (event === 'close') {
@@ -394,15 +397,15 @@ export function createMockChildProcess(exitCode = 0): MockChildProcess {
           }
         }),
         stdout: {
-          on: vi.fn((event: string, handler: Function) => {}),
+          on: vi.fn((event: string, _handler: EventHandler) => {}),
         },
         stderr: {
-          on: vi.fn((event: string, handler: Function) => {}),
+          on: vi.fn((event: string, _handler: EventHandler) => {}),
         },
         kill: vi.fn(),
       };
     }),
-    exec: vi.fn((cmd: string, callback?: Function) => {
+    exec: vi.fn((cmd: string, callback?: EventHandler) => {
       setTimeout(() => callback?.(null, '', ''), 10);
     }),
   };
@@ -500,6 +503,7 @@ export function createTempPath(name: string): string {
  * Strip ANSI codes from string (for testing CLI output)
  */
 export function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
   return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 

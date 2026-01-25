@@ -69,7 +69,7 @@ export const UNIVERSAL_PATTERNS = {
   /**
    * Operators: comparison, logical, arithmetic
    */
-  operator: /===|!==|==|!=|<=|>=|&&|\|\||[<>!+\-*\/=]/g,
+  operator: /===|!==|==|!=|<=|>=|&&|\|\||[<>!+\-*/=]/g,
 
   /**
    * Punctuation: parentheses, brackets, etc.

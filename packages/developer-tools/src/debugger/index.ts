@@ -219,15 +219,17 @@ export class HyperScriptDebugger {
           this.removeBreakpoint(message.data.file, message.data.line);
           break;
 
-        case 'evaluate':
+        case 'evaluate': {
           const result = this.evaluateExpression(message.data.expression, message.data.frameId);
           this.sendToClient(ws, { type: 'evaluateResult', result });
           break;
+        }
 
-        case 'getVariables':
+        case 'getVariables': {
           const vars = this.getVariables(message.data.frameId);
           this.sendToClient(ws, { type: 'variables', variables: vars });
           break;
+        }
       }
     } catch (error) {
       this.log('error', `Failed to handle message: ${error}`);

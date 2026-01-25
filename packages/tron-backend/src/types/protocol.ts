@@ -13,8 +13,8 @@
  * TRON message header - present in all TRON-encoded messages
  */
 export interface TronHeader {
-  /** Magic bytes: 0x54524F4E ("TRON") */
-  magic: 0x54524F4E;
+  /** Magic bytes: 0x54524f4e ("TRON") */
+  magic: 0x54524f4e;
   /** Protocol version */
   version: number;
   /** Feature flags */
@@ -58,17 +58,25 @@ export type TronPayloadType =
 /**
  * Type-safe payload discriminated union
  */
-export type TronPayload<T extends TronPayloadType> =
-  T extends 'compile' ? CompilePayload :
-  T extends 'execute' ? ExecutePayload :
-  T extends 'event' ? EventPayload :
-  T extends 'hydrate' ? HydratePayload :
-  T extends 'validate' ? ValidatePayload :
-  T extends 'translate' ? TranslatePayload :
-  T extends 'batch' ? BatchPayload :
-  T extends 'stream' ? StreamPayload :
-  T extends 'error' ? ErrorPayload :
-  never;
+export type TronPayload<T extends TronPayloadType> = T extends 'compile'
+  ? CompilePayload
+  : T extends 'execute'
+    ? ExecutePayload
+    : T extends 'event'
+      ? EventPayload
+      : T extends 'hydrate'
+        ? HydratePayload
+        : T extends 'validate'
+          ? ValidatePayload
+          : T extends 'translate'
+            ? TranslatePayload
+            : T extends 'batch'
+              ? BatchPayload
+              : T extends 'stream'
+                ? StreamPayload
+                : T extends 'error'
+                  ? ErrorPayload
+                  : never;
 
 // =============================================================================
 // Compilation
@@ -376,12 +384,7 @@ export interface BatchPayload {
 
 export interface BatchRequest {
   /** Operations to execute */
-  operations: Array<
-    | CompilePayload
-    | ExecutePayload
-    | ValidatePayload
-    | TranslatePayload
-  >;
+  operations: Array<CompilePayload | ExecutePayload | ValidatePayload | TranslatePayload>;
   /** Execute in parallel */
   parallel?: boolean;
   /** Stop on first error */

@@ -174,7 +174,7 @@ function nodeToHtml(node: TemplateNode): string {
       return escapeHtml(node.content || '');
 
     case 'element':
-    case 'hyperscript':
+    case 'hyperscript': {
       if (!node.tagName) return '';
 
       let html = `<${node.tagName}`;
@@ -199,6 +199,7 @@ function nodeToHtml(node: TemplateNode): string {
       }
 
       return html;
+    }
 
     default:
       return '';

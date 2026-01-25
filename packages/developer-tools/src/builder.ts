@@ -1168,7 +1168,7 @@ export function createComponent(id, props = {}) {
     if (!this.config.livereload) return;
 
     this.watcher = chokidar.watch(watchPaths, {
-      ignored: /(^|[\/\\])\../, // ignore dotfiles
+      ignored: /(^|[/\\])\../, // ignore dotfiles
       persistent: true,
     });
 

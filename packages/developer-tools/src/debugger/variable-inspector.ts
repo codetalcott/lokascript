@@ -209,16 +209,18 @@ export class VariableInspector {
       case 'undefined':
         return 'undefined';
 
-      case 'function':
+      case 'function': {
         const fnName = value.name || 'anonymous';
         return `ƒ ${fnName}()`;
+      }
 
       case 'array':
         return `Array(${value.length})`;
 
-      case 'object':
+      case 'object': {
         const keys = Object.keys(value);
         return `Object {${keys.slice(0, 3).join(', ')}${keys.length > 3 ? ', ...' : ''}}`;
+      }
 
       case 'map':
         return `Map(${value.size})`;
@@ -238,12 +240,13 @@ export class VariableInspector {
       case 'promise':
         return 'Promise';
 
-      case 'element':
+      case 'element': {
         const el = value as HTMLElement;
         const tag = el.tagName.toLowerCase();
         const id = el.id ? `#${el.id}` : '';
         const classes = el.className ? `.${el.className.split(' ').join('.')}` : '';
         return `<${tag}${id}${classes}>`;
+      }
 
       default:
         try {

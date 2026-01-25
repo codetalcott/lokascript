@@ -26,6 +26,7 @@ export interface TemplateContext {
   /** Component instances available in template */
   components?: Record<string, ComponentDefinition>;
   /** Global functions available to hyperscript */
+  // eslint-disable-next-line @typescript-eslint/ban-types
   functions?: Record<string, Function>;
   /** Current request context (for SSR) */
   request?: {

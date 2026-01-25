@@ -102,18 +102,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
-
-      - name: Debug - verify artifact extraction
-        run: |
-          echo "=== packages/ contents ==="
-          ls -la packages/ | head -15
-          echo "=== packages/semantic/ contents ==="
-          ls -la packages/semantic/ 2>/dev/null | head -10 || echo "packages/semantic/ not found"
-          echo "=== packages/semantic/dist/ ==="
-          ls -la packages/semantic/dist/ 2>/dev/null | head -5 || echo "packages/semantic/dist/ not found"
-          echo "=== semantic/ at root? ==="
-          ls -la semantic/ 2>/dev/null | head -5 || echo "semantic/ not found at root"
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -162,7 +151,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -211,7 +200,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -284,7 +273,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -302,7 +291,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: packages/core/playwright-report/
+          path: ./core/playwright-report/
           retention-days: 7
 
   # ============================================
@@ -331,7 +320,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -362,7 +351,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: multilingual-test-results
-          path: packages/testing-framework/test-results/
+          path: ./testing-framework/test-results/
           retention-days: 30
 
   # ============================================
@@ -391,7 +380,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -494,7 +483,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: packages
+          path: .
 
       - name: Rebuild workspace links
         run: |
@@ -510,5 +499,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: packages/core/benchmark-results/
+          path: ./core/benchmark-results/
           retention-days: 30

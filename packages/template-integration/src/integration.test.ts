@@ -287,7 +287,7 @@ describe('Template Integration Tests', () => {
     it('should handle multiple simultaneous compilations', async () => {
       const templates = Array.from(
         { length: 50 },
-        (_, i) => `<div class="item-${i}">\{{message${i}}}</div>`
+        (_, i) => `<div class="item-${i}">{{message${i}}}</div>`
       );
 
       const startTime = performance.now();

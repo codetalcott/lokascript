@@ -316,11 +316,7 @@ export interface TronMiddleware {
   /**
    * Handle incoming request
    */
-  handle(
-    request: MiddlewareRequest,
-    response: MiddlewareResponse,
-    next: () => void
-  ): Promise<void>;
+  handle(request: MiddlewareRequest, response: MiddlewareResponse, next: () => void): Promise<void>;
 }
 
 export interface MiddlewareRequest {

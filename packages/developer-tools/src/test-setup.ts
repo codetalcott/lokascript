@@ -92,6 +92,7 @@ expect.extend({
    * Check if chalk output contains expected content (strips ANSI codes)
    */
   toHaveBeenCalledWithChalk(received: ReturnType<typeof vi.fn>, expectedContent: string) {
+    // eslint-disable-next-line no-control-regex
     const calls = received.mock.calls.map(call => String(call[0]).replace(/\x1b\[[0-9;]*m/g, ''));
     const pass = calls.some(call => call.includes(expectedContent));
     return {
@@ -133,6 +134,7 @@ expect.extend({
 
 // Global type augmentation for custom matchers
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Vi {
     interface AsymmetricMatchersContaining {
       toBeValidAnalysisResult(): any;
