@@ -1161,8 +1161,9 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
     potentialConflicts: [],
   },
   {
+    // ⚠️ TEST VARIANT - demonstrates language variant feature, not production-ready
     code: 'es-MX',
-    name: 'Spanish (Mexico)',
+    name: 'Spanish (Mexico) [TEST]',
     wordOrder: 'SVO',
     direction: 'ltr',
     files: {
@@ -1176,7 +1177,7 @@ export const SUPPORTED_LANGUAGES: LanguageChecklist[] = [
     },
     morphology: {
       needed: true,
-      reason: 'Uses Spanish morphology with Mexican-specific vocabulary',
+      reason: 'Example variant - uses Spanish morphology with illustrative Mexican vocabulary',
       inflectionTypes: ['inherits from Spanish'],
       integratedWithTokenizer: true,
       confidenceThreshold: 0.7,

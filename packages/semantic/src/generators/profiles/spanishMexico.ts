@@ -1,15 +1,18 @@
 /**
  * Mexican Spanish Language Profile
  *
- * Regional variant of Spanish with Mexican vocabulary and expressions.
- * Inherits from base Spanish profile, overriding specific keywords.
+ * ⚠️  EXAMPLE/TEST ONLY - NOT FOR PRODUCTION USE
  *
- * Key differences from base Spanish:
- * - Uses "ahorita" (Mexican diminutive of "ahora" for "wait/soon")
- * - Uses "jalar" (to pull) as alternative for "fetch"
- * - Uses "aventar" (to throw) instead of "lanzar"
- * - Uses "computadora" instead of "ordenador" (vocabulary difference)
- * - More informal alternatives common in Mexican software/web contexts
+ * This profile demonstrates the language variant feature:
+ * - Extends base Spanish using `extends: 'es'`
+ * - Overrides specific keywords with regional alternatives
+ * - Reuses the Spanish tokenizer
+ *
+ * The Mexican-specific vocabulary (ahorita, jalar, aventar, etc.) is
+ * illustrative and has NOT been validated by native speakers.
+ *
+ * To create a production-ready regional variant, consult native speakers
+ * to verify vocabulary choices and completeness.
  */
 
 import type { LanguageProfile } from './types';
