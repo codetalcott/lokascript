@@ -41,6 +41,9 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write # For git push and creating releases
+      id-token: write # For npm OIDC trusted publishing
 
     steps:
       - name: Checkout
@@ -139,6 +142,8 @@ jobs:
             fi
           done
 
+      # Uses OIDC trusted publishing - no NPM_TOKEN needed
+      # Requires trusted publisher configured on npmjs.com for each package
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run == 'false' }}
         run: |
@@ -148,12 +153,10 @@ jobs:
             if [ -d "packages/$pkg" ]; then
               echo "Publishing @lokascript/$pkg with tag ${{ github.event.inputs.npm-tag }}"
               cd "packages/$pkg"
-              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public
+              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
               cd ../..
             fi
           done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit version changes
         if: ${{ github.event.inputs.dry-run == 'false' }}
