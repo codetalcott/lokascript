@@ -164,6 +164,30 @@ const HTMX_SELECTOR = HTMX_REQUEST_ATTRS.map(attr => `[${attr}]`).join(', ') + '
 const FIXI_SELECTOR = `[${FIXI_REQUEST_ATTR}]`;
 const COMBINED_SELECTOR = `${HTMX_SELECTOR}, ${FIXI_SELECTOR}`;
 
+// ============================================================================
+// Lifecycle Event Name Constants
+// ============================================================================
+
+/** htmx lifecycle event names */
+const HTMX_EVENTS = {
+  CONFIGURING: 'htmx:configuring',
+  BEFORE_REQUEST: 'htmx:beforeRequest',
+  AFTER_SETTLE: 'htmx:afterSettle',
+  ERROR: 'htmx:error',
+} as const;
+
+/** fixi lifecycle event names */
+const FX_EVENTS = {
+  INIT: 'fx:init',
+  CONFIG: 'fx:config',
+  BEFORE: 'fx:before',
+  AFTER: 'fx:after',
+  SWAPPED: 'fx:swapped',
+  ERROR: 'fx:error',
+  FINALLY: 'fx:finally',
+  INITED: 'fx:inited',
+} as const;
+
 export class HtmxAttributeProcessor {
   private options: Required<HtmxProcessorOptions>;
   private observer: MutationObserver | null = null;
@@ -414,7 +438,7 @@ export class HtmxAttributeProcessor {
       if (
         !this.dispatchLifecycleEvent<FxInitEventDetail>(
           element,
-          'fx:init',
+          FX_EVENTS.INIT,
           { element, options: {} },
           { debugPrefix: 'fx' }
         )
@@ -427,7 +451,7 @@ export class HtmxAttributeProcessor {
     if (
       !this.dispatchLifecycleEvent<HtmxConfiguringEventDetail>(
         element,
-        'htmx:configuring',
+        HTMX_EVENTS.CONFIGURING,
         { config, element },
         { debugPrefix: prefix }
       )
@@ -454,7 +478,9 @@ export class HtmxAttributeProcessor {
         element,
       };
       if (
-        !this.dispatchLifecycleEvent(element, 'fx:config', fxConfigDetail, { debugPrefix: 'fx' })
+        !this.dispatchLifecycleEvent(element, FX_EVENTS.CONFIG, fxConfigDetail, {
+          debugPrefix: 'fx',
+        })
       ) {
         return;
       }
@@ -496,7 +522,7 @@ export class HtmxAttributeProcessor {
       if (
         !this.dispatchLifecycleEvent<HtmxBeforeRequestEventDetail>(
           element,
-          'htmx:beforeRequest',
+          HTMX_EVENTS.BEFORE_REQUEST,
           { element, url: config.url, method: config.method || 'GET' },
           { debugPrefix: prefix }
         )
@@ -510,7 +536,7 @@ export class HtmxAttributeProcessor {
         if (
           !this.dispatchLifecycleEvent(
             element,
-            'fx:before',
+            FX_EVENTS.BEFORE,
             { element, url: config.url, method: config.method || 'GET' },
             { debugPrefix: 'fx' }
           )
@@ -546,7 +572,7 @@ export class HtmxAttributeProcessor {
               element,
             };
             if (
-              !this.dispatchLifecycleEvent(element, 'fx:after', fxAfterDetail, {
+              !this.dispatchLifecycleEvent(element, FX_EVENTS.AFTER, fxAfterDetail, {
                 debugPrefix: 'fx',
               })
             ) {
@@ -557,7 +583,7 @@ export class HtmxAttributeProcessor {
           // Dispatch htmx:afterSettle event (non-cancelable)
           this.dispatchLifecycleEvent<HtmxAfterSettleEventDetail>(
             element,
-            'htmx:afterSettle',
+            HTMX_EVENTS.AFTER_SETTLE,
             { element, target: config.target },
             { cancelable: false }
           );
@@ -566,7 +592,7 @@ export class HtmxAttributeProcessor {
           if (isFx && this.options.fixiEvents) {
             this.dispatchLifecycleEvent(
               element,
-              'fx:swapped',
+              FX_EVENTS.SWAPPED,
               { element, target: config.target },
               { cancelable: false, debugPrefix: 'fx' }
             );
@@ -580,7 +606,7 @@ export class HtmxAttributeProcessor {
           const errorObj = error instanceof Error ? error : new Error(String(error));
           this.dispatchLifecycleEvent<HtmxErrorEventDetail>(
             element,
-            'htmx:error',
+            HTMX_EVENTS.ERROR,
             { element, error: errorObj },
             { cancelable: false }
           );
@@ -589,7 +615,7 @@ export class HtmxAttributeProcessor {
           if (isFx && this.options.fixiEvents) {
             this.dispatchLifecycleEvent(
               element,
-              'fx:error',
+              FX_EVENTS.ERROR,
               { element, error: errorObj },
               { cancelable: false, debugPrefix: 'fx' }
             );
@@ -603,7 +629,7 @@ export class HtmxAttributeProcessor {
           if (isFx && this.options.fixiEvents) {
             this.dispatchLifecycleEvent<FxFinallyEventDetail>(
               element,
-              'fx:finally',
+              FX_EVENTS.FINALLY,
               { element, success: wasSuccessful },
               { cancelable: false, debugPrefix: 'fx' }
             );
@@ -613,7 +639,7 @@ export class HtmxAttributeProcessor {
           if (isFx && this.options.fixiEvents) {
             this.dispatchLifecycleEvent(
               element,
-              'fx:inited',
+              FX_EVENTS.INITED,
               { element },
               { cancelable: false, bubbles: false, debugPrefix: 'fx' }
             );
