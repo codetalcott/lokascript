@@ -35,17 +35,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Build order based on dependency graph:
+      # 1. semantic (no lokascript deps)
+      # 2. core (depends on semantic)
+      # 3. patterns-reference (depends on semantic)
+      # 4. i18n (depends on core, semantic)
+      # 5. ast-toolkit (depends on core, patterns-reference)
+      # 6. developer-tools
+      # 7. vite-plugin (depends on core)
       - name: Build semantic package
         run: npm run build --prefix packages/semantic
-
-      - name: Build i18n package
-        run: npm run build --prefix packages/i18n
 
       - name: Build core package (full)
         run: npm run build --prefix packages/core
 
       - name: Build patterns-reference package
         run: npm run build --prefix packages/patterns-reference
+
+      - name: Build i18n package
+        run: npm run build --prefix packages/i18n
 
       - name: Build ast-toolkit package
         run: npm run build --prefix packages/ast-toolkit
