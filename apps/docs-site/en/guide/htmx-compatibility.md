@@ -1,6 +1,6 @@
-# htmx Compatibility
+# htmx & fixi Compatibility
 
-The `hybrid-hx` bundle provides htmx-style declarative attributes for AJAX operations.
+The `hybrid-hx` bundle provides htmx-style and fixi-style declarative attributes for AJAX operations.
 
 ## Installation
 
@@ -344,6 +344,71 @@ Use both htmx attributes and hyperscript together:
 | `hx-indicator` | Loading indicator    | `hx-indicator="#spinner"`       |
 | `hx-confirm`   | Confirmation dialog  | `hx-confirm="Are you sure?"`    |
 | `hx-on:*`      | Inline hyperscript   | `hx-on:click="toggle .active"`  |
+
+## Fixi Compatibility
+
+The `hybrid-hx` bundle also supports [fixi.js](https://github.com/bigskysoftware/fixi) attributes, a minimal alternative to htmx.
+
+### Fixi Attributes
+
+| Attribute    | Description                     | Default      |
+| ------------ | ------------------------------- | ------------ |
+| `fx-action`  | Request URL                     | -            |
+| `fx-method`  | HTTP method                     | `GET`        |
+| `fx-target`  | Response destination            | element self |
+| `fx-swap`    | Swap strategy                   | `outerHTML`  |
+| `fx-trigger` | Event trigger                   | `click`      |
+| `fx-ignore`  | Exclude element from processing | -            |
+
+### Basic Example
+
+```html
+<button fx-action="/api/users" fx-target="#users-list" fx-swap="innerHTML">Load Users</button>
+
+<button fx-action="/api/submit" fx-method="POST" fx-target="#result">Submit</button>
+```
+
+### Fixi Events
+
+Fixi dispatches a richer event lifecycle than htmx:
+
+| Event        | When                             | Cancelable |
+| ------------ | -------------------------------- | ---------- |
+| `fx:init`    | Before element processed         | Yes        |
+| `fx:config`  | Before request, config available | Yes        |
+| `fx:before`  | Before fetch executes            | Yes        |
+| `fx:after`   | After response, before swap      | Yes        |
+| `fx:error`   | On fetch failure                 | No         |
+| `fx:finally` | Always fires (success or error)  | No         |
+| `fx:swapped` | After DOM swap complete          | No         |
+
+```javascript
+document.addEventListener('fx:config', e => {
+  console.log('URL:', e.detail.cfg.action);
+  console.log('Method:', e.detail.cfg.method);
+});
+```
+
+### Request Dropping
+
+Fixi-style request dropping prevents double-submit by ignoring new requests while one is pending:
+
+```html
+<!-- Clicking rapidly only triggers one request -->
+<button fx-action="/api/submit" fx-method="POST">Submit</button>
+```
+
+### fx-ignore
+
+Exclude elements (and descendants) from processing:
+
+```html
+<div fx-ignore>
+  <!-- These buttons won't be processed -->
+  <button fx-action="/api/a">Ignored</button>
+  <button fx-action="/api/b">Also Ignored</button>
+</div>
+```
 
 ## Next Steps
 

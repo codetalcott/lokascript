@@ -1,11 +1,17 @@
 /**
  * HtmxAttributeProcessor
  *
- * Scans DOM for elements with hx-* attributes and translates them
- * to hyperscript syntax for execution by the HyperFixi runtime.
+ * Scans DOM for elements with hx-* and fx-* attributes and translates them
+ * to hyperscript syntax for execution by the LokaScript runtime.
  *
- * This implements Option B from the htmx compatibility plan:
- * core subset of htmx attributes covering ~80% of use cases.
+ * Supports both htmx-style (hx-*) and fixi-style (fx-*) attributes:
+ * - htmx: hx-get, hx-post, hx-target, hx-swap, hx-trigger, etc.
+ * - fixi: fx-action, fx-method, fx-target, fx-swap, fx-trigger, fx-ignore
+ *
+ * Fixi-specific features:
+ * - Request dropping (anti-double-submit) - new requests are dropped if one is pending
+ * - fx-ignore attribute - prevents processing on element and descendants
+ * - Full fixi event lifecycle: fx:init, fx:config, fx:before, fx:after, fx:error, fx:finally, fx:swapped
  */
 
 import { translateToHyperscript, type HtmxConfig } from './htmx-translator.js';
@@ -54,6 +60,65 @@ export interface HtmxErrorEventDetail {
 }
 
 // ============================================================================
+// Fixi Event Types
+// ============================================================================
+
+/**
+ * Detail for fx:init event
+ * Fired when processing begins on an element with fx-action.
+ * Cancel to prevent initialization.
+ */
+export interface FxInitEventDetail {
+  element: Element;
+  options: EventListenerOptions;
+}
+
+/**
+ * Detail for fx:config event
+ * Fired before request. Matches fixi's cfg object structure.
+ * Cancel to prevent the request.
+ */
+export interface FxConfigEventDetail {
+  cfg: {
+    trigger: string;
+    method: string;
+    action: string | undefined;
+    headers: Record<string, string>;
+    target: string | undefined;
+    swap: string;
+    body: FormData | null;
+    drop: number; // Number of outstanding requests
+    transition: boolean | ((callback: () => void) => void);
+    preventTrigger: boolean;
+    signal: AbortSignal;
+    confirm?: () => Promise<boolean>;
+  };
+  element: Element;
+}
+
+/**
+ * Detail for fx:after event
+ * Fired after response received, before swap.
+ * Can modify cfg.text to transform swapped content.
+ */
+export interface FxAfterEventDetail {
+  cfg: FxConfigEventDetail['cfg'] & {
+    response: Response | null;
+    text: string;
+  };
+  element: Element;
+}
+
+/**
+ * Detail for fx:finally event
+ * Always fires, regardless of success or error.
+ */
+export interface FxFinallyEventDetail {
+  element: Element;
+  success: boolean;
+}
+
+// ============================================================================
 // Processor Options
 // ============================================================================
 
@@ -66,9 +131,13 @@ export interface HtmxProcessorOptions {
   debug?: boolean;
   /** Custom root element to scan (defaults to document.body) */
   root?: Element;
+  /** Enable fixi-style request dropping (drop new requests if one is pending) */
+  requestDropping?: boolean;
+  /** Dispatch fixi-compatible events (fx:*) in addition to htmx events */
+  fixiEvents?: boolean;
 }
 
-/** Attributes to scan for */
+/** htmx attributes to scan for */
 const HTMX_REQUEST_ATTRS = ['hx-get', 'hx-post', 'hx-put', 'hx-patch', 'hx-delete'];
 const HTMX_ALL_ATTRS = [
   ...HTMX_REQUEST_ATTRS,
@@ -83,14 +152,26 @@ const HTMX_ALL_ATTRS = [
   'hx-replace-url',
 ];
 
-/** Build CSS selector for elements with any hx-* attribute */
+/** fixi attributes to scan for */
+const FIXI_ATTRS = ['fx-action', 'fx-method', 'fx-trigger', 'fx-target', 'fx-swap', 'fx-ignore'];
+const FIXI_REQUEST_ATTR = 'fx-action';
+
+/** Combined attributes for MutationObserver */
+const ALL_ATTRS = [...HTMX_ALL_ATTRS, ...FIXI_ATTRS];
+
+/** Build CSS selector for elements with any hx-* or fx-* attribute */
 const HTMX_SELECTOR = HTMX_REQUEST_ATTRS.map(attr => `[${attr}]`).join(', ') + ', [hx-on\\:]';
+const FIXI_SELECTOR = `[${FIXI_REQUEST_ATTR}]`;
+const COMBINED_SELECTOR = `${HTMX_SELECTOR}, ${FIXI_SELECTOR}`;
 
 export class HtmxAttributeProcessor {
   private options: Required<HtmxProcessorOptions>;
   private observer: MutationObserver | null = null;
   private processedElements = new WeakSet<Element>();
   private executeCallback: ((code: string, element: Element) => Promise<void>) | null = null;
+
+  /** Track pending requests per element for request dropping (fixi behavior) */
+  private pendingRequests = new WeakMap<Element, AbortController>();
 
   constructor(options: HtmxProcessorOptions = {}) {
     this.options = {
@@ -100,6 +181,8 @@ export class HtmxAttributeProcessor {
       root:
         options.root ??
         (typeof document !== 'undefined' ? document.body : (null as unknown as Element)),
+      requestDropping: options.requestDropping ?? true, // Enable by default for fixi compatibility
+      fixiEvents: options.fixiEvents ?? true, // Enable by default
     };
   }
 
@@ -135,20 +218,27 @@ export class HtmxAttributeProcessor {
   }
 
   /**
-   * Scan for elements with hx-* attributes
+   * Scan for elements with hx-* or fx-* attributes
+   * Excludes elements with fx-ignore or inside fx-ignore containers
    */
   scanForHtmxElements(root?: Element): Element[] {
     const searchRoot = root ?? this.options.root;
     if (!searchRoot) return [];
 
-    const elements = Array.from(searchRoot.querySelectorAll(HTMX_SELECTOR));
+    // Skip if root is inside fx-ignore
+    if (searchRoot.closest?.('[fx-ignore]')) {
+      return [];
+    }
+
+    const elements = Array.from(searchRoot.querySelectorAll(COMBINED_SELECTOR));
 
     // Also check the root element itself
-    if (searchRoot.matches?.(HTMX_SELECTOR)) {
+    if (searchRoot.matches?.(COMBINED_SELECTOR)) {
       elements.unshift(searchRoot);
     }
 
-    return elements;
+    // Filter out elements inside fx-ignore containers
+    return elements.filter(el => !el.closest('[fx-ignore]'));
   }
 
   /**
@@ -236,21 +326,82 @@ export class HtmxAttributeProcessor {
   }
 
   /**
-   * Process a single element
+   * Collect all fx-* attributes from an element into a config object
+   * Maps fixi's simpler API to HtmxConfig structure
+   */
+  collectFxAttributes(element: Element): HtmxConfig {
+    const config: HtmxConfig = {};
+
+    // fx-action is the URL (required for fixi)
+    const action = element.getAttribute('fx-action');
+    if (action) {
+      config.url = action;
+    }
+
+    // fx-method specifies HTTP verb (default: GET)
+    const method = element.getAttribute('fx-method');
+    config.method = (method?.toUpperCase() || 'GET') as HtmxConfig['method'];
+
+    // fx-target is CSS selector for swap location
+    const target = element.getAttribute('fx-target');
+    if (target) {
+      config.target = target;
+    }
+
+    // fx-swap is insertion mechanism (default: outerHTML for fixi)
+    const swap = element.getAttribute('fx-swap');
+    config.swap = swap || 'outerHTML';
+
+    // fx-trigger is the event type
+    const trigger = element.getAttribute('fx-trigger');
+    if (trigger) {
+      config.trigger = trigger;
+    }
+
+    return config;
+  }
+
+  /**
+   * Check if an element uses fixi-style attributes
+   */
+  private isFxElement(element: Element): boolean {
+    return element.hasAttribute('fx-action');
+  }
+
+  /**
+   * Process a single element (supports both hx-* and fx-* attributes)
    */
   processElement(element: Element): void {
     if (this.processedElements.has(element)) {
       return;
     }
 
-    const config = this.collectAttributes(element);
+    // Detect if this is a fixi-style or htmx-style element
+    const isFx = this.isFxElement(element);
+    const config = isFx ? this.collectFxAttributes(element) : this.collectAttributes(element);
+    const prefix = isFx ? 'fx' : 'htmx';
 
-    // Skip if no meaningful htmx config
+    // Skip if no meaningful config
     if (!config.url && !config.onHandlers && !config.boost) {
       return;
     }
 
-    // Dispatch htmx:configuring event (cancelable)
+    // Dispatch fx:init event for fixi elements (cancelable)
+    if (isFx && this.options.fixiEvents) {
+      const initEvent = new CustomEvent<FxInitEventDetail>('fx:init', {
+        detail: { element, options: {} },
+        bubbles: true,
+        cancelable: true,
+      });
+      if (!element.dispatchEvent(initEvent)) {
+        if (this.options.debug) {
+          console.log('[fx-compat] Processing cancelled by fx:init handler');
+        }
+        return;
+      }
+    }
+
+    // Dispatch htmx:configuring / fx:config event (cancelable)
     const configuringEvent = new CustomEvent<HtmxConfiguringEventDetail>('htmx:configuring', {
       detail: { config, element },
       bubbles: true,
@@ -258,15 +409,45 @@ export class HtmxAttributeProcessor {
     });
     if (!element.dispatchEvent(configuringEvent)) {
       if (this.options.debug) {
-        console.log('[htmx-compat] Processing cancelled by htmx:configuring handler');
+        console.log(`[${prefix}-compat] Processing cancelled by htmx:configuring handler`);
       }
-      return; // Cancelled by event handler
+      return;
+    }
+
+    // Also dispatch fx:config for fixi elements
+    if (isFx && this.options.fixiEvents) {
+      const fxConfigEvent = new CustomEvent<FxConfigEventDetail>('fx:config', {
+        detail: {
+          cfg: {
+            trigger: config.trigger || 'click',
+            method: config.method || 'GET',
+            action: config.url,
+            headers: {},
+            target: config.target,
+            swap: config.swap || 'outerHTML',
+            body: null,
+            drop: this.pendingRequests.has(element) ? 1 : 0,
+            transition: true,
+            preventTrigger: true,
+            signal: new AbortController().signal,
+          },
+          element,
+        },
+        bubbles: true,
+        cancelable: true,
+      });
+      if (!element.dispatchEvent(fxConfigEvent)) {
+        if (this.options.debug) {
+          console.log('[fx-compat] Processing cancelled by fx:config handler');
+        }
+        return;
+      }
     }
 
     const hyperscript = translateToHyperscript(config, element);
 
     if (this.options.debug) {
-      console.log('[htmx-compat] Translated:', {
+      console.log(`[${prefix}-compat] Translated:`, {
         element: element.tagName,
         config,
         hyperscript,
@@ -277,10 +458,25 @@ export class HtmxAttributeProcessor {
 
     // Execute the generated hyperscript
     if (this.executeCallback && hyperscript) {
-      // Store the generated code on the element for inspection
-      element.setAttribute('data-hx-generated', hyperscript);
+      // Request dropping for fixi elements (anti-double-submit)
+      if (isFx && this.options.requestDropping && this.pendingRequests.has(element)) {
+        if (this.options.debug) {
+          console.log('[fx-compat] Request dropped - pending request exists');
+        }
+        return;
+      }
 
-      // Dispatch htmx:beforeRequest event (cancelable)
+      // Track pending request for fixi elements
+      const controller = new AbortController();
+      if (isFx && this.options.requestDropping) {
+        this.pendingRequests.set(element, controller);
+      }
+
+      // Store the generated code on the element for inspection
+      const dataAttr = isFx ? 'data-fx-generated' : 'data-hx-generated';
+      element.setAttribute(dataAttr, hyperscript);
+
+      // Dispatch htmx:beforeRequest / fx:before event (cancelable)
       const beforeRequestEvent = new CustomEvent<HtmxBeforeRequestEventDetail>(
         'htmx:beforeRequest',
         {
@@ -295,30 +491,93 @@ export class HtmxAttributeProcessor {
       );
       if (!element.dispatchEvent(beforeRequestEvent)) {
         if (this.options.debug) {
-          console.log('[htmx-compat] Execution cancelled by htmx:beforeRequest handler');
+          console.log(`[${prefix}-compat] Execution cancelled by htmx:beforeRequest handler`);
         }
-        return; // Cancelled by event handler
+        this.pendingRequests.delete(element);
+        return;
+      }
+
+      // Also dispatch fx:before for fixi elements
+      if (isFx && this.options.fixiEvents) {
+        const fxBeforeEvent = new CustomEvent('fx:before', {
+          detail: { element, url: config.url, method: config.method || 'GET' },
+          bubbles: true,
+          cancelable: true,
+        });
+        if (!element.dispatchEvent(fxBeforeEvent)) {
+          if (this.options.debug) {
+            console.log('[fx-compat] Execution cancelled by fx:before handler');
+          }
+          this.pendingRequests.delete(element);
+          return;
+        }
       }
 
       this.executeCallback(hyperscript, element)
         .then(() => {
-          // Dispatch htmx:afterSettle event (not cancelable)
+          // Dispatch htmx:afterSettle / fx:swapped event
           element.dispatchEvent(
             new CustomEvent<HtmxAfterSettleEventDetail>('htmx:afterSettle', {
               detail: { element, target: config.target },
               bubbles: true,
             })
           );
+
+          // Also dispatch fx:swapped for fixi elements
+          if (isFx && this.options.fixiEvents) {
+            element.dispatchEvent(
+              new CustomEvent('fx:swapped', {
+                detail: { element, target: config.target },
+                bubbles: true,
+              })
+            );
+          }
         })
         .catch(error => {
-          console.error('[htmx-compat] Execution error:', error);
-          // Dispatch htmx:error event (not cancelable)
+          console.error(`[${prefix}-compat] Execution error:`, error);
+
+          // Dispatch htmx:error / fx:error event
+          const errorObj = error instanceof Error ? error : new Error(String(error));
           element.dispatchEvent(
             new CustomEvent<HtmxErrorEventDetail>('htmx:error', {
-              detail: { element, error: error instanceof Error ? error : new Error(String(error)) },
+              detail: { element, error: errorObj },
               bubbles: true,
             })
           );
+
+          // Also dispatch fx:error for fixi elements
+          if (isFx && this.options.fixiEvents) {
+            element.dispatchEvent(
+              new CustomEvent('fx:error', {
+                detail: { element, error: errorObj },
+                bubbles: true,
+              })
+            );
+          }
+        })
+        .finally(() => {
+          // Clean up pending request tracking
+          this.pendingRequests.delete(element);
+
+          // Dispatch fx:finally for fixi elements (always fires)
+          if (isFx && this.options.fixiEvents) {
+            element.dispatchEvent(
+              new CustomEvent<FxFinallyEventDetail>('fx:finally', {
+                detail: { element, success: true }, // TODO: track actual success
+                bubbles: true,
+              })
+            );
+          }
+
+          // Dispatch fx:inited after processing complete (no bubble)
+          if (isFx && this.options.fixiEvents) {
+            element.dispatchEvent(
+              new CustomEvent('fx:inited', {
+                detail: { element },
+                bubbles: false, // fx:inited does not bubble
+              })
+            );
+          }
         });
     }
   }
@@ -349,11 +608,8 @@ export class HtmxAttributeProcessor {
         // Handle attribute changes
         if (mutation.type === 'attributes' && mutation.target instanceof Element) {
           const attrName = mutation.attributeName;
-          if (
-            attrName &&
-            HTMX_ALL_ATTRS.some(a => attrName === a || attrName.startsWith('hx-on:'))
-          ) {
-            // Re-process element if htmx attributes changed
+          if (attrName && (ALL_ATTRS.includes(attrName) || attrName.startsWith('hx-on:'))) {
+            // Re-process element if htmx or fixi attributes changed
             this.processedElements.delete(mutation.target);
             this.processElement(mutation.target);
           }
@@ -366,18 +622,43 @@ export class HtmxAttributeProcessor {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: HTMX_ALL_ATTRS,
+        attributeFilter: ALL_ATTRS,
       });
     }
   }
 
   /**
    * Manually trigger processing of an element (useful for testing)
+   * Supports both htmx and fixi elements
    */
   manualProcess(element: Element): string {
-    const config = this.collectAttributes(element);
+    const isFx = this.isFxElement(element);
+    const config = isFx ? this.collectFxAttributes(element) : this.collectAttributes(element);
     return translateToHyperscript(config, element);
   }
+
+  /**
+   * Check if there's a pending request for an element
+   */
+  hasPendingRequest(element: Element): boolean {
+    return this.pendingRequests.has(element);
+  }
+
+  /**
+   * Abort a pending request for an element
+   */
+  abortPendingRequest(element: Element): boolean {
+    const controller = this.pendingRequests.get(element);
+    if (controller) {
+      controller.abort();
+      this.pendingRequests.delete(element);
+      return true;
+    }
+    return false;
+  }
 }
+
+// Export constants for external use
+export { FIXI_ATTRS, HTMX_ALL_ATTRS as HTMX_ATTRS };
 
 export { translateToHyperscript, type HtmxConfig } from './htmx-translator.js';

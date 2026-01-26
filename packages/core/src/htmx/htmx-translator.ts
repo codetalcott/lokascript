@@ -1,8 +1,14 @@
 /**
  * htmx-translator.ts
  *
- * Translates htmx attribute configurations to hyperscript syntax.
- * Implements the translation matrix from the htmx compatibility plan.
+ * Translates htmx/fixi attribute configurations to hyperscript syntax.
+ * Supports both htmx-style (hx-*) and fixi-style (fx-*) configs.
+ *
+ * Key differences between htmx and fixi:
+ * - htmx uses separate hx-get, hx-post, etc. attributes
+ * - fixi uses fx-action + fx-method (default: GET)
+ * - htmx default swap: innerHTML
+ * - fixi default swap: outerHTML
  */
 
 export interface HtmxConfig {
@@ -318,4 +324,18 @@ export function hasHtmxAttributes(element: Element): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Check if an element has any fixi attributes
+ */
+export function hasFxAttributes(element: Element): boolean {
+  return element.hasAttribute('fx-action');
+}
+
+/**
+ * Check if an element has any htmx or fixi attributes
+ */
+export function hasAnyAttributes(element: Element): boolean {
+  return hasHtmxAttributes(element) || hasFxAttributes(element);
 }

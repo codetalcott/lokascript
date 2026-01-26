@@ -5,6 +5,16 @@ All notable changes to @lokascript/core will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-01-25
+
+### Added
+
+- **Fixi.js compatibility** in hybrid-hx bundle
+  - `fx-action`, `fx-method`, `fx-trigger`, `fx-target`, `fx-swap`, `fx-ignore` attributes
+  - Full fixi event lifecycle: `fx:init`, `fx:config`, `fx:before`, `fx:after`, `fx:error`, `fx:finally`, `fx:swapped`
+  - Request dropping (anti-double-submit) - new requests dropped while one is pending
+  - `fx-ignore` attribute to exclude elements from processing
+
 ## [2.0.0] - 2025-01-19
 
 ### Added

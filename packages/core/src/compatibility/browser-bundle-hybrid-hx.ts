@@ -1,15 +1,28 @@
 /**
- * HyperFixi Hybrid-HX Browser Bundle
+ * LokaScript Hybrid-HX Browser Bundle
  *
- * Extends hybrid-complete with htmx attribute compatibility (hx-*).
- * Supports both `_="..."` hyperscript syntax AND htmx-style attributes.
+ * Extends hybrid-complete with htmx (hx-*) and fixi (fx-*) attribute compatibility.
+ * Supports:
+ * - hyperscript syntax: `_="..."`
+ * - htmx-style: `hx-get`, `hx-post`, `hx-target`, `hx-swap`, etc.
+ * - fixi-style: `fx-action`, `fx-method`, `fx-target`, `fx-swap`, `fx-trigger`, `fx-ignore`
  *
- * Target: ~8-9 KB gzipped
+ * Fixi-specific features:
+ * - Request dropping (anti-double-submit) - new requests dropped while one is pending
+ * - fx-ignore attribute - prevents processing on element and descendants
+ * - Full fixi event lifecycle: fx:init, fx:config, fx:before, fx:after, fx:error, fx:finally, fx:swapped
+ *
+ * Target: ~9-10 KB gzipped
  *
  * Usage:
  * ```html
  * <!-- htmx-style -->
  * <button hx-get="/api/data" hx-target="#result" hx-swap="innerHTML">
+ *   Load Data
+ * </button>
+ *
+ * <!-- fixi-style -->
+ * <button fx-action="/api/data" fx-target="#result" fx-swap="innerHTML">
  *   Load Data
  * </button>
  *
@@ -21,18 +34,26 @@
 // Import everything from hybrid-complete (we'll re-export its functionality)
 import hybridComplete from './browser-bundle-hybrid-complete.js';
 
-// Import htmx compatibility layer
+// Import htmx/fixi compatibility layer
 import {
   HtmxAttributeProcessor,
+  FIXI_ATTRS,
+  HTMX_ATTRS,
   type HtmxProcessorOptions,
+  type FxInitEventDetail,
+  type FxConfigEventDetail,
+  type FxAfterEventDetail,
+  type FxFinallyEventDetail,
 } from '../htmx/htmx-attribute-processor.js';
 import {
   translateToHyperscript,
   hasHtmxAttributes,
+  hasFxAttributes,
+  hasAnyAttributes,
   type HtmxConfig,
 } from '../htmx/htmx-translator.js';
 
-// ============== HTMX COMPATIBILITY ==============
+// ============== HTMX/FIXI COMPATIBILITY ==============
 
 let htmxProcessor: HtmxAttributeProcessor | null = null;
 
@@ -42,18 +63,24 @@ interface HtmxCompatOptions extends HtmxProcessorOptions {
 }
 
 /**
- * Enable htmx attribute compatibility
- * Call this to start processing hx-* attributes on the page
+ * Enable htmx/fixi attribute compatibility
+ * Call this to start processing hx-* and fx-* attributes on the page
+ *
+ * Fixi-specific options:
+ * - requestDropping: Enable request dropping (default: true)
+ * - fixiEvents: Dispatch fixi-compatible events (default: true)
  */
 function enableHtmxCompatibility(options: HtmxCompatOptions = {}): void {
   const { processHyperscript = true, ...htmxOptions } = options;
 
-  // Create the processor
+  // Create the processor with fixi support
   htmxProcessor = new HtmxAttributeProcessor({
     processExisting: htmxOptions.processExisting ?? true,
     watchMutations: htmxOptions.watchMutations ?? true,
     debug: htmxOptions.debug ?? false,
     root: htmxOptions.root ?? document.body,
+    requestDropping: htmxOptions.requestDropping ?? true,
+    fixiEvents: htmxOptions.fixiEvents ?? true,
   });
 
   // Initialize with execute callback
@@ -67,7 +94,7 @@ function enableHtmxCompatibility(options: HtmxCompatOptions = {}): void {
   // would double-process elements and break event handlers
 
   if (options.debug) {
-    console.log('[hyperfixi-hx] htmx compatibility enabled');
+    console.log('[lokascript-hx] htmx/fixi compatibility enabled');
   }
 }
 
@@ -106,12 +133,14 @@ const api = {
   // Override version
   version: '1.0.0-hybrid-hx',
 
-  // htmx compatibility
+  // htmx/fixi compatibility
   enableHtmxCompatibility,
   disableHtmxCompatibility,
   getHtmxProcessor,
   translateHtmx,
   hasHtmxAttributes,
+  hasFxAttributes,
+  hasAnyAttributes,
 
   // Export types for TypeScript users
   HtmxAttributeProcessor,
@@ -120,26 +149,26 @@ const api = {
   // Feature flags
   features: {
     htmx: true,
+    fixi: true,
     hyperscript: true,
   },
 
   // All supported htmx attributes
-  htmxAttributes: [
-    'hx-get',
-    'hx-post',
-    'hx-put',
-    'hx-patch',
-    'hx-delete',
-    'hx-target',
-    'hx-swap',
-    'hx-trigger',
-    'hx-confirm',
-    'hx-boost',
-    'hx-vals',
-    'hx-headers',
-    'hx-push-url',
-    'hx-replace-url',
-    'hx-on:*',
+  htmxAttributes: HTMX_ATTRS,
+
+  // All supported fixi attributes
+  fixiAttributes: FIXI_ATTRS,
+
+  // Fixi-specific events (for documentation)
+  fixiEvents: [
+    'fx:init',
+    'fx:inited',
+    'fx:config',
+    'fx:before',
+    'fx:after',
+    'fx:error',
+    'fx:finally',
+    'fx:swapped',
   ],
 };
 
@@ -147,14 +176,17 @@ const api = {
 
 if (typeof window !== 'undefined') {
   (window as any).hyperfixi = api;
+  (window as any).lokascript = api; // Also expose as lokascript
 
-  // Auto-enable htmx compatibility when DOM is ready
+  // Auto-enable htmx/fixi compatibility when DOM is ready
   const initHybridHx = () => {
-    // Enable htmx processing by default
+    // Enable htmx/fixi processing by default
     enableHtmxCompatibility({
       processExisting: true,
       watchMutations: true,
       processHyperscript: true, // Also process _="..." attributes
+      requestDropping: true, // Fixi-style request dropping
+      fixiEvents: true, // Dispatch fixi-compatible events
     });
   };
 
@@ -166,5 +198,22 @@ if (typeof window !== 'undefined') {
 }
 
 export default api;
-export { enableHtmxCompatibility, disableHtmxCompatibility, translateHtmx, HtmxAttributeProcessor };
-export type { HtmxConfig, HtmxCompatOptions, HtmxProcessorOptions };
+export {
+  enableHtmxCompatibility,
+  disableHtmxCompatibility,
+  translateHtmx,
+  HtmxAttributeProcessor,
+  hasFxAttributes,
+  hasAnyAttributes,
+  FIXI_ATTRS,
+  HTMX_ATTRS,
+};
+export type {
+  HtmxConfig,
+  HtmxCompatOptions,
+  HtmxProcessorOptions,
+  FxInitEventDetail,
+  FxConfigEventDetail,
+  FxAfterEventDetail,
+  FxFinallyEventDetail,
+};

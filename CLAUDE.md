@@ -580,7 +580,7 @@ For projects prioritizing bundle size over features:
 | `lokascript-lite.js`            | 1.9 KB      | 8         | Regex parser, basic commands                  |
 | `lokascript-lite-plus.js`       | 2.6 KB      | 14        | Regex parser, more commands, i18n aliases     |
 | `lokascript-hybrid-complete.js` | 7.3 KB      | 21+blocks | Full AST parser, expressions, event modifiers |
-| `lokascript-hybrid-hx.js`       | 9.7 KB      | 21+blocks | hybrid-complete + htmx attribute support      |
+| `lokascript-hybrid-hx.js`       | 9.7 KB      | 21+blocks | hybrid-complete + htmx/fixi attribute support |
 
 **Hybrid Complete** (~85% hyperscript coverage) is recommended - it supports:
 
@@ -619,15 +619,20 @@ For projects prioritizing bundle size over features:
 </button>
 ```
 
-**Hybrid-HX** adds htmx attribute compatibility for declarative AJAX:
+**Hybrid-HX** adds htmx and fixi attribute compatibility for declarative AJAX:
 
 ```html
 <!-- htmx-style attributes (hybrid-hx bundle) -->
 <button hx-get="/api/users" hx-target="#users-list" hx-swap="innerHTML">Load Users</button>
 
+<!-- fixi-style attributes (also supported) -->
+<button fx-action="/api/users" fx-target="#users-list" fx-swap="innerHTML">Load Users</button>
+
 <!-- hx-on:* for inline hyperscript -->
 <button hx-on:click="toggle .active on me">Toggle</button>
 ```
+
+Fixi features include request dropping (anti-double-submit), `fx-ignore` attribute, and a rich event lifecycle (`fx:init`, `fx:config`, `fx:before`, `fx:after`, `fx:error`, `fx:finally`, `fx:swapped`).
 
 ### htmx Lifecycle Events
 
