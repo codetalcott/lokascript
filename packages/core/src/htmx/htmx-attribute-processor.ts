@@ -173,6 +173,29 @@ export class HtmxAttributeProcessor {
   /** Track pending requests per element for request dropping (fixi behavior) */
   private pendingRequests = new WeakMap<Element, AbortController>();
 
+  /**
+   * Helper to dispatch lifecycle events with consistent options
+   * Returns true if event was not cancelled, false if cancelled
+   */
+  private dispatchLifecycleEvent<T extends object>(
+    element: Element,
+    name: string,
+    detail: T,
+    options: { cancelable?: boolean; bubbles?: boolean; debugPrefix?: string } = {}
+  ): boolean {
+    const event = new CustomEvent(name, {
+      detail,
+      bubbles: options.bubbles ?? true,
+      cancelable: options.cancelable ?? true,
+    });
+    const dispatched = element.dispatchEvent(event);
+    if (!dispatched && this.options.debug) {
+      const prefix = options.debugPrefix ?? 'htmx';
+      console.log(`[${prefix}-compat] ${name} cancelled`);
+    }
+    return dispatched;
+  }
+
   constructor(options: HtmxProcessorOptions = {}) {
     this.options = {
       processExisting: options.processExisting ?? true,
@@ -388,58 +411,51 @@ export class HtmxAttributeProcessor {
 
     // Dispatch fx:init event for fixi elements (cancelable)
     if (isFx && this.options.fixiEvents) {
-      const initEvent = new CustomEvent<FxInitEventDetail>('fx:init', {
-        detail: { element, options: {} },
-        bubbles: true,
-        cancelable: true,
-      });
-      if (!element.dispatchEvent(initEvent)) {
-        if (this.options.debug) {
-          console.log('[fx-compat] Processing cancelled by fx:init handler');
-        }
+      if (
+        !this.dispatchLifecycleEvent<FxInitEventDetail>(
+          element,
+          'fx:init',
+          { element, options: {} },
+          { debugPrefix: 'fx' }
+        )
+      ) {
         return;
       }
     }
 
-    // Dispatch htmx:configuring / fx:config event (cancelable)
-    const configuringEvent = new CustomEvent<HtmxConfiguringEventDetail>('htmx:configuring', {
-      detail: { config, element },
-      bubbles: true,
-      cancelable: true,
-    });
-    if (!element.dispatchEvent(configuringEvent)) {
-      if (this.options.debug) {
-        console.log(`[${prefix}-compat] Processing cancelled by htmx:configuring handler`);
-      }
+    // Dispatch htmx:configuring event (cancelable)
+    if (
+      !this.dispatchLifecycleEvent<HtmxConfiguringEventDetail>(
+        element,
+        'htmx:configuring',
+        { config, element },
+        { debugPrefix: prefix }
+      )
+    ) {
       return;
     }
 
     // Also dispatch fx:config for fixi elements
     if (isFx && this.options.fixiEvents) {
-      const fxConfigEvent = new CustomEvent<FxConfigEventDetail>('fx:config', {
-        detail: {
-          cfg: {
-            trigger: config.trigger || 'click',
-            method: config.method || 'GET',
-            action: config.url,
-            headers: {},
-            target: config.target,
-            swap: config.swap || 'outerHTML',
-            body: null,
-            drop: this.pendingRequests.has(element) ? 1 : 0,
-            transition: true,
-            preventTrigger: true,
-            signal: new AbortController().signal,
-          },
-          element,
+      const fxConfigDetail: FxConfigEventDetail = {
+        cfg: {
+          trigger: config.trigger || 'click',
+          method: config.method || 'GET',
+          action: config.url,
+          headers: {},
+          target: config.target,
+          swap: config.swap || 'outerHTML',
+          body: null,
+          drop: this.pendingRequests.has(element) ? 1 : 0,
+          transition: true,
+          preventTrigger: true,
+          signal: new AbortController().signal,
         },
-        bubbles: true,
-        cancelable: true,
-      });
-      if (!element.dispatchEvent(fxConfigEvent)) {
-        if (this.options.debug) {
-          console.log('[fx-compat] Processing cancelled by fx:config handler');
-        }
+        element,
+      };
+      if (
+        !this.dispatchLifecycleEvent(element, 'fx:config', fxConfigDetail, { debugPrefix: 'fx' })
+      ) {
         return;
       }
     }
@@ -476,38 +492,29 @@ export class HtmxAttributeProcessor {
       const dataAttr = isFx ? 'data-fx-generated' : 'data-hx-generated';
       element.setAttribute(dataAttr, hyperscript);
 
-      // Dispatch htmx:beforeRequest / fx:before event (cancelable)
-      const beforeRequestEvent = new CustomEvent<HtmxBeforeRequestEventDetail>(
-        'htmx:beforeRequest',
-        {
-          detail: {
-            element,
-            url: config.url,
-            method: config.method || 'GET',
-          },
-          bubbles: true,
-          cancelable: true,
-        }
-      );
-      if (!element.dispatchEvent(beforeRequestEvent)) {
-        if (this.options.debug) {
-          console.log(`[${prefix}-compat] Execution cancelled by htmx:beforeRequest handler`);
-        }
+      // Dispatch htmx:beforeRequest event (cancelable)
+      if (
+        !this.dispatchLifecycleEvent<HtmxBeforeRequestEventDetail>(
+          element,
+          'htmx:beforeRequest',
+          { element, url: config.url, method: config.method || 'GET' },
+          { debugPrefix: prefix }
+        )
+      ) {
         this.pendingRequests.delete(element);
         return;
       }
 
       // Also dispatch fx:before for fixi elements
       if (isFx && this.options.fixiEvents) {
-        const fxBeforeEvent = new CustomEvent('fx:before', {
-          detail: { element, url: config.url, method: config.method || 'GET' },
-          bubbles: true,
-          cancelable: true,
-        });
-        if (!element.dispatchEvent(fxBeforeEvent)) {
-          if (this.options.debug) {
-            console.log('[fx-compat] Execution cancelled by fx:before handler');
-          }
+        if (
+          !this.dispatchLifecycleEvent(
+            element,
+            'fx:before',
+            { element, url: config.url, method: config.method || 'GET' },
+            { debugPrefix: 'fx' }
+          )
+        ) {
           this.pendingRequests.delete(element);
           return;
         }
@@ -520,51 +527,48 @@ export class HtmxAttributeProcessor {
         .then(() => {
           // Dispatch fx:after for fixi elements (cancelable, before swap)
           if (isFx && this.options.fixiEvents) {
-            const fxAfterEvent = new CustomEvent<FxAfterEventDetail>('fx:after', {
-              detail: {
-                cfg: {
-                  trigger: config.trigger || 'click',
-                  method: config.method || 'GET',
-                  action: config.url,
-                  headers: {},
-                  target: config.target,
-                  swap: config.swap || 'outerHTML',
-                  body: null,
-                  drop: 0,
-                  transition: true,
-                  preventTrigger: true,
-                  signal: controller.signal,
-                  response: null,
-                  text: '',
-                },
-                element,
+            const fxAfterDetail: FxAfterEventDetail = {
+              cfg: {
+                trigger: config.trigger || 'click',
+                method: config.method || 'GET',
+                action: config.url,
+                headers: {},
+                target: config.target,
+                swap: config.swap || 'outerHTML',
+                body: null,
+                drop: 0,
+                transition: true,
+                preventTrigger: true,
+                signal: controller.signal,
+                response: null,
+                text: '',
               },
-              bubbles: true,
-              cancelable: true,
-            });
-            if (!element.dispatchEvent(fxAfterEvent)) {
-              if (this.options.debug) {
-                console.log('[fx-compat] Swap cancelled by fx:after handler');
-              }
+              element,
+            };
+            if (
+              !this.dispatchLifecycleEvent(element, 'fx:after', fxAfterDetail, {
+                debugPrefix: 'fx',
+              })
+            ) {
               return; // Skip swap if cancelled
             }
           }
 
-          // Dispatch htmx:afterSettle / fx:swapped event
-          element.dispatchEvent(
-            new CustomEvent<HtmxAfterSettleEventDetail>('htmx:afterSettle', {
-              detail: { element, target: config.target },
-              bubbles: true,
-            })
+          // Dispatch htmx:afterSettle event (non-cancelable)
+          this.dispatchLifecycleEvent<HtmxAfterSettleEventDetail>(
+            element,
+            'htmx:afterSettle',
+            { element, target: config.target },
+            { cancelable: false }
           );
 
           // Also dispatch fx:swapped for fixi elements
           if (isFx && this.options.fixiEvents) {
-            element.dispatchEvent(
-              new CustomEvent('fx:swapped', {
-                detail: { element, target: config.target },
-                bubbles: true,
-              })
+            this.dispatchLifecycleEvent(
+              element,
+              'fx:swapped',
+              { element, target: config.target },
+              { cancelable: false, debugPrefix: 'fx' }
             );
           }
         })
@@ -572,22 +576,22 @@ export class HtmxAttributeProcessor {
           wasSuccessful = false;
           console.error(`[${prefix}-compat] Execution error:`, error);
 
-          // Dispatch htmx:error / fx:error event
+          // Dispatch htmx:error event (non-cancelable)
           const errorObj = error instanceof Error ? error : new Error(String(error));
-          element.dispatchEvent(
-            new CustomEvent<HtmxErrorEventDetail>('htmx:error', {
-              detail: { element, error: errorObj },
-              bubbles: true,
-            })
+          this.dispatchLifecycleEvent<HtmxErrorEventDetail>(
+            element,
+            'htmx:error',
+            { element, error: errorObj },
+            { cancelable: false }
           );
 
           // Also dispatch fx:error for fixi elements
           if (isFx && this.options.fixiEvents) {
-            element.dispatchEvent(
-              new CustomEvent('fx:error', {
-                detail: { element, error: errorObj },
-                bubbles: true,
-              })
+            this.dispatchLifecycleEvent(
+              element,
+              'fx:error',
+              { element, error: errorObj },
+              { cancelable: false, debugPrefix: 'fx' }
             );
           }
         })
@@ -597,21 +601,21 @@ export class HtmxAttributeProcessor {
 
           // Dispatch fx:finally for fixi elements (always fires)
           if (isFx && this.options.fixiEvents) {
-            element.dispatchEvent(
-              new CustomEvent<FxFinallyEventDetail>('fx:finally', {
-                detail: { element, success: wasSuccessful },
-                bubbles: true,
-              })
+            this.dispatchLifecycleEvent<FxFinallyEventDetail>(
+              element,
+              'fx:finally',
+              { element, success: wasSuccessful },
+              { cancelable: false, debugPrefix: 'fx' }
             );
           }
 
           // Dispatch fx:inited after processing complete (no bubble)
           if (isFx && this.options.fixiEvents) {
-            element.dispatchEvent(
-              new CustomEvent('fx:inited', {
-                detail: { element },
-                bubbles: false, // fx:inited does not bubble
-              })
+            this.dispatchLifecycleEvent(
+              element,
+              'fx:inited',
+              { element },
+              { cancelable: false, bubbles: false, debugPrefix: 'fx' }
             );
           }
         });
