@@ -25,7 +25,7 @@
  */
 export const packageInfo = {
   name: '@lokascript/core',
-  version: '1.0.0-rc.1',
+  version: '1.0.0-rc.2',
   description: 'Multilingual, tree-shakeable hyperscript',
   compatibility: '~85% official _hyperscript',
   languages: 24,
