@@ -64,18 +64,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build packages (must build before tests due to workspace imports)
+        run: |
+          # Build order matters: semantic/i18n first (dependencies), then core, then vite-plugin
+          npm run build --prefix packages/semantic
+          npm run build --prefix packages/i18n
+          npm run build --prefix packages/patterns-reference
+          npm run build --prefix packages/ast-toolkit
+          npm run build --prefix packages/core
+          npm run build --prefix packages/vite-plugin
+
       - name: Run tests
         run: |
           npm test --prefix packages/core -- --run
           npm test --prefix packages/semantic -- --run
           npm test --prefix packages/i18n -- --run
-
-      - name: Build packages
-        run: |
-          npm run build --prefix packages/core
-          npm run build --prefix packages/semantic
-          npm run build --prefix packages/i18n
-          npm run build --prefix packages/vite-plugin
 
       - name: Parse package list
         id: packages
