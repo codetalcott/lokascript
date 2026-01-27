@@ -74,12 +74,15 @@ jobs:
           # 2. core (depends on semantic)
           # 3. patterns-reference (depends on semantic)
           # 4. i18n (depends on core, semantic)
-          # 5. vite-plugin (depends on core)
-          # Note: ast-toolkit is private and not published, so skip it
+          # 5. ast-toolkit (optional dep for mcp-server, build even though private)
+          # 6. mcp-server (depends on semantic, patterns-reference, ast-toolkit optional)
+          # 7. vite-plugin (depends on core)
           npm run build --prefix packages/semantic
           npm run build --prefix packages/core
           npm run build --prefix packages/patterns-reference
           npm run build --prefix packages/i18n
+          npm run build --prefix packages/ast-toolkit
+          npm run build --prefix packages/mcp-server
           npm run build --prefix packages/vite-plugin
 
       - name: Run tests
@@ -87,6 +90,7 @@ jobs:
           npm test --prefix packages/core -- --run
           npm test --prefix packages/semantic -- --run
           npm test --prefix packages/i18n -- --run
+          npm test --prefix packages/mcp-server -- --run
 
       - name: Parse package list
         id: packages

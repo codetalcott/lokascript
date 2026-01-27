@@ -41,8 +41,9 @@ jobs:
       # 3. patterns-reference (depends on semantic)
       # 4. i18n (depends on core, semantic)
       # 5. ast-toolkit (depends on core, patterns-reference)
-      # 6. developer-tools
-      # 7. vite-plugin (depends on core)
+      # 6. mcp-server (depends on semantic, patterns-reference, ast-toolkit optional)
+      # 7. developer-tools
+      # 8. vite-plugin (depends on core)
       - name: Build semantic package
         run: npm run build --prefix packages/semantic
 
@@ -57,6 +58,9 @@ jobs:
 
       - name: Build ast-toolkit package
         run: npm run build --prefix packages/ast-toolkit
+
+      - name: Build mcp-server package
+        run: npm run build --prefix packages/mcp-server
 
       - name: Build developer-tools package
         run: npm run build --prefix packages/developer-tools
@@ -89,6 +93,7 @@ jobs:
             packages/core/dist/
             packages/patterns-reference/dist/
             packages/ast-toolkit/dist/
+            packages/mcp-server/dist/
             packages/developer-tools/dist/
             packages/vite-plugin/dist/
           retention-days: 1
@@ -154,6 +159,7 @@ jobs:
           npm run typecheck --prefix packages/i18n
           npm run typecheck --prefix packages/vite-plugin
           npm run typecheck --prefix packages/patterns-reference
+          npm run typecheck --prefix packages/mcp-server
 
       - name: Verify reference data
         run: npm run verify:reference --prefix packages/core
@@ -209,6 +215,9 @@ jobs:
 
       - name: Test patterns-reference
         run: npm test --prefix packages/patterns-reference -- --run
+
+      - name: Test mcp-server
+        run: npm test --prefix packages/mcp-server -- --run
 
   # ============================================
   # Job 4: Coverage Report (Node 20 only)
