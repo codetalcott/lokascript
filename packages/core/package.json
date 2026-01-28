@@ -86,7 +86,7 @@
       "require": "./dist/parser/regex-parser.js"
     },
     "./browser/modular": {
-      "default": "./dist/lokascript-modular.js"
+      "default": "./dist/hyperfixi.mjs"
     },
     "./behaviors": {
       "types": "./dist/behaviors/index.d.ts",

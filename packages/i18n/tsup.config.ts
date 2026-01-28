@@ -1,7 +1,14 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/browser.ts'],
+  entry: [
+    'src/index.ts',
+    'src/browser.ts',
+    // Additional exports declared in package.json
+    'src/dictionaries/index.ts',
+    'src/plugins/vite.ts',
+    'src/plugins/webpack.ts',
+  ],
   format: ['esm', 'cjs'],
   dts: {
     compilerOptions: {

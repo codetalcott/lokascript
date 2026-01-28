@@ -209,6 +209,43 @@ jobs:
             fi
           done
 
+      - name: Validate exports
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Export Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Verifying all package.json exports resolve to actual files..." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
+          FAILED_PKGS=""
+
+          for pkg in "${PKG_ARRAY[@]}"; do
+            pkg=$(echo "$pkg" | xargs)
+            if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/package.json" ]; then
+              echo "Validating @lokascript/$pkg exports..."
+              if node scripts/validate-exports.mjs "$pkg" 2>&1 | tee /tmp/${pkg}-exports.log; then
+                MISSING=$(grep -c "Missing exports" /tmp/${pkg}-exports.log 2>/dev/null || echo "0")
+                if [ "$MISSING" = "0" ]; then
+                  echo "✅ @lokascript/$pkg - All exports valid" >> $GITHUB_STEP_SUMMARY
+                else
+                  echo "❌ @lokascript/$pkg - Missing exports detected" >> $GITHUB_STEP_SUMMARY
+                  FAILED_PKGS="$FAILED_PKGS $pkg"
+                fi
+              else
+                echo "❌ @lokascript/$pkg - Export validation failed" >> $GITHUB_STEP_SUMMARY
+                FAILED_PKGS="$FAILED_PKGS $pkg"
+              fi
+            fi
+          done
+
+          if [ -n "$FAILED_PKGS" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Export validation issues found in:**$FAILED_PKGS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Run \`node scripts/validate-exports.mjs --fix-suggestions\` locally for details." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Package.json validation
         run: |
           echo "" >> $GITHUB_STEP_SUMMARY

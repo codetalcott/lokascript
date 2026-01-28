@@ -19,12 +19,21 @@ import { resolve as resolvePath } from 'path';
 const projectRoot = process.cwd();
 
 // Bundle configurations with metadata
+// All bundles declared in package.json exports must be built
 const BUNDLES = {
+  // === Critical bundles (fail CI if these don't build) ===
   main: {
     name: 'main (lokascript-browser.js)',
     script: 'build:browser:main-only',
     config: 'rollup.browser.config.mjs',
     output: 'dist/lokascript-browser.js',
+    critical: true,
+  },
+  multilingual: {
+    name: 'multilingual',
+    script: 'build:browser:multilingual',
+    config: 'rollup.browser-multilingual.config.mjs',
+    output: 'dist/lokascript-multilingual.js',
     critical: true,
   },
   'classic-i18n': {
@@ -34,12 +43,60 @@ const BUNDLES = {
     output: 'dist/lokascript-browser-classic-i18n.js',
     critical: true,
   },
-  multilingual: {
-    name: 'multilingual',
-    script: 'build:browser:multilingual',
-    config: 'rollup.browser-multilingual.config.mjs',
-    output: 'dist/lokascript-multilingual.js',
+
+  // === Lite bundles (size-optimized, exported in package.json) ===
+  lite: {
+    name: 'lite',
+    script: 'build:browser:lite',
+    config: 'rollup.browser-lite.config.mjs',
+    output: 'dist/lokascript-lite.js',
     critical: true,
+  },
+  'lite-plus': {
+    name: 'lite-plus',
+    script: 'build:browser:lite-plus',
+    config: 'rollup.browser-lite-plus.config.mjs',
+    output: 'dist/lokascript-lite-plus.js',
+    critical: true,
+  },
+
+  // === Hybrid bundles (AST parser with tree-shaking) ===
+  'hybrid-complete': {
+    name: 'hybrid-complete',
+    script: 'build:browser:hybrid-complete',
+    config: 'rollup.browser-hybrid-complete.config.mjs',
+    output: 'dist/lokascript-hybrid-complete.js',
+    critical: true,
+  },
+  'hybrid-hx': {
+    name: 'hybrid-hx',
+    script: 'build:browser:hybrid-hx',
+    config: 'rollup.browser-hybrid-hx.config.mjs',
+    output: 'dist/lokascript-hybrid-hx.js',
+    critical: true,
+  },
+
+  // === Standard bundles (full features) ===
+  minimal: {
+    name: 'minimal',
+    script: 'build:browser:minimal',
+    config: 'rollup.browser-minimal.config.mjs',
+    output: 'dist/lokascript-browser-minimal.js',
+    critical: true,
+  },
+  standard: {
+    name: 'standard',
+    script: 'build:browser:standard',
+    config: 'rollup.browser-standard.config.mjs',
+    output: 'dist/lokascript-browser-standard.js',
+    critical: true,
+  },
+  modular: {
+    name: 'modular',
+    script: 'build:browser:modular',
+    config: 'rollup.browser-modular.config.mjs',
+    output: 'dist/hyperfixi.mjs',  // ESM output for code-splitting bundle
+    critical: false,  // Non-critical: experimental modular bundle
   },
 };
 
