@@ -86,6 +86,9 @@ function stripTypes(code: string): string {
         /:\s*(?:TransitionEvent|MouseEvent|KeyboardEvent|Event|Element|HTMLElement|Node)(?=\s*[=;,)\]])/g,
         ''
       )
+      // Remove non-null assertions (property! -> property)
+      // Matches: block.condition!, obj.prop!, but NOT !condition or !=
+      .replace(/(\w)!(?=[,;)\].\s])/g, '$1')
   );
 }
 
