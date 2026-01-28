@@ -193,6 +193,14 @@ jobs:
         run: |
           git add packages/*/package.json package-lock.json
           git commit -m "chore: release ${{ steps.packages.outputs.packages }}" || echo "No changes to commit"
+
+          # Pull with rebase to handle any changes pushed since checkout
+          git pull --rebase origin main || {
+            echo "Failed to rebase. Attempting to resolve..."
+            git rebase --abort 2>/dev/null || true
+            git pull --no-rebase origin main
+          }
+
           git push
 
       - name: Create Git tags
@@ -203,8 +211,14 @@ jobs:
             pkg=$(echo "$pkg" | xargs)
             if [ -d "packages/$pkg" ]; then
               VERSION=$(node -p "require('./packages/$pkg/package.json').version")
-              git tag "@lokascript/${pkg}@${VERSION}"
-              git push origin "@lokascript/${pkg}@${VERSION}"
+              TAG_NAME="@lokascript/${pkg}@${VERSION}"
+
+              # Create tag (--force to overwrite if exists locally)
+              git tag -f "$TAG_NAME"
+
+              # Push tag (--force to overwrite if exists remotely)
+              # This is safe for version tags as they represent immutable releases
+              git push origin "$TAG_NAME" --force
             fi
           done
 
