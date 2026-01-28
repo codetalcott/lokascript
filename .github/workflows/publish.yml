@@ -3,10 +3,6 @@ name: Publish Packages
 on:
   workflow_dispatch:
     inputs:
-      packages:
-        description: 'Packages to publish (comma-separated, e.g., core,semantic,i18n)'
-        required: true
-        type: string
       version-type:
         description: 'Version bump type'
         required: true
@@ -16,12 +12,7 @@ on:
           - minor
           - major
           - prerelease
-          - custom
         default: 'patch'
-      custom-version:
-        description: 'Custom version (only if version-type is custom)'
-        required: false
-        type: string
       npm-tag:
         description: 'npm dist-tag (latest, beta, next, etc.)'
         required: true
@@ -35,6 +26,8 @@ on:
 
 env:
   NODE_OPTIONS: --max-old-space-size=4096
+  # All public packages to publish (in dependency order)
+  PACKAGES: 'semantic,core,i18n,patterns-reference,mcp-server,vite-plugin'
 
 jobs:
   publish:
@@ -42,8 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: write # For git push and creating releases
-      id-token: write # For npm OIDC trusted publishing
+      contents: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -65,21 +58,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        # Use npm install instead of npm ci to handle cross-platform optional deps
-        # (lock file generated on macOS won't have linux esbuild platform packages)
         run: npm install --prefer-offline
 
-      - name: Build packages (must build before tests due to workspace imports)
+      - name: Build packages
         run: |
-          # Build order based on dependency graph:
-          # 1. semantic (no lokascript deps)
-          # 2. core (depends on semantic)
-          # 3. i18n (depends on core, semantic) - must build before core:browser
-          # 4. core:browser (classic-i18n bundle depends on i18n/dist/browser.js)
-          # 5. patterns-reference (depends on semantic)
-          # 6. ast-toolkit (optional dep for mcp-server, build even though private)
-          # 7. mcp-server (depends on semantic, patterns-reference, ast-toolkit optional)
-          # 8. vite-plugin (depends on core)
+          # Build order based on dependency graph
           npm run build --prefix packages/semantic
           npm run build --prefix packages/core
           npm run build --prefix packages/i18n
@@ -96,41 +79,34 @@ jobs:
           npm test --prefix packages/i18n -- --run
           npm test --prefix packages/mcp-server -- --run
 
-      - name: Parse package list
-        id: packages
+      - name: Calculate new version
+        id: version
         run: |
-          PACKAGES="${{ github.event.inputs.packages }}"
-          echo "Packages to publish: $PACKAGES"
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          # Get current version from core (all packages should be in sync)
+          CURRENT=$(node -p "require('./packages/core/package.json').version")
+          echo "Current version: $CURRENT"
 
-      - name: Version bump
-        if: ${{ github.event.inputs.version-type != 'custom' }}
-        run: |
-          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
-          for pkg in "${PKG_ARRAY[@]}"; do
-            pkg=$(echo "$pkg" | xargs)  # trim whitespace
-            if [ -d "packages/$pkg" ]; then
-              echo "Bumping version for @lokascript/$pkg (${{ github.event.inputs.version-type }})"
-              cd "packages/$pkg"
-              npm version ${{ github.event.inputs.version-type }} --no-git-tag-version
-              cd ../..
-            else
-              echo "Warning: Package directory packages/$pkg not found"
-            fi
-          done
+          # Calculate new version
+          cd packages/core
+          NEW=$(npm version ${{ github.event.inputs.version-type }} --no-git-tag-version | tr -d 'v')
+          cd ../..
 
-      - name: Set custom version
-        if: ${{ github.event.inputs.version-type == 'custom' }}
+          # Reset core's package.json (we'll set all at once below)
+          git checkout packages/core/package.json
+
+          echo "New version: $NEW"
+          echo "version=$NEW" >> $GITHUB_OUTPUT
+
+      - name: Sync all package versions
         run: |
-          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
-          for pkg in "${PKG_ARRAY[@]}"; do
-            pkg=$(echo "$pkg" | xargs)
-            if [ -d "packages/$pkg" ]; then
-              echo "Setting version for @lokascript/$pkg to ${{ github.event.inputs.custom-version }}"
-              cd "packages/$pkg"
-              npm version ${{ github.event.inputs.custom-version }} --no-git-tag-version --allow-same-version
-              cd ../..
-            fi
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Setting all packages to version $VERSION"
+
+          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+            echo "  → @lokascript/$pkg"
+            cd "packages/$pkg"
+            npm version "$VERSION" --no-git-tag-version --allow-same-version
+            cd ../..
           done
 
       - name: Update package-lock.json
@@ -139,20 +115,16 @@ jobs:
       - name: Publish to npm (dry-run)
         if: ${{ github.event.inputs.dry-run == 'true' }}
         run: |
-          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
-          for pkg in "${PKG_ARRAY[@]}"; do
-            pkg=$(echo "$pkg" | xargs)
-            if [ -d "packages/$pkg" ]; then
-              echo "DRY RUN: Would publish @lokascript/$pkg with tag ${{ github.event.inputs.npm-tag }}"
-              cd "packages/$pkg"
-              npm publish --dry-run --tag ${{ github.event.inputs.npm-tag }} --access public
-              cd ../..
-            fi
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "DRY RUN: Would publish all packages at version $VERSION"
+
+          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+            echo "  → @lokascript/$pkg@$VERSION"
+            cd "packages/$pkg"
+            npm publish --dry-run --tag ${{ github.event.inputs.npm-tag }} --access public
+            cd ../..
           done
 
-      # Uses OIDC trusted publishing by default - no NPM_TOKEN needed
-      # Requires trusted publisher configured on npmjs.com for each package
-      # Falls back to NPM_TOKEN if provided (useful for transitioning repos)
       - name: Check authentication method
         run: |
           if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
@@ -166,41 +138,35 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
-          for pkg in "${PKG_ARRAY[@]}"; do
-            pkg=$(echo "$pkg" | xargs)
-            if [ -d "packages/$pkg" ]; then
-              echo "Publishing @lokascript/$pkg with tag ${{ github.event.inputs.npm-tag }}"
-              cd "packages/$pkg"
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Publishing all packages at version $VERSION"
 
-              # Use provenance if OIDC is available and no token is set
-              if [ -z "$NODE_AUTH_TOKEN" ]; then
-                echo "🔐 Using OIDC trusted publishing (with provenance)"
-                # Remove any existing .npmrc to force OIDC
-                rm -f .npmrc
-                npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
-              else
-                echo "🔑 Using NPM_TOKEN authentication (remove secret to use OIDC)"
-                echo "Token length: ${#NODE_AUTH_TOKEN} characters"
-                # Explicitly set up .npmrc with token
-                echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-                npm publish --tag ${{ github.event.inputs.npm-tag }} --access public
-                rm -f .npmrc
-              fi
+          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+            echo "Publishing @lokascript/$pkg@$VERSION"
+            cd "packages/$pkg"
 
-              cd ../..
+            if [ -z "$NODE_AUTH_TOKEN" ]; then
+              echo "🔐 Using OIDC trusted publishing"
+              rm -f .npmrc
+              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
+            else
+              echo "🔑 Using NPM_TOKEN authentication"
+              echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public
+              rm -f .npmrc
             fi
+
+            cd ../..
           done
 
       - name: Commit version changes
         if: ${{ github.event.inputs.dry-run == 'false' }}
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           git add packages/*/package.json package-lock.json
-          git commit -m "chore: release ${{ steps.packages.outputs.packages }}" || echo "No changes to commit"
+          git commit -m "chore: release v$VERSION" || echo "No changes to commit"
 
-          # Pull with rebase to handle any changes pushed since checkout
           git pull --rebase origin main || {
-            echo "Failed to rebase. Attempting to resolve..."
             git rebase --abort 2>/dev/null || true
             git pull --no-rebase origin main
           }
@@ -210,20 +176,17 @@ jobs:
       - name: Create Git tags
         if: ${{ github.event.inputs.dry-run == 'false' }}
         run: |
-          IFS=',' read -ra PKG_ARRAY <<< "${{ steps.packages.outputs.packages }}"
-          for pkg in "${PKG_ARRAY[@]}"; do
-            pkg=$(echo "$pkg" | xargs)
-            if [ -d "packages/$pkg" ]; then
-              VERSION=$(node -p "require('./packages/$pkg/package.json').version")
-              TAG_NAME="@lokascript/${pkg}@${VERSION}"
+          VERSION="${{ steps.version.outputs.version }}"
 
-              # Create tag (--force to overwrite if exists locally)
-              git tag -f "$TAG_NAME"
+          # Create unified version tag
+          git tag -f "v$VERSION"
+          git push origin "v$VERSION" --force
 
-              # Push tag (--force to overwrite if exists remotely)
-              # This is safe for version tags as they represent immutable releases
-              git push origin "$TAG_NAME" --force
-            fi
+          # Create per-package tags
+          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+            TAG_NAME="@lokascript/${pkg}@${VERSION}"
+            git tag -f "$TAG_NAME"
+            git push origin "$TAG_NAME" --force
           done
 
       - name: Create GitHub Release
@@ -232,31 +195,45 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: 'release-${{ github.run_number }}'
-          release_name: 'Release ${{ steps.packages.outputs.packages }}'
+          tag_name: 'v${{ steps.version.outputs.version }}'
+          release_name: 'v${{ steps.version.outputs.version }}'
           body: |
-            Published packages: ${{ steps.packages.outputs.packages }}
-            Version: ${{ github.event.inputs.version-type }}
-            Tag: ${{ github.event.inputs.npm-tag }}
+            ## @lokascript v${{ steps.version.outputs.version }}
 
-            See individual package CHANGELOGs for details.
+            All packages published at version ${{ steps.version.outputs.version }}:
+            - @lokascript/core
+            - @lokascript/semantic
+            - @lokascript/i18n
+            - @lokascript/vite-plugin
+            - @lokascript/mcp-server
+            - @lokascript/patterns-reference
+
+            ### Install
+            ```bash
+            npm install @lokascript/core@${{ steps.version.outputs.version }}
+            npm install @lokascript/vite-plugin@${{ steps.version.outputs.version }}
+            ```
           draft: false
           prerelease: ${{ github.event.inputs.npm-tag != 'latest' }}
 
       - name: Summary
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           echo "## Publication Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Packages**: ${{ steps.packages.outputs.packages }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
           echo "**Version Type**: ${{ github.event.inputs.version-type }}" >> $GITHUB_STEP_SUMMARY
           echo "**npm Tag**: ${{ github.event.inputs.npm-tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Dry Run**: ${{ github.event.inputs.dry-run }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Packages" >> $GITHUB_STEP_SUMMARY
+          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+            echo "- @lokascript/$pkg@$VERSION" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ github.event.inputs.dry-run }}" = "true" ]; then
             echo "✅ **Dry run completed successfully**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "No packages were published. Re-run with dry-run=false to publish." >> $GITHUB_STEP_SUMMARY
           else
-            echo "✅ **Packages published successfully to npm**" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **All packages published successfully**" >> $GITHUB_STEP_SUMMARY
           fi
