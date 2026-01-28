@@ -58,9 +58,9 @@ function stripTypes(code: string): string {
       .replace(/\s+as\s+\w+<[^>]*(?:<[^>]*>[^>]*)*>/g, '')
       // Remove " as Type" simple casts (after generic removal)
       .replace(/\s+as\s+\w+(?:\[\])?/g, '')
-      // Remove variable/const/let type annotations with generics
-      // Matches: const x: Map<string, number>, let y: Record<K, V>
-      .replace(/:\s*\w+<[^>]*(?:<[^>]*>[^>]*)*>(?=\s*[=;,)\]])/g, '')
+      // Remove variable/const/let type annotations with generics (including array types)
+      // Matches: const x: Map<string, number>, let y: Record<K, V>, const z: Promise<void>[]
+      .replace(/:\s*\w+<[^>]*(?:<[^>]*>[^>]*)*>(?:\[\])?(?=\s*[=;,)\]])/g, '')
       // Remove simple type annotations in declarations
       // Matches: const x: string, let y: number, but NOT in ternary or object literals
       .replace(
