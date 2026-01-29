@@ -10,6 +10,16 @@ export default defineConfig([
     sourcemap: true,
     clean: true,
       },
+  // Core ESM entry (no language data) - for tree-shaking in Vite/Rollup
+  // Output: dist/core.js, dist/core.d.ts
+  // Usage: import { createSemanticAnalyzer, buildAST } from '@lokascript/semantic/core'
+  {
+    entry: ['src/core.ts'],
+    format: ['esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+  },
   // Browser bundle (IIFE) - Full 13-language bundle
   // Output: hyperfixi-semantic.browser.global.js
   {

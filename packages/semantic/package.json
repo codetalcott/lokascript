@@ -1,6 +1,6 @@
 {
   "name": "@lokascript/semantic",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Semantic multilingual parser for hyperscript (23 languages)",
   "type": "module",
   "main": "dist/index.cjs",
@@ -12,6 +12,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
     },
     "./browser": {
       "types": "./dist/index.d.ts",

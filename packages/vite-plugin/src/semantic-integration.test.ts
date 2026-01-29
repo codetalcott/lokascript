@@ -4,9 +4,14 @@ import {
   resolveSemanticConfig,
   getSemanticBundleImport,
   getSemanticExports,
+  getLanguagesForBundleType,
+  canUseCorePlusLanguages,
+  generateSemanticIntegrationCode,
   type SemanticBundleType,
+  type SemanticConfig,
 } from './semantic-integration';
 import type { HyperfixiPluginOptions } from './types';
+import type { SupportedLanguage } from './language-keywords';
 
 describe('selectOptimalBundle', () => {
   it('returns en for empty language set', () => {
@@ -75,17 +80,149 @@ describe('selectOptimalBundle', () => {
 });
 
 describe('getSemanticBundleImport', () => {
-  it('returns main entry for all bundle types (ES module usage)', () => {
-    // All ES module imports use the main entry which has named exports
-    // Regional bundles are IIFE format only (for <script> tags)
-    expect(getSemanticBundleImport('en')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('es')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('tr')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('es-en')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('western')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('east-asian')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('priority')).toBe('@lokascript/semantic');
-    expect(getSemanticBundleImport('all')).toBe('@lokascript/semantic');
+  it('returns core entry for all bundle types (ES module usage)', () => {
+    // Core entry provides analyzer infrastructure without language data
+    // Languages are imported separately via side-effect imports
+    expect(getSemanticBundleImport('en')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('es')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('tr')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('es-en')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('western')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('east-asian')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('priority')).toBe('@lokascript/semantic/core');
+    expect(getSemanticBundleImport('all')).toBe('@lokascript/semantic/core');
+  });
+});
+
+describe('getLanguagesForBundleType', () => {
+  it('always includes English', () => {
+    const result = getLanguagesForBundleType('ja', new Set(['ja'] as SupportedLanguage[]));
+    expect(result.has('en')).toBe(true);
+    expect(result.has('ja')).toBe(true);
+  });
+
+  it('expands western region', () => {
+    const result = getLanguagesForBundleType('western', new Set());
+    expect(result.has('en')).toBe(true);
+    expect(result.has('es')).toBe(true);
+    expect(result.has('pt')).toBe(true);
+    expect(result.has('fr')).toBe(true);
+    expect(result.has('de')).toBe(true);
+  });
+
+  it('expands east-asian region', () => {
+    const result = getLanguagesForBundleType('east-asian', new Set());
+    expect(result.has('ja')).toBe(true);
+    expect(result.has('zh')).toBe(true);
+    expect(result.has('ko')).toBe(true);
+    expect(result.has('en')).toBe(true); // always included
+  });
+
+  it('expands es-en', () => {
+    const result = getLanguagesForBundleType('es-en', new Set());
+    expect(result.has('en')).toBe(true);
+    expect(result.has('es')).toBe(true);
+  });
+
+  it('includes config languages plus bundle type', () => {
+    const result = getLanguagesForBundleType('ja', new Set(['ko'] as SupportedLanguage[]));
+    expect(result.has('ja')).toBe(true);
+    expect(result.has('ko')).toBe(true);
+    expect(result.has('en')).toBe(true);
+  });
+});
+
+describe('canUseCorePlusLanguages', () => {
+  it('returns true for languages with ESM exports', () => {
+    expect(canUseCorePlusLanguages(new Set(['en']))).toBe(true);
+    expect(canUseCorePlusLanguages(new Set(['en', 'es', 'ja']))).toBe(true);
+    expect(canUseCorePlusLanguages(new Set(['en', 'ko', 'zh', 'tr', 'pt', 'fr', 'de']))).toBe(true);
+  });
+
+  it('returns false when a language lacks ESM exports', () => {
+    // 'it' (Italian) and 'ru' (Russian) don't have per-language ESM subpath exports
+    expect(canUseCorePlusLanguages(new Set(['en', 'it']))).toBe(false);
+    expect(canUseCorePlusLanguages(new Set(['en', 'ru']))).toBe(false);
+    expect(canUseCorePlusLanguages(new Set(['en', 'hi']))).toBe(false);
+  });
+
+  it('returns true for empty set', () => {
+    expect(canUseCorePlusLanguages(new Set())).toBe(true);
+  });
+});
+
+describe('generateSemanticIntegrationCode', () => {
+  it('returns empty string when disabled', () => {
+    const config: SemanticConfig = {
+      enabled: false,
+      bundleType: null,
+      languages: new Set(),
+      grammarEnabled: false,
+    };
+    expect(generateSemanticIntegrationCode(config)).toBe('');
+  });
+
+  it('generates core + per-language imports for single language', () => {
+    const config: SemanticConfig = {
+      enabled: true,
+      bundleType: 'en',
+      languages: new Set(['en'] as SupportedLanguage[]),
+      grammarEnabled: false,
+    };
+    const code = generateSemanticIntegrationCode(config);
+    expect(code).toContain("from '@lokascript/semantic/core'");
+    expect(code).toContain("import '@lokascript/semantic/languages/en'");
+    expect(code).not.toContain("from '@lokascript/semantic';");
+  });
+
+  it('generates core + multiple language imports for bilingual config', () => {
+    const config: SemanticConfig = {
+      enabled: true,
+      bundleType: 'es-en',
+      languages: new Set(['en', 'es'] as SupportedLanguage[]),
+      grammarEnabled: false,
+    };
+    const code = generateSemanticIntegrationCode(config);
+    expect(code).toContain("from '@lokascript/semantic/core'");
+    expect(code).toContain("import '@lokascript/semantic/languages/en'");
+    expect(code).toContain("import '@lokascript/semantic/languages/es'");
+  });
+
+  it('always includes English language import', () => {
+    const config: SemanticConfig = {
+      enabled: true,
+      bundleType: 'ja',
+      languages: new Set(['ja'] as SupportedLanguage[]),
+      grammarEnabled: false,
+    };
+    const code = generateSemanticIntegrationCode(config);
+    expect(code).toContain("import '@lokascript/semantic/languages/en'");
+    expect(code).toContain("import '@lokascript/semantic/languages/ja'");
+  });
+
+  it('falls back to full import when languages lack ESM exports', () => {
+    const config: SemanticConfig = {
+      enabled: true,
+      bundleType: 'priority',
+      languages: new Set(['en', 'it', 'ru'] as SupportedLanguage[]),
+      grammarEnabled: false,
+    };
+    const code = generateSemanticIntegrationCode(config);
+    // 'it' and 'ru' are in the priority region but lack ESM exports
+    expect(code).toContain("from '@lokascript/semantic'");
+    expect(code).not.toContain("from '@lokascript/semantic/core'");
+  });
+
+  it('includes grammar imports when grammar is enabled', () => {
+    const config: SemanticConfig = {
+      enabled: true,
+      bundleType: 'en',
+      languages: new Set(['en'] as SupportedLanguage[]),
+      grammarEnabled: true,
+    };
+    const code = generateSemanticIntegrationCode(config);
+    expect(code).toContain("from '@lokascript/i18n'");
+    expect(code).toContain('GrammarTransformer');
   });
 });
 
