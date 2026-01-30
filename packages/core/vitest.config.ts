@@ -6,11 +6,11 @@ export default defineConfig({
   esbuild: {
     target: 'node20',
   },
-  
+
   test: {
     // Use happy-dom for DOM testing (faster than jsdom)
     environment: 'happy-dom',
-    
+
     // Test file patterns
     include: ['src/**/*.{test,spec}.{js,ts}'],
     // Exclude:
@@ -33,7 +33,7 @@ export default defineConfig({
       'src/validation/lightweight-validators.test.ts',
       'src/test-includes-integration.test.ts',
     ],
-    
+
     // Coverage configuration
     coverage: {
       provider: 'v8',
@@ -57,24 +57,25 @@ export default defineConfig({
         },
       },
     },
-    
+
     // Test timeout for async operations
     testTimeout: 10000,
-    
+
     // Global test setup
     setupFiles: ['./src/test-setup.ts'],
-    
+
     // Watch disabled in config - use command line
 
     // Reporter configuration - minimal output to reduce disk usage
     // Use VITEST_HTML=1 environment variable to enable HTML reports when needed
     reporters: process.env.VITEST_HTML ? ['verbose', 'html'] : ['verbose'],
-    
-    // Use forks pool for reliable process cleanup (threads pool keeps esbuild
-    // daemon alive after tests complete, causing CI hangs)
+
+    // Use forks pool for process isolation. Note: vitest may hang after tests
+    // complete due to esbuild daemon keeping Node alive. CI workflow handles
+    // this with a timeout wrapper that kills the process after tests finish.
     pool: 'forks',
   },
-  
+
   // Resolve aliases for imports
   resolve: {
     alias: {
@@ -82,7 +83,7 @@ export default defineConfig({
       '@test': new URL('./src/test', import.meta.url).pathname,
     },
   },
-  
+
   // Define transformations for TypeScript files
   define: {
     'import.meta.vitest': undefined,
