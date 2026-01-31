@@ -59,7 +59,7 @@
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.10.0",
     "@vitest/coverage-v8": "^4.0.0",
-    "eslint": "^8.54.0",
+    "eslint": "^9.39.2",
     "rollup": "^4.6.1",
     "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
