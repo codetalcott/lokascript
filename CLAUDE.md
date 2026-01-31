@@ -509,7 +509,7 @@ function handle(payload: UniversalEventPayload) {
 }
 ```
 
-See [TYPE_SAFETY_DESIGN.md](TYPE_SAFETY_DESIGN.md) for implementation details.
+See [TYPE_SAFETY_DESIGN.md](docs-internal/analysis/TYPE_SAFETY_DESIGN.md) for implementation details.
 
 ## Important Files
 

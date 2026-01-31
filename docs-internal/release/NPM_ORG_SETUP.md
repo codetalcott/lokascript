@@ -189,7 +189,7 @@ npm token list
 
 Once organization is created and verified:
 
-1. [ ] Update IMPLEMENTATION_SUMMARY.md checklist
+1. [ ] Update ../analysis/IMPLEMENTATION_SUMMARY.md checklist
 2. [ ] Begin Phase 1 of rebrand (package names)
 3. [ ] Test dry-run publish with one package
 4. [ ] Proceed with full rebrand

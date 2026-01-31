@@ -52,6 +52,7 @@ The tree-shaking initiative has successfully completed **all five phases**, incl
 **Documentation**: [PHASE1_COMPLETE.md](PHASE1_COMPLETE.md)
 
 **What Was Built**:
+
 - **RuntimeBase.ts** (617 lines, 22,185 bytes)
   - Generic runtime with zero command imports
   - Dependency injection for command registry
@@ -61,6 +62,7 @@ The tree-shaking initiative has successfully completed **all five phases**, incl
 **Key Innovation**: Broke direct coupling between Runtime and command implementations
 
 **Impact**:
+
 - Foundation for tree-shakable architecture
 - Enables custom command registries
 - Major contributor to 37% bundle reduction
@@ -73,6 +75,7 @@ The tree-shaking initiative has successfully completed **all five phases**, incl
 **Documentation**: [PHASE2_COMPLETE.md](PHASE2_COMPLETE.md)
 
 **What Was Built**:
+
 - **16 V2 commands** across 6 categories:
   - **DOM** (7): hide, show, add, remove, toggle, put, make
   - **Async** (2): wait, fetch
@@ -82,14 +85,13 @@ The tree-shaking initiative has successfully completed **all five phases**, incl
   - **Utility** (1): log
 
 **Pattern Applied**:
+
 ```typescript
 // V2 command extends V1, adds parseInput()
 export class HideCommand extends HideCommandV1 {
   async parseInput(raw, evaluator, context) {
     // Move argument parsing from Runtime to command
-    const evaluatedArgs = await Promise.all(
-      raw.args.map(arg => evaluator.evaluate(arg, context))
-    );
+    const evaluatedArgs = await Promise.all(raw.args.map(arg => evaluator.evaluate(arg, context)));
     return evaluatedArgs;
   }
   // execute() inherited from V1
@@ -99,6 +101,7 @@ export class HideCommand extends HideCommandV1 {
 **Key Innovation**: Moved argument parsing from Runtime into commands
 
 **Impact**:
+
 - Clean separation of concerns
 - Self-contained command implementations
 - Enabled CommandAdapterV2 simplification
@@ -111,6 +114,7 @@ export class HideCommand extends HideCommandV1 {
 **Documentation**: [PHASE3_4_COMPLETE.md](PHASE3_4_COMPLETE.md)
 
 **What Was Built**:
+
 - **CommandAdapterV2.ts** (288 lines, 9,306 bytes)
   - Generic delegation to command.parseInput()
   - Removed 609 lines of command-specific logic (70% reduction vs V1)
@@ -118,6 +122,7 @@ export class HideCommand extends HideCommandV1 {
   - Fallback support for V1 commands
 
 **Before (CommandAdapter V1)**:
+
 ```typescript
 // 973 lines of command-specific logic
 private async parseAddCommandInput(...) { /* 40 lines */ }
@@ -127,6 +132,7 @@ private async parseToggleCommandInput(...) { /* 42 lines */ }
 ```
 
 **After (CommandAdapterV2)**:
+
 ```typescript
 // Generic delegation - works with ALL commands
 async parseInput(raw, context) {
@@ -140,6 +146,7 @@ async parseInput(raw, context) {
 **Key Innovation**: Single generic delegation method replaced 23 command-specific methods
 
 **Impact**:
+
 - 685 lines eliminated (70% reduction)
 - Extensible to new commands without adapter changes
 - Major contributor to bundle size reduction
@@ -152,6 +159,7 @@ async parseInput(raw, context) {
 **Documentation**: [PHASE3_4_COMPLETE.md](PHASE3_4_COMPLETE.md)
 
 **What Was Built**:
+
 - **RuntimeExperimental.ts** (6,336 bytes)
   - Test runtime using RuntimeBase + EnhancedCommandRegistryV2
   - Factory functions for custom command sets
@@ -164,6 +172,7 @@ async parseInput(raw, context) {
 **Key Innovation**: Demonstrated practical usage of new architecture
 
 **Impact**:
+
 - Validated 37% bundle reduction
 - Identified command-level tree-shaking limitation
 - Provided foundation for future optimizations
@@ -187,26 +196,13 @@ After Phase 4 identified that V1 inheritance blocked command-level tree-shaking,
 2. **show.ts** (266 lines) - DOM visibility
 3. **log.ts** (182 lines) - Console logging
 
-**Week 2** (4 commands):
-4. **add.ts** (485 lines) - Classes + attributes + styles
-5. **remove.ts** (445 lines) - Classes + attributes + styles
-6. **set.ts** (641 lines) - Variable assignment with object literals
-7. **wait.ts** (574 lines) - Async delays with race conditions
+**Week 2** (4 commands): 4. **add.ts** (485 lines) - Classes + attributes + styles 5. **remove.ts** (445 lines) - Classes + attributes + styles 6. **set.ts** (641 lines) - Variable assignment with object literals 7. **wait.ts** (574 lines) - Async delays with race conditions
 
-**Week 3** (3 commands):
-8. **toggle.ts** (804 lines) - Complex DOM manipulation, temporal modifiers
-9. **put.ts** (465 lines) - DOM insertion with memberExpression
-10. **send.ts** (527 lines) - Custom event creation and dispatch
+**Week 3** (3 commands): 8. **toggle.ts** (804 lines) - Complex DOM manipulation, temporal modifiers 9. **put.ts** (465 lines) - DOM insertion with memberExpression 10. **send.ts** (527 lines) - Custom event creation and dispatch
 
-**Week 4** (3 commands):
-11. **fetch.ts** (632 lines) - HTTP requests with lifecycle events
-12. **trigger.ts** (532 lines) - Event triggering
-13. **make.ts** (375 lines) - DOM/class instantiation
+**Week 4** (3 commands): 11. **fetch.ts** (632 lines) - HTTP requests with lifecycle events 12. **trigger.ts** (532 lines) - Event triggering 13. **make.ts** (375 lines) - DOM/class instantiation
 
-**Week 5** (3 commands):
-14. **increment.ts** (632 lines) - Variable/property increment with scoping
-15. **decrement.ts** (632 lines) - Variable/property decrement with scoping
-16. **go.ts** (700 lines) - Navigation (URL/history/scrolling)
+**Week 5** (3 commands): 14. **increment.ts** (632 lines) - Variable/property increment with scoping 15. **decrement.ts** (632 lines) - Variable/property decrement with scoping 16. **go.ts** (700 lines) - Navigation (URL/history/scrolling)
 
 **Pattern Applied**:
 
@@ -214,8 +210,12 @@ After Phase 4 identified that V1 inheritance blocked command-level tree-shaking,
 // Standalone V2 command (NO V1 inheritance)
 export class HideCommand implements Command<HideInput, void> {
   // Inline all required utilities (zero external dependencies)
-  private async resolveTargets(/* ... */) { /* ~25 lines */ }
-  private parseClasses(/* ... */) { /* ~15 lines */ }
+  private async resolveTargets(/* ... */) {
+    /* ~25 lines */
+  }
+  private parseClasses(/* ... */) {
+    /* ~15 lines */
+  }
 
   // parseInput: AST → typed input
   async parseInput(raw: ASTNode, evaluator, context): Promise<HideInput> {
@@ -225,15 +225,15 @@ export class HideCommand implements Command<HideInput, void> {
 
   // execute: typed input → side effects
   async execute(input: HideInput, context): Promise<void> {
-    input.targets.forEach(el => el.style.display = 'none');
+    input.targets.forEach(el => (el.style.display = 'none'));
   }
 
   // Comprehensive metadata
   static metadata = {
-    description: "Hide elements from view",
-    syntax: ["hide <target>"],
-    examples: ["hide .modal", "hide me"],
-    category: "dom"
+    description: 'Hide elements from view',
+    syntax: ['hide <target>'],
+    examples: ['hide .modal', 'hide me'],
+    category: 'dom',
   };
 }
 
@@ -299,13 +299,13 @@ export function createHideCommand(): Command<HideInput, void> {
 
 ### Measurement Results (2025-11-22, Final Rebuild 13:05)
 
-| Configuration | Size (bytes) | Size (KB) | vs Baseline | Reduction | Status |
-|---------------|--------------|-----------|-------------|-----------|--------|
-| **Baseline** (Original Runtime) | 375,235 | 366 KB | - | - | ✅ Measured |
-| **Phase 4 Minimal** (RuntimeBase + V2 extending V1) | 235,440 | 230 KB | -140 KB | **-37%** | ✅ Complete |
-| **Phase 4 Standard** (RuntimeBase + V2 extending V1) | 235,426 | 230 KB | -140 KB | **-37%** | ✅ Complete |
-| **Phase 5 Minimal** (RuntimeBase + 16 standalone) | 164,321 | **160 KB** | **-211 KB** | **-56%** ✨ | ✅ Complete |
-| **Phase 5 Standard** (RuntimeBase + 16 standalone) | 164,307 | **160 KB** | **-211 KB** | **-56%** ✨ | ✅ Complete |
+| Configuration                                        | Size (bytes) | Size (KB)  | vs Baseline | Reduction   | Status      |
+| ---------------------------------------------------- | ------------ | ---------- | ----------- | ----------- | ----------- |
+| **Baseline** (Original Runtime)                      | 375,235      | 366 KB     | -           | -           | ✅ Measured |
+| **Phase 4 Minimal** (RuntimeBase + V2 extending V1)  | 235,440      | 230 KB     | -140 KB     | **-37%**    | ✅ Complete |
+| **Phase 4 Standard** (RuntimeBase + V2 extending V1) | 235,426      | 230 KB     | -140 KB     | **-37%**    | ✅ Complete |
+| **Phase 5 Minimal** (RuntimeBase + 16 standalone)    | 164,321      | **160 KB** | **-211 KB** | **-56%** ✨ | ✅ Complete |
+| **Phase 5 Standard** (RuntimeBase + 16 standalone)   | 164,307      | **160 KB** | **-211 KB** | **-56%** ✨ | ✅ Complete |
 
 **Key Findings**:
 
@@ -357,12 +357,14 @@ commands-v2/hide
 ```
 
 **Issue**: Most V1 commands share common modules. When V2 commands extend V1:
+
 - Importing ANY V2 command pulls its V1 parent
 - V1 parent imports shared utilities
 - Shared utilities are used by ALL V1 commands
 - Result: Bundler includes all V1 commands regardless
 
 **Why This Matters**:
+
 - Cannot achieve granular command-level tree-shaking
 - Minimal bundle (2 commands) includes all 16 V1 implementations
 - Additional commands add <1 KB each (just the V2 wrapper)
@@ -423,6 +425,7 @@ class Runtime {
 ```
 
 **Issues**:
+
 - Direct command imports in Runtime
 - Switch statement with 45+ cases
 - Adapter with 973 lines of command-specific logic
@@ -458,6 +461,7 @@ class CommandAdapterV2 {
 ```
 
 **Improvements**:
+
 - Zero direct command imports
 - Generic AST traversal
 - 70% less adapter code (973 → 288 lines)
@@ -511,6 +515,7 @@ src/
 ### Preserved Files (Non-Destructive)
 
 All original files remain **completely untouched**:
+
 - ✅ `src/runtime/runtime.ts` - Original runtime (preserved)
 - ✅ `src/commands/**` - All V1 commands (preserved)
 - ✅ `src/runtime/command-adapter.ts` - V1 adapter (preserved)
@@ -546,6 +551,7 @@ All original files remain **completely untouched**:
 ### Key Patterns
 
 **Pattern 1: Generic Runtime**
+
 ```typescript
 class RuntimeBase<TRegistry extends CommandRegistry> {
   constructor(
@@ -557,6 +563,7 @@ class RuntimeBase<TRegistry extends CommandRegistry> {
 ```
 
 **Pattern 2: parseInput() Method**
+
 ```typescript
 interface CommandWithParsing {
   parseInput(raw: ASTNode, evaluator: Evaluator, context: Context): Promise<any>;
@@ -565,6 +572,7 @@ interface CommandWithParsing {
 ```
 
 **Pattern 3: Generic Adapter**
+
 ```typescript
 class CommandAdapterV2 {
   async parseInput(node, context) {
@@ -583,22 +591,22 @@ class CommandAdapterV2 {
 
 ### Bundle Size Metrics
 
-| Metric | Before | After | Change | % Change |
-|--------|--------|-------|--------|----------|
-| **Runtime bundle** | 366 KB | 230 KB | -136 KB | **-37%** |
-| **Minimal (2 cmd)** | 366 KB | 230 KB | -136 KB | **-37%** |
-| **Standard (16 cmd)** | 366 KB | 230 KB | -136 KB | **-37%** |
-| **Command difference** | N/A | 14 bytes | - | 0.006% |
+| Metric                 | Before | After    | Change  | % Change |
+| ---------------------- | ------ | -------- | ------- | -------- |
+| **Runtime bundle**     | 366 KB | 230 KB   | -136 KB | **-37%** |
+| **Minimal (2 cmd)**    | 366 KB | 230 KB   | -136 KB | **-37%** |
+| **Standard (16 cmd)**  | 366 KB | 230 KB   | -136 KB | **-37%** |
+| **Command difference** | N/A    | 14 bytes | -       | 0.006%   |
 
 ### Code Metrics
 
-| Metric | Before | After | Change | % Change |
-|--------|--------|-------|--------|----------|
-| **Adapter lines** | 973 | 288 | -685 | **-70%** |
-| **Runtime coupling** | 45 imports | 0 imports | -45 | **-100%** |
-| **Command methods** | 23 methods | 1 method | -22 | **-96%** |
-| **New infrastructure** | 0 KB | 40 KB | +40 KB | - |
-| **Net bundle impact** | - | - | -139 KB | **-37%** |
+| Metric                 | Before     | After     | Change  | % Change  |
+| ---------------------- | ---------- | --------- | ------- | --------- |
+| **Adapter lines**      | 973        | 288       | -685    | **-70%**  |
+| **Runtime coupling**   | 45 imports | 0 imports | -45     | **-100%** |
+| **Command methods**    | 23 methods | 1 method  | -22     | **-96%**  |
+| **New infrastructure** | 0 KB       | 40 KB     | +40 KB  | -         |
+| **Net bundle impact**  | -          | -         | -139 KB | **-37%**  |
 
 ### Quality Metrics
 
@@ -614,12 +622,14 @@ class CommandAdapterV2 {
 ### Architecture Quality ⬆️
 
 **Before**:
+
 - Tightly coupled Runtime with 45 command imports
 - 973-line adapter with command-specific logic
 - Switch statement with 45+ cases
 - Hard to test, hard to extend
 
 **After**:
+
 - Zero-coupling RuntimeBase with dependency injection
 - 288-line generic adapter (70% reduction)
 - Single delegation method
@@ -628,6 +638,7 @@ class CommandAdapterV2 {
 ### Developer Experience ⬆️
 
 **Benefits**:
+
 1. **Adding new commands** - Register in one place, no Runtime changes
 2. **Custom builds** - Create minimal registries for specific use cases
 3. **Testing** - Mock command registry for unit tests
@@ -637,6 +648,7 @@ class CommandAdapterV2 {
 ### Maintainability ⬆️
 
 **Improvements**:
+
 1. **Fewer files to modify** - Command changes don't touch Runtime
 2. **Clear responsibilities** - Each component has single purpose
 3. **Better testability** - Dependency injection enables mocking
@@ -716,6 +728,7 @@ class CommandAdapterV2 {
 ### ~~Option 1: Accept Current State~~ (Not Chosen)
 
 **Original Rationale**:
+
 - 37% reduction is significant achievement
 - 230 KB ≈ 100 KB gzipped (reasonable for full hyperscript runtime)
 - Command-level tree-shaking requires major rewrite effort
@@ -806,6 +819,7 @@ class CommandAdapterV2 {
 From [runtime-refactor.md](runtime-refactor.md):
 
 > **Phase 4 Validation Criteria**:
+>
 > - Bundle size targets met
 > - Tree-shaking verified working
 > - Performance maintained
@@ -813,13 +827,13 @@ From [runtime-refactor.md](runtime-refactor.md):
 
 ### Actual Results
 
-| Criterion | Target | Phase 4 | Phase 5 (Current) | Status |
-|-----------|--------|---------|-------------------|--------|
-| **Bundle reduction** | 40-60% | 37% | 42% (targeting 51-59%) | 🚧 **Improving** |
-| **Tree-shaking working** | Yes | Partial | Working (standalone) | ✅ **Improving** |
-| **Performance maintained** | Yes | Yes | Yes | ✅ Pass |
-| **Zero breaking changes** | Yes | Yes | Yes | ✅ Pass |
-| **Code quality** | Improved | Improved | Excellent | ✅ Pass |
+| Criterion                  | Target   | Phase 4  | Phase 5 (Current)      | Status           |
+| -------------------------- | -------- | -------- | ---------------------- | ---------------- |
+| **Bundle reduction**       | 40-60%   | 37%      | 42% (targeting 51-59%) | 🚧 **Improving** |
+| **Tree-shaking working**   | Yes      | Partial  | Working (standalone)   | ✅ **Improving** |
+| **Performance maintained** | Yes      | Yes      | Yes                    | ✅ Pass          |
+| **Zero breaking changes**  | Yes      | Yes      | Yes                    | ✅ Pass          |
+| **Code quality**           | Improved | Improved | Excellent              | ✅ Pass          |
 
 ### Assessment: ✅ **SUCCESS** (Phases 1-4) → 🚧 **EXCEEDING EXPECTATIONS** (Phase 5)
 
@@ -846,11 +860,13 @@ From [runtime-refactor.md](runtime-refactor.md):
 ## Related Documentation
 
 ### Planning Documents
+
 - [runtime-refactor.md](runtime-refactor.md) - Original architectural blueprint
 - [packages/core/TREE_SHAKING_ANALYSIS.md](../../packages/core/TREE_SHAKING_ANALYSIS.md) - Technical analysis
 - [packages/core/TREE_SHAKING_GUIDE.md](../../packages/core/TREE_SHAKING_GUIDE.md) - Implementation guide
 
 ### Phase Completion Documents
+
 - [PHASE1_COMPLETE.md](PHASE1_COMPLETE.md) - RuntimeBase foundation
 - [PHASE2_COMPLETE.md](PHASE2_COMPLETE.md) - Commands-v2 with parseInput()
 - [PHASE3_4_COMPLETE.md](PHASE3_4_COMPLETE.md) - CommandAdapterV2 + RuntimeExperimental
@@ -858,10 +874,12 @@ From [runtime-refactor.md](runtime-refactor.md):
 - [WEEK3_5_COMPLETION_PLAN.md](WEEK3_5_COMPLETION_PLAN.md) - Weeks 3-5 migration plan
 
 ### Validation Documents
+
 - [packages/core/TREE_SHAKING_VALIDATION.md](../../packages/core/TREE_SHAKING_VALIDATION.md) - Bundle size measurements
 - [packages/core/TREE_SHAKING_SUCCESS.md](../../packages/core/TREE_SHAKING_SUCCESS.md) - Success summary
 
 ### Git History
+
 ```bash
 # View tree-shaking refactoring commits
 git log --grep="tree-shaking" --grep="RuntimeBase" --grep="CommandAdapterV2" --oneline

@@ -4,9 +4,9 @@
 
 ## Current Bundle
 
-| Bundle | Size (gzip) | Features |
-|--------|-------------|----------|
-| **Hybrid Complete** | 6.7 KB | Full recursive descent parser, AST, blocks, expressions, event modifiers, i18n |
+| Bundle              | Size (gzip) | Features                                                                       |
+| ------------------- | ----------- | ------------------------------------------------------------------------------ |
+| **Hybrid Complete** | 6.7 KB      | Full recursive descent parser, AST, blocks, expressions, event modifiers, i18n |
 
 ### File
 
@@ -47,12 +47,15 @@ After evaluation, **Hybrid Complete was chosen** as the single hybrid bundle bec
 ## Features
 
 ### Commands (21)
+
 toggle, add, remove, put, append, set, get, call, log, send, trigger, wait, show, hide, take, increment, decrement, focus, blur, go, return
 
 ### Blocks (5)
+
 if/else/else-if, unless, repeat N times, for each, while, fetch
 
 ### Expressions
+
 - Arithmetic with precedence: `+`, `-`, `*`, `/`, `%`
 - Comparisons: `<`, `>`, `<=`, `>=`, `==`, `!=`, `is`, `is not`
 - Boolean logic: `and`, `or`, `not`
@@ -63,9 +66,11 @@ if/else/else-if, unless, repeat N times, for each, while, fetch
 - Array/object literals
 
 ### Events
+
 - Standard DOM events with modifiers: `.once`, `.prevent`, `.stop`, `.debounce(N)`, `.throttle(N)`
 - Special events: `init`, `every Nms`
 
 ### i18n
+
 - Built-in command aliases: flip → toggle, reveal → show, conceal → hide
 - Custom aliases via `addAliases()` and `addEventAliases()`

@@ -268,6 +268,6 @@ Add to **pre-commit**:
 
 **See also:**
 
-- [MAINTENANCE.md](MAINTENANCE.md) - Full maintenance guide
+- [MAINTENANCE.md](../MAINTENANCE.md) - Full maintenance guide
 - [REBUILD_WORKFLOW.md](REBUILD_WORKFLOW.md) - Build procedures
-- [PRE_PUBLICATION_REPORT.md](PRE_PUBLICATION_REPORT.md) - Publication checks
+- [PRE_PUBLICATION_REPORT.md](../release/PRE_PUBLICATION_REPORT.md) - Publication checks

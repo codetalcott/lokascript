@@ -232,7 +232,7 @@ Based on the integration analysis, the following are recommended next:
 
 ## Resources
 
-- [Analysis Document](../../EVENT_SOURCE_INTEGRATION_ANALYSIS.md)
+- [Analysis Document](../../docs-internal/analysis/EVENT_SOURCE_INTEGRATION_ANALYSIS.md)
 - [Registry System README](../core/src/registry/README.md)
 - [Package README](./README.md)
 

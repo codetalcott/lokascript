@@ -25,7 +25,7 @@ npm run test:quick --prefix packages/core  # ✅ All passing
 
 ### 2. Version Consistency
 
-**Analysis**: Created version consistency plan in [PUBLICATION_PLAN.md](PUBLICATION_PLAN.md)
+**Analysis**: Created version consistency plan in [PUBLICATION_PLAN.md](../release/PUBLICATION_PLAN.md)
 
 **Changes Made**:
 
@@ -125,7 +125,7 @@ Each CHANGELOG includes:
 
 ### 6. Paid Feature Analysis
 
-**Document**: [PUBLICATION_PLAN.md](PUBLICATION_PLAN.md#paid-feature-analysis)
+**Document**: [PUBLICATION_PLAN.md](../release/PUBLICATION_PLAN.md#paid-feature-analysis)
 
 **Top Commercial Opportunities** (Ranked):
 

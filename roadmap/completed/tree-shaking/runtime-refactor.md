@@ -6,16 +6,16 @@ Here is an architectural blueprint and refactoring plan to achieve a tree-shakab
 
 ### **The Architectural Shift**
 
-Currently, our architecture looks like this (dependency arrows point *down*):
+Currently, our architecture looks like this (dependency arrows point _down_):
 
 Code snippet
 
 graph TD  
-    UserCode \--\> Runtime  
-    Runtime \--\> HideCommand  
-    Runtime \--\> ShowCommand  
-    Runtime \--\> FetchCommand  
-    Runtime \--\> ...20 others...
+ UserCode \--\> Runtime  
+ Runtime \--\> HideCommand  
+ Runtime \--\> ShowCommand  
+ Runtime \--\> FetchCommand  
+ Runtime \--\> ...20 others...
 
 **Result:** Even if UserCode only uses "Hide", the bundler includes "Fetch" because Runtime imports it.
 
@@ -24,11 +24,11 @@ We need to shift to this **Dependency Injection** model:
 Code snippet
 
 graph TD  
-    UserCode \--\> RuntimeBase  
-    UserCode \--\> CommandRegistry  
-    UserCode \--\> HideCommand  
-    CommandRegistry \--\> HideCommand  
-    RuntimeBase \--\> CommandRegistry
+ UserCode \--\> RuntimeBase  
+ UserCode \--\> CommandRegistry  
+ UserCode \--\> HideCommand  
+ CommandRegistry \--\> HideCommand  
+ RuntimeBase \--\> CommandRegistry
 
 **Result:** If UserCode doesn't import "Fetch", it never ends up in the bundle.
 
@@ -48,46 +48,47 @@ import type { ASTNode, ExecutionContext, CommandNode } from '../types/base-types
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 
 export interface RuntimeConfig {  
-    // The registry is now passed IN, not created internally  
-    registry: EnhancedCommandRegistry;  
-    expressionEvaluator?: ExpressionEvaluator;  
+ // The registry is now passed IN, not created internally  
+ registry: EnhancedCommandRegistry;  
+ expressionEvaluator?: ExpressionEvaluator;  
 }
 
 export class RuntimeBase {  
-  protected registry: EnhancedCommandRegistry;  
-  protected expressionEvaluator: ExpressionEvaluator;
+ protected registry: EnhancedCommandRegistry;  
+ protected expressionEvaluator: ExpressionEvaluator;
 
-  constructor(config: RuntimeConfig) {  
-    this.registry \= config.registry;  
-    this.expressionEvaluator \= config.expressionEvaluator || new ExpressionEvaluator();  
-  }
+constructor(config: RuntimeConfig) {  
+ this.registry \= config.registry;  
+ this.expressionEvaluator \= config.expressionEvaluator || new ExpressionEvaluator();  
+ }
 
-  // 1\. GENERIC Execute Wrapper  
-  async execute(node: ASTNode, context: ExecutionContext): Promise\<unknown\> {  
-     // ... logic to switch on node.type (program, block, etc.) ...  
-     // When a 'command' node is found, delegate to generic handler:  
-     if (node.type \=== 'command') {  
-         return this.executeCommand(node as CommandNode, context);  
-     }  
-     // ...  
-  }
+// 1\. GENERIC Execute Wrapper  
+ async execute(node: ASTNode, context: ExecutionContext): Promise\<unknown\> {  
+ // ... logic to switch on node.type (program, block, etc.) ...  
+ // When a 'command' node is found, delegate to generic handler:  
+ if (node.type \=== 'command') {  
+ return this.executeCommand(node as CommandNode, context);  
+ }  
+ // ...  
+ }
 
-  // 2\. GENERIC Command Execution (No switch statements\!)  
-  protected async executeCommand(node: CommandNode, context: ExecutionContext): Promise\<unknown\> {  
-    const { name, args, modifiers } \= node;  
-    const commandName \= name.toLowerCase();
+// 2\. GENERIC Command Execution (No switch statements\!)  
+ protected async executeCommand(node: CommandNode, context: ExecutionContext): Promise\<unknown\> {  
+ const { name, args, modifiers } \= node;  
+ const commandName \= name.toLowerCase();
 
-    // Check registry  
-    if (this.registry.has(commandName)) {  
-        const adapter \= await this.registry.getAdapter(commandName);  
-          
-        // MOVED LOGIC: The adapter itself should handle argument processing  
-        // We pass the raw Context and AST info to the adapter.  
-        return await adapter.execute(context, { args, modifiers });  
+    // Check registry
+    if (this.registry.has(commandName)) {
+        const adapter \= await this.registry.getAdapter(commandName);
+
+        // MOVED LOGIC: The adapter itself should handle argument processing
+        // We pass the raw Context and AST info to the adapter.
+        return await adapter.execute(context, { args, modifiers });
     }
 
-    throw new Error(\`Unknown command: ${name}\`);  
-  }  
+    throw new Error(\`Unknown command: ${name}\`);
+
+}  
 }
 
 ### **Step 2: Refactor Command Adapters (The Hard Part)**
@@ -105,21 +106,22 @@ TypeScript
 
 // commands/dom/append.ts  
 export const createAppendCommand \= () \=\> ({  
-  name: 'append',  
-  // The execute method now accepts the generic AST/Input  
-  execute: async (context, input) \=\> {  
-    let content, target;  
+ name: 'append',  
+ // The execute method now accepts the generic AST/Input  
+ execute: async (context, input) \=\> {  
+ let content, target;
 
-    // Logic moved from Runtime.ts to here  
-    if (input.modifiers && input.modifiers.to) {  
-       content \= await context.evaluate(input.args\[0\]);  
-       target \= await context.evaluate(input.modifiers.to);  
-    } else {  
-       // Fallback logic  
-    }  
-      
-    // Actual DOM append logic...  
-  }  
+    // Logic moved from Runtime.ts to here
+    if (input.modifiers && input.modifiers.to) {
+       content \= await context.evaluate(input.args\[0\]);
+       target \= await context.evaluate(input.modifiers.to);
+    } else {
+       // Fallback logic
+    }
+
+    // Actual DOM append logic...
+
+}  
 });
 
 ### **Step 3: Create the "Batteries-Included" Runtime**
@@ -139,21 +141,22 @@ import { createShowCommand } from '../commands/dom/show';
 // ... other imports
 
 export class Runtime extends RuntimeBase {  
-  constructor(options: RuntimeOptions \= {}) {  
-    // 1\. Create Registry  
-    const registry \= new EnhancedCommandRegistry();
+ constructor(options: RuntimeOptions \= {}) {  
+ // 1\. Create Registry  
+ const registry \= new EnhancedCommandRegistry();
 
-    // 2\. Register Defaults (The "Bloat" stays here, isolated)  
-    registry.register(createHideCommand());  
-    registry.register(createShowCommand());  
+    // 2\. Register Defaults (The "Bloat" stays here, isolated)
+    registry.register(createHideCommand());
+    registry.register(createShowCommand());
     // ... register all others
 
-    // 3\. Initialize Base  
-    super({   
-        registry,   
-        // options...   
-    });  
-  }  
+    // 3\. Initialize Base
+    super({
+        registry,
+        // options...
+    });
+
+}  
 }
 
 ### **Step 4: How the User gets Tree-Shaking**
@@ -179,17 +182,17 @@ const myRuntime \= new RuntimeBase({ registry });
 
 To achieve this, you need to address specific blocks in Our uploaded file:
 
-1. **Remove buildCommandInputFromModifiers (Lines 471-579):**  
-   * Move the specific case 'append', case 'fetch', etc., logic into the respective command factory files.  
-2. **Remove executeEnhancedCommand massive if/else block (Lines 610-1150):**  
-   * This section does manual argument parsing (e.g., checking for me, toggle patterns).  
-   * **Action:** Create a utility ArgumentResolver class or helper functions that Commands can use, but remove the hardcoded command names from Runtime.  
-3. **Remove Legacy Command Methods (Lines 1210-1260 & 1480+):**  
-   * executeHideCommand, executeShowCommand, executeWaitCommand should be deleted from RuntimeBase.  
-   * Ensure the createHideCommand implementation covers all logic currently in executeHideCommand.  
-4. **Event Handlers (Lines 1288-1445):**  
-   * executeEventHandler is mostly generic, but it has specific logic for mutation and change.  
-   * **Strategy:** Keep this in RuntimeBase for now as it relies on DOM APIs (MutationObserver) rather than other heavy modules. It's "Core" enough.
+1. **Remove buildCommandInputFromModifiers (Lines 471-579):**
+   - Move the specific case 'append', case 'fetch', etc., logic into the respective command factory files.
+2. **Remove executeEnhancedCommand massive if/else block (Lines 610-1150):**
+   - This section does manual argument parsing (e.g., checking for me, toggle patterns).
+   - **Action:** Create a utility ArgumentResolver class or helper functions that Commands can use, but remove the hardcoded command names from Runtime.
+3. **Remove Legacy Command Methods (Lines 1210-1260 & 1480+):**
+   - executeHideCommand, executeShowCommand, executeWaitCommand should be deleted from RuntimeBase.
+   - Ensure the createHideCommand implementation covers all logic currently in executeHideCommand.
+4. **Event Handlers (Lines 1288-1445):**
+   - executeEventHandler is mostly generic, but it has specific logic for mutation and change.
+   - **Strategy:** Keep this in RuntimeBase for now as it relies on DOM APIs (MutationObserver) rather than other heavy modules. It's "Core" enough.
 
 ### **Next Steps**
 

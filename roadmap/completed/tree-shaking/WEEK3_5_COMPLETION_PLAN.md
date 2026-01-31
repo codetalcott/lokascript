@@ -45,6 +45,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: CRITICAL - High bundle impact, used in minimal bundle
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/dom/toggle.ts`
 - **Status**: Extends ToggleCommandV1
 - **V1 Lines**: 1,110 lines
@@ -101,7 +102,7 @@ This document provides the detailed execution plan for completing the hybrid tre
    - Write unit tests for parseInput
    - Write unit tests for execute
    - Write V1-v2 compatibility tests
-   - Run official _hyperscript toggle tests
+   - Run official \_hyperscript toggle tests
 
 **Estimated Standalone Size**: 400-600 lines (vs 1,110 V1 lines)
 
@@ -112,7 +113,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 - [ ] Zero V1 dependencies (verified via imports)
 - [ ] All V1 features working (classes, attributes, dialog/details, temporal)
 - [ ] 100% compatibility tests passing
-- [ ] Official _hyperscript toggle tests passing
+- [ ] Official \_hyperscript toggle tests passing
 - [ ] TypeScript zero errors
 - [ ] Bundle size reduction measured
 
@@ -123,6 +124,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: HIGH - Used in minimal bundle, moderate complexity
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/dom/put.ts`
 - **Status**: Extends PutCommandV1
 - **V1 Lines**: ~400 lines
@@ -188,6 +190,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: HIGH - Used in minimal bundle, event creation complexity
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/events/send.ts`
 - **Status**: Extends SendCommandV1
 - **V1 Lines**: 682 lines
@@ -272,6 +275,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: STANDARD - HTTP requests, moderate bundle impact
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/async/fetch.ts`
 - **Status**: Extends FetchCommandV1
 - **V1 Lines**: ~400 lines
@@ -313,6 +317,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: STANDARD - Similar to send but different semantics
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/events/trigger.ts`
 - **Status**: Extends TriggerCommandV1
 - **V1 Lines**: 682 lines
@@ -353,6 +358,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: STANDARD - DOM creation utilities
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/dom/make.ts`
 - **Status**: Extends MakeCommandV1
 - **V1 Lines**: ~300 lines
@@ -403,6 +409,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: COMPLETENESS - Variable manipulation
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/data/increment.ts`
 - **Status**: Extends IncrementCommandV1
 - **V1 Lines**: 544 lines
@@ -440,6 +447,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: COMPLETENESS - Mirror of increment
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/data/decrement.ts`
 - **Status**: Extends DecrementCommandV1
 - **V1 Lines**: ~500 lines
@@ -477,6 +485,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 **Priority**: COMPLETENESS - Navigation
 
 **Current State**:
+
 - **File**: `packages/core/src/commands-v2/navigation/go.ts`
 - **Status**: Extends GoCommandV1
 - **V1 Lines**: ~400 lines
@@ -538,19 +547,21 @@ This document provides the detailed execution plan for completing the hybrid tre
    - Verify identical behavior
    - Test edge cases that differ
 
-4. **Official _hyperscript Tests** (if available):
+4. **Official \_hyperscript Tests** (if available):
    - Run relevant official test files
    - Verify 100% compatibility
 
 ### Integration Testing (After Each Week)
 
 1. **Build Validation**:
+
    ```bash
    npm run build:browser --prefix packages/core
    npm run typecheck --prefix packages/core
    ```
 
 2. **Test Suite Validation**:
+
    ```bash
    npm run test:quick --prefix packages/core
    npm test --prefix packages/core
@@ -593,6 +604,7 @@ This document provides the detailed execution plan for completing the hybrid tre
 ### Rollback Plan
 
 Each command is committed separately with clear commit messages:
+
 ```
 feat(commands-v2): Implement standalone ToggleCommand
 
@@ -604,6 +616,7 @@ feat(commands-v2): Implement standalone ToggleCommand
 ```
 
 **Rollback Process**:
+
 1. Identify problematic commit: `git log --oneline`
 2. Revert to previous commit: `git reset --hard <commit-hash>`
 3. Re-run tests to verify stability
@@ -634,18 +647,18 @@ Each command must pass ALL gates before proceeding to next:
 
 ### Bundle Size Metrics
 
-| Milestone | Standard Bundle | vs Baseline | vs Phase 4 |
-|-----------|-----------------|-------------|------------|
-| **Week 2 Complete** | 213 KB (minimal) | -42% | -7% |
-| **Week 3 Target** | ~200-210 KB | -45-47% | -9-13% |
-| **Week 4 Target** | ~180-190 KB | -49-51% | -17-22% |
-| **Week 5 Target** | ~150-180 KB | -51-59% | -22-35% |
+| Milestone           | Standard Bundle  | vs Baseline | vs Phase 4 |
+| ------------------- | ---------------- | ----------- | ---------- |
+| **Week 2 Complete** | 213 KB (minimal) | -42%        | -7%        |
+| **Week 3 Target**   | ~200-210 KB      | -45-47%     | -9-13%     |
+| **Week 4 Target**   | ~180-190 KB      | -49-51%     | -17-22%    |
+| **Week 5 Target**   | ~150-180 KB      | -51-59%     | -22-35%    |
 
 ### Test Coverage Metrics
 
 - **Unit tests**: 100% coverage for parseInput + execute
 - **Compatibility tests**: 100% V1 behavior preserved
-- **Official tests**: All relevant _hyperscript tests passing
+- **Official tests**: All relevant \_hyperscript tests passing
 - **Regression tests**: Zero new failures introduced
 
 ### Timeline Metrics

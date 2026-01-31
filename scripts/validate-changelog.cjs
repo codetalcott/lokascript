@@ -47,7 +47,7 @@ privatePackages.forEach(name => {
 if (errors > 0) {
   console.error(`\n⚠️  ${errors} private package(s) found in CHANGELOG.md\n`);
   console.error('Private packages should not be in the public changelog.');
-  console.error('See CHANGELOG_GUIDELINES.md for more information.\n');
+  console.error('See docs-internal/build/CHANGELOG_GUIDELINES.md for more information.\n');
   console.error('Private packages:');
   privatePackages.forEach(name => console.error(`  - ${name}`));
   console.error('');

@@ -80,7 +80,7 @@ npm run build:browser:minimal
 npm run build:browser:all
 ```
 
-**See**: [REBUILD_WORKFLOW.md](REBUILD_WORKFLOW.md) | [REBUILD_QUICKSTART.md](REBUILD_QUICKSTART.md)
+**See**: [REBUILD_WORKFLOW.md](build/REBUILD_WORKFLOW.md) | [REBUILD_QUICKSTART.md](build/REBUILD_QUICKSTART.md)
 
 ## Version Management
 
@@ -155,7 +155,7 @@ npm run packages:list:private
 
 The `prepublishOnly` hook automatically validates the changelog. **Publication is blocked** if private packages are mentioned.
 
-**See**: [CHANGELOG_GUIDELINES.md](CHANGELOG_GUIDELINES.md) | [CHANGELOG_PROTECTION.md](CHANGELOG_PROTECTION.md)
+**See**: [CHANGELOG_GUIDELINES.md](build/CHANGELOG_GUIDELINES.md) | [CHANGELOG_PROTECTION.md](build/CHANGELOG_PROTECTION.md)
 
 ## Publication Process
 
@@ -208,7 +208,7 @@ cd ../semantic && npm publish
 # - Documentation: Update version references
 ```
 
-**See**: [PRE_PUBLICATION_REPORT.md](PRE_PUBLICATION_REPORT.md)
+**See**: [PRE_PUBLICATION_REPORT.md](release/PRE_PUBLICATION_REPORT.md)
 
 ## Common Tasks
 
@@ -350,15 +350,15 @@ npm run typecheck
 
 ### Workflow Documentation
 
-- **[REBUILD_WORKFLOW.md](REBUILD_WORKFLOW.md)** - Comprehensive rebuild guide
-- **[REBUILD_QUICKSTART.md](REBUILD_QUICKSTART.md)** - Quick reference
-- **[PRE_PUBLICATION_REPORT.md](PRE_PUBLICATION_REPORT.md)** - Publication checklist
+- **[REBUILD_WORKFLOW.md](build/REBUILD_WORKFLOW.md)** - Comprehensive rebuild guide
+- **[REBUILD_QUICKSTART.md](build/REBUILD_QUICKSTART.md)** - Quick reference
+- **[PRE_PUBLICATION_REPORT.md](release/PRE_PUBLICATION_REPORT.md)** - Publication checklist
 
 ### Policy Documentation
 
-- **[CHANGELOG_GUIDELINES.md](CHANGELOG_GUIDELINES.md)** - Changelog best practices
-- **[CHANGELOG_PROTECTION.md](CHANGELOG_PROTECTION.md)** - Protection system
-- **[TYPE_SAFETY_DESIGN.md](TYPE_SAFETY_DESIGN.md)** - Type safety patterns
+- **[CHANGELOG_GUIDELINES.md](build/CHANGELOG_GUIDELINES.md)** - Changelog best practices
+- **[CHANGELOG_PROTECTION.md](build/CHANGELOG_PROTECTION.md)** - Protection system
+- **[TYPE_SAFETY_DESIGN.md](analysis/TYPE_SAFETY_DESIGN.md)** - Type safety patterns
 
 ### Package Documentation
 

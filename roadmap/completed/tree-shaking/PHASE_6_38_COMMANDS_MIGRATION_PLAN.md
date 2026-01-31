@@ -14,6 +14,7 @@
 **Expected Outcome**: >60% bundle reduction with all commands standalone
 
 **Phase 5 Achievement** (Completed):
+
 - ✅ 56% bundle reduction (366 KB → 160 KB)
 - ✅ All 16 core commands standalone
 - ✅ Zero V1 dependencies
@@ -24,9 +25,11 @@
 ## Migration Strategy: 7 Phases Over 8 Weeks
 
 ### Phase 1: Critical Control Flow (Week 1)
+
 **Priority**: P0-P2 | **Effort**: 20-30 hours | **Lines**: 1,221
 
 **Commands** (5):
+
 1. `if.ts` (310 lines) - P0 - Conditional logic [BLOCKER FOR OTHER COMMANDS]
 2. `repeat.ts` (641 lines) - P0 - Iteration/loops [BLOCKER FOR break/continue]
 3. `break.ts` (70 lines) - P2 - Loop control (requires `repeat`)
@@ -38,11 +41,13 @@
 **Dependencies**: `repeat` must be completed before `break`/`continue`
 
 **Implementation Order**:
+
 1. Day 1-2: `if.ts` (enables conditional logic)
 2. Day 3-5: `repeat.ts` (most complex, enables loops)
 3. Day 6: `break.ts`, `continue.ts`, `halt.ts` (quick wins after `repeat`)
 
 **Success Criteria**:
+
 - ✅ Zero V1 dependencies
 - ✅ All control flow patterns working (if/else, repeat/while/for, break/continue)
 - ✅ Integration tests passing
@@ -51,20 +56,17 @@
 ---
 
 ### Phase 2: Essential Data & Execution (Week 2)
+
 **Priority**: P1-P2 | **Effort**: 18-25 hours | **Lines**: 1,187
 
-**Commands** (5):
-6. `bind.ts` (496 lines) - P1 - Two-way data binding [HIGH COMPLEXITY]
-7. `call.ts` (204 lines) - P2 - Function invocation [BLOCKER FOR return]
-8. `append.ts` (309 lines) - P2 - DOM content manipulation
-9. `return.ts` (101 lines) - P2 - Function returns (requires `call`)
-10. `exit.ts` (77 lines) - P2 - Behavior termination
+**Commands** (5): 6. `bind.ts` (496 lines) - P1 - Two-way data binding [HIGH COMPLEXITY] 7. `call.ts` (204 lines) - P2 - Function invocation [BLOCKER FOR return] 8. `append.ts` (309 lines) - P2 - DOM content manipulation 9. `return.ts` (101 lines) - P2 - Function returns (requires `call`) 10. `exit.ts` (77 lines) - P2 - Behavior termination
 
 **Why Second**: Data binding and function calls are essential for real-world applications. `bind` enables reactive patterns, `call`/`return` enable function composition.
 
 **Dependencies**: `call` must be completed before `return`
 
 **Implementation Order**:
+
 1. Day 1-3: `bind.ts` (complex, bidirectional reactivity)
 2. Day 4: `call.ts`, `return.ts` (tackle together)
 3. Day 5: `append.ts`, `exit.ts` (simpler, finish strong)
@@ -74,19 +76,17 @@
 ---
 
 ### Phase 3: Animation & Persistence (Week 3)
+
 **Priority**: P2 | **Effort**: 20-28 hours | **Lines**: 1,377
 
-**Commands** (4):
-11. `transition.ts` (335 lines) - P2 - CSS transitions
-12. `measure.ts` (326 lines) - P2 - FLIP animations
-13. `settle.ts` (326 lines) - P2 - Animation settling
-14. `persist.ts` (390 lines) - P2 - LocalStorage integration
+**Commands** (4): 11. `transition.ts` (335 lines) - P2 - CSS transitions 12. `measure.ts` (326 lines) - P2 - FLIP animations 13. `settle.ts` (326 lines) - P2 - Animation settling 14. `persist.ts` (390 lines) - P2 - LocalStorage integration
 
 **Why Third**: Modern UIs require smooth animations and state persistence. These commands form a cohesive animation subsystem.
 
 **Dependencies**: None - all can be done in parallel if needed
 
 **Implementation Order**:
+
 1. Day 1-2: `transition.ts` (CSS transitions)
 2. Day 3: `measure.ts`, `settle.ts` (FLIP animation pair)
 3. Day 4-5: `persist.ts` (localStorage integration)
@@ -96,20 +96,17 @@
 ---
 
 ### Phase 4: Advanced Features (Week 4)
+
 **Priority**: P1-P3 | **Effort**: 20-30 hours | **Lines**: 1,469
 
-**Commands** (5):
-15. `js.ts` (296 lines) - P2 - JavaScript execution
-16. `unless.ts` (223 lines) - P1 - Inverse conditional (requires Phase 1 `if`)
-17. `default.ts` (381 lines) - P3 - Variable initialization
-18. `pseudo-command.ts` (365 lines) - P3 - Meta-commands
-19. `async.ts` (204 lines) - P3 - Async wrapper
+**Commands** (5): 15. `js.ts` (296 lines) - P2 - JavaScript execution 16. `unless.ts` (223 lines) - P1 - Inverse conditional (requires Phase 1 `if`) 17. `default.ts` (381 lines) - P3 - Variable initialization 18. `pseudo-command.ts` (365 lines) - P3 - Meta-commands 19. `async.ts` (204 lines) - P3 - Async wrapper
 
 **Why Fourth**: Power user capabilities and advanced patterns. These unlock sophisticated use cases.
 
 **Dependencies**: `unless` requires `if` from Phase 1 (should be complete by now)
 
 **Implementation Order**:
+
 1. Day 1-2: `js.ts` (JavaScript execution, scope management)
 2. Day 3: `unless.ts`, `async.ts` (both straightforward)
 3. Day 4: `default.ts` (variable defaults)
@@ -118,21 +115,17 @@
 ---
 
 ### Phase 5: Utility & Specialized (Week 5)
+
 **Priority**: P3-P4 | **Effort**: 18-24 hours | **Lines**: 1,439
 
-**Commands** (6):
-20. `tell.ts` (289 lines) - P3 - Cross-element messaging
-21. `copy.ts` (285 lines) - P3 - Clipboard operations
-22. `pick.ts` (195 lines) - P3 - Object property selection
-23. `throw.ts` (127 lines) - P3 - Error handling
-24. `install.ts` (320 lines) - P3 - Runtime behavior installation
-25. `beep.ts` (223 lines) - P4 - Audio notifications
+**Commands** (6): 20. `tell.ts` (289 lines) - P3 - Cross-element messaging 21. `copy.ts` (285 lines) - P3 - Clipboard operations 22. `pick.ts` (195 lines) - P3 - Object property selection 23. `throw.ts` (127 lines) - P3 - Error handling 24. `install.ts` (320 lines) - P3 - Runtime behavior installation 25. `beep.ts` (223 lines) - P4 - Audio notifications
 
 **Why Fifth**: Convenience and utility commands. Less frequently used but valuable for specific use cases.
 
 **Dependencies**: None - all independent
 
 **Implementation Order** (can be parallelized or reordered):
+
 1. Day 1: `tell.ts` (messaging)
 2. Day 2: `copy.ts`, `pick.ts` (browser APIs)
 3. Day 3: `throw.ts`, `install.ts` (error handling, meta)
@@ -144,14 +137,15 @@
 ---
 
 ### Phase 6: Complex Property Transfer (Week 6)
+
 **Priority**: P3 | **Effort**: 16-24 hours | **Lines**: 934
 
-**Command** (1):
-26. `take.ts` (934 lines) - P3 - Property/class transfer system [VERY HIGH COMPLEXITY]
+**Command** (1): 26. `take.ts` (934 lines) - P3 - Property/class transfer system [VERY HIGH COMPLEXITY]
 
 **Why Sixth**: This is the most complex single command. Tackle it after gaining experience from 25 previous migrations.
 
 **Complexity Factors**:
+
 - 934 lines (largest single command)
 - Sophisticated property transfer logic
 - Complex validation and type handling
@@ -159,11 +153,13 @@
 - Temporal modifiers support
 
 **Implementation Strategy**:
+
 - Day 1-2: Understand V1 implementation, plan architecture
 - Day 3-4: Implement `parseInput()` and core logic
 - Day 5: Testing, edge cases, refinement
 
 **Success Criteria**:
+
 - All property transfer modes working
 - All temporal modifiers supported
 - Edge cases handled (non-existent properties, type mismatches)
@@ -172,33 +168,30 @@
 ---
 
 ### Phase 7: Template Subsystem (Weeks 7-8)
+
 **Priority**: P3 | **Effort**: 40-60 hours | **Lines**: ~3,000
 
-**Components** (7 files + directives):
-27. `render.ts` (775 lines) - Main render command
-28. `template-compiler.ts` (344 lines) - Template compilation
-29. `template-executor.ts` (533 lines) - Template execution
-30. `template-executor-optimized.ts` (594 lines) - Optimized executor
-31. `template-context.ts` (397 lines) - Context management
-32. `template-processor-fixed.ts` (332 lines) - Template processing
-33. Directives: `if-directive.ts`, `else-directive.ts`, `repeat-directive.ts`
+**Components** (7 files + directives): 27. `render.ts` (775 lines) - Main render command 28. `template-compiler.ts` (344 lines) - Template compilation 29. `template-executor.ts` (533 lines) - Template execution 30. `template-executor-optimized.ts` (594 lines) - Optimized executor 31. `template-context.ts` (397 lines) - Context management 32. `template-processor-fixed.ts` (332 lines) - Template processing 33. Directives: `if-directive.ts`, `else-directive.ts`, `repeat-directive.ts`
 
 **Why Last**: This is an entire subsystem, not a single command. Should be migrated as a cohesive unit after mastering the standalone pattern.
 
 **Implementation Strategy**:
 
 **Week 7: Core Infrastructure**
+
 - Day 1-2: `template-context.ts`, `template-compiler.ts` (foundation)
 - Day 3-4: `template-executor.ts` (core execution)
 - Day 5: `template-processor-fixed.ts` (processing logic)
 
 **Week 8: Execution & Directives**
+
 - Day 1-2: `template-executor-optimized.ts` (performance variant)
 - Day 3: Directives (`if-directive`, `else-directive`, `repeat-directive`)
 - Day 4: `render.ts` (main command, ties everything together)
 - Day 5: Integration testing, documentation
 
 **Special Considerations**:
+
 - Template subsystem is interconnected - changes to one file may affect others
 - Need comprehensive testing with various template patterns
 - Performance is critical (templates are often used in loops)
@@ -211,11 +204,13 @@
 For each command, follow this proven pattern (from Phase 5):
 
 ### 1. Create File Structure
+
 ```
 src/commands-v2/{category}/{command-name}.ts
 ```
 
 ### 2. Define Typed Interfaces
+
 ```typescript
 export interface {CommandName}Input {
   // Parsed, typed inputs from AST
@@ -229,6 +224,7 @@ export interface {CommandName}Output {
 ```
 
 ### 3. Implement Command Class
+
 ```typescript
 export class {CommandName}Command implements Command<{CommandName}Input, {CommandName}Output> {
   readonly name = '{commandname}';
@@ -268,6 +264,7 @@ export class {CommandName}Command implements Command<{CommandName}Input, {Comman
 ```
 
 ### 4. Create Factory Function
+
 ```typescript
 export function create{CommandName}Command(): Command<{CommandName}Input, {CommandName}Output> {
   return new {CommandName}Command();
@@ -275,6 +272,7 @@ export function create{CommandName}Command(): Command<{CommandName}Input, {Comma
 ```
 
 ### 5. Zero V1 Dependencies
+
 - ❌ NO imports from `src/commands/`
 - ❌ NO imports from V1 utilities
 - ✅ Inline all required utilities
@@ -287,6 +285,7 @@ export function create{CommandName}Command(): Command<{CommandName}Input, {Comma
 Before marking a command complete:
 
 ### Code Quality
+
 - [ ] Zero TypeScript errors
 - [ ] Zero V1 imports/dependencies
 - [ ] Comprehensive JSDoc comments
@@ -294,18 +293,21 @@ Before marking a command complete:
 - [ ] Proper error handling
 
 ### Feature Parity
+
 - [ ] All V1 syntax patterns supported
 - [ ] All modifiers working
 - [ ] All temporal modifiers supported (if applicable)
 - [ ] Edge cases handled
 
 ### Testing
+
 - [ ] Unit tests created/passing
 - [ ] Integration tests passing
 - [ ] V1 compatibility tests passing
 - [ ] Performance benchmarks (no regression)
 
 ### Documentation
+
 - [ ] Metadata complete (description, syntax, examples)
 - [ ] Category assigned correctly
 - [ ] Migration notes (if any breaking changes)
@@ -315,7 +317,9 @@ Before marking a command complete:
 ## Testing Strategy
 
 ### Per-Phase Testing
+
 After each phase, run:
+
 1. **TypeScript Validation**: `npm run typecheck`
 2. **Unit Tests**: `npx vitest run src/commands-v2/{category}/`
 3. **Integration Tests**: Full runtime tests
@@ -323,6 +327,7 @@ After each phase, run:
 5. **Regression Tests**: Ensure existing functionality unchanged
 
 ### Phase Completion Criteria
+
 - ✅ All phase commands migrated
 - ✅ Zero TypeScript errors
 - ✅ All tests passing (440+ → growing)
@@ -342,6 +347,7 @@ ls -lh dist/test-*.js
 ```
 
 Expected progression:
+
 - **Baseline**: 366 KB (V1 only)
 - **Phase 5 Complete**: 160 KB (16 standalone) ✅ **-56%**
 - **Phase 1 Complete**: ~140 KB (21 standalone, critical control flow)
@@ -357,6 +363,7 @@ Expected progression:
 ## Risk Management
 
 ### High-Risk Commands
+
 1. **`repeat.ts`** (641 lines) - Complex iteration, loop context
    - **Mitigation**: Allocate 3 days, extensive testing
 2. **`bind.ts`** (496 lines) - Bidirectional reactivity, MutationObserver
@@ -367,6 +374,7 @@ Expected progression:
    - **Mitigation**: 2 weeks dedicated, create sub-plan, modular approach
 
 ### Blockers & Dependencies
+
 - `repeat` blocks `break`, `continue` (Phase 1)
 - `if` blocks `unless` (Phase 1 → Phase 4)
 - `call` blocks `return` (Phase 2)
@@ -378,6 +386,7 @@ Expected progression:
 ## Git Workflow
 
 ### Per-Command Commits
+
 ```bash
 git add src/commands-v2/{category}/{command}.ts
 git commit -m "feat(commands-v2): Implement standalone {CommandName} (Phase {N})
@@ -391,7 +400,9 @@ Part of Phase {N} migration ({M}/{Total} commands complete)"
 ```
 
 ### Per-Phase Commits
+
 After phase complete:
+
 ```bash
 git commit -m "feat(commands-v2): Complete Phase {N} - {Category} ({X} commands)
 
@@ -426,15 +437,17 @@ When starting a new work session:
 ## Success Metrics
 
 ### Overall Goals
+
 - [ ] All 38 commands migrated to standalone V2
 - [ ] Template subsystem fully functional
 - [ ] Zero V1 dependencies across all commands
-- [ ] >75% bundle reduction (366 KB → <90 KB)
+- [ ] > 75% bundle reduction (366 KB → <90 KB)
 - [ ] All tests passing (600+ tests expected)
 - [ ] Zero breaking changes for consumers
 - [ ] Complete documentation
 
 ### Per-Phase Milestones
+
 - [ ] Phase 1: Control flow working (if/repeat/break/continue/halt)
 - [ ] Phase 2: Data binding & function calls working
 - [ ] Phase 3: Animations & persistence working
@@ -450,12 +463,14 @@ When starting a new work session:
 **To begin Phase 1** (Critical Control Flow):
 
 1. **Review V1 implementation**:
+
    ```bash
    cat src/commands/control-flow/if.ts
    cat src/commands/control-flow/repeat.ts
    ```
 
 2. **Create Phase 1 working branch**:
+
    ```bash
    git checkout -b feat/phase-6-1-control-flow
    ```
@@ -480,16 +495,16 @@ When starting a new work session:
 
 ## Estimated Timeline
 
-| Phase | Week | Days | Commands | Lines | Effort |
-|-------|------|------|----------|-------|--------|
-| 1 | 1 | 5 | 5 | 1,221 | 20-30h |
-| 2 | 2 | 5 | 5 | 1,187 | 18-25h |
-| 3 | 3 | 5 | 4 | 1,377 | 20-28h |
-| 4 | 4 | 5 | 5 | 1,469 | 20-30h |
-| 5 | 5 | 5 | 6 | 1,439 | 18-24h |
-| 6 | 6 | 5 | 1 | 934 | 16-24h |
-| 7 | 7-8 | 10 | Subsystem | ~3,000 | 40-60h |
-| **Total** | **8** | **40** | **27** | **~10,627** | **152-221h** |
+| Phase     | Week  | Days   | Commands  | Lines       | Effort       |
+| --------- | ----- | ------ | --------- | ----------- | ------------ |
+| 1         | 1     | 5      | 5         | 1,221       | 20-30h       |
+| 2         | 2     | 5      | 5         | 1,187       | 18-25h       |
+| 3         | 3     | 5      | 4         | 1,377       | 20-28h       |
+| 4         | 4     | 5      | 5         | 1,469       | 20-30h       |
+| 5         | 5     | 5      | 6         | 1,439       | 18-24h       |
+| 6         | 6     | 5      | 1         | 934         | 16-24h       |
+| 7         | 7-8   | 10     | Subsystem | ~3,000      | 40-60h       |
+| **Total** | **8** | **40** | **27**    | **~10,627** | **152-221h** |
 
 ---
 
@@ -498,6 +513,7 @@ When starting a new work session:
 After all 7 phases complete:
 
 1. **Delete V1 infrastructure**:
+
    ```bash
    rm -rf src/commands/
    ```
@@ -546,16 +562,19 @@ After all 7 phases complete:
 ## Resources
 
 ### Reference Documents
+
 - [TREE_SHAKING_COMPLETE.md](TREE_SHAKING_COMPLETE.md) - Phase 1-5 summary
 - [HYBRID_TREE_SHAKING_GUIDE.md](HYBRID_TREE_SHAKING_GUIDE.md) - Standalone pattern guide
 - [WEEK3_5_COMPLETION_PLAN.md](WEEK3_5_COMPLETION_PLAN.md) - Phase 5 execution plan
 
 ### Example Commands (Phase 5 - Reference)
+
 - Simple: `src/commands-v2/utility/log.ts` (182 lines)
 - Medium: `src/commands-v2/dom/hide.ts` (238 lines)
 - Complex: `src/commands-v2/dom/toggle.ts` (804 lines)
 
 ### Bundle Measurements
+
 ```bash
 # Measure current bundles
 cd packages/core

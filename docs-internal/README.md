@@ -21,9 +21,14 @@ Welcome to the LokaScript documentation directory.
 - **[Roadmap](../roadmap/)** - Project planning and development roadmap
 - **[CLAUDE.md](../CLAUDE.md)** - AI development context and guidelines
 
-### Archive
+### Internal Documentation
 
-- **[archive/](./archive/)** - Historical documentation and implementation notes
+- **[release/](./release/)** - Release guides, NPM publishing, publication plans
+- **[analysis/](./analysis/)** - Bundle audits, type safety design, implementation summaries
+- **[build/](./build/)** - Rebuild workflows, git hooks, changelog guidelines
+- **[investigations/](./investigations/)** - Technical investigations and findings
+- **[proposals/](./proposals/)** - Feature proposals
+- **[sessions/](./sessions/)** - Development session summaries
 
 ## Quick Links
 

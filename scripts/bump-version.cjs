@@ -81,7 +81,7 @@ try {
 // Update CHANGELOG
 console.log('\n2️⃣  Updating CHANGELOG.md...');
 console.log('   ⚠️  IMPORTANT: Only include changes to PUBLIC packages');
-console.log('   ⚠️  See CHANGELOG_GUIDELINES.md for details');
+console.log('   ⚠️  See docs-internal/build/CHANGELOG_GUIDELINES.md for details');
 const changelogPath = path.join(__dirname, '../CHANGELOG.md');
 const today = new Date().toISOString().split('T')[0];
 
@@ -156,7 +156,7 @@ try {
 console.log('\n✅ Version bump complete!\n');
 console.log('Next steps:');
 console.log(`  1. Edit CHANGELOG.md to add release notes`);
-console.log(`     ⚠️  Only include changes to PUBLIC packages (see CHANGELOG_GUIDELINES.md)`);
+console.log(`     ⚠️  Only include changes to PUBLIC packages (see docs-internal/build/CHANGELOG_GUIDELINES.md)`);
 console.log(`  2. Validate changelog: node scripts/validate-changelog.cjs`);
 console.log(`  3. Push changes: git push && git push --tags`);
 console.log(`  4. Publish packages: npm run publish:all`);
