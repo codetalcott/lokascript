@@ -6,7 +6,14 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { parseSetCommand, parseIncrementDecrementCommand } from '../variable-commands';
+import {
+  parseSetCommand,
+  parseIncrementDecrementCommand,
+  parseColonVariable,
+  parseScopedVariable,
+  parsePropertyOfTarget,
+  parseTargetFallback,
+} from '../variable-commands';
 import {
   createMockParserContext,
   createTokenStream,
@@ -891,6 +898,336 @@ describe('Variable Command Parsers', () => {
       expect(() => parseIncrementDecrementCommand(ctx, commandToken)).toThrow(
         "Expected amount after 'by' in increment command"
       );
+    });
+  });
+
+  describe('parseColonVariable', () => {
+    it('should return null if current token is not ":"', () => {
+      const tokens = createTokenStream(['count'], ['identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseColonVariable(ctx);
+      expect(result).toBeNull();
+    });
+
+    it('should parse single-colon as local scope', () => {
+      // :myVar
+      const tokens = createTokenStream([':', 'myVar'], ['symbol', 'identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseColonVariable(ctx);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('identifier');
+      expect((result as any).name).toBe('myVar');
+      expect((result as any).scope).toBe('local');
+    });
+
+    it('should parse double-colon as global scope', () => {
+      // ::globalVar
+      const tokens = createTokenStream([':', ':', 'globalVar'], ['symbol', 'symbol', 'identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseColonVariable(ctx);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('identifier');
+      expect((result as any).name).toBe('globalVar');
+      expect((result as any).scope).toBe('global');
+    });
+  });
+
+  describe('parseScopedVariable', () => {
+    it('should return null if current token is not "global" or "local"', () => {
+      const tokens = createTokenStream(['count'], ['identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseScopedVariable(ctx);
+      expect(result).toBeNull();
+    });
+
+    it('should parse "global <var>" as global scope', () => {
+      const tokens = createTokenStream(['global', 'counter'], ['keyword', 'identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseScopedVariable(ctx);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('identifier');
+      expect((result as any).name).toBe('counter');
+      expect((result as any).scope).toBe('global');
+    });
+
+    it('should parse "local <var>" as local scope', () => {
+      const tokens = createTokenStream(['local', 'temp'], ['keyword', 'identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseScopedVariable(ctx);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('identifier');
+      expect((result as any).name).toBe('temp');
+      expect((result as any).scope).toBe('local');
+    });
+  });
+
+  describe('parsePropertyOfTarget', () => {
+    it('should return null if current token is not "the"', () => {
+      const tokens = createTokenStream(['count'], ['identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parsePropertyOfTarget(ctx, 0);
+      expect(result).toBeNull();
+    });
+
+    it('should parse "the textContent of #counter" as propertyOfExpression', () => {
+      // the textContent of #counter
+      const tokens = createTokenStream(
+        ['the', 'textContent', 'of', '#counter'],
+        ['keyword', 'identifier', 'keyword', 'identifier']
+      );
+      const ctx = createMockParserContext(tokens);
+
+      const result = parsePropertyOfTarget(ctx, 0);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('propertyOfExpression');
+      expect((result as any).property.name).toBe('textContent');
+      expect((result as any).target.value).toBe('#counter');
+      expect((result as any).target.type).toBe('idSelector');
+    });
+
+    it('should parse "the X of .myClass" with cssSelector type', () => {
+      const tokens = createTokenStream(
+        ['the', 'innerHTML', 'of', '.myClass'],
+        ['keyword', 'identifier', 'keyword', 'identifier']
+      );
+      const ctx = createMockParserContext(tokens);
+
+      const result = parsePropertyOfTarget(ctx, 0);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('propertyOfExpression');
+      expect((result as any).target.type).toBe('cssSelector');
+      expect((result as any).target.value).toBe('.myClass');
+    });
+
+    it('should parse "the X to ..." by stripping "the" and returning identifier', () => {
+      // the count to ... → returns identifier for 'count'
+      const tokens = createTokenStream(
+        ['the', 'count', 'to', '10'],
+        ['keyword', 'identifier', 'keyword', 'number']
+      );
+      const ctx = createMockParserContext(tokens);
+
+      const result = parsePropertyOfTarget(ctx, 0);
+      expect(result).not.toBeNull();
+      expect((result as any).type).toBe('identifier');
+      expect((result as any).name).toBe('count');
+    });
+
+    it('should rollback and return null for unrecognized pattern after "the"', () => {
+      // "the" followed by something that isn't "X of Y" or "X to Y"
+      const tokens = createTokenStream(
+        ['the', 'count', 'and'],
+        ['keyword', 'identifier', 'keyword']
+      );
+      const ctx = createMockParserContext(tokens);
+
+      const result = parsePropertyOfTarget(ctx, 0);
+      expect(result).toBeNull();
+      // Verify position was restored via savePosition/restorePosition
+      expect(ctx.restorePosition).toHaveBeenCalled();
+    });
+  });
+
+  describe('parseTargetFallback', () => {
+    it('should return local variable for colon match', () => {
+      // : myVar
+      const tokens = createTokenStream([':', 'myVar'], ['symbol', 'identifier']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseTargetFallback(ctx);
+      expect(result.expression).not.toBeNull();
+      expect((result.expression as any).type).toBe('identifier');
+      expect((result.expression as any).name).toBe('myVar');
+      expect((result.expression as any).scope).toBe('local');
+      expect(result.tokens).toHaveLength(0);
+    });
+
+    it('should return null expression for empty token stream', () => {
+      // Already at 'to' keyword (terminator)
+      const tokens = createTokenStream(['to', '5'], ['keyword', 'number']);
+      const ctx = createMockParserContext(tokens);
+
+      const result = parseTargetFallback(ctx);
+      expect(result.expression).toBeNull();
+      expect(result.tokens).toHaveLength(0);
+    });
+
+    it('should return single token as expression', () => {
+      // Single token 'x' followed by terminator 'to'
+      const tokens = createTokenStream(['x', 'to'], ['identifier', 'keyword']);
+      let pos = 0;
+      const xNode: ASTNode = {
+        type: 'identifier',
+        name: 'x',
+        start: 0,
+        end: 1,
+        line: 1,
+        column: 0,
+      };
+
+      const ctx = createMockParserContext(tokens, {
+        check: vi.fn((val: string) => tokens[pos]?.value === val),
+        advance: vi.fn(() => {
+          const t = tokens[pos];
+          pos++;
+          return t;
+        }),
+        match: vi.fn((val: string) => {
+          if (tokens[pos]?.value === val) {
+            pos++;
+            return true;
+          }
+          return false;
+        }),
+        isAtEnd: vi.fn(() => pos >= tokens.length),
+        parsePrimary: vi.fn(() => {
+          pos++;
+          return xNode;
+        }),
+      });
+
+      const result = parseTargetFallback(ctx);
+      expect(result.expression).toBe(xNode);
+      expect(result.tokens).toHaveLength(0);
+    });
+
+    it('should reconstruct "the X of Y" from collected tokens', () => {
+      // the textContent of #counter to ...
+      const theNode: ASTNode = {
+        type: 'keyword',
+        value: 'the',
+        start: 0,
+        end: 3,
+        line: 1,
+        column: 0,
+      } as any;
+      const propNode: ASTNode = {
+        type: 'identifier',
+        name: 'textContent',
+        value: 'textContent',
+        start: 4,
+        end: 15,
+        line: 1,
+        column: 4,
+      } as any;
+      const ofNode: ASTNode = {
+        type: 'keyword',
+        value: 'of',
+        start: 16,
+        end: 18,
+        line: 1,
+        column: 16,
+      } as any;
+      const targetNode: ASTNode = {
+        type: 'idSelector',
+        name: '#counter',
+        value: '#counter',
+        start: 19,
+        end: 27,
+        line: 1,
+        column: 19,
+      } as any;
+
+      const tokens = createTokenStream(
+        ['the', 'textContent', 'of', '#counter', 'to'],
+        ['keyword', 'identifier', 'keyword', 'identifier', 'keyword']
+      );
+      let pos = 0;
+      const parsedNodes = [theNode, propNode, ofNode, targetNode];
+      let primaryCallCount = 0;
+
+      const ctx = createMockParserContext(tokens, {
+        check: vi.fn((val: string) => tokens[pos]?.value === val),
+        advance: vi.fn(() => {
+          const t = tokens[pos];
+          pos++;
+          return t;
+        }),
+        match: vi.fn((val: string) => {
+          if (tokens[pos]?.value === val) {
+            pos++;
+            return true;
+          }
+          return false;
+        }),
+        isAtEnd: vi.fn(() => pos >= tokens.length),
+        parsePrimary: vi.fn(() => {
+          const node = parsedNodes[primaryCallCount];
+          primaryCallCount++;
+          pos++;
+          return node;
+        }),
+      });
+
+      const result = parseTargetFallback(ctx);
+      expect(result.expression).not.toBeNull();
+      expect((result.expression as any).type).toBe('propertyOfExpression');
+      expect((result.expression as any).property.name).toBe('textContent');
+      expect(result.tokens).toHaveLength(0);
+    });
+
+    it('should return raw tokens for unrecognized multi-token pattern', () => {
+      // foo bar to ...
+      const fooNode: ASTNode = {
+        type: 'identifier',
+        name: 'foo',
+        start: 0,
+        end: 3,
+        line: 1,
+        column: 0,
+      };
+      const barNode: ASTNode = {
+        type: 'identifier',
+        name: 'bar',
+        start: 4,
+        end: 7,
+        line: 1,
+        column: 4,
+      };
+
+      const tokens = createTokenStream(
+        ['foo', 'bar', 'to'],
+        ['identifier', 'identifier', 'keyword']
+      );
+      let pos = 0;
+      const parsedNodes = [fooNode, barNode];
+      let primaryCallCount = 0;
+
+      const ctx = createMockParserContext(tokens, {
+        check: vi.fn((val: string) => tokens[pos]?.value === val),
+        advance: vi.fn(() => {
+          const t = tokens[pos];
+          pos++;
+          return t;
+        }),
+        match: vi.fn((val: string) => {
+          if (tokens[pos]?.value === val) {
+            pos++;
+            return true;
+          }
+          return false;
+        }),
+        isAtEnd: vi.fn(() => pos >= tokens.length),
+        parsePrimary: vi.fn(() => {
+          const node = parsedNodes[primaryCallCount];
+          primaryCallCount++;
+          pos++;
+          return node;
+        }),
+      });
+
+      const result = parseTargetFallback(ctx);
+      expect(result.expression).toBeNull();
+      expect(result.tokens).toHaveLength(2);
+      expect(result.tokens[0]).toBe(fooNode);
+      expect(result.tokens[1]).toBe(barNode);
     });
   });
 });

@@ -103,6 +103,9 @@ export interface CommandNode extends ASTNode {
   isBlocking: boolean;
   // Modifiers for multi-word commands (e.g., "append X to Y" → modifiers: {to: Y})
   modifiers?: Record<string, ExpressionNode>;
+  // Original command name when parser sugar transforms the command
+  // (e.g., "increment" → set command with originalCommand: "increment")
+  originalCommand?: string;
 }
 
 // ExpressionNode is now imported from base-types.ts for consistency

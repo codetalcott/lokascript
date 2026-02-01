@@ -3951,6 +3951,16 @@ export class Parser {
       getMultiWordPattern: this.getMultiWordPattern.bind(this),
       resolveKeyword: this.resolveKeyword.bind(this),
 
+      // Position Checkpoint Methods
+      savePosition: (): number => parser.current,
+      restorePosition: (pos: number): void => {
+        parser.current = pos;
+      },
+      peekAt: (offset: number): Token | null => {
+        const index = parser.current + offset;
+        return index >= 0 && index < parser.tokens.length ? parser.tokens[index] : null;
+      },
+
       // Raw Input Access (for preserving literal code like JS in js...end blocks)
       getInputSlice: (start: number, end?: number): string => {
         if (!this.originalInput) return '';

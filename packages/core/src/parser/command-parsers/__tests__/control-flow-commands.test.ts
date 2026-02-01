@@ -446,11 +446,14 @@ describe('Control Flow Command Parsers', () => {
         peek: vi.fn(
           () => tokens[pos] || { kind: 'eof', value: '', start: 0, end: 0, line: 1, column: 0 }
         ),
+        peekAt: vi.fn((offset: number) => {
+          const index = pos + offset;
+          return index >= 0 && index < tokens.length ? tokens[index] : null;
+        }),
         isAtEnd: vi.fn(() => pos >= tokens.length),
         parseExpression: vi.fn(() => collectionExpr),
       });
       ctx.current = 0;
-      ctx.tokens = tokens;
 
       const commandToken = createToken('repeat');
       const result = parseRepeatCommand(ctx, commandToken);
@@ -761,8 +764,12 @@ describe('Control Flow Command Parsers', () => {
         consume: vi.fn(),
         getPosition: vi.fn(() => ({ start: 0, end: state.pos, line: 1, column: state.pos })),
         addError: vi.fn(),
+        // Position checkpoint methods (synced with state.pos)
+        savePosition: vi.fn(() => state.pos),
+        restorePosition: vi.fn((pos: number) => {
+          state.pos = pos;
+        }),
       });
-      rawCtx.tokens = tokens;
 
       // Proxy to keep ctx.current in sync with state.pos
       const ctx = new Proxy(rawCtx, {

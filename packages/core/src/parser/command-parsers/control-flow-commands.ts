@@ -216,7 +216,7 @@ export function parseRepeatCommand(ctx: ParserContext, commandToken: Token): Com
   let indexVariable: string | null = null;
   if (ctx.check(KEYWORDS.WITH)) {
     // Peek ahead to verify this is "with index" pattern
-    const nextToken = ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
+    const nextToken = ctx.peekAt(1);
     if (nextToken && nextToken.value.toLowerCase() === KEYWORDS.INDEX) {
       ctx.advance(); // consume 'with'
       ctx.advance(); // consume 'index'
@@ -342,7 +342,7 @@ export function parseIfCommand(ctx: ParserContext, commandToken: Token): Command
 
   // Look ahead to find 'then' keyword (not just check current token)
   let hasThen = false;
-  const savedPosForThen = ctx.current;
+  const savedPosForThen = ctx.savePosition();
   const maxThenLookahead = 500; // Increased to handle large conditional expressions
   for (let i = 0; i < maxThenLookahead && !ctx.isAtEnd(); i++) {
     const token = ctx.peek();
@@ -361,7 +361,7 @@ export function parseIfCommand(ctx: ParserContext, commandToken: Token): Command
     }
     ctx.advance();
   }
-  ctx.current = savedPosForThen;
+  ctx.restorePosition(savedPosForThen);
 
   // Look ahead to check for multi-line form without 'then'
   // We need to distinguish:
@@ -372,7 +372,7 @@ export function parseIfCommand(ctx: ParserContext, commandToken: Token): Command
   // Key insight: Only check the FIRST command's line position
   let hasImplicitMultiLineEnd = false;
   if (!hasThen) {
-    const savedPosition = ctx.current;
+    const savedPosition = ctx.savePosition();
     const ifStatementLine = commandToken.line; // Line where 'if' keyword appears
     const maxLookahead = 100;
 
@@ -417,7 +417,7 @@ export function parseIfCommand(ctx: ParserContext, commandToken: Token): Command
       ctx.advance();
     }
 
-    ctx.current = savedPosition;
+    ctx.restorePosition(savedPosition);
   }
 
   const isMultiLine = hasThen || hasImplicitMultiLineEnd;
@@ -443,13 +443,13 @@ export function parseIfCommand(ctx: ParserContext, commandToken: Token): Command
       !ctx.check(KEYWORDS.THEN) &&
       iterations < maxIterations
     ) {
-      const beforePos = ctx.current;
+      const beforePos = ctx.savePosition();
       // Use parseLogicalAnd() to handle binary operators like 'is a' and unary operators like 'not'
       // This is one level below parseLogicalOr() to avoid consuming 'or' which might be part of pattern syntax
       conditionTokens.push(ctx.parseLogicalAnd());
 
       // Safety check: ensure we're making progress
-      if (ctx.current === beforePos) {
+      if (ctx.savePosition() === beforePos) {
         // parseUnary didn't advance - manually advance to prevent infinite loop
         ctx.advance();
       }
@@ -659,7 +659,7 @@ export function parseForCommand(ctx: ParserContext, commandToken: Token): Comman
   // Parse optional index variable (same as repeat)
   let indexVariable: string | null = null;
   if (ctx.check(KEYWORDS.WITH)) {
-    const nextToken = ctx.current + 1 < ctx.tokens.length ? ctx.tokens[ctx.current + 1] : null;
+    const nextToken = ctx.peekAt(1);
     if (nextToken && nextToken.value.toLowerCase() === KEYWORDS.INDEX) {
       ctx.advance(); // consume 'with'
       ctx.advance(); // consume 'index'

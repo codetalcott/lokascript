@@ -48,6 +48,7 @@ export class CommandNodeBuilder {
   private implicitTarget?: ExpressionNode;
   private isBlocking = false;
   private modifiers?: Record<string, ExpressionNode>;
+  private originalCmd?: string;
   private startPos?: Position;
   private endPos?: Position;
 
@@ -151,6 +152,25 @@ export class CommandNodeBuilder {
   }
 
   /**
+   * Override the command name (e.g., to emit 'set' from an 'increment' parser)
+   * @param name New command name
+   */
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Store the original command name before transformation
+   * (e.g., "increment" when emitting a "set" command)
+   * @param name Original command name for debugging/compatibility
+   */
+  withOriginalCommand(name: string): this {
+    this.originalCmd = name;
+    return this;
+  }
+
+  /**
    * Mark this command as blocking (default: false)
    * @param value Whether the command should block (default: true)
    */
@@ -220,6 +240,9 @@ export class CommandNodeBuilder {
     if (this.modifiers) {
       node.modifiers = this.modifiers;
     }
+    if (this.originalCmd) {
+      node.originalCommand = this.originalCmd;
+    }
 
     return node;
   }
@@ -235,6 +258,7 @@ export class CommandNodeBuilder {
     cloned.implicitTarget = this.implicitTarget;
     cloned.isBlocking = this.isBlocking;
     cloned.modifiers = this.modifiers ? { ...this.modifiers } : undefined;
+    cloned.originalCmd = this.originalCmd;
     cloned.startPos = this.startPos ? { ...this.startPos } : undefined;
     cloned.endPos = this.endPos ? { ...this.endPos } : undefined;
     return cloned;

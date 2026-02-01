@@ -78,7 +78,7 @@ export function parseTriggerCommand(
 
       while (!ctx.isAtEnd() && !ctx.check(')')) {
         // Check if this is a named parameter (identifier followed by ':')
-        const checkpoint = ctx.current;
+        const checkpoint = ctx.savePosition();
         let paramName: string | undefined;
 
         if (ctx.checkIdentifierLike()) {
@@ -90,7 +90,7 @@ export function parseTriggerCommand(
             paramName = possibleName;
           } else {
             // Not a named parameter, rewind
-            ctx.current = checkpoint;
+            ctx.restorePosition(checkpoint);
           }
         }
 

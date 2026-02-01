@@ -568,6 +568,12 @@ describe('Async Command Parsers', () => {
               column: token.column,
             } as ASTNode;
           }),
+
+          // Position checkpoint methods (synced with local position variable)
+          savePosition: vi.fn(() => position),
+          restorePosition: vi.fn((pos: number) => {
+            position = pos;
+          }),
         });
 
         // The install parser reads ctx.current for checkpoint/rewind.

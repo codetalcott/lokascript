@@ -50,16 +50,11 @@ export function parseWaitCommand(ctx: ParserContext, commandToken: Token) {
     const timeExpr = ctx.parsePrimary();
     args.push(timeExpr);
 
-    return {
-      type: 'command',
-      name: 'wait',
-      args: args as ExpressionNode[],
-      isBlocking: true,
-      start: commandToken.start || 0,
-      end: ctx.getPosition().end,
-      line: commandToken.line || 1,
-      column: commandToken.column || 1,
-    };
+    return CommandNodeBuilder.from(commandToken)
+      .withArgs(...args)
+      .blocking()
+      .endingAt(ctx.getPosition())
+      .build();
   }
 
   // Check for 'for' keyword (event-based wait)
@@ -234,7 +229,7 @@ export function parseInstallCommand(ctx: ParserContext, commandToken: Token) {
 
     while (!ctx.isAtEnd() && !ctx.check(')')) {
       // Check if this is a named parameter (identifier followed by ':')
-      const checkpoint = ctx.current;
+      const checkpoint = ctx.savePosition();
       let paramName: string | undefined;
 
       // Phase 4: Using predicate method
@@ -248,7 +243,7 @@ export function parseInstallCommand(ctx: ParserContext, commandToken: Token) {
           paramName = possibleName;
         } else {
           // Not a named parameter, rewind
-          ctx.current = checkpoint;
+          ctx.restorePosition(checkpoint);
         }
       }
 

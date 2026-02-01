@@ -324,6 +324,19 @@ export interface ParserContext {
   parseCommandListUntilEnd(): ASTNode[];
 
   // ==========================================
+  // Position Checkpoint Methods
+  // ==========================================
+
+  /** Save current position for later restoration (returns opaque position handle) */
+  savePosition(): number;
+
+  /** Restore to a previously saved position */
+  restorePosition(pos: number): void;
+
+  /** Peek at token relative to current position without consuming (0 = current, 1 = next, etc.) */
+  peekAt(offset: number): Token | null;
+
+  // ==========================================
   // Position Tracking
   // ==========================================
 

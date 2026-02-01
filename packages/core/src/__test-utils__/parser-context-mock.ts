@@ -126,6 +126,17 @@ export function createMockParserContext(
       return false;
     }),
 
+    // Position checkpoint methods
+    savePosition: vi.fn(() => currentPosition),
+    restorePosition: vi.fn((pos: number) => {
+      currentPosition = pos;
+      baseContext.current = currentPosition;
+    }),
+    peekAt: vi.fn((offset: number) => {
+      const index = currentPosition + offset;
+      return index >= 0 && index < tokens.length ? tokens[index] : null;
+    }),
+
     // AST creation
     createIdentifier: vi.fn(
       (name: string) =>
