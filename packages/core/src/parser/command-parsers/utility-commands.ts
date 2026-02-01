@@ -22,6 +22,7 @@ import * as controlFlowCommands from './control-flow-commands';
 import * as animationCommands from './animation-commands';
 import * as domCommands from './dom-commands';
 import * as variableCommands from './variable-commands';
+import * as dataCommands from './data-commands';
 
 /**
  * Parse compound command
@@ -40,6 +41,8 @@ import * as variableCommands from './variable-commands';
  * - set: Variable assignment with scoping
  * - halt: Control flow interruption
  * - measure: Element property measurement
+ * - bind: Client-side data binding (lokascript-extension)
+ * - persist: Browser storage operations (lokascript-extension)
  *
  * Examples:
  *   - put <div/> into <body/>
@@ -79,6 +82,10 @@ export function parseCompoundCommand(
       return parseJsCommand(ctx, identifierNode);
     case 'tell':
       return parseTellCommand(ctx, identifierNode);
+    case 'bind':
+      return dataCommands.parseBindCommand(ctx, identifierNode);
+    case 'persist':
+      return dataCommands.parsePersistCommand(ctx, identifierNode);
     case 'swap':
     case 'morph':
       return domCommands.parseSwapCommand(ctx, identifierNode);

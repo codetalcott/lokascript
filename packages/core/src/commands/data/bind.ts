@@ -1,6 +1,10 @@
 /**
  * BindCommand - Decorated Implementation
  *
+ * LokaScript Extension: NOT part of the official _hyperscript specification.
+ * This is a LokaScript-only command for client-side two-way data binding.
+ * Prefer server-side state management when possible.
+ *
  * Two-way data binding between variables and DOM elements.
  * Uses Stage 3 decorators for reduced boilerplate.
  *
@@ -75,6 +79,7 @@ const activeBindings: Map<string, ActiveBinding> = new Map();
  */
 @meta({
   description: 'Create two-way data binding between variables and DOM elements',
+  compatibility: 'lokascript-extension',
   syntax: [
     'bind :variable to <element>.<property>',
     'bind :variable from <element>.<property>',

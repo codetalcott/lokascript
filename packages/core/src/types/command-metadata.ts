@@ -290,6 +290,17 @@ export interface CommandMetadata {
     readonly isAsync?: boolean;
     readonly mayBlock?: boolean;
   };
+
+  /**
+   * Compatibility with official _hyperscript specification.
+   *
+   * - 'standard': Part of or closely matching official _hyperscript
+   * - 'lokascript-extension': LokaScript-only command, not in official _hyperscript
+   * - 'experimental': Experimental, may change or be removed
+   *
+   * @optional @default 'standard'
+   */
+  readonly compatibility?: 'standard' | 'lokascript-extension' | 'experimental';
 }
 
 // ============================================================================

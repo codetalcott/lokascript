@@ -7,6 +7,7 @@ import { parseAndEvaluateExpression } from '../parser/expression-parser';
 import { Parser } from '../parser/parser';
 import { Runtime } from '../runtime/runtime';
 import { tokenize } from '../parser/tokenizer';
+import { COMMANDS } from '../parser/parser-constants';
 import type { ExecutionContext } from '../types/core';
 import type { SemanticAnalyzerInterface } from '../parser/types';
 import {
@@ -200,10 +201,23 @@ function isCommand(script: string): boolean {
     /^repeat\s+.+/, // repeat for x in list
     /^on\s+.+/, // on click
     /^render\s+.+/, // render #template or render #template with data
+    /^bind\s+.+/, // bind :variable to|from element.property [bidirectional]
+    /^persist\s+.+/, // persist value to storage as key [ttl ms]
   ];
 
-  // Check if script matches any command pattern
-  return commandPatterns.some(pattern => pattern.test(trimmed));
+  // Check specific patterns first
+  if (commandPatterns.some(pattern => pattern.test(trimmed))) {
+    return true;
+  }
+
+  // Fallback: check if the first word is a known command from the authoritative COMMANDS set.
+  // This ensures newly added commands are recognized without needing regex patterns.
+  const firstWord = trimmed.split(/\s/)[0];
+  if (firstWord && COMMANDS.has(firstWord)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

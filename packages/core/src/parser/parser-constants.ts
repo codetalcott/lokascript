@@ -95,6 +95,7 @@ export const COMMANDS = new Set([
   'append',
   'async',
   'beep',
+  'bind', // lokascript-extension: client-side data binding (not in official _hyperscript)
   'break',
   'call',
   'continue',
@@ -116,6 +117,7 @@ export const COMMANDS = new Set([
   'make',
   'measure',
   'morph', // htmx-like: DOM morphing with state preservation
+  'persist', // lokascript-extension: browser storage operations (not in official _hyperscript)
   'pick',
   'process', // htmx-like: process partials
   'push', // htmx-like: push url to history
@@ -159,6 +161,9 @@ export const COMPOUND_COMMANDS = new Set([
   'measure',
   'js',
   'tell', // tell <target> <command> [<command> ...]
+  // lokascript-extension commands with modifier-based argument patterns
+  'bind', // bind :variable to|from <target>.<property> [bidirectional]
+  'persist', // persist <value> to <storage> as <key> [ttl <ms>]
   // htmx-like commands with complex argument patterns
   'swap', // swap [strategy] of <target> with <content> [using view transition]
   'morph', // morph [over] <target> with <content>

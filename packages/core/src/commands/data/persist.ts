@@ -1,6 +1,10 @@
 /**
  * PersistCommand - Decorated Implementation
  *
+ * LokaScript Extension: NOT part of the official _hyperscript specification.
+ * This is a LokaScript-only command for client-side browser storage operations.
+ * Prefer server-side state management when possible.
+ *
  * Saves and restores values from localStorage or sessionStorage.
  * Uses Stage 3 decorators for reduced boilerplate.
  *
@@ -68,6 +72,7 @@ interface StoredValue {
  */
 @meta({
   description: 'Save and restore values from browser storage with TTL support',
+  compatibility: 'lokascript-extension',
   syntax: [
     'persist <value> to <storage> as <key>',
     'restore <key> from <storage>',
@@ -92,13 +97,26 @@ export class PersistCommand implements DecoratedCommand {
   ): Promise<PersistCommandInput> {
     // Detect operation from command name/modifiers
     let operation: 'save' | 'restore' | 'remove' = 'save';
-    let key: string;
+    let key = '';
     let value: unknown;
     let storage: 'local' | 'session' | undefined;
     let ttl: number | undefined;
 
-    // Check for 'restore' or 'remove' operations (might be separate command names)
-    if (raw.modifiers?.from) {
+    // Check for explicit operation modifier (set by compound parser for 'persist remove ...')
+    if (raw.modifiers?.operation) {
+      const op = String(await evaluator.evaluate(raw.modifiers.operation, context));
+      if (op === 'remove') {
+        operation = 'remove';
+        // First arg is key for remove
+        key = String(await evaluator.evaluate(raw.args[0], context));
+        if (raw.modifiers?.from) {
+          storage = String(await evaluator.evaluate(raw.modifiers.from, context)) as
+            | 'local'
+            | 'session';
+        }
+      }
+    } else if (raw.modifiers?.from) {
+      // Check for restore operation (persist <key> from <storage>)
       operation = 'restore';
       // First arg is key for restore
       key = String(await evaluator.evaluate(raw.args[0], context));

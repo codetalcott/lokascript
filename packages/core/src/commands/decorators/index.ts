@@ -55,6 +55,8 @@ export interface MetaConfig {
   relatedCommands?: readonly string[];
   isBlocking?: boolean;
   hasBody?: boolean;
+  /** @see CommandMetadata.compatibility */
+  compatibility?: 'standard' | 'lokascript-extension' | 'experimental';
 }
 
 /**
@@ -172,6 +174,7 @@ export function meta(config: MetaConfig) {
       isBlocking: config.isBlocking ?? false,
       hasBody: config.hasBody ?? false,
       version: '1.0.0',
+      compatibility: config.compatibility,
     };
 
     // Store on class
