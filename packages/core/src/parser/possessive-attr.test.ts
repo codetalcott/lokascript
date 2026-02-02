@@ -67,6 +67,43 @@ describe("Possessive @attr parsing (element's @attribute)", () => {
     });
   });
 
+  describe('Context property access: my/its/your @attr', () => {
+    it('should parse my @data-attr as a member expression', () => {
+      const ast = parse('my @data-value');
+      expect(ast.success).toBe(true);
+      expect(ast.node).toBeDefined();
+      expect(ast.node!.type).toBe('memberExpression');
+      // Property should be an identifier with @-prefixed name
+      const prop = (ast.node as any).property;
+      expect(prop.type).toBe('identifier');
+      expect(prop.name).toBe('@data-value');
+    });
+
+    it('should evaluate my @data-attr via getAttribute', async () => {
+      const element = document.createElement('div');
+      element.setAttribute('data-value', 'my-test');
+      const context = createMockHyperscriptContext(element);
+
+      const ast = parse('my @data-value');
+      expect(ast.success).toBe(true);
+
+      const result = await evaluateAST(ast.node!, context);
+      expect(result).toBe('my-test');
+    });
+
+    it('should evaluate my @data-attr with hyphenated names', async () => {
+      const element = document.createElement('div');
+      element.setAttribute('data-search-text', 'hello world');
+      const context = createMockHyperscriptContext(element);
+
+      const ast = parse('my @data-search-text');
+      expect(ast.success).toBe(true);
+
+      const result = await evaluateAST(ast.node!, context);
+      expect(result).toBe('hello world');
+    });
+  });
+
   describe('Precedence with or/contains', () => {
     it('should parse or + contains with correct precedence (contains binds tighter)', () => {
       // This is the core regression: "or" must not consume the possessive as its full right operand

@@ -554,7 +554,7 @@ describe('PutCommand', () => {
       const result = await command.execute(input, context);
 
       expect(context.locals.get('myVar')).toBe(42);
-      expect(result).toEqual([]);
+      expect(result).toBeUndefined();
     });
 
     it('should assign value to context property', async () => {
@@ -669,7 +669,7 @@ describe('PutCommand', () => {
       expect(result).toEqual([target1, target2]);
     });
 
-    it('should return empty array for variable assignment', async () => {
+    it('should return undefined for variable assignment', async () => {
       const context = createMockContext();
 
       const input: PutCommandInput = {
@@ -681,7 +681,163 @@ describe('PutCommand', () => {
 
       const result = await command.execute(input, context);
 
-      expect(result).toEqual([]);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Parsing - Element Reference Targets', () => {
+    it('should resolve HTMLElement from complex expression evaluation', async () => {
+      const targetElement = createMockElement('resolved-target');
+      const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      // Simulate a complex expression node (e.g., "the first <.selector/> in me")
+      const complexNode = { type: 'positionalExpression', operator: 'first' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(complexNode, targetElement);
+      returnValues.set(contentNode, 'Hello');
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, complexNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.targets).toContain(targetElement);
+      expect(input.variableName).toBeUndefined();
+    });
+
+    it('should resolve array of HTMLElements from expression evaluation', async () => {
+      const el1 = createMockElement('el1');
+      const el2 = createMockElement('el2');
+      const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      const complexNode = { type: 'queryExpression', selector: '.items' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(complexNode, [el1, el2]);
+      returnValues.set(contentNode, 'Hello');
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, complexNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.targets).toHaveLength(2);
+      expect(input.targets).toContain(el1);
+      expect(input.targets).toContain(el2);
+    });
+
+    it('should resolve identifier holding element reference as DOM target', async () => {
+      const targetElement = createMockElement('var-target');
+      const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      const varNode = { type: 'identifier', name: 'myElement' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(varNode, targetElement);
+      returnValues.set(contentNode, 'Hello');
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, varNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.targets).toContain(targetElement);
+      expect(input.variableName).toBeUndefined();
+    });
+
+    it('should fall back to variable assignment when identifier holds non-element', async () => {
+      const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      const varNode = { type: 'identifier', name: 'myVar' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(varNode, 'just a string');
+      returnValues.set(contentNode, 'Hello');
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, varNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.variableName).toBe('myVar');
+      expect(input.targets).toEqual([]);
+    });
+
+    it('should fall back to variable assignment when identifier is null', async () => {
+      const contentNode = { type: 'string', value: 42 } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      const varNode = { type: 'identifier', name: 'newVar' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(varNode, null);
+      returnValues.set(contentNode, 42);
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, varNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.variableName).toBe('newVar');
+    });
+
+    it('should fall through to context.me when expression evaluates to null', async () => {
+      const meElement = createMockElement('me-element');
+      const contentNode = { type: 'string', value: 'Hello' } as ASTNode;
+      const intoNode = { type: 'literal', value: 'into' } as ASTNode;
+      const complexNode = { type: 'positionalExpression', operator: 'first' } as ASTNode;
+
+      const returnValues = new Map<ASTNode, unknown>();
+      returnValues.set(complexNode, null);
+      returnValues.set(contentNode, 'Hello');
+
+      const evaluator = createMockEvaluator(returnValues);
+      const context = createMockContext(meElement);
+
+      const input = await command.parseInput(
+        { args: [contentNode, intoNode, complexNode], modifiers: {} },
+        evaluator,
+        context
+      );
+
+      expect(input.targets).toContain(meElement);
+    });
+
+    it('should set context.it to assigned value after variable assignment', async () => {
+      const context = createMockContext();
+      (context as any).it = 'previous-value';
+
+      const input: PutCommandInput = {
+        value: 42,
+        targets: [],
+        position: 'replace',
+        variableName: 'myVar',
+      };
+
+      await command.execute(input, context);
+
+      expect(context.locals.get('myVar')).toBe(42);
+      expect((context as any).it).toBe(42);
     });
   });
 });

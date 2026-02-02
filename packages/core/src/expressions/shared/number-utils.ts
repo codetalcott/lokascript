@@ -48,6 +48,22 @@ export function toNumber(value: unknown, context: string): number {
 
   // Try valueOf for objects
   if (typeof value === 'object' && value !== null) {
+    // Unwrap single-element arrays (from querySelectorAll/selector evaluation)
+    if (Array.isArray(value) && value.length === 1) {
+      return toNumber(value[0], context);
+    }
+
+    // Handle DOM elements — extract textContent or value property
+    if (typeof (value as any).textContent === 'string' || 'value' in (value as any)) {
+      const text = (value as any).value ?? (value as any).textContent;
+      if (text !== null && text !== undefined) {
+        const trimmed = String(text).trim();
+        if (trimmed === '') return 0;
+        const num = parseFloat(trimmed);
+        if (!isNaN(num)) return num;
+      }
+    }
+
     const primitive = (value as any).valueOf();
     if (typeof primitive === 'number' && Number.isFinite(primitive)) {
       return primitive;

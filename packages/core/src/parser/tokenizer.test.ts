@@ -293,6 +293,64 @@ describe('Hyperscript Tokenizer', () => {
     });
   });
 
+  describe('CSS Selector Context Keywords', () => {
+    it('should tokenize .class as CSS selector after positional keyword "first"', () => {
+      const tokens = tokenize('first .active');
+
+      expect(tokens).toHaveLength(2);
+      expect(tokens[0]).toMatchObject({
+        kind: TokenKind.IDENTIFIER,
+        value: 'first',
+      });
+      expect(tokens[1]).toMatchObject({
+        kind: TokenKind.SELECTOR,
+        value: '.active',
+      });
+    });
+
+    it('should tokenize .class as CSS selector after positional keyword "last"', () => {
+      const tokens = tokenize('last .item');
+
+      expect(tokens).toHaveLength(2);
+      expect(tokens[0]).toMatchObject({
+        kind: TokenKind.IDENTIFIER,
+        value: 'last',
+      });
+      expect(tokens[1]).toMatchObject({
+        kind: TokenKind.SELECTOR,
+        value: '.item',
+      });
+    });
+
+    it('should tokenize .class as CSS selector after "closest"', () => {
+      const tokens = tokenize('closest .container');
+
+      expect(tokens).toHaveLength(2);
+      expect(tokens[1]).toMatchObject({
+        kind: TokenKind.SELECTOR,
+        value: '.container',
+      });
+    });
+
+    it('should still tokenize . as member access after regular identifiers', () => {
+      const tokens = tokenize('obj.property');
+
+      expect(tokens).toHaveLength(3);
+      expect(tokens[0]).toMatchObject({
+        kind: TokenKind.IDENTIFIER,
+        value: 'obj',
+      });
+      expect(tokens[1]).toMatchObject({
+        kind: TokenKind.OPERATOR,
+        value: '.',
+      });
+      expect(tokens[2]).toMatchObject({
+        kind: TokenKind.IDENTIFIER,
+        value: 'property',
+      });
+    });
+  });
+
   describe('Performance', () => {
     it.skip('should tokenize large input efficiently', () => {
       const largeInput = 'on click '.repeat(1000) + 'hide me';

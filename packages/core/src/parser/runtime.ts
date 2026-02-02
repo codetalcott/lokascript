@@ -344,6 +344,16 @@ async function evaluateMemberExpression(node: any, context: ExecutionContext): P
   } else {
     // Non-computed access: object.property
     const propertyName = node.property.name;
+
+    // Handle attribute access (@attr → getAttribute)
+    if (typeof propertyName === 'string' && propertyName.startsWith('@')) {
+      const attrName = propertyName.substring(1);
+      if (object && typeof object.getAttribute === 'function') {
+        return object.getAttribute(attrName);
+      }
+      return undefined;
+    }
+
     return object?.[propertyName];
   }
 }

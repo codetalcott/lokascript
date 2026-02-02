@@ -3294,19 +3294,13 @@ export class Parser {
       );
     } else {
       // Check for attribute access syntax: my @attr, its @attr, your @attr
+      // Use @-prefixed identifier (matching possessive expression pattern at line 1168-1170)
+      // so evaluateMemberExpression can handle it via propertyName.startsWith('@')
       if (isSymbol(this.peek()) && this.peek().value.startsWith('@')) {
         const attrToken = this.advance();
-        const attributeName = attrToken.value.substring(1); // Remove '@' prefix
         return this.createMemberExpression(
           this.createIdentifier(contextVar),
-          {
-            type: 'attributeAccess',
-            attributeName,
-            start: attrToken.start,
-            end: attrToken.end,
-            line: attrToken.line,
-            column: attrToken.column,
-          } as ASTNode,
+          this.createIdentifier(attrToken.value), // "@data-attr" including @ prefix
           false
         );
       }

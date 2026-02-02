@@ -199,6 +199,57 @@ describe('ToggleCommand (Standalone V2)', () => {
       }
     });
 
+    it('should parse attribute toggle from attributeAccess AST node (real parser output)', async () => {
+      const context = createMockContext();
+      const evaluator = createMockEvaluator();
+
+      // Real parser creates attributeAccess nodes for @attr tokens
+      const input = await command.parseInput(
+        {
+          args: [{ type: 'attributeAccess', attributeName: 'disabled' } as any],
+          modifiers: {},
+        },
+        evaluator,
+        context
+      );
+
+      expect(input.type).toBe('attribute');
+      if (input.type === 'attribute') {
+        expect(input.name).toBe('disabled');
+      }
+    });
+
+    it('should parse attributeAccess node with target via on keyword', async () => {
+      const context = createMockContext();
+      const targetBtn = document.createElement('button');
+      targetBtn.id = 'target-btn';
+      document.body.appendChild(targetBtn);
+
+      const evaluator = createMockEvaluator();
+
+      try {
+        const input = await command.parseInput(
+          {
+            args: [
+              { type: 'attributeAccess', attributeName: 'required' } as any,
+              { type: 'identifier', name: 'on' } as any,
+              { type: 'selector', value: '#target-btn' } as any,
+            ],
+            modifiers: {},
+          },
+          evaluator,
+          context
+        );
+
+        expect(input.type).toBe('attribute');
+        if (input.type === 'attribute') {
+          expect(input.name).toBe('required');
+        }
+      } finally {
+        document.body.removeChild(targetBtn);
+      }
+    });
+
     it('should parse attribute toggle with bracket notation', async () => {
       const context = createMockContext();
       const evaluator = createMockEvaluator();

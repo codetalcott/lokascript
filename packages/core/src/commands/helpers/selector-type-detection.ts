@@ -248,6 +248,51 @@ export function isCSSPropertySelectorNode(node: ASTNode): boolean {
 }
 
 /**
+ * Check if an AST node is an attribute selector that should be extracted directly
+ *
+ * Attribute selectors (e.g., @disabled, @required) should have their value
+ * extracted directly rather than evaluated, since evaluating them would either
+ * throw "Unsupported AST node type" or attempt querySelectorAll('@disabled').
+ *
+ * @param node - AST node to check
+ * @returns true if node is an attribute selector
+ */
+export function isAttributeSelectorNode(node: ASTNode): boolean {
+  if (!node || typeof node !== 'object') {
+    return false;
+  }
+
+  const anyNode = node as Record<string, unknown>;
+
+  // Parser creates attributeAccess nodes for @attr tokens
+  if (anyNode.type === 'attributeAccess') {
+    return true;
+  }
+
+  // Also catch selector/cssSelector nodes with @ prefix
+  if (anyNode.type === 'selector' || anyNode.type === 'cssSelector') {
+    const value = extractSelectorValue(node);
+    return typeof value === 'string' && value.startsWith('@');
+  }
+
+  return false;
+}
+
+/**
+ * Extract the @attr string from an attribute-like AST node
+ *
+ * @param node - AST node to extract attribute value from
+ * @returns Attribute string (e.g., '@disabled') or null
+ */
+export function extractAttributeValue(node: ASTNode): string | null {
+  const anyNode = node as Record<string, unknown>;
+  if (anyNode.type === 'attributeAccess') {
+    return `@${anyNode.attributeName}`;
+  }
+  return extractSelectorValue(node);
+}
+
+/**
  * Check if an AST node represents a bare smart element tag identifier
  *
  * e.g., "toggle details" where 'details' is an identifier node
@@ -343,6 +388,15 @@ export async function evaluateFirstArg(
   if (isCSSPropertySelectorNode(firstArg)) {
     return {
       value: extractSelectorValue(firstArg),
+      extractedFromNode: true,
+    };
+  }
+
+  // Attribute selector nodes should be extracted directly to get the @attr string
+  // rather than evaluated (which would throw or attempt querySelectorAll('@attr'))
+  if (isAttributeSelectorNode(firstArg)) {
+    return {
+      value: extractAttributeValue(firstArg),
       extractedFromNode: true,
     };
   }

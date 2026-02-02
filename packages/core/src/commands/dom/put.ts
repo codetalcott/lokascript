@@ -165,11 +165,23 @@ export class PutCommand implements DecoratedCommand {
         else variableName = String(lv);
       } else if (tt === 'identifier') {
         const nm = (targetArg as any).name;
-        if (this.looksLikeCss(nm)) targetSelector = nm;
-        else variableName = nm;
+        if (this.looksLikeCss(nm)) {
+          targetSelector = nm;
+        } else {
+          // Evaluate to check if variable holds an element reference (matches _hyperscript semantics)
+          const ev = await evaluator.evaluate(targetArg, context);
+          const resolved = this.resolveEvaluatedAsElements(ev);
+          if (resolved) {
+            return { value, targets: resolved, position, memberPath };
+          }
+          variableName = nm;
+        }
       } else {
         const ev = await evaluator.evaluate(targetArg, context);
-        if (typeof ev === 'string') {
+        const resolved = this.resolveEvaluatedAsElements(ev);
+        if (resolved) {
+          return { value, targets: resolved, position, memberPath };
+        } else if (typeof ev === 'string') {
           if (this.looksLikeCss(ev)) targetSelector = ev;
           else variableName = ev;
         }
@@ -188,7 +200,8 @@ export class PutCommand implements DecoratedCommand {
     if (variableName) {
       if (context.locals) context.locals.set(variableName, value);
       (context as any)[variableName] = value;
-      return [];
+      Object.assign(context, { it: value });
+      return undefined as unknown as HTMLElement[];
     }
 
     if (memberPath) {
@@ -274,6 +287,23 @@ export class PutCommand implements DecoratedCommand {
       if (hasHTML) target.insertAdjacentHTML(pos, content);
       else target.insertAdjacentText(pos, content);
     }
+  }
+
+  /**
+   * Attempt to resolve an evaluated value as element target(s).
+   * Returns an array of HTMLElements if the value is element-like, or null otherwise.
+   */
+  private resolveEvaluatedAsElements(ev: unknown): HTMLElement[] | null {
+    if (isHTMLElement(ev)) return [ev as HTMLElement];
+    if (Array.isArray(ev)) {
+      const elements = ev.filter(isHTMLElement) as HTMLElement[];
+      return elements.length > 0 ? elements : null;
+    }
+    if (typeof NodeList !== 'undefined' && ev instanceof NodeList) {
+      const elements = Array.from(ev).filter(isHTMLElement) as HTMLElement[];
+      return elements.length > 0 ? elements : null;
+    }
+    return null;
   }
 
   private looksLikeCss(s: string): boolean {

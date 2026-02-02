@@ -357,7 +357,21 @@ export function tokenize(input: string): Token[] {
       // Phase 8: Use TokenKind for CSS selector context detection
       const prevToken = tokenizer.tokens[tokenizer.tokens.length - 1];
       // Keywords that can precede CSS selectors (not member access)
-      const SELECTOR_CONTEXT_KEYWORDS = new Set(['from', 'to', 'into', 'on', 'in', 'at']);
+      const SELECTOR_CONTEXT_KEYWORDS = new Set([
+        'from',
+        'to',
+        'into',
+        'on',
+        'in',
+        'at',
+        // Positional keywords can be followed by bare CSS selectors
+        'first',
+        'last',
+        'next',
+        'previous',
+        'closest',
+        'random',
+      ]);
       // Commands like add, remove, toggle can be followed by class selectors
       const isCommandContext =
         prevToken &&

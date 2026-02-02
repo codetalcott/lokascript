@@ -143,6 +143,9 @@ export class BaseExpressionEvaluator {
       case 'idSelector':
         return this.evaluateIdSelector(node as any, context);
 
+      case 'attributeAccess':
+        return this.evaluateAttributeAccess(node as any, context);
+
       default:
         throw new Error(`Unsupported AST node type for evaluation: ${node.type}`);
     }
@@ -711,6 +714,34 @@ export class BaseExpressionEvaluator {
   /**
    * Evaluate binary expressions (comparisons, arithmetic, etc.)
    */
+  /**
+   * Coerce DOM elements (or arrays of elements from selector results) to their
+   * numeric/string value for arithmetic operations.
+   * Returns the original value unchanged if it's not a DOM element or element array.
+   */
+  private coerceArithmeticOperand(value: unknown): unknown {
+    // Unwrap single-element arrays (from querySelectorAll/selector evaluation)
+    if (Array.isArray(value) && value.length === 1) {
+      value = value[0];
+    }
+
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      typeof (value as any).textContent === 'string'
+    ) {
+      const text = (value as any).value ?? (value as any).textContent;
+      if (text !== null && text !== undefined) {
+        const trimmed = String(text).trim();
+        if (trimmed === '') return 0;
+        const num = parseFloat(trimmed);
+        return isNaN(num) ? trimmed : num;
+      }
+      return 0;
+    }
+    return value;
+  }
+
   protected async evaluateBinaryExpression(node: any, context: ExecutionContext): Promise<any> {
     const { operator, left, right } = node;
 
@@ -896,45 +927,68 @@ export class BaseExpressionEvaluator {
       case 'is not really equal to':
         return leftValue !== rightValue;
 
-      case '+':
+      case '+': {
+        // Coerce DOM elements to their values before operator logic
+        const coercedLeft = this.coerceArithmeticOperand(leftValue);
+        const coercedRight = this.coerceArithmeticOperand(rightValue);
+
         const shouldUseStringConcatenation =
-          typeof leftValue === 'string' || typeof rightValue === 'string';
+          typeof coercedLeft === 'string' || typeof coercedRight === 'string';
 
         if (shouldUseStringConcatenation) {
           const stringConcatExpr = this.expressionRegistry.get('stringConcatenation');
           if (stringConcatExpr) {
-            debug.expressions('Using string concatenation for:', { leftValue, rightValue });
-            const result = await stringConcatExpr.evaluate(context, {
-              left: leftValue,
-              right: rightValue,
+            debug.expressions('Using string concatenation for:', {
+              leftValue: coercedLeft,
+              rightValue: coercedRight,
             });
-            return result.success ? result.value : leftValue + rightValue;
+            const result = await stringConcatExpr.evaluate(context, {
+              left: coercedLeft,
+              right: coercedRight,
+            });
+            return result.success ? result.value : (coercedLeft as any) + (coercedRight as any);
           }
         } else {
           const additionExpr = this.expressionRegistry.get('addition');
           if (additionExpr) {
-            debug.expressions('Using numeric addition for:', { leftValue, rightValue });
-            const result = await additionExpr.evaluate(context, {
-              left: leftValue,
-              right: rightValue,
+            debug.expressions('Using numeric addition for:', {
+              leftValue: coercedLeft,
+              rightValue: coercedRight,
             });
-            return result.success ? result.value : leftValue + rightValue;
+            const result = await additionExpr.evaluate(context, {
+              left: coercedLeft,
+              right: coercedRight,
+            });
+            return result.success ? result.value : (coercedLeft as any) + (coercedRight as any);
           }
         }
-        return leftValue + rightValue;
+        return (coercedLeft as any) + (coercedRight as any);
+      }
 
       case '-':
-        return leftValue - rightValue;
+        return (
+          (this.coerceArithmeticOperand(leftValue) as any) -
+          (this.coerceArithmeticOperand(rightValue) as any)
+        );
 
       case '*':
-        return leftValue * rightValue;
+        return (
+          (this.coerceArithmeticOperand(leftValue) as any) *
+          (this.coerceArithmeticOperand(rightValue) as any)
+        );
 
       case '/':
-        return leftValue / rightValue;
+        return (
+          (this.coerceArithmeticOperand(leftValue) as any) /
+          (this.coerceArithmeticOperand(rightValue) as any)
+        );
 
       case '%':
       case 'mod':
-        return leftValue % rightValue;
+        return (
+          (this.coerceArithmeticOperand(leftValue) as any) %
+          (this.coerceArithmeticOperand(rightValue) as any)
+        );
 
       case 'as':
         const typeName =
@@ -1343,6 +1397,23 @@ export class BaseExpressionEvaluator {
     const isElement = (el: any): el is HTMLElement =>
       el && typeof el === 'object' && el.nodeType === 1 && typeof el.tagName === 'string';
     return Array.from(elements).filter(isElement);
+  }
+
+  /**
+   * Evaluate standalone attribute access nodes (@attr)
+   *
+   * When used in a command context (toggle, add, remove), returns the @-prefixed
+   * string so the command can detect it as an attribute operation.
+   * When used standalone with a context element, reads the attribute value.
+   */
+  protected evaluateAttributeAccess(
+    node: { attributeName: string },
+    context: ExecutionContext
+  ): string {
+    if (context.me && typeof (context.me as any).getAttribute === 'function') {
+      return (context.me as any).getAttribute(node.attributeName);
+    }
+    return `@${node.attributeName}`;
   }
 
   /**
