@@ -118,20 +118,6 @@ Use element properties or data attributes:
 </button>
 ```
 
-Or use the `persist` command:
-
-```html
-<button
-  _="on click
-  persist :count with key:'click-count' then
-  increment :count then
-  persist :count then
-  put :count into me"
->
-  Click count
-</button>
-```
-
 ## Global Variables
 
 Access globals through context:

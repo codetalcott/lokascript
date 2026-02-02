@@ -170,7 +170,7 @@ LokaScript includes 43 commands organized by category:
 - [Animation](/en/api/commands/animation) - `transition`, `settle`, `wait`
 - [Async Commands](/en/api/commands/async) - `fetch`, `async`, `send`
 - [Navigation](/en/api/commands/navigation) - `go`, `push url`, `replace url`
-- [Data Commands](/en/api/commands/data) - `bind`, `persist`, `default`
+- [Data Commands](/en/api/commands/data) - `default`
 - [Utility Commands](/en/api/commands/utility) - `log`, `beep!`, `copy`, `pick`
 
 ### Expressions

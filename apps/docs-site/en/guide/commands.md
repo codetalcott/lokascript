@@ -195,11 +195,9 @@ Iterate over collections.
 
 ### Data
 
-| Command   | Description             |
-| --------- | ----------------------- |
-| `bind`    | Two-way data binding    |
-| `persist` | Save to browser storage |
-| `default` | Set value if undefined  |
+| Command   | Description            |
+| --------- | ---------------------- |
+| `default` | Set value if undefined |
 
 ### Utility
 

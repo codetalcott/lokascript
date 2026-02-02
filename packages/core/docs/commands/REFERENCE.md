@@ -27,7 +27,6 @@
 | `append`         | content      | Add content to the end of a string, array, or HTML element.                                                    |
 | `async`          | advanced     | Execute commands asynchronously without blocking.                                                              |
 | `beep`           | utility      | Debug output for expressions with type information.                                                            |
-| `bind`           | data         | Create two-way data binding between variables and DOM elements.                                                |
 | `break`          | control-flow | Exit from the current loop (repeat, for, while, until).                                                        |
 | `call`           | execution    | Evaluate an expression and store the result in the it variable.                                                |
 | `continue`       | control-flow | Skip to the next iteration of the current loop.                                                                |
@@ -47,7 +46,6 @@
 | `log`            | utility      | Log values to the console.                                                                                     |
 | `make`           | dom          | The make command can be used to create class instances or DOM elements.                                        |
 | `measure`        | animation    | Measure DOM element dimensions, positions, and properties.                                                     |
-| `persist`        | data         | Save and restore values from browser storage with TTL support.                                                 |
 | `pick`           | utility      | Select a random element from a collection.                                                                     |
 | `pseudo-command` | execution    | Treat a method on an object as a top-level command.                                                            |
 | `put`            | dom          | Insert content into elements or properties.                                                                    |
@@ -648,50 +646,6 @@ unless count > 10 increment
 
 ## Data Commands
 
-### bind
-
-Create two-way data binding between variables and DOM elements
-
-**Syntax:**
-
-```hyperscript
-bind :variable to <element>.<property>
-```
-
-```hyperscript
-bind :variable from <element>.<property>
-```
-
-```hyperscript
-bind :variable to <element>.<property> bidirectional
-```
-
-**Examples:**
-
-```hyperscript
-bind :username to my.value
-```
-
-```hyperscript
-bind :count from #display.textContent
-```
-
-```hyperscript
-bind :message to #input.value bidirectional
-```
-
-```hyperscript
-bind :checked to #checkbox.checked
-```
-
-```hyperscript
-bind :theme from @data-theme
-```
-
-**Side Effects:** data-binding, event-listeners, dom-observation
-
----
-
 ### decrement
 
 Decrement a variable or property by a specified amount (default: 1)
@@ -805,54 +759,6 @@ increment counter by 5
 ```hyperscript
 increment me.scrollTop by 100
 ```
-
----
-
-### persist
-
-Save and restore values from browser storage with TTL support
-
-**Syntax:**
-
-```hyperscript
-persist <value> to <storage> as <key>
-```
-
-```hyperscript
-persist <value> to <storage> as <key> with ttl <ms>
-```
-
-```hyperscript
-restore <key> from <storage>
-```
-
-```hyperscript
-remove <key> from <storage>
-```
-
-**Examples:**
-
-```hyperscript
-persist myValue to local as "username"
-```
-
-```hyperscript
-persist formData to session as "draft"
-```
-
-```hyperscript
-persist data to local as "cache" with ttl 3600000
-```
-
-```hyperscript
-restore "username" from local
-```
-
-```hyperscript
-remove "cache" from local
-```
-
-**Side Effects:** storage, data-mutation
 
 ---
 

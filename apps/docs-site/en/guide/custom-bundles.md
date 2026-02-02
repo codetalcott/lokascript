@@ -183,7 +183,7 @@ These commands require the full runtime:
 | --------------------- | ------------------------------------------- |
 | Advanced execution    | `async`, `js`                               |
 | Complex DOM           | `make`, `swap`, `morph`, `process-partials` |
-| Data binding          | `bind`, `persist`, `default`                |
+| Data                  | `default`                                   |
 | Complex utility       | `beep`, `tell`, `copy`, `pick`              |
 | Complex navigation    | `push-url`, `replace-url`                   |
 | Advanced control flow | `halt`, `exit`, `throw`, `unless`           |

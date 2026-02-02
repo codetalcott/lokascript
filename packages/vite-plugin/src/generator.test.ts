@@ -263,7 +263,6 @@ describe('Generator', () => {
       // Commands that require full runtime
       expect(generator.requiresFullRuntime(['toggle', 'async'])).toBe(true);
       expect(generator.requiresFullRuntime(['swap'])).toBe(true);
-      expect(generator.requiresFullRuntime(['bind', 'persist'])).toBe(true);
 
       // Commands that don't require full runtime (including morph now)
       expect(generator.requiresFullRuntime(['toggle', 'add', 'remove'])).toBe(false);
@@ -386,7 +385,7 @@ describe('Vite Integration Edge Cases', () => {
     it('should automatically fall back to full runtime when advanced commands detected', () => {
       // When user uses commands that need full runtime,
       // the generator should automatically fall back to full bundle
-      const usage = createUsage(['toggle', 'async', 'bind', 'persist']);
+      const usage = createUsage(['toggle', 'async', 'swap', 'morph']);
       const code = generator.generate(usage, {});
 
       // Should generate full runtime fallback

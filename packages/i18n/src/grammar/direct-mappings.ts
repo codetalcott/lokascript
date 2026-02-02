@@ -197,9 +197,7 @@ export const esPtMapping: DirectMapping = {
     transición: 'transição', // transition
     incrementar: 'incrementar', // increment
     decrementar: 'decrementar', // decrement
-    vincular: 'vincular', // bind
     predeterminar: 'padrão', // default
-    persistir: 'persistir', // persist
     ir: 'ir', // go
     copiar: 'copiar', // copy
     escoger: 'escolher', // pick

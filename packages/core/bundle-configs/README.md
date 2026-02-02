@@ -114,7 +114,7 @@ The following commands require the full runtime and are not available in generat
 
 - **Advanced execution**: `async`, `js`
 - **DOM operations (complex)**: `make`, `swap`, `morph`, `process-partials`
-- **Data binding**: `bind`, `persist`, `default`
+- **Data binding**: `default`
 - **Utility (complex)**: `beep`, `tell`, `copy`, `pick`
 - **Navigation (complex)**: `push-url`, `replace-url`
 - **Control flow (advanced)**: `halt`, `exit`, `throw`, `unless`

@@ -25,12 +25,10 @@
 - unless
 
 ## Data
-- bind
 - decrement
 - default
 - get
 - increment
-- persist
 
 ## DOM
 - make
@@ -59,4 +57,4 @@
 - pick
 - tell
 
-Total: ~35 commands needing tests
+Total: ~33 commands needing tests

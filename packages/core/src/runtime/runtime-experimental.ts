@@ -55,9 +55,6 @@ import { createHaltCommand } from '../commands/control-flow/halt';
 import { createReturnCommand } from '../commands/control-flow/return';
 import { createExitCommand } from '../commands/control-flow/exit';
 
-// Data Commands - Phase 6-2 (1)
-import { createBindCommand } from '../commands/data/bind';
-
 // Execution Commands (1)
 import { createCallCommand } from '../commands/execution/call';
 
@@ -68,9 +65,6 @@ import { createAppendCommand } from '../commands/content/append';
 import { createTransitionCommand } from '../commands/animation/transition';
 import { createMeasureCommand } from '../commands/animation/measure';
 import { createSettleCommand } from '../commands/animation/settle';
-
-// Data Persistence - Phase 6-3 (1)
-import { createPersistCommand } from '../commands/data/persist';
 
 // Advanced Commands - Phase 6-4 (2)
 import { createJsCommand } from '../commands/advanced/js';
@@ -195,16 +189,14 @@ export class RuntimeExperimental extends RuntimeBase {
       registry.register(createReturnCommand());
       registry.register(createExitCommand());
 
-      // Phase 6-2 Commands (5)
-      registry.register(createBindCommand());
+      // Phase 6-2 Commands (3)
       registry.register(createCallCommand());
       registry.register(createAppendCommand());
 
-      // Phase 6-3 Commands (4)
+      // Phase 6-3 Commands (3)
       registry.register(createTransitionCommand());
       registry.register(createMeasureCommand());
       registry.register(createSettleCommand());
-      registry.register(createPersistCommand());
 
       // Phase 6-4 Commands (5)
       registry.register(createJsCommand());

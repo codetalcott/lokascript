@@ -66,33 +66,25 @@
   "commands": {
     "add": {
       "description": "Add CSS classes to elements",
-      "syntax": [
-        "add <classes> [to <target>]"
-      ],
+      "syntax": ["add <classes> [to <target>]"],
       "examples": [
         "add .active to me",
         "add \"active selected\" to <button/>",
         "add .highlighted to #modal"
       ],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "remove": {
       "description": "Remove CSS classes from elements",
-      "syntax": [
-        "remove <classes> [from <target>]"
-      ],
+      "syntax": ["remove <classes> [from <target>]"],
       "examples": [
         "remove .active from me",
         "remove \"active selected\" from <button/>",
         "remove .highlighted from #modal"
       ],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "toggle": {
       "description": "Toggle classes, attributes, or interactive elements",
@@ -115,41 +107,21 @@
         "toggle .active until click"
       ],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "show": {
       "description": "Show elements by restoring display property",
-      "syntax": [
-        "show [<target>]"
-      ],
-      "examples": [
-        "show me",
-        "show #modal",
-        "show .hidden",
-        "show <button/>"
-      ],
+      "syntax": ["show [<target>]"],
+      "examples": ["show me", "show #modal", "show .hidden", "show <button/>"],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "hide": {
       "description": "Hide elements by setting display to none",
-      "syntax": [
-        "hide [<target>]"
-      ],
-      "examples": [
-        "hide me",
-        "hide #modal",
-        "hide .warnings",
-        "hide <button/>"
-      ],
+      "syntax": ["hide [<target>]"],
+      "examples": ["hide me", "hide #modal", "hide .warnings", "hide <button/>"],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "put": {
       "description": "Insert content into elements or properties",
@@ -168,15 +140,11 @@
         "put 42 into obj's dataset.count"
       ],
       "category": "dom",
-      "sideEffects": [
-        "dom-mutation"
-      ]
+      "sideEffects": ["dom-mutation"]
     },
     "make": {
       "description": "The make command can be used to create class instances or DOM elements. In the first form: make a URL from \"/path/\", \"https://origin.example.com\" is equal to the JavaScript new URL(\"/path/\", \"https://origin.example.com\"). In the second form: make an <a.navlink/> will create an <a> element and add the class \"navlink\" to it.",
-      "syntax": [
-        "make (a|an) <expression> [from <arg-list>] [called <identifier>]"
-      ],
+      "syntax": ["make (a|an) <expression> [from <arg-list>] [called <identifier>]"],
       "examples": [
         "make a URL from \"/path/\", \"https://origin.example.com\"",
         "make an <a.navlink/> called linkElement",
@@ -188,11 +156,7 @@
     },
     "wait": {
       "description": "Wait for time delay, event, or race condition",
-      "syntax": [
-        "wait <time>",
-        "wait for <event>",
-        "wait for <event> or <condition>"
-      ],
+      "syntax": ["wait <time>", "wait for <event>", "wait for <event> or <condition>"],
       "examples": [
         "wait 2s",
         "wait 500ms",
@@ -203,10 +167,7 @@
         "wait for load from <iframe/>"
       ],
       "category": "async",
-      "sideEffects": [
-        "time",
-        "event-listening"
-      ]
+      "sideEffects": ["time", "event-listening"]
     },
     "fetch": {
       "description": "Make HTTP requests with lifecycle event support",
@@ -225,16 +186,11 @@
         "fetch \"/slow\" with timeout:5000"
       ],
       "category": "async",
-      "sideEffects": [
-        "network",
-        "event-dispatching"
-      ]
+      "sideEffects": ["network", "event-dispatching"]
     },
     "transition": {
       "description": "Animate CSS properties using CSS transitions",
-      "syntax": [
-        "transition <property> to <value> [over <duration>] [with <timing>]"
-      ],
+      "syntax": ["transition <property> to <value> [over <duration>] [with <timing>]"],
       "examples": [
         "transition opacity to 0.5",
         "transition left to 100px over 500ms",
@@ -258,20 +214,12 @@
         "measure x and set dragX"
       ],
       "category": "animation",
-      "sideEffects": [
-        "data-mutation"
-      ]
+      "sideEffects": ["data-mutation"]
     },
     "settle": {
       "description": "Wait for CSS transitions and animations to complete",
-      "syntax": [
-        "settle [<target>] [for <timeout>]"
-      ],
-      "examples": [
-        "settle",
-        "settle #animated-element",
-        "settle for 3000"
-      ],
+      "syntax": ["settle [<target>] [for <timeout>]"],
+      "examples": ["settle", "settle #animated-element", "settle for 3000"],
       "category": "animation"
     },
     "take": {
@@ -287,10 +235,7 @@
         "take background-color from <.theme-source/>"
       ],
       "category": "animation",
-      "sideEffects": [
-        "dom-mutation",
-        "property-transfer"
-      ]
+      "sideEffects": ["dom-mutation", "property-transfer"]
     },
     "if": {
       "description": "Conditional execution based on boolean expressions",
@@ -305,9 +250,7 @@
         "if form.checkValidity() then submit else show .error"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "conditional-execution"
-      ]
+      "sideEffects": ["conditional-execution"]
     },
     "repeat": {
       "description": "Iteration in hyperscript - for-in, counted, conditional, event-driven, and infinite loops",
@@ -328,16 +271,11 @@
         "repeat forever { monitor }"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "iteration",
-        "conditional-execution"
-      ]
+      "sideEffects": ["iteration", "conditional-execution"]
     },
     "break": {
       "description": "Exit from the current loop (repeat, for, while, until)",
-      "syntax": [
-        "break"
-      ],
+      "syntax": ["break"],
       "examples": [
         "break",
         "if found then break",
@@ -345,15 +283,11 @@
         "repeat for item in items { if item == target then break }"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "control-flow"
-      ]
+      "sideEffects": ["control-flow"]
     },
     "continue": {
       "description": "Skip to the next iteration of the current loop",
-      "syntax": [
-        "continue"
-      ],
+      "syntax": ["continue"],
       "examples": [
         "continue",
         "if item.isInvalid then continue",
@@ -361,16 +295,11 @@
         "repeat for item in items { if item.skip then continue; process item }"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "control-flow"
-      ]
+      "sideEffects": ["control-flow"]
     },
     "return": {
       "description": "Return a value from a command sequence or function, terminating execution",
-      "syntax": [
-        "return",
-        "return <value>"
-      ],
+      "syntax": ["return", "return <value>"],
       "examples": [
         "return",
         "return 42",
@@ -379,16 +308,11 @@
         "if found then return result else return null"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "control-flow",
-        "context-mutation"
-      ]
+      "sideEffects": ["control-flow", "context-mutation"]
     },
     "exit": {
       "description": "Immediately terminate execution of the current event handler or behavior",
-      "syntax": [
-        "exit"
-      ],
+      "syntax": ["exit"],
       "examples": [
         "exit",
         "if no draggedItem exit",
@@ -396,16 +320,11 @@
         "on click if disabled exit"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "control-flow"
-      ]
+      "sideEffects": ["control-flow"]
     },
     "halt": {
       "description": "Stop command execution or prevent event defaults",
-      "syntax": [
-        "halt",
-        "halt the event"
-      ],
+      "syntax": ["halt", "halt the event"],
       "examples": [
         "halt",
         "halt the event",
@@ -414,32 +333,22 @@
         "on click halt the event then log \"clicked\""
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "control-flow",
-        "event-prevention"
-      ]
+      "sideEffects": ["control-flow", "event-prevention"]
     },
     "throw": {
       "description": "Throw an error with a specified message",
-      "syntax": [
-        "throw <message>"
-      ],
+      "syntax": ["throw <message>"],
       "examples": [
         "throw \"Invalid input\"",
         "throw new Error(\"Custom error\")",
         "if not valid then throw \"Validation failed\""
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "error-throwing",
-        "execution-termination"
-      ]
+      "sideEffects": ["error-throwing", "execution-termination"]
     },
     "unless": {
       "description": "Execute commands only if condition is false (inverse of if)",
-      "syntax": [
-        "unless <condition> <command> [<command> ...]"
-      ],
+      "syntax": ["unless <condition> <command> [<command> ...]"],
       "examples": [
         "unless user.isLoggedIn showLoginForm",
         "unless data.isValid clearForm showError",
@@ -447,15 +356,11 @@
         "unless count > 10 increment"
       ],
       "category": "control-flow",
-      "sideEffects": [
-        "conditional-execution"
-      ]
+      "sideEffects": ["conditional-execution"]
     },
     "set": {
       "description": "Set values to variables, attributes, or properties",
-      "syntax": [
-        "set <target> to <value>"
-      ],
+      "syntax": ["set <target> to <value>"],
       "examples": [
         "set myVar to \"value\"",
         "set @data-theme to \"dark\"",
@@ -463,16 +368,11 @@
         "set its textContent to \"text\""
       ],
       "category": "data",
-      "sideEffects": [
-        "state-mutation",
-        "dom-mutation"
-      ]
+      "sideEffects": ["state-mutation", "dom-mutation"]
     },
     "get": {
       "description": "Evaluate an expression and store the result in it",
-      "syntax": [
-        "get <expression>"
-      ],
+      "syntax": ["get <expression>"],
       "examples": [
         "get #my-dialog",
         "get <button/>",
@@ -480,39 +380,23 @@
         "get #count then set x to it.textContent"
       ],
       "category": "data",
-      "sideEffects": [
-        "context-mutation"
-      ]
+      "sideEffects": ["context-mutation"]
     },
     "increment": {
       "description": "Increment a variable or property by a specified amount (default: 1)",
-      "syntax": [
-        "increment <target> [by <number>]"
-      ],
-      "examples": [
-        "increment counter",
-        "increment counter by 5",
-        "increment me.scrollTop by 100"
-      ],
+      "syntax": ["increment <target> [by <number>]"],
+      "examples": ["increment counter", "increment counter by 5", "increment me.scrollTop by 100"],
       "category": "data"
     },
     "decrement": {
       "description": "Decrement a variable or property by a specified amount (default: 1)",
-      "syntax": [
-        "decrement <target> [by <number>]"
-      ],
-      "examples": [
-        "decrement counter",
-        "decrement counter by 5",
-        "decrement me.scrollTop by 100"
-      ],
+      "syntax": ["decrement <target> [by <number>]"],
+      "examples": ["decrement counter", "decrement counter by 5", "decrement me.scrollTop by 100"],
       "category": "data"
     },
     "default": {
       "description": "Set a value only if it doesn't already exist",
-      "syntax": [
-        "default <expression> to <expression>"
-      ],
+      "syntax": ["default <expression> to <expression>"],
       "examples": [
         "default myVar to \"fallback\"",
         "default @data-theme to \"light\"",
@@ -520,52 +404,7 @@
         "default count to 0"
       ],
       "category": "data",
-      "sideEffects": [
-        "data-mutation",
-        "dom-mutation"
-      ]
-    },
-    "persist": {
-      "description": "Save and restore values from browser storage with TTL support",
-      "syntax": [
-        "persist <value> to <storage> as <key>",
-        "persist <value> to <storage> as <key> with ttl <ms>",
-        "restore <key> from <storage>",
-        "remove <key> from <storage>"
-      ],
-      "examples": [
-        "persist myValue to local as \"username\"",
-        "persist formData to session as \"draft\"",
-        "persist data to local as \"cache\" with ttl 3600000",
-        "restore \"username\" from local",
-        "remove \"cache\" from local"
-      ],
-      "category": "data",
-      "sideEffects": [
-        "storage",
-        "data-mutation"
-      ]
-    },
-    "bind": {
-      "description": "Create two-way data binding between variables and DOM elements",
-      "syntax": [
-        "bind :variable to <element>.<property>",
-        "bind :variable from <element>.<property>",
-        "bind :variable to <element>.<property> bidirectional"
-      ],
-      "examples": [
-        "bind :username to my.value",
-        "bind :count from #display.textContent",
-        "bind :message to #input.value bidirectional",
-        "bind :checked to #checkbox.checked",
-        "bind :theme from @data-theme"
-      ],
-      "category": "data",
-      "sideEffects": [
-        "data-binding",
-        "event-listeners",
-        "dom-observation"
-      ]
+      "sideEffects": ["data-mutation", "dom-mutation"]
     },
     "trigger": {
       "description": "Trigger events on elements using \"trigger X on Y\" syntax",
@@ -583,9 +422,7 @@
         "trigger docEvent on document"
       ],
       "category": "event",
-      "sideEffects": [
-        "event-dispatch"
-      ]
+      "sideEffects": ["event-dispatch"]
     },
     "send": {
       "description": "Send custom events to elements with optional data",
@@ -604,33 +441,18 @@
         "trigger loaded on document"
       ],
       "category": "event",
-      "sideEffects": [
-        "event-dispatch"
-      ]
+      "sideEffects": ["event-dispatch"]
     },
     "log": {
       "description": "Log values to the console",
-      "syntax": [
-        "log [<values...>]"
-      ],
-      "examples": [
-        "log \"Hello World\"",
-        "log me.value",
-        "log x y z",
-        "log \"Result:\" result"
-      ],
+      "syntax": ["log [<values...>]"],
+      "examples": ["log \"Hello World\"", "log me.value", "log x y z", "log \"Result:\" result"],
       "category": "utility",
-      "sideEffects": [
-        "console-output"
-      ]
+      "sideEffects": ["console-output"]
     },
     "beep": {
       "description": "Debug output for expressions with type information",
-      "syntax": [
-        "beep!",
-        "beep! <expression>",
-        "beep! <expression>, <expression>, ..."
-      ],
+      "syntax": ["beep!", "beep! <expression>", "beep! <expression>, <expression>, ..."],
       "examples": [
         "beep!",
         "beep! myValue",
@@ -638,16 +460,11 @@
         "beep! user.name, user.age"
       ],
       "category": "utility",
-      "sideEffects": [
-        "console-output",
-        "debugging"
-      ]
+      "sideEffects": ["console-output", "debugging"]
     },
     "tell": {
       "description": "Execute commands in the context of target elements",
-      "syntax": [
-        "tell <target> <command> [<command> ...]"
-      ],
+      "syntax": ["tell <target> <command> [<command> ...]"],
       "examples": [
         "tell #sidebar hide",
         "tell .buttons add .disabled",
@@ -655,17 +472,11 @@
         "tell children <input/> set value to \"\""
       ],
       "category": "utility",
-      "sideEffects": [
-        "context-switching",
-        "command-execution"
-      ]
+      "sideEffects": ["context-switching", "command-execution"]
     },
     "pick": {
       "description": "Select a random element from a collection",
-      "syntax": [
-        "pick <item1>, <item2>, ...",
-        "pick from <array>"
-      ],
+      "syntax": ["pick <item1>, <item2>, ...", "pick from <array>"],
       "examples": [
         "pick \"red\", \"green\", \"blue\"",
         "pick from colors",
@@ -673,16 +484,11 @@
         "pick from document.querySelectorAll(\".option\")"
       ],
       "category": "utility",
-      "sideEffects": [
-        "random-selection"
-      ]
+      "sideEffects": ["random-selection"]
     },
     "copy": {
       "description": "Copy text or element content to the clipboard",
-      "syntax": [
-        "copy <source>",
-        "copy <source> to clipboard"
-      ],
+      "syntax": ["copy <source>", "copy <source> to clipboard"],
       "examples": [
         "copy \"Hello World\"",
         "copy #code-snippet",
@@ -690,17 +496,11 @@
         "copy <div/> to clipboard"
       ],
       "category": "utility",
-      "sideEffects": [
-        "clipboard-write",
-        "custom-events"
-      ]
+      "sideEffects": ["clipboard-write", "custom-events"]
     },
     "call": {
       "description": "Evaluate an expression and store the result in the it variable",
-      "syntax": [
-        "call <expression>",
-        "get <expression>"
-      ],
+      "syntax": ["call <expression>", "get <expression>"],
       "examples": [
         "call myFunction()",
         "get user.name",
@@ -710,16 +510,11 @@
         "get localStorage.getItem(\"key\")"
       ],
       "category": "execution",
-      "sideEffects": [
-        "function-execution",
-        "context-mutation"
-      ]
+      "sideEffects": ["function-execution", "context-mutation"]
     },
     "pseudo-command": {
       "description": "Treat a method on an object as a top-level command",
-      "syntax": [
-        "<method>(<args>) [(to|on|with|into|from|at)] <expression>"
-      ],
+      "syntax": ["<method>(<args>) [(to|on|with|into|from|at)] <expression>"],
       "examples": [
         "getElementById(\"d1\") from the document",
         "reload() the location of the window",
@@ -727,16 +522,11 @@
         "foo() on me"
       ],
       "category": "execution",
-      "sideEffects": [
-        "method-execution"
-      ]
+      "sideEffects": ["method-execution"]
     },
     "js": {
       "description": "Execute inline JavaScript code with access to hyperscript context",
-      "syntax": [
-        "js <code> end",
-        "js(param1, param2) <code> end"
-      ],
+      "syntax": ["js <code> end", "js(param1, param2) <code> end"],
       "examples": [
         "js console.log(\"Hello\") end",
         "js(x, y) return x + y end",
@@ -744,16 +534,11 @@
         "js(element) element.classList.add(\"active\") end"
       ],
       "category": "advanced",
-      "sideEffects": [
-        "code-execution",
-        "data-mutation"
-      ]
+      "sideEffects": ["code-execution", "data-mutation"]
     },
     "async": {
       "description": "Execute commands asynchronously without blocking",
-      "syntax": [
-        "async <command> [<command> ...]"
-      ],
+      "syntax": ["async <command> [<command> ...]"],
       "examples": [
         "async command1 command2",
         "async fetchData processData",
@@ -761,9 +546,7 @@
         "async loadImage fadeIn"
       ],
       "category": "advanced",
-      "sideEffects": [
-        "async-execution"
-      ]
+      "sideEffects": ["async-execution"]
     },
     "go": {
       "description": "Provides navigation functionality including URL navigation, element scrolling, and browser history management",
@@ -782,10 +565,7 @@
     },
     "append": {
       "description": "Add content to the end of a string, array, or HTML element",
-      "syntax": [
-        "append <content>",
-        "append <content> to <target>"
-      ],
+      "syntax": ["append <content>", "append <content> to <target>"],
       "examples": [
         "append \"Hello\"",
         "append \"World\" to greeting",
@@ -794,10 +574,7 @@
         "append text to me"
       ],
       "category": "content",
-      "sideEffects": [
-        "data-mutation",
-        "dom-mutation"
-      ]
+      "sideEffects": ["data-mutation", "dom-mutation"]
     },
     "render": {
       "description": "Render templates with @if, @else, and @repeat directives",
@@ -813,10 +590,7 @@
         "render template with (items: data)"
       ],
       "category": "templates",
-      "sideEffects": [
-        "dom-creation",
-        "template-execution"
-      ]
+      "sideEffects": ["dom-creation", "template-execution"]
     },
     "install": {
       "description": "Install a behavior on an element with optional parameters",
@@ -834,10 +608,7 @@
         "install MyBehavior(foo: 42) on the first <div/>"
       ],
       "category": "behaviors",
-      "sideEffects": [
-        "behavior-installation",
-        "element-modification"
-      ]
+      "sideEffects": ["behavior-installation", "element-modification"]
     }
   }
 }

@@ -6,7 +6,7 @@
  *
  * This bundle provides:
  *   - Full semantic parsing (13 languages)
- *   - All 43 commands
+ *   - All 41 commands
  *   - Translation between languages
  *   - Direct semantic->AST->execute path
  *
@@ -14,10 +14,10 @@
  *
  * Input (any language) -> Semantic Parser -> AST Builder -> Runtime Execute
  *
- * Commands included (43 - all commands):
+ * Commands included (41 - all commands):
  * - DOM (7): hide, show, add, remove, toggle, put, make
  * - Async (2): wait, fetch
- * - Data (7): set, get, increment, decrement, bind, default, persist
+ * - Data (5): set, get, increment, decrement, default
  * - Events (2): trigger, send
  * - Navigation (1): go
  * - Control Flow (9): if, repeat, break, continue, halt, return, exit, unless, throw
@@ -38,7 +38,7 @@ import { createMinimalRuntime } from '../runtime/runtime-experimental';
 import { createContext, ensureContext } from '../core/context';
 import type { ASTNode } from '../types/base-types';
 
-// Import ALL V2 commands (43 commands total)
+// Import ALL V2 commands (41 commands total)
 // DOM Commands (7)
 import { createHideCommand } from '../commands/dom/hide';
 import { createShowCommand } from '../commands/dom/show';
@@ -52,14 +52,12 @@ import { createMakeCommand } from '../commands/dom/make';
 import { createWaitCommand } from '../commands/async/wait';
 import { createFetchCommand } from '../commands/async/fetch';
 
-// Data Commands (7)
+// Data Commands (5)
 import { createSetCommand } from '../commands/data/set';
 import { createGetCommand } from '../commands/data/get';
 import { createIncrementCommand } from '../commands/data/increment';
 import { createDecrementCommand } from '../commands/data/decrement';
-import { createBindCommand } from '../commands/data/bind';
 import { createDefaultCommand } from '../commands/data/default';
-import { createPersistCommand } from '../commands/data/persist';
 
 // Event Commands (2)
 import { createTriggerCommand } from '../commands/events/trigger';
@@ -142,14 +140,12 @@ const SUPPORTED_COMMANDS = [
   // Async (2)
   'wait',
   'fetch',
-  // Data (7)
+  // Data (5)
   'set',
   'get',
   'increment',
   'decrement',
-  'bind',
   'default',
-  'persist',
   // Events (2)
   'trigger',
   'send',
@@ -206,7 +202,7 @@ const SUPPORTED_LANGUAGES = [
   'sw',
 ] as const;
 
-// Create runtime with ALL 43 commands
+// Create runtime with ALL 41 commands
 const runtime = createMinimalRuntime(
   [
     // DOM (7)
@@ -220,14 +216,12 @@ const runtime = createMinimalRuntime(
     // Async (2)
     createWaitCommand(),
     createFetchCommand(),
-    // Data (7)
+    // Data (5)
     createSetCommand(),
     createGetCommand(),
     createIncrementCommand(),
     createDecrementCommand(),
-    createBindCommand(),
     createDefaultCommand(),
-    createPersistCommand(),
     // Events (2)
     createTriggerCommand(),
     createSendCommand(),
