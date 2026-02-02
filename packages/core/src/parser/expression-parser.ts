@@ -46,7 +46,11 @@ import { propertyExpressions } from '../expressions/property/index';
 import { positionalExpressions } from '../expressions/positional/index';
 import { logicalExpressions } from '../expressions/logical/index';
 import { referencesExpressions } from '../expressions/references/index';
-import { isElement, getElementProperty } from '../expressions/property-access-utils';
+import {
+  isElement,
+  getElementProperty,
+  accessAttribute,
+} from '../expressions/property-access-utils';
 
 // Import legacy conversion system for Date conversion compatibility
 import { conversionExpressions as legacyConversionExpressions } from '../expressions/conversion/index';
@@ -1702,26 +1706,24 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
   if (propertyNode.type === 'identifier') {
     const propertyName = propertyNode.name;
 
-    // Check if property starts with '*' (CSS property access like *opacity)
-    if (typeof propertyName === 'string' && propertyName.startsWith('*')) {
-      const cssPropertyName = propertyName.slice(1); // Remove '*'
-      // Get element (handle NodeList/arrays by taking first element)
-      let element = object;
-      if (
-        object &&
-        typeof object === 'object' &&
-        'length' in object &&
-        typeof object[0] !== 'undefined'
-      ) {
-        element = object[0];
-      }
-      // Use duck-typing for Element check (cross-realm compatible)
-      if (element && typeof element === 'object' && 'style' in element && element.style) {
-        return element.style[cssPropertyName as keyof CSSStyleDeclaration];
-      }
-      return null;
+    // Get element (handle NodeList/arrays by taking first element)
+    let element = object;
+    if (
+      object &&
+      typeof object === 'object' &&
+      'length' in object &&
+      typeof object[0] !== 'undefined'
+    ) {
+      element = object[0];
     }
 
+    // Use getElementProperty for comprehensive property/attribute access
+    // This handles @attributes (with boolean support), *css-properties, special DOM properties, etc.
+    if (isElement(element)) {
+      return getElementProperty(element, propertyName);
+    }
+
+    // For non-element objects, use the expression system
     return await extractValue(
       propertyExpressions.its.evaluate(toTypedContext(context), {
         target: object,
@@ -1745,7 +1747,7 @@ async function evaluatePossessiveExpression(node: any, context: ExecutionContext
 
     // Use duck-typing for Element check (cross-realm compatible with Happy-DOM)
     if (element && typeof element === 'object' && typeof element.getAttribute === 'function') {
-      return element.getAttribute(attributeName);
+      return accessAttribute(element as Element, attributeName);
     }
     return null;
   } else if (propertyNode.type === 'bracketExpression') {

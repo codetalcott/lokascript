@@ -11,7 +11,8 @@ import type { ASTNode, ExecutionContext } from '../../types/base-types';
 import type { ExpressionEvaluator } from '../../core/expression-evaluator';
 import { isHTMLElement } from '../../utils/element-check';
 import { resolveElement } from './element-resolution';
-import { getElementProperty, setElementProperty } from './element-property-access';
+import { getElementProperty } from '../../expressions/property-access-utils';
+import { setElementProperty } from './element-property-access';
 import { getComputedStyleValue, setStyleValue } from './style-manipulation';
 
 // Types
@@ -159,16 +160,24 @@ export async function resolveAnyPropertyTarget(
     return resolvePropertyTargetFromAccessNode(node as PropertyAccessNode, evaluator, context);
   }
 
-  // Possessive expression: "#element's *opacity"
+  // Possessive/member expression: "#element's @disabled", "#element's *opacity"
+  // The traditional parser creates possessiveExpression, the semantic/compile API creates memberExpression
   const anyNode = node as Record<string, unknown>;
-  if (anyNode?.type === 'possessiveExpression') {
+  if (anyNode?.type === 'possessiveExpression' || anyNode?.type === 'memberExpression') {
     const objectNode = anyNode.object as ASTNode;
     const propertyNode = anyNode.property as Record<string, unknown>;
     let element = await evaluator.evaluate(objectNode, context);
     if (Array.isArray(element)) element = element[0];
     if (!isHTMLElement(element)) return null;
+
+    // Extract property name - parser creates identifier nodes with @ or * prefix included
+    // e.g., #el's @disabled → property: { type: 'identifier', name: '@disabled' }
     const propertyName = (propertyNode?.name || propertyNode?.value) as string;
-    if (!propertyName) return null;
+
+    // Only treat as property target if name starts with @ or * (attribute/CSS property)
+    // Regular member expressions like element.textContent should not be intercepted
+    if (!propertyName || (!propertyName.startsWith('@') && !propertyName.startsWith('*')))
+      return null;
     return { element: element as HTMLElement, property: propertyName };
   }
 
@@ -221,8 +230,15 @@ export function togglePropertyTarget(target: PropertyTarget): unknown {
   const current = readPropertyTarget(target);
   const prop = target.property;
 
+  // Strip @ prefix for boolean property check (e.g., @disabled → disabled)
+  const propName = prop.startsWith('@') ? prop.substring(1) : prop;
+
   // Boolean
-  if (typeof current === 'boolean' || BOOL_PROPS.has(prop) || BOOL_PROPS.has(prop.toLowerCase())) {
+  if (
+    typeof current === 'boolean' ||
+    BOOL_PROPS.has(propName) ||
+    BOOL_PROPS.has(propName.toLowerCase())
+  ) {
     const val = !current;
     writePropertyTarget(target, val);
     return val;

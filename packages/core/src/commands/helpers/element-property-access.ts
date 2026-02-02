@@ -98,7 +98,15 @@ export function getElementProperty(element: HTMLElement, property: string): unkn
 export function setElementProperty(element: HTMLElement, property: string, value: unknown): void {
   // Handle @attribute syntax
   if (property.startsWith('@')) {
-    element.setAttribute(property.substring(1), String(value));
+    const attrName = property.substring(1);
+    // For boolean attributes, use toggleAttribute semantics: false = remove, true = add
+    if (value === false) {
+      element.removeAttribute(attrName);
+    } else if (value === true) {
+      element.setAttribute(attrName, '');
+    } else {
+      element.setAttribute(attrName, String(value));
+    }
     return;
   }
 

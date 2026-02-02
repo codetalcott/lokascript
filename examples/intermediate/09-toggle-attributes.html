@@ -158,7 +158,11 @@
                 </button>
             </div>
             <div class="status">
-                Status: <span id="disabled-status" _="on click from #toggle-disabled-btn wait 10ms then put (#target-btn's @disabled) ? 'disabled' : 'enabled' into me">enabled</span>
+                Status: <span id="disabled-status" _="on click from #toggle-disabled-btn
+                    if #target-btn's @disabled
+                        then put 'disabled' into me
+                        else put 'enabled' into me
+                    end">enabled</span>
             </div>
 
             <div class="code">
@@ -187,7 +191,11 @@
             </div>
             <div class="status">
                 Required: <span id="required-status" _="on load put 'no' into me
-                    on click from #toggle-required-btn wait 10ms then put (#email-input's @required) ? 'yes' : 'no' into me">no</span>
+                    on click from #toggle-required-btn
+                        if #email-input's @required
+                            then put 'yes' into me
+                            else put 'no' into me
+                        end">no</span>
             </div>
 
             <div class="code">
@@ -269,24 +277,38 @@
             </div>
         </div>
 
-        <!-- Demo 6: Property Syntax -->
+        <!-- Demo 6: Direct Attribute Toggle -->
         <div class="demo">
-            <h2>Demo 6: Property Syntax Alternative</h2>
-            <p>Use possessive syntax (<code>element's property</code>) to toggle DOM properties directly.</p>
+            <h2>Demo 6: Toggle Attribute on Specific Element</h2>
+            <p>Use <code>toggle @attribute on #element</code> to toggle attributes on specific elements.</p>
 
             <div class="demo-row">
                 <button id="prop-btn" class="demo-target">
-                    Property Target
+                    Another Target
                 </button>
-                <button _="on click toggle #prop-btn's disabled">
-                    Toggle via Property
+                <button _="on click toggle @disabled on #prop-btn">
+                    Toggle Disabled
                 </button>
+                <button id="test-possessive" _="on click toggle #prop-btn's @disabled">
+                    Toggle via Possessive
+                </button>
+            </div>
+            <div class="status">
+                Test "has @disabled": <span id="has-test" _="on click from #test-possessive
+                    if #prop-btn has @disabled
+                        then put 'YES' into me
+                        else put 'NO' into me
+                    end">-</span>
             </div>
 
             <div class="code">
-&lt;button <span class="keyword">id</span>=<span class="string">"prop-btn"</span>&gt;Property Target&lt;/button&gt;
-&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle #prop-btn's disabled"</span>&gt;
-  Toggle via Property
+&lt;button <span class="keyword">id</span>=<span class="string">"prop-btn"</span>&gt;Another Target&lt;/button&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle @disabled on #prop-btn"</span>&gt;
+  Toggle Disabled
+&lt;/button&gt;
+&lt;!-- Possessive syntax --&gt;
+&lt;button <span class="keyword">_</span>=<span class="string">"on click toggle #prop-btn's @disabled"</span>&gt;
+  Toggle via Possessive
 &lt;/button&gt;
             </div>
         </div>
@@ -298,7 +320,7 @@
                 <li><strong><code>.class</code></strong> - Toggle CSS classes for styling changes</li>
                 <li><strong><code>@attribute</code></strong> - Toggle HTML attributes (disabled, required, readonly, hidden)</li>
                 <li><strong><code>*property</code></strong> - Toggle CSS properties (display, visibility, opacity)</li>
-                <li><strong><code>element's prop</code></strong> - Direct DOM property access (alternative to @)</li>
+                <li><strong><code>element's @attribute</code></strong> - Reference attribute on specific element</li>
             </ul>
 
             <h3>Supported CSS Properties:</h3>

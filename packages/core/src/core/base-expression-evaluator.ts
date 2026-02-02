@@ -14,7 +14,11 @@ import type { ASTNode, ExecutionContext } from '../types/core';
 import type { ExecutionResult, ExecutionSignal } from '../types/result';
 import { ok, err } from '../types/result';
 import { debug } from '../utils/debug';
-import { isElement, getElementProperty } from '../expressions/property-access-utils';
+import {
+  isElement,
+  getElementProperty,
+  accessAttribute,
+} from '../expressions/property-access-utils';
 
 /**
  * Base Expression Evaluator - Abstract class with shared evaluation logic
@@ -683,7 +687,7 @@ export class BaseExpressionEvaluator {
         if (propertyName.startsWith('@')) {
           const attrName = propertyName.substring(1);
           if (objectValue && typeof objectValue.getAttribute === 'function') {
-            return objectValue.getAttribute(attrName);
+            return accessAttribute(objectValue, attrName);
           }
           return undefined;
         }
@@ -1409,9 +1413,9 @@ export class BaseExpressionEvaluator {
   protected evaluateAttributeAccess(
     node: { attributeName: string },
     context: ExecutionContext
-  ): string {
+  ): string | boolean | null {
     if (context.me && typeof (context.me as any).getAttribute === 'function') {
-      return (context.me as any).getAttribute(node.attributeName);
+      return accessAttribute(context.me as Element, node.attributeName);
     }
     return `@${node.attributeName}`;
   }
@@ -1477,28 +1481,13 @@ export class BaseExpressionEvaluator {
     const propertyName = property.name || property.value || property;
 
     if (typeof propertyName === 'string') {
-      if (propertyName.startsWith('@')) {
-        const attrName = propertyName.substring(1);
-        if (objectValue && typeof objectValue.getAttribute === 'function') {
-          return objectValue.getAttribute(attrName);
-        }
+      // Use getElementProperty for comprehensive property access handling
+      // This handles: @attributes (with boolean support), *css-properties, special DOM properties, etc.
+      if (isElement(objectValue)) {
+        return getElementProperty(objectValue, propertyName);
       }
 
-      if (propertyName.startsWith('computed-')) {
-        const styleProp = propertyName.substring('computed-'.length);
-        if (objectValue && typeof window !== 'undefined' && objectValue instanceof Element) {
-          const computedStyle = window.getComputedStyle(objectValue);
-          return computedStyle.getPropertyValue(styleProp);
-        }
-      }
-
-      if (propertyName.startsWith('style.')) {
-        const styleProp = propertyName.substring(6);
-        if (objectValue && objectValue.style) {
-          return objectValue.style[styleProp];
-        }
-      }
-
+      // For non-element objects, fall back to direct property access
       return objectValue[propertyName];
     }
 
