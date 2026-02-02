@@ -237,6 +237,129 @@ export function parseMultiWordCommand(
 }
 
 /**
+ * Parse fetch command with extended syntax support
+ *
+ * Supports original _hyperscript-compatible syntax:
+ *   fetch URL
+ *   fetch URL as json
+ *   fetch URL as Object                            (Object alias for json)
+ *   fetch URL as a Object | as an Object           (optional article)
+ *   fetch URL {method:"POST"}                      (object literal without 'with')
+ *   fetch URL with method:"POST", headers:{...}    (naked named args after 'with')
+ *   fetch URL with {method:"POST"} as json         (as after with — flexible order)
+ *   fetch URL as json with {method:"POST"}         (as before with — existing)
+ *
+ * @param ctx - Parser context providing access to parser state and methods
+ * @param commandToken - The command token (already consumed by caller)
+ * @returns CommandNode representing the fetch command
+ */
+export function parseFetchCommand(ctx: ParserContext, commandToken: Token): CommandNode {
+  const modifiers: Record<string, ExpressionNode> = {};
+
+  // Step 1: Parse URL using parsePrimary (avoids consuming 'as' as binary operator)
+  const url = ctx.parsePrimary();
+  if (!url) {
+    ctx.addError('fetch requires a URL');
+    return CommandNodeBuilder.from(commandToken).endingAt(ctx.getPosition()).build();
+  }
+
+  // Step 2: Check for object literal directly after URL (no 'with' keyword)
+  // e.g., fetch /url {method:"POST"}
+  if (!ctx.isAtEnd() && ctx.check('{')) {
+    modifiers['with'] = ctx.parsePrimary() as ExpressionNode;
+  }
+
+  // Step 3: Parse 'as' and 'with' modifiers in any order
+  for (let i = 0; i < 2 && !ctx.isAtEnd(); i++) {
+    if (ctx.check('as') && !modifiers['as']) {
+      ctx.advance(); // consume 'as'
+      // Skip optional articles: 'a' or 'an' (e.g., "as a Object", "as an Object")
+      if (!ctx.isAtEnd() && (ctx.check('a') || ctx.check('an'))) {
+        ctx.advance();
+      }
+      modifiers['as'] = ctx.parsePrimary() as ExpressionNode;
+      continue;
+    }
+
+    if (ctx.check('with') && !modifiers['with']) {
+      ctx.advance(); // consume 'with'
+      if (isFetchNakedNamedArgStart(ctx)) {
+        modifiers['with'] = parseFetchNakedNamedArgs(ctx) as ExpressionNode;
+      } else {
+        modifiers['with'] = ctx.parsePrimary() as ExpressionNode;
+      }
+      continue;
+    }
+
+    break; // Not a fetch modifier — stop
+  }
+
+  const builder = CommandNodeBuilder.from(commandToken).withArgs(url).endingAt(ctx.getPosition());
+
+  if (Object.keys(modifiers).length > 0) {
+    builder.withModifiers(modifiers);
+  }
+
+  return builder.build();
+}
+
+/**
+ * Check if the current position starts a naked named argument list.
+ * Naked named args look like: method:"POST", headers:{...}
+ * (identifier followed by colon, without surrounding braces)
+ */
+function isFetchNakedNamedArgStart(ctx: ParserContext): boolean {
+  if (ctx.check('{')) return false; // Object literal, not naked args
+  if (!ctx.checkIdentifierLike()) return false;
+  const next = ctx.peekAt(1);
+  return next !== null && next.value === ':';
+}
+
+/**
+ * Parse a naked named argument list into an objectLiteral AST node.
+ * e.g., method:"POST", headers:{...}, body:data
+ *
+ * Produces the same AST shape as parseObjectLiteral() so the fetch
+ * command implementation handles it identically.
+ */
+function parseFetchNakedNamedArgs(ctx: ParserContext): ASTNode {
+  const properties: Array<{ key: ASTNode; value: ASTNode }> = [];
+  const startPos = ctx.getPosition();
+
+  do {
+    if (!ctx.checkIdentifierLike()) break;
+
+    const keyToken = ctx.advance();
+    const key: ASTNode = {
+      type: 'identifier',
+      name: keyToken.value,
+      start: keyToken.start,
+      end: keyToken.end,
+      line: keyToken.line,
+      column: keyToken.column,
+    };
+
+    ctx.consume(':', "Expected ':' after property name in fetch named arguments");
+
+    // Use parsePrimary to avoid consuming 'as'/'then' as binary operators
+    const value = ctx.parsePrimary();
+    if (value) {
+      properties.push({ key, value });
+    }
+  } while (ctx.match(',') && !ctx.isAtEnd());
+
+  const endPos = ctx.getPosition();
+  return {
+    type: 'objectLiteral',
+    properties,
+    start: startPos.start,
+    end: endPos.end,
+    line: startPos.line,
+    column: startPos.column,
+  } as ASTNode;
+}
+
+/**
  * Parse js command
  *
  * Syntax:

@@ -27,15 +27,11 @@ export interface MultiWordPattern {
  * Multi-word command patterns
  *
  * These patterns define which keywords indicate modifiers for specific commands.
- * Used for commands like "append X to Y", "fetch URL as json", etc.
+ * Used for commands like "append X to Y", etc.
+ * Note: fetch has a dedicated parser (parseFetchCommand) for extended syntax support.
  */
 export const MULTI_WORD_PATTERNS: MultiWordPattern[] = [
   { command: 'append', keywords: ['to'], syntax: 'append <value> [to <target>]' },
-  {
-    command: 'fetch',
-    keywords: ['as', 'with'],
-    syntax: 'fetch <url> [as <type>] [with <options>]',
-  },
   { command: 'make', keywords: ['a', 'an'], syntax: 'make (a|an) <type>' },
   { command: 'send', keywords: ['to'], syntax: 'send <event> to <target>' },
   { command: 'throw', keywords: [], syntax: 'throw <error>' },

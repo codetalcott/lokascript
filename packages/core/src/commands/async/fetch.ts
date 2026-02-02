@@ -166,6 +166,8 @@ export class FetchCommand implements DecoratedCommand {
     if (n.type === 'identifier' || n.type === 'expression') {
       if (n.name) {
         const t = n.name.toLowerCase();
+        // 'object' is an alias for 'json' (original _hyperscript compatibility)
+        if (t === 'object') return 'json';
         if (['text', 'json', 'html', 'response', 'blob', 'arraybuffer'].includes(t))
           return t === 'arraybuffer' ? 'arrayBuffer' : (t as FetchResponseType);
         throw new Error(`fetch: invalid response type "${t}"`);

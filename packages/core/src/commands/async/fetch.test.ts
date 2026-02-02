@@ -312,6 +312,36 @@ describe('FetchCommand', () => {
 
       expect(input.responseType).toBe('json');
     });
+
+    it('should parse "Object" as json alias (_hyperscript compatibility)', async () => {
+      const evaluator = createMockEvaluator('https://example.com');
+      const urlNode = { type: 'string' } as ASTNode;
+      const asNode = { type: 'expression', name: 'Object' } as ExpressionNode;
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [urlNode], modifiers: { as: asNode } },
+        evaluator,
+        context
+      );
+
+      expect(input.responseType).toBe('json');
+    });
+
+    it('should parse "object" (lowercase) as json alias', async () => {
+      const evaluator = createMockEvaluator('https://example.com');
+      const urlNode = { type: 'string' } as ASTNode;
+      const asNode = { type: 'expression', name: 'object' } as ExpressionNode;
+      const context = createMockContext();
+
+      const input = await command.parseInput(
+        { args: [urlNode], modifiers: { as: asNode } },
+        evaluator,
+        context
+      );
+
+      expect(input.responseType).toBe('json');
+    });
   });
 
   describe('Request Options Parsing', () => {

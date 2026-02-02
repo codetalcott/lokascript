@@ -219,15 +219,36 @@ export class HybridParser {
     this.expect('fetch');
     const url = this.parseExpression();
     let responseType: ASTNode = { type: 'literal', value: 'text' };
+    let options: ASTNode | undefined;
 
-    if (this.match('as')) {
-      this.advance();
-      responseType = this.parseExpression();
+    // Check for object literal directly after URL (no 'with' keyword)
+    // e.g., fetch /url {method:"POST"}
+    if (this.match('{')) {
+      this.pos--; // back up so parseExpression handles the full object
+      options = this.parseExpression();
     }
+
+    // Parse 'as' and 'with' in any order
+    for (let i = 0; i < 2; i++) {
+      if (this.match('as')) {
+        this.advance();
+        // Skip optional articles 'a'/'an'
+        if (this.match('a') || this.match('an')) this.advance();
+        responseType = this.parseExpression();
+        continue;
+      }
+      if (this.match('with') && !options) {
+        this.advance();
+        options = this.parseExpression();
+        continue;
+      }
+      break;
+    }
+
     if (this.match('then')) this.advance();
 
     const body = this.parseCommandSequence();
-    return { type: 'fetch', condition: { type: 'fetchConfig', url, responseType }, body };
+    return { type: 'fetch', condition: { type: 'fetchConfig', url, responseType, options }, body };
   }
 
   // Command parsing

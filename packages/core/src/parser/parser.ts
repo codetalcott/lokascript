@@ -2993,7 +2993,12 @@ export class Parser {
       commandName = 'beep!';
     }
 
-    // Check if this is a multi-word command (append...to, fetch...as, etc.)
+    // Dedicated fetch parser with extended _hyperscript-compatible syntax
+    if (commandName === 'fetch') {
+      return utilityCommands.parseFetchCommand(this.getContext(), commandToken);
+    }
+
+    // Check if this is a multi-word command (append...to, etc.)
     const multiWordResult = this.parseMultiWordCommand(commandToken, commandName);
     if (multiWordResult) {
       return multiWordResult;
