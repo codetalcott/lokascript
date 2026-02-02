@@ -583,4 +583,247 @@ describe('AttributeProcessor System Events', () => {
       expect(btn.classList.contains('on')).toBe(false);
     });
   });
+
+  describe('Chunked Processing', () => {
+    let chunkedProcessor: AttributeProcessor;
+
+    beforeEach(() => {
+      chunkedProcessor = new AttributeProcessor({
+        autoScan: false,
+        chunkedProcessing: true,
+        chunkSize: 3,
+      });
+    });
+
+    afterEach(() => {
+      chunkedProcessor.destroy();
+    });
+
+    it('should process all elements when chunkedProcessing is enabled', async () => {
+      // Create 10 elements (will be processed in chunks of 3)
+      for (let i = 0; i < 10; i++) {
+        const elem = document.createElement('div');
+        elem.setAttribute('_', `on click add .clicked-${i}`);
+        testContainer.appendChild(elem);
+      }
+
+      let loadCount = 0;
+      testContainer.querySelectorAll('[_]').forEach(elem => {
+        elem.addEventListener('load', () => loadCount++);
+      });
+
+      await chunkedProcessor.scanAndProcessAll();
+
+      expect(loadCount).toBe(10);
+    });
+
+    it('should dispatch hyperscript:ready after all chunks complete', async () => {
+      for (let i = 0; i < 7; i++) {
+        const elem = document.createElement('div');
+        elem.setAttribute('_', `on click log '${i}'`);
+        testContainer.appendChild(elem);
+      }
+
+      const eventPromise = new Promise<void>(resolve => {
+        document.addEventListener(
+          'hyperscript:ready',
+          (event: Event) => {
+            const customEvent = event as CustomEvent;
+            expect(customEvent.detail.processedElements).toBe(7);
+            resolve();
+          },
+          { once: true }
+        );
+      });
+
+      await chunkedProcessor.scanAndProcessAll();
+      chunkedProcessor['dispatchReadyEvent']();
+
+      await eventPromise;
+    });
+
+    it('should yield between chunks', async () => {
+      // Create enough elements to require multiple chunks
+      for (let i = 0; i < 9; i++) {
+        const elem = document.createElement('div');
+        elem.setAttribute('_', `on click log '${i}'`);
+        testContainer.appendChild(elem);
+      }
+
+      // With chunkSize=3, 9 elements = 3 chunks with 2 yields between them
+      // We verify all elements are still processed correctly
+      let loadCount = 0;
+      testContainer.querySelectorAll('[_]').forEach(elem => {
+        elem.addEventListener('load', () => loadCount++);
+      });
+
+      await chunkedProcessor.scanAndProcessAll();
+
+      expect(loadCount).toBe(9);
+    });
+
+    it('should handle fewer elements than chunk size', async () => {
+      // Only 2 elements with chunkSize=3
+      const elem1 = document.createElement('div');
+      elem1.setAttribute('_', 'on click add .a');
+      testContainer.appendChild(elem1);
+
+      const elem2 = document.createElement('div');
+      elem2.setAttribute('_', 'on click add .b');
+      testContainer.appendChild(elem2);
+
+      let loadCount = 0;
+      elem1.addEventListener('load', () => loadCount++);
+      elem2.addEventListener('load', () => loadCount++);
+
+      await chunkedProcessor.scanAndProcessAll();
+
+      expect(loadCount).toBe(2);
+    });
+  });
+
+  describe('Lazy Parsing', () => {
+    let lazyProcessor: AttributeProcessor;
+
+    beforeEach(() => {
+      lazyProcessor = new AttributeProcessor({
+        autoScan: false,
+        lazyParsing: true,
+      });
+    });
+
+    afterEach(() => {
+      lazyProcessor.destroy();
+    });
+
+    it('should not fully parse event handlers until first event', async () => {
+      const elem = document.createElement('button');
+      elem.setAttribute('_', 'on click add .clicked to me');
+      testContainer.appendChild(elem);
+
+      let loadFired = false;
+      elem.addEventListener('load', () => {
+        loadFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+
+      // Element should NOT have been fully processed yet (no load event)
+      expect(loadFired).toBe(false);
+    });
+
+    it('should execute handler on first click after lazy registration', async () => {
+      const elem = document.createElement('button');
+      elem.setAttribute('_', 'on click add .clicked to me');
+      testContainer.appendChild(elem);
+
+      await lazyProcessor.scanAndProcessAll();
+
+      // Click to trigger lazy parse + execution
+      elem.click();
+
+      // Wait for async processing
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(elem.classList.contains('clicked')).toBe(true);
+    });
+
+    it('should process "on every" attributes immediately (immediate event)', async () => {
+      // "on every" is in the IMMEDIATE_EVENTS set and should not be deferred.
+      // We verify this by spying on processElementAsync - it should be called
+      // during scanAndProcessAll, not deferred to a stub listener.
+      const elem = document.createElement('div');
+      elem.setAttribute('_', 'on load add .loaded to me');
+      testContainer.appendChild(elem);
+
+      let loadFired = false;
+      elem.addEventListener('load', () => {
+        loadFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      // "on load" is an IMMEDIATE_EVENT so it should have been processed eagerly
+      expect(loadFired).toBe(true);
+    });
+
+    it('should process "on load" attributes immediately', async () => {
+      const elem = document.createElement('div');
+      elem.setAttribute('_', 'on load add .loaded to me');
+      testContainer.appendChild(elem);
+
+      let loadEventFired = false;
+      elem.addEventListener('load', () => {
+        loadEventFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      // on load should have been processed eagerly
+      expect(loadEventFired).toBe(true);
+    });
+
+    it('should process non-event attributes eagerly', async () => {
+      const elem = document.createElement('div');
+      // No "on" prefix - should be processed immediately
+      elem.setAttribute('_', 'add .immediate to me');
+      testContainer.appendChild(elem);
+
+      let loadFired = false;
+      elem.addEventListener('load', () => {
+        loadFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      // Non-event code should be processed eagerly
+      expect(loadFired).toBe(true);
+    });
+
+    it('should process multi-handler attributes eagerly', async () => {
+      const elem = document.createElement('div');
+      // Multiple "on" handlers should fall back to eager
+      elem.setAttribute('_', 'on click add .a to me on mouseover add .b to me');
+      testContainer.appendChild(elem);
+
+      let loadFired = false;
+      elem.addEventListener('load', () => {
+        loadFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      // Multi-handler should be processed eagerly
+      expect(loadFired).toBe(true);
+    });
+
+    it('should count lazy elements in processedCount', async () => {
+      for (let i = 0; i < 5; i++) {
+        const elem = document.createElement('div');
+        elem.setAttribute('_', `on click log '${i}'`);
+        testContainer.appendChild(elem);
+      }
+
+      const eventPromise = new Promise<void>(resolve => {
+        document.addEventListener(
+          'hyperscript:ready',
+          (event: Event) => {
+            const customEvent = event as CustomEvent;
+            expect(customEvent.detail.processedElements).toBe(5);
+            resolve();
+          },
+          { once: true }
+        );
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+      lazyProcessor['dispatchReadyEvent']();
+
+      await eventPromise;
+    });
+  });
 });

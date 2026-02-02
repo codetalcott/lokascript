@@ -18,6 +18,49 @@ export interface AttributeProcessorOptions {
   attributeName?: string;
   autoScan?: boolean;
   processOnlyNewElements?: boolean;
+  /** Enable lazy parsing for event-driven attributes. Defers compilation until first event dispatch. (default: false) */
+  lazyParsing?: boolean;
+  /** Process elements in batches, yielding to the browser between batches. (default: false) */
+  chunkedProcessing?: boolean;
+  /** Number of elements to process per batch when chunkedProcessing is enabled. (default: 16) */
+  chunkSize?: number;
+}
+
+// =============================================================================
+// Lazy Parsing Constants
+// =============================================================================
+
+/** Regex to extract event type from hyperscript code: "on click ...", "on mouseover ..." */
+const EVENT_REGEX = /^on\s+(\w+)/;
+
+/** Events that must be processed immediately (cannot be deferred).
+ * Note: `init` is a standalone block keyword, not an event name, so it's not listed here.
+ * Non-event code (no "on" prefix) is always processed eagerly via a separate check. */
+const IMMEDIATE_EVENTS = new Set([
+  'load', // Fires at registration time
+  'mutation', // MutationObserver setup needed immediately
+  'intersection', // IntersectionObserver setup needed immediately
+  'appear', // Visibility observer
+  'every', // Interval setup
+]);
+
+// =============================================================================
+// Chunked Processing Utilities
+// =============================================================================
+
+/**
+ * Yield to the browser event loop so rendering and input can be processed.
+ * Uses scheduler.yield() when available (modern browsers), else setTimeout(0).
+ */
+function yieldToBrowser(): Promise<void> {
+  if (
+    typeof globalThis !== 'undefined' &&
+    'scheduler' in globalThis &&
+    typeof (globalThis as any).scheduler?.yield === 'function'
+  ) {
+    return (globalThis as any).scheduler.yield();
+  }
+  return new Promise(resolve => setTimeout(resolve, 0));
 }
 
 export class AttributeProcessor {
@@ -27,12 +70,17 @@ export class AttributeProcessor {
   private processedCount = 0;
   private readyEventDispatched = false;
   private initialized = false;
+  /** Elements with lazy stubs registered (not yet fully parsed) */
+  private lazyElements = new WeakSet<HTMLElement>();
 
   constructor(options: AttributeProcessorOptions = {}) {
     this.options = {
       attributeName: '_',
       autoScan: true,
       processOnlyNewElements: true,
+      lazyParsing: false,
+      chunkedProcessing: false,
+      chunkSize: 16,
       ...options,
     };
   }
@@ -95,14 +143,37 @@ export class AttributeProcessor {
     const elements = document.querySelectorAll(`[${this.options.attributeName}]`);
     debug.parse(`ATTR: Found ${elements.length} elements to process`);
 
-    // Process elements asynchronously and wait for all to complete
-    const processPromises: Promise<void>[] = [];
-    elements.forEach(element => {
-      if (element instanceof HTMLElement) {
-        processPromises.push(this.processElementAsync(element));
+    if (this.options.lazyParsing) {
+      // Lazy path: register lightweight stubs for event-driven attributes.
+      // Elements that need eager processing (on init, on load, non-event, multi-handler)
+      // return promises that we collect and await.
+      debug.parse('ATTR: Using lazy parsing mode');
+      const eagerPromises: Promise<void>[] = [];
+      elements.forEach(element => {
+        if (element instanceof HTMLElement) {
+          const promise = this.processElementLazy(element);
+          if (promise) {
+            eagerPromises.push(promise);
+          }
+        }
+      });
+      if (eagerPromises.length > 0) {
+        await Promise.all(eagerPromises);
       }
-    });
-    await Promise.all(processPromises);
+    } else if (this.options.chunkedProcessing) {
+      // Chunked path: process in batches, yielding to browser between chunks
+      debug.parse(`ATTR: Using chunked processing (chunkSize=${this.options.chunkSize})`);
+      await this.processElementsChunked(elements);
+    } else {
+      // Default eager path: process all elements in parallel
+      const processPromises: Promise<void>[] = [];
+      elements.forEach(element => {
+        if (element instanceof HTMLElement) {
+          processPromises.push(this.processElementAsync(element));
+        }
+      });
+      await Promise.all(processPromises);
+    }
     debug.parse('ATTR: All elements processed');
 
     // Dispatch completion event for testing
@@ -302,6 +373,96 @@ export class AttributeProcessor {
   }
 
   /**
+   * Process elements in batches, yielding to the browser between chunks.
+   * This prevents long main-thread blocking when many elements need processing.
+   */
+  private async processElementsChunked(elements: NodeListOf<Element>): Promise<void> {
+    const chunkSize = this.options.chunkSize;
+    const htmlElements: HTMLElement[] = [];
+    elements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        htmlElements.push(el);
+      }
+    });
+
+    for (let i = 0; i < htmlElements.length; i += chunkSize) {
+      const chunk = htmlElements.slice(i, i + chunkSize);
+
+      // Process chunk in parallel (same as default eager path, but bounded)
+      const promises = chunk.map(el => this.processElementAsync(el));
+      await Promise.all(promises);
+
+      // Yield to browser between chunks (skip for last chunk)
+      if (i + chunkSize < htmlElements.length) {
+        await yieldToBrowser();
+      }
+    }
+  }
+
+  /**
+   * Register a lightweight stub listener for an event-driven attribute.
+   * Full parsing is deferred until the first event dispatch.
+   * Non-event attributes and immediate events fall back to eager processing.
+   * @returns A promise if the element needs eager processing, or null if lazy-registered.
+   */
+  private processElementLazy(element: HTMLElement): Promise<void> | null {
+    const code = element.getAttribute(this.options.attributeName);
+    if (!code) return null;
+
+    const match = code.match(EVENT_REGEX);
+
+    // Not an event handler, or is an immediate event, or has multiple handlers -> eager
+    if (!match || IMMEDIATE_EVENTS.has(match[1]) || this.hasMultipleHandlers(code)) {
+      return this.processElementAsync(element);
+    }
+
+    const eventType = match[1];
+    debug.parse(`ATTR: Lazy-registering stub for "${eventType}" on element`);
+
+    // Register a one-time stub listener that triggers full processing on first event
+    const stubListener = (event: Event) => {
+      // Remove stub immediately
+      element.removeEventListener(eventType, stubListener);
+      this.lazyElements.delete(element);
+
+      // Queue events during parse to avoid losing them
+      const queuedEvents: Event[] = [];
+      const queueHandler = (e: Event) => queuedEvents.push(e);
+      element.addEventListener(eventType, queueHandler);
+
+      // Full parse + execute (will benefit from AST cache)
+      this.processElementAsync(element)
+        .then(() => {
+          element.removeEventListener(eventType, queueHandler);
+          // Re-dispatch the original event so the real handler fires
+          element.dispatchEvent(new Event(event.type, event));
+          // Re-dispatch any queued events
+          for (const queued of queuedEvents) {
+            element.dispatchEvent(new Event(queued.type, queued));
+          }
+        })
+        .catch(err => {
+          element.removeEventListener(eventType, queueHandler);
+          debug.parse('ATTR: Error in lazy parse on first event:', err);
+        });
+    };
+
+    element.addEventListener(eventType, stubListener, { once: true });
+    this.lazyElements.add(element);
+    this.processedCount++;
+    return null;
+  }
+
+  /**
+   * Check if hyperscript code contains multiple event handlers.
+   * e.g., "on click ... on mouseover ..." should be processed eagerly.
+   */
+  private hasMultipleHandlers(code: string): boolean {
+    const matches = code.match(/\bon\s+\w+/g);
+    return !!matches && matches.length > 1;
+  }
+
+  /**
    * Dispatch load event on an element after it has been processed
    */
   private dispatchLoadEvent(element: HTMLElement): void {
@@ -415,6 +576,7 @@ export class AttributeProcessor {
     this.initialized = false;
     this.readyEventDispatched = false;
     this.processedCount = 0;
+    this.lazyElements = new WeakSet<HTMLElement>();
   }
 
   /**

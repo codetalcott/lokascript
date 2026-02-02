@@ -44,6 +44,83 @@ import { process as processDOMElements, initializeDOMProcessor } from './dom-pro
 const DEFAULT_LANGUAGE = 'en';
 
 // =============================================================================
+// AST Compilation Cache
+// =============================================================================
+
+/**
+ * Cache for compiled ASTs to avoid re-parsing identical hyperscript code.
+ * This is especially effective for template loops where many elements share
+ * the same _= attribute text (e.g., 114 <details> with identical handlers).
+ *
+ * Safe because AST nodes are never mutated during execution - the runtime
+ * only reads AST properties to build execution contexts and dispatch commands.
+ */
+interface ASTCacheEntry {
+  result: CompileResult;
+}
+
+class ASTCache {
+  private cache = new Map<string, ASTCacheEntry>();
+  private maxSize: number;
+  private hits = 0;
+  private misses = 0;
+
+  constructor(maxSize = 500) {
+    this.maxSize = maxSize;
+  }
+
+  private makeKey(code: string, options?: NewCompileOptions): string {
+    const lang = options?.language || DEFAULT_LANGUAGE;
+    const trad = options?.traditional ? '1' : '0';
+    return `${lang}\0${trad}\0${code}`;
+  }
+
+  get(code: string, options?: NewCompileOptions): CompileResult | undefined {
+    const entry = this.cache.get(this.makeKey(code, options));
+    if (entry) {
+      this.hits++;
+      return entry.result;
+    }
+    this.misses++;
+    return undefined;
+  }
+
+  set(code: string, options: NewCompileOptions | undefined, result: CompileResult): void {
+    if (!result.ok) return; // Only cache successful compilations
+
+    const key = this.makeKey(code, options);
+
+    // FIFO eviction when at capacity
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, { result });
+  }
+
+  clear(): void {
+    this.cache.clear();
+    this.hits = 0;
+    this.misses = 0;
+  }
+
+  getStats(): { size: number; hits: number; misses: number; hitRate: number } {
+    const total = this.hits + this.misses;
+    return {
+      size: this.cache.size,
+      hits: this.hits,
+      misses: this.misses,
+      hitRate: total > 0 ? this.hits / total : 0,
+    };
+  }
+}
+
+const astCache = new ASTCache(500);
+
+// =============================================================================
 // Type Augmentations
 // =============================================================================
 
@@ -303,6 +380,16 @@ export interface HyperscriptAPI {
   registerHooks(name: string, hooks: RuntimeHooks): void;
   unregisterHooks(name: string): boolean;
   getRegisteredHooks(): string[];
+
+  // ─────────────────────────────────────────────────────────────
+  // CACHE
+  // ─────────────────────────────────────────────────────────────
+
+  /** Clear the AST compilation cache */
+  clearCache(): void;
+
+  /** Get cache hit/miss statistics */
+  getCacheStats(): { size: number; hits: number; misses: number; hitRate: number };
 }
 
 // ============================================================================
@@ -450,6 +537,12 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
     throw new TypeError('Code must be a string');
   }
 
+  // Check AST cache first
+  const cached = astCache.get(code, options);
+  if (cached) {
+    return cached;
+  }
+
   const startTime = performance.now();
   const lang = options?.language || DEFAULT_LANGUAGE;
 
@@ -462,7 +555,7 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
     const timeMs = performance.now() - startTime;
 
     if (parseResult.success && parseResult.node) {
-      return {
+      const result: CompileResult = {
         ok: true,
         ast: parseResult.node,
         meta: {
@@ -471,6 +564,8 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
           timeMs,
         },
       };
+      astCache.set(code, options, result);
+      return result;
     } else {
       return {
         ok: false,
@@ -539,12 +634,19 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
   }
 
   const lang = options?.language || DEFAULT_LANGUAGE;
-  const startTime = performance.now();
 
-  // For English or when traditional parsing is requested, use sync path
+  // For English or when traditional parsing is requested, use sync path (includes cache)
   if (lang === DEFAULT_LANGUAGE || options?.traditional) {
     return compileSync(code, options);
   }
+
+  // Check AST cache for non-English code
+  const cached = astCache.get(code, options);
+  if (cached) {
+    return cached;
+  }
+
+  const startTime = performance.now();
 
   // For non-English, try direct AST path
   try {
@@ -553,7 +655,7 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
 
     if (astResult.usedDirectPath && astResult.ast) {
       const timeMs = performance.now() - startTime;
-      return {
+      const result: CompileResult = {
         ok: true,
         ast: astResult.ast,
         meta: {
@@ -564,12 +666,14 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
           directPath: true,
         },
       };
+      astCache.set(code, options, result);
+      return result;
     }
 
     // Direct path failed, fall back to traditional
     const fallbackCode = astResult.fallbackText || code;
     const result = compileSync(fallbackCode, { ...options, language: DEFAULT_LANGUAGE });
-    return {
+    const finalResult: CompileResult = {
       ...result,
       meta: {
         ...result.meta,
@@ -578,6 +682,8 @@ async function compileAsync(code: string, options?: NewCompileOptions): Promise<
         directPath: false,
       },
     };
+    astCache.set(code, options, finalResult);
+    return finalResult;
   } catch {
     // Fall back to sync compilation on any error
     return compileSync(code, { ...options, language: 'en' });
@@ -787,6 +893,10 @@ export const hyperscript: HyperscriptAPI = {
   getRegisteredHooks: () => {
     return getDefaultRuntime().getRegisteredHooks();
   },
+
+  // Cache management
+  clearCache: () => astCache.clear(),
+  getCacheStats: () => astCache.getStats(),
 };
 
 // Export as _hyperscript for official _hyperscript API compatibility
