@@ -5,6 +5,7 @@
 
 import { hyperscript } from '../api/hyperscript-api';
 import { createContext } from '../core/context';
+import { unwrapCommandResult } from '../runtime/runtime-base';
 import { debug } from '../utils/debug';
 
 // Type declarations for window extensions used by external packages
@@ -450,7 +451,11 @@ export class AttributeProcessor {
           (eventContext as any).event = event;
 
           for (const command of ast.commands) {
-            await hyperscript.execute(command, eventContext);
+            const cmdResult = await hyperscript.execute(command, eventContext);
+            const val = unwrapCommandResult(cmdResult);
+            if (val !== undefined) {
+              Object.assign(eventContext, { it: val, result: val });
+            }
           }
         }
 

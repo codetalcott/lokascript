@@ -42,7 +42,13 @@ export type SetCommandInput =
   | { type: 'attribute'; element: HTMLElement; name: string; value: unknown }
   | { type: 'property'; element: HTMLElement; property: string; value: unknown }
   | { type: 'style'; element: HTMLElement; property: string; value: string }
-  | { type: 'object-literal'; properties: Record<string, unknown>; targets: HTMLElement[] };
+  | { type: 'object-literal'; properties: Record<string, unknown>; targets: HTMLElement[] }
+  | {
+      type: 'member-assignment';
+      container: Record<string, unknown>;
+      property: string;
+      value: unknown;
+    };
 
 /** Output from SetCommand execution */
 export interface SetCommandOutput {
@@ -222,6 +228,11 @@ export class SetCommand implements DecoratedCommand {
           targetType: 'property',
         };
 
+      case 'member-assignment':
+        input.container[input.property] = input.value;
+        Object.assign(context, { it: input.value });
+        return { target: input.property, value: input.value, targetType: 'property' };
+
       default:
         throw new Error(`Unknown input type: ${(input as { type: string }).type}`);
     }
@@ -246,6 +257,29 @@ export class SetCommand implements DecoratedCommand {
         return { type: 'property', element, property: propertyNode.name, value };
       }
     }
+
+    // General member expression assignment (e.g. window.foo, element.style.color)
+    // Evaluate the object sub-expression to get the container, then assign the property.
+    const objectAst = firstArg.object as ASTNode | undefined;
+    const computed = firstArg.computed as boolean | undefined;
+    if (objectAst) {
+      const container = await evaluator.evaluate(objectAst, context);
+      if (container != null && typeof container === 'object') {
+        const property = computed
+          ? String(await evaluator.evaluate(firstArg.property as ASTNode, context))
+          : propertyNode?.name || '';
+        if (property) {
+          const value = await this.extractValue(raw, evaluator, context);
+          return {
+            type: 'member-assignment',
+            container: container as Record<string, unknown>,
+            property,
+            value,
+          };
+        }
+      }
+    }
+
     return null;
   }
 

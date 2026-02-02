@@ -237,10 +237,52 @@ export function parseMultiWordCommand(
 }
 
 /**
+ * Check if the current token terminates a bare URL path in a fetch command.
+ * URL paths end before modifiers (as, with), braces, command boundaries, etc.
+ */
+function isFetchURLTerminator(ctx: ParserContext): boolean {
+  if (ctx.isAtEnd()) return true;
+  const val = ctx.peek().value;
+  return (
+    ['as', 'with', '{', 'then', 'end', 'else', 'otherwise', ')'].includes(val) ||
+    isCommandBoundary(ctx)
+  );
+}
+
+/**
+ * Parse a bare (unquoted) URL path starting with '/' (e.g. /api/data, /users/123).
+ * Collects `/`, identifier, and other non-terminator tokens into a string literal.
+ * Returns null if the path can't be reconstructed.
+ */
+function parseBareURLPath(ctx: ParserContext): ASTNode | null {
+  const startPos = ctx.savePosition();
+  let path = '';
+
+  while (!ctx.isAtEnd() && !isFetchURLTerminator(ctx)) {
+    path += ctx.advance().value;
+  }
+
+  if (!path || path === '/') {
+    ctx.restorePosition(startPos);
+    return null;
+  }
+
+  return {
+    type: 'literal',
+    value: path,
+    raw: path,
+    start: startPos,
+    end: ctx.savePosition(),
+  } as ASTNode;
+}
+
+/**
  * Parse fetch command with extended syntax support
  *
  * Supports original _hyperscript-compatible syntax:
- *   fetch URL
+ *   fetch /api/data                                (bare URL path — no quotes required)
+ *   fetch /api/data as json                        (bare path + modifier)
+ *   fetch URL                                      (quoted string or expression)
  *   fetch URL as json
  *   fetch URL as Object                            (Object alias for json)
  *   fetch URL as a Object | as an Object           (optional article)
@@ -256,8 +298,14 @@ export function parseMultiWordCommand(
 export function parseFetchCommand(ctx: ParserContext, commandToken: Token): CommandNode {
   const modifiers: Record<string, ExpressionNode> = {};
 
-  // Step 1: Parse URL using parsePrimary (avoids consuming 'as' as binary operator)
-  const url = ctx.parsePrimary();
+  // Step 1: Parse URL — check for bare path starting with '/' first, then fall back to parsePrimary
+  let url: ASTNode | null = null;
+  if (!ctx.isAtEnd() && ctx.check('/')) {
+    url = parseBareURLPath(ctx);
+  }
+  if (!url) {
+    url = ctx.parsePrimary();
+  }
   if (!url) {
     ctx.addError('fetch requires a URL');
     return CommandNodeBuilder.from(commandToken).endingAt(ctx.getPosition()).build();

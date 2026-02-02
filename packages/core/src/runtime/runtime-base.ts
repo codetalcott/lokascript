@@ -25,6 +25,67 @@ import {
   type RegistryIntegrationOptions,
 } from '../registry/runtime-integration';
 
+/**
+ * Unwrap a command's return value to extract the user-facing result.
+ *
+ * Commands return different wrapper shapes (CallCommand, JsCommand, FetchCommand, etc.).
+ * This function extracts the meaningful value from those wrappers so it can be assigned
+ * to `context.it` / `context.result` between sequential command executions.
+ *
+ * Returns `undefined` when the result should NOT update the context (e.g. IfCommand
+ * with no branch result), signalling the caller to skip assignment.
+ */
+export function unwrapCommandResult(result: unknown): unknown | undefined {
+  if (result === undefined) return undefined;
+
+  let val = result;
+  if (val && typeof val === 'object') {
+    const valObj = val as any;
+
+    // CallCommand returns { result, wasAsync }
+    if ('result' in valObj && 'wasAsync' in valObj) {
+      val = valObj.result;
+    }
+    // JsCommand returns { result, executed, codeLength, parameters, preserveArrayResult }
+    else if ('result' in valObj && 'executed' in valObj) {
+      val = valObj.result;
+      // JsCommand sets preserveArrayResult to skip array unwrapping
+      if (valObj.preserveArrayResult) {
+        return val !== undefined ? val : undefined;
+      }
+    }
+    // RepeatCommand/IfCommand returns { type, lastResult }
+    else if ('lastResult' in valObj && 'type' in valObj) {
+      val = valObj.lastResult;
+    }
+    // IfCommand returns { conditionResult, executedBranch, result }
+    // Don't clobber context.result with if command metadata
+    else if ('conditionResult' in valObj && 'executedBranch' in valObj) {
+      if (valObj.result !== undefined) {
+        val = valObj.result;
+      } else {
+        return undefined; // don't update context
+      }
+    }
+    // GetCommand returns { value }
+    else if ('value' in valObj && Object.keys(valObj).length === 1) {
+      val = valObj.value;
+    }
+    // SetCommand returns { target, value, targetType }
+    else if ('value' in valObj && 'target' in valObj && 'targetType' in valObj) {
+      val = valObj.value;
+    }
+    // FetchCommand returns { status, statusText, headers, data, url, duration }
+    // In _hyperscript, 'it' should be the actual data (not the wrapper)
+    else if ('data' in valObj && 'status' in valObj && 'headers' in valObj) {
+      val = valObj.data;
+    }
+  }
+  if (Array.isArray(val) && val.length > 0) val = val[0];
+
+  return val;
+}
+
 export interface RuntimeBaseOptions {
   /**
    * The registry instance containing allowed commands.
@@ -1090,60 +1151,8 @@ export class RuntimeBase {
       for (const command of commands) {
         try {
           const result = await this.execute(command, eventContext);
-          if (result !== undefined) {
-            // Logic for extracting actual results from complex return types
-            // (e.g. CallCommand result wrapper, GetCommand { value }, etc.)
-            let val = result;
-            if (val && typeof val === 'object') {
-              const valObj = val as any;
-
-              // CallCommand returns { result, wasAsync }
-              if ('result' in valObj && 'wasAsync' in valObj) {
-                val = valObj.result;
-              }
-              // JsCommand returns { result, executed, codeLength, parameters, preserveArrayResult }
-              else if ('result' in valObj && 'executed' in valObj) {
-                val = valObj.result;
-                // JsCommand sets preserveArrayResult to skip array unwrapping
-                // Only update context.it if there's an actual value (avoid overwriting with undefined)
-                if (valObj.preserveArrayResult) {
-                  if (val !== undefined) {
-                    Object.assign(eventContext, { it: val, result: val });
-                  }
-                  continue; // Skip the normal array unwrapping logic
-                }
-              }
-              // RepeatCommand/IfCommand returns { type, lastResult } or { conditionResult, executedBranch }
-              else if ('lastResult' in valObj && 'type' in valObj) {
-                val = valObj.lastResult;
-              }
-              // IfCommand returns { conditionResult, executedBranch, result }
-              // Don't clobber context.result with if command metadata - only update if branch produced a result
-              else if ('conditionResult' in valObj && 'executedBranch' in valObj) {
-                // Only update context.result if the branch actually produced a meaningful result
-                if (valObj.result !== undefined) {
-                  val = valObj.result;
-                } else {
-                  // Don't update it/result - the if command didn't produce a value
-                  continue;
-                }
-              }
-              // GetCommand returns { value }
-              else if ('value' in valObj && Object.keys(valObj).length === 1) {
-                val = valObj.value;
-              }
-              // SetCommand returns { target, value, targetType }
-              else if ('value' in valObj && 'target' in valObj && 'targetType' in valObj) {
-                val = valObj.value;
-              }
-              // FetchCommand returns { status, statusText, headers, data, url, duration }
-              // In _hyperscript, 'it' should be the actual data (not the wrapper)
-              else if ('data' in valObj && 'status' in valObj && 'headers' in valObj) {
-                val = valObj.data;
-              }
-            }
-            if (Array.isArray(val) && val.length > 0) val = val[0];
-
+          const val = unwrapCommandResult(result);
+          if (val !== undefined) {
             Object.assign(eventContext, { it: val, result: val });
           }
         } catch (e) {

@@ -654,8 +654,16 @@ export class BaseExpressionEvaluator {
       return objectValue[propertyValue];
     } else {
       // For dot access (obj.prop), unwrap selector results to single element
-      objectValue = this.unwrapSelectorResult(objectValue);
+      // UNLESS the property is an array method/property (length, filter, map, etc.)
+      // This allows (<.selector/> in me).length and .filter() to work correctly.
       const propertyName = property.name || property;
+      const isArrayProp =
+        Array.isArray(objectValue) &&
+        typeof propertyName === 'string' &&
+        (propertyName === 'length' || propertyName in Array.prototype);
+      if (!isArrayProp) {
+        objectValue = this.unwrapSelectorResult(objectValue);
+      }
 
       if (typeof propertyName === 'string') {
         // Handle computed style access

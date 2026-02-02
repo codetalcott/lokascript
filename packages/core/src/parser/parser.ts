@@ -489,6 +489,26 @@ export class Parser {
 
     // Right associative - assignment operators associate right-to-left
     if (this.match('=')) {
+      // Detect arrow function syntax: identifier => expression
+      // The tokenizer produces '=' and '>' as separate tokens ('=>' is not a two-char operator).
+      // Note: '>=' is a single token so match('=') won't fire on it.
+      if (this.check('>')) {
+        this.advance(); // consume '>'
+        this.addError(
+          'Arrow functions (=>) are not supported in hyperscript. ' +
+            'Use "js ... end" blocks for JavaScript callbacks.'
+        );
+        // Recovery: try to parse and discard the arrow body
+        if (!this.isAtEnd()) {
+          try {
+            this.parseExpression();
+          } catch {
+            /* recovery */
+          }
+        }
+        return this.createErrorNode();
+      }
+
       const operator = this.previous().value;
       const right = this.parseAssignment(); // Recursive call for right associativity
       expr = this.createBinaryExpression(operator, expr, right);
