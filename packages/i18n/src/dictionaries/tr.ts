@@ -49,9 +49,7 @@ export const tr: Dictionary = {
     // Data Commands
     increment: 'artır',
     decrement: 'azalt',
-    bind: 'bağla',
     default: 'varsayılan',
-    persist: 'kalıcı',
 
     // Navigation Commands
     go: 'git',

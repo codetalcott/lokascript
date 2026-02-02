@@ -49,9 +49,7 @@ export const sw: Dictionary = {
     // Data Commands
     increment: 'ongeza',
     decrement: 'punguza',
-    bind: 'funga',
     default: 'msingi',
-    persist: 'hifadhi',
 
     // Navigation Commands
     go: 'nenda',

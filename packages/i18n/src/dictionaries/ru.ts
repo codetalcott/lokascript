@@ -54,9 +54,7 @@ export const russianDictionary: Dictionary = {
     // Data Commands
     increment: 'увеличить',
     decrement: 'уменьшить',
-    bind: 'связать',
     default: 'по_умолчанию',
-    persist: 'сохранить',
 
     // Navigation Commands
     go: 'перейти',

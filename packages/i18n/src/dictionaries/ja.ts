@@ -49,9 +49,7 @@ export const ja: Dictionary = {
     // Data Commands
     increment: '増加',
     decrement: '減少',
-    bind: '結合',
     default: '既定',
-    persist: '永続化',
 
     // Navigation Commands
     go: '移動',

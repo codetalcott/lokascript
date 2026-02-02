@@ -49,9 +49,7 @@ export const qu: Dictionary = {
     // Data Commands
     increment: 'yapay',
     decrement: 'pisiyachiy',
-    bind: 'watay',
     default: 'ñawpaq_kaq',
-    persist: 'waqaychay',
 
     // Navigation Commands
     go: 'riy',

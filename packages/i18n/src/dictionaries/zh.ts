@@ -49,9 +49,7 @@ export const zh: Dictionary = {
     // Data Commands
     increment: '增加',
     decrement: '减少',
-    bind: '绑定',
     default: '默认',
-    persist: '持久化',
 
     // Navigation Commands
     go: '前往',

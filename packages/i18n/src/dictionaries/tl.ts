@@ -54,9 +54,7 @@ export const tagalogDictionary: Dictionary = {
     // Data Commands
     increment: 'dagdagan',
     decrement: 'bawasan',
-    bind: 'itali',
     default: 'pamantayan',
-    persist: 'panatilihin',
 
     // Navigation Commands
     go: 'pumunta',

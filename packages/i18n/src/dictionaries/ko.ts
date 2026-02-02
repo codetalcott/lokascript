@@ -49,9 +49,7 @@ export const ko: Dictionary = {
     // Data Commands
     increment: '증가',
     decrement: '감소',
-    bind: '바인드',
     default: '기본값',
-    persist: '유지',
 
     // Navigation Commands
     go: '이동',

@@ -49,9 +49,7 @@ export const it: Dictionary = {
     // Data Commands
     increment: 'incrementare',
     decrement: 'decrementare',
-    bind: 'vincolare',
     default: 'predefinito',
-    persist: 'persistere',
 
     // Navigation Commands
     go: 'andare',

@@ -54,9 +54,7 @@ export const hindiDictionary: Dictionary = {
     // Data Commands
     increment: 'बढ़ाएं',
     decrement: 'घटाएं',
-    bind: 'बाँधें',
     default: 'डिफ़ॉल्ट',
-    persist: 'सहेजें',
 
     // Navigation Commands
     go: 'जाएं',

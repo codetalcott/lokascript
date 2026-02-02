@@ -49,9 +49,7 @@ export const ar: Dictionary = {
     // Data Commands
     increment: 'زِد',
     decrement: 'أنقص',
-    bind: 'اربط',
     default: 'افتراضي',
-    persist: 'احفظ',
 
     // Navigation Commands
     go: 'اذهب',

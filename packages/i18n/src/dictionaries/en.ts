@@ -53,9 +53,7 @@ export const en: Dictionary = {
     // Data Commands
     increment: 'increment',
     decrement: 'decrement',
-    bind: 'bind',
     default: 'default',
-    persist: 'persist',
 
     // Navigation Commands
     go: 'go',

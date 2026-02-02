@@ -49,9 +49,7 @@ export const id: Dictionary = {
     // Data Commands
     increment: 'tambahkan',
     decrement: 'kurangi',
-    bind: 'ikat',
     default: 'bawaan',
-    persist: 'simpan',
 
     // Navigation Commands
     go: 'pergi',

@@ -201,8 +201,6 @@ function isCommand(script: string): boolean {
     /^repeat\s+.+/, // repeat for x in list
     /^on\s+.+/, // on click
     /^render\s+.+/, // render #template or render #template with data
-    /^bind\s+.+/, // bind :variable to|from element.property [bidirectional]
-    /^persist\s+.+/, // persist value to storage as key [ttl ms]
   ];
 
   // Check specific patterns first

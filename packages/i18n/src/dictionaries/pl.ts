@@ -55,9 +55,7 @@ export const pl: Dictionary = {
     // Data Commands
     increment: 'zwiększ',
     decrement: 'zmniejsz',
-    bind: 'powiąż',
     default: 'domyślnie',
-    persist: 'zachowaj',
 
     // Navigation Commands
     go: 'idź',

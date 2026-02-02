@@ -54,9 +54,7 @@ export const malayDictionary: Dictionary = {
     // Data Commands
     increment: 'tambah_satu',
     decrement: 'kurang_satu',
-    bind: 'ikat',
     default: 'lalai',
-    persist: 'kekal',
 
     // Navigation Commands
     go: 'pergi',

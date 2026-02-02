@@ -49,9 +49,7 @@ export const vi: Dictionary = {
     // Data Commands
     increment: 'tăng',
     decrement: 'giảm',
-    bind: 'ràng buộc',
     default: 'mặc định',
-    persist: 'duy trì',
 
     // Navigation Commands
     go: 'đi đến',

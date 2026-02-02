@@ -47,8 +47,6 @@ export { createSetCommand as set } from './data/set';
 export { createGetCommand as get } from './data/get';
 export { createIncrementCommand as increment } from './data/increment';
 export { createDecrementCommand as decrement } from './data/decrement';
-export { createBindCommand as bind } from './data/bind';
-export { createPersistCommand as persist } from './data/persist';
 export { createDefaultCommand as defaultCmd } from './data/default';
 
 // Utility Commands (factories)
@@ -173,9 +171,6 @@ export { HaltCommand, createHaltCommand } from './control-flow/halt';
 export { ReturnCommand, createReturnCommand } from './control-flow/return';
 export { ExitCommand, createExitCommand } from './control-flow/exit';
 
-// Data Commands (Phase 6-2)
-export { BindCommand, createBindCommand } from './data/bind';
-
 // Execution Commands
 export { CallCommand, createCallCommand } from './execution/call';
 
@@ -186,9 +181,6 @@ export { AppendCommand, createAppendCommand } from './content/append';
 export { TransitionCommand, createTransitionCommand } from './animation/transition';
 export { MeasureCommand, createMeasureCommand } from './animation/measure';
 export { SettleCommand, createSettleCommand } from './animation/settle';
-
-// Data Persistence (Phase 6-3)
-export { PersistCommand, createPersistCommand } from './data/persist';
 
 // Advanced Commands (Phase 6-4)
 export { JsCommand, createJsCommand } from './advanced/js';
@@ -254,13 +246,11 @@ export type { ContinueCommandInput } from './control-flow/continue';
 export type { HaltCommandInput } from './control-flow/halt';
 export type { ReturnCommandInput } from './control-flow/return';
 export type { ExitCommandInput } from './control-flow/exit';
-export type { BindCommandInput } from './data/bind';
 export type { CallCommandInput } from './execution/call';
 export type { AppendCommandInput } from './content/append';
 export type { TransitionCommandInput } from './animation/transition';
 export type { MeasureCommandInput } from './animation/measure';
 export type { SettleCommandInput } from './animation/settle';
-export type { PersistCommandInput } from './data/persist';
 export type { JsCommandInput } from './advanced/js';
 export type { AsyncCommandInput } from './advanced/async';
 export type { UnlessCommandInput } from './control-flow/unless';

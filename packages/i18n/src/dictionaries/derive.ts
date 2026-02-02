@@ -76,9 +76,7 @@ const COMMAND_KEYWORDS = [
   // Data commands
   'increment',
   'decrement',
-  'bind',
   'default',
-  'persist',
   // Navigation
   'go',
   'pushUrl',

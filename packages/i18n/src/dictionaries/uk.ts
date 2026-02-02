@@ -54,9 +54,7 @@ export const ukrainianDictionary: Dictionary = {
     // Data Commands
     increment: 'збільшити',
     decrement: 'зменшити',
-    bind: "прив'язати",
     default: 'за_замовчуванням',
-    persist: 'зберегти',
 
     // Navigation Commands
     go: 'перейти',
