@@ -164,6 +164,12 @@ export function getElementProperty(element: Element, property: string): unknown 
     return undefined;
   }
 
+  // Handle attribute access (@attribute) - strip @ prefix for getAttribute
+  if (property.startsWith('@')) {
+    const attrName = property.slice(1);
+    return accessAttribute(element, attrName);
+  }
+
   // Handle special DOM properties
   const specialHandler = SPECIAL_DOM_PROPERTIES[property.toLowerCase()];
   if (specialHandler) {

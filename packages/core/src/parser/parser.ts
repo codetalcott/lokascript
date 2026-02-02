@@ -1145,6 +1145,9 @@ export class Parser {
           );
           // Combine * with property name
           propertyName = '*' + propertyToken.value;
+        } else if (isSymbol(this.peek()) && this.peek().value.startsWith('@')) {
+          // Attribute reference: element's @data-attr
+          propertyName = this.advance().value;
         } else {
           // Normal property access - Phase 8: Use predicate-based consume
           const property = this.consumeIdentifier('Expected property name after possessive');
