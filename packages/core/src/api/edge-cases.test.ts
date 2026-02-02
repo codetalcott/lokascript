@@ -97,13 +97,6 @@ describe('API v2 Edge Cases', () => {
       expect(result.meta.parser).toBe('traditional');
     });
 
-    it('should handle confidence threshold', async () => {
-      const result = await hyperscript.compile('toggle .active', {
-        confidenceThreshold: 0.9,
-      });
-      expect(result.ok).toBe(true);
-    });
-
     it('should throw TypeError for non-string input', async () => {
       await expect(async () => {
         await hyperscript.compile(undefined as any);

@@ -170,8 +170,8 @@ describe('AST Compilation Cache', () => {
     });
   });
 
-  describe('FIFO eviction', () => {
-    it('should evict oldest entries when cache is full', () => {
+  describe('LRU eviction', () => {
+    it('should grow cache correctly up to capacity', () => {
       // We can't easily test the internal maxSize=500 without compiling 500+ unique strings,
       // but we can verify the cache grows and stats work correctly
       const uniqueStrings = 20;

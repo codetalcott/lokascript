@@ -76,9 +76,13 @@ class ASTCache {
   }
 
   get(code: string, options?: NewCompileOptions): CompileResult | undefined {
-    const entry = this.cache.get(this.makeKey(code, options));
+    const key = this.makeKey(code, options);
+    const entry = this.cache.get(key);
     if (entry) {
       this.hits++;
+      // LRU: move to end so frequently-accessed entries survive eviction
+      this.cache.delete(key);
+      this.cache.set(key, entry);
       return entry.result;
     }
     this.misses++;
@@ -257,9 +261,6 @@ export interface CompileError {
 export interface NewCompileOptions {
   /** Language code (default: 'en'). Auto-detected from element if using process() */
   language?: string;
-
-  /** Confidence threshold for semantic parsing (0-1, default: 0.5) */
-  confidenceThreshold?: number;
 
   /** Force traditional parser (skip semantic analysis) */
   traditional?: boolean;
@@ -514,7 +515,6 @@ function toCompileError(error: ParseError): CompileError {
  * @param code - The hyperscript code to compile
  * @param options - Compilation options
  * @param options.language - Language code (default: 'en')
- * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1, default: 0.5)
  * @param options.traditional - Force traditional parser, skip semantic analysis
  *
  * @returns CompileResult with ok/errors/meta structure
@@ -606,7 +606,6 @@ function compileSync(code: string, options?: NewCompileOptions): CompileResult {
  * @param code - The hyperscript code to compile
  * @param options - Compilation options
  * @param options.language - Language code (e.g., 'en', 'ja', 'es'). Auto-detected if not specified
- * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1, default: 0.5)
  * @param options.traditional - Force traditional parser, skip semantic analysis
  *
  * @returns Promise<CompileResult> with ok/errors/meta structure
@@ -704,7 +703,6 @@ initializeDOMProcessor(compileSync, compileAsync, getDefaultRuntime);
  *                  created with that element as 'me'. If omitted, a basic context is created.
  * @param options - Compilation options
  * @param options.language - Language code (e.g., 'en', 'ja', 'es')
- * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1)
  * @param options.traditional - Force traditional parser
  *
  * @returns Promise<unknown> - The result of execution
@@ -778,7 +776,6 @@ async function evalCode(
  * @param code - The hyperscript code to validate
  * @param options - Validation options (same as compilation options)
  * @param options.language - Language code (e.g., 'en', 'ja', 'es')
- * @param options.confidenceThreshold - Min confidence for semantic parsing (0-1)
  * @param options.traditional - Force traditional parser
  *
  * @returns Promise<ValidateResult> with valid flag and optional errors

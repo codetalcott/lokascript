@@ -234,8 +234,7 @@ export class AttributeProcessor {
       const compilationResult = hyperscript.compileSync(hyperscriptCode);
 
       if (!compilationResult.ok) {
-        debug.parse(`ATTR: Script for="${selector}" compilation failed:`, compilationResult.errors);
-        console.error(
+        console.warn(
           `[LokaScript] Script for="${selector}" compilation failed:`,
           compilationResult.errors
         );
@@ -279,7 +278,7 @@ export class AttributeProcessor {
       debug.parse('SCRIPT: Compilation result:', compilationResult.ok ? 'SUCCESS' : 'FAILED');
 
       if (!compilationResult.ok) {
-        debug.parse('ATTR: Script compilation failed:', compilationResult.errors);
+        console.warn('[LokaScript] Script compilation failed:', compilationResult.errors);
         return;
       }
 
@@ -296,7 +295,7 @@ export class AttributeProcessor {
 
       debug.parse('ATTR: Script executed successfully');
     } catch (error) {
-      debug.parse('ATTR: Script execution error:', (error as Error).message);
+      console.error('[LokaScript] Script execution error:', error);
     }
   }
 
@@ -341,16 +340,11 @@ export class AttributeProcessor {
       debug.parse('ATTR: Compilation result:', compilationResult);
 
       if (!compilationResult.ok) {
-        debug.parse('ATTR: Hyperscript compilation failed for element:', element);
-        debug.parse('ATTR: Code that failed:', hyperscriptCode);
-        debug.parse('ATTR: Compilation errors:', JSON.stringify(compilationResult.errors, null, 2));
-        (compilationResult.errors || []).forEach((error, i) => {
-          debug.parse(
-            `ATTR: Error ${i + 1}:`,
-            error.message,
-            `at line ${error.line}, column ${error.column}`
-          );
-        });
+        console.warn(
+          '[LokaScript] Compilation failed for _= attribute:',
+          compilationResult.errors,
+          element
+        );
         return;
       }
 
@@ -368,7 +362,7 @@ export class AttributeProcessor {
       // Dispatch load event on the element after successful processing
       this.dispatchLoadEvent(element);
     } catch (error) {
-      debug.parse('ATTR: Error processing hyperscript attribute on element:', element, error);
+      console.error('[LokaScript] Error processing _= attribute:', error, element);
     }
   }
 
@@ -401,7 +395,9 @@ export class AttributeProcessor {
 
   /**
    * Register a lightweight stub listener for an event-driven attribute.
-   * Full parsing is deferred until the first event dispatch.
+   * On first event, synchronously compiles and installs the real handler, then
+   * executes the handler body with the original trusted event (preserving isTrusted
+   * and user activation for security-sensitive APIs like clipboard).
    * Non-event attributes and immediate events fall back to eager processing.
    * @returns A promise if the element needs eager processing, or null if lazy-registered.
    */
@@ -419,47 +415,79 @@ export class AttributeProcessor {
     const eventType = match[1];
     debug.parse(`ATTR: Lazy-registering stub for "${eventType}" on element`);
 
-    // Register a one-time stub listener that triggers full processing on first event
-    const stubListener = (event: Event) => {
-      // Remove stub immediately
-      element.removeEventListener(eventType, stubListener);
+    // One-shot stub: on first event, compile synchronously and execute directly.
+    // This avoids re-dispatching synthetic events (which lose isTrusted).
+    const stubListener = async (event: Event) => {
       this.lazyElements.delete(element);
 
-      // Queue events during parse to avoid losing them
-      const queuedEvents: Event[] = [];
-      const queueHandler = (e: Event) => queuedEvents.push(e);
-      element.addEventListener(eventType, queueHandler);
+      try {
+        // Synchronous compile within the trusted event callback.
+        // compileSync() is fully synchronous for English code, preserving
+        // user activation for security-sensitive APIs (clipboard, fullscreen, etc.)
+        const result = hyperscript.compileSync(code);
+        if (!result.ok || !result.ast) {
+          console.warn('[LokaScript] Lazy compilation failed:', result.errors, element);
+          return;
+        }
 
-      // Full parse + execute (will benefit from AST cache)
-      this.processElementAsync(element)
-        .then(() => {
-          element.removeEventListener(eventType, queueHandler);
-          // Re-dispatch the original event so the real handler fires
-          element.dispatchEvent(new Event(event.type, event));
-          // Re-dispatch any queued events
-          for (const queued of queuedEvents) {
-            element.dispatchEvent(new Event(queued.type, queued));
+        // Install the real handler for future events.
+        // execute() for eventHandler ASTs calls addEventListener() synchronously
+        // (before its first internal await), so the handler is active immediately.
+        const context = createContext(element);
+        void hyperscript.execute(result.ast, context);
+
+        // Execute the handler body for the current (trusted) event.
+        // The real handler installed above won't fire for this event (per DOM spec:
+        // listeners added during dispatch are not invoked for the current event).
+        const ast = result.ast as any;
+        if (ast.type === 'eventHandler' && ast.commands?.length > 0) {
+          if (ast.modifiers?.prevent) event.preventDefault();
+          if (ast.modifiers?.stop) event.stopPropagation();
+
+          const eventContext = createContext(element);
+          eventContext.locals.set('event', event);
+          eventContext.locals.set('target', event.target);
+          (eventContext as any).event = event;
+
+          for (const command of ast.commands) {
+            await hyperscript.execute(command, eventContext);
           }
-        })
-        .catch(err => {
-          element.removeEventListener(eventType, queueHandler);
-          debug.parse('ATTR: Error in lazy parse on first event:', err);
-        });
+        }
+
+        this.dispatchLoadEvent(element);
+      } catch (err) {
+        console.error('[LokaScript] Error in lazy handler on first event:', err, element);
+      }
     };
 
     element.addEventListener(eventType, stubListener, { once: true });
     this.lazyElements.add(element);
+    this.processedElements.add(element); // Prevent re-processing via mutation observer
     this.processedCount++;
     return null;
   }
 
   /**
    * Check if hyperscript code contains multiple event handlers.
-   * e.g., "on click ... on mouseover ..." should be processed eagerly.
+   * e.g., "on click add .a on mouseover add .b" should be processed eagerly.
+   * Distinguishes handler-start "on click" from preposition "on me" / "on navigator.clipboard".
    */
   private hasMultipleHandlers(code: string): boolean {
-    const matches = code.match(/\bon\s+\w+/g);
-    return !!matches && matches.length > 1;
+    // Pronouns and targets that follow the preposition "on", not event names
+    const TARGET_WORDS = new Set(['me', 'it', 'its', 'my', 'you', 'yourself']);
+    let count = 0;
+    const regex = /\bon\s+(\w+)/g;
+    let m;
+    while ((m = regex.exec(code)) !== null) {
+      const word = m[1];
+      // Skip property-access targets: "on navigator.clipboard", "on document.body"
+      if (code[m.index + m[0].length] === '.') continue;
+      // Skip hyperscript pronouns: "on me", "on it"
+      if (TARGET_WORDS.has(word)) continue;
+      count++;
+      if (count > 1) return true;
+    }
+    return false;
   }
 
   /**
@@ -523,7 +551,7 @@ export class AttributeProcessor {
               element.getAttribute('type') === 'text/hyperscript'
             ) {
               this.processHyperscriptTag(element as HTMLScriptElement).catch(err => {
-                debug.parse('ATTR: Error processing dynamically added script tag:', err);
+                console.error('[LokaScript] Error processing dynamically added script tag:', err);
               });
             }
 
@@ -532,7 +560,7 @@ export class AttributeProcessor {
             scriptTags?.forEach(script => {
               if (script instanceof HTMLScriptElement) {
                 this.processHyperscriptTag(script).catch(err => {
-                  debug.parse('ATTR: Error processing dynamically added script tag:', err);
+                  console.error('[LokaScript] Error processing dynamically added script tag:', err);
                 });
               }
             });
@@ -540,7 +568,7 @@ export class AttributeProcessor {
             // Process the element itself if it has hyperscript attribute
             if (element.getAttribute && element.getAttribute(this.options.attributeName)) {
               this.processElementAsync(element).catch(err => {
-                debug.parse('ATTR: Error processing dynamically added element:', err);
+                console.error('[LokaScript] Error processing dynamically added element:', err);
               });
             }
 
@@ -549,7 +577,7 @@ export class AttributeProcessor {
             descendants?.forEach(descendant => {
               if (descendant instanceof HTMLElement) {
                 this.processElementAsync(descendant).catch(err => {
-                  debug.parse('ATTR: Error processing dynamically added element:', err);
+                  console.error('[LokaScript] Error processing dynamically added element:', err);
                 });
               }
             });

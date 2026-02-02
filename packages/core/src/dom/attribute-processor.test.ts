@@ -825,5 +825,57 @@ describe('AttributeProcessor System Events', () => {
 
       await eventPromise;
     });
+
+    describe('hasMultipleHandlers', () => {
+      it('should detect true multi-handler attributes', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        expect(hasMultiple('on click add .a to me on mouseover add .b to me')).toBe(true);
+      });
+
+      it('should not false-positive on "on navigator.clipboard" (property access)', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        const code = "on click writeText('hello') on navigator.clipboard";
+        expect(hasMultiple(code)).toBe(false);
+      });
+
+      it('should not false-positive on "on me" (pronoun target)', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        expect(hasMultiple('on click add .active on me')).toBe(false);
+        expect(hasMultiple('on click toggle .active on it')).toBe(false);
+      });
+
+      it('should not false-positive on "on document.body" (property access)', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        expect(hasMultiple('on click add .active on document.body')).toBe(false);
+      });
+
+      it('should detect multiple real handlers even with preposition targets', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        // Two real handlers plus a preposition "on me" - should still be true
+        const code = 'on click add .a on me on mouseover add .b on me';
+        expect(hasMultiple(code)).toBe(true);
+      });
+
+      it('should return false for single handler with no prepositions', () => {
+        const hasMultiple = lazyProcessor['hasMultipleHandlers'].bind(lazyProcessor);
+        expect(hasMultiple('on click add .active')).toBe(false);
+      });
+    });
+
+    it('should lazily process "on click ... on navigator.clipboard" (not eager)', async () => {
+      const elem = document.createElement('button');
+      elem.setAttribute('_', "on click writeText('hello') on navigator.clipboard");
+      testContainer.appendChild(elem);
+
+      let loadFired = false;
+      elem.addEventListener('load', () => {
+        loadFired = true;
+      });
+
+      await lazyProcessor.scanAndProcessAll();
+
+      // Single handler with preposition target - should be lazy (no load event yet)
+      expect(loadFired).toBe(false);
+    });
   });
 });
