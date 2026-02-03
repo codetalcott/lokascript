@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>_hyperscript Multilingual Adapter Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fafafa;
+      color: #1a1a1a;
+    }
+    h1 { margin-bottom: 0.5rem; }
+    .subtitle { color: #666; margin-top: 0; margin-bottom: 2rem; }
+    section {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    section h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+    .lang-tag {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      background: white;
+      transition: all 0.2s;
+    }
+    button:hover { background: #f5f5f5; }
+    button.active { background: #2196f3; color: white; border-color: #1976d2; }
+    button.highlight { background: #ff9800; color: white; border-color: #f57c00; }
+    .box {
+      display: inline-block;
+      width: 100px;
+      height: 100px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      margin: 8px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .box.active { background: #2196f3; color: white; }
+    .box.highlight { background: #ff9800; color: white; }
+    .hidden { display: none !important; }
+    #msg {
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      min-height: 40px;
+      margin-top: 8px;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+    }
+    .code-block {
+      background: #263238;
+      color: #eee;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+    .result { margin-top: 12px; padding: 8px; background: #f9f9f9; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<h1>_hyperscript Multilingual Adapter</h1>
+<p class="subtitle">Writing hyperscript in Spanish, Japanese, Korean, Chinese, and French — powered by the original _hyperscript runtime</p>
+
+<!-- ============================================ -->
+<!-- Spanish: Toggle -->
+<!-- ============================================ -->
+<section>
+  <h2>Toggle <span class="lang-tag">ES - Spanish</span></h2>
+  <p>Click the button to toggle the <code>.active</code> class:</p>
+  <div class="code-block">_="alternar .active"</div>
+  <button _="on click alternar .active on me" data-lang="es">
+    Alternar .active (Spanish)
+  </button>
+</section>
+
+<!-- ============================================ -->
+<!-- Japanese: Toggle -->
+<!-- ============================================ -->
+<section>
+  <h2>Toggle <span class="lang-tag">JA - Japanese</span></h2>
+  <p>Click to toggle <code>.active</code> class:</p>
+  <div class="code-block">_=".active を 切り替え"</div>
+  <button _="on click .active を me で 切り替え" data-lang="ja">
+    切り替え .active (Japanese)
+  </button>
+</section>
+
+<!-- ============================================ -->
+<!-- Korean: Toggle -->
+<!-- ============================================ -->
+<section>
+  <h2>Toggle <span class="lang-tag">KO - Korean</span></h2>
+  <div class="code-block">_=".active 을 토글"</div>
+  <button _="on click .active 을 me 에서 토글" data-lang="ko">
+    토글 .active (Korean)
+  </button>
+</section>
+
+<!-- ============================================ -->
+<!-- French: Add class -->
+<!-- ============================================ -->
+<section>
+  <h2>Add Class <span class="lang-tag">FR - French</span></h2>
+  <p>Click to add <code>.highlight</code> to the box:</p>
+  <div class="code-block">_="ajouter .highlight sur #frenchBox"</div>
+  <button _="on click ajouter .highlight sur #frenchBox" data-lang="fr">
+    Ajouter .highlight (French)
+  </button>
+  <div class="box" id="frenchBox">Box</div>
+</section>
+
+<!-- ============================================ -->
+<!-- Chinese: Toggle -->
+<!-- ============================================ -->
+<section>
+  <h2>Toggle <span class="lang-tag">ZH - Chinese</span></h2>
+  <div class="code-block">_="切换 .active"</div>
+  <button _="on click 切换 .active" data-lang="zh">
+    切换 .active (Chinese)
+  </button>
+</section>
+
+<!-- ============================================ -->
+<!-- Spanish: Put -->
+<!-- ============================================ -->
+<section>
+  <h2>Put <span class="lang-tag">ES - Spanish</span></h2>
+  <p>Click to put text into the message area:</p>
+  <div class="code-block">_='poner "Hola desde _hyperscript!" en #msg'</div>
+  <button _='on click poner "Hola desde _hyperscript!" en #msg' data-lang="es">
+    Poner texto (Spanish)
+  </button>
+  <div id="msg">(message will appear here)</div>
+</section>
+
+<!-- ============================================ -->
+<!-- English: Control (should pass through) -->
+<!-- ============================================ -->
+<section>
+  <h2>English Control <span class="lang-tag">EN - English</span></h2>
+  <p>Standard English hyperscript (no translation needed):</p>
+  <div class="code-block">_="on click toggle .active on me"</div>
+  <button _="on click toggle .active on me">
+    Toggle .active (English)
+  </button>
+</section>
+
+<!-- ============================================ -->
+<!-- Inherited Language -->
+<!-- ============================================ -->
+<section data-hyperscript-lang="es">
+  <h2>Inherited Language <span class="lang-tag">ES - Inherited</span></h2>
+  <p>This section has <code>data-hyperscript-lang="es"</code> on the parent. All children inherit Spanish:</p>
+  <div class="code-block">Parent: data-hyperscript-lang="es"<br>Button: _="alternar .highlight on me"</div>
+  <button _="on click alternar .highlight on me">
+    Inherited Spanish
+  </button>
+</section>
+
+<!-- Load scripts -->
+<!-- 1. Original _hyperscript -->
+<script src="../../../_hyperscript/dist/_hyperscript.js"></script>
+
+<!-- 2. Adapter plugin (bundles semantic parser) -->
+<script src="../dist/hyperscript-i18n.global.js"></script>
+
+<script>
+  // Verify plugin loaded
+  if (typeof HyperscriptI18n !== 'undefined') {
+    console.log('[demo] HyperscriptI18n loaded, supported languages:', HyperscriptI18n.supportedLanguages);
+  } else {
+    console.error('[demo] HyperscriptI18n not found — did the bundle load?');
+  }
+</script>
+
+</body>
+</html>

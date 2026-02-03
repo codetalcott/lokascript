@@ -1,0 +1,95 @@
+{
+  "name": "@lokascript/hyperscript-adapter",
+  "version": "0.1.0",
+  "description": "Multilingual adapter plugin for original _hyperscript — enables writing hyperscript in 24 languages",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./browser": {
+      "default": "./dist/hyperscript-i18n.global.js"
+    },
+    "./browser/lite": {
+      "default": "./dist/hyperscript-i18n-lite.global.js"
+    },
+    "./browser/es": {
+      "default": "./dist/hyperscript-i18n-es.global.js"
+    },
+    "./browser/ja": {
+      "default": "./dist/hyperscript-i18n-ja.global.js"
+    },
+    "./browser/ko": {
+      "default": "./dist/hyperscript-i18n-ko.global.js"
+    },
+    "./browser/zh": {
+      "default": "./dist/hyperscript-i18n-zh.global.js"
+    },
+    "./browser/fr": {
+      "default": "./dist/hyperscript-i18n-fr.global.js"
+    },
+    "./browser/de": {
+      "default": "./dist/hyperscript-i18n-de.global.js"
+    },
+    "./browser/pt": {
+      "default": "./dist/hyperscript-i18n-pt.global.js"
+    },
+    "./browser/ar": {
+      "default": "./dist/hyperscript-i18n-ar.global.js"
+    },
+    "./browser/tr": {
+      "default": "./dist/hyperscript-i18n-tr.global.js"
+    },
+    "./browser/id": {
+      "default": "./dist/hyperscript-i18n-id.global.js"
+    },
+    "./browser/western": {
+      "default": "./dist/hyperscript-i18n-western.global.js"
+    },
+    "./browser/east-asian": {
+      "default": "./dist/hyperscript-i18n-east-asian.global.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:check": "vitest run --reporter=dot 2>&1 | tail -5",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "hyperscript",
+    "i18n",
+    "multilingual",
+    "plugin",
+    "adapter"
+  ],
+  "author": "Hyperfixi Team",
+  "license": "MIT",
+  "dependencies": {
+    "@lokascript/semantic": "*"
+  },
+  "optionalDependencies": {
+    "@lokascript/i18n": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

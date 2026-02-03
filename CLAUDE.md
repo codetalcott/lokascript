@@ -44,6 +44,9 @@ packages/
 │       ├── aggregator.ts     # Usage collection across files
 │       └── generator.ts      # Minimal bundle generation
 │
+├── hyperscript-adapter/  # Multilingual plugin for original _hyperscript (preprocessor)
+│   └── src/              # See packages/hyperscript-adapter/CLAUDE.md
+│
 └── [other packages: smart-bundling, developer-tools, testing-framework, etc.]
 
 examples/

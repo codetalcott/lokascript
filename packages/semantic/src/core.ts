@@ -149,6 +149,13 @@ export {
 } from './types';
 
 // =============================================================================
+// Parsing & Rendering (registry-based, no language imports)
+// =============================================================================
+
+export { parse, canParse } from './parser';
+export { render, renderExplicit, translate, toExplicit, fromExplicit } from './explicit';
+
+// =============================================================================
 // Cache
 // =============================================================================
 
