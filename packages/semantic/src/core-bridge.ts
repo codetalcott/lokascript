@@ -14,6 +14,7 @@ import type {
   SemanticRole,
 } from './types';
 import { PatternMatcher } from './parser/pattern-matcher';
+import { parse as fullParse } from './parser/semantic-parser';
 import { getTokenizer } from './tokenizers';
 // Import from registry for tree-shaking (registry uses directly-registered patterns first)
 import { getPatternsForLanguage, getRegisteredLanguages } from './registry';
@@ -169,24 +170,40 @@ export class SemanticAnalyzerImpl implements SemanticAnalyzer {
       // Try to match patterns
       const match = this.patternMatcher.matchBest(tokenStream, patterns);
 
-      if (!match) {
+      if (match) {
+        // Build semantic node from match
+        const node = this.buildSemanticNode(match);
+
         return {
-          confidence: 0,
-          errors: ['No pattern matched the input'],
+          confidence: match.confidence,
+          command: {
+            name: match.pattern.command,
+            roles: match.captured,
+          },
+          node,
+          tokensConsumed: match.consumedTokens,
         };
       }
 
-      // Build semantic node from match
-      const node = this.buildSemanticNode(match);
+      // Fallback: try full parser which handles event handlers, compound
+      // statements (then-chains), and grammar-transformed patterns
+      try {
+        const node = fullParse(input, language);
+        const result: SemanticAnalysisResult = {
+          confidence: node.metadata?.confidence ?? 0.8,
+          node,
+        };
+        if (node.kind === 'command') {
+          return { ...result, command: { name: node.action, roles: node.roles } };
+        }
+        return result;
+      } catch {
+        // Full parser also failed
+      }
 
       return {
-        confidence: match.confidence,
-        command: {
-          name: match.pattern.command,
-          roles: match.captured,
-        },
-        node,
-        tokensConsumed: match.consumedTokens,
+        confidence: 0,
+        errors: ['No pattern matched the input'],
       };
     } catch (error) {
       return {

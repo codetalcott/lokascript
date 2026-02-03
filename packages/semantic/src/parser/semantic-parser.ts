@@ -24,6 +24,7 @@ import {
 // Import from registry for tree-shaking (registry uses directly-registered patterns first)
 import { getPatternsForLanguage } from '../registry';
 import { patternMatcher } from './pattern-matcher';
+import { eventNameTranslations } from '../patterns/event-handler/shared';
 import { render as renderExplicitFn } from '../explicit/renderer';
 import { parseExplicit as parseExplicitFn } from '../explicit/parser';
 
@@ -63,6 +64,14 @@ export class SemanticParserImpl implements ISemanticParser {
 
     if (commandMatch) {
       return this.buildCommand(commandMatch, language);
+    }
+
+    // Try SOV event trigger extraction: detect embedded event keywords
+    // (e.g., "クリック で" in JA, "클릭 에" in KO, "tıklama de" in TR)
+    // and extract them to parse the remaining tokens as command body
+    const sovResult = this.trySOVEventExtraction(input, language, sortedPatterns);
+    if (sovResult) {
+      return sovResult;
     }
 
     throw new Error(`Could not parse input in ${language}: ${input}`);
@@ -390,6 +399,137 @@ export class SemanticParserImpl implements ISemanticParser {
     return commands;
   }
 
+  // ==========================================================================
+  // SOV Event Trigger Extraction
+  // ==========================================================================
+
+  /**
+   * Known event names for detection (common DOM events).
+   */
+  private static readonly KNOWN_EVENTS = new Set([
+    'click',
+    'dblclick',
+    'input',
+    'change',
+    'submit',
+    'keydown',
+    'keyup',
+    'keypress',
+    'mouseover',
+    'mouseout',
+    'mousedown',
+    'mouseup',
+    'focus',
+    'blur',
+    'load',
+    'scroll',
+    'resize',
+    'contextmenu',
+  ]);
+
+  /**
+   * SOV event marker particles per language (postpositions that mark the event role).
+   * Korean has no event marker particle -- the event keyword stands alone.
+   */
+  private static readonly SOV_EVENT_MARKERS: Record<string, Set<string>> = {
+    ja: new Set(['で']),
+    ko: new Set(), // Korean doesn't use event marker particles
+    tr: new Set(['de', 'da', 'te', 'ta']),
+  };
+
+  /**
+   * Try to extract an embedded event trigger from SOV grammar-transformed text.
+   *
+   * SOV languages embed the event trigger within the sentence:
+   *   JA: ".active を クリック で 切り替え"  (patient event-marker action)
+   *   KO: ".active 를 클릭 에 토글"          (patient event-marker action)
+   *   TR: ".active i tıklama de değiştir"   (patient event-marker action)
+   *
+   * This method detects the [event_keyword] [event_particle] pair,
+   * removes those tokens, and parses the remaining tokens as command body.
+   */
+  private trySOVEventExtraction(
+    input: string,
+    language: string,
+    patterns: LanguagePattern[]
+  ): SemanticNode | null {
+    const eventMarkers = SemanticParserImpl.SOV_EVENT_MARKERS[language];
+    if (!eventMarkers) return null;
+
+    const tokens = tokenizeInternal(input, language);
+    const allTokens = tokens.tokens;
+
+    // Build a set of native event names for this language (from eventNameTranslations)
+    const langEvents = eventNameTranslations[language];
+    const nativeEventNames = new Set<string>();
+    if (langEvents) {
+      for (const native of Object.keys(langEvents)) {
+        nativeEventNames.add(native.toLowerCase());
+      }
+    }
+
+    // Scan for event keyword + optional event marker particle pattern
+    let eventIndex = -1;
+    let eventName = '';
+    let tokensToRemove = 1; // How many tokens to strip (1 = event only, 2 = event + marker)
+
+    for (let i = 0; i < allTokens.length; i++) {
+      const token = allTokens[i];
+      // Check if this token is a known event name (by normalized value or native text)
+      const isEventByNormalized =
+        token.normalized && SemanticParserImpl.KNOWN_EVENTS.has(token.normalized);
+      const isEventByNative = nativeEventNames.has(token.value.toLowerCase());
+
+      if (isEventByNormalized || isEventByNative) {
+        const resolvedName =
+          token.normalized && SemanticParserImpl.KNOWN_EVENTS.has(token.normalized)
+            ? token.normalized
+            : (langEvents?.[token.value] ?? token.value);
+
+        if (eventMarkers.size > 0) {
+          // Languages with event markers (JA, TR): require marker after event keyword
+          const nextToken = allTokens[i + 1];
+          if (nextToken && nextToken.kind === 'particle' && eventMarkers.has(nextToken.value)) {
+            eventIndex = i;
+            eventName = resolvedName;
+            tokensToRemove = 2; // Remove event keyword + marker
+            break;
+          }
+        } else {
+          // Languages without event markers (KO): event keyword stands alone
+          eventIndex = i;
+          eventName = resolvedName;
+          tokensToRemove = 1; // Remove event keyword only
+          break;
+        }
+      }
+    }
+
+    if (eventIndex === -1) return null;
+
+    // Remove event tokens from the array
+    const bodyTokens = [
+      ...allTokens.slice(0, eventIndex),
+      ...allTokens.slice(eventIndex + tokensToRemove),
+    ];
+
+    if (bodyTokens.length === 0) return null;
+
+    // Parse body tokens as command(s)
+    const commandPatterns = patterns.filter(p => p.command !== 'on');
+    const bodyStream = new TokenStreamImpl(bodyTokens, language);
+
+    // Use clause-based parsing to handle then-chains
+    const body = this.parseBodyWithClauses(bodyStream, commandPatterns, language);
+
+    if (body.length === 0) return null;
+
+    return createEventHandler({ type: 'literal', value: eventName }, body, undefined, {
+      sourceLanguage: language,
+      confidence: 0.75,
+    });
+  }
+
   /**
    * Check if a token is a 'then' keyword in the given language.
    */
@@ -399,7 +539,7 @@ export class SemanticParserImpl implements ISemanticParser {
       ja: new Set(['それから', '次に', 'そして']),
       ar: new Set(['ثم', 'بعدها', 'ثمّ']),
       es: new Set(['entonces', 'luego', 'después']),
-      ko: new Set(['그다음', '그리고', '그런후']),
+      ko: new Set(['그다음', '그리고', '그런후', '그러면']),
       zh: new Set(['然后', '接着', '之后']),
       tr: new Set(['sonra', 'ardından', 'daha sonra']),
       pt: new Set(['então', 'depois', 'logo']),

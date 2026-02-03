@@ -288,6 +288,11 @@ const KOREAN_EXTRAS: KeywordEntry[] = [
   { native: '내', normalized: 'my' },
   { native: '그것의', normalized: 'its' },
 
+  // Then/conjunction (clause chaining)
+  { native: '그다음', normalized: 'then' },
+  { native: '그런후', normalized: 'then' },
+  { native: '그러면', normalized: 'then' },
+
   // Logical
   { native: '그리고', normalized: 'and' },
   { native: '또는', normalized: 'or' },

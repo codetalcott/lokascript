@@ -46,7 +46,7 @@ const POSTPOSITIONS = new Set([
   'için', // for
   'kadar', // until, as far as
   'gibi', // like
-  'sonra', // after
+  // 'sonra' removed — classified as keyword('then') for hyperscript clause chaining
   'önce', // before
   'üzerinde', // on, above
   'altında', // under
@@ -162,6 +162,12 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'milisaniye', normalized: 'ms' },
   { native: 'dakika', normalized: 'm' },
   { native: 'saat', normalized: 'h' },
+
+  // Then/conjunction (clause chaining)
+  { native: 'sonra', normalized: 'then' },
+  { native: 'ardından', normalized: 'then' },
+  { native: 'ardindan', normalized: 'then' },
+  { native: 'daha sonra', normalized: 'then' },
 
   // Logical
   { native: 've', normalized: 'and' },
