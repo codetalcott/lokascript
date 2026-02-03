@@ -47,6 +47,9 @@ function getAnalyzer(): SemanticAnalyzer {
 /**
  * Preprocess non-English hyperscript into English.
  * Identical to preprocessToEnglish in preprocessor.ts but with slim imports.
+ *
+ * Handles _hyperscript feature prefixes (e.g. "on click", "on every keyup")
+ * by stripping them, translating only the command portion, then reassembling.
  */
 export function preprocessToEnglish(
   src: string,
@@ -55,6 +58,25 @@ export function preprocessToEnglish(
 ): string {
   const cfg = { ...DEFAULT_CONFIG, ...config };
 
+  // Try translating the full string first
+  const fullResult = tryTranslateWithStrategies(src, lang, cfg);
+  if (fullResult !== null) return fullResult;
+
+  // If full translation failed, try stripping event/feature prefix
+  const stripped = stripEventPrefix(src);
+  if (stripped) {
+    const translated = tryTranslateWithStrategies(stripped.commands, lang, cfg);
+    if (translated !== null) return stripped.prefix + translated;
+  }
+
+  return src;
+}
+
+function tryTranslateWithStrategies(
+  src: string,
+  lang: string,
+  cfg: PreprocessorConfig
+): string | null {
   if (cfg.strategy === 'semantic' || cfg.strategy === 'auto') {
     const threshold = resolveThreshold(cfg.confidenceThreshold, lang);
     const result = trySemanticTranslation(src, lang, threshold);
@@ -66,7 +88,20 @@ export function preprocessToEnglish(
     if (result !== null) return result;
   }
 
-  return src;
+  return null;
+}
+
+/** Match _hyperscript event handler prefix. */
+const EVENT_PREFIX_RE =
+  /^(on\s+(?:every\s+)?[\w-]+(?:\[.*?\])?(?:\.[\w-]+(?:\([^)]*\))?)*(?:\s+from\s+\S+)?(?:\s+queue\s+\w+)?\s+)/;
+
+function stripEventPrefix(src: string): { prefix: string; commands: string } | null {
+  const match = src.match(EVENT_PREFIX_RE);
+  if (!match) return null;
+  const prefix = match[1];
+  const commands = src.slice(prefix.length);
+  if (!commands) return null;
+  return { prefix, commands };
 }
 
 function trySemanticTranslation(src: string, lang: string, threshold: number): string | null {

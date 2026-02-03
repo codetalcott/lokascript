@@ -106,7 +106,7 @@
   <h2>Toggle <span class="lang-tag">ES - Spanish</span></h2>
   <p>Click the button to toggle the <code>.active</code> class:</p>
   <div class="code-block">_="alternar .active"</div>
-  <button _="on click alternar .active on me" data-lang="es">
+  <button _="on click alternar .active" data-lang="es">
     Alternar .active (Spanish)
   </button>
 </section>
@@ -118,7 +118,7 @@
   <h2>Toggle <span class="lang-tag">JA - Japanese</span></h2>
   <p>Click to toggle <code>.active</code> class:</p>
   <div class="code-block">_=".active を 切り替え"</div>
-  <button _="on click .active を me で 切り替え" data-lang="ja">
+  <button _="on click .active を 切り替え" data-lang="ja">
     切り替え .active (Japanese)
   </button>
 </section>
@@ -129,7 +129,7 @@
 <section>
   <h2>Toggle <span class="lang-tag">KO - Korean</span></h2>
   <div class="code-block">_=".active 을 토글"</div>
-  <button _="on click .active 을 me 에서 토글" data-lang="ko">
+  <button _="on click .active 을 토글" data-lang="ko">
     토글 .active (Korean)
   </button>
 </section>
@@ -189,15 +189,15 @@
 <section data-hyperscript-lang="es">
   <h2>Inherited Language <span class="lang-tag">ES - Inherited</span></h2>
   <p>This section has <code>data-hyperscript-lang="es"</code> on the parent. All children inherit Spanish:</p>
-  <div class="code-block">Parent: data-hyperscript-lang="es"<br>Button: _="alternar .highlight on me"</div>
-  <button _="on click alternar .highlight on me">
+  <div class="code-block">Parent: data-hyperscript-lang="es"<br>Button: _="alternar .highlight"</div>
+  <button _="on click alternar .highlight">
     Inherited Spanish
   </button>
 </section>
 
 <!-- Load scripts -->
 <!-- 1. Original _hyperscript -->
-<script src="../../../_hyperscript/dist/_hyperscript.js"></script>
+<script src="https://unpkg.com/hyperscript.org"></script>
 
 <!-- 2. Adapter plugin (bundles semantic parser) -->
 <script src="../dist/hyperscript-i18n.global.js"></script>

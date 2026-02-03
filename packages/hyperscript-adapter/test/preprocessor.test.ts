@@ -100,6 +100,47 @@ describe('preprocessToEnglish', () => {
     });
   });
 
+  describe('event prefix stripping', () => {
+    it.each([
+      ['es', 'on click alternar .active', 'on click toggle .active'],
+      ['ja', 'on click .active を 切り替え', 'on click toggle .active'],
+      ['ko', 'on click .active 을 토글', 'on click toggle .active'],
+      ['zh', 'on click 切换 .active', 'on click toggle .active'],
+      ['fr', 'on click ajouter .highlight sur #box', 'on click add .highlight on #box'],
+    ])('[%s] translates commands after "on click" prefix', (lang, input, expected) => {
+      const result = preprocessToEnglish(input, lang);
+      expect(result).toBe(expected);
+    });
+
+    it('handles "on every" modifier', () => {
+      const result = preprocessToEnglish('on every click alternar .active', 'es');
+      expect(result).toBe('on every click toggle .active');
+    });
+
+    it('handles event modifiers like .debounce()', () => {
+      const result = preprocessToEnglish('on click.debounce(300) alternar .active', 'es');
+      expect(result).toBe('on click.debounce(300) toggle .active');
+    });
+
+    it('passes through pure English with event prefix', () => {
+      // Note: preprocessToEnglish is never called with lang='en' by the plugin
+      // (plugin.ts short-circuits for English). This tests direct usage.
+      const result = preprocessToEnglish('on click toggle .active', 'en');
+      expect(result).toContain('toggle');
+      expect(result).toContain('.active');
+    });
+
+    it('handles compound commands after event prefix', () => {
+      const result = preprocessToEnglish(
+        'on click alternar .active then agregar .loaded',
+        'es'
+      );
+      expect(result).toContain('on click');
+      expect(result).toContain('toggle .active');
+      expect(result).toContain('then');
+    });
+  });
+
   describe('confidence fallback', () => {
     it('returns original when confidence threshold is very high and input is ambiguous', () => {
       // An intentionally garbled input that shouldn't match any pattern

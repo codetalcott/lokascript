@@ -69,14 +69,46 @@ function getAnalyzer(): SemanticAnalyzer {
  *
  * Uses the semantic parser to parse the input in the source language,
  * then renders back to English. Falls through to i18n if configured.
+ *
+ * Handles _hyperscript feature prefixes (e.g. "on click", "on every keyup")
+ * by stripping them, translating only the command portion, then reassembling.
  */
 export function preprocessToEnglish(
   src: string,
   lang: string,
   config: Partial<PreprocessorConfig> = {}
 ): string {
+  // English→English is identity; skip semantic parsing which may mangle the input
+  if (lang === 'en') return src;
+
   const cfg = { ...DEFAULT_CONFIG, ...config };
 
+  // Try translating the full string first
+  const fullResult = tryTranslateWithStrategies(src, lang, cfg);
+  if (fullResult !== null) return fullResult;
+
+  // If full translation failed, try stripping event/feature prefix.
+  // _hyperscript attributes often contain "on <event> <commands>" — the semantic
+  // parser only understands command syntax, not event declarations.
+  const stripped = stripEventPrefix(src);
+  if (stripped) {
+    const translated = tryTranslateWithStrategies(stripped.commands, lang, cfg);
+    if (translated !== null) return stripped.prefix + translated;
+  }
+
+  // Fallback: return original
+  return cfg.fallbackToOriginal ? src : src;
+}
+
+/**
+ * Try all configured translation strategies on the input.
+ * Returns null if none succeed.
+ */
+function tryTranslateWithStrategies(
+  src: string,
+  lang: string,
+  cfg: PreprocessorConfig
+): string | null {
   // Strategy: semantic-only
   if (cfg.strategy === 'semantic' || cfg.strategy === 'auto') {
     const threshold = resolveThreshold(cfg.confidenceThreshold, lang);
@@ -90,8 +122,29 @@ export function preprocessToEnglish(
     if (result !== null) return result;
   }
 
-  // Fallback: return original
-  return cfg.fallbackToOriginal ? src : src;
+  return null;
+}
+
+/**
+ * Match _hyperscript event handler prefix: "on [every] <event>[filter][.modifiers] "
+ *
+ * Examples:
+ *   "on click toggle .active"            → prefix: "on click ", commands: "toggle .active"
+ *   "on every click toggle .active"      → prefix: "on every click ", commands: "toggle .active"
+ *   "on click.debounce(300) toggle .x"   → prefix: "on click.debounce(300) ", commands: "toggle .x"
+ *   "on keyup[key=='Enter'] set x to 1"  → prefix: "on keyup[key=='Enter'] ", commands: "set x to 1"
+ *   "on click from body toggle .active"  → prefix: "on click from body ", commands: "toggle .active"
+ */
+const EVENT_PREFIX_RE =
+  /^(on\s+(?:every\s+)?[\w-]+(?:\[.*?\])?(?:\.[\w-]+(?:\([^)]*\))?)*(?:\s+from\s+\S+)?(?:\s+queue\s+\w+)?\s+)/;
+
+function stripEventPrefix(src: string): { prefix: string; commands: string } | null {
+  const match = src.match(EVENT_PREFIX_RE);
+  if (!match) return null;
+  const prefix = match[1];
+  const commands = src.slice(prefix.length);
+  if (!commands) return null;
+  return { prefix, commands };
 }
 
 /**

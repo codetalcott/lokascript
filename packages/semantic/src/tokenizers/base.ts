@@ -822,6 +822,15 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
       for (const [normalized, native] of Object.entries(profile.references)) {
         keywordMap.set(native, { native, normalized });
       }
+      // Also register English canonical forms as universal fallbacks.
+      // Users frequently mix English references (me, it, you) into non-English
+      // hyperscript (e.g., "alternar .active on me"). Without this, the English
+      // word "me" would be unrecognized in non-English token streams.
+      for (const canonical of Object.keys(profile.references)) {
+        if (!keywordMap.has(canonical)) {
+          keywordMap.set(canonical, { native: canonical, normalized: canonical });
+        }
+      }
     }
 
     // Extract from roleMarkers (into, from, with, etc.)

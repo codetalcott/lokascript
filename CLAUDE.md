@@ -182,7 +182,7 @@ As of 2026-01-23, all CI testing has been consolidated into a single `.github/wo
 **Known Issues:**
 
 - Behavior tests: Draggable, Sortable, Resizable not fully implemented (continue-on-error)
-- SOV/VSO languages: Japanese (11%), Korean (7%), Turkish (2%) have low pass rates (continue-on-error)
+- SOV/VSO languages: Japanese, Korean, Turkish have lower pass rates than SVO languages (continue-on-error)
 
 **Other Workflows:**
 
