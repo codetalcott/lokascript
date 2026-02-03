@@ -200,22 +200,6 @@ export const commands: Record<string, CommandRef> = {
     availability: 'lite-plus',
     examples: ['decrement :count', 'decrement :lives by 1'],
   },
-  bind: {
-    name: 'bind',
-    description: 'Create two-way data binding',
-    syntax: 'bind variable to element',
-    category: 'data',
-    availability: 'full',
-    examples: ['bind :name to #nameInput', 'bind :email to <input#email/>'],
-  },
-  persist: {
-    name: 'persist',
-    description: 'Persist variable to localStorage',
-    syntax: 'persist variable',
-    category: 'data',
-    availability: 'full',
-    examples: ['persist :theme', 'persist :userPrefs'],
-  },
   default: {
     name: 'default',
     description: 'Set default value if not already set',
