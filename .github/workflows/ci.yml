@@ -56,6 +56,9 @@ jobs:
       - name: Build i18n package
         run: npm run build --prefix packages/i18n
 
+      - name: Build hyperscript-adapter package
+        run: npm run build --prefix packages/hyperscript-adapter
+
       - name: Build ast-toolkit package
         run: npm run build --prefix packages/ast-toolkit
 
@@ -214,6 +217,7 @@ jobs:
           npm run typecheck --prefix packages/core
           npm run typecheck --prefix packages/semantic
           npm run typecheck --prefix packages/i18n
+          npm run typecheck --prefix packages/hyperscript-adapter
           npm run typecheck --prefix packages/vite-plugin
           npm run typecheck --prefix packages/patterns-reference
           npm run typecheck --prefix packages/mcp-server
@@ -275,6 +279,9 @@ jobs:
 
       - name: Test i18n
         run: npm test --prefix packages/i18n
+
+      - name: Test hyperscript-adapter
+        run: npm test --prefix packages/hyperscript-adapter
 
       - name: Test vite-plugin
         run: npm test --prefix packages/vite-plugin

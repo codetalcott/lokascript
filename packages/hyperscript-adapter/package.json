@@ -1,7 +1,7 @@
 {
   "name": "@lokascript/hyperscript-adapter",
-  "version": "0.1.0",
-  "description": "Multilingual adapter plugin for original _hyperscript — enables writing hyperscript in 24 languages",
+  "version": "1.3.0",
+  "description": "Multilingual adapter plugin for original _hyperscript — write hyperscript in 24 languages",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -118,13 +118,28 @@
   },
   "keywords": [
     "hyperscript",
+    "_hyperscript",
     "i18n",
+    "internationalization",
     "multilingual",
+    "localization",
     "plugin",
-    "adapter"
+    "adapter",
+    "translation",
+    "lokascript",
+    "preprocessor"
   ],
-  "author": "Hyperfixi Team",
+  "author": "LokaScript Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codetalcott/lokascript.git",
+    "directory": "packages/hyperscript-adapter"
+  },
+  "bugs": {
+    "url": "https://github.com/codetalcott/lokascript/issues"
+  },
+  "homepage": "https://github.com/codetalcott/lokascript/tree/main/packages/hyperscript-adapter#readme",
   "dependencies": {
     "@lokascript/semantic": "*"
   },
@@ -140,9 +155,14 @@
   "files": [
     "dist",
     "src",
+    "README.md",
     "LICENSE"
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
   }
 }

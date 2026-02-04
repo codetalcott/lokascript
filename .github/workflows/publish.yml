@@ -27,7 +27,7 @@ on:
 env:
   NODE_OPTIONS: --max-old-space-size=4096
   # All public packages to publish (in dependency order)
-  PACKAGES: 'semantic,core,i18n,patterns-reference,mcp-server,vite-plugin'
+  PACKAGES: 'semantic,core,i18n,hyperscript-adapter,patterns-reference,mcp-server,vite-plugin'
 
 jobs:
   publish:
@@ -67,6 +67,7 @@ jobs:
           npm run build --prefix packages/core
           npm run build --prefix packages/i18n
           npm run build:browser --prefix packages/core
+          npm run build --prefix packages/hyperscript-adapter
           npm run build --prefix packages/patterns-reference
           npm run build --prefix packages/ast-toolkit
           npm run build --prefix packages/mcp-server
@@ -77,6 +78,7 @@ jobs:
           npm test --prefix packages/core -- --run
           npm test --prefix packages/semantic -- --run
           npm test --prefix packages/i18n -- --run
+          npm test --prefix packages/hyperscript-adapter -- --run
           npm test --prefix packages/mcp-server -- --run
 
       - name: Calculate new version
@@ -103,7 +105,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           echo "Setting all packages to version $VERSION"
 
-          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+          for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             echo "  → @lokascript/$pkg"
             cd "packages/$pkg"
             npm version "$VERSION" --no-git-tag-version --allow-same-version
@@ -119,7 +121,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           echo "DRY RUN: Would publish all packages at version $VERSION"
 
-          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+          for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             echo "  → @lokascript/$pkg@$VERSION"
             cd "packages/$pkg"
             npm publish --dry-run --tag ${{ github.event.inputs.npm-tag }} --access public
@@ -142,7 +144,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           echo "Publishing all packages at version $VERSION"
 
-          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+          for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             echo "Publishing @lokascript/$pkg@$VERSION"
             cd "packages/$pkg"
 
@@ -184,7 +186,7 @@ jobs:
           git push origin "v$VERSION" --force
 
           # Create per-package tags
-          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+          for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             TAG_NAME="@lokascript/${pkg}@${VERSION}"
             git tag -f "$TAG_NAME"
             git push origin "$TAG_NAME" --force
@@ -205,6 +207,7 @@ jobs:
             - @lokascript/core
             - @lokascript/semantic
             - @lokascript/i18n
+            - @lokascript/hyperscript-adapter
             - @lokascript/vite-plugin
             - @lokascript/mcp-server
             - @lokascript/patterns-reference
@@ -213,6 +216,7 @@ jobs:
             ```bash
             npm install @lokascript/core@${{ steps.version.outputs.version }}
             npm install @lokascript/vite-plugin@${{ steps.version.outputs.version }}
+            npm install @lokascript/hyperscript-adapter@${{ steps.version.outputs.version }}
             ```
           draft: false
           prerelease: ${{ github.event.inputs.npm-tag != 'latest' }}
@@ -228,7 +232,7 @@ jobs:
           echo "**Dry Run**: ${{ github.event.inputs.dry-run }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Packages" >> $GITHUB_STEP_SUMMARY
-          for pkg in semantic core i18n patterns-reference mcp-server vite-plugin; do
+          for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             echo "- @lokascript/$pkg@$VERSION" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY

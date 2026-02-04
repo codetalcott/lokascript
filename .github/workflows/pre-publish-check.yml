@@ -7,7 +7,7 @@ on:
         description: 'Packages to check (comma-separated, e.g., core,semantic,i18n or "all")'
         required: true
         type: string
-        default: 'core,semantic,i18n,vite-plugin,mcp-server'
+        default: 'core,semantic,i18n,hyperscript-adapter,vite-plugin,mcp-server'
 
 jobs:
   pre-publish-check:
@@ -33,7 +33,7 @@ jobs:
         run: |
           PACKAGES="${{ github.event.inputs.packages }}"
           if [ "$PACKAGES" = "all" ]; then
-            PACKAGES="core,semantic,i18n,vite-plugin,mcp-server,ast-toolkit,behaviors,multi-tenant"
+            PACKAGES="core,semantic,i18n,hyperscript-adapter,vite-plugin,mcp-server,ast-toolkit,behaviors,multi-tenant"
           fi
           echo "Checking packages: $PACKAGES"
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
@@ -127,6 +127,11 @@ jobs:
           if [ -d "packages/i18n" ]; then
             echo "Building @lokascript/i18n..."
             npm run build --prefix packages/i18n 2>&1 || true
+          fi
+
+          if [ -d "packages/hyperscript-adapter" ]; then
+            echo "Building @lokascript/hyperscript-adapter..."
+            npm run build --prefix packages/hyperscript-adapter 2>&1 || true
           fi
 
           echo "✅ Dependency builds complete" >> $GITHUB_STEP_SUMMARY
