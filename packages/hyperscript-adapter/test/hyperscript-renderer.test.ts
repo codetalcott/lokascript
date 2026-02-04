@@ -314,8 +314,8 @@ describe('renderToHyperscript', () => {
   // -------------------------------------------------------------------------
 
   describe('newly added commands', () => {
-    it('renders tell with patient', () => {
-      expect(renderToHyperscript(cmd('tell', [['patient', sel('#dialog')]]))).toBe('tell #dialog');
+    it('renders tell with destination', () => {
+      expect(renderToHyperscript(cmd('tell', [['destination', sel('#dialog')]]))).toBe('tell #dialog');
     });
 
     it('renders else with no roles', () => {

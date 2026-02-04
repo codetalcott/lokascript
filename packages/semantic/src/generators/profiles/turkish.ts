@@ -146,6 +146,12 @@ export const turkishProfile: LanguageProfile = {
     behavior: { primary: 'davranış', normalized: 'behavior' },
     install: { primary: 'yükle', alternatives: ['kur', 'yüklemek'], normalized: 'install' },
     measure: { primary: 'ölç', normalized: 'measure' },
+    beep: { primary: 'bip', normalized: 'beep' },
+    break: { primary: 'dur', normalized: 'break' },
+    copy: { primary: 'kopyala', normalized: 'copy' },
+    exit: { primary: 'çık', normalized: 'exit' },
+    pick: { primary: 'seç', normalized: 'pick' },
+    render: { primary: 'render', normalized: 'render' },
     // Modifiers
     into: { primary: 'içine', normalized: 'into' },
     before: { primary: 'önce', normalized: 'before' },

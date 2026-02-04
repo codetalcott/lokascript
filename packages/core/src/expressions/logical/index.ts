@@ -799,6 +799,55 @@ export const matchesExpression: EnhancedExpressionImplementation = {
 };
 
 // ============================================================================
+// Class/Attribute Presence Expressions
+// ============================================================================
+
+export const hasExpression: ExpressionImplementation = {
+  name: 'has',
+  category: 'Logical',
+  evaluatesTo: 'Boolean',
+  operators: ['has', 'have'],
+
+  async evaluate(
+    _context: ExecutionContext,
+    element: unknown,
+    selector: unknown
+  ): Promise<boolean> {
+    // Check class presence: "me has .active"
+    if (element instanceof Element && isString(selector)) {
+      const selectorStr = selector as string;
+      if (selectorStr.startsWith('.')) {
+        return element.classList.contains(selectorStr.slice(1));
+      }
+      // Check attribute presence: "me has [disabled]"
+      if (selectorStr.startsWith('[') && selectorStr.endsWith(']')) {
+        return element.hasAttribute(selectorStr.slice(1, -1));
+      }
+    }
+    return false;
+  },
+
+  validate(args: unknown[]): string | null {
+    return validateArgCount(args, 2, 'has', 'element, selector');
+  },
+};
+
+export const doesNotHaveExpression: ExpressionImplementation = {
+  name: 'doesNotHave',
+  category: 'Logical',
+  evaluatesTo: 'Boolean',
+  operators: ['does not have'],
+
+  async evaluate(context: ExecutionContext, element: unknown, selector: unknown): Promise<boolean> {
+    return !(await hasExpression.evaluate(context, element, selector));
+  },
+
+  validate(args: unknown[]): string | null {
+    return validateArgCount(args, 2, 'doesNotHave', 'element, selector');
+  },
+};
+
+// ============================================================================
 // Export all logical expressions
 // ============================================================================
 
@@ -824,6 +873,8 @@ export const logicalExpressions = {
   startsWith: startsWithExpression,
   endsWith: endsWithExpression,
   matches: matchesExpression,
+  has: hasExpression,
+  doesNotHave: doesNotHaveExpression,
 } as const;
 
 export type LogicalExpressionName = keyof typeof logicalExpressions;

@@ -124,6 +124,12 @@ export const spanishProfile: LanguageProfile = {
     behavior: { primary: 'comportamiento', normalized: 'behavior' },
     install: { primary: 'instalar', normalized: 'install' },
     measure: { primary: 'medir', normalized: 'measure' },
+    beep: { primary: 'pitido', normalized: 'beep' },
+    break: { primary: 'romper', normalized: 'break' },
+    copy: { primary: 'copiar', normalized: 'copy' },
+    exit: { primary: 'salir', normalized: 'exit' },
+    pick: { primary: 'escoger', normalized: 'pick' },
+    render: { primary: 'renderizar', normalized: 'render' },
     // Modifiers
     into: { primary: 'en', alternatives: ['dentro de'], normalized: 'into' },
     before: { primary: 'antes', normalized: 'before' },

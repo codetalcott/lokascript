@@ -46,6 +46,9 @@ export type ActionType =
   | 'increment'
   | 'decrement'
   | 'log'
+  | 'copy'
+  | 'pick'
+  | 'beep'
   // Visibility
   | 'show'
   | 'hide'
@@ -75,10 +78,14 @@ export type ActionType =
   | 'for'
   | 'while'
   | 'continue'
+  | 'break'
+  | 'exit'
   | 'halt'
   | 'throw'
   | 'call'
   | 'return'
+  // Templates
+  | 'render'
   // Advanced
   | 'js'
   | 'async'

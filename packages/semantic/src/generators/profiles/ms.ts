@@ -114,6 +114,12 @@ export const malayProfile: LanguageProfile = {
     behavior: { primary: 'kelakuan', normalized: 'behavior' },
     install: { primary: 'pasang', normalized: 'install' },
     measure: { primary: 'ukur', normalized: 'measure' },
+    beep: { primary: 'bunyi', normalized: 'beep' },
+    break: { primary: 'henti', normalized: 'break' },
+    copy: { primary: 'salin', normalized: 'copy' },
+    exit: { primary: 'keluar', normalized: 'exit' },
+    pick: { primary: 'pilih', normalized: 'pick' },
+    render: { primary: 'papar', normalized: 'render' },
     // Modifiers
     into: { primary: 'ke_dalam', normalized: 'into' },
     before: { primary: 'sebelum', normalized: 'before' },

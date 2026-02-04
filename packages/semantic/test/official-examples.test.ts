@@ -607,11 +607,11 @@ describe('AST Equivalence Across Languages', () => {
 
 describe('Newly Wired Commands', () => {
   describe('Append Command', () => {
-    it('append "text" on #container', () => {
-      // Generated pattern uses "on" not "to"
-      expect(canParse('append "text" on #container', 'en')).toBe(true);
+    it('append "text" to #container', () => {
+      // Schema markerOverride: { en: 'to' } — correct _hyperscript syntax
+      expect(canParse('append "text" to #container', 'en')).toBe(true);
 
-      const node = parse('append "text" on #container', 'en');
+      const node = parse('append "text" to #container', 'en');
       expect(node.action).toBe('append');
       expect(node.roles.get('patient')?.value).toBe('text');
       expect(node.roles.get('destination')?.value).toBe('#container');
@@ -643,11 +643,11 @@ describe('Newly Wired Commands', () => {
   });
 
   describe('Prepend Command', () => {
-    it('prepend "text" on #container', () => {
-      // Generated pattern uses "on" not "to"
-      expect(canParse('prepend "text" on #container', 'en')).toBe(true);
+    it('prepend "text" to #container', () => {
+      // Schema markerOverride: { en: 'to' } — correct _hyperscript syntax
+      expect(canParse('prepend "text" to #container', 'en')).toBe(true);
 
-      const node = parse('prepend "text" on #container', 'en');
+      const node = parse('prepend "text" to #container', 'en');
       expect(node.action).toBe('prepend');
       expect(node.roles.get('patient')?.value).toBe('text');
       expect(node.roles.get('destination')?.value).toBe('#container');
@@ -1012,8 +1012,8 @@ describe('Pattern Coverage Report', () => {
     { example: 'increment :x', expected: 'increment', tier: 2 },
     { example: 'log "Hello Console!"', expected: 'log', tier: 2 },
     // Tier 3 - Newly wired
-    { example: 'append "text" on #container', expected: 'append', tier: 3 },
-    { example: 'prepend "text" on #container', expected: 'prepend', tier: 3 },
+    { example: 'append "text" to #container', expected: 'append', tier: 3 },
+    { example: 'prepend "text" to #container', expected: 'prepend', tier: 3 },
     { example: 'trigger click on #button', expected: 'trigger', tier: 3 },
     { example: 'set :x to 5', expected: 'set', tier: 3 },
   ];

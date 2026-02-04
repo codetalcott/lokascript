@@ -119,6 +119,12 @@ export const bengaliProfile: LanguageProfile = {
     behavior: { primary: 'আচরণ', alternatives: [], normalized: 'behavior' },
     install: { primary: 'ইনস্টল', alternatives: [], normalized: 'install' },
     measure: { primary: 'মাপুন', alternatives: [], normalized: 'measure' },
+    beep: { primary: 'বীপ', alternatives: [], normalized: 'beep' },
+    break: { primary: 'থামুন', alternatives: [], normalized: 'break' },
+    copy: { primary: 'কপি', alternatives: [], normalized: 'copy' },
+    exit: { primary: 'বের', alternatives: [], normalized: 'exit' },
+    pick: { primary: 'বাছুন', alternatives: [], normalized: 'pick' },
+    render: { primary: 'রেন্ডার', alternatives: [], normalized: 'render' },
     // Modifiers
     into: { primary: 'তে', alternatives: ['এ'], normalized: 'into' },
     before: { primary: 'আগে', alternatives: [], normalized: 'before' },

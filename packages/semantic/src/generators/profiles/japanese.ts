@@ -133,6 +133,12 @@ export const japaneseProfile: LanguageProfile = {
     behavior: { primary: '振る舞い', alternatives: ['ビヘイビア'], normalized: 'behavior' },
     install: { primary: 'インストール', alternatives: ['導入'], normalized: 'install' },
     measure: { primary: '測定', alternatives: ['計測', 'メジャー'], normalized: 'measure' },
+    beep: { primary: 'ビープ', normalized: 'beep' },
+    break: { primary: '中断', normalized: 'break' },
+    copy: { primary: 'コピー', normalized: 'copy' },
+    exit: { primary: '終了', normalized: 'exit' },
+    pick: { primary: '選択', normalized: 'pick' },
+    render: { primary: '描画', normalized: 'render' },
     // Modifiers
     into: { primary: 'へ', alternatives: ['に'], normalized: 'into' },
     before: { primary: '前に', alternatives: ['前'], normalized: 'before' },

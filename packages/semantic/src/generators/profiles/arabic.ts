@@ -120,6 +120,12 @@ export const arabicProfile: LanguageProfile = {
     behavior: { primary: 'سلوك', normalized: 'behavior' },
     install: { primary: 'تثبيت', alternatives: ['ثبّت'], normalized: 'install' },
     measure: { primary: 'قياس', alternatives: ['قِس'], normalized: 'measure' },
+    beep: { primary: 'صفّر', normalized: 'beep' },
+    break: { primary: 'توقف', normalized: 'break' },
+    copy: { primary: 'انسخ', normalized: 'copy' },
+    exit: { primary: 'اخرج', normalized: 'exit' },
+    pick: { primary: 'اختر', normalized: 'pick' },
+    render: { primary: 'ارسم', normalized: 'render' },
     // Modifiers
     into: { primary: 'في', alternatives: ['إلى'], normalized: 'into' },
     before: { primary: 'قبل', normalized: 'before' },

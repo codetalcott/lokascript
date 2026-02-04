@@ -20,9 +20,12 @@ import type {
 // ---------------------------------------------------------------------------
 // Per-command syntax: ordered [role, preposition] tuples.
 // Empty string = no preposition (direct object).
+//
+// This table is derived from CommandSchema definitions in @lokascript/semantic.
+// The derive-syntax.test.ts validates that this stays in sync with schemas.
 // ---------------------------------------------------------------------------
 
-const SYNTAX: Record<string, readonly [string, string][]> = {
+export const SYNTAX: Record<string, readonly [string, string][]> = {
   // Class/attribute
   toggle: [
     ['patient', ''],
@@ -62,6 +65,7 @@ const SYNTAX: Record<string, readonly [string, string][]> = {
   swap: [
     ['method', ''],
     ['destination', 'of'],
+    ['patient', 'with'],
   ],
   morph: [
     ['destination', ''],
@@ -73,7 +77,10 @@ const SYNTAX: Record<string, readonly [string, string][]> = {
     ['destination', ''],
     ['patient', 'to'],
   ],
-  get: [['source', '']],
+  get: [
+    ['source', ''],
+    ['destination', 'on'],
+  ],
   increment: [
     ['patient', ''],
     ['quantity', 'by'],
@@ -100,10 +107,16 @@ const SYNTAX: Record<string, readonly [string, string][]> = {
   transition: [
     ['patient', ''],
     ['goal', 'to'],
+    ['destination', 'on'],
     ['duration', 'over'],
+    ['style', 'with'],
   ],
 
-  // Events
+  // Events (on/compound handled by dedicated renderers; entries here for schema parity)
+  on: [
+    ['event', ''],
+    ['source', 'from'],
+  ],
   trigger: [
     ['event', ''],
     ['destination', 'on'],
@@ -125,6 +138,8 @@ const SYNTAX: Record<string, readonly [string, string][]> = {
   fetch: [
     ['source', ''],
     ['responseType', 'as'],
+    ['method', 'via'],
+    ['destination', 'on'],
   ],
   settle: [['patient', '']],
 
@@ -158,11 +173,28 @@ const SYNTAX: Record<string, readonly [string, string][]> = {
   while: [['condition', '']],
 
   // Structural / advanced
-  tell: [['patient', '']],
+  tell: [['destination', '']],
   async: [],
-  js: [],
+  js: [['patient', '']],
   init: [],
   behavior: [['patient', '']],
+
+  // Utility / misc
+  beep: [['patient', '']],
+  break: [],
+  copy: [['patient', '']],
+  exit: [],
+  pick: [
+    ['patient', ''],
+    ['source', 'from'],
+  ],
+  render: [
+    ['patient', ''],
+    ['style', 'with'],
+  ],
+
+  // Meta (handled by dedicated renderer; entry here for schema parity)
+  compound: [],
 };
 
 // ---------------------------------------------------------------------------

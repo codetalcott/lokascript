@@ -574,6 +574,36 @@ const BUILTIN_COMMANDS: Record<string, any> = {
     description: 'Send/trigger a custom event',
     syntax: 'send <event-name> [to <target>] [with <details>]',
   },
+  beep: {
+    name: 'beep',
+    description: 'Debug output — logs a value with type info to the console',
+    syntax: 'beep [<expression>]',
+  },
+  break: {
+    name: 'break',
+    description: 'Exit the current repeat/for/while loop',
+    syntax: 'break',
+  },
+  copy: {
+    name: 'copy',
+    description: 'Copy a value to the clipboard',
+    syntax: 'copy <expression>',
+  },
+  exit: {
+    name: 'exit',
+    description: 'Exit the current event handler immediately',
+    syntax: 'exit',
+  },
+  pick: {
+    name: 'pick',
+    description: 'Pick a random item from a collection',
+    syntax: 'pick <expression>',
+  },
+  render: {
+    name: 'render',
+    description: 'Render a template with variable substitution',
+    syntax: 'render <template> [with <variables>]',
+  },
 };
 
 function handleWithBuiltinDocs(

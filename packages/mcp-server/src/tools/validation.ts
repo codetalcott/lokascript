@@ -775,6 +775,16 @@ const COMMAND_SUGGESTIONS: Record<
     description: 'Call a JavaScript function',
   },
   log: { command: 'log', example: 'log me', description: 'Log to console' },
+  beep: { command: 'beep', example: 'beep me', description: 'Debug output with type info' },
+  break: { command: 'break', example: 'break', description: 'Exit current loop' },
+  copy: { command: 'copy', example: 'copy #input.value', description: 'Copy to clipboard' },
+  exit: { command: 'exit', example: 'exit', description: 'Exit event handler' },
+  pick: { command: 'pick', example: 'pick .items', description: 'Pick random item' },
+  render: {
+    command: 'render',
+    example: 'render "<p>${name}</p>" with {name: "World"}',
+    description: 'Render a template',
+  },
 };
 
 const TASK_KEYWORDS: Record<string, string[]> = {
@@ -794,6 +804,12 @@ const TASK_KEYWORDS: Record<string, string[]> = {
   focus: ['focus', 'select', 'cursor', 'active element'],
   call: ['call', 'execute', 'run', 'invoke', 'function'],
   log: ['log', 'debug', 'console', 'print', 'output'],
+  beep: ['beep', 'debug', 'inspect', 'type info', 'dump'],
+  break: ['break', 'exit loop', 'stop loop', 'end loop'],
+  copy: ['copy', 'clipboard', 'copy text', 'copy value'],
+  exit: ['exit', 'stop', 'abort', 'quit handler', 'early return'],
+  pick: ['pick', 'random', 'choose', 'select random', 'sample'],
+  render: ['render', 'template', 'interpolate', 'substitute', 'format'],
 };
 
 /**

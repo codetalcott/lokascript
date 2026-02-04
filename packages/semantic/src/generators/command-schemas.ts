@@ -174,6 +174,7 @@ export const addSchema: CommandSchema = {
       default: { type: 'reference', value: 'me' },
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'to' }, // "add .class to #element"
     },
   ],
   // Runtime error documentation
@@ -263,6 +264,7 @@ export const putSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
       sovPosition: 2, // SOV: destination comes second (に/에/a marker)
+      markerOverride: { en: 'into' }, // "put 'hello' into #output"
     },
   ],
   // Runtime error documentation
@@ -552,6 +554,8 @@ export const fetchSchema: CommandSchema = {
       expectedTypes: ['literal', 'expression'],
       svoPosition: 1,
       sovPosition: 1,
+      // No markerOverride — uses profile default 'from' for parsing.
+      // Adapter renders without preposition via RENDER_OVERRIDES.
     },
     {
       role: 'responseType',
@@ -605,6 +609,7 @@ export const incrementSchema: CommandSchema = {
       default: { type: 'literal', value: 1, dataType: 'number' },
       svoPosition: 2,
       sovPosition: 2,
+      markerOverride: { en: 'by' }, // "increment :count by 5"
     },
   ],
 };
@@ -634,6 +639,7 @@ export const decrementSchema: CommandSchema = {
       default: { type: 'literal', value: 1, dataType: 'number' },
       svoPosition: 2,
       sovPosition: 2,
+      markerOverride: { en: 'by' }, // "decrement :count by 5"
     },
   ],
 };
@@ -662,6 +668,7 @@ export const appendSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'to' }, // "append <content> to #element"
     },
   ],
 };
@@ -690,6 +697,7 @@ export const prependSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'to' }, // "prepend <content> to #element"
     },
   ],
 };
@@ -1052,6 +1060,7 @@ export const forSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference', 'expression'],
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'in' }, // "for item in .items"
     },
   ],
 };
@@ -1108,6 +1117,7 @@ export const goSchema: CommandSchema = {
       expectedTypes: ['literal', 'expression'],
       svoPosition: 1,
       sovPosition: 1,
+      markerOverride: { en: 'to' }, // "go to /page"
     },
   ],
 };
@@ -1173,6 +1183,7 @@ export const transitionSchema: CommandSchema = {
       expectedTypes: ['literal'],
       svoPosition: 4,
       sovPosition: 4,
+      markerOverride: { en: 'over' }, // "transition opacity to 1 over 500ms"
     },
     {
       role: 'style',
@@ -1209,6 +1220,7 @@ export const cloneSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'into' }, // "clone #element into #container"
     },
   ],
 };
@@ -1349,6 +1361,7 @@ export const tellSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 1,
       sovPosition: 1,
+      markerOverride: { en: '' }, // "tell #element ..." (no preposition)
     },
   ],
 };
@@ -1497,6 +1510,7 @@ export const measureSchema: CommandSchema = {
       default: { type: 'reference', value: 'me' },
       svoPosition: 2,
       sovPosition: 2,
+      markerOverride: { en: 'of' }, // "measure width of #element"
     },
   ],
 };
@@ -1526,6 +1540,7 @@ export const swapSchema: CommandSchema = {
       expectedTypes: ['literal'],
       svoPosition: 1,
       sovPosition: 3,
+      markerOverride: { en: '' }, // "swap innerHTML ..." (no preposition)
     },
     {
       role: 'destination',
@@ -1534,6 +1549,7 @@ export const swapSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 2,
       sovPosition: 1,
+      markerOverride: { en: 'of' }, // "swap innerHTML of #target"
     },
     {
       role: 'patient',
@@ -1542,6 +1558,7 @@ export const swapSchema: CommandSchema = {
       expectedTypes: ['literal', 'expression', 'selector'],
       svoPosition: 3,
       sovPosition: 2,
+      markerOverride: { en: 'with' }, // "swap innerHTML of #target with <html>"
     },
   ],
 };
@@ -1566,6 +1583,7 @@ export const morphSchema: CommandSchema = {
       expectedTypes: ['selector', 'reference'],
       svoPosition: 1,
       sovPosition: 1,
+      markerOverride: { en: '' }, // "morph #target ..." (no preposition)
     },
     {
       role: 'patient',
@@ -1574,6 +1592,135 @@ export const morphSchema: CommandSchema = {
       expectedTypes: ['literal', 'expression', 'selector'],
       svoPosition: 2,
       sovPosition: 2,
+      markerOverride: { en: 'to' }, // "morph #target to <html>"
+    },
+  ],
+};
+
+// =============================================================================
+// Batch 6 - Missing Commands (beep, break, copy, exit, pick, render)
+// =============================================================================
+
+/**
+ * Beep command: debug output with type information.
+ * Syntax: beep! / beep! <expression>
+ */
+export const beepSchema: CommandSchema = {
+  action: 'beep',
+  description: 'Debug output for expressions with type information',
+  category: 'variable',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The expression(s) to debug',
+      required: false,
+      expectedTypes: ['literal', 'selector', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Break command: exits from the current loop.
+ * Syntax: break
+ */
+export const breakSchema: CommandSchema = {
+  action: 'break',
+  description: 'Exit from the current loop',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [],
+};
+
+/**
+ * Copy command: copies text or element content to clipboard.
+ * Syntax: copy <source>
+ */
+export const copySchema: CommandSchema = {
+  action: 'copy',
+  description: 'Copy text or element content to the clipboard',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The text or element to copy',
+      required: true,
+      expectedTypes: ['literal', 'selector', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+  ],
+};
+
+/**
+ * Exit command: exits early from an event handler.
+ * Syntax: exit
+ */
+export const exitSchema: CommandSchema = {
+  action: 'exit',
+  description: 'Exit from the current event handler',
+  category: 'control-flow',
+  primaryRole: 'patient',
+  roles: [],
+};
+
+/**
+ * Pick command: selects a random element from a collection.
+ * Syntax: pick <item1>, <item2>, ... / pick from <array>
+ */
+export const pickSchema: CommandSchema = {
+  action: 'pick',
+  description: 'Select a random element from a collection',
+  category: 'variable',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The items to pick from',
+      required: true,
+      expectedTypes: ['literal', 'expression', 'reference'],
+      svoPosition: 1,
+      sovPosition: 1,
+    },
+    {
+      role: 'source',
+      description: 'The array to pick from (with "from" keyword)',
+      required: false,
+      expectedTypes: ['reference', 'expression'],
+      svoPosition: 2,
+      sovPosition: 2,
+    },
+  ],
+};
+
+/**
+ * Render command: renders a template with variables.
+ * Syntax: render <template> / render <template> with <variables>
+ */
+export const renderSchema: CommandSchema = {
+  action: 'render',
+  description: 'Render a template with optional variables',
+  category: 'dom-content',
+  primaryRole: 'patient',
+  roles: [
+    {
+      role: 'patient',
+      description: 'The template to render',
+      required: true,
+      expectedTypes: ['selector', 'reference', 'expression'],
+      svoPosition: 1,
+      sovPosition: 2,
+    },
+    {
+      role: 'style',
+      description: 'Variables to pass to the template (with keyword)',
+      required: false,
+      expectedTypes: ['expression', 'reference'],
+      svoPosition: 2,
+      sovPosition: 1,
     },
   ],
 };
@@ -1639,6 +1786,13 @@ export const commandSchemas: Record<ActionType, CommandSchema> = {
   // Batch 5 - DOM Content Manipulation
   swap: swapSchema,
   morph: morphSchema,
+  // Batch 6 - Missing Commands
+  beep: beepSchema,
+  break: breakSchema,
+  copy: copySchema,
+  exit: exitSchema,
+  pick: pickSchema,
+  render: renderSchema,
   // Meta commands (for compound structures)
   compound: {
     action: 'compound',

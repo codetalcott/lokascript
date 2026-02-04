@@ -250,6 +250,12 @@ export const russianProfile: LanguageProfile = {
       normalized: 'measure',
       form: 'infinitive',
     },
+    beep: { primary: 'звук', normalized: 'beep' },
+    break: { primary: 'прервать', normalized: 'break' },
+    copy: { primary: 'копировать', normalized: 'copy' },
+    exit: { primary: 'выйти', normalized: 'exit' },
+    pick: { primary: 'выбрать', normalized: 'pick' },
+    render: { primary: 'отобразить', normalized: 'render' },
     // Modifiers
     into: { primary: 'в', alternatives: ['во'], normalized: 'into' },
     before: { primary: 'до', alternatives: ['перед'], normalized: 'before' },

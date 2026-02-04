@@ -233,6 +233,12 @@ export const polishProfile: LanguageProfile = {
     behavior: { primary: 'zachowanie', normalized: 'behavior' },
     install: { primary: 'zainstaluj', normalized: 'install', form: 'imperative' },
     measure: { primary: 'zmierz', normalized: 'measure', form: 'imperative' },
+    beep: { primary: 'sygnał', normalized: 'beep' },
+    break: { primary: 'przerwij', normalized: 'break' },
+    copy: { primary: 'kopiuj', normalized: 'copy' },
+    exit: { primary: 'wyjdź', normalized: 'exit' },
+    pick: { primary: 'wybierz', normalized: 'pick' },
+    render: { primary: 'renderuj', normalized: 'render' },
     // Modifiers
     into: { primary: 'do', alternatives: ['w'], normalized: 'into' },
     before: { primary: 'przed', normalized: 'before' },

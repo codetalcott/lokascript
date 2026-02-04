@@ -22,9 +22,9 @@ describe('preprocessToEnglish', () => {
       ['ja', '#box に .highlight を 追加'],
       ['ko', '#box 에 .highlight 을 추가'],
       ['fr', 'ajouter .highlight sur #box'],
-    ])('[%s] translates add .highlight on #box', (lang, input) => {
+    ])('[%s] translates add .highlight to #box', (lang, input) => {
       const result = preprocessToEnglish(input, lang);
-      expect(result).toBe('add .highlight on #box');
+      expect(result).toBe('add .highlight to #box');
     });
   });
 
@@ -107,7 +107,7 @@ describe('preprocessToEnglish', () => {
       ['ja', 'on click .active を 切り替え', 'on click toggle .active'],
       ['ko', 'on click .active 을 토글', 'on click toggle .active'],
       ['zh', 'on click 切换 .active', 'on click toggle .active'],
-      ['fr', 'on click ajouter .highlight sur #box', 'on click add .highlight on #box'],
+      ['fr', 'on click ajouter .highlight sur #box', 'on click add .highlight to #box'],
     ])('[%s] translates commands after "on click" prefix', (lang, input, expected) => {
       const result = preprocessToEnglish(input, lang);
       expect(result).toBe(expected);

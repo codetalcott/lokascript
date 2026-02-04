@@ -117,6 +117,12 @@ export const koreanProfile: LanguageProfile = {
     behavior: { primary: '동작', normalized: 'behavior' },
     install: { primary: '설치', normalized: 'install' },
     measure: { primary: '측정', normalized: 'measure' },
+    beep: { primary: '비프', normalized: 'beep' },
+    break: { primary: '중단', normalized: 'break' },
+    copy: { primary: '복사', normalized: 'copy' },
+    exit: { primary: '종료', normalized: 'exit' },
+    pick: { primary: '선택', normalized: 'pick' },
+    render: { primary: '렌더링', normalized: 'render' },
     // Modifiers
     into: { primary: '으로', normalized: 'into' },
     before: { primary: '전에', normalized: 'before' },

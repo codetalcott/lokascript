@@ -260,6 +260,12 @@ export const ukrainianProfile: LanguageProfile = {
       normalized: 'measure',
       form: 'infinitive',
     },
+    beep: { primary: 'звук', normalized: 'beep' },
+    break: { primary: 'перервати', normalized: 'break' },
+    copy: { primary: 'копіювати', normalized: 'copy' },
+    exit: { primary: 'вийти', normalized: 'exit' },
+    pick: { primary: 'вибрати', normalized: 'pick' },
+    render: { primary: 'відобразити', normalized: 'render' },
     // Modifiers
     into: { primary: 'в', alternatives: ['у'], normalized: 'into' },
     before: { primary: 'до', alternatives: ['перед'], normalized: 'before' },

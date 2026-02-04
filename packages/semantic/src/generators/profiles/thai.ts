@@ -120,6 +120,12 @@ export const thaiProfile: LanguageProfile = {
     behavior: { primary: 'พฤติกรรม', alternatives: [], normalized: 'behavior' },
     install: { primary: 'ติดตั้ง', alternatives: [], normalized: 'install' },
     measure: { primary: 'วัด', alternatives: [], normalized: 'measure' },
+    beep: { primary: 'บี๊บ', alternatives: [], normalized: 'beep' },
+    break: { primary: 'หยุด', alternatives: [], normalized: 'break' },
+    copy: { primary: 'คัดลอก', alternatives: [], normalized: 'copy' },
+    exit: { primary: 'ออก', alternatives: [], normalized: 'exit' },
+    pick: { primary: 'เลือก', alternatives: [], normalized: 'pick' },
+    render: { primary: 'แสดงผล', alternatives: [], normalized: 'render' },
     // Modifiers
     into: { primary: 'ใน', alternatives: [], normalized: 'into' },
     before: { primary: 'ก่อน', alternatives: [], normalized: 'before' },

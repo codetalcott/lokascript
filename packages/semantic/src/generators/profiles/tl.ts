@@ -118,6 +118,12 @@ export const tagalogProfile: LanguageProfile = {
     behavior: { primary: 'ugali', alternatives: ['kilos'], normalized: 'behavior' },
     install: { primary: 'ikabit', alternatives: ['mag-install'], normalized: 'install' },
     measure: { primary: 'sukatin', normalized: 'measure' },
+    beep: { primary: 'tunog', normalized: 'beep' },
+    break: { primary: 'itigil', normalized: 'break' },
+    copy: { primary: 'kopyahin', normalized: 'copy' },
+    exit: { primary: 'lumabas', normalized: 'exit' },
+    pick: { primary: 'pumili', normalized: 'pick' },
+    render: { primary: 'ipakita', normalized: 'render' },
     // Modifiers
     into: { primary: 'sa', normalized: 'into' },
     before: { primary: 'bago', normalized: 'before' },

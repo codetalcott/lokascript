@@ -141,8 +141,7 @@ The plugin overrides `runtime.getScript()` — the method \_hyperscript calls to
 
 ## Limitations
 
-- **Expressions** (`is`, `contains`, `matches`, etc.): expression operators embedded in commands are preserved as raw text and work fine. Standalone non-English boolean expressions outside a command context do not translate. Note: `has` is not yet implemented as an expression operator.
+- **Expressions** (`is`, `contains`, `matches`, `has`, etc.): expression operators embedded in commands are preserved as raw text and work fine. Standalone non-English boolean expressions outside a command context do not translate.
 - **Feature declarations** (`def`, `worker`): these are original \_hyperscript feature-level keywords that are not part of the adapter's translation layer — keep them in English. Command bodies within features translate normally. (`behavior` IS supported.)
 - **SOV/VSO accuracy**: Japanese, Korean, Turkish have lower pattern coverage — confidence gating may trigger fallback to the original text
 - **Programmatic calls**: `_hyperscript("code")` bypasses the plugin; use `preprocess()` for those
-- **Unsupported commands**: `beep`, `break`, `copy`, `exit`, `pick`, and `render` lack semantic schemas — the parser cannot recognize them in non-English. Write these commands in English.

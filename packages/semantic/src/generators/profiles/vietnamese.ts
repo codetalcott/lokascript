@@ -123,6 +123,12 @@ export const vietnameseProfile: LanguageProfile = {
     behavior: { primary: 'hành vi', normalized: 'behavior' },
     install: { primary: 'cài đặt', normalized: 'install' },
     measure: { primary: 'đo lường', normalized: 'measure' },
+    beep: { primary: 'beep', normalized: 'beep' },
+    break: { primary: 'dừng', normalized: 'break' },
+    copy: { primary: 'sao chép', normalized: 'copy' },
+    exit: { primary: 'thoát', normalized: 'exit' },
+    pick: { primary: 'chọn', normalized: 'pick' },
+    render: { primary: 'kết xuất', normalized: 'render' },
     // Modifiers
     into: { primary: 'vào', alternatives: ['vào trong'], normalized: 'into' },
     before: { primary: 'trước', alternatives: ['trước khi'], normalized: 'before' },

@@ -117,6 +117,12 @@ export const hebrewProfile: LanguageProfile = {
     behavior: { primary: 'התנהגות', normalized: 'behavior' },
     install: { primary: 'התקן', normalized: 'install' },
     measure: { primary: 'מדוד', normalized: 'measure' },
+    beep: { primary: 'ביפ', normalized: 'beep' },
+    break: { primary: 'שבור', normalized: 'break' },
+    copy: { primary: 'העתק', normalized: 'copy' },
+    exit: { primary: 'צא', normalized: 'exit' },
+    pick: { primary: 'בחר', normalized: 'pick' },
+    render: { primary: 'רנדר', normalized: 'render' },
     // Modifiers
     into: { primary: 'לתוך', alternatives: ['אל'], normalized: 'into' },
     before: { primary: 'לפני', normalized: 'before' },

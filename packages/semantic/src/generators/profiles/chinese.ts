@@ -115,6 +115,12 @@ export const chineseProfile: LanguageProfile = {
     behavior: { primary: '行为', normalized: 'behavior' },
     install: { primary: '安装', normalized: 'install' },
     measure: { primary: '测量', normalized: 'measure' },
+    beep: { primary: '蜂鸣', normalized: 'beep' },
+    break: { primary: '中断', normalized: 'break' },
+    copy: { primary: '复制', normalized: 'copy' },
+    exit: { primary: '退出', normalized: 'exit' },
+    pick: { primary: '选取', normalized: 'pick' },
+    render: { primary: '渲染', normalized: 'render' },
     // Modifiers
     into: { primary: '进入', normalized: 'into' },
     before: { primary: '之前', normalized: 'before' },

@@ -127,6 +127,12 @@ export const italianProfile: LanguageProfile = {
     behavior: { primary: 'comportamento', normalized: 'behavior' },
     install: { primary: 'installare', normalized: 'install' },
     measure: { primary: 'misurare', normalized: 'measure' },
+    beep: { primary: 'beep', normalized: 'beep' },
+    break: { primary: 'interrompere', normalized: 'break' },
+    copy: { primary: 'copiare', normalized: 'copy' },
+    exit: { primary: 'uscire', normalized: 'exit' },
+    pick: { primary: 'scegliere', normalized: 'pick' },
+    render: { primary: 'renderizzare', normalized: 'render' },
     // Modifiers
     into: { primary: 'in', alternatives: ['dentro'], normalized: 'into' },
     before: { primary: 'prima', normalized: 'before' },

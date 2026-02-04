@@ -133,6 +133,12 @@ export const hindiProfile: LanguageProfile = {
     behavior: { primary: 'व्यवहार', alternatives: [], normalized: 'behavior' },
     install: { primary: 'इंस्टॉल', alternatives: [], normalized: 'install' },
     measure: { primary: 'मापें', alternatives: [], normalized: 'measure' },
+    beep: { primary: 'बीप', alternatives: [], normalized: 'beep' },
+    break: { primary: 'रोकें', alternatives: [], normalized: 'break' },
+    copy: { primary: 'कॉपी', alternatives: [], normalized: 'copy' },
+    exit: { primary: 'बाहर', alternatives: [], normalized: 'exit' },
+    pick: { primary: 'चुनें', alternatives: [], normalized: 'pick' },
+    render: { primary: 'रेंडर', alternatives: [], normalized: 'render' },
     // Modifiers
     into: { primary: 'में', alternatives: ['को'], normalized: 'into' },
     before: { primary: 'से पहले', alternatives: ['पहले'], normalized: 'before' },
