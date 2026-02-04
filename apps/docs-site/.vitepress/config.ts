@@ -145,6 +145,12 @@ export default defineConfig({
           ]
         },
         {
+          text: 'Integration',
+          items: [
+            { text: '@lokascript/hyperscript-adapter', link: '/en/packages/hyperscript-adapter' }
+          ]
+        },
+        {
           text: 'Build Tools',
           items: [
             { text: '@lokascript/vite-plugin', link: '/en/packages/vite-plugin' }

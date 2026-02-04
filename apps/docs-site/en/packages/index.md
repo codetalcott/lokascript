@@ -10,6 +10,12 @@ LokaScript is organized as a monorepo with multiple packages. Each package can b
 | [@lokascript/semantic](/en/packages/semantic) | Semantic-first multilingual parser (23 languages) | 61 KB  |
 | [@lokascript/i18n](/en/packages/i18n)         | Grammar transformation (13 languages)             | 68 KB  |
 
+## Integration
+
+| Package                                                             | Description                                                   | Size       |
+| ------------------------------------------------------------------- | ------------------------------------------------------------- | ---------- |
+| [@lokascript/hyperscript-adapter](/en/packages/hyperscript-adapter) | Multilingual plugin for original \_hyperscript (24 languages) | 85--568 KB |
+
 ## Build Tools
 
 | Package                                             | Description                                              |
@@ -34,6 +40,19 @@ npm install @lokascript/core @lokascript/vite-plugin
 
 ```bash
 npm install @lokascript/core @lokascript/semantic @lokascript/i18n
+```
+
+### Existing \_hyperscript Project (Add i18n)
+
+```bash
+npm install @lokascript/hyperscript-adapter
+```
+
+Or use a CDN bundle -- no npm required:
+
+```html
+<script src="_hyperscript.js"></script>
+<script src="hyperscript-i18n-es.global.js"></script>
 ```
 
 ## Bundle Comparison
