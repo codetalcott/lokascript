@@ -527,7 +527,7 @@ export class SemanticParserImpl implements ISemanticParser {
     postVerbTokens: LanguageToken[],
     markerToRole: Map<string, string>,
     action: string,
-    language: string
+    _language: string
   ): Record<string, SemanticValue> {
     const roles: Record<string, SemanticValue> = {};
 
@@ -580,7 +580,7 @@ export class SemanticParserImpl implements ISemanticParser {
    */
   private mapRoleForCommand(
     markerRole: string,
-    action: string,
+    _action: string,
     existingRoles: Record<string, SemanticValue>
   ): string | null {
     // Direct mapping — if the role isn't taken yet, use it
@@ -610,7 +610,7 @@ export class SemanticParserImpl implements ISemanticParser {
     if (tokens.length === 0) return null;
 
     // Filter out noise tokens (whitespace, etc.)
-    const meaningful = tokens.filter(t => t.kind !== 'whitespace');
+    const meaningful = tokens.filter(t => (t.kind as string) !== 'whitespace');
     if (meaningful.length === 0) return null;
 
     // Single token — use its type directly
@@ -634,7 +634,7 @@ export class SemanticParserImpl implements ISemanticParser {
     if (first.kind === 'literal' || first.value.startsWith('"') || first.value.startsWith("'")) {
       return createLiteral(combined);
     }
-    if (first.kind === 'reference') {
+    if ((first.kind as string) === 'reference') {
       return createReference(combined as 'me' | 'it' | 'you' | 'result');
     }
 
@@ -681,7 +681,7 @@ export class SemanticParserImpl implements ISemanticParser {
     if (ref === 'me' || ref === 'it' || ref === 'you' || ref === 'result' || ref === 'body') {
       return createReference(ref as 'me' | 'it' | 'you' | 'result');
     }
-    if (token.kind === 'reference') {
+    if ((token.kind as string) === 'reference') {
       return createReference((token.normalized as 'me' | 'it' | 'you') || 'me');
     }
 
@@ -795,7 +795,7 @@ export class SemanticParserImpl implements ISemanticParser {
     if (!hasThenKeyword) return null;
 
     // Reset token stream and parse using clause-based parsing
-    const freshStream = new TokenStreamImpl(allTokens, language);
+    const freshStream = new TokenStreamImpl(allTokens as LanguageToken[], language);
     const body = this.parseBodyWithClauses(freshStream, commandPatterns, language);
 
     if (body.length === 0) return null;
