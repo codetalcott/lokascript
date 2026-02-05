@@ -128,39 +128,16 @@ jobs:
             cd ../..
           done
 
-      - name: Check authentication method
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -n "$NPM_TOKEN" ]; then
-            echo "✅ NPM_TOKEN secret is set (will use token auth)"
-          else
-            echo "ℹ️  NPM_TOKEN secret not set (will use OIDC)"
-          fi
-
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run == 'false' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          echo "Publishing all packages at version $VERSION"
+          echo "Publishing all packages at version $VERSION (OIDC trusted publishing)"
 
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             echo "Publishing @lokascript/$pkg@$VERSION"
             cd "packages/$pkg"
-
-            if [ -z "$NODE_AUTH_TOKEN" ]; then
-              echo "🔐 Using OIDC trusted publishing"
-              rm -f .npmrc
-              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
-            else
-              echo "🔑 Using NPM_TOKEN authentication"
-              echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-              npm publish --tag ${{ github.event.inputs.npm-tag }} --access public
-              rm -f .npmrc
-            fi
-
+            npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
             cd ../..
           done
 
