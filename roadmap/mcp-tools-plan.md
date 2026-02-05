@@ -11,23 +11,32 @@ LokaScript provides two complementary approaches for LLM coding agent support:
 
 ### Agent Skills ✅ COMPLETED
 
-Location: `skills/hyperscript/`
+Location: `.github/skills/hyperscript/`
 
 Agent Skills follow the open standard adopted by VS Code, Cursor, GitHub Copilot, and OpenAI Codex.
 
 **Files:**
 
-- `SKILL.md` - Main skill definition with quick reference
-- `references/commands.md` - Complete command reference (21 commands)
-- `references/expressions.md` - Expression syntax guide
-- `references/multilingual.md` - 22 language examples with keywords
+- `SKILL.md` - Main skill definition (hand-written, teaches HOW to use MCP tools)
+- `references/commands.md` - Generated from MCP server content
+- `references/expressions.md` - Generated from MCP server content
+- `references/events.md` - Generated from MCP server content
+- `references/patterns.md` - Generated from MCP server content
+
+**Generation:**
+
+Reference files are generated from the MCP server's content.ts (single source of truth):
+
+```bash
+npm run generate:skills
+```
 
 **Key Features:**
 
 - Works immediately with any agent that supports Agent Skills
 - No server infrastructure required
-- Covers all 21 commands, 6 blocks, and 22 languages
-- Includes common patterns and troubleshooting
+- Single source of truth: MCP server content generates skill references
+- SKILL.md teaches workflow; references provide syntax details
 
 ### MCP Server ✅ COMPLETED
 
@@ -100,7 +109,7 @@ npm run build
 
 ### Agent Skills
 
-Agent Skills are automatically available in supporting editors when the `skills/` directory is present in your workspace.
+Agent Skills are automatically available in supporting editors when the `.github/skills/` directory is present in your workspace.
 
 ## Architecture Decision: Skills + MCP
 
@@ -123,7 +132,7 @@ Ask any compatible agent:
 
 > "Generate hyperscript that toggles a dropdown menu on click"
 
-The agent uses `skills/hyperscript/SKILL.md` to understand:
+The agent uses `.github/skills/hyperscript/SKILL.md` to understand:
 
 - Command syntax: `toggle .class on #element`
 - Event handling: `on click ...`
@@ -174,10 +183,12 @@ The original `mcp-server-hyperscript/` directory has been removed. Use `packages
 
 ### Completed Phase 1 Checklist
 
-- [x] Create Agent Skill (`skills/hyperscript/SKILL.md`)
-- [x] Create command reference (`skills/hyperscript/references/commands.md`)
-- [x] Create expression guide (`skills/hyperscript/references/expressions.md`)
-- [x] Create multilingual examples (`skills/hyperscript/references/multilingual.md`)
+- [x] Create Agent Skill (`.github/skills/hyperscript/SKILL.md`)
+- [x] Create command reference (generated from MCP content)
+- [x] Create expression guide (generated from MCP content)
+- [x] Create events reference (generated from MCP content)
+- [x] Create patterns reference (generated from MCP content)
+- [x] Create generation script (`scripts/generate-skills.ts`)
 - [x] Create consolidated MCP server (`packages/mcp-server/`)
 - [x] Implement analysis tools (from ast-toolkit)
 - [x] Implement pattern tools (from patterns-reference)

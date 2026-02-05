@@ -10,7 +10,8 @@
     "mcp-server-hyperscript"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "lerna run build",
+    "build:workspaces": "npm run build --workspaces --if-present",
     "build:packages": "npm run build --workspace=packages/* --if-present",
     "test": "npm run test --workspaces",
     "test:integration": "npm test --workspace=@lokascript/core && npm test --workspace=@lokascript/semantic",
@@ -39,6 +40,7 @@
     "compatibility:improve": "node scripts/improvement-workflow.js",
     "compatibility:cycle": "npm run compatibility:monitor && npm run compatibility:improve",
     "compatibility:dashboard": "node scripts/metrics-dashboard.js",
+    "generate:skills": "npx tsx scripts/generate-skills.ts",
     "patterns:generate": "node scripts/testing/generate-pattern-tests.mjs",
     "patterns:test": "node scripts/testing/test-all-patterns.mjs",
     "patterns:validate": "npm run patterns:generate && npm run patterns:test",
