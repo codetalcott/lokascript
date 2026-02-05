@@ -92,6 +92,140 @@ const defaultSettings: ServerSettings = {
 let globalSettings: ServerSettings = defaultSettings;
 
 // =============================================================================
+// HTML Hyperscript Extraction
+// =============================================================================
+
+interface HyperscriptRegion {
+  code: string;
+  startLine: number;
+  startChar: number;
+  endLine: number;
+  endChar: number;
+  type: 'attribute' | 'script';
+}
+
+/**
+ * Checks if a document is HTML based on URI or content
+ */
+function isHtmlDocument(uri: string, content: string): boolean {
+  if (uri.endsWith('.html') || uri.endsWith('.htm')) return true;
+  if (content.trim().startsWith('<!DOCTYPE') || content.trim().startsWith('<html')) return true;
+  // Check for HTML tags
+  if (/<\w+[^>]*>/.test(content) && !content.trim().startsWith('on ')) return true;
+  return false;
+}
+
+/**
+ * Extracts hyperscript regions from HTML content.
+ * Returns regions for _="..." attributes and <script type="text/hyperscript"> tags.
+ */
+function extractHyperscriptRegions(content: string): HyperscriptRegion[] {
+  const regions: HyperscriptRegion[] = [];
+  const lines = content.split('\n');
+
+  // Track position for multiline matching
+  let fullContent = content;
+
+  // Extract _="..." attributes (handles multiline)
+  // Match _=" followed by content until unescaped "
+  const attrRegex = /_="([^"\\]*(?:\\.[^"\\]*)*)"/g;
+  let match;
+
+  while ((match = attrRegex.exec(fullContent)) !== null) {
+    const code = match[1].replace(/\\"/g, '"'); // Unescape quotes
+    const startOffset = match.index + 3; // After _="
+    const endOffset = match.index + match[0].length - 1; // Before final "
+
+    // Convert offset to line/character
+    const startPos = offsetToPosition(content, startOffset);
+    const endPos = offsetToPosition(content, endOffset);
+
+    regions.push({
+      code,
+      startLine: startPos.line,
+      startChar: startPos.character,
+      endLine: endPos.line,
+      endChar: endPos.character,
+      type: 'attribute',
+    });
+  }
+
+  // Extract <script type="text/hyperscript">...</script>
+  const scriptRegex = /<script\s+type=["']text\/hyperscript["'][^>]*>([\s\S]*?)<\/script>/gi;
+
+  while ((match = scriptRegex.exec(fullContent)) !== null) {
+    const code = match[1];
+    const startOffset = match.index + match[0].indexOf('>') + 1;
+    const endOffset = match.index + match[0].lastIndexOf('</script>');
+
+    const startPos = offsetToPosition(content, startOffset);
+    const endPos = offsetToPosition(content, endOffset);
+
+    regions.push({
+      code,
+      startLine: startPos.line,
+      startChar: startPos.character,
+      endLine: endPos.line,
+      endChar: endPos.character,
+      type: 'script',
+    });
+  }
+
+  return regions;
+}
+
+/**
+ * Converts a character offset to line/character position
+ */
+function offsetToPosition(content: string, offset: number): { line: number; character: number } {
+  let line = 0;
+  let character = 0;
+
+  for (let i = 0; i < offset && i < content.length; i++) {
+    if (content[i] === '\n') {
+      line++;
+      character = 0;
+    } else {
+      character++;
+    }
+  }
+
+  return { line, character };
+}
+
+/**
+ * Finds which hyperscript region (if any) contains the given position
+ */
+function findRegionAtPosition(
+  regions: HyperscriptRegion[],
+  line: number,
+  character: number
+): { region: HyperscriptRegion; localLine: number; localChar: number } | null {
+  for (const region of regions) {
+    // Check if position is within region bounds
+    const afterStart =
+      line > region.startLine || (line === region.startLine && character >= region.startChar);
+    const beforeEnd =
+      line < region.endLine || (line === region.endLine && character <= region.endChar);
+
+    if (afterStart && beforeEnd) {
+      // Calculate local position within the region
+      let localLine = line - region.startLine;
+      let localChar: number;
+
+      if (line === region.startLine) {
+        localChar = character - region.startChar;
+      } else {
+        localChar = character;
+      }
+
+      return { region, localLine, localChar };
+    }
+  }
+  return null;
+}
+
+// =============================================================================
 // Initialization
 // =============================================================================
 
@@ -138,8 +272,45 @@ documents.onDidChangeContent(change => {
 
 async function validateDocument(document: TextDocument): Promise<void> {
   const text = document.getText();
-  const diagnostics = await getDiagnostics(text, globalSettings.language);
-  connection.sendDiagnostics({ uri: document.uri, diagnostics });
+  const uri = document.uri;
+  let allDiagnostics: Diagnostic[] = [];
+
+  if (isHtmlDocument(uri, text)) {
+    // Extract hyperscript regions from HTML
+    const regions = extractHyperscriptRegions(text);
+
+    for (const region of regions) {
+      const diagnostics = await getDiagnostics(region.code, globalSettings.language);
+
+      // Map diagnostics back to document positions
+      for (const diag of diagnostics) {
+        allDiagnostics.push({
+          ...diag,
+          range: {
+            start: {
+              line: region.startLine + diag.range.start.line,
+              character:
+                diag.range.start.line === 0
+                  ? region.startChar + diag.range.start.character
+                  : diag.range.start.character,
+            },
+            end: {
+              line: region.startLine + diag.range.end.line,
+              character:
+                diag.range.end.line === 0
+                  ? region.startChar + diag.range.end.character
+                  : diag.range.end.character,
+            },
+          },
+        });
+      }
+    }
+  } else {
+    // Pure hyperscript file
+    allDiagnostics = await getDiagnostics(text, globalSettings.language);
+  }
+
+  connection.sendDiagnostics({ uri, diagnostics: allDiagnostics });
 }
 
 async function getDiagnostics(code: string, language: string): Promise<Diagnostic[]> {
@@ -299,12 +470,40 @@ connection.onCompletion((params: TextDocumentPositionParams): CompletionItem[] =
   if (!document) return [];
 
   const text = document.getText();
-  const offset = document.offsetAt(params.position);
-  const beforeCursor = text.slice(0, offset);
-  const context = inferContext(beforeCursor);
+  const uri = document.uri;
+  const position = params.position;
   const language = globalSettings.language;
 
-  return getContextualCompletions(context, language);
+  if (isHtmlDocument(uri, text)) {
+    // Find if cursor is inside a hyperscript region
+    const regions = extractHyperscriptRegions(text);
+    const found = findRegionAtPosition(regions, position.line, position.character);
+
+    if (!found) {
+      // Not inside hyperscript - no completions
+      return [];
+    }
+
+    // Get the code before cursor within this region
+    const regionLines = found.region.code.split('\n');
+    let beforeCursor = '';
+    for (let i = 0; i <= found.localLine && i < regionLines.length; i++) {
+      if (i === found.localLine) {
+        beforeCursor += regionLines[i].slice(0, found.localChar);
+      } else {
+        beforeCursor += regionLines[i] + '\n';
+      }
+    }
+
+    const context = inferContext(beforeCursor);
+    return getContextualCompletions(context, language);
+  } else {
+    // Pure hyperscript file
+    const offset = document.offsetAt(position);
+    const beforeCursor = text.slice(0, offset);
+    const context = inferContext(beforeCursor);
+    return getContextualCompletions(context, language);
+  }
 });
 
 function inferContext(beforeCursor: string): string {
@@ -475,12 +674,48 @@ connection.onHover((params: TextDocumentPositionParams): Hover | null => {
   if (!document) return null;
 
   const text = document.getText();
+  const uri = document.uri;
   const position = params.position;
+
+  // For HTML files, check if we're inside a hyperscript region
+  if (isHtmlDocument(uri, text)) {
+    const regions = extractHyperscriptRegions(text);
+    const found = findRegionAtPosition(regions, position.line, position.character);
+
+    if (!found) {
+      // Not inside hyperscript - no hover
+      return null;
+    }
+
+    // Get the line within the region
+    const regionLines = found.region.code.split('\n');
+    const currentLine = regionLines[found.localLine];
+    if (!currentLine) return null;
+
+    const word = getWordAtPosition(currentLine, found.localChar);
+    if (!word) return null;
+
+    const doc = getHoverDocumentation(word.text, globalSettings.language);
+    if (!doc) return null;
+
+    // Map range back to document coordinates
+    const startChar = found.localLine === 0 ? found.region.startChar + word.start : word.start;
+    const endChar = found.localLine === 0 ? found.region.startChar + word.end : word.end;
+
+    return {
+      contents: { kind: 'markdown', value: doc },
+      range: {
+        start: { line: position.line, character: startChar },
+        end: { line: position.line, character: endChar },
+      },
+    };
+  }
+
+  // Pure hyperscript file
   const lines = text.split('\n');
   const currentLine = lines[position.line];
   if (!currentLine) return null;
 
-  // Find word at cursor position
   const word = getWordAtPosition(currentLine, position.character);
   if (!word) return null;
 
@@ -577,7 +812,61 @@ connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => 
   if (!document) return [];
 
   const text = document.getText();
-  return extractSymbols(text, globalSettings.language);
+  const uri = document.uri;
+  const language = globalSettings.language;
+
+  if (isHtmlDocument(uri, text)) {
+    // Extract symbols from all hyperscript regions
+    const regions = extractHyperscriptRegions(text);
+    const allSymbols: DocumentSymbol[] = [];
+
+    for (const region of regions) {
+      const symbols = extractSymbols(region.code, language);
+
+      // Map symbol positions back to document coordinates
+      for (const symbol of symbols) {
+        allSymbols.push({
+          ...symbol,
+          range: {
+            start: {
+              line: region.startLine + symbol.range.start.line,
+              character:
+                symbol.range.start.line === 0
+                  ? region.startChar + symbol.range.start.character
+                  : symbol.range.start.character,
+            },
+            end: {
+              line: region.startLine + symbol.range.end.line,
+              character:
+                symbol.range.end.line === 0
+                  ? region.startChar + symbol.range.end.character
+                  : symbol.range.end.character,
+            },
+          },
+          selectionRange: {
+            start: {
+              line: region.startLine + symbol.selectionRange.start.line,
+              character:
+                symbol.selectionRange.start.line === 0
+                  ? region.startChar + symbol.selectionRange.start.character
+                  : symbol.selectionRange.start.character,
+            },
+            end: {
+              line: region.startLine + symbol.selectionRange.end.line,
+              character:
+                symbol.selectionRange.end.line === 0
+                  ? region.startChar + symbol.selectionRange.end.character
+                  : symbol.selectionRange.end.character,
+            },
+          },
+        });
+      }
+    }
+
+    return allSymbols;
+  } else {
+    return extractSymbols(text, language);
+  }
 });
 
 function extractSymbols(code: string, language: string): DocumentSymbol[] {
