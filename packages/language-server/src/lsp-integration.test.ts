@@ -62,7 +62,7 @@ function parseResponse(data: string): JsonRpcResponse | null {
 
 class LSPTestClient {
   private server: ChildProcess | null = null;
-  private responseBuffer = '';
+  private responseBuffer: Buffer = Buffer.alloc(0);
   private pendingRequests = new Map<number, (response: JsonRpcResponse) => void>();
   private nextId = 1;
 
@@ -73,15 +73,15 @@ class LSPTestClient {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    // Collect stdout data
+    // Collect stdout data as Buffer (important for byte-accurate Content-Length handling)
     this.server.stdout?.on('data', (data: Buffer) => {
-      this.responseBuffer += data.toString();
+      this.responseBuffer = Buffer.concat([this.responseBuffer, data]);
       this.processBuffer();
     });
 
     // Log stderr for debugging
     this.server.stderr?.on('data', (data: Buffer) => {
-      // Uncomment for debugging: console.error('Server stderr:', data.toString());
+      // console.error('Server stderr:', data.toString());
     });
 
     // Wait for server to be ready
@@ -91,25 +91,41 @@ class LSPTestClient {
   private processBuffer(): void {
     // Try to parse complete messages from buffer
     while (true) {
-      const headerMatch = this.responseBuffer.match(/Content-Length: (\d+)\r\n/);
-      if (!headerMatch) break;
+      // Find the header separator (blank line) in bytes
+      const headerSep = this.responseBuffer.indexOf('\r\n\r\n');
+      if (headerSep === -1) break;
 
-      const contentLength = parseInt(headerMatch[1], 10);
-      const headerEnd = this.responseBuffer.indexOf('\r\n\r\n');
-      if (headerEnd === -1) break;
+      // Extract headers as string
+      const headerSection = this.responseBuffer.subarray(0, headerSep).toString('utf-8');
+      const contentLengthMatch = headerSection.match(/Content-Length:\s*(\d+)/i);
+      if (!contentLengthMatch) {
+        // Invalid message, skip past the separator and try again
+        this.responseBuffer = this.responseBuffer.subarray(headerSep + 4);
+        continue;
+      }
 
-      const contentStart = headerEnd + 4;
+      const contentLength = parseInt(contentLengthMatch[1], 10);
+      const contentStart = headerSep + 4;
       const messageEnd = contentStart + contentLength;
 
       if (this.responseBuffer.length < messageEnd) break;
 
-      const content = this.responseBuffer.slice(contentStart, messageEnd);
-      this.responseBuffer = this.responseBuffer.slice(messageEnd);
+      // Extract content as bytes, then convert to string
+      const content = this.responseBuffer.subarray(contentStart, messageEnd).toString('utf-8');
+      this.responseBuffer = this.responseBuffer.subarray(messageEnd);
 
       try {
         const message = JSON.parse(content);
-        // Only process responses (messages with id), ignore notifications
-        if ('id' in message && message.id !== null) {
+
+        // Handle server requests (messages with both 'method' and 'id')
+        // These need a response from the client
+        if ('method' in message && 'id' in message && message.id !== undefined) {
+          this.respondToServerRequest(message.id, message.method);
+          continue;
+        }
+
+        // Handle responses to our requests (messages with 'id' but no 'method')
+        if ('id' in message && message.id !== null && !('method' in message)) {
           const resolver = this.pendingRequests.get(message.id);
           if (resolver) {
             resolver(message as JsonRpcResponse);
@@ -121,6 +137,18 @@ class LSPTestClient {
         // Ignore parse errors
       }
     }
+  }
+
+  private respondToServerRequest(id: number, method: string): void {
+    // Respond to server requests with appropriate empty results
+    const response: JsonRpcResponse = {
+      jsonrpc: '2.0',
+      id,
+      result: null, // Most server requests just need acknowledgment
+    };
+    const content = JSON.stringify(response);
+    const msg = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n${content}`;
+    this.server?.stdin?.write(msg);
   }
 
   async sendRequest(method: string, params?: unknown): Promise<JsonRpcResponse> {
@@ -135,6 +163,8 @@ class LSPTestClient {
       method,
       params,
     };
+
+    // console.log(`Sending request ${method} with id=${id}`);
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -547,5 +577,102 @@ describe('LSP Protocol Compliance', () => {
       expect(response.error).toBeUndefined();
       expect(response.result).toBeDefined();
     });
+  });
+});
+
+// =============================================================================
+// Multilingual Support Tests
+// =============================================================================
+
+describe('Multilingual Auto-Detection', () => {
+  let client: LSPTestClient;
+
+  beforeAll(async () => {
+    client = new LSPTestClient();
+    await client.start();
+
+    // Initialize the server
+    await client.sendRequest('initialize', {
+      processId: process.pid,
+      capabilities: {},
+      rootUri: null,
+    });
+    client.sendNotification('initialized', {});
+    await new Promise(resolve => setTimeout(resolve, 50));
+  });
+
+  afterAll(async () => {
+    await client.stop();
+  });
+
+  it('does not flag Spanish hyperscript as error', async () => {
+    const testUri = 'file:///test/spanish.hs';
+
+    // Open a document with Spanish hyperscript
+    client.sendNotification('textDocument/didOpen', {
+      textDocument: {
+        uri: testUri,
+        languageId: 'hyperscript',
+        version: 1,
+        text: 'al hacer clic alternar .active',
+      },
+    });
+
+    // Wait for diagnostics to be published
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Request document symbols (to trigger document processing)
+    const response = await client.sendRequest('textDocument/documentSymbol', {
+      textDocument: { uri: testUri },
+    });
+
+    expect(response.error).toBeUndefined();
+    // Server should process the document without crashing
+    expect(response.result).toBeDefined();
+  });
+
+  it('does not flag Japanese hyperscript as error', async () => {
+    const testUri = 'file:///test/japanese.hs';
+
+    client.sendNotification('textDocument/didOpen', {
+      textDocument: {
+        uri: testUri,
+        languageId: 'hyperscript',
+        version: 1,
+        text: 'クリック で .active を トグル',
+      },
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const response = await client.sendRequest('textDocument/documentSymbol', {
+      textDocument: { uri: testUri },
+    });
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toBeDefined();
+  });
+
+  it('still detects syntax errors in multilingual code', async () => {
+    const testUri = 'file:///test/spanish-error.hs';
+
+    // Spanish code with unclosed quote (syntax error)
+    client.sendNotification('textDocument/didOpen', {
+      textDocument: {
+        uri: testUri,
+        languageId: 'hyperscript',
+        version: 1,
+        text: "poner 'hola en #mensaje", // unclosed quote
+      },
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Server should not crash
+    const response = await client.sendRequest('textDocument/documentSymbol', {
+      textDocument: { uri: testUri },
+    });
+
+    expect(response.error).toBeUndefined();
   });
 });

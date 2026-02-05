@@ -45,15 +45,17 @@
         "path": "./syntaxes/hyperscript.tmLanguage.json"
       },
       {
-        "scopeName": "source.hyperscript.embedded",
-        "path": "./syntaxes/hyperscript.tmLanguage.json",
+        "scopeName": "inline.hyperscript",
+        "path": "./syntaxes/hyperscript-injection.tmLanguage.json",
         "injectTo": [
           "text.html.basic",
+          "text.html.derivative",
           "text.html.vue",
+          "source.vue",
           "source.svelte"
         ],
         "embeddedLanguages": {
-          "source.hyperscript": "hyperscript"
+          "meta.embedded.inline.hyperscript": "hyperscript"
         }
       }
     ],
@@ -85,10 +87,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run generate:grammar && npm run compile",
     "compile": "tsup src/extension.ts --format cjs --external vscode --dts",
     "watch": "tsup src/extension.ts --format cjs --external vscode --watch",
     "typecheck": "tsc --noEmit",
+    "generate:grammar": "npx tsx scripts/generate-grammar.ts",
     "package": "vsce package",
     "publish": "vsce publish"
   },
@@ -100,7 +103,9 @@
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
-    "@vscode/vsce": "^2.0.0"
+    "@vscode/vsce": "^2.0.0",
+    "@lokascript/semantic": "*",
+    "tsx": "^4.0.0"
   },
   "repository": {
     "type": "git",

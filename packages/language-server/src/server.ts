@@ -16,6 +16,7 @@ import {
   CompletionItem,
   CompletionItemKind,
   Hover,
+  MarkupKind,
   Diagnostic,
   DiagnosticSeverity,
   DocumentSymbol,
@@ -320,7 +321,30 @@ async function getDiagnostics(code: string, language: string): Promise<Diagnosti
   const analyzer = getSemanticAnalyzer();
   if (analyzer) {
     try {
-      const result = analyzer.analyze(code, language);
+      // First try with configured language
+      let result = analyzer.analyze(code, language);
+      let usedLanguage = language;
+
+      // If confidence is low, try other supported languages
+      // This enables automatic language detection for multilingual code
+      if (result.confidence < 0.5) {
+        // Try common languages first (Spanish, Japanese, Korean, German, French, etc.)
+        const languagesToTry = ['es', 'ja', 'ko', 'de', 'fr', 'pt', 'zh', 'ar', 'tr', 'id'];
+
+        for (const lang of languagesToTry) {
+          if (lang === usedLanguage) continue;
+          try {
+            const tryResult = analyzer.analyze(code, lang);
+            if (tryResult.confidence > result.confidence) {
+              result = tryResult;
+              usedLanguage = lang;
+              if (result.confidence >= 0.7) break; // Good enough
+            }
+          } catch {
+            // This language failed, try next
+          }
+        }
+      }
 
       // Add semantic-level errors
       if (result.errors && result.errors.length > 0) {
@@ -338,7 +362,8 @@ async function getDiagnostics(code: string, language: string): Promise<Diagnosti
         }
       }
 
-      // Low confidence warning
+      // Low confidence warning - only if we really couldn't parse it
+      // (skip for successfully detected multilingual code)
       if (result.confidence > 0 && result.confidence < 0.3) {
         diagnostics.push({
           range: {
@@ -670,65 +695,70 @@ function getContextualCompletions(context: string, language: string): Completion
 // =============================================================================
 
 connection.onHover((params: TextDocumentPositionParams): Hover | null => {
-  const document = documents.get(params.textDocument.uri);
-  if (!document) return null;
+  try {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return null;
 
-  const text = document.getText();
-  const uri = document.uri;
-  const position = params.position;
+    const text = document.getText();
+    const uri = document.uri;
+    const position = params.position;
 
-  // For HTML files, check if we're inside a hyperscript region
-  if (isHtmlDocument(uri, text)) {
-    const regions = extractHyperscriptRegions(text);
-    const found = findRegionAtPosition(regions, position.line, position.character);
+    // For HTML files, check if we're inside a hyperscript region
+    if (isHtmlDocument(uri, text)) {
+      const regions = extractHyperscriptRegions(text);
+      const found = findRegionAtPosition(regions, position.line, position.character);
 
-    if (!found) {
-      // Not inside hyperscript - no hover
-      return null;
+      if (!found) {
+        // Not inside hyperscript - no hover
+        return null;
+      }
+
+      // Get the line within the region
+      const regionLines = found.region.code.split('\n');
+      const currentLine = regionLines[found.localLine];
+      if (!currentLine) return null;
+
+      const word = getWordAtPosition(currentLine, found.localChar);
+      if (!word) return null;
+
+      const doc = getHoverDocumentation(word.text, globalSettings.language);
+      if (!doc) return null;
+
+      // Map range back to document coordinates
+      const startChar = found.localLine === 0 ? found.region.startChar + word.start : word.start;
+      const endChar = found.localLine === 0 ? found.region.startChar + word.end : word.end;
+
+      return {
+        contents: { kind: MarkupKind.Markdown, value: doc },
+        range: {
+          start: { line: position.line, character: startChar },
+          end: { line: position.line, character: endChar },
+        },
+      };
     }
 
-    // Get the line within the region
-    const regionLines = found.region.code.split('\n');
-    const currentLine = regionLines[found.localLine];
+    // Pure hyperscript file
+    const lines = text.split('\n');
+    const currentLine = lines[position.line];
     if (!currentLine) return null;
 
-    const word = getWordAtPosition(currentLine, found.localChar);
+    const word = getWordAtPosition(currentLine, position.character);
     if (!word) return null;
 
     const doc = getHoverDocumentation(word.text, globalSettings.language);
     if (!doc) return null;
 
-    // Map range back to document coordinates
-    const startChar = found.localLine === 0 ? found.region.startChar + word.start : word.start;
-    const endChar = found.localLine === 0 ? found.region.startChar + word.end : word.end;
-
     return {
-      contents: { kind: 'markdown', value: doc },
+      contents: { kind: MarkupKind.Markdown, value: doc },
       range: {
-        start: { line: position.line, character: startChar },
-        end: { line: position.line, character: endChar },
+        start: { line: position.line, character: word.start },
+        end: { line: position.line, character: word.end },
       },
     };
+  } catch (error) {
+    connection.console.error(`Hover error: ${error}`);
+    return null;
   }
-
-  // Pure hyperscript file
-  const lines = text.split('\n');
-  const currentLine = lines[position.line];
-  if (!currentLine) return null;
-
-  const word = getWordAtPosition(currentLine, position.character);
-  if (!word) return null;
-
-  const doc = getHoverDocumentation(word.text, globalSettings.language);
-  if (!doc) return null;
-
-  return {
-    contents: { kind: 'markdown', value: doc },
-    range: {
-      start: { line: position.line, character: word.start },
-      end: { line: position.line, character: word.end },
-    },
-  };
 });
 
 function getWordAtPosition(
@@ -738,10 +768,22 @@ function getWordAtPosition(
   let start = character;
   let end = character;
 
-  while (start > 0 && /[\w.-]/.test(line[start - 1])) {
+  // Extended regex to handle:
+  // - Latin characters with diacritics (á, ñ, ü, etc.)
+  // - CJK characters (Japanese, Korean, Chinese)
+  // - Arabic, Hebrew, Cyrillic, etc.
+  // Using Unicode property escapes for proper multilingual support
+  const isWordChar = (char: string): boolean => {
+    if (!char) return false;
+    // Match: letters, marks, numbers, hyphen, dot, underscore
+    // This covers Latin, CJK, Arabic, Hebrew, Cyrillic, etc.
+    return /[\p{L}\p{M}\p{N}_.-]/u.test(char);
+  };
+
+  while (start > 0 && isWordChar(line[start - 1])) {
     start--;
   }
-  while (end < line.length && /[\w.-]/.test(line[end])) {
+  while (end < line.length && isWordChar(line[end])) {
     end++;
   }
 
@@ -755,52 +797,314 @@ function getHoverDocumentation(word: string, language: string): string | null {
   // Normalize to English for lookup
   const engWord = normalizeToEnglish(wordLower, language);
 
-  const docs: Record<string, string> = {
-    toggle:
-      '**toggle**\n\nToggles a class, attribute, or visibility state.\n\n```hyperscript\ntoggle .active on me\ntoggle @disabled on #btn\n```',
-    add: '**add**\n\nAdds a class or attribute to an element.\n\n```hyperscript\nadd .highlight to me\nadd @disabled to #btn\n```',
-    remove:
-      '**remove**\n\nRemoves a class, attribute, or element.\n\n```hyperscript\nremove .highlight from me\nremove #temp\n```',
-    show: '**show**\n\nMakes an element visible.\n\n```hyperscript\nshow #modal\nshow me with *opacity\n```',
-    hide: '**hide**\n\nHides an element.\n\n```hyperscript\nhide #modal\nhide me with *opacity\n```',
-    put: '**put**\n\nSets the content of an element.\n\n```hyperscript\nput "Hello" into #message\nput response into #results\n```',
-    set: '**set**\n\nSets a variable or property.\n\n```hyperscript\nset :count to 0\nset $globalVar to "value"\n```',
-    fetch:
-      '**fetch**\n\nMakes an HTTP request.\n\n```hyperscript\nfetch /api/data as json\nfetch /api/users then put it into #list\n```',
-    wait: '**wait**\n\nPauses execution for a duration.\n\n```hyperscript\nwait 1s\nwait 500ms then remove .loading\n```',
-    send: '**send**\n\nDispatches a custom event.\n\n```hyperscript\nsend myEvent to #target\nsend refresh to <body/>\n```',
-    trigger:
-      '**trigger**\n\nTriggers an event on an element.\n\n```hyperscript\ntrigger click on #btn\ntrigger submit on closest <form/>\n```',
-    on: '**on**\n\nDefines an event handler.\n\n```hyperscript\non click toggle .active\non keydown[key=="Enter"] submit()\n```',
-    me: '**me**\n\nReferences the current element (the element with this hyperscript).',
-    you: '**you**\n\nReferences the element that triggered the event.',
-    it: '**it**\n\nReferences the result of the last expression.',
-    result: '**result**\n\nAlias for `it` - the result of the last expression.',
+  // Base documentation in English
+  const docs: Record<string, { title: string; description: string; example: string }> = {
+    toggle: {
+      title: 'toggle',
+      description: 'Toggles a class, attribute, or visibility state.',
+      example: 'toggle .active on me\ntoggle @disabled on #btn',
+    },
+    add: {
+      title: 'add',
+      description: 'Adds a class or attribute to an element.',
+      example: 'add .highlight to me\nadd @disabled to #btn',
+    },
+    remove: {
+      title: 'remove',
+      description: 'Removes a class, attribute, or element.',
+      example: 'remove .highlight from me\nremove #temp',
+    },
+    show: {
+      title: 'show',
+      description: 'Makes an element visible.',
+      example: 'show #modal\nshow me with *opacity',
+    },
+    hide: {
+      title: 'hide',
+      description: 'Hides an element.',
+      example: 'hide #modal\nhide me with *opacity',
+    },
+    put: {
+      title: 'put',
+      description: 'Sets the content of an element.',
+      example: 'put "Hello" into #message\nput response into #results',
+    },
+    set: {
+      title: 'set',
+      description: 'Sets a variable or property.',
+      example: 'set :count to 0\nset $globalVar to "value"',
+    },
+    get: {
+      title: 'get',
+      description: 'Gets a value from an element or variable.',
+      example: 'get the value of #input\nget #myElement',
+    },
+    fetch: {
+      title: 'fetch',
+      description: 'Makes an HTTP request.',
+      example: 'fetch /api/data as json\nfetch /api/users then put it into #list',
+    },
+    wait: {
+      title: 'wait',
+      description: 'Pauses execution for a duration.',
+      example: 'wait 1s\nwait 500ms then remove .loading',
+    },
+    send: {
+      title: 'send',
+      description: 'Dispatches a custom event.',
+      example: 'send myEvent to #target\nsend refresh to <body/>',
+    },
+    trigger: {
+      title: 'trigger',
+      description: 'Triggers an event on an element.',
+      example: 'trigger click on #btn\ntrigger submit on closest <form/>',
+    },
+    call: {
+      title: 'call',
+      description: 'Calls a function or method.',
+      example: 'call myFunction()\ncall element.focus()',
+    },
+    log: {
+      title: 'log',
+      description: 'Logs a value to the console.',
+      example: 'log "Hello"\nlog the value of #input',
+    },
+    go: {
+      title: 'go',
+      description: 'Navigates to a URL.',
+      example: 'go to url /home\ngo to url #section',
+    },
+    on: {
+      title: 'on',
+      description: 'Defines an event handler.',
+      example: 'on click toggle .active\non keydown[key=="Enter"] submit()',
+    },
+    if: {
+      title: 'if',
+      description: 'Conditional execution.',
+      example: 'if .active toggle .active\nif :count > 10 log "high"',
+    },
+    repeat: {
+      title: 'repeat',
+      description: 'Loops a specified number of times.',
+      example: 'repeat 5 times log "hello"\nrepeat for item in items',
+    },
+    behavior: {
+      title: 'behavior',
+      description: 'Defines a reusable behavior.',
+      example: 'behavior Clickable\n  on click toggle .active\nend',
+    },
+    me: {
+      title: 'me',
+      description: 'References the current element (the element with this hyperscript).',
+      example: 'toggle .active on me',
+    },
+    you: {
+      title: 'you',
+      description: 'References the element that triggered the event.',
+      example: 'add .clicked to you',
+    },
+    it: {
+      title: 'it',
+      description: 'References the result of the last expression.',
+      example: 'fetch /api/data then put it into #result',
+    },
+    result: {
+      title: 'result',
+      description: 'Alias for `it` - the result of the last expression.',
+      example: 'call myFunction() then log result',
+    },
   };
 
-  return docs[engWord] || null;
+  const doc = docs[engWord];
+  if (!doc) return null;
+
+  // Build hover content
+  let content = `**${doc.title}**`;
+
+  // If the word was translated, show the original word too
+  if (wordLower !== engWord) {
+    content = `**${word}** → *${engWord}*`;
+  }
+
+  content += `\n\n${doc.description}`;
+  content += `\n\n\`\`\`hyperscript\n${doc.example}\n\`\`\``;
+
+  // Add translations from cache (built lazily)
+  const translations = getKeywordTranslations(engWord);
+  if (translations) {
+    content += `\n\n**Translations:** ${translations}`;
+  }
+
+  return content;
 }
 
-function normalizeToEnglish(word: string, language: string): string {
-  if (!semanticPackage || language === 'en') return word;
+// Cache for keyword translations (English → translated versions)
+let translationCache: Map<string, string> | null = null;
 
-  try {
-    const profile = semanticPackage.getProfile(language);
-    if (profile?.keywords) {
-      for (const [engKey, translation] of Object.entries(profile.keywords)) {
-        const trans = translation as { primary?: string; alternatives?: string[] };
-        if (trans.primary?.toLowerCase() === word) return engKey;
-        if (trans.alternatives?.some((a: string) => a.toLowerCase() === word)) return engKey;
+function buildTranslationCache(): Map<string, string> {
+  const cache = new Map<string, string>();
+
+  if (!semanticPackage) return cache;
+
+  const langMap: Record<string, string> = {
+    es: 'Spanish',
+    ja: 'Japanese',
+    ko: 'Korean',
+    de: 'German',
+    fr: 'French',
+  };
+
+  // Build translation strings for each English keyword
+  const englishKeywords = [
+    'toggle',
+    'add',
+    'remove',
+    'show',
+    'hide',
+    'put',
+    'set',
+    'get',
+    'fetch',
+    'wait',
+    'send',
+    'trigger',
+    'call',
+    'log',
+    'go',
+    'on',
+    'if',
+    'repeat',
+    'behavior',
+    'me',
+    'you',
+    'it',
+    'result',
+  ];
+
+  for (const engWord of englishKeywords) {
+    const translations: string[] = [];
+
+    for (const [lang, langName] of Object.entries(langMap)) {
+      try {
+        const profile = semanticPackage.getProfile(lang);
+        const kw = profile?.keywords?.[engWord as keyof typeof profile.keywords];
+        if (kw) {
+          const trans = kw as { primary?: string };
+          if (trans.primary && trans.primary !== engWord) {
+            translations.push(`${langName}: \`${trans.primary}\``);
+          }
+        }
+      } catch {
+        // Skip failed profiles
       }
     }
-    if (profile?.references) {
-      for (const [engRef, translatedRef] of Object.entries(profile.references)) {
-        if ((translatedRef as string).toLowerCase() === word) return engRef;
-      }
-    }
-  } catch {}
 
-  return word;
+    if (translations.length > 0) {
+      cache.set(engWord, translations.join(' · '));
+    }
+  }
+
+  return cache;
+}
+
+function getKeywordTranslations(engWord: string): string | null {
+  if (!translationCache) {
+    translationCache = buildTranslationCache();
+  }
+  return translationCache.get(engWord) || null;
+}
+
+// Cache for reverse keyword lookup (translation → English)
+let reverseKeywordCache: Map<string, string> | null = null;
+
+function buildReverseKeywordCache(): Map<string, string> {
+  const cache = new Map<string, string>();
+
+  if (!semanticPackage) return cache;
+
+  const languagesToTry = ['es', 'ja', 'ko', 'de', 'fr', 'pt', 'zh', 'ar', 'tr', 'id', 'qu', 'sw'];
+
+  for (const lang of languagesToTry) {
+    try {
+      const profile = semanticPackage.getProfile(lang);
+      if (profile?.keywords) {
+        for (const [engKey, translation] of Object.entries(profile.keywords)) {
+          const trans = translation as { primary?: string; alternatives?: string[] };
+          if (trans.primary) {
+            cache.set(trans.primary.toLowerCase(), engKey);
+          }
+          if (trans.alternatives) {
+            for (const alt of trans.alternatives) {
+              cache.set(alt.toLowerCase(), engKey);
+            }
+          }
+        }
+      }
+      if (profile?.references) {
+        for (const [engRef, translatedRef] of Object.entries(profile.references)) {
+          if (typeof translatedRef === 'string') {
+            cache.set(translatedRef.toLowerCase(), engRef);
+          }
+        }
+      }
+    } catch {
+      // This language profile failed, continue
+    }
+  }
+
+  return cache;
+}
+
+function normalizeToEnglish(word: string, _language: string): string {
+  // If it's already an English keyword, return it
+  const englishKeywords = [
+    'toggle',
+    'add',
+    'remove',
+    'show',
+    'hide',
+    'put',
+    'set',
+    'get',
+    'fetch',
+    'wait',
+    'send',
+    'trigger',
+    'call',
+    'return',
+    'throw',
+    'halt',
+    'exit',
+    'go',
+    'focus',
+    'blur',
+    'log',
+    'on',
+    'me',
+    'you',
+    'it',
+    'result',
+    'if',
+    'else',
+    'then',
+    'end',
+    'repeat',
+    'for',
+    'while',
+    'behavior',
+    'def',
+    'init',
+  ];
+  if (englishKeywords.includes(word)) return word;
+
+  // Build cache lazily
+  if (!reverseKeywordCache) {
+    reverseKeywordCache = buildReverseKeywordCache();
+  }
+
+  // Look up in cache
+  return reverseKeywordCache.get(word) || word;
 }
 
 // =============================================================================
