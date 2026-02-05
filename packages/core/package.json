@@ -133,6 +133,11 @@
       "types": "./dist/metadata.d.ts",
       "import": "./dist/metadata.mjs",
       "require": "./dist/metadata.js"
+    },
+    "./lsp-metadata": {
+      "types": "./dist/lsp-metadata.d.ts",
+      "import": "./dist/lsp-metadata.mjs",
+      "require": "./dist/lsp-metadata.js"
     }
   },
   "files": [

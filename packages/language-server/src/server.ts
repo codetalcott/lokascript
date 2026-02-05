@@ -55,6 +55,7 @@ import { formatHyperscript } from './formatting.js';
 let semanticPackage: any = null;
 let astToolkit: any = null;
 let parseFunction: any = null;
+let lspMetadata: any = null;
 
 // Try to import semantic package for multilingual support
 try {
@@ -77,6 +78,179 @@ try {
 } catch {
   console.error('[lokascript-ls] @lokascript/core not available');
 }
+
+// Try to import LSP metadata from core (canonical keyword/hover docs source)
+try {
+  lspMetadata = await import('@lokascript/core/lsp-metadata');
+} catch {
+  console.error(
+    '[lokascript-ls] @lokascript/core/lsp-metadata not available - using fallback keywords'
+  );
+}
+
+// =============================================================================
+// Fallback Constants (used when @lokascript/core/lsp-metadata is unavailable)
+// =============================================================================
+
+const FALLBACK_KEYWORDS = [
+  'toggle',
+  'add',
+  'remove',
+  'show',
+  'hide',
+  'put',
+  'set',
+  'get',
+  'fetch',
+  'wait',
+  'send',
+  'trigger',
+  'call',
+  'return',
+  'throw',
+  'halt',
+  'exit',
+  'go',
+  'log',
+  'on',
+  'me',
+  'you',
+  'it',
+  'result',
+  'if',
+  'else',
+  'then',
+  'end',
+  'repeat',
+  'for',
+  'while',
+  'behavior',
+  'def',
+  'init',
+  'first',
+  'last',
+  'next',
+  'previous',
+  'closest',
+  'parent',
+  'and',
+  'or',
+  'not',
+  'is',
+  'exists',
+  'empty',
+  'has',
+] as const;
+
+const FALLBACK_HOVER_DOCS: Record<string, { title: string; description: string; example: string }> =
+  {
+    toggle: {
+      title: 'toggle',
+      description: 'Toggles a class, attribute, or visibility state.',
+      example: 'toggle .active on me',
+    },
+    add: {
+      title: 'add',
+      description: 'Adds a class or attribute to an element.',
+      example: 'add .highlight to me',
+    },
+    remove: {
+      title: 'remove',
+      description: 'Removes a class, attribute, or element.',
+      example: 'remove .highlight from me',
+    },
+    show: { title: 'show', description: 'Makes an element visible.', example: 'show #modal' },
+    hide: { title: 'hide', description: 'Hides an element.', example: 'hide #modal' },
+    put: {
+      title: 'put',
+      description: 'Sets the content of an element.',
+      example: 'put "Hello" into #message',
+    },
+    set: { title: 'set', description: 'Sets a variable or property.', example: 'set :count to 0' },
+    get: {
+      title: 'get',
+      description: 'Gets a value from an element or variable.',
+      example: 'get the value of #input',
+    },
+    fetch: {
+      title: 'fetch',
+      description: 'Makes an HTTP request.',
+      example: 'fetch /api/data as json',
+    },
+    wait: { title: 'wait', description: 'Pauses execution for a duration.', example: 'wait 1s' },
+    send: {
+      title: 'send',
+      description: 'Dispatches a custom event.',
+      example: 'send myEvent to #target',
+    },
+    trigger: {
+      title: 'trigger',
+      description: 'Triggers an event on an element.',
+      example: 'trigger click on #btn',
+    },
+    call: {
+      title: 'call',
+      description: 'Calls a function or method.',
+      example: 'call myFunction()',
+    },
+    log: { title: 'log', description: 'Logs a value to the console.', example: 'log "Hello"' },
+    go: { title: 'go', description: 'Navigates to a URL.', example: 'go to url /home' },
+    on: {
+      title: 'on',
+      description: 'Defines an event handler.',
+      example: 'on click toggle .active',
+    },
+    if: {
+      title: 'if',
+      description: 'Conditional execution.',
+      example: 'if .active toggle .active',
+    },
+    repeat: {
+      title: 'repeat',
+      description: 'Loops a specified number of times.',
+      example: 'repeat 5 times log "hello"',
+    },
+    behavior: {
+      title: 'behavior',
+      description: 'Defines a reusable behavior.',
+      example: 'behavior Clickable\\n  on click toggle .active\\nend',
+    },
+    me: {
+      title: 'me',
+      description: 'References the current element.',
+      example: 'toggle .active on me',
+    },
+    you: {
+      title: 'you',
+      description: 'References the element that triggered the event.',
+      example: 'add .clicked to you',
+    },
+    it: {
+      title: 'it',
+      description: 'References the result of the last expression.',
+      example: 'fetch /api/data then put it into #result',
+    },
+    result: {
+      title: 'result',
+      description: 'Alias for it - the result of the last expression.',
+      example: 'call myFunction() then log result',
+    },
+  };
+
+const FALLBACK_EVENT_NAMES = [
+  'click',
+  'dblclick',
+  'mouseenter',
+  'mouseleave',
+  'keydown',
+  'keyup',
+  'input',
+  'change',
+  'submit',
+  'load',
+  'focus',
+  'blur',
+] as const;
 
 // =============================================================================
 // Server Setup
@@ -438,20 +612,15 @@ function getContextualCompletions(context: string, language: string): Completion
 
   switch (context) {
     case 'event':
-      completions.push(
-        { label: 'click', kind: CompletionItemKind.Event, detail: 'Mouse click event' },
-        { label: 'dblclick', kind: CompletionItemKind.Event, detail: 'Double click event' },
-        { label: 'mouseenter', kind: CompletionItemKind.Event, detail: 'Mouse enter event' },
-        { label: 'mouseleave', kind: CompletionItemKind.Event, detail: 'Mouse leave event' },
-        { label: 'keydown', kind: CompletionItemKind.Event, detail: 'Key down event' },
-        { label: 'keyup', kind: CompletionItemKind.Event, detail: 'Key up event' },
-        { label: 'input', kind: CompletionItemKind.Event, detail: 'Input change event' },
-        { label: 'change', kind: CompletionItemKind.Event, detail: 'Value change event' },
-        { label: 'submit', kind: CompletionItemKind.Event, detail: 'Form submit event' },
-        { label: 'load', kind: CompletionItemKind.Event, detail: 'Element load event' },
-        { label: 'focus', kind: CompletionItemKind.Event, detail: 'Focus event' },
-        { label: 'blur', kind: CompletionItemKind.Event, detail: 'Blur event' }
-      );
+      // Use canonical event names from @lokascript/core/lsp-metadata, with fallback
+      const eventNames: readonly string[] = lspMetadata?.EVENT_NAMES ?? FALLBACK_EVENT_NAMES;
+      for (const eventName of eventNames) {
+        completions.push({
+          label: eventName,
+          kind: CompletionItemKind.Event,
+          detail: `${eventName} event`,
+        });
+      }
       break;
 
     case 'command':
@@ -644,124 +813,8 @@ function getHoverDocumentation(word: string, language: string): string | null {
   // Normalize to English for lookup
   const engWord = normalizeToEnglish(wordLower, language);
 
-  // Base documentation in English
-  const docs: Record<string, { title: string; description: string; example: string }> = {
-    toggle: {
-      title: 'toggle',
-      description: 'Toggles a class, attribute, or visibility state.',
-      example: 'toggle .active on me\ntoggle @disabled on #btn',
-    },
-    add: {
-      title: 'add',
-      description: 'Adds a class or attribute to an element.',
-      example: 'add .highlight to me\nadd @disabled to #btn',
-    },
-    remove: {
-      title: 'remove',
-      description: 'Removes a class, attribute, or element.',
-      example: 'remove .highlight from me\nremove #temp',
-    },
-    show: {
-      title: 'show',
-      description: 'Makes an element visible.',
-      example: 'show #modal\nshow me with *opacity',
-    },
-    hide: {
-      title: 'hide',
-      description: 'Hides an element.',
-      example: 'hide #modal\nhide me with *opacity',
-    },
-    put: {
-      title: 'put',
-      description: 'Sets the content of an element.',
-      example: 'put "Hello" into #message\nput response into #results',
-    },
-    set: {
-      title: 'set',
-      description: 'Sets a variable or property.',
-      example: 'set :count to 0\nset $globalVar to "value"',
-    },
-    get: {
-      title: 'get',
-      description: 'Gets a value from an element or variable.',
-      example: 'get the value of #input\nget #myElement',
-    },
-    fetch: {
-      title: 'fetch',
-      description: 'Makes an HTTP request.',
-      example: 'fetch /api/data as json\nfetch /api/users then put it into #list',
-    },
-    wait: {
-      title: 'wait',
-      description: 'Pauses execution for a duration.',
-      example: 'wait 1s\nwait 500ms then remove .loading',
-    },
-    send: {
-      title: 'send',
-      description: 'Dispatches a custom event.',
-      example: 'send myEvent to #target\nsend refresh to <body/>',
-    },
-    trigger: {
-      title: 'trigger',
-      description: 'Triggers an event on an element.',
-      example: 'trigger click on #btn\ntrigger submit on closest <form/>',
-    },
-    call: {
-      title: 'call',
-      description: 'Calls a function or method.',
-      example: 'call myFunction()\ncall element.focus()',
-    },
-    log: {
-      title: 'log',
-      description: 'Logs a value to the console.',
-      example: 'log "Hello"\nlog the value of #input',
-    },
-    go: {
-      title: 'go',
-      description: 'Navigates to a URL.',
-      example: 'go to url /home\ngo to url #section',
-    },
-    on: {
-      title: 'on',
-      description: 'Defines an event handler.',
-      example: 'on click toggle .active\non keydown[key=="Enter"] submit()',
-    },
-    if: {
-      title: 'if',
-      description: 'Conditional execution.',
-      example: 'if .active toggle .active\nif :count > 10 log "high"',
-    },
-    repeat: {
-      title: 'repeat',
-      description: 'Loops a specified number of times.',
-      example: 'repeat 5 times log "hello"\nrepeat for item in items',
-    },
-    behavior: {
-      title: 'behavior',
-      description: 'Defines a reusable behavior.',
-      example: 'behavior Clickable\n  on click toggle .active\nend',
-    },
-    me: {
-      title: 'me',
-      description: 'References the current element (the element with this hyperscript).',
-      example: 'toggle .active on me',
-    },
-    you: {
-      title: 'you',
-      description: 'References the element that triggered the event.',
-      example: 'add .clicked to you',
-    },
-    it: {
-      title: 'it',
-      description: 'References the result of the last expression.',
-      example: 'fetch /api/data then put it into #result',
-    },
-    result: {
-      title: 'result',
-      description: 'Alias for `it` - the result of the last expression.',
-      example: 'call myFunction() then log result',
-    },
-  };
+  // Use canonical hover docs from @lokascript/core/lsp-metadata, with fallback
+  const docs = lspMetadata?.HOVER_DOCS ?? FALLBACK_HOVER_DOCS;
 
   const doc = docs[engWord];
   if (!doc) return null;
@@ -905,44 +958,8 @@ function buildReverseKeywordCache(): Map<string, string> {
 
 function normalizeToEnglish(word: string, _language: string): string {
   // If it's already an English keyword, return it
-  const englishKeywords = [
-    'toggle',
-    'add',
-    'remove',
-    'show',
-    'hide',
-    'put',
-    'set',
-    'get',
-    'fetch',
-    'wait',
-    'send',
-    'trigger',
-    'call',
-    'return',
-    'throw',
-    'halt',
-    'exit',
-    'go',
-    'focus',
-    'blur',
-    'log',
-    'on',
-    'me',
-    'you',
-    'it',
-    'result',
-    'if',
-    'else',
-    'then',
-    'end',
-    'repeat',
-    'for',
-    'while',
-    'behavior',
-    'def',
-    'init',
-  ];
+  // Use canonical keyword list from @lokascript/core/lsp-metadata, with fallback
+  const englishKeywords: readonly string[] = lspMetadata?.ALL_KEYWORDS ?? FALLBACK_KEYWORDS;
   if (englishKeywords.includes(word)) return word;
 
   // Build cache lazily
