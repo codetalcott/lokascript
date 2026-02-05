@@ -173,7 +173,7 @@ jobs:
             if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/package.json" ]; then
               if grep -q '"test"' "packages/$pkg/package.json"; then
                 echo "Testing @lokascript/$pkg..."
-                if npm test --prefix "packages/$pkg" -- --run 2>&1 | tee /tmp/${pkg}-test.log; then
+                if npm test --prefix "packages/$pkg" 2>&1 | tee /tmp/${pkg}-test.log; then
                   TESTS=$(grep -o '[0-9]* passed' /tmp/${pkg}-test.log | head -1 || echo "0 passed")
                   echo "✅ @lokascript/$pkg - $TESTS" >> $GITHUB_STEP_SUMMARY
                 else

@@ -75,7 +75,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm test --prefix packages/core -- --run
+          npm test --prefix packages/core
           npm test --prefix packages/semantic -- --run
           npm test --prefix packages/i18n -- --run
           npm test --prefix packages/hyperscript-adapter -- --run
@@ -129,8 +129,10 @@ jobs:
           done
 
       - name: Check authentication method
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+          if [ -n "$NPM_TOKEN" ]; then
             echo "✅ NPM_TOKEN secret is set (will use token auth)"
           else
             echo "ℹ️  NPM_TOKEN secret not set (will use OIDC)"
@@ -193,33 +195,37 @@ jobs:
           done
 
       - name: Create GitHub Release
-        if: ${{ github.event.inputs.dry-run == 'false' && github.event.inputs.npm-tag == 'latest' }}
-        uses: actions/create-release@v1
+        if: ${{ github.event.inputs.dry-run == 'false' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: 'v${{ steps.version.outputs.version }}'
-          release_name: 'v${{ steps.version.outputs.version }}'
-          body: |
-            ## @lokascript v${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ github.event.inputs.npm-tag }}"
+          PRERELEASE_FLAG=""
+          if [ "$TAG" != "latest" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
 
-            All packages published at version ${{ steps.version.outputs.version }}:
-            - @lokascript/core
-            - @lokascript/semantic
-            - @lokascript/i18n
-            - @lokascript/hyperscript-adapter
-            - @lokascript/vite-plugin
-            - @lokascript/mcp-server
-            - @lokascript/patterns-reference
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            $PRERELEASE_FLAG \
+            --notes "## @lokascript v${VERSION}
 
-            ### Install
-            ```bash
-            npm install @lokascript/core@${{ steps.version.outputs.version }}
-            npm install @lokascript/vite-plugin@${{ steps.version.outputs.version }}
-            npm install @lokascript/hyperscript-adapter@${{ steps.version.outputs.version }}
-            ```
-          draft: false
-          prerelease: ${{ github.event.inputs.npm-tag != 'latest' }}
+          All packages published at version ${VERSION}:
+          - @lokascript/core
+          - @lokascript/semantic
+          - @lokascript/i18n
+          - @lokascript/hyperscript-adapter
+          - @lokascript/vite-plugin
+          - @lokascript/mcp-server
+          - @lokascript/patterns-reference
+
+          ### Install
+          \`\`\`bash
+          npm install @lokascript/core@${VERSION}
+          npm install @lokascript/vite-plugin@${VERSION}
+          npm install @lokascript/hyperscript-adapter@${VERSION}
+          \`\`\`"
 
       - name: Summary
         run: |
