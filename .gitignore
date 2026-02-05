@@ -215,6 +215,10 @@ clients/*/node_modules/
 clients/*/*.tsbuildinfo
 
 # Python specific
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 clients/python-client/__pycache__/
 clients/python-client/*.pyc
 clients/python-client/*.pyo
