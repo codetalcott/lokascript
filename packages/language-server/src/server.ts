@@ -62,17 +62,23 @@ import { formatHyperscript } from './formatting.js';
 // Optional Package Imports
 // =============================================================================
 
-let semanticPackage: any = null;
+// Semantic package is bundled into the server for multilingual LSP support.
+// Static import ensures all 25 languages are registered at startup.
+import * as semanticImport from '@lokascript/semantic';
+const semanticPackage: any = semanticImport;
+
+/**
+ * Get all registered language codes except the current one from the semantic package.
+ * Used for auto-detection, reverse keyword cache, and keyword variant lookups.
+ */
+function getOtherLanguages(): string[] {
+  if (!semanticPackage?.getRegisteredLanguages) return [];
+  return semanticPackage.getRegisteredLanguages().filter((l: string) => l !== 'en');
+}
+
 let astToolkit: any = null;
 let parseFunction: any = null;
 let lspMetadata: any = null;
-
-// Try to import semantic package for multilingual support
-try {
-  semanticPackage = await import('@lokascript/semantic');
-} catch {
-  console.error('[lokascript-ls] @lokascript/semantic not available - using English-only fallback');
-}
 
 // Try to import ast-toolkit for enhanced analysis
 try {
@@ -387,6 +393,10 @@ connection.onDidChangeConfiguration(change => {
     connection.console.log(`Mode changed to '${resolvedMode}' (${brand})`);
   }
 
+  // Clear keyword caches so they rebuild for the new language
+  translationCache = null;
+  reverseKeywordCache = null;
+
   documents.all().forEach(validateDocument);
 });
 
@@ -462,8 +472,8 @@ async function getDiagnostics(code: string, language: string): Promise<Diagnosti
     }
   }
 
-  // In multilingual modes: try semantic analysis (works for all 21 supported languages)
-  // In hyperscript mode (English-only): skip semantic analysis
+  // In multilingual modes: try semantic analysis (works for all supported languages)
+  // In hyperscript-compat mode: skip semantic analysis
   const analyzer = isMultilingualEnabled(resolvedMode) ? getSemanticAnalyzer() : null;
   if (analyzer) {
     try {
@@ -474,8 +484,8 @@ async function getDiagnostics(code: string, language: string): Promise<Diagnosti
       // If confidence is low, try other supported languages
       // This enables automatic language detection for multilingual code
       if (result.confidence < 0.5) {
-        // Try common languages first (Spanish, Japanese, Korean, German, French, etc.)
-        const languagesToTry = ['es', 'ja', 'ko', 'de', 'fr', 'pt', 'zh', 'ar', 'tr', 'id'];
+        // Try all registered languages for automatic detection
+        const languagesToTry = getOtherLanguages();
 
         for (const lang of languagesToTry) {
           if (lang === usedLanguage) continue;
@@ -696,8 +706,8 @@ function inferContext(beforeCursor: string): string {
 function getContextualCompletions(context: string, language: string): CompletionItem[] {
   const completions: CompletionItem[] = [];
 
-  // In hyperscript mode (English-only): always use English
-  // In multilingual modes: use configured language with multilingual lookup
+  // In hyperscript-compat mode: use canonical keywords only
+  // In multilingual modes: use configured language with localized lookup
   const effectiveLanguage = isMultilingualEnabled(resolvedMode) ? language : 'en';
 
   // Helper for multilingual keyword lookup (active in multilingual modes)
@@ -965,24 +975,24 @@ connection.onHover((params: TextDocumentPositionParams): Hover | null => {
 function getHoverDocumentation(word: string, language: string): string | null {
   const wordLower = word.toLowerCase();
 
-  // In multilingual modes: normalize to English for lookup
-  // In hyperscript mode (English-only): no translation lookup needed
-  const engWord = isMultilingualEnabled(resolvedMode)
-    ? normalizeToEnglish(wordLower, language)
+  // In multilingual modes: resolve to canonical keyword for doc lookup
+  // In hyperscript mode: word is already canonical
+  const canonicalKey = isMultilingualEnabled(resolvedMode)
+    ? resolveCanonicalKeyword(wordLower, language)
     : wordLower;
 
   // Use canonical hover docs from @lokascript/core/lsp-metadata, with fallback
   const docs = lspMetadata?.HOVER_DOCS ?? FALLBACK_HOVER_DOCS;
 
-  const doc = docs[engWord];
+  const doc = docs[canonicalKey];
   if (!doc) return null;
 
   // Build hover content
   let content = `**${doc.title}**`;
 
-  // Show translation mapping in multilingual modes
-  if (isMultilingualEnabled(resolvedMode) && wordLower !== engWord) {
-    content = `**${word}** → *${engWord}*`;
+  // Show the user's keyword with the canonical form for reference
+  if (isMultilingualEnabled(resolvedMode) && wordLower !== canonicalKey) {
+    content = `**${word}** (${canonicalKey})`;
   }
 
   content += `\n\n${doc.description}`;
@@ -990,7 +1000,7 @@ function getHoverDocumentation(word: string, language: string): string | null {
 
   // Add translations in multilingual modes
   if (isMultilingualEnabled(resolvedMode)) {
-    const translations = getKeywordTranslations(engWord);
+    const translations = getKeywordTranslations(canonicalKey);
     if (translations) {
       content += `\n\n**Translations:** ${translations}`;
     }
@@ -999,7 +1009,7 @@ function getHoverDocumentation(word: string, language: string): string | null {
   return content;
 }
 
-// Cache for keyword translations (English → translated versions)
+// Cache for keyword translations (canonical keyword → localized forms)
 let translationCache: Map<string, string> | null = null;
 
 function buildTranslationCache(): Map<string, string> {
@@ -1015,8 +1025,8 @@ function buildTranslationCache(): Map<string, string> {
     fr: 'French',
   };
 
-  // Build translation strings for each English keyword
-  const englishKeywords = [
+  // Build translation strings for each canonical keyword
+  const canonicalKeywords = [
     'toggle',
     'add',
     'remove',
@@ -1042,16 +1052,16 @@ function buildTranslationCache(): Map<string, string> {
     'result',
   ];
 
-  for (const engWord of englishKeywords) {
+  for (const canonicalKey of canonicalKeywords) {
     const translations: string[] = [];
 
     for (const [lang, langName] of Object.entries(langMap)) {
       try {
         const profile = semanticPackage.getProfile(lang);
-        const kw = profile?.keywords?.[engWord as keyof typeof profile.keywords];
+        const kw = profile?.keywords?.[canonicalKey as keyof typeof profile.keywords];
         if (kw) {
           const trans = kw as { primary?: string };
-          if (trans.primary && trans.primary !== engWord) {
+          if (trans.primary && trans.primary !== canonicalKey) {
             translations.push(`${langName}: \`${trans.primary}\``);
           }
         }
@@ -1061,21 +1071,21 @@ function buildTranslationCache(): Map<string, string> {
     }
 
     if (translations.length > 0) {
-      cache.set(engWord, translations.join(' · '));
+      cache.set(canonicalKey, translations.join(' · '));
     }
   }
 
   return cache;
 }
 
-function getKeywordTranslations(engWord: string): string | null {
+function getKeywordTranslations(canonicalKey: string): string | null {
   if (!translationCache) {
     translationCache = buildTranslationCache();
   }
-  return translationCache.get(engWord) || null;
+  return translationCache.get(canonicalKey) || null;
 }
 
-// Cache for reverse keyword lookup (translation → English)
+// Cache for reverse keyword lookup (localized keyword → canonical form)
 let reverseKeywordCache: Map<string, string> | null = null;
 
 function buildReverseKeywordCache(): Map<string, string> {
@@ -1083,20 +1093,20 @@ function buildReverseKeywordCache(): Map<string, string> {
 
   if (!semanticPackage) return cache;
 
-  const languagesToTry = ['es', 'ja', 'ko', 'de', 'fr', 'pt', 'zh', 'ar', 'tr', 'id', 'qu', 'sw'];
+  const languagesToTry = getOtherLanguages();
 
   for (const lang of languagesToTry) {
     try {
       const profile = semanticPackage.getProfile(lang);
       if (profile?.keywords) {
-        for (const [engKey, translation] of Object.entries(profile.keywords)) {
+        for (const [canonicalKey, translation] of Object.entries(profile.keywords)) {
           const trans = translation as { primary?: string; alternatives?: string[] };
           if (trans.primary) {
-            cache.set(trans.primary.toLowerCase(), engKey);
+            cache.set(trans.primary.toLowerCase(), canonicalKey);
           }
           if (trans.alternatives) {
             for (const alt of trans.alternatives) {
-              cache.set(alt.toLowerCase(), engKey);
+              cache.set(alt.toLowerCase(), canonicalKey);
             }
           }
         }
@@ -1116,11 +1126,11 @@ function buildReverseKeywordCache(): Map<string, string> {
   return cache;
 }
 
-function normalizeToEnglish(word: string, _language: string): string {
-  // If it's already an English keyword, return it
+function resolveCanonicalKeyword(word: string, _language: string): string {
+  // If it's already a canonical keyword, return it
   // Use canonical keyword list from @lokascript/core/lsp-metadata, with fallback
-  const englishKeywords: readonly string[] = lspMetadata?.ALL_KEYWORDS ?? FALLBACK_KEYWORDS;
-  if (englishKeywords.includes(word)) return word;
+  const canonicalKeywords: readonly string[] = lspMetadata?.ALL_KEYWORDS ?? FALLBACK_KEYWORDS;
+  if (canonicalKeywords.includes(word)) return word;
 
   // Build cache lazily
   if (!reverseKeywordCache) {
@@ -1282,14 +1292,13 @@ connection.onDefinition((params: TextDocumentPositionParams): Location | Locatio
 });
 
 /**
- * Helper: Get keyword variants for a given English keyword
+ * Helper: Get all localized variants for a given canonical keyword
  */
 function getKeywordVariants(eng: string): string[] {
   const variants = [eng];
   if (!semanticPackage) return variants;
 
-  const languagesToTry = ['es', 'ja', 'ko', 'de', 'fr', 'pt', 'zh', 'ar', 'tr', 'id'];
-  for (const lang of languagesToTry) {
+  for (const lang of getOtherLanguages()) {
     try {
       const profile = semanticPackage.getProfile(lang);
       if (profile?.keywords?.[eng]) {
