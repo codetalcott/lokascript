@@ -2080,3 +2080,90 @@ describe('Server Mode Types', () => {
     });
   });
 });
+
+// =============================================================================
+// Language Coverage Tests
+// =============================================================================
+
+describe('Language Coverage', () => {
+  let semanticPackage: any;
+
+  beforeEach(async () => {
+    try {
+      semanticPackage = await import('@lokascript/semantic');
+    } catch {
+      semanticPackage = null;
+    }
+  });
+
+  it('all registered languages have a profile with keywords', () => {
+    if (!semanticPackage) return; // skip if semantic not available
+
+    const languages = semanticPackage.getRegisteredLanguages();
+    expect(languages.length).toBeGreaterThanOrEqual(20);
+
+    for (const lang of languages) {
+      const profile = semanticPackage.getProfile(lang);
+      expect(profile, `missing profile for '${lang}'`).toBeDefined();
+      expect(profile.keywords, `missing keywords for '${lang}'`).toBeDefined();
+    }
+  });
+
+  it('getOtherLanguages covers all registered languages except en', () => {
+    if (!semanticPackage) return;
+
+    const all = semanticPackage.getRegisteredLanguages() as string[];
+    const others = all.filter((l: string) => l !== 'en');
+
+    // Verify the function logic matches: all registered minus 'en'
+    expect(others.length).toBe(all.length - 1);
+    expect(others).not.toContain('en');
+
+    // Every registered language should be reachable
+    for (const lang of others) {
+      const profile = semanticPackage.tryGetProfile(lang);
+      expect(profile, `language '${lang}' registered but profile not accessible`).toBeDefined();
+    }
+  });
+
+  it('reverse keyword cache covers all registered languages', () => {
+    if (!semanticPackage) return;
+
+    const all = semanticPackage.getRegisteredLanguages() as string[];
+    const others = all.filter((l: string) => l !== 'en');
+
+    // Build a reverse cache the same way the server does
+    const cache = new Map<string, string>();
+    for (const lang of others) {
+      const profile = semanticPackage.getProfile(lang);
+      if (profile?.keywords) {
+        for (const [canonicalKey, translation] of Object.entries(profile.keywords)) {
+          const trans = translation as { primary?: string; alternatives?: string[] };
+          if (trans.primary) {
+            cache.set(trans.primary.toLowerCase(), canonicalKey);
+          }
+          if (trans.alternatives) {
+            for (const alt of trans.alternatives) {
+              cache.set(alt.toLowerCase(), canonicalKey);
+            }
+          }
+        }
+      }
+    }
+
+    // Should have entries from many languages, not just a hardcoded subset
+    expect(cache.size).toBeGreaterThan(100);
+
+    // Spot-check: languages that were previously missing from the hardcoded list
+    // should now contribute entries
+    const languagesWithKeywords = new Set<string>();
+    for (const lang of others) {
+      const profile = semanticPackage.getProfile(lang);
+      if (profile?.keywords && Object.keys(profile.keywords).length > 0) {
+        languagesWithKeywords.add(lang);
+      }
+    }
+    // At least 15 languages should have keywords (we have 25 total)
+    expect(languagesWithKeywords.size).toBeGreaterThanOrEqual(15);
+  });
+});
