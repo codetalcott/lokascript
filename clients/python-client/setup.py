@@ -12,7 +12,7 @@ setup(
     name="lokascript-client",
     version="0.1.0",
     author="LokaScript Team",
-    author_email="team@lokascript.dev",
+    author_email="",
     description="Python client library for LokaScript server-side hyperscript compilation",
     long_description=long_description,
     long_description_content_type="text/markdown",

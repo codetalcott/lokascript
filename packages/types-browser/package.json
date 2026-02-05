@@ -1,7 +1,7 @@
 {
   "name": "@lokascript/types-browser",
-  "version": "1.1.1",
-  "description": "TypeScript type definitions for HyperFixi browser globals",
+  "version": "1.3.0",
+  "description": "TypeScript type definitions for LokaScript browser globals",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,12 +27,21 @@
     "browser",
     "globals"
   ],
-  "author": "HyperFixi Contributors",
+  "author": "LokaScript Contributors",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.8.3"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codetalcott/lokascript.git",
+    "directory": "packages/types-browser"
+  },
+  "bugs": {
+    "url": "https://github.com/codetalcott/lokascript/issues"
+  },
+  "homepage": "https://github.com/codetalcott/lokascript/tree/main/packages/types-browser#readme"
 }

@@ -178,16 +178,16 @@ export class LokaScriptSSREngine implements SSREngine {
           
           // Set global app state
           if (hydrationData.appState) {
-            window.__HYPERFIXI_STATE__ = hydrationData.appState;
+            window.__LOKASCRIPT_STATE__ = hydrationData.appState;
           }
           
           // Configure client
           if (hydrationData.config) {
-            window.__HYPERFIXI_CONFIG__ = hydrationData.config;
+            window.__LOKASCRIPT_CONFIG__ = hydrationData.config;
           }
           
           // Emit hydration complete event
-          window.dispatchEvent(new CustomEvent('hyperfixi:hydrated', {
+          window.dispatchEvent(new CustomEvent('lokascript:hydrated', {
             detail: hydrationData
           }));
         });

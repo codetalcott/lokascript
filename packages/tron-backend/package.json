@@ -1,8 +1,8 @@
 {
   "name": "@lokascript/tron-backend",
-  "version": "1.1.1",
+  "version": "1.3.0",
   "private": true,
-  "description": "TRON (Tree Root Object Notation) backend integration for HyperFixi",
+  "description": "TRON (Tree Root Object Notation) backend integration for LokaScript",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -51,7 +51,7 @@
     "backend",
     "ssr"
   ],
-  "author": "HyperFixi Team",
+  "author": "LokaScript Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",

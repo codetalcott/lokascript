@@ -1,6 +1,6 @@
 {
   "name": "@lokascript/server-integration",
-  "version": "1.1.1",
+  "version": "1.3.0",
   "private": true,
   "description": "Server-side hyperscript integration with multi-language support",
   "type": "module",
@@ -48,6 +48,6 @@
     "integration",
     "compilation"
   ],
-  "author": "LokaScript Team",
+  "author": "LokaScript Contributors",
   "license": "MIT"
 }

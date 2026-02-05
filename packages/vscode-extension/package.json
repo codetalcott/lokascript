@@ -2,7 +2,7 @@
   "name": "lokascript-vscode",
   "displayName": "Hyperscript Language Support",
   "description": "Language support for _hyperscript and LokaScript — syntax highlighting, completions, hover docs, diagnostics, and 21 language i18n",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "publisher": "lokascript",
   "engines": {
     "vscode": "^1.85.0"
@@ -114,5 +114,9 @@
     "url": "https://github.com/codetalcott/lokascript.git",
     "directory": "packages/vscode-extension"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codetalcott/lokascript/issues"
+  },
+  "homepage": "https://github.com/codetalcott/lokascript/tree/main/packages/vscode-extension#readme"
 }

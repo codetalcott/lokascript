@@ -1,14 +1,14 @@
 {
   "name": "@lokascript/developer-tools",
-  "version": "1.1.1",
+  "version": "1.3.0",
   "private": true,
-  "description": "CLI tools and visual builder API for HyperFixi development",
+  "description": "CLI tools and visual builder API for LokaScript development",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "hyperfixi": "dist/cli.js",
-    "hfx": "dist/cli.js"
+    "lokascript": "dist/cli.js",
+    "lks": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -72,7 +72,7 @@
     "syntax-highlighting",
     "i18n"
   ],
-  "author": "HyperFixi Team",
+  "author": "LokaScript Contributors",
   "license": "MIT",
   "dependencies": {
     "@lokascript/ast-toolkit": "*",
@@ -120,8 +120,5 @@
     "dist",
     "src",
     "templates"
-  ],
-  "publishConfig": {
-    "access": "public"
-  }
+  ]
 }

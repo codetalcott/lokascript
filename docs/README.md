@@ -1,10 +1,10 @@
 # LokaScript Documentation
 
-**[Full Documentation](https://lokascript.dev)**
+**[Full Documentation](https://github.com/codetalcott/lokascript#readme)**
 
-- [Getting Started](https://lokascript.dev/en/guide/)
-- [API Reference](https://lokascript.dev/en/api/)
-- [Cookbook](https://lokascript.dev/en/cookbook/)
+- [Getting Started](../packages/core/README.md)
+- [API Reference](../packages/core/docs/API.md)
+- [Cookbook](../examples/README.md)
 
 ## Package Documentation
 

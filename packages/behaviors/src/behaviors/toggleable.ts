@@ -20,14 +20,14 @@ export const toggleableSource = toggleableSchema.source;
 export const toggleableMetadata = toggleableSchema;
 
 /**
- * Register the Toggleable behavior with HyperFixi.
+ * Register the Toggleable behavior with LokaScript.
  */
 export async function registerToggleable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).lokascript : null);
 
   if (!hf) {
     throw new Error(
-      'HyperFixi not found. Make sure @lokascript/core is loaded before registering behaviors.'
+      'LokaScript not found. Make sure @lokascript/core is loaded before registering behaviors.'
     );
   }
 

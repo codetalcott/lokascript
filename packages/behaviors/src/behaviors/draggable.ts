@@ -25,14 +25,14 @@ export const draggableSource = draggableSchema.source;
 export const draggableMetadata = draggableSchema;
 
 /**
- * Register the Draggable behavior with HyperFixi.
+ * Register the Draggable behavior with LokaScript.
  */
 export async function registerDraggable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).lokascript : null);
 
   if (!hf) {
     throw new Error(
-      'HyperFixi not found. Make sure @lokascript/core is loaded before registering behaviors.'
+      'LokaScript not found. Make sure @lokascript/core is loaded before registering behaviors.'
     );
   }
 

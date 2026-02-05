@@ -245,7 +245,7 @@
     "parser",
     "natural-language"
   ],
-  "author": "Hyperfixi Team",
+  "author": "LokaScript Contributors",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",

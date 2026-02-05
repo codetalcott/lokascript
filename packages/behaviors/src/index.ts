@@ -1,7 +1,7 @@
 /**
  * @lokascript/behaviors
  *
- * Reusable hyperscript behaviors for HyperFixi.
+ * Reusable hyperscript behaviors for LokaScript.
  * Each behavior can be imported individually for tree-shaking,
  * or all behaviors can be registered at once.
  *
@@ -26,7 +26,7 @@
  *
  * @example CDN usage
  * ```html
- * <script src="hyperfixi-browser.js"></script>
+ * <script src="lokascript-browser.js"></script>
  * <script src="@lokascript/behaviors/draggable.browser.js"></script>
  * <!-- Draggable is auto-registered -->
  * ```

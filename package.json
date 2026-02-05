@@ -1,7 +1,7 @@
 {
   "name": "@lokascript/monorepo",
-  "version": "1.1.1",
-  "description": "HyperFixi monorepo - modular hyperscript expression engine with fixi.js integration",
+  "version": "1.3.0",
+  "description": "LokaScript monorepo - multilingual hyperscript engine with 24-language support",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -98,7 +98,7 @@
     "expressions",
     "parser"
   ],
-  "author": "HyperFixi Contributors",
+  "author": "LokaScript Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",

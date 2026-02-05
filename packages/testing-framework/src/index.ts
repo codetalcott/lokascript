@@ -488,9 +488,9 @@ export function createPageObject(definition: import('./types').PageObject) {
 }
 
 /**
- * Integration with HyperFixi core for behavior testing
+ * Integration with LokaScript core for behavior testing
  */
-export function createHyperFixiTestContext(hyperfixi: any) {
+export function createLokaScriptTestContext(hyperfixi: any) {
   return {
     // Compile and test hyperscript
     async compileAndTest(script: string, element: Element, event?: string) {

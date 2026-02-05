@@ -3,18 +3,18 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.hyperfixi.mcp-server</string>
+    <string>com.lokascript.mcp-server</string>
 
     <key>ProgramArguments</key>
     <array>
         <!-- Update path to your node installation -->
         <string>/opt/homebrew/opt/node@20/bin/node</string>
-        <!-- Update path to your hyperfixi installation -->
-        <string>$HYPERFIXI_PATH/packages/mcp-server/dist/index.js</string>
+        <!-- Update path to your lokascript installation -->
+        <string>$LOKASCRIPT_PATH/packages/mcp-server/dist/index.js</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>$HYPERFIXI_PATH/packages/mcp-server</string>
+    <string>$LOKASCRIPT_PATH/packages/mcp-server</string>
 
     <key>RunAtLoad</key>
     <true/>
@@ -31,10 +31,10 @@
     <integer>5</integer>
 
     <key>StandardOutPath</key>
-    <string>$HYPERFIXI_PATH/packages/mcp-server/logs/stdout.log</string>
+    <string>$LOKASCRIPT_PATH/packages/mcp-server/logs/stdout.log</string>
 
     <key>StandardErrorPath</key>
-    <string>$HYPERFIXI_PATH/packages/mcp-server/logs/stderr.log</string>
+    <string>$LOKASCRIPT_PATH/packages/mcp-server/logs/stderr.log</string>
 
     <key>EnvironmentVariables</key>
     <dict>

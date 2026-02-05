@@ -541,6 +541,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- **Documentation**: [https://lokascript.dev/docs](https://lokascript.dev/docs)
+- **Documentation**: [https://github.com/codetalcott/lokascript#readme](https://github.com/codetalcott/lokascript#readme)
 - **Issues**: [GitHub Issues](https://github.com/lokascript/lokascript/issues)
 - **Go Package**: [pkg.go.dev](https://pkg.go.dev/github.com/lokascript/lokascript-go)

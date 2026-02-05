@@ -223,7 +223,7 @@ from lokascript import hs
 
 - **GitHub Issues:** https://github.com/lokascript/lokascript/issues
 - **Discussions:** https://github.com/lokascript/lokascript/discussions
-- **Documentation:** https://lokascript.dev (coming soon)
+- **Documentation:** https://github.com/codetalcott/lokascript#readme
 
 ## Timeline for v2.0.0
 

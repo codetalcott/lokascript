@@ -1,5 +1,5 @@
 /**
- * HyperFixi - Hyperscript Expression Evaluation Engine
+ * LokaScript - Multilingual Hyperscript Engine
  * Main entry point for the public API
  */
 

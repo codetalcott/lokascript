@@ -63,6 +63,7 @@ pids/
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+*.vsix
 .nyc_output/
 
 # Temporary folders
@@ -176,7 +177,7 @@ packages/*/html/
 # MCP server files
 mcp-server-hyperscript/dist/
 mcp-server-hyperscript/node_modules/
-packages/mcp-server/com.hyperfixi.mcp-server.plist
+packages/mcp-server/com.lokascript.mcp-server.plist
 
 # Lock files (keep package-lock.json)
 deno.lock

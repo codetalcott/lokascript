@@ -20,14 +20,14 @@ export const resizableSource = resizableSchema.source;
 export const resizableMetadata = resizableSchema;
 
 /**
- * Register the Resizable behavior with HyperFixi.
+ * Register the Resizable behavior with LokaScript.
  */
 export async function registerResizable(hyperfixi?: LokaScriptInstance): Promise<void> {
   const hf = hyperfixi || (typeof window !== 'undefined' ? (window as any).lokascript : null);
 
   if (!hf) {
     throw new Error(
-      'HyperFixi not found. Make sure @lokascript/core is loaded before registering behaviors.'
+      'LokaScript not found. Make sure @lokascript/core is loaded before registering behaviors.'
     );
   }
 
