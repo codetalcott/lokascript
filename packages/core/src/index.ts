@@ -145,5 +145,12 @@ export type {
   ValidatedPartialContent,
 } from './validation/partial-validation-types';
 
+// AST Interchange Format (for downstream tools like AOT compiler, language server)
+export { fromCoreAST } from './ast-utils/interchange/index';
+export type {
+  InterchangeNode,
+  EventModifiers as InterchangeEventModifiers,
+} from './ast-utils/interchange/types';
+
 // Note: Default export removed in favor of named exports for better tree-shaking
 // Use: import { hyperscript } from '@lokascript/core' instead of import hyperfixi from '@lokascript/core'

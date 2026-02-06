@@ -52,6 +52,10 @@ export interface SemanticAnalyzer {
   /**
    * Analyze input in the specified language.
    *
+   * @deprecated Prefer `parseSemantic()` from `@lokascript/semantic` for new code.
+   * This method is retained for backward compatibility but now uses the full
+   * parser internally (as of v1.4.0) to preserve event handler bodies.
+   *
    * @param input The input string to analyze
    * @param language ISO 639-1 language code
    * @returns Analysis result with confidence score
@@ -144,49 +148,17 @@ export class SemanticAnalyzerImpl implements SemanticAnalyzer {
 
   /**
    * Perform analysis without cache lookup.
+   *
+   * Uses full parser first to preserve complete AST structure (event handler
+   * bodies, compound statements, conditionals). Falls back to pattern matching
+   * only when the full parser fails, which provides fast simple-command detection
+   * but loses structural information like event handler bodies.
    */
   private analyzeUncached(input: string, language: string): SemanticAnalysisResult {
     try {
-      // Tokenize
-      const tokenizer = getTokenizer(language);
-      if (!tokenizer) {
-        return {
-          confidence: 0,
-          errors: [`No tokenizer available for language '${language}'`],
-        };
-      }
-
-      const tokenStream = tokenizer.tokenize(input);
-
-      // Get patterns for this language
-      const patterns = getPatternsForLanguage(language);
-      if (patterns.length === 0) {
-        return {
-          confidence: 0,
-          errors: [`No patterns available for language '${language}'`],
-        };
-      }
-
-      // Try to match patterns
-      const match = this.patternMatcher.matchBest(tokenStream, patterns);
-
-      if (match) {
-        // Build semantic node from match
-        const node = this.buildSemanticNode(match);
-
-        return {
-          confidence: match.confidence,
-          command: {
-            name: match.pattern.command,
-            roles: match.captured,
-          },
-          node,
-          tokensConsumed: match.consumedTokens,
-        };
-      }
-
-      // Fallback: try full parser which handles event handlers, compound
-      // statements (then-chains), and grammar-transformed patterns
+      // Try full parser first — this preserves event handler bodies,
+      // compound statements, and other structural information that
+      // pattern-only matching loses.
       try {
         const node = fullParse(input, language);
         const result: SemanticAnalysisResult = {
@@ -198,7 +170,44 @@ export class SemanticAnalyzerImpl implements SemanticAnalyzer {
         }
         return result;
       } catch {
-        // Full parser also failed
+        // Full parser failed — fall through to pattern matching
+      }
+
+      // Fallback: pattern matching for simple commands.
+      // This path is faster but only produces {kind: 'command'} nodes
+      // without structural information like event handler bodies.
+      const tokenizer = getTokenizer(language);
+      if (!tokenizer) {
+        return {
+          confidence: 0,
+          errors: [`No tokenizer available for language '${language}'`],
+        };
+      }
+
+      const tokenStream = tokenizer.tokenize(input);
+
+      const patterns = getPatternsForLanguage(language);
+      if (patterns.length === 0) {
+        return {
+          confidence: 0,
+          errors: [`No patterns available for language '${language}'`],
+        };
+      }
+
+      const match = this.patternMatcher.matchBest(tokenStream, patterns);
+
+      if (match) {
+        const node = this.buildSemanticNode(match);
+
+        return {
+          confidence: match.confidence,
+          command: {
+            name: match.pattern.command,
+            roles: match.captured,
+          },
+          node,
+          tokensConsumed: match.consumedTokens,
+        };
       }
 
       return {

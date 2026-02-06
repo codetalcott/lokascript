@@ -86,3 +86,28 @@ export {
   extractCommonExpressions,
   createOptimizationPass,
 } from './transformer.js';
+
+// Interchange Format
+export type {
+  InterchangeNode,
+  BaseNode as InterchangeBaseNode,
+  EventNode as InterchangeEventNode,
+  CommandNode as InterchangeCommandNode,
+  LiteralNode as InterchangeLiteralNode,
+  IdentifierNode as InterchangeIdentifierNode,
+  SelectorNode as InterchangeSelectorNode,
+  VariableNode as InterchangeVariableNode,
+  BinaryNode as InterchangeBinaryNode,
+  UnaryNode as InterchangeUnaryNode,
+  MemberNode as InterchangeMemberNode,
+  PossessiveNode as InterchangePossessiveNode,
+  CallNode as InterchangeCallNode,
+  IfNode as InterchangeIfNode,
+  RepeatNode as InterchangeRepeatNode,
+  ForEachNode as InterchangeForEachNode,
+  WhileNode as InterchangeWhileNode,
+  PositionalNode as InterchangePositionalNode,
+  EventModifiers as InterchangeEventModifiers,
+} from './interchange/index.js';
+
+export { fromCoreAST } from './interchange/index.js';

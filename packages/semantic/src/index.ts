@@ -438,3 +438,46 @@ export {
   type ConfidenceResult,
   type ParseWithConfidenceResult,
 } from './utils/confidence-calculator';
+
+// =============================================================================
+// Recommended Parsing Entry Point
+// =============================================================================
+
+import { parseWithConfidence as _parseWithConfidence } from './utils/confidence-calculator';
+import type { ParseWithConfidenceResult as _PWCResult } from './utils/confidence-calculator';
+
+/**
+ * Parse hyperscript code in any supported language.
+ *
+ * This is the recommended entry point for semantic parsing. It returns the
+ * complete semantic AST (including event handler bodies, compound statements,
+ * and conditionals) along with a confidence score.
+ *
+ * Unlike `createSemanticAnalyzer().analyze()`, this function always uses the
+ * full parser, so it never loses structural information.
+ *
+ * @param code - Hyperscript source code in any supported language
+ * @param language - ISO 639-1 language code (e.g., 'en', 'ja', 'es')
+ * @returns `{ node, confidence, error }` — the parsed AST, confidence score, and any error
+ *
+ * @example
+ * ```typescript
+ * import { parseSemantic } from '@lokascript/semantic';
+ *
+ * const result = parseSemantic('on click toggle .active', 'en');
+ * if (result.node) {
+ *   console.log(result.node.kind);       // 'event-handler'
+ *   console.log(result.confidence);      // 0.95
+ * }
+ * ```
+ */
+export function parseSemantic(code: string, language: string): _PWCResult {
+  return _parseWithConfidence(code, language);
+}
+
+// =============================================================================
+// AST Interchange Format (for downstream tools like AOT compiler)
+// =============================================================================
+
+export { fromSemanticAST } from './interchange';
+export type { InterchangeNode, EventModifiers as InterchangeEventModifiers } from './interchange';

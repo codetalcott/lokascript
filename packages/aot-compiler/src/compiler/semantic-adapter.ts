@@ -2,20 +2,11 @@
  * Semantic Parser Adapter
  *
  * Bridges @lokascript/semantic's parse output into AOT ASTNode types.
- * Enables the AOT compiler to compile hyperscript from any of the 24
- * supported languages.
+ * Delegates AST conversion to the shared interchange format (fromSemanticAST)
+ * exported by @lokascript/semantic.
  */
 
-import type {
-  ASTNode,
-  EventHandlerNode,
-  CommandNode,
-  IfNode,
-  RepeatNode,
-  ForEachNode,
-  WhileNode,
-  EventModifiers,
-} from '../types/aot-types.js';
+import type { ASTNode } from '../types/aot-types.js';
 
 // =============================================================================
 // SEMANTIC TYPES (imported dynamically)
@@ -38,36 +29,17 @@ interface SemanticAnalyzerLike {
 interface SemanticNodeLike {
   kind: string;
   action: string;
-  roles: ReadonlyMap<string, SemanticValueLike>;
+  roles: ReadonlyMap<string, unknown>;
   metadata?: { confidence?: number };
-  // Event handler fields
   body?: SemanticNodeLike[];
-  eventModifiers?: {
-    once?: boolean;
-    debounce?: number;
-    throttle?: number;
-    from?: SemanticValueLike;
-  };
+  eventModifiers?: Record<string, unknown>;
   parameterNames?: readonly string[];
-  // Conditional fields
   thenBranch?: SemanticNodeLike[];
   elseBranch?: SemanticNodeLike[];
-  // Compound fields
   statements?: SemanticNodeLike[];
-  // Loop fields
   loopVariant?: string;
   loopVariable?: string;
   indexVariable?: string;
-}
-
-interface SemanticValueLike {
-  type: string;
-  value?: string | number | boolean;
-  raw?: string;
-  object?: SemanticValueLike;
-  property?: string;
-  selectorKind?: string;
-  dataType?: string;
 }
 
 interface ASTBuilderLike {
@@ -85,6 +57,9 @@ type ParseWithConfidenceFn = (
   language: string
 ) => { node: SemanticNodeLike | null; confidence: number; error: string | undefined };
 
+/** Interchange converter function signature */
+type InterchangeConverter = (node: SemanticASTNodeLike) => ASTNode;
+
 // =============================================================================
 // SEMANTIC PARSER ADAPTER
 // =============================================================================
@@ -101,15 +76,18 @@ export class SemanticParserAdapter {
   private analyzer: SemanticAnalyzerLike;
   private ASTBuilderClass: new () => ASTBuilderLike;
   private parseWithConfidenceFn: ParseWithConfidenceFn;
+  private converter: InterchangeConverter;
 
   constructor(
     analyzer: SemanticAnalyzerLike,
     ASTBuilderClass: new () => ASTBuilderLike,
-    parseWithConfidenceFn: ParseWithConfidenceFn
+    parseWithConfidenceFn: ParseWithConfidenceFn,
+    converter: InterchangeConverter
   ) {
     this.analyzer = analyzer;
     this.ASTBuilderClass = ASTBuilderClass;
     this.parseWithConfidenceFn = parseWithConfidenceFn;
+    this.converter = converter;
   }
 
   /**
@@ -138,14 +116,14 @@ export class SemanticParserAdapter {
 
   /**
    * Build an AOT-compatible AST from the SemanticNode.
-   * Converts the semantic package's AST format to AOT types.
+   * Converts the semantic package's AST format to AOT types via interchange.
    */
   buildAST(node: unknown): { ast: ASTNode; warnings: string[] } {
     const semanticNode = node as SemanticNodeLike;
 
     const builder = new this.ASTBuilderClass();
     const semanticAST = builder.build(semanticNode);
-    const aotAST = convertSemanticASTToAOT(semanticAST);
+    const aotAST = this.converter(semanticAST);
 
     return { ast: aotAST, warnings: builder.warnings };
   }
@@ -159,408 +137,22 @@ export class SemanticParserAdapter {
 }
 
 // =============================================================================
-// AST CONVERSION: Semantic AST → AOT AST
+// STANDALONE CONVERTER (backward compat)
 // =============================================================================
+
+let _converter: InterchangeConverter | null = null;
 
 /**
  * Convert a semantic package AST node to an AOT AST node.
- * The semantic package produces nodes with types like 'eventHandler', 'command',
- * 'contextReference', 'propertyAccess', etc. AOT expects 'event', 'command',
- * 'identifier', 'possessive'/'member', etc.
+ *
+ * Delegates to `fromSemanticAST` from `@lokascript/semantic`'s interchange format.
+ * This function is available after `createSemanticAdapter()` has been called.
+ *
+ * @deprecated Import `fromSemanticAST` from `@lokascript/semantic` directly instead.
  */
 export function convertSemanticASTToAOT(node: SemanticASTNodeLike): ASTNode {
-  if (!node) return { type: 'literal', value: null };
-
-  switch (node.type) {
-    case 'eventHandler':
-      return convertEventHandler(node);
-    case 'command':
-      return convertCommand(node);
-    case 'CommandSequence':
-      return convertCommandSequence(node);
-    case 'block':
-      return convertBlock(node);
-    case 'if':
-      return convertIfNode(node);
-
-    // Expression types
-    case 'literal':
-      return { type: 'literal', value: node.value as string | number | boolean | null };
-    case 'selector':
-      return { type: 'selector', value: (node.value ?? node.selector ?? '') as string };
-    case 'contextReference':
-      return { type: 'identifier', value: (node.name ?? node.contextType ?? '') as string };
-    case 'identifier':
-      return {
-        type: 'identifier',
-        value: (node.name ?? node.value ?? '') as string,
-        name: (node.name ?? '') as string,
-      };
-    case 'propertyAccess':
-      return convertPropertyAccess(node);
-    case 'possessiveExpression':
-      return convertPossessive(node);
-    case 'memberExpression':
-      return convertMember(node);
-    case 'binaryExpression':
-      return convertBinary(node);
-    case 'callExpression':
-      return convertCall(node);
-    case 'unaryExpression':
-      return {
-        type: 'unary',
-        operator: node.operator as string,
-        operand: convertSemanticASTToAOT(node.operand as SemanticASTNodeLike),
-      };
-    case 'string':
-      return { type: 'literal', value: node.value as string };
-    case 'timeExpression':
-      return { type: 'literal', value: node.value as number };
-    case 'templateLiteral':
-      return { type: 'literal', value: (node.raw ?? '') as string };
-    case 'variable':
-      return {
-        type: 'variable',
-        name: (node.name ?? '') as string,
-        scope: (node.scope ?? 'local') as 'local' | 'global' | 'element',
-      };
-    case 'htmlSelector':
-      return { type: 'selector', value: (node.value ?? node.selector ?? '') as string };
-
-    default:
-      // Attempt generic conversion for unknown types
-      return convertGeneric(node);
-  }
-}
-
-function convertEventHandler(node: SemanticASTNodeLike): EventHandlerNode {
-  const event = (node.event ?? 'click') as string;
-  const commands = (node.commands ?? []) as SemanticASTNodeLike[];
-  const body = commands.map(cmd => convertSemanticASTToAOT(cmd));
-
-  const modifiers: EventModifiers = {};
-  // Extract event modifiers from flat properties
-  if (node.once) modifiers.once = true;
-  if (node.debounce) modifiers.debounce = node.debounce as number;
-  if (node.throttle) modifiers.throttle = node.throttle as number;
-  if (node.prevent) modifiers.prevent = true;
-  if (node.stop) modifiers.stop = true;
-  if (node.capture) modifiers.capture = true;
-  if (node.passive) modifiers.passive = true;
-  if (node.from) modifiers.from = node.from as string;
-  if (node.selector) modifiers.from = node.selector as string;
-  // Also check nested eventModifiers from semantic AST builder
-  const em = node.eventModifiers as Record<string, unknown> | undefined;
-  if (em) {
-    if (em.once) modifiers.once = true;
-    if (em.debounce) modifiers.debounce = em.debounce as number;
-    if (em.throttle) modifiers.throttle = em.throttle as number;
-    if (em.prevent) modifiers.prevent = true;
-    if (em.stop) modifiers.stop = true;
-    if (em.capture) modifiers.capture = true;
-    if (em.passive) modifiers.passive = true;
-    if (em.from) modifiers.from = em.from as string;
-  }
-
-  return {
-    type: 'event',
-    event,
-    modifiers,
-    body,
-  };
-}
-
-function convertCommand(node: SemanticASTNodeLike): ASTNode {
-  const name = node.name as string;
-
-  // Special handling for 'if' and 'unless' commands from semantic builder
-  if (name === 'if' || name === 'unless') {
-    return convertIfCommand(node);
-  }
-
-  // Special handling for 'repeat' command from semantic builder
-  if (name === 'repeat') {
-    return convertRepeatCommand(node);
-  }
-
-  const args = ((node.args ?? []) as SemanticASTNodeLike[]).map(arg =>
-    convertSemanticASTToAOT(arg)
-  );
-
-  const target = node.target
-    ? convertSemanticASTToAOT(node.target as SemanticASTNodeLike)
-    : undefined;
-
-  const modifiers = node.modifiers
-    ? convertModifiers(node.modifiers as Record<string, SemanticASTNodeLike>)
-    : undefined;
-
-  const result: CommandNode = {
-    type: 'command',
-    name,
-    args,
-  };
-
-  if (target) {
-    (result as Record<string, unknown>).target = target;
-  }
-  if (modifiers && Object.keys(modifiers).length > 0) {
-    (result as Record<string, unknown>).modifiers = modifiers;
-  }
-
-  return result;
-}
-
-function convertIfCommand(node: SemanticASTNodeLike): IfNode {
-  const args = (node.args ?? []) as SemanticASTNodeLike[];
-
-  // args[0] = condition, args[1] = then block, args[2] = else block (optional)
-  let condition: ASTNode = args[0]
-    ? convertSemanticASTToAOT(args[0])
-    : { type: 'literal', value: true };
-  const thenBlock = args[1] as SemanticASTNodeLike | undefined;
-  const elseBlock = args[2] as SemanticASTNodeLike | undefined;
-
-  const thenBranch = extractBlockCommands(thenBlock);
-  const elseBranch = elseBlock ? extractBlockCommands(elseBlock) : undefined;
-
-  // Handle 'unless' as negated 'if'
-  if ((node.name as string) === 'unless') {
-    condition = {
-      type: 'unary',
-      operator: 'not',
-      operand: condition,
-    };
-  }
-
-  return {
-    type: 'if',
-    condition,
-    thenBranch,
-    elseBranch,
-  };
-}
-
-function convertRepeatCommand(node: SemanticASTNodeLike): ASTNode {
-  const args = (node.args ?? []) as SemanticASTNodeLike[];
-
-  // args[0] = loop type identifier, args[1+] vary, args[last] = body block
-  if (args.length === 0) {
-    return { type: 'repeat', body: [] } as RepeatNode;
-  }
-
-  const loopTypeNode = args[0];
-  const loopType = (loopTypeNode?.name ?? loopTypeNode?.value ?? 'forever') as string;
-  const bodyBlock = args[args.length - 1];
-
-  switch (loopType) {
-    case 'times': {
-      const count = args[1] ? convertSemanticASTToAOT(args[1]) : undefined;
-      return {
-        type: 'repeat',
-        count,
-        body: extractBlockCommands(bodyBlock),
-      } as RepeatNode;
-    }
-    case 'for': {
-      const itemName = (args[1]?.value ?? 'item') as string;
-      const collection = args[2]
-        ? convertSemanticASTToAOT(args[2])
-        : { type: 'identifier', value: '[]' };
-      return {
-        type: 'foreach',
-        itemName,
-        collection,
-        body: extractBlockCommands(bodyBlock),
-      } as ForEachNode;
-    }
-    case 'while': {
-      const condition = args[1]
-        ? convertSemanticASTToAOT(args[1])
-        : { type: 'literal', value: true };
-      return {
-        type: 'while',
-        condition,
-        body: extractBlockCommands(bodyBlock),
-      } as WhileNode;
-    }
-    case 'until': {
-      // "until" is "while NOT condition"
-      const condition = args[1]
-        ? convertSemanticASTToAOT(args[1])
-        : { type: 'literal', value: false };
-      return {
-        type: 'while',
-        condition: {
-          type: 'unary',
-          operator: 'not',
-          operand: condition,
-        },
-        body: extractBlockCommands(bodyBlock),
-      } as WhileNode;
-    }
-    default: {
-      // 'forever' or unknown → repeat forever
-      return {
-        type: 'repeat',
-        body: extractBlockCommands(bodyBlock),
-      } as RepeatNode;
-    }
-  }
-}
-
-function convertCommandSequence(node: SemanticASTNodeLike): ASTNode {
-  const commands = (node.commands ?? []) as SemanticASTNodeLike[];
-  if (commands.length === 1) {
-    return convertSemanticASTToAOT(commands[0]);
-  }
-
-  // Wrap as event handler with default click event if standalone
-  return {
-    type: 'event',
-    event: 'click',
-    body: commands.map(cmd => convertSemanticASTToAOT(cmd)),
-  } as EventHandlerNode;
-}
-
-function convertBlock(node: SemanticASTNodeLike): ASTNode {
-  const commands = (node.commands ?? []) as SemanticASTNodeLike[];
-  if (commands.length === 1) {
-    return convertSemanticASTToAOT(commands[0]);
-  }
-  // Return as a sequence
-  return {
-    type: 'event',
-    event: 'click',
-    body: commands.map(cmd => convertSemanticASTToAOT(cmd)),
-  } as EventHandlerNode;
-}
-
-function convertIfNode(node: SemanticASTNodeLike): IfNode {
-  const condition = node.condition
-    ? convertSemanticASTToAOT(node.condition as SemanticASTNodeLike)
-    : { type: 'literal', value: true };
-
-  const thenBranch = ((node.thenBranch ?? []) as SemanticASTNodeLike[]).map(n =>
-    convertSemanticASTToAOT(n)
-  );
-  const elseBranch = node.elseBranch
-    ? (node.elseBranch as SemanticASTNodeLike[]).map(n => convertSemanticASTToAOT(n))
-    : undefined;
-
-  return {
-    type: 'if',
-    condition,
-    thenBranch,
-    elseBranch,
-  };
-}
-
-function convertPropertyAccess(node: SemanticASTNodeLike): ASTNode {
-  const object = node.object
-    ? convertSemanticASTToAOT(node.object as SemanticASTNodeLike)
-    : { type: 'identifier', value: 'me' };
-  const property = (node.property ?? '') as string;
-
-  return {
-    type: 'possessive',
-    object,
-    property,
-  };
-}
-
-function convertPossessive(node: SemanticASTNodeLike): ASTNode {
-  const object = node.object
-    ? convertSemanticASTToAOT(node.object as SemanticASTNodeLike)
-    : { type: 'identifier', value: 'me' };
-  const property =
-    typeof node.property === 'string'
-      ? node.property
-      : ((node.property as SemanticASTNodeLike)?.name ??
-        (node.property as SemanticASTNodeLike)?.value ??
-        '');
-
-  return {
-    type: 'possessive',
-    object,
-    property: property as string,
-  };
-}
-
-function convertMember(node: SemanticASTNodeLike): ASTNode {
-  const object = node.object
-    ? convertSemanticASTToAOT(node.object as SemanticASTNodeLike)
-    : { type: 'identifier', value: 'me' };
-  const property =
-    typeof node.property === 'string'
-      ? node.property
-      : node.property
-        ? convertSemanticASTToAOT(node.property as SemanticASTNodeLike)
-        : { type: 'literal', value: '' };
-
-  return {
-    type: 'member',
-    object,
-    property,
-    computed: (node.computed ?? false) as boolean,
-  };
-}
-
-function convertBinary(node: SemanticASTNodeLike): ASTNode {
-  return {
-    type: 'binary',
-    operator: (node.operator ?? '') as string,
-    left: convertSemanticASTToAOT(node.left as SemanticASTNodeLike),
-    right: convertSemanticASTToAOT(node.right as SemanticASTNodeLike),
-  };
-}
-
-function convertCall(node: SemanticASTNodeLike): ASTNode {
-  const callee =
-    typeof node.callee === 'string'
-      ? { type: 'identifier', value: node.callee, name: node.callee }
-      : convertSemanticASTToAOT(node.callee as SemanticASTNodeLike);
-  const args = ((node.arguments ?? node.args ?? []) as SemanticASTNodeLike[]).map(a =>
-    convertSemanticASTToAOT(a)
-  );
-
-  return {
-    type: 'call',
-    callee,
-    args,
-  };
-}
-
-function convertModifiers(modifiers: Record<string, SemanticASTNodeLike>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(modifiers)) {
-    result[key] = convertSemanticASTToAOT(value);
-  }
-  return result;
-}
-
-function convertGeneric(node: SemanticASTNodeLike): ASTNode {
-  // For unknown node types, try to preserve the structure
-  return {
-    type: node.type || 'literal',
-    value: node.value ?? null,
-  };
-}
-
-/**
- * Extract commands from a block or single node.
- */
-function extractBlockCommands(block: SemanticASTNodeLike | undefined): ASTNode[] {
-  if (!block) return [];
-
-  if (block.type === 'block') {
-    return ((block.commands ?? []) as SemanticASTNodeLike[]).map(cmd =>
-      convertSemanticASTToAOT(cmd)
-    );
-  }
-
-  // Single node — wrap in array
-  return [convertSemanticASTToAOT(block)];
+  if (_converter) return _converter(node);
+  return node as ASTNode;
 }
 
 // =============================================================================
@@ -577,9 +169,22 @@ export async function createSemanticAdapter(): Promise<SemanticParserAdapter> {
   const ASTBuilderClass = semantic.ASTBuilder;
   const parseWithConfidence = semantic.parseWithConfidence;
 
+  // Use the interchange converter from semantic
+  const converter = (semantic as Record<string, unknown>).fromSemanticAST as InterchangeConverter;
+  if (!converter) {
+    throw new Error(
+      '@lokascript/semantic does not export fromSemanticAST. ' +
+        'Ensure @lokascript/semantic >= 1.3.0 is installed.'
+    );
+  }
+
+  // Cache for standalone convertSemanticASTToAOT()
+  _converter = converter;
+
   return new SemanticParserAdapter(
     analyzer as unknown as SemanticAnalyzerLike,
     ASTBuilderClass as unknown as new () => ASTBuilderLike,
-    parseWithConfidence as unknown as ParseWithConfidenceFn
+    parseWithConfidence as unknown as ParseWithConfidenceFn,
+    converter
   );
 }

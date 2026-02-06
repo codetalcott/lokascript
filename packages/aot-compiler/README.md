@@ -77,11 +77,13 @@ export default {
 ## Example Output
 
 **Input (HTML):**
+
 ```html
 <button id="btn" _="on click toggle .active">Toggle</button>
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 import { createContext } from '@lokascript/aot-compiler/runtime';
 
@@ -93,67 +95,77 @@ function _handler_click_toggle_a1b2(_event) {
 document.getElementById('btn').addEventListener('click', _handler_click_toggle_a1b2);
 ```
 
+## Current Status
+
+The compiler is functional for class-manipulation commands across all 24 languages (standalone) and for English event handlers via the core parser adapter. Key gaps:
+
+- **Non-English event handler bodies** compile to empty functions (semantic adapter issue)
+- **Data commands** (`set`, `put`, `increment`) parse but have no codegen yet
+- See [aot-compiler-design.md](../../docs-internal/proposals/aot-compiler-design.md#11-implementation-status-2026-02-05) for full reliability assessment
+
 ## Supported Features
 
 ### Commands
 
-| Command | Status | Notes |
-|---------|--------|-------|
-| toggle | Full | classList.toggle() |
-| add | Full | classList.add() or DOM |
-| remove | Full | classList.remove() or DOM |
-| set | Full | Property/attribute assignment |
-| put | Full | innerHTML/textContent |
-| show/hide | Full | display style |
-| focus/blur | Full | Element methods |
-| log | Full | console.log |
-| wait | Full | setTimeout promise |
-| fetch | Full | Native fetch API |
-| send/trigger | Full | dispatchEvent |
-| increment/decrement | Full | Variable manipulation |
-| halt/exit | Full | Control flow |
-| return | Full | Return statement |
-| if/else | Full | Conditionals |
-| repeat | Full | For loops |
-| for each | Full | Iteration |
-| while | Full | While loops |
+| Command             | Codegen | Notes                     |
+| ------------------- | ------- | ------------------------- |
+| toggle              | Yes     | classList.toggle()        |
+| add                 | Yes     | classList.add() or DOM    |
+| remove              | Yes     | classList.remove() or DOM |
+| show/hide           | Yes     | display style             |
+| focus/blur          | Yes     | Element methods           |
+| log                 | Yes     | console.log               |
+| send/trigger        | Yes     | dispatchEvent             |
+| halt/exit           | Yes     | Control flow              |
+| return              | Yes     | Return statement          |
+| if/else             | Yes     | Conditionals              |
+| repeat              | Yes     | For loops                 |
+| for each            | Yes     | Iteration                 |
+| while               | Yes     | While loops               |
+| set                 | Planned | Parses, no codegen        |
+| put                 | Planned | Parses, no codegen        |
+| wait                | Planned | Parses, no codegen        |
+| fetch               | Planned | Parses, no codegen        |
+| increment/decrement | Planned | Parses, no codegen        |
 
 ### Expressions
 
-| Expression | Status |
-|------------|--------|
-| Literals | Full |
-| Selectors (#id, .class) | Full |
-| Context vars (me, you, it) | Full |
-| Local vars (:var) | Full |
-| Global vars ($var, ::var) | Full |
-| Binary operators | Full |
-| Possessive ('s) | Full |
-| Positional (first, last, next, previous, closest, parent) | Full |
-| Method calls | Full |
+| Expression                                                | Status |
+| --------------------------------------------------------- | ------ |
+| Literals                                                  | Full   |
+| Selectors (#id, .class)                                   | Full   |
+| Context vars (me, you, it)                                | Full   |
+| Local vars (:var)                                         | Full   |
+| Global vars ($var, ::var)                                 | Full   |
+| Binary operators                                          | Full   |
+| Possessive ('s)                                           | Full   |
+| Positional (first, last, next, previous, closest, parent) | Full   |
+| Method calls                                              | Full   |
 
 ### Event Modifiers
 
-| Modifier | Status |
-|----------|--------|
-| .prevent | Full |
-| .stop | Full |
-| .once | Full |
-| .passive | Full |
-| .capture | Full |
-| .debounce(N) | Full |
-| .throttle(N) | Full |
+| Modifier     | Status |
+| ------------ | ------ |
+| .prevent     | Full   |
+| .stop        | Full   |
+| .once        | Full   |
+| .passive     | Full   |
+| .capture     | Full   |
+| .debounce(N) | Full   |
+| .throttle(N) | Full   |
 
 ## Optimization Passes
 
 The compiler includes several optimization passes:
 
 1. **Constant Folding**: Evaluates compile-time constants
+
    ```hyperscript
    set :x to 5 + 3  →  set :x to 8
    ```
 
 2. **Selector Caching**: Caches repeated selector lookups
+
    ```hyperscript
    add .a to #btn then remove .b from #btn
    →
@@ -163,6 +175,7 @@ The compiler includes several optimization passes:
    ```
 
 3. **Dead Code Elimination**: Removes unreachable code
+
    ```hyperscript
    halt then log "never runs"  →  halt
    ```
@@ -180,14 +193,14 @@ The AOT runtime is a minimal (~3KB) set of helpers that cannot be inlined:
 
 ```typescript
 import {
-  createContext,  // Execution context
-  toggle,         // Class/attribute toggle
-  debounce,       // Function debouncing
-  throttle,       // Function throttling
-  wait,           // Promise-based delay
-  send,           // Custom event dispatch
-  fetchJSON,      // Fetch helper
-  globals,        // Global variable store
+  createContext, // Execution context
+  toggle, // Class/attribute toggle
+  debounce, // Function debouncing
+  throttle, // Function throttling
+  wait, // Promise-based delay
+  send, // Custom event dispatch
+  fetchJSON, // Fetch helper
+  globals, // Global variable store
 } from '@lokascript/aot-compiler/runtime';
 ```
 
@@ -219,12 +232,12 @@ interface CompileOptions {
 
 ## Performance
 
-| Metric | JIT (Runtime) | AOT (Build-time) | Improvement |
-|--------|--------------|------------------|-------------|
-| Initial parse time | 2-5ms per handler | 0ms | 100% |
-| Bundle size (full) | 203 KB | ~40 KB | 80% |
-| Bundle size (lite) | 7.3 KB | ~3 KB | 59% |
-| Command dispatch | ~0.5ms | ~0.1ms | 80% |
+| Metric             | JIT (Runtime)     | AOT (Build-time) | Improvement |
+| ------------------ | ----------------- | ---------------- | ----------- |
+| Initial parse time | 2-5ms per handler | 0ms              | 100%        |
+| Bundle size (full) | 203 KB            | ~40 KB           | 80%         |
+| Bundle size (lite) | 7.3 KB            | ~3 KB            | 59%         |
+| Command dispatch   | ~0.5ms            | ~0.1ms           | 80%         |
 
 ## License
 

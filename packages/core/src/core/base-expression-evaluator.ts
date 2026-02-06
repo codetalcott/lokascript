@@ -19,6 +19,7 @@ import {
   getElementProperty,
   accessAttribute,
 } from '../expressions/property-access-utils';
+import { extractPropertyName } from './ast-property-utils';
 
 /**
  * Base Expression Evaluator - Abstract class with shared evaluation logic
@@ -94,7 +95,7 @@ export class BaseExpressionEvaluator {
         return this.evaluateLiteral(node as any, context);
 
       case 'string':
-        return (node as any).value || (node as any).content || '';
+        return (node as any).value ?? '';
 
       case 'memberExpression':
         return this.evaluateMemberExpression(node as any, context);
@@ -639,7 +640,7 @@ export class BaseExpressionEvaluator {
     // Special case: handle command-like member expressions
     if (object.type === 'identifier' && ['add', 'remove'].includes(object.name)) {
       const commandName = object.name;
-      const className = property.name || property;
+      const className = extractPropertyName(property);
 
       if (!context.me) {
         throw new Error('Context element "me" is null');
@@ -666,7 +667,7 @@ export class BaseExpressionEvaluator {
       // For dot access (obj.prop), unwrap selector results to single element
       // UNLESS the property is an array method/property (length, filter, map, etc.)
       // This allows (<.selector/> in me).length and .filter() to work correctly.
-      const propertyName = property.name || property;
+      const propertyName = extractPropertyName(property);
       const isArrayProp =
         Array.isArray(objectValue) &&
         typeof propertyName === 'string' &&
@@ -1350,7 +1351,7 @@ export class BaseExpressionEvaluator {
       }
 
       // Extract property name (handle both memberExpression and propertyAccess formats)
-      const propertyName = callee.property?.name || callee.property?.value || callee.property;
+      const propertyName = extractPropertyName(callee.property);
       if (!propertyName || typeof propertyName !== 'string') {
         throw new Error(`Invalid method name: ${propertyName}`);
       }
@@ -1481,7 +1482,7 @@ export class BaseExpressionEvaluator {
       return undefined;
     }
 
-    const propertyName = property.name || property.value || property;
+    const propertyName = extractPropertyName(property);
 
     if (typeof propertyName === 'string') {
       // Use getElementProperty for comprehensive property access handling

@@ -1,8 +1,9 @@
 # LokaScript AOT Compiler Design
 
-> **Status**: Proposal
+> **Status**: Implemented (with gaps)
 > **Author**: Design Session
 > **Date**: 2026-02-05
+> **Last reviewed**: 2026-02-05
 
 ## Executive Summary
 
@@ -20,6 +21,7 @@ This document proposes an Ahead-of-Time (AOT) compiler for LokaScript that trans
 8. [Example Outputs](#8-example-outputs)
 9. [Performance Considerations](#9-performance-considerations)
 10. [Migration Path](#10-migration-path)
+11. [Implementation Status (2026-02-05)](#11-implementation-status-2026-02-05)
 
 ---
 
@@ -35,13 +37,13 @@ This document proposes an Ahead-of-Time (AOT) compiler for LokaScript that trans
 
 ### Quantified Benefits
 
-| Metric | JIT (Current) | AOT (Proposed) | Improvement |
-|--------|--------------|----------------|-------------|
-| Initial parse time | 2-5ms per handler | 0ms | 100% |
-| Bundle size (full) | 203 KB | ~40 KB (runtime only) | 80% |
-| Bundle size (lite) | 7.3 KB | ~3 KB (no parser) | 59% |
-| Command dispatch | ~0.5ms | ~0.1ms | 80% |
-| Memory (AST cache) | ~500KB per 100 handlers | 0 | 100% |
+| Metric             | JIT (Current)           | AOT (Proposed)        | Improvement |
+| ------------------ | ----------------------- | --------------------- | ----------- |
+| Initial parse time | 2-5ms per handler       | 0ms                   | 100%        |
+| Bundle size (full) | 203 KB                  | ~40 KB (runtime only) | 80%         |
+| Bundle size (lite) | 7.3 KB                  | ~3 KB (no parser)     | 59%         |
+| Command dispatch   | ~0.5ms                  | ~0.1ms                | 80%         |
+| Memory (AST cache) | ~500KB per 100 handlers | 0                     | 100%        |
 
 ### Non-Goals
 
@@ -166,11 +168,11 @@ interface SourceExtractor {
 }
 
 interface ExtractedScript {
-  code: string;                 // The hyperscript code
-  location: SourceLocation;     // File, line, column
-  elementId?: string;           // ID for DOM binding
-  elementSelector?: string;     // CSS selector for binding
-  language?: string;            // Language code (for semantic)
+  code: string; // The hyperscript code
+  location: SourceLocation; // File, line, column
+  elementId?: string; // ID for DOM binding
+  elementSelector?: string; // CSS selector for binding
+  language?: string; // Language code (for semantic)
 }
 
 // Example extraction from HTML
@@ -224,35 +226,35 @@ Perform analysis on the AST to inform optimization:
 ```typescript
 interface AnalysisResult {
   // Command usage statistics
-  commandsUsed: Set<string>;           // e.g., {'toggle', 'add', 'set'}
+  commandsUsed: Set<string>; // e.g., {'toggle', 'add', 'set'}
 
   // Variable analysis
   variables: {
-    locals: Map<string, VariableInfo>;  // :localVar
+    locals: Map<string, VariableInfo>; // :localVar
     globals: Map<string, VariableInfo>; // ::globalVar
-    contextVars: Set<string>;           // me, you, it, event, result
+    contextVars: Set<string>; // me, you, it, event, result
   };
 
   // Expression complexity
   expressions: {
-    pure: ExpressionNode[];             // Can be evaluated at compile time
-    dynamic: ExpressionNode[];          // Require runtime evaluation
-    selectors: SelectorInfo[];          // CSS selectors used
+    pure: ExpressionNode[]; // Can be evaluated at compile time
+    dynamic: ExpressionNode[]; // Require runtime evaluation
+    selectors: SelectorInfo[]; // CSS selectors used
   };
 
   // Control flow
   controlFlow: {
-    hasAsync: boolean;                  // Uses fetch, settle, wait
-    hasLoops: boolean;                  // repeat, for each, while
-    hasConditionals: boolean;           // if/else
-    canThrow: boolean;                  // May throw halt/exit
+    hasAsync: boolean; // Uses fetch, settle, wait
+    hasLoops: boolean; // repeat, for each, while
+    hasConditionals: boolean; // if/else
+    canThrow: boolean; // May throw halt/exit
   };
 
   // Dependencies
   dependencies: {
-    domQueries: string[];               // Selectors that need querySelectorAll
-    eventTypes: string[];               // Events listened to
-    behaviors: string[];                // Behaviors referenced
+    domQueries: string[]; // Selectors that need querySelectorAll
+    eventTypes: string[]; // Events listened to
+    behaviors: string[]; // Behaviors referenced
   };
 }
 
@@ -276,11 +278,11 @@ interface Optimizer {
 
 class OptimizationPipeline implements Optimizer {
   private passes: OptimizationPass[] = [
-    new ConstantFoldingPass(),      // Evaluate compile-time constants
-    new SelectorMergingPass(),       // Combine repeated selector queries
-    new DeadCodeEliminationPass(),   // Remove unreachable code
-    new InliningPass(),              // Inline simple expressions
-    new LoopUnrollingPass(),         // Unroll small fixed-count loops
+    new ConstantFoldingPass(), // Evaluate compile-time constants
+    new SelectorMergingPass(), // Combine repeated selector queries
+    new DeadCodeEliminationPass(), // Remove unreachable code
+    new InliningPass(), // Inline simple expressions
+    new LoopUnrollingPass(), // Unroll small fixed-count loops
   ];
 
   optimize(ast: ASTNode, analysis: AnalysisResult): OptimizedAST {
@@ -298,6 +300,7 @@ class OptimizationPipeline implements Optimizer {
 #### Optimization Pass Examples
 
 **1. Constant Folding**
+
 ```typescript
 // Input AST for: set :x to 5 + 3
 {
@@ -324,6 +327,7 @@ class OptimizationPipeline implements Optimizer {
 ```
 
 **2. Selector Caching**
+
 ```typescript
 // Input: "add .active to #btn then remove .loading from #btn"
 // Without optimization: 2 x document.querySelector('#btn')
@@ -349,7 +353,7 @@ interface CodegenOptions {
   mode: 'iife' | 'esm' | 'cjs';
   minify: boolean;
   sourceMaps: boolean;
-  runtimeImport: string;              // e.g., '@lokascript/aot-runtime'
+  runtimeImport: string; // e.g., '@lokascript/aot-runtime'
   preserveComments: boolean;
   debugMode: boolean;
 }
@@ -357,8 +361,8 @@ interface CodegenOptions {
 interface GeneratedCode {
   code: string;
   map?: SourceMap;
-  imports: string[];                   // Required runtime imports
-  exports: string[];                   // Exported handler names
+  imports: string[]; // Required runtime imports
+  exports: string[]; // Exported handler names
   metadata: {
     commandsUsed: string[];
     originalSize: number;
@@ -383,10 +387,7 @@ interface CommandCodegen {
   readonly command: string;
 
   /** Generate JavaScript for this command */
-  generate(
-    node: CommandNode,
-    ctx: CodegenContext
-  ): GeneratedExpression;
+  generate(node: CommandNode, ctx: CodegenContext): GeneratedExpression;
 }
 
 // Registry of command code generators
@@ -410,7 +411,7 @@ class ToggleCodegen implements CommandCodegen {
   readonly command = 'toggle';
 
   generate(node: CommandNode, ctx: CodegenContext): GeneratedExpression {
-    const target = node.args[0];      // The class/attribute to toggle
+    const target = node.args[0]; // The class/attribute to toggle
     const element = node.modifiers?.on ?? ctx.implicitTarget;
 
     // Generate optimized code based on target type
@@ -603,8 +604,10 @@ async function _handler_${ctx.handlerId}(_event) {
 
       bindingCode: this.generateBinding(node, ctx, options),
 
-      cleanup: options.once ? null : `
-_el.removeEventListener(${JSON.stringify(eventName)}, _handler_${ctx.handlerId}${options.capture ? ', true' : ''});`
+      cleanup: options.once
+        ? null
+        : `
+_el.removeEventListener(${JSON.stringify(eventName)}, _handler_${ctx.handlerId}${options.capture ? ', true' : ''});`,
     };
   }
 
@@ -640,9 +643,7 @@ _el.removeEventListener(${JSON.stringify(eventName)}, _handler_${ctx.handlerId}$
     if (options.passive) listenerOpts.push('passive: true');
     if (options.capture) listenerOpts.push('capture: true');
 
-    const optsArg = listenerOpts.length > 0
-      ? `, { ${listenerOpts.join(', ')} }`
-      : '';
+    const optsArg = listenerOpts.length > 0 ? `, { ${listenerOpts.join(', ')} }` : '';
 
     // Event delegation?
     if (node.target) {
@@ -676,9 +677,8 @@ class ControlFlowCodegen {
   generateRepeat(node: RepeatNode, ctx: CodegenContext): string {
     // "repeat 5 times" → fixed count loop
     if (node.count !== undefined) {
-      const count = typeof node.count === 'number'
-        ? node.count
-        : ctx.exprCodegen.generate(node.count, ctx);
+      const count =
+        typeof node.count === 'number' ? node.count : ctx.exprCodegen.generate(node.count, ctx);
 
       const body = this.generateBlock(node.body, ctx);
 
@@ -822,23 +822,17 @@ export function matches(element: Element, selector: string): boolean {
 }
 
 // Timing helpers
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  ms: number
-): T {
+export function debounce<T extends (...args: any[]) => any>(fn: T, ms: number): T {
   let timeout: ReturnType<typeof setTimeout>;
-  return function(this: any, ...args: Parameters<T>) {
+  return function (this: any, ...args: Parameters<T>) {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn.apply(this, args), ms);
   } as T;
 }
 
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  ms: number
-): T {
+export function throttle<T extends (...args: any[]) => any>(fn: T, ms: number): T {
   let last = 0;
-  return function(this: any, ...args: Parameters<T>) {
+  return function (this: any, ...args: Parameters<T>) {
     const now = Date.now();
     if (now - last >= ms) {
       last = now;
@@ -1061,10 +1055,7 @@ program
         defaultLanguage: options.language,
       });
 
-      const outPath = path.join(
-        options.output,
-        file.replace(/\.(html|vue|svelte)$/, '.hs.js')
-      );
+      const outPath = path.join(options.output, file.replace(/\.(html|vue|svelte)$/, '.hs.js'));
 
       await fs.mkdir(path.dirname(outPath), { recursive: true });
       await fs.writeFile(outPath, result.code);
@@ -1113,12 +1104,18 @@ program
     }
 
     if (options.json) {
-      console.log(JSON.stringify({
-        ...analysis,
-        commands: Array.from(analysis.commands),
-        events: Array.from(analysis.events),
-        selectors: Array.from(analysis.selectors),
-      }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            ...analysis,
+            commands: Array.from(analysis.commands),
+            events: Array.from(analysis.events),
+            selectors: Array.from(analysis.selectors),
+          },
+          null,
+          2
+        )
+      );
     } else {
       console.log(`\nAnalysis Results:`);
       console.log(`  Files: ${analysis.files}`);
@@ -1146,10 +1143,7 @@ export { CodeGenerator } from './compiler/codegen';
 export * from './types/aot-types';
 
 // Convenience function for simple use cases
-export async function compileHyperscript(
-  code: string,
-  options?: CompileOptions
-): Promise<string> {
+export async function compileHyperscript(code: string, options?: CompileOptions): Promise<string> {
   const compiler = new AOTCompiler();
   const result = await compiler.compileScript(code, options);
   return result.code;
@@ -1168,45 +1162,45 @@ export async function compileHyperscript(
 
 ### Phase 1: Core Compiler (4 weeks)
 
-| Week | Tasks |
-|------|-------|
-| 1 | Set up package structure, TypeScript config, testing infrastructure |
-| 1 | Implement source extraction for HTML files |
-| 2 | Implement expression code generation (all expression types) |
-| 2 | Implement basic command code generators (toggle, add, remove, set) |
-| 3 | Implement control flow code generation (if, repeat, for each) |
-| 3 | Implement event handler code generation with modifiers |
-| 4 | Implement minimal AOT runtime |
-| 4 | Integration testing with real hyperscript examples |
+| Week | Tasks                                                               |
+| ---- | ------------------------------------------------------------------- |
+| 1    | Set up package structure, TypeScript config, testing infrastructure |
+| 1    | Implement source extraction for HTML files                          |
+| 2    | Implement expression code generation (all expression types)         |
+| 2    | Implement basic command code generators (toggle, add, remove, set)  |
+| 3    | Implement control flow code generation (if, repeat, for each)       |
+| 3    | Implement event handler code generation with modifiers              |
+| 4    | Implement minimal AOT runtime                                       |
+| 4    | Integration testing with real hyperscript examples                  |
 
 ### Phase 2: Optimization Passes (2 weeks)
 
-| Week | Tasks |
-|------|-------|
-| 5 | Implement constant folding pass |
-| 5 | Implement selector caching optimization |
-| 6 | Implement dead code elimination |
-| 6 | Implement loop unrolling for small fixed counts |
+| Week | Tasks                                           |
+| ---- | ----------------------------------------------- |
+| 5    | Implement constant folding pass                 |
+| 5    | Implement selector caching optimization         |
+| 6    | Implement dead code elimination                 |
+| 6    | Implement loop unrolling for small fixed counts |
 
 ### Phase 3: Integration (2 weeks)
 
-| Week | Tasks |
-|------|-------|
-| 7 | Vite plugin integration |
-| 7 | CLI tool implementation |
-| 8 | Source map generation |
-| 8 | Vue/Svelte scanner support |
+| Week | Tasks                      |
+| ---- | -------------------------- |
+| 7    | Vite plugin integration    |
+| 7    | CLI tool implementation    |
+| 8    | Source map generation      |
+| 8    | Vue/Svelte scanner support |
 
 ### Phase 4: Advanced Features (3 weeks)
 
-| Week | Tasks |
-|------|-------|
-| 9 | Multilingual support via semantic parser integration |
-| 9 | Behavior compilation support |
-| 10 | Bundle optimization (tree-shaking runtime) |
-| 10 | Async command support (fetch, settle, wait) |
-| 11 | Performance benchmarking and optimization |
-| 11 | Documentation and examples |
+| Week | Tasks                                                |
+| ---- | ---------------------------------------------------- |
+| 9    | Multilingual support via semantic parser integration |
+| 9    | Behavior compilation support                         |
+| 10   | Bundle optimization (tree-shaking runtime)           |
+| 10   | Async command support (fetch, settle, wait)          |
+| 11   | Performance benchmarking and optimization            |
+| 11   | Documentation and examples                           |
 
 ### File Structure
 
@@ -1275,18 +1269,20 @@ packages/aot-compiler/
 ### Example 1: Simple Toggle
 
 **Input (HTML):**
+
 ```html
 <button id="btn" _="on click toggle .active">Toggle</button>
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 // lokascript-compiled.js
 import { createContext } from '@lokascript/aot-runtime';
 
 const _el_btn = document.getElementById('btn');
 
-_el_btn.addEventListener('click', function(_event) {
+_el_btn.addEventListener('click', function (_event) {
   this.classList.toggle('active');
 });
 ```
@@ -1294,24 +1290,28 @@ _el_btn.addEventListener('click', function(_event) {
 ### Example 2: Form Validation
 
 **Input:**
+
 ```html
-<form _="on submit
+<form
+  _="on submit
   if #email's value is empty
     add .error to #email
     halt
   end
   remove .error from #email
-">
+"
+></form>
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 import { createContext, HALT } from '@lokascript/aot-runtime';
 
 const _el_form = document.querySelector('form[_]');
 const _sel_email = document.getElementById('email');
 
-_el_form.addEventListener('submit', async function(_event) {
+_el_form.addEventListener('submit', async function (_event) {
   const _ctx = createContext(_event, this);
 
   try {
@@ -1337,23 +1337,27 @@ _el_form.addEventListener('submit', async function(_event) {
 ### Example 3: Fetch with Loading State
 
 **Input:**
+
 ```html
-<button _="on click
+<button
+  _="on click
   add .loading to me
   fetch /api/data as json
   put result into #output
   remove .loading from me
-">
+"
+></button>
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 import { createContext, fetchJSON } from '@lokascript/aot-runtime';
 
 const _el_btn = document.querySelector('button[_]');
 const _sel_output = document.getElementById('output');
 
-_el_btn.addEventListener('click', async function(_event) {
+_el_btn.addEventListener('click', async function (_event) {
   const _ctx = createContext(_event, this);
 
   // add .loading to me
@@ -1373,22 +1377,26 @@ _el_btn.addEventListener('click', async function(_event) {
 ### Example 4: Repeat Loop
 
 **Input:**
+
 ```html
-<div _="on click
+<div
+  _="on click
   repeat 5 times
     add <div.item/> to me
     wait 100ms
   end
-">
+"
+></div>
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 import { createContext, wait } from '@lokascript/aot-runtime';
 
 const _el_div = document.querySelector('div[_]');
 
-_el_div.addEventListener('click', async function(_event) {
+_el_div.addEventListener('click', async function (_event) {
   const _ctx = createContext(_event, this);
 
   // repeat 5 times
@@ -1409,18 +1417,20 @@ _el_div.addEventListener('click', async function(_event) {
 ### Example 5: Event Modifiers
 
 **Input:**
+
 ```html
-<input _="on input.debounce(300) put my value into #preview">
+<input _="on input.debounce(300) put my value into #preview" />
 ```
 
 **Generated JavaScript:**
+
 ```javascript
 import { createContext, debounce } from '@lokascript/aot-runtime';
 
 const _el_input = document.querySelector('input[_]');
 const _sel_preview = document.getElementById('preview');
 
-const _handler_1 = debounce(function(_event) {
+const _handler_1 = debounce(function (_event) {
   _sel_preview.textContent = this.value;
 }, 300);
 
@@ -1430,15 +1440,17 @@ _el_input.addEventListener('input', _handler_1);
 ### Example 6: Multilingual (Japanese)
 
 **Input:**
+
 ```html
 <button _="クリック で .active を トグル" lang="ja">Toggle</button>
 ```
 
 **Generated JavaScript (same output):**
+
 ```javascript
 const _el_btn = document.querySelector('button[_]');
 
-_el_btn.addEventListener('click', function(_event) {
+_el_btn.addEventListener('click', function (_event) {
   this.classList.toggle('active');
 });
 ```
@@ -1449,28 +1461,28 @@ _el_btn.addEventListener('click', function(_event) {
 
 ### Bundle Size Comparison
 
-| Scenario | JIT Bundle | AOT Bundle | Savings |
-|----------|-----------|------------|---------|
-| Full runtime | 203 KB | 3 KB (runtime only) | 98.5% |
-| With parser fallback | 203 KB | 65 KB | 68% |
-| Lite mode | 7.3 KB | 2 KB | 73% |
+| Scenario             | JIT Bundle | AOT Bundle          | Savings |
+| -------------------- | ---------- | ------------------- | ------- |
+| Full runtime         | 203 KB     | 3 KB (runtime only) | 98.5%   |
+| With parser fallback | 203 KB     | 65 KB               | 68%     |
+| Lite mode            | 7.3 KB     | 2 KB                | 73%     |
 
 ### Execution Performance
 
-| Operation | JIT Time | AOT Time | Improvement |
-|-----------|----------|----------|-------------|
-| Initial parse | 2-5ms | 0ms | 100% |
-| Command dispatch | 0.5ms | 0.1ms | 80% |
-| Expression eval | 0.3ms | 0.05ms | 83% |
-| Total handler exec | 3-6ms | 0.15-0.2ms | 95%+ |
+| Operation          | JIT Time | AOT Time   | Improvement |
+| ------------------ | -------- | ---------- | ----------- |
+| Initial parse      | 2-5ms    | 0ms        | 100%        |
+| Command dispatch   | 0.5ms    | 0.1ms      | 80%         |
+| Expression eval    | 0.3ms    | 0.05ms     | 83%         |
+| Total handler exec | 3-6ms    | 0.15-0.2ms | 95%+        |
 
 ### Memory Usage
 
-| Metric | JIT | AOT | Improvement |
-|--------|-----|-----|-------------|
-| AST cache (100 handlers) | ~500 KB | 0 | 100% |
-| Parser heap | ~2 MB | 0 | 100% |
-| Runtime heap | ~50 KB | ~10 KB | 80% |
+| Metric                   | JIT     | AOT    | Improvement |
+| ------------------------ | ------- | ------ | ----------- |
+| AST cache (100 handlers) | ~500 KB | 0      | 100%        |
+| Parser heap              | ~2 MB   | 0      | 100%        |
+| Runtime heap             | ~50 KB  | ~10 KB | 80%         |
 
 ---
 
@@ -1507,7 +1519,7 @@ export default {
 
     // Option 3: Hybrid (AOT + JIT fallback)
     lokascript({ aot: true, fallback: true }),
-  ]
+  ],
 };
 ```
 
@@ -1520,59 +1532,147 @@ export default {
 
 ---
 
+## 11. Implementation Status (2026-02-05)
+
+### What's Built
+
+The AOT compiler package (`packages/aot-compiler`) is implemented with:
+
+- **AOT Compiler** (`aot-compiler.ts`): Main orchestrator — parses, generates code, tracks metadata, produces combined output
+- **Two parser adapters**: `CoreParserAdapter` (English, wraps `@lokascript/core`) and `SemanticParserAdapter` (24 languages, wraps `@lokascript/semantic`)
+- **Regex fallback parser** (`createSimpleAST`): Zero-dependency pattern matching for simple cases
+- **Code generation**: `CommandCodegen` (12 commands), `ExpressionCodegen` (all expression types), `EventCodegen` (event handler wiring)
+- **128 tests passing** (vitest, happy-dom environment)
+
+### Adapter Correctness Fixes (commit `a0b580ab`)
+
+The following bugs were found and fixed in both parser adapters:
+
+| Bug                                                        | Impact                                             | Fix                                                                     |
+| ---------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- |
+| `unaryExpression` mapped to `type: 'binary'`               | `not x` generated `(0 not x)` — invalid JS         | Changed to `type: 'unary'` which dispatches to `generateUnary()` → `!x` |
+| `unless` / `until` negation used broken binary pattern     | Same invalid JS for negated conditions             | Changed to `{ type: 'unary', operator: 'not', operand }`                |
+| `convertMember()` recursed on string `property`            | Crash when member property is a raw string         | Added `typeof node.property === 'string'` guard                         |
+| Semantic adapter missing `unless` command                  | `unless` silently dropped                          | Routes to `convertIfCommand()` with negated condition                   |
+| Semantic adapter missing `variable` / `htmlSelector` nodes | Variables and selectors lost during conversion     | Added conversion cases matching core adapter                            |
+| Semantic adapter ignored event modifiers                   | `once`, `debounce`, `throttle`, etc. not extracted | Added extraction from both flat properties and `eventModifiers` object  |
+| Test suites vacuously passing                              | 19 core adapter tests silently skipped (no DOM)    | Added `@vitest-environment happy-dom` + `describe.runIf()`              |
+
+### Multilingual Reliability Assessment
+
+Tested actual JS output (not just `success: true`) across 9 languages via both parser adapters.
+
+#### What Works (High Reliability)
+
+**Standalone class commands** generate correct JS across all tested languages:
+
+| Input            | Generated JS                    | Languages Verified                 |
+| ---------------- | ------------------------------- | ---------------------------------- |
+| `toggle .active` | `el.classList.toggle('active')` | en, es, ja, ko, ar, zh, tr, pt, fr |
+| `add .clicked`   | `el.classList.add('clicked')`   | en, es, ko, ar, zh, tr, pt, fr     |
+| `remove .hidden` | `el.classList.remove('hidden')` | en, es, ja, ko, ar, zh, tr, pt, fr |
+| `show`           | `el.style.display = ''`         | en, es, ja, ko, ar, zh, tr, pt, fr |
+| `hide`           | `el.style.display = 'none'`     | en, es, ja, ko, ar, zh, tr, pt, fr |
+
+These pass through the semantic adapter → AOT AST → `CommandCodegen` cleanly. The semantic parser correctly identifies the command and class operand regardless of language.
+
+#### What's Broken (Needs Work)
+
+1. **Non-English event handlers produce empty function bodies**
+   - Input: `クリック で .active を 切り替え` (Japanese: "on click toggle .active")
+   - Output: `function(event) { }` — the event is wired but the body is empty
+   - Root cause: The semantic adapter's `convertEventHandler()` receives the event handler node but the body commands aren't being recursively converted from the semantic AST
+   - The compiler reports `success: true` for these — **silent failure**
+
+2. **Japanese `add` (`追加 .clicked`) fails entirely**
+   - The semantic parser returns a structure the adapter doesn't recognize for this command in Japanese
+   - Other languages (Korean `추가`, Arabic `أضف`, etc.) work fine
+
+3. **`set` command has no codegen**
+   - `set :count to 0` parses successfully through the core adapter
+   - But `CommandCodegen` has no `set` case — falls through to generic/unsupported
+   - Same for `put`, `increment`, `decrement`, and other data commands
+
+4. **`addEventListener` is in a separate binding step (by design)**
+   - `compileScript()` generates the handler function body only
+   - Event binding (`el.addEventListener(...)`) is produced by `generateCombinedCode()` which wraps all handlers
+   - This is correct architecture but means individual `compileScript()` results don't show the full picture
+
+#### Reliability Summary
+
+| Category                      | English (core)      | English (semantic) | Non-English (semantic) |
+| ----------------------------- | ------------------- | ------------------ | ---------------------- |
+| Standalone class ops          | Works               | Works              | Works                  |
+| Event handler + class ops     | Works               | Works              | **Empty body**         |
+| `set` / `put` / data commands | Parses, no codegen  | Parses, no codegen | Parses, no codegen     |
+| Control flow (`if`/`repeat`)  | Works (core parser) | Untested           | Untested               |
+| `fetch` / async               | Untested            | Untested           | Untested               |
+
+### Recommended Next Steps
+
+1. **Fix non-English event handler body conversion** — highest impact bug. The semantic adapter receives body nodes but doesn't convert them. This likely requires tracing how `parseWithConfidence()` structures event handler bodies vs. how `convertEventHandler()` expects them.
+
+2. **Add `set` command codegen** — `CommandCodegen` needs a `set` case that generates `_ctx.locals.set('name', value)` for local variables and property assignment for DOM targets.
+
+3. **Add silent-failure detection** — `compileScript()` should warn or fail when an event handler has a parsed body but the converted AST body is empty.
+
+4. **Expand command codegen coverage** — `put`, `increment`, `decrement`, `log`, `wait`, `fetch` are all specified in this design doc's appendices but not yet implemented in `CommandCodegen`.
+
+---
+
 ## Appendix A: Command Coverage Matrix
 
-| Command | AOT Support | Notes |
-|---------|-------------|-------|
-| toggle | Full | Direct classList.toggle() |
-| add | Full | classList.add() or DOM |
-| remove | Full | classList.remove() or DOM |
-| set | Full | Property/attribute assignment |
-| put | Full | innerHTML/textContent |
-| get | Full | Property access |
-| if/else | Full | Direct JS conditionals |
-| repeat | Full | for loop |
-| for each | Full | for...of loop |
-| while | Full | while loop |
-| wait | Full | setTimeout promise |
-| fetch | Full | Native fetch API |
-| send | Full | dispatchEvent |
-| trigger | Full | dispatchEvent |
-| call | Full | Function call |
-| return | Full | return statement |
-| halt | Full | throw HALT |
-| exit | Full | throw EXIT |
-| log | Full | console.log |
-| throw | Full | throw Error |
-| try/catch | Full | try/catch block |
-| async | Full | async/await |
-| settle | Full | Promise.allSettled |
-| show/hide | Full | display style |
-| transition | Partial | CSS transitions |
-| measure | Full | getBoundingClientRect |
-| go | Full | location/history |
-| focus/blur | Full | Element methods |
-| scroll | Full | scrollIntoView |
-| take | Full | classList manipulation |
+| Command    | AOT Support | Notes                         |
+| ---------- | ----------- | ----------------------------- |
+| toggle     | Full        | Direct classList.toggle()     |
+| add        | Full        | classList.add() or DOM        |
+| remove     | Full        | classList.remove() or DOM     |
+| set        | Full        | Property/attribute assignment |
+| put        | Full        | innerHTML/textContent         |
+| get        | Full        | Property access               |
+| if/else    | Full        | Direct JS conditionals        |
+| repeat     | Full        | for loop                      |
+| for each   | Full        | for...of loop                 |
+| while      | Full        | while loop                    |
+| wait       | Full        | setTimeout promise            |
+| fetch      | Full        | Native fetch API              |
+| send       | Full        | dispatchEvent                 |
+| trigger    | Full        | dispatchEvent                 |
+| call       | Full        | Function call                 |
+| return     | Full        | return statement              |
+| halt       | Full        | throw HALT                    |
+| exit       | Full        | throw EXIT                    |
+| log        | Full        | console.log                   |
+| throw      | Full        | throw Error                   |
+| try/catch  | Full        | try/catch block               |
+| async      | Full        | async/await                   |
+| settle     | Full        | Promise.allSettled            |
+| show/hide  | Full        | display style                 |
+| transition | Partial     | CSS transitions               |
+| measure    | Full        | getBoundingClientRect         |
+| go         | Full        | location/history              |
+| focus/blur | Full        | Element methods               |
+| scroll     | Full        | scrollIntoView                |
+| take       | Full        | classList manipulation        |
 
 ---
 
 ## Appendix B: Expression Support Matrix
 
-| Expression Type | AOT Support | Generated Code |
-|----------------|-------------|----------------|
-| Literals | Full | JSON.stringify |
-| Selectors (#id, .class) | Full | querySelector |
-| Context vars (me, you, it) | Full | _ctx.* access |
-| Local vars (:var) | Full | _ctx.locals.get/set |
-| Global vars (::var) | Full | _rt.globals.get/set |
-| Binary operators | Full | Native JS operators |
-| Possessive ('s) | Full | Property access |
-| Comparisons | Full | ===, !==, <, >, etc. |
-| contains/matches | Full | Runtime helper |
-| as conversion | Full | Type coercion |
-| first/last/random | Full | Array access |
-| closest/parent | Full | DOM traversal |
+| Expression Type            | AOT Support | Generated Code       |
+| -------------------------- | ----------- | -------------------- |
+| Literals                   | Full        | JSON.stringify       |
+| Selectors (#id, .class)    | Full        | querySelector        |
+| Context vars (me, you, it) | Full        | \_ctx.\* access      |
+| Local vars (:var)          | Full        | \_ctx.locals.get/set |
+| Global vars (::var)        | Full        | \_rt.globals.get/set |
+| Binary operators           | Full        | Native JS operators  |
+| Possessive ('s)            | Full        | Property access      |
+| Comparisons                | Full        | ===, !==, <, >, etc. |
+| contains/matches           | Full        | Runtime helper       |
+| as conversion              | Full        | Type coercion        |
+| first/last/random          | Full        | Array access         |
+| closest/parent             | Full        | DOM traversal        |
 
 ---
 
