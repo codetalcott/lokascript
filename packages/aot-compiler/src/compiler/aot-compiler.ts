@@ -152,21 +152,21 @@ export class AOTCompiler {
   parse(code: string, options: CompileOptions = {}): ASTNode | null {
     const { language = 'en', confidenceThreshold = 0.7, debug = false } = options;
 
+    let ast: ASTNode | null = null;
+
     // Try semantic parser for non-English
     if (language !== 'en' && this.semanticParser?.supportsLanguage(language)) {
       const result = this.semanticParser.analyze(code, language);
 
       if (result.node && result.confidence >= confidenceThreshold) {
-        const { ast, warnings } = this.semanticParser.buildAST(result.node);
+        const { ast: semanticAst, warnings } = this.semanticParser.buildAST(result.node);
 
         if (debug && warnings.length > 0) {
           console.log(`[aot] Semantic warnings for "${code}":`, warnings);
         }
 
-        return ast;
-      }
-
-      if (debug) {
+        ast = semanticAst;
+      } else if (debug) {
         console.log(
           `[aot] Semantic parse failed for "${code}": ${result.errors?.join(', ') || 'low confidence'}`
         );
@@ -174,20 +174,33 @@ export class AOTCompiler {
     }
 
     // Fall back to traditional parser
-    if (this.parser) {
+    if (!ast && this.parser) {
       try {
-        return this.parser.parse(code, language);
+        ast = this.parser.parse(code, language);
       } catch (error) {
         if (debug) {
           console.log(`[aot] Parse error for "${code}":`, error);
         }
-        return null;
       }
     }
 
     // No parser available - create a simple AST wrapper
-    // This allows the compiler to work without a full parser for testing
-    return this.createSimpleAST(code);
+    if (!ast) {
+      ast = this.createSimpleAST(code);
+    }
+
+    // Ensure top-level node is always an event handler.
+    // The codegen pipeline (EventHandlerCodegen) requires this.
+    if (ast && ast.type !== 'event') {
+      ast = {
+        type: 'event',
+        event: 'click',
+        modifiers: {},
+        body: [ast],
+      } as EventHandlerNode;
+    }
+
+    return ast;
   }
 
   /**
@@ -321,6 +334,9 @@ export class AOTCompiler {
     // Generate code
     const generated = this.generateCode(optimized, ctx, analysis);
 
+    // Merge codegen-reported imports with context-required helpers
+    const allHelpers = new Set([...ctx.requiredHelpers, ...generated.imports]);
+
     return {
       success: true,
       code: generated.code,
@@ -331,8 +347,8 @@ export class AOTCompiler {
         language: mergedOptions.language,
         commandsUsed: Array.from(analysis.commandsUsed),
         optimizationsApplied: (optimized as { _optimizations?: string[] })._optimizations ?? [],
-        needsRuntime: ctx.requiredHelpers.size > 0,
-        runtimeHelpers: Array.from(ctx.requiredHelpers),
+        needsRuntime: allHelpers.size > 0,
+        runtimeHelpers: Array.from(allHelpers),
       },
     };
   }
@@ -436,18 +452,19 @@ export class AOTCompiler {
     const codegenOptions = { ...DEFAULT_CODEGEN_OPTIONS, ...options.codegen };
     const lines: string[] = [];
 
+    // Ensure 'ready' is always included (binding code requires it)
+    const allImports = [...new Set([...imports, 'ready'])];
+
     // Import statement
-    if (imports.length > 0) {
-      const importList = imports.join(', ');
-      if (codegenOptions.mode === 'esm') {
-        lines.push(`import { ${importList} } from '${codegenOptions.runtimeImport}';`);
-      } else if (codegenOptions.mode === 'cjs') {
-        lines.push(`const { ${importList} } = require('${codegenOptions.runtimeImport}');`);
-      }
+    const importList = allImports.join(', ');
+    if (codegenOptions.mode === 'esm') {
+      lines.push(`import { ${importList} } from '${codegenOptions.runtimeImport}';`);
+    } else if (codegenOptions.mode === 'cjs') {
+      lines.push(`const { ${importList} } = require('${codegenOptions.runtimeImport}');`);
     }
 
     // Runtime alias
-    lines.push('const _rt = { ' + imports.map(i => `${i}: ${i}`).join(', ') + ' };');
+    lines.push('const _rt = { ' + allImports.map(i => `${i}: ${i}`).join(', ') + ' };');
     lines.push('');
 
     // Handler functions
@@ -637,6 +654,30 @@ export async function compileHyperscript(code: string, options?: CompileOptions)
   }
 
   return result.code ?? '';
+}
+
+/**
+ * Create an AOT compiler with both core and semantic parsers wired up.
+ * Dynamically imports @lokascript/core and @lokascript/semantic if available.
+ */
+export async function createMultilingualCompiler(): Promise<AOTCompiler> {
+  const compiler = new AOTCompiler();
+
+  try {
+    const { createCoreParserAdapter } = await import('./core-parser-adapter.js');
+    compiler.setParser(await createCoreParserAdapter());
+  } catch {
+    /* @lokascript/core not available */
+  }
+
+  try {
+    const { createSemanticAdapter } = await import('./semantic-adapter.js');
+    compiler.setSemanticParser(await createSemanticAdapter());
+  } catch {
+    /* @lokascript/semantic not available */
+  }
+
+  return compiler;
 }
 
 export default AOTCompiler;

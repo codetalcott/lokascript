@@ -27,9 +27,14 @@ export {
   AOTCompiler,
   createCompiler,
   compileHyperscript,
+  createMultilingualCompiler,
 } from './compiler/aot-compiler.js';
 
 export { Analyzer, analyze } from './compiler/analyzer.js';
+
+export { SemanticParserAdapter, createSemanticAdapter } from './compiler/semantic-adapter.js';
+
+export { CoreParserAdapter, createCoreParserAdapter } from './compiler/core-parser-adapter.js';
 
 export {
   OptimizationPipeline,
