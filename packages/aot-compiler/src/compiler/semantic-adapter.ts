@@ -168,7 +168,7 @@ export class SemanticParserAdapter {
  * 'contextReference', 'propertyAccess', etc. AOT expects 'event', 'command',
  * 'identifier', 'possessive'/'member', etc.
  */
-function convertSemanticASTToAOT(node: SemanticASTNodeLike): ASTNode {
+export function convertSemanticASTToAOT(node: SemanticASTNodeLike): ASTNode {
   if (!node) return { type: 'literal', value: null };
 
   switch (node.type) {
@@ -208,10 +208,9 @@ function convertSemanticASTToAOT(node: SemanticASTNodeLike): ASTNode {
       return convertCall(node);
     case 'unaryExpression':
       return {
-        type: 'binary',
+        type: 'unary',
         operator: node.operator as string,
-        left: { type: 'literal', value: 0 },
-        right: convertSemanticASTToAOT(node.operand as SemanticASTNodeLike),
+        operand: convertSemanticASTToAOT(node.operand as SemanticASTNodeLike),
       };
     case 'string':
       return { type: 'literal', value: node.value as string };
@@ -219,6 +218,14 @@ function convertSemanticASTToAOT(node: SemanticASTNodeLike): ASTNode {
       return { type: 'literal', value: node.value as number };
     case 'templateLiteral':
       return { type: 'literal', value: (node.raw ?? '') as string };
+    case 'variable':
+      return {
+        type: 'variable',
+        name: (node.name ?? '') as string,
+        scope: (node.scope ?? 'local') as 'local' | 'global' | 'element',
+      };
+    case 'htmlSelector':
+      return { type: 'selector', value: (node.value ?? node.selector ?? '') as string };
 
     default:
       // Attempt generic conversion for unknown types
@@ -232,9 +239,27 @@ function convertEventHandler(node: SemanticASTNodeLike): EventHandlerNode {
   const body = commands.map(cmd => convertSemanticASTToAOT(cmd));
 
   const modifiers: EventModifiers = {};
-  // Copy modifiers if present
-  if (node.selector) {
-    modifiers.from = node.selector as string;
+  // Extract event modifiers from flat properties
+  if (node.once) modifiers.once = true;
+  if (node.debounce) modifiers.debounce = node.debounce as number;
+  if (node.throttle) modifiers.throttle = node.throttle as number;
+  if (node.prevent) modifiers.prevent = true;
+  if (node.stop) modifiers.stop = true;
+  if (node.capture) modifiers.capture = true;
+  if (node.passive) modifiers.passive = true;
+  if (node.from) modifiers.from = node.from as string;
+  if (node.selector) modifiers.from = node.selector as string;
+  // Also check nested eventModifiers from semantic AST builder
+  const em = node.eventModifiers as Record<string, unknown> | undefined;
+  if (em) {
+    if (em.once) modifiers.once = true;
+    if (em.debounce) modifiers.debounce = em.debounce as number;
+    if (em.throttle) modifiers.throttle = em.throttle as number;
+    if (em.prevent) modifiers.prevent = true;
+    if (em.stop) modifiers.stop = true;
+    if (em.capture) modifiers.capture = true;
+    if (em.passive) modifiers.passive = true;
+    if (em.from) modifiers.from = em.from as string;
   }
 
   return {
@@ -248,8 +273,8 @@ function convertEventHandler(node: SemanticASTNodeLike): EventHandlerNode {
 function convertCommand(node: SemanticASTNodeLike): ASTNode {
   const name = node.name as string;
 
-  // Special handling for 'if' command from semantic builder
-  if (name === 'if') {
+  // Special handling for 'if' and 'unless' commands from semantic builder
+  if (name === 'if' || name === 'unless') {
     return convertIfCommand(node);
   }
 
@@ -290,12 +315,23 @@ function convertIfCommand(node: SemanticASTNodeLike): IfNode {
   const args = (node.args ?? []) as SemanticASTNodeLike[];
 
   // args[0] = condition, args[1] = then block, args[2] = else block (optional)
-  const condition = args[0] ? convertSemanticASTToAOT(args[0]) : { type: 'literal', value: true };
+  let condition: ASTNode = args[0]
+    ? convertSemanticASTToAOT(args[0])
+    : { type: 'literal', value: true };
   const thenBlock = args[1] as SemanticASTNodeLike | undefined;
   const elseBlock = args[2] as SemanticASTNodeLike | undefined;
 
   const thenBranch = extractBlockCommands(thenBlock);
   const elseBranch = elseBlock ? extractBlockCommands(elseBlock) : undefined;
+
+  // Handle 'unless' as negated 'if'
+  if ((node.name as string) === 'unless') {
+    condition = {
+      type: 'unary',
+      operator: 'not',
+      operand: condition,
+    };
+  }
 
   return {
     type: 'if',
@@ -356,10 +392,9 @@ function convertRepeatCommand(node: SemanticASTNodeLike): ASTNode {
       return {
         type: 'while',
         condition: {
-          type: 'binary',
+          type: 'unary',
           operator: 'not',
-          left: condition,
-          right: { type: 'literal', value: null },
+          operand: condition,
         },
         body: extractBlockCommands(bodyBlock),
       } as WhileNode;
@@ -456,9 +491,12 @@ function convertMember(node: SemanticASTNodeLike): ASTNode {
   const object = node.object
     ? convertSemanticASTToAOT(node.object as SemanticASTNodeLike)
     : { type: 'identifier', value: 'me' };
-  const property = node.property
-    ? convertSemanticASTToAOT(node.property as SemanticASTNodeLike)
-    : { type: 'literal', value: '' };
+  const property =
+    typeof node.property === 'string'
+      ? node.property
+      : node.property
+        ? convertSemanticASTToAOT(node.property as SemanticASTNodeLike)
+        : { type: 'literal', value: '' };
 
   return {
     type: 'member',
@@ -531,7 +569,7 @@ function extractBlockCommands(block: SemanticASTNodeLike | undefined): ASTNode[]
 
 /**
  * Create a SemanticParserAdapter by dynamically importing @lokascript/semantic.
- * Returns null if the package is not available.
+ * Throws if the package is not available.
  */
 export async function createSemanticAdapter(): Promise<SemanticParserAdapter> {
   const semantic = await import('@lokascript/semantic');

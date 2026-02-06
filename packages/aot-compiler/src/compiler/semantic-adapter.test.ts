@@ -6,60 +6,52 @@
  * to JavaScript through the full AOT pipeline.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { SemanticParserAdapter, createSemanticAdapter } from './semantic-adapter.js';
 import { AOTCompiler } from './aot-compiler.js';
 import type { ASTNode, EventHandlerNode, CommandNode } from '../types/aot-types.js';
 
 // =============================================================================
-// ADAPTER CREATION
+// ADAPTER CREATION (module-level for describe.runIf)
 // =============================================================================
 
 let adapter: SemanticParserAdapter;
 let adapterAvailable = false;
 
-beforeAll(async () => {
-  try {
-    adapter = await createSemanticAdapter();
-    adapterAvailable = true;
-  } catch {
-    // @lokascript/semantic not available — skip tests
-  }
-});
+try {
+  adapter = await createSemanticAdapter();
+  adapterAvailable = true;
+} catch {
+  // @lokascript/semantic not available — tests will be skipped
+}
 
 // =============================================================================
 // LANGUAGE SUPPORT
 // =============================================================================
 
-describe('SemanticParserAdapter', () => {
+describe.runIf(adapterAvailable)('SemanticParserAdapter', () => {
   describe('supportsLanguage()', () => {
     it('supports English', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('en')).toBe(true);
     });
 
     it('supports Japanese', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('ja')).toBe(true);
     });
 
     it('supports Korean', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('ko')).toBe(true);
     });
 
     it('supports Spanish', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('es')).toBe(true);
     });
 
     it('supports Arabic', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('ar')).toBe(true);
     });
 
     it('does not support invalid language', () => {
-      if (!adapterAvailable) return;
       expect(adapter.supportsLanguage('xx')).toBe(false);
     });
   });
@@ -70,16 +62,12 @@ describe('SemanticParserAdapter', () => {
 
   describe('analyze() + buildAST()', () => {
     it('analyzes English toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = adapter.analyze('toggle .active', 'en');
       expect(result.confidence).toBeGreaterThan(0);
       expect(result.node).toBeDefined();
     });
 
     it('builds AOT AST from semantic node', () => {
-      if (!adapterAvailable) return;
-
       const analyzeResult = adapter.analyze('toggle .active', 'en');
       if (!analyzeResult.node) throw new Error('Analyze returned no node');
 
@@ -90,8 +78,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('handles errors gracefully', () => {
-      if (!adapterAvailable) return;
-
       const result = adapter.analyze('xyzzy_not_valid_12345', 'en');
       // Should not throw, should return low confidence or errors
       expect(result.confidence).toBeLessThan(0.7);
@@ -111,37 +97,27 @@ describe('SemanticParserAdapter', () => {
     }
 
     it('converts toggle command', () => {
-      if (!adapterAvailable) return;
-
       const ast = parseCommand('toggle .active');
       // Should be a command with name 'toggle'
       expect(findCommand(ast, 'toggle')).toBeDefined();
     });
 
     it('converts add command', () => {
-      if (!adapterAvailable) return;
-
       const ast = parseCommand('add .clicked');
       expect(findCommand(ast, 'add')).toBeDefined();
     });
 
     it('converts remove command', () => {
-      if (!adapterAvailable) return;
-
       const ast = parseCommand('remove .hidden');
       expect(findCommand(ast, 'remove')).toBeDefined();
     });
 
     it('converts set command', () => {
-      if (!adapterAvailable) return;
-
       const ast = parseCommand('set :x to 10');
       expect(findCommand(ast, 'set')).toBeDefined();
     });
 
     it('converts show command (with target)', () => {
-      if (!adapterAvailable) return;
-
       // Bare "show" may not be recognized by semantic parser;
       // use "show #target" which has a patient role
       const result = adapter.analyze('show #dialog', 'en');
@@ -154,8 +130,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('converts hide command (with target)', () => {
-      if (!adapterAvailable) return;
-
       const result = adapter.analyze('hide #dialog', 'en');
       if (!result.node) {
         return;
@@ -178,8 +152,6 @@ describe('SemanticParserAdapter', () => {
     }
 
     it('converts basic click handler', () => {
-      if (!adapterAvailable) return;
-
       const ast = parseToEvent('on click toggle .active');
       const event = findEventHandler(ast);
       expect(event).toBeDefined();
@@ -191,8 +163,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('converts mouseenter handler', () => {
-      if (!adapterAvailable) return;
-
       const result = adapter.analyze('on mouseenter add .hovered', 'en');
       if (!result.node || result.confidence < 0.5) {
         // mouseenter may not be in the semantic parser's event list
@@ -227,8 +197,6 @@ describe('SemanticParserAdapter', () => {
     // ── Japanese (SOV) ──
 
     it('compiles Japanese toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('.active を 切り替え', 'ja');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -243,8 +211,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('compiles Japanese event handler', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('クリック で .active を 切り替え', 'ja');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -253,8 +219,6 @@ describe('SemanticParserAdapter', () => {
     // ── Korean (SOV) ──
 
     it('compiles Korean toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('.active 를 토글', 'ko');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -263,16 +227,12 @@ describe('SemanticParserAdapter', () => {
     // ── Spanish (SVO) ──
 
     it('compiles Spanish toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('alternar .active', 'es');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
     });
 
     it('compiles Spanish add command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('agregar .clicked', 'es');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -281,8 +241,6 @@ describe('SemanticParserAdapter', () => {
     // ── Arabic (VSO, RTL) ──
 
     it('compiles Arabic toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('بدّل .active', 'ar');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -291,8 +249,6 @@ describe('SemanticParserAdapter', () => {
     // ── Chinese (SVO) ──
 
     it('compiles Chinese toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('切换 .active', 'zh');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -301,8 +257,6 @@ describe('SemanticParserAdapter', () => {
     // ── German (SVO) ──
 
     it('compiles German toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('umschalten .active', 'de');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -311,8 +265,6 @@ describe('SemanticParserAdapter', () => {
     // ── French (SVO) ──
 
     it('compiles French toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('basculer .active', 'fr');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -321,8 +273,6 @@ describe('SemanticParserAdapter', () => {
     // ── Turkish (SOV) ──
 
     it('compiles Turkish toggle command', () => {
-      if (!adapterAvailable) return;
-
       // Turkish is SOV with known lower pass rates
       const result = compileMultilingual('.active değiştir', 'tr');
       // Accept either success or graceful failure
@@ -334,8 +284,6 @@ describe('SemanticParserAdapter', () => {
     // ── Portuguese (SVO) ──
 
     it('compiles Portuguese toggle command', () => {
-      if (!adapterAvailable) return;
-
       const result = compileMultilingual('alternar .active', 'pt');
       expect(result.success).toBe(true);
       expect(result.code).toBeDefined();
@@ -348,8 +296,6 @@ describe('SemanticParserAdapter', () => {
 
   describe('full pipeline: non-English → JavaScript', () => {
     it('Japanese toggle → JavaScript with classList.toggle', () => {
-      if (!adapterAvailable) return;
-
       const compiler = new AOTCompiler();
       compiler.setSemanticParser(adapter);
 
@@ -376,8 +322,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('Spanish add → JavaScript with classList.add', () => {
-      if (!adapterAvailable) return;
-
       const compiler = new AOTCompiler();
       compiler.setSemanticParser(adapter);
 
@@ -396,8 +340,6 @@ describe('SemanticParserAdapter', () => {
     });
 
     it('batch compile with mixed languages', () => {
-      if (!adapterAvailable) return;
-
       const compiler = new AOTCompiler();
       compiler.setSemanticParser(adapter);
 

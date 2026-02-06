@@ -107,6 +107,7 @@ export type {
   SelectorNode,
   VariableNode,
   BinaryExpressionNode,
+  UnaryExpressionNode,
   MemberExpressionNode,
   PossessiveNode,
   CallExpressionNode,

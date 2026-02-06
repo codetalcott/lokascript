@@ -128,10 +128,9 @@ export function convertCoreASTToAOT(node: CoreASTNode): ASTNode {
       return convertCall(node);
     case 'unaryExpression':
       return {
-        type: 'binary',
+        type: 'unary',
         operator: node.operator as string,
-        left: { type: 'literal', value: 0 },
-        right: convertCoreASTToAOT(node.operand as CoreASTNode),
+        operand: convertCoreASTToAOT(node.operand as CoreASTNode),
       };
     case 'timeExpression':
       return { type: 'literal', value: node.value as number };
@@ -247,10 +246,9 @@ function convertIfCommand(node: CoreASTNode): IfNode {
   // Handle 'unless' as negated 'if'
   if ((node.name as string) === 'unless') {
     condition = {
-      type: 'binary',
+      type: 'unary',
       operator: 'not',
-      left: condition,
-      right: { type: 'literal', value: null },
+      operand: condition,
     };
   }
 
@@ -356,9 +354,12 @@ function convertMember(node: CoreASTNode): ASTNode {
   const object = node.object
     ? convertCoreASTToAOT(node.object as CoreASTNode)
     : { type: 'identifier', value: 'me' };
-  const property = node.property
-    ? convertCoreASTToAOT(node.property as CoreASTNode)
-    : { type: 'literal', value: '' };
+  const property =
+    typeof node.property === 'string'
+      ? node.property
+      : node.property
+        ? convertCoreASTToAOT(node.property as CoreASTNode)
+        : { type: 'literal', value: '' };
 
   return {
     type: 'member',

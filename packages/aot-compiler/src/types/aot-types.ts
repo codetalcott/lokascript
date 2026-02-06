@@ -108,6 +108,12 @@ export interface BinaryExpressionNode extends ASTNode {
   right: ASTNode;
 }
 
+export interface UnaryExpressionNode extends ASTNode {
+  type: 'unary';
+  operator: string;
+  operand: ASTNode;
+}
+
 export interface MemberExpressionNode extends ASTNode {
   type: 'member';
   object: ASTNode;
