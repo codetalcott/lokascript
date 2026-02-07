@@ -11,6 +11,8 @@ import type {
   ValidationResponse,
   TranslateRequest,
   TranslateResponse,
+  TestRequest,
+  TestResponse,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
@@ -29,6 +31,9 @@ import {
   type AOTCompilerLike,
 } from './compile/bridge.js';
 import { SemanticCache, generateCacheKey } from './compile/cache.js';
+import { extractOperations } from './operations/extract.js';
+import { PlaywrightRenderer } from './renderers/playwright.js';
+import type { TestRenderer } from './renderers/types.js';
 
 // =============================================================================
 // Service
@@ -249,6 +254,98 @@ export class CompilationService {
         ],
       };
     }
+  }
+
+  /**
+   * Generate behavior-level tests from hyperscript.
+   *
+   * Parses the input, extracts abstract operations (what the behavior does),
+   * and renders them as test code in the requested framework.
+   */
+  generateTests(request: TestRequest): TestResponse {
+    const diagnostics: Diagnostic[] = [];
+
+    // Step 1: Normalize input to SemanticNode (reuse existing pipeline)
+    const normalized = normalize({
+      code: request.code,
+      explicit: request.explicit,
+      semantic: request.semantic,
+      language: request.language,
+      confidence: request.confidence,
+    });
+    diagnostics.push(...normalized.diagnostics);
+
+    if (!normalized.node) {
+      return { ok: false, tests: [], operations: [], diagnostics };
+    }
+
+    // Step 2: Validate
+    const threshold = request.confidence ?? this.confidenceThreshold;
+    const gateResult = runValidationGates(normalized.node, normalized.confidence, threshold);
+    diagnostics.push(...gateResult.diagnostics);
+
+    if (!gateResult.pass) {
+      return { ok: false, tests: [], operations: [], diagnostics };
+    }
+
+    // Step 3: Extract abstract operations
+    const spec = extractOperations(normalized.node);
+
+    if (spec.operations.length === 0) {
+      diagnostics.push({
+        severity: 'warning',
+        code: 'NO_OPERATIONS',
+        message: 'No testable operations extracted from the input.',
+      });
+      return { ok: false, tests: [], operations: [], diagnostics };
+    }
+
+    // Attach source hyperscript for test naming
+    if (!spec.source && request.code) {
+      spec.source = request.code;
+    }
+
+    // Step 4: Render tests
+    const renderer: TestRenderer = new PlaywrightRenderer();
+
+    // Optionally compile for 'compiled' execution mode
+    let compiledJs: string | undefined;
+    if (request.executionMode === 'compiled') {
+      const compileResult = this.compile({
+        code: request.code,
+        explicit: request.explicit,
+        semantic: request.semantic,
+        language: request.language,
+      });
+      if (compileResult.ok && compileResult.js) {
+        compiledJs = compileResult.js;
+      }
+    }
+
+    const generated = renderer.render(spec, {
+      testName: request.testName,
+      executionMode: request.executionMode,
+      bundlePath: request.bundlePath,
+      hyperscript: request.code ?? request.explicit,
+      compiledJs,
+    });
+
+    const semanticJSON = nodeToSemanticJSON(normalized.node);
+
+    return {
+      ok: true,
+      tests: [
+        {
+          name: generated.name,
+          code: generated.code,
+          html: generated.html,
+          framework: generated.framework,
+        },
+      ],
+      operations: spec.operations,
+      semantic: semanticJSON,
+      diagnostics,
+    };
   }
 
   /**

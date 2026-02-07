@@ -3,6 +3,7 @@
  *
  * Semantic compilation service for LokaScript.
  * Validates and compiles hyperscript from 24 languages, explicit syntax, or LLM JSON.
+ * Generates behavior-level tests from semantic analysis.
  */
 
 // Main service
@@ -15,6 +16,9 @@ export type {
   ValidationResponse,
   TranslateRequest,
   TranslateResponse,
+  TestRequest,
+  TestResponse,
+  GeneratedTestOutput,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
@@ -28,3 +32,32 @@ export { validateSemanticJSON, jsonToSemanticNode } from './input/json-schema.js
 
 // Cache (for custom configurations)
 export { SemanticCache, generateCacheKey } from './compile/cache.js';
+
+// Abstract operations (for custom renderers / Phase 3 codegen targets)
+export type {
+  AbstractOperation,
+  TargetRef,
+  BehaviorSpec,
+  ToggleClassOp,
+  AddClassOp,
+  RemoveClassOp,
+  SetContentOp,
+  AppendContentOp,
+  ShowOp,
+  HideOp,
+  SetVariableOp,
+  IncrementOp,
+  DecrementOp,
+  NavigateOp,
+  FetchOp,
+  WaitOp,
+  TriggerEventOp,
+  FocusOp,
+  BlurOp,
+  LogOp,
+} from './operations/types.js';
+export { extractOperations } from './operations/extract.js';
+
+// Test renderers
+export { PlaywrightRenderer } from './renderers/playwright.js';
+export type { TestRenderer, TestRenderOptions, GeneratedTest } from './renderers/types.js';

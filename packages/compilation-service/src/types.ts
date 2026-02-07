@@ -144,6 +144,66 @@ export interface Diagnostic {
 }
 
 // =============================================================================
+// Test Generation Types
+// =============================================================================
+
+/**
+ * Test generation request.
+ */
+export interface TestRequest {
+  /** Natural language hyperscript (requires `language`) */
+  code?: string;
+  /** Explicit syntax: [command role:value ...] */
+  explicit?: string;
+  /** LLM JSON — structured semantic representation */
+  semantic?: SemanticJSON;
+
+  /** ISO 639-1 language code (required for `code`, ignored for `explicit`/`semantic`) */
+  language?: string;
+  /** Minimum confidence for natural language parsing (default 0.7) */
+  confidence?: number;
+
+  /** Test framework to target (default 'playwright') */
+  framework?: 'playwright';
+  /** How to load hyperscript in the test (default 'runtime') */
+  executionMode?: 'runtime' | 'compiled';
+  /** Override auto-generated test name */
+  testName?: string;
+  /** Path to LokaScript bundle (runtime mode) */
+  bundlePath?: string;
+}
+
+/**
+ * Test generation response.
+ */
+export interface TestResponse {
+  /** Whether test generation succeeded */
+  ok: boolean;
+  /** Generated test files */
+  tests: GeneratedTestOutput[];
+  /** Raw abstract operations (for introspection) */
+  operations: import('./operations/types.js').AbstractOperation[];
+  /** Normalized semantic representation */
+  semantic?: SemanticJSON;
+  /** Diagnostics */
+  diagnostics: Diagnostic[];
+}
+
+/**
+ * A single generated test output.
+ */
+export interface GeneratedTestOutput {
+  /** Test name */
+  name: string;
+  /** Full test file content */
+  code: string;
+  /** HTML fixture */
+  html: string;
+  /** Target framework */
+  framework: string;
+}
+
+// =============================================================================
 // Service Configuration
 // =============================================================================
 
