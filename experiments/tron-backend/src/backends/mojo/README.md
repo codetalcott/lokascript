@@ -89,6 +89,7 @@ fn main() raises:
 ### ML/AI Integration
 
 Mojo's ML capabilities make it ideal for:
+
 - Semantic parsing with neural networks
 - Language detection models
 - AST optimization via learned heuristics
@@ -141,7 +142,7 @@ async function compileWithMojo(source: string): Promise<CompileResult> {
   return new Promise((resolve, reject) => {
     const proc = spawn('python', ['bridge.py', '--compile', source]);
     let output = '';
-    proc.stdout.on('data', (data) => output += data);
+    proc.stdout.on('data', data => (output += data));
     proc.on('close', () => resolve(JSON.parse(output)));
   });
 }
@@ -164,11 +165,13 @@ const response = await fetch('http://localhost:8080/compile', {
 ## Performance Considerations
 
 Mojo provides:
+
 - **Python compatibility**: Import and use Python libraries
 - **Systems performance**: Zero-cost abstractions, SIMD, parallelism
 - **ML optimizations**: First-class tensor support, autograd, GPU support
 
 Expected performance:
+
 - Encode latency: ~30μs (with SIMD)
 - Decode latency: ~15μs (zero-copy)
 - ML inference: Hardware-accelerated
@@ -176,6 +179,7 @@ Expected performance:
 ## Current Limitations
 
 As of early 2024, Mojo is still evolving:
+
 - Limited ecosystem compared to Python/Rust/Go
 - Requires Modular runtime
 - Some Python interop overhead for certain operations

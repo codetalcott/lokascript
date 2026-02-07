@@ -156,12 +156,14 @@ const result = backend.compile({ source: 'toggle .active' });
 ## Performance
 
 Native Rust with Lite³ FFI provides:
+
 - Zero-copy TRON encoding/decoding
 - SIMD acceleration (when available)
 - Memory-safe bindings
 - Async runtime integration
 
 Expected performance:
+
 - Encode latency: ~20μs (SIMD), ~50μs (scalar)
 - Decode latency: ~10μs (zero-copy)
 - Throughput: 50,000+ encodes/s
@@ -169,6 +171,7 @@ Expected performance:
 ## Safety
 
 The native FFI implementation uses:
+
 - Safe Rust wrappers around C FFI
 - Bounds checking on all buffer operations
 - Proper cleanup via Drop trait

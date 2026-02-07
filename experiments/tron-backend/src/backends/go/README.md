@@ -90,8 +90,8 @@ The Go adapter can be used from Node.js via:
 import ffi from 'ffi-napi';
 
 const lib = ffi.Library('./hyperfixi-tron.so', {
-  'Compile': ['string', ['string']],
-  'Execute': ['string', ['string', 'string']],
+  Compile: ['string', ['string']],
+  Execute: ['string', ['string', 'string']],
 });
 
 const result = lib.Compile(JSON.stringify({ source: 'toggle .active' }));
@@ -100,12 +100,14 @@ const result = lib.Compile(JSON.stringify({ source: 'toggle .active' }));
 ## Performance
 
 The Go adapter provides:
+
 - Native CGo bindings to Lite³ C library
 - Zero-allocation encoding path
 - Connection pooling for HTTP mode
 - Concurrent request handling
 
 Expected performance:
+
 - Encode latency: ~50μs
 - Decode latency: ~30μs
 - Compile throughput: 10,000+ req/s
