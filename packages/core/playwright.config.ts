@@ -55,12 +55,6 @@ export default defineConfig({
       timeout: 60000,
     },
     {
-      // Cookbook pattern validation (existing tag)
-      name: 'cookbook',
-      grep: /@cookbook/,
-      timeout: 60000,
-    },
-    {
       // Debug/diagnostic tests - only run explicitly
       name: 'debug',
       testDir: './src/compatibility/browser-tests/debug',
