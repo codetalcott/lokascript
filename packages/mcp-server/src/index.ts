@@ -22,6 +22,7 @@ import { validationTools, handleValidationTool } from './tools/validation.js';
 import { lspBridgeTools, handleLspBridgeTool } from './tools/lsp-bridge.js';
 import { languageDocsTools, handleLanguageDocsTool } from './tools/language-docs.js';
 import { profileTools, handleProfileTool } from './tools/profiles.js';
+import { compilationTools, handleCompilationTool } from './tools/compilation.js';
 
 // Resource implementations
 import { listResources, readResource } from './resources/index.js';
@@ -56,6 +57,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       ...lspBridgeTools,
       ...languageDocsTools,
       ...profileTools,
+      ...compilationTools,
     ],
   };
 });
@@ -120,6 +122,17 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     name === 'compare_language_profiles'
   ) {
     return handleProfileTool(name, args as Record<string, unknown>);
+  }
+
+  // Compilation service tools
+  if (
+    name === 'compile_hyperscript' ||
+    name === 'validate_and_compile' ||
+    name === 'translate_code' ||
+    name === 'generate_tests' ||
+    name === 'generate_component'
+  ) {
+    return handleCompilationTool(name, args as Record<string, unknown>);
   }
 
   // Pattern tools with get_ prefix (after LSP, language-docs, and profile tools to avoid conflict)

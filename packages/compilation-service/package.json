@@ -12,6 +12,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./http": {
+      "types": "./dist/http.d.ts",
+      "import": "./dist/http.js",
+      "require": "./dist/http.cjs"
     }
   },
   "files": [
@@ -26,7 +31,11 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "hono": "^4.11.7"
+  },
   "devDependencies": {
+    "@hono/node-server": "^1.13.0",
     "@lokascript/aot-compiler": "*",
     "@lokascript/semantic": "*",
     "@types/node": "^20.11.0",
@@ -52,7 +61,10 @@
     "compilation",
     "semantic",
     "multilingual",
-    "llm"
+    "llm",
+    "http",
+    "edge",
+    "react"
   ],
   "author": "LokaScript Contributors",
   "license": "MIT",

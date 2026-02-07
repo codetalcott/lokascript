@@ -204,6 +204,59 @@ export interface GeneratedTestOutput {
 }
 
 // =============================================================================
+// Component Generation Types
+// =============================================================================
+
+/**
+ * Component generation request.
+ */
+export interface ComponentRequest {
+  /** Natural language hyperscript (requires `language`) */
+  code?: string;
+  /** Explicit syntax: [command role:value ...] */
+  explicit?: string;
+  /** LLM JSON — structured semantic representation */
+  semantic?: SemanticJSON;
+
+  /** ISO 639-1 language code (required for `code`) */
+  language?: string;
+  /** Minimum confidence for natural language parsing (default 0.7) */
+  confidence?: number;
+
+  /** Target framework (default 'react') */
+  framework?: 'react';
+  /** Override auto-generated component name */
+  componentName?: string;
+  /** TypeScript output (default true) */
+  typescript?: boolean;
+}
+
+/**
+ * Component generation response.
+ */
+export interface ComponentResponse {
+  /** Whether generation succeeded */
+  ok: boolean;
+  /** Generated component */
+  component?: {
+    /** Component name */
+    name: string;
+    /** Full component file content */
+    code: string;
+    /** React hooks used */
+    hooks: string[];
+    /** Target framework */
+    framework: string;
+  };
+  /** Raw abstract operations (for introspection) */
+  operations: import('./operations/types.js').AbstractOperation[];
+  /** Normalized semantic representation */
+  semantic?: SemanticJSON;
+  /** Diagnostics */
+  diagnostics: Diagnostic[];
+}
+
+// =============================================================================
 // Service Configuration
 // =============================================================================
 

@@ -4,6 +4,7 @@
  * Semantic compilation service for LokaScript.
  * Validates and compiles hyperscript from 24 languages, explicit syntax, or LLM JSON.
  * Generates behavior-level tests from semantic analysis.
+ * Generates React components from abstract operations.
  */
 
 // Main service
@@ -19,6 +20,8 @@ export type {
   TestRequest,
   TestResponse,
   GeneratedTestOutput,
+  ComponentRequest,
+  ComponentResponse,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
@@ -61,3 +64,11 @@ export { extractOperations } from './operations/extract.js';
 // Test renderers
 export { PlaywrightRenderer } from './renderers/playwright.js';
 export type { TestRenderer, TestRenderOptions, GeneratedTest } from './renderers/types.js';
+
+// Component renderers
+export { ReactRenderer } from './renderers/react.js';
+export type {
+  ComponentRenderer,
+  ComponentRenderOptions,
+  GeneratedComponent,
+} from './renderers/component-types.js';

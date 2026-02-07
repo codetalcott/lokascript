@@ -35,15 +35,20 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.0",
+    "@lokascript/compilation-service": "*",
     "@lokascript/semantic": "*",
     "@lokascript/patterns-reference": "*"
   },
   "peerDependencies": {
+    "@lokascript/compilation-service": "*",
     "@lokascript/core": "*",
     "@lokascript/patterns-reference": "*",
     "@lokascript/semantic": "*"
   },
   "peerDependenciesMeta": {
+    "@lokascript/compilation-service": {
+      "optional": true
+    },
     "@lokascript/core": {
       "optional": true
     },
@@ -55,6 +60,7 @@
     }
   },
   "devDependencies": {
+    "@lokascript/compilation-service": "*",
     "@lokascript/core": "*",
     "@lokascript/patterns-reference": "*",
     "@lokascript/semantic": "*",

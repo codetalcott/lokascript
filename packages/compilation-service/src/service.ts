@@ -13,6 +13,8 @@ import type {
   TranslateResponse,
   TestRequest,
   TestResponse,
+  ComponentRequest,
+  ComponentResponse,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
@@ -33,7 +35,9 @@ import {
 import { SemanticCache, generateCacheKey } from './compile/cache.js';
 import { extractOperations } from './operations/extract.js';
 import { PlaywrightRenderer } from './renderers/playwright.js';
+import { ReactRenderer } from './renderers/react.js';
 import type { TestRenderer } from './renderers/types.js';
+import type { ComponentRenderer } from './renderers/component-types.js';
 
 // =============================================================================
 // Service
@@ -342,6 +346,77 @@ export class CompilationService {
           framework: generated.framework,
         },
       ],
+      operations: spec.operations,
+      semantic: semanticJSON,
+      diagnostics,
+    };
+  }
+
+  /**
+   * Generate a React component from hyperscript.
+   *
+   * Parses the input, extracts abstract operations, and renders
+   * them as a React functional component with hooks.
+   */
+  generateComponent(request: ComponentRequest): ComponentResponse {
+    const diagnostics: Diagnostic[] = [];
+
+    // Step 1: Normalize input to SemanticNode
+    const normalized = normalize({
+      code: request.code,
+      explicit: request.explicit,
+      semantic: request.semantic,
+      language: request.language,
+      confidence: request.confidence,
+    });
+    diagnostics.push(...normalized.diagnostics);
+
+    if (!normalized.node) {
+      return { ok: false, operations: [], diagnostics };
+    }
+
+    // Step 2: Validate
+    const threshold = request.confidence ?? this.confidenceThreshold;
+    const gateResult = runValidationGates(normalized.node, normalized.confidence, threshold);
+    diagnostics.push(...gateResult.diagnostics);
+
+    if (!gateResult.pass) {
+      return { ok: false, operations: [], diagnostics };
+    }
+
+    // Step 3: Extract abstract operations
+    const spec = extractOperations(normalized.node);
+
+    if (spec.operations.length === 0) {
+      diagnostics.push({
+        severity: 'warning',
+        code: 'NO_OPERATIONS',
+        message: 'No operations extracted from the input.',
+      });
+      return { ok: false, operations: [], diagnostics };
+    }
+
+    if (!spec.source && request.code) {
+      spec.source = request.code;
+    }
+
+    // Step 4: Render component
+    const renderer: ComponentRenderer = new ReactRenderer();
+    const generated = renderer.render(spec, {
+      componentName: request.componentName,
+      typescript: request.typescript,
+    });
+
+    const semanticJSON = nodeToSemanticJSON(normalized.node);
+
+    return {
+      ok: true,
+      component: {
+        name: generated.name,
+        code: generated.code,
+        hooks: generated.hooks,
+        framework: generated.framework,
+      },
       operations: spec.operations,
       semantic: semanticJSON,
       diagnostics,
