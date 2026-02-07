@@ -162,18 +162,16 @@ The key architectural unlock is abstracting the codegen target. Right now the 45
 - Zero changes to existing 45 JS codegens or 533 AOT tests
 - Next: Phase 3 adds new renderers (React, Vue, Svelte) on the same `AbstractOperation` layer
 
-### Phase 3: Cross-Framework Codegen
+### Phase 3: Cross-Framework Codegen + HTTP + MCP — DONE (a98e2dec)
 
-Pluggable framework targets (#1)
+`@lokascript/compilation-service` — 122 tests (78 existing + 30 React + 14 HTTP).
+`@lokascript/mcp-server` — 260 tests (244 existing + 16 compilation).
 
-With the abstract operation layer from Phase 2, adding React/Vue/Svelte/Alpine targets becomes "just" writing new renderers. The semantic roles map naturally to framework idioms:
-
-Role React Vue Svelte
-patient:.active useState toggle ref toggle class:active
-destination:#el useRef template ref bind:this
-trigger:click onClick @click on:click
-source:/api useEffect + fetch onMounted + fetch onMount + fetch
-Why third: This is where the architecture pays off. Each new framework target is incremental effort, not a rewrite. And it repositions LokaScript from "hyperscript runtime" to "universal behavior language with compilation targets."
+- **React Component Renderer**: `ReactRenderer` maps 17 AbstractOperation types to React hooks (useState, useRef, useCallback) + JSX. `ComponentRenderer` interface parallel to `TestRenderer`. `generateComponent()` on CompilationService.
+- **HTTP/Edge Wrapper**: Hono server with 7 endpoints (compile, validate, translate, generate-tests, generate-component, cache stats/clear). Optional API key auth, CORS, lazy service init. Separate `./http` entry point.
+- **MCP Compilation Tools**: 5 tools (compile_hyperscript, validate_and_compile, translate_code, generate_tests, generate_component) wired into existing MCP server.
+- Proves the AbstractOperation layer works for both test assertions and component codegen — Vue/Svelte renderers are now incremental.
+- Next: Vue/Svelte renderers, progressive enhancement (#4), semantic diffing (#5)
 
 ### Phase 4 (optional, builds on #3): Semantic Diffing + Progressive Enhancement
 
@@ -187,4 +185,4 @@ Developers write behavior in their native language
 LLMs generate reliable structured output (not fragile syntax)
 The compiler validates, optimizes, and emits to whatever target the project uses
 Tests are generated automatically from the semantic understanding
-Phase 1 proves the pipeline. Phase 2 proves the abstraction. Phase 3 is the payoff.
+Phase 1 proves the pipeline. Phase 2 proves the abstraction. Phase 3 is the payoff — all three are done.
