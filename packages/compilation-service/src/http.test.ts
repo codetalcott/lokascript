@@ -22,12 +22,16 @@ beforeAll(async () => {
 // =============================================================================
 
 describe('GET /health', () => {
-  it('returns ok and version', async () => {
+  it('returns ok, version, ready, uptime, and cache stats', async () => {
     const res = await app.request('/health');
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.version).toBeDefined();
+    expect(body.ready).toBe(true);
+    expect(body.uptime).toBeGreaterThan(0);
+    expect(body.cache).toHaveProperty('size');
+    expect(body.cache).toHaveProperty('hits');
   });
 });
 
@@ -155,6 +159,61 @@ describe('POST /generate-component', () => {
 });
 
 // =============================================================================
+// Diff
+// =============================================================================
+
+describe('POST /diff', () => {
+  it('reports identical for same input', async () => {
+    const res = await app.request('/diff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        a: { explicit: '[toggle patient:.active]' },
+        b: { explicit: '[toggle patient:.active]' },
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.identical).toBe(true);
+    expect(body.summary).toBe('No semantic change');
+  });
+
+  it('detects differences', async () => {
+    const res = await app.request('/diff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        a: { explicit: '[toggle patient:.active]' },
+        b: { explicit: '[add patient:.highlight]' },
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.identical).toBe(false);
+    expect(body.operations.length).toBeGreaterThan(0);
+  });
+
+  it('returns 422 for invalid input', async () => {
+    const res = await app.request('/diff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        a: { code: 'xyzzy blorp', language: 'en', confidence: 0.9 },
+        b: { explicit: '[toggle patient:.active]' },
+      }),
+    });
+
+    // Parse failure on side a should cause ok: false
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+  });
+});
+
+// =============================================================================
 // Cache
 // =============================================================================
 
@@ -192,6 +251,54 @@ describe('Error handling', () => {
     const body = await res.json();
     expect(body.ok).toBe(false);
     expect(body.diagnostics).toBeDefined();
+  });
+});
+
+// =============================================================================
+// API Key Auth
+// =============================================================================
+
+// =============================================================================
+// Production Middleware
+// =============================================================================
+
+describe('Production middleware', () => {
+  let prodApp: Hono;
+
+  beforeAll(async () => {
+    const service = await CompilationService.create();
+    prodApp = createApp({ service, production: true, maxBodyBytes: 100 });
+  }, 30000);
+
+  it('rejects oversized payloads with 413', async () => {
+    const largeBody = JSON.stringify({ code: 'x'.repeat(200), language: 'en' });
+    const res = await prodApp.request('/compile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(Buffer.byteLength(largeBody)),
+      },
+      body: largeBody,
+    });
+
+    expect(res.status).toBe(413);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.diagnostics[0].code).toBe('PAYLOAD_TOO_LARGE');
+  });
+
+  it('allows normal-sized payloads', async () => {
+    const smallBody = JSON.stringify({ explicit: '[toggle patient:.active]' });
+    const res = await prodApp.request('/compile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(Buffer.byteLength(smallBody)),
+      },
+      body: smallBody,
+    });
+
+    expect(res.status).toBe(200);
   });
 });
 

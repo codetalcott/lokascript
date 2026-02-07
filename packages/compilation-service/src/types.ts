@@ -257,6 +257,19 @@ export interface ComponentResponse {
 }
 
 // =============================================================================
+// Diff Types
+// =============================================================================
+
+export type {
+  DiffInput,
+  DiffRequest,
+  DiffResponse,
+  TriggerDiff,
+  OperationDiff,
+  OperationChangeKind,
+} from './diff/types.js';
+
+// =============================================================================
 // Service Configuration
 // =============================================================================
 

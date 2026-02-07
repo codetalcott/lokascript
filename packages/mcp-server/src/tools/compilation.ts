@@ -126,6 +126,38 @@ export const compilationTools: Tool[] = [
       },
     },
   },
+  {
+    name: 'diff_behaviors',
+    description:
+      'Compare two hyperscript inputs at the behavior level. Returns whether they are semantically identical, trigger diffs, and per-operation diffs. Works across languages and input formats.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        a: {
+          type: 'object',
+          description: 'First input (code, explicit, or semantic)',
+          properties: {
+            code: { type: 'string' },
+            explicit: { type: 'string' },
+            semantic: { type: 'object' },
+            language: { type: 'string' },
+          },
+        },
+        b: {
+          type: 'object',
+          description: 'Second input (code, explicit, or semantic)',
+          properties: {
+            code: { type: 'string' },
+            explicit: { type: 'string' },
+            semantic: { type: 'object' },
+            language: { type: 'string' },
+          },
+        },
+        confidence: { type: 'number', description: 'Minimum confidence threshold' },
+      },
+      required: ['a', 'b'],
+    },
+  },
 ];
 
 // =============================================================================
@@ -203,6 +235,18 @@ export async function handleCompilationTool(
           language: args.language as string | undefined,
           componentName: args.componentName as string | undefined,
           typescript: args.typescript as boolean | undefined,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+          isError: !result.ok,
+        };
+      }
+
+      case 'diff_behaviors': {
+        const result = service.diff({
+          a: args.a as any,
+          b: args.b as any,
+          confidence: args.confidence as number | undefined,
         });
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

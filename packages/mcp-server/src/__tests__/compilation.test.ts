@@ -12,8 +12,8 @@ import { compilationTools, handleCompilationTool } from '../tools/compilation.js
 // =============================================================================
 
 describe('compilationTools', () => {
-  it('exports 5 tools', () => {
-    expect(compilationTools).toHaveLength(5);
+  it('exports 6 tools', () => {
+    expect(compilationTools).toHaveLength(6);
   });
 
   it('has compile_hyperscript tool', () => {
@@ -43,6 +43,13 @@ describe('compilationTools', () => {
   it('has generate_component tool', () => {
     const tool = compilationTools.find(t => t.name === 'generate_component');
     expect(tool).toBeDefined();
+  });
+
+  it('has diff_behaviors tool with required params', () => {
+    const tool = compilationTools.find(t => t.name === 'diff_behaviors');
+    expect(tool).toBeDefined();
+    expect(tool?.inputSchema.required).toContain('a');
+    expect(tool?.inputSchema.required).toContain('b');
   });
 });
 
@@ -148,6 +155,42 @@ describe('generate_component', () => {
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.ok).toBe(true);
     expect(parsed.component.name).toBe('MyToggle');
+  }, 30000);
+});
+
+describe('diff_behaviors', () => {
+  it('reports identical for same input', async () => {
+    const result = await handleCompilationTool('diff_behaviors', {
+      a: { explicit: '[toggle patient:.active]' },
+      b: { explicit: '[toggle patient:.active]' },
+    });
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.identical).toBe(true);
+    expect(parsed.summary).toBe('No semantic change');
+  }, 30000);
+
+  it('detects differences', async () => {
+    const result = await handleCompilationTool('diff_behaviors', {
+      a: { explicit: '[toggle patient:.active]' },
+      b: { explicit: '[add patient:.highlight]' },
+    });
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.identical).toBe(false);
+    expect(parsed.operations.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('returns error for invalid input', async () => {
+    const result = await handleCompilationTool('diff_behaviors', {
+      a: { code: 'xyzzy blorp', language: 'en', confidence: 0.9 },
+      b: { explicit: '[toggle patient:.active]' },
+    });
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.ok).toBe(false);
   }, 30000);
 });
 

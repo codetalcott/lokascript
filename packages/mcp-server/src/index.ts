@@ -130,7 +130,8 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     name === 'validate_and_compile' ||
     name === 'translate_code' ||
     name === 'generate_tests' ||
-    name === 'generate_component'
+    name === 'generate_component' ||
+    name === 'diff_behaviors'
   ) {
     return handleCompilationTool(name, args as Record<string, unknown>);
   }

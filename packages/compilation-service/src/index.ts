@@ -22,6 +22,12 @@ export type {
   GeneratedTestOutput,
   ComponentRequest,
   ComponentResponse,
+  DiffRequest,
+  DiffResponse,
+  DiffInput,
+  TriggerDiff,
+  OperationDiff,
+  OperationChangeKind,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
@@ -60,6 +66,9 @@ export type {
   LogOp,
 } from './operations/types.js';
 export { extractOperations } from './operations/extract.js';
+
+// Diff engine (for custom pipelines)
+export { diffBehaviors, canonicalizeOp } from './diff/diff.js';
 
 // Test renderers
 export { PlaywrightRenderer } from './renderers/playwright.js';

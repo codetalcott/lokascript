@@ -16,7 +16,16 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { CompilationService } from './service.js';
-import type { CompileRequest, TranslateRequest, TestRequest, ComponentRequest } from './types.js';
+import type {
+  CompileRequest,
+  TranslateRequest,
+  TestRequest,
+  ComponentRequest,
+  DiffRequest,
+} from './types.js';
+import { bodyLimit } from './middleware/body-limit.js';
+import { timeout } from './middleware/timeout.js';
+import { structuredLogger } from './middleware/logger.js';
 
 // =============================================================================
 // Types
@@ -31,6 +40,12 @@ export interface HttpOptions {
   port?: number;
   /** Pre-created service instance (skips lazy init) */
   service?: CompilationService;
+  /** Enable production middleware (body limit, timeout, logger) */
+  production?: boolean;
+  /** Max request body in bytes (default 50KB, requires production: true) */
+  maxBodyBytes?: number;
+  /** Request timeout in ms (default 10000, requires production: true) */
+  timeoutMs?: number;
 }
 
 // =============================================================================
@@ -63,6 +78,13 @@ export function createApp(options: HttpOptions = {}): Hono {
 
   app.use('*', cors({ origin: options.corsOrigin ?? '*' }));
 
+  // Production middleware (body limit, timeout, structured logging)
+  if (options.production) {
+    app.use('*', bodyLimit(options.maxBodyBytes));
+    app.use('*', timeout(options.timeoutMs));
+    app.use('*', structuredLogger());
+  }
+
   // API key auth (optional)
   if (options.apiKey) {
     app.use('*', async (c, next) => {
@@ -80,8 +102,13 @@ export function createApp(options: HttpOptions = {}): Hono {
 
   // --- Routes ---
 
-  app.get('/health', c => {
-    return c.json({ ok: true, version: '1.3.0' });
+  app.get('/health', async c => {
+    const ready = service !== null;
+    const base = { ok: true, version: '1.4.0', ready, uptime: process.uptime() };
+    if (ready) {
+      return c.json({ ...base, cache: service!.getCacheStats() });
+    }
+    return c.json(base);
   });
 
   app.post('/compile', async c => {
@@ -116,6 +143,13 @@ export function createApp(options: HttpOptions = {}): Hono {
     const svc = await getService();
     const body = await c.req.json<ComponentRequest>();
     const result = svc.generateComponent(body);
+    return c.json(result, result.ok ? 200 : 422);
+  });
+
+  app.post('/diff', async c => {
+    const svc = await getService();
+    const body = await c.req.json<DiffRequest>();
+    const result = svc.diff(body);
     return c.json(result, result.ok ? 200 : 422);
   });
 

@@ -15,11 +15,14 @@ import type {
   TestResponse,
   ComponentRequest,
   ComponentResponse,
+  DiffRequest,
+  DiffResponse,
   ServiceOptions,
   SemanticJSON,
   SemanticJSONValue,
   Diagnostic,
 } from './types.js';
+import { diffBehaviors } from './diff/diff.js';
 import { normalize, initNormalizer } from './input/normalize.js';
 import {
   runValidationGates,
@@ -419,6 +422,81 @@ export class CompilationService {
       },
       operations: spec.operations,
       semantic: semanticJSON,
+      diagnostics,
+    };
+  }
+
+  /**
+   * Compare two hyperscript inputs at the behavior level.
+   *
+   * Both sides are independently normalized and validated, then compared
+   * as abstract operations. Same behavior in different languages → identical.
+   */
+  diff(request: DiffRequest): DiffResponse {
+    const diagnostics: Diagnostic[] = [];
+    const threshold = request.confidence ?? this.confidenceThreshold;
+
+    // Normalize both sides independently
+    const normA = normalize({
+      code: request.a.code,
+      explicit: request.a.explicit,
+      semantic: request.a.semantic,
+      language: request.a.language,
+      confidence: request.confidence,
+    });
+    diagnostics.push(...normA.diagnostics.map(d => ({ ...d, message: `[a] ${d.message}` })));
+
+    const normB = normalize({
+      code: request.b.code,
+      explicit: request.b.explicit,
+      semantic: request.b.semantic,
+      language: request.b.language,
+      confidence: request.confidence,
+    });
+    diagnostics.push(...normB.diagnostics.map(d => ({ ...d, message: `[b] ${d.message}` })));
+
+    if (!normA.node || !normB.node) {
+      return {
+        ok: false,
+        identical: false,
+        trigger: null,
+        operations: [],
+        summary: 'Parse failed',
+        diagnostics,
+      };
+    }
+
+    // Validate both sides
+    const gateA = runValidationGates(normA.node, normA.confidence, threshold);
+    diagnostics.push(...gateA.diagnostics.map(d => ({ ...d, message: `[a] ${d.message}` })));
+
+    const gateB = runValidationGates(normB.node, normB.confidence, threshold);
+    diagnostics.push(...gateB.diagnostics.map(d => ({ ...d, message: `[b] ${d.message}` })));
+
+    if (!gateA.pass || !gateB.pass) {
+      return {
+        ok: false,
+        identical: false,
+        trigger: null,
+        operations: [],
+        summary: 'Validation failed',
+        diagnostics,
+      };
+    }
+
+    // Extract operations from both
+    const specA = extractOperations(normA.node);
+    const specB = extractOperations(normB.node);
+
+    // Diff
+    const result = diffBehaviors(specA, specB);
+
+    return {
+      ok: true,
+      identical: result.identical,
+      trigger: result.trigger,
+      operations: result.operations,
+      summary: result.summary,
       diagnostics,
     };
   }
