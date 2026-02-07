@@ -48,9 +48,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '24'
           cache: 'npm'
+
+      - name: Verify npm version
+        run: |
+          echo "Node: $(node --version)"
+          echo "npm: $(npm --version)"
+          # OIDC trusted publishing requires npm >= 11.5.1
+          NPM_MAJOR=$(npm --version | cut -d. -f1)
+          NPM_MINOR=$(npm --version | cut -d. -f2)
+          if [ "$NPM_MAJOR" -lt 11 ] || { [ "$NPM_MAJOR" -eq 11 ] && [ "$NPM_MINOR" -lt 5 ]; }; then
+            echo "::error::npm >= 11.5.1 required for OIDC trusted publishing"
+            exit 1
+          fi
+          echo "✅ npm version OK for OIDC trusted publishing"
 
       - name: Configure Git
         run: |
