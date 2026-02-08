@@ -81,6 +81,32 @@ export interface ReturnSignal {
 export type ExecutionResult<T> = Result<T, ExecutionSignal>;
 
 /**
+ * Error subtype carrying control-flow signal properties.
+ * Used to bridge exception-based control flow (legacy) with typed signal handling.
+ * Commands like halt, exit, break, continue, return throw these.
+ */
+export interface ControlFlowError extends Error {
+  isHalt?: true;
+  isExit?: true;
+  isBreak?: true;
+  isContinue?: true;
+  isReturn?: true;
+  returnValue?: unknown;
+}
+
+/**
+ * Type guard to narrow an unknown error to ControlFlowError.
+ * Checks for any of the 5 signal properties on an Error instance.
+ */
+export function asControlFlowError(e: unknown): ControlFlowError | null {
+  if (!(e instanceof Error)) return null;
+  if ('isHalt' in e || 'isExit' in e || 'isBreak' in e || 'isContinue' in e || 'isReturn' in e) {
+    return e as ControlFlowError;
+  }
+  return null;
+}
+
+/**
  * Result type for operations that can fail with an error.
  * Distinct from ExecutionResult which handles control flow.
  */

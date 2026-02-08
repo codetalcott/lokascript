@@ -177,10 +177,10 @@ export class CommandAdapterV2 implements RuntimeCommand {
    */
   async execute(context: ExecutionContext, ...args: unknown[]): Promise<unknown> {
     // Extract modifiers for hook context
-    const rawInput = args[0] as any;
+    const rawInput = args[0] as Record<string, unknown> | undefined;
     const modifiers: Record<string, unknown> =
       rawInput && typeof rawInput === 'object' && 'modifiers' in rawInput
-        ? rawInput.modifiers || {}
+        ? (rawInput.modifiers as Record<string, unknown>) || {}
         : {};
 
     // Create hook context
@@ -223,7 +223,8 @@ export class CommandAdapterV2 implements RuntimeCommand {
         ) {
           // Check when/where conditional modifiers before execution
           // Both 'when' and 'where' are treated as identical conditional guards
-          const whenCondition = rawInput.modifiers?.when || rawInput.modifiers?.where;
+          const mods = rawInput.modifiers as Record<string, unknown> | undefined;
+          const whenCondition = (mods?.when || mods?.where) as ASTNode | undefined;
           if (whenCondition) {
             const conditionResult = await this.expressionEvaluator.evaluate(whenCondition, context);
             if (!conditionResult) {
@@ -237,10 +238,10 @@ export class CommandAdapterV2 implements RuntimeCommand {
           // Raw AST input - pass to parseInput()
           parsedInput = await this.impl.parseInput(
             {
-              args: rawInput.args || [],
-              modifiers: rawInput.modifiers || {},
+              args: (rawInput.args as ASTNode[]) || [],
+              modifiers: mods || {},
               // Pass command name for consolidated commands (e.g., show/hide → VisibilityCommand)
-              commandName: rawInput.commandName,
+              commandName: rawInput.commandName as string | undefined,
             },
             this.expressionEvaluator,
             context
@@ -267,7 +268,9 @@ export class CommandAdapterV2 implements RuntimeCommand {
         result = await this.impl.execute(parsedInput, typedContext);
       } else {
         // Legacy signature: execute(context, ...args)
-        result = await (this.impl.execute as any)(typedContext, ...parsedInput);
+        result = await (
+          this.impl.execute as (ctx: TypedExecutionContext, ...rest: unknown[]) => Promise<unknown>
+        )(typedContext, ...parsedInput);
       }
 
       debug.command(`CommandAdapterV2: Command result:`, result);

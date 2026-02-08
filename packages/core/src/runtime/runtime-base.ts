@@ -6,12 +6,12 @@
 
 import type { ASTNode, ExecutionContext, CommandNode, EventHandlerNode } from '../types/base-types';
 
-import type { ExecutionResult, ExecutionSignal } from '../types/result';
+import type { ExecutionResult, ExecutionSignal, ControlFlowError } from '../types/result';
 
 import type { RuntimeHooks } from '../types/hooks';
 import { HookRegistry } from '../types/hooks';
 
-import { ok, err, isOk } from '../types/result';
+import { ok, err, isOk, asControlFlowError } from '../types/result';
 
 import { BaseExpressionEvaluator } from '../core/base-expression-evaluator';
 
@@ -35,15 +35,10 @@ function signalToError(signal: ExecutionSignal): Error {
  * Check if an error is a control-flow signal (halt, exit, break, continue, return).
  * These are expected signals used for flow control, not actual errors.
  */
-export function isControlFlowError(e: unknown): boolean {
+export function isControlFlowError(e: unknown): e is ControlFlowError {
   if (!(e instanceof Error)) return false;
-  const err = e as any;
   return (
-    err.isHalt === true ||
-    err.isExit === true ||
-    err.isBreak === true ||
-    err.isContinue === true ||
-    err.isReturn === true ||
+    asControlFlowError(e) !== null ||
     e.message === 'HALT_EXECUTION' ||
     e.message === 'EXIT_COMMAND' ||
     e.message === 'EXIT_EXECUTION'
@@ -73,53 +68,69 @@ import {
 export function unwrapCommandResult(result: unknown): unknown | undefined {
   if (result === undefined) return undefined;
 
-  let val = result;
+  let val: unknown = result;
   if (val && typeof val === 'object') {
-    const valObj = val as any;
+    const obj = val as Record<string, unknown>;
 
     // CallCommand returns { result, wasAsync }
-    if ('result' in valObj && 'wasAsync' in valObj) {
-      val = valObj.result;
+    if ('result' in obj && 'wasAsync' in obj) {
+      val = obj.result;
     }
     // JsCommand returns { result, executed, codeLength, parameters, preserveArrayResult }
-    else if ('result' in valObj && 'executed' in valObj) {
-      val = valObj.result;
+    else if ('result' in obj && 'executed' in obj) {
+      val = obj.result;
       // JsCommand sets preserveArrayResult to skip array unwrapping
-      if (valObj.preserveArrayResult) {
+      if (obj.preserveArrayResult) {
         return val !== undefined ? val : undefined;
       }
     }
     // RepeatCommand/IfCommand returns { type, lastResult }
-    else if ('lastResult' in valObj && 'type' in valObj) {
-      val = valObj.lastResult;
+    else if ('lastResult' in obj && 'type' in obj) {
+      val = obj.lastResult;
     }
     // IfCommand returns { conditionResult, executedBranch, result }
     // Don't clobber context.result with if command metadata
-    else if ('conditionResult' in valObj && 'executedBranch' in valObj) {
-      if (valObj.result !== undefined) {
-        val = valObj.result;
+    else if ('conditionResult' in obj && 'executedBranch' in obj) {
+      if (obj.result !== undefined) {
+        val = obj.result;
       } else {
         return undefined; // don't update context
       }
     }
     // GetCommand returns { value }
-    else if ('value' in valObj && Object.keys(valObj).length === 1) {
-      val = valObj.value;
+    else if ('value' in obj && Object.keys(obj).length === 1) {
+      val = obj.value;
     }
     // SetCommand returns { target, value, targetType }
-    else if ('value' in valObj && 'target' in valObj && 'targetType' in valObj) {
-      val = valObj.value;
+    else if ('value' in obj && 'target' in obj && 'targetType' in obj) {
+      val = obj.value;
     }
     // FetchCommand returns { status, statusText, headers, data, url, duration }
     // In _hyperscript, 'it' should be the actual data (not the wrapper)
-    else if ('data' in valObj && 'status' in valObj && 'headers' in valObj) {
-      val = valObj.data;
+    else if ('data' in obj && 'status' in obj && 'headers' in obj) {
+      val = obj.data;
     }
   }
   if (Array.isArray(val) && val.length > 0) val = val[0];
 
   return val;
 }
+
+/**
+ * Pattern from expression evaluator where a space-separated "word token" is
+ * interpreted as an implicit command invocation (e.g. "add .class").
+ */
+interface ImplicitCommandResult {
+  command: string;
+  selector: string;
+}
+
+function isImplicitCommand(val: unknown): val is ImplicitCommandResult {
+  return val !== null && typeof val === 'object' && 'command' in val && 'selector' in val;
+}
+
+/** Track event recursion depth per-event without expando properties on Event objects */
+const eventRecursionDepth = new WeakMap<Event, number>();
 
 export interface RuntimeBaseOptions {
   /**
@@ -401,29 +412,36 @@ export class RuntimeBase {
           // Handle EventNode from hybrid parser (different structure from EventHandlerNode)
           // EventNode has: event, filter, modifiers, body
           // EventHandlerNode expects: event, events, commands, target, args, selector
-          const eventNode = node as any;
-          const adaptedNode = {
+          const adaptedNode: EventHandlerNode = {
             type: 'eventHandler',
-            event: eventNode.event,
-            events: [eventNode.event],
-            commands: eventNode.body || [],
-            target: eventNode.filter,
-            modifiers: eventNode.modifiers || {},
+            event: node.event as string,
+            events: [node.event as string],
+            commands: (node.body as ASTNode[]) || [],
+            target: node.filter as string | undefined,
+            modifiers: (node.modifiers as Record<string, unknown>) || {},
           };
-          return await this.executeEventHandler(adaptedNode as EventHandlerNode, context);
+          return await this.executeEventHandler(adaptedNode, context);
         }
 
         case 'behavior': {
-          return await this.executeBehaviorDefinition(node as any, context);
+          return await this.executeBehaviorDefinition(
+            node as ASTNode & {
+              name: string;
+              parameters?: string[];
+              eventHandlers?: EventHandlerNode[];
+              initBlock?: ASTNode;
+            },
+            context
+          );
         }
 
         case 'Program': {
-          return await this.executeProgram(node as any, context);
+          return await this.executeProgram(node as ASTNode & { features?: ASTNode[] }, context);
         }
 
         case 'initBlock':
         case 'block': {
-          return await this.executeBlock(node as any, context);
+          return await this.executeBlock(node as ASTNode & { commands?: ASTNode[] }, context);
         }
 
         case 'sequence':
@@ -535,23 +553,28 @@ export class RuntimeBase {
    * Used for bridging legacy exception-throwing code with Result pattern.
    */
   protected toSignal(error: unknown): ExecutionSignal | null {
-    if (error instanceof Error) {
-      const e = error as any;
-      if (e.isHalt || e.message === 'HALT_EXECUTION') {
+    const cfe = asControlFlowError(error);
+    if (cfe) {
+      if (cfe.isHalt || cfe.message === 'HALT_EXECUTION') {
         return { type: 'halt' };
       }
-      if (e.isExit || e.message === 'EXIT_COMMAND') {
-        return { type: 'exit', returnValue: e.returnValue };
+      if (cfe.isExit || cfe.message === 'EXIT_COMMAND') {
+        return { type: 'exit', returnValue: cfe.returnValue };
       }
-      if (e.isBreak) {
+      if (cfe.isBreak) {
         return { type: 'break' };
       }
-      if (e.isContinue) {
+      if (cfe.isContinue) {
         return { type: 'continue' };
       }
-      if (e.isReturn) {
-        return { type: 'return', returnValue: e.returnValue };
+      if (cfe.isReturn) {
+        return { type: 'return', returnValue: cfe.returnValue };
       }
+    }
+    // Legacy message-based signals (no signal properties set)
+    if (error instanceof Error) {
+      if (error.message === 'HALT_EXECUTION') return { type: 'halt' };
+      if (error.message === 'EXIT_COMMAND') return { type: 'exit' };
     }
     return null;
   }
@@ -672,17 +695,8 @@ export class RuntimeBase {
 
     // 2. Check for "Implicit Command Pattern" (e.g. "add .class")
     // This happens when the parser sees "word token" but interprets as property access
-    if (
-      result &&
-      typeof result === 'object' &&
-      (result as any).command &&
-      (result as any).selector
-    ) {
-      return await this.executeCommandFromPattern(
-        (result as any).command,
-        (result as any).selector,
-        context
-      );
+    if (isImplicitCommand(result)) {
+      return await this.executeCommandFromPattern(result.command, result.selector, context);
     }
 
     return result;
@@ -708,20 +722,20 @@ export class RuntimeBase {
     const value = result.value;
 
     // Check for "Implicit Command Pattern" (e.g. "add .class")
-    if (value && typeof value === 'object' && (value as any).command && (value as any).selector) {
+    if (isImplicitCommand(value)) {
       // Execute command and wrap in Result
       if (this.options.enableResultPattern) {
         const commandNode: CommandNode = {
           type: 'command',
-          name: (value as any).command,
-          args: [{ type: 'literal', value: (value as any).selector }],
+          name: value.command,
+          args: [{ type: 'literal', value: value.selector }],
         };
         return this.processCommandWithResult(commandNode, context);
       } else {
         try {
           const cmdResult = await this.executeCommandFromPattern(
-            (value as any).command,
-            (value as any).selector,
+            value.command,
+            value.selector,
             context
           );
           return ok(cmdResult);
@@ -794,7 +808,7 @@ export class RuntimeBase {
       try {
         await this.execute(handler, context);
       } catch (error) {
-        if (error instanceof Error && ((error as any).isHalt || (error as any).isExit)) {
+        if (isControlFlowError(error) && (error.isHalt || error.isExit)) {
           break;
         }
         throw error;
@@ -806,7 +820,7 @@ export class RuntimeBase {
       try {
         lastResult = await this.execute(init, context);
       } catch (error) {
-        if (error instanceof Error && ((error as any).isHalt || (error as any).isExit)) {
+        if (isControlFlowError(error) && (error.isHalt || error.isExit)) {
           break;
         }
         throw error;
@@ -818,7 +832,7 @@ export class RuntimeBase {
       try {
         lastResult = await this.execute(statement, context);
       } catch (error) {
-        if (error instanceof Error && ((error as any).isHalt || (error as any).isExit)) {
+        if (isControlFlowError(error) && (error.isHalt || error.isExit)) {
           break;
         }
         throw error;
@@ -828,14 +842,17 @@ export class RuntimeBase {
     return lastResult;
   }
 
-  protected async executeBlock(node: any, context: ExecutionContext): Promise<void> {
+  protected async executeBlock(
+    node: { commands?: ASTNode[] },
+    context: ExecutionContext
+  ): Promise<void> {
     if (!node.commands || !Array.isArray(node.commands)) return;
 
     for (const command of node.commands) {
       try {
         await this.execute(command, context);
       } catch (error) {
-        if (error instanceof Error && (error as any).isHalt) break;
+        if (isControlFlowError(error) && error.isHalt) break;
         throw error;
       }
     }
@@ -854,16 +871,17 @@ export class RuntimeBase {
         lastResult = await this.execute(command, context);
       } catch (error) {
         // Handle Flow Control Signals
-        const e = error as any;
-        if (e.isHalt || e.isExit) break;
-        if (e.isReturn) {
-          if (e.returnValue !== undefined) {
-            Object.assign(context, { it: e.returnValue, result: e.returnValue });
-            return e.returnValue;
+        if (isControlFlowError(error)) {
+          if (error.isHalt || error.isExit) break;
+          if (error.isReturn) {
+            if (error.returnValue !== undefined) {
+              Object.assign(context, { it: error.returnValue, result: error.returnValue });
+              return error.returnValue;
+            }
+            break;
           }
-          break;
+          if (error.isBreak) throw error; // Caught by loop
         }
-        if (e.isBreak) throw error; // Caught by loop
         throw error;
       }
     }
@@ -914,7 +932,15 @@ export class RuntimeBase {
   // Event & Behavior System (DOM Glue)
   // --------------------------------------------------------------------------
 
-  protected async executeBehaviorDefinition(node: any, _context: ExecutionContext): Promise<void> {
+  protected async executeBehaviorDefinition(
+    node: ASTNode & {
+      name: string;
+      parameters?: string[];
+      eventHandlers?: EventHandlerNode[];
+      initBlock?: ASTNode;
+    },
+    _context: ExecutionContext
+  ): Promise<void> {
     const { name, parameters, eventHandlers, initBlock } = node;
     this.behaviorRegistry.set(name, { name, parameters, eventHandlers, initBlock });
     debug.runtime(`RUNTIME BASE: Registered behavior '${name}'`);
@@ -964,25 +990,51 @@ export class RuntimeBase {
       }
     }
 
-    // Run Init Block
+    // Run Init Block (with timeout protection)
     if (behavior.initBlock) {
       debug.runtime(`BEHAVIOR: Running init block for ${behaviorName}`);
+      const timeout = this.options.commandTimeout ?? 10000;
       try {
-        await this.execute(behavior.initBlock, behaviorContext);
+        await Promise.race([
+          this.execute(behavior.initBlock, behaviorContext),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new Error(`Behavior "${behaviorName}" init block timed out after ${timeout}ms`)
+                ),
+              timeout
+            )
+          ),
+        ]);
         debug.runtime(`BEHAVIOR: Init block completed for ${behaviorName}`);
       } catch (e) {
         debug.runtime(`BEHAVIOR: Init block error for ${behaviorName}:`, e);
-        if (!(e instanceof Error && (e as any).isHalt)) throw e;
+        if (!(e instanceof Error && isControlFlowError(e))) throw e;
       }
     }
 
-    // Attach Handlers
+    // Attach Handlers (with timeout protection)
     debug.runtime(
       `BEHAVIOR: About to attach ${behavior.eventHandlers?.length || 0} handlers for ${behaviorName}`
     );
     if (behavior.eventHandlers) {
+      const timeout = this.options.commandTimeout ?? 10000;
       for (const handler of behavior.eventHandlers) {
-        await this.executeEventHandler(handler, behaviorContext);
+        await Promise.race([
+          this.executeEventHandler(handler, behaviorContext),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new Error(
+                    `Behavior "${behaviorName}" handler attachment timed out after ${timeout}ms`
+                  )
+                ),
+              timeout
+            )
+          ),
+        ]);
       }
     }
     debug.runtime(`BEHAVIOR: Finished installing ${behaviorName}`);
@@ -1002,7 +1054,7 @@ export class RuntimeBase {
       attributeName,
       watchTarget,
       modifiers,
-    } = node as any;
+    } = node;
     const eventNames = events && events.length > 0 ? events : [event];
     debug.runtime(`BEHAVIOR: executeEventHandler: event='${event}', target='${target}'`);
 
@@ -1060,7 +1112,7 @@ export class RuntimeBase {
     }
 
     // SPECIAL CASE 3: Custom Event Source (from registry)
-    const customEventSource = (node as any).customEventSource;
+    const customEventSource = node.customEventSource;
     if (customEventSource && this.registryIntegration) {
       debug.runtime(
         `BEHAVIOR: executeEventHandler - Using custom event source '${customEventSource}' for event '${event}'`
@@ -1123,72 +1175,15 @@ export class RuntimeBase {
     }
 
     // STANDARD CASE: DOM Event Listeners
-    const baseEventHandler = async (domEvent: Event) => {
-      // Recursion Guard
-      const currentDepth = (domEvent as any).__hyperfixi_recursion_depth || 0;
-      if (currentDepth >= 100) {
-        return;
-      }
-      (domEvent as any).__hyperfixi_recursion_depth = currentDepth + 1;
-
-      // Event Delegation Check
-      if (selector && domEvent.target instanceof Element) {
-        try {
-          if (!domEvent.target.matches(selector) && !domEvent.target.closest(selector)) {
-            return;
-          }
-        } catch {
-          // Invalid CSS selector — skip delegation filter rather than crashing the handler
-          debug.runtime(`Event delegation: invalid CSS selector '${selector}', skipping filter`);
-        }
-      }
-
-      // Context Hydration
-      const eventLocals = new Map(context.locals);
-      const baseEventContext: ExecutionContext = {
-        ...context,
-        locals: eventLocals,
-        it: domEvent,
-        event: domEvent,
-      };
-      // Only set 'target' if not already defined by the behavior's init block
-      if (!eventLocals.has('target')) {
-        baseEventContext.locals.set('target', domEvent.target);
-      }
-
-      // Enhance context with registered providers
-      const eventContext = this.enhanceContext(baseEventContext);
-
-      // Arg Destructuring (e.g. on pointerdown(x, y))
-      if (args && args.length > 0) {
-        for (const argName of args) {
-          const value = (domEvent as any)[argName] ?? (domEvent as any).detail?.[argName] ?? null;
-          eventContext.locals.set(argName, value);
-        }
-      }
-
-      // Execution
-      for (const command of commands) {
-        try {
-          const result = await this.execute(command, eventContext);
-          const val = unwrapCommandResult(result);
-          if (val !== undefined) {
-            Object.assign(eventContext, { it: val, result: val });
-          }
-        } catch (e) {
-          const err = e as any;
-          if (err.isHalt || err.isExit) break;
-          if (err.isReturn) {
-            if (err.returnValue !== undefined) {
-              Object.assign(eventContext, { it: err.returnValue, result: err.returnValue });
-            }
-            break;
-          }
-          console.error(`COMMAND FAILED:`, e);
-          throw e;
-        }
-      }
-    };
+    // Create handler via helper to limit closure scope — only captures what's needed,
+    // not the full executeEventHandler scope (node, targets, globalTarget, eventNames, etc.)
+    const baseEventHandler = RuntimeBase.createEventHandler(
+      this,
+      commands,
+      context,
+      selector,
+      args
+    );
 
     // Apply event modifiers
     let eventHandler: (domEvent: Event) => void | Promise<void>;
@@ -1298,6 +1293,89 @@ export class RuntimeBase {
   // Utilities
   // --------------------------------------------------------------------------
 
+  /**
+   * Create a DOM event handler closure with minimal scope capture.
+   * Extracted as a static method so the returned closure only captures the 5 parameters
+   * (runtime, commands, context, selector, args) instead of the full executeEventHandler scope.
+   */
+  private static createEventHandler(
+    runtime: RuntimeBase,
+    commands: ASTNode[],
+    context: ExecutionContext,
+    selector: string | undefined,
+    args: string[] | undefined
+  ): (domEvent: Event) => Promise<void> {
+    return async (domEvent: Event) => {
+      // Recursion Guard (uses WeakMap instead of expando property on Event)
+      const currentDepth = eventRecursionDepth.get(domEvent) ?? 0;
+      if (currentDepth >= 100) {
+        return;
+      }
+      eventRecursionDepth.set(domEvent, currentDepth + 1);
+
+      // Event Delegation Check
+      if (selector && domEvent.target instanceof Element) {
+        try {
+          if (!domEvent.target.matches(selector) && !domEvent.target.closest(selector)) {
+            return;
+          }
+        } catch {
+          // Invalid CSS selector — skip delegation filter rather than crashing the handler
+          debug.runtime(`Event delegation: invalid CSS selector '${selector}', skipping filter`);
+        }
+      }
+
+      // Context Hydration
+      const eventLocals = new Map(context.locals);
+      const baseEventContext: ExecutionContext = {
+        ...context,
+        locals: eventLocals,
+        it: domEvent,
+        event: domEvent,
+      };
+      // Only set 'target' if not already defined by the behavior's init block
+      if (!eventLocals.has('target')) {
+        baseEventContext.locals.set('target', domEvent.target);
+      }
+
+      // Enhance context with registered providers
+      const eventContext = runtime.enhanceContext(baseEventContext);
+
+      // Arg Destructuring (e.g. on pointerdown(x, y))
+      if (args && args.length > 0) {
+        const eventObj = domEvent as Event & Record<string, unknown>;
+        const detail = (eventObj as { detail?: Record<string, unknown> }).detail;
+        for (const argName of args) {
+          const value = eventObj[argName] ?? detail?.[argName] ?? null;
+          eventContext.locals.set(argName, value);
+        }
+      }
+
+      // Execution
+      for (const command of commands) {
+        try {
+          const result = await runtime.execute(command, eventContext);
+          const val = unwrapCommandResult(result);
+          if (val !== undefined) {
+            Object.assign(eventContext, { it: val, result: val });
+          }
+        } catch (e) {
+          if (isControlFlowError(e)) {
+            if (e.isHalt || e.isExit) break;
+            if (e.isReturn) {
+              if (e.returnValue !== undefined) {
+                Object.assign(eventContext, { it: e.returnValue, result: e.returnValue });
+              }
+              break;
+            }
+          }
+          console.error(`COMMAND FAILED:`, e);
+          throw e;
+        }
+      }
+    };
+  }
+
   protected setupMutationObserver(
     targets: HTMLElement[],
     attr: string,
@@ -1337,8 +1415,7 @@ export class RuntimeBase {
                 await this.execute(command, mutationContext);
               } catch (error) {
                 if (isControlFlowError(error)) {
-                  const e = error as any;
-                  if (e.isHalt || e.isExit || e.isReturn) break;
+                  if (error.isHalt || error.isExit || error.isReturn) break;
                 } else {
                   console.error(`Error executing mutation handler command:`, error);
                 }
@@ -1428,8 +1505,7 @@ export class RuntimeBase {
                 await this.execute(command, changeContext);
               } catch (error) {
                 if (isControlFlowError(error)) {
-                  const e = error as any;
-                  if (e.isHalt || e.isExit || e.isReturn) break;
+                  if (error.isHalt || error.isExit || error.isReturn) break;
                 } else {
                   console.error(`Error executing change handler command:`, error);
                 }
@@ -1460,8 +1536,10 @@ export class RuntimeBase {
 
   protected queryElements(selector: string, context: ExecutionContext): HTMLElement[] {
     // Use element's ownerDocument for JSDOM compatibility, fall back to global document
+    const me = context.me;
     const doc =
-      (context.me as any)?.ownerDocument ?? (typeof document !== 'undefined' ? document : null);
+      (me instanceof Element ? me.ownerDocument : null) ??
+      (typeof document !== 'undefined' ? document : null);
     if (!doc) return [];
     // Handle hyperscript queryReference syntax <tag/>
     let cleanSelector = selector;
@@ -1479,7 +1557,11 @@ export class RuntimeBase {
 
   protected isElement(obj: unknown): obj is HTMLElement {
     if (typeof HTMLElement !== 'undefined' && obj instanceof HTMLElement) return true;
-    const objAny = obj as any;
-    return obj && typeof obj === 'object' && objAny.style && objAny.classList;
+    // Duck-type check for JSDOM/polyfill environments where instanceof fails
+    if (obj && typeof obj === 'object') {
+      const el = obj as Record<string, unknown>;
+      return !!el.style && !!el.classList;
+    }
+    return false;
   }
 }

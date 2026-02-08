@@ -523,3 +523,514 @@ describe('Runtime Audit Fixes', () => {
     });
   });
 });
+
+// ============================================================================
+// RuntimeBase Method Coverage Tests
+// ============================================================================
+
+describe('RuntimeBase Method Coverage', () => {
+  describe('Lifecycle Methods', () => {
+    let runtime: Runtime;
+    let element: HTMLElement;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+      element = document.createElement('div');
+      document.body.appendChild(element);
+    });
+
+    afterEach(() => {
+      element.remove();
+    });
+
+    it('cleanup() should return 0 for element with no cleanups', () => {
+      expect(runtime.cleanup(element)).toBe(0);
+    });
+
+    it('cleanup() should clean up registered listeners after event handler', async () => {
+      const context: ExecutionContext = {
+        me: element,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+
+      // Register an event handler (which registers a listener)
+      await runtime.execute(
+        { type: 'eventHandler', event: 'click', events: ['click'], commands: [] },
+        context
+      );
+
+      // Element should now have cleanups registered
+      const stats = runtime.getCleanupStats();
+      expect(stats.listeners).toBeGreaterThanOrEqual(1);
+
+      // Cleanup should return the count of cleaned-up resources
+      const cleaned = runtime.cleanup(element);
+      expect(cleaned).toBeGreaterThanOrEqual(1);
+    });
+
+    it('cleanupTree() should clean up nested elements', async () => {
+      const parent = document.createElement('div');
+      const child = document.createElement('span');
+      parent.appendChild(child);
+      document.body.appendChild(parent);
+
+      const parentContext: ExecutionContext = {
+        me: parent,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+
+      await runtime.execute(
+        { type: 'eventHandler', event: 'click', events: ['click'], commands: [] },
+        parentContext
+      );
+
+      const childContext: ExecutionContext = {
+        ...parentContext,
+        me: child,
+      };
+      await runtime.execute(
+        { type: 'eventHandler', event: 'click', events: ['click'], commands: [] },
+        childContext
+      );
+
+      // Should clean up both parent and child
+      const cleaned = runtime.cleanupTree(parent);
+      expect(cleaned).toBeGreaterThanOrEqual(2);
+
+      parent.remove();
+    });
+
+    it('getCleanupStats() should report accurate statistics', () => {
+      const stats = runtime.getCleanupStats();
+      expect(stats).toHaveProperty('elementsTracked');
+      expect(stats).toHaveProperty('listeners');
+      expect(stats).toHaveProperty('observers');
+      expect(typeof stats.elementsTracked).toBe('number');
+    });
+
+    it('destroy() should clean up global resources', () => {
+      // Calling destroy should not throw
+      expect(() => runtime.destroy()).not.toThrow();
+    });
+  });
+
+  describe('Hook Methods', () => {
+    let runtime: Runtime;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+    });
+
+    it('registerHooks() should register a named hook set', () => {
+      const hookFn = vi.fn();
+      runtime.registerHooks('test-hooks', {
+        beforeExecute: hookFn,
+      });
+
+      expect(runtime.getRegisteredHooks()).toContain('test-hooks');
+    });
+
+    it('unregisterHooks() should remove hooks and return true', () => {
+      runtime.registerHooks('test-hooks', {
+        beforeExecute: vi.fn(),
+      });
+
+      expect(runtime.unregisterHooks('test-hooks')).toBe(true);
+      expect(runtime.getRegisteredHooks()).not.toContain('test-hooks');
+    });
+
+    it('unregisterHooks() should return false for unknown hooks', () => {
+      expect(runtime.unregisterHooks('nonexistent')).toBe(false);
+    });
+
+    it('getRegisteredHooks() should return empty array initially (except default)', () => {
+      const hooks = runtime.getRegisteredHooks();
+      // Default hooks may be registered in constructor
+      expect(Array.isArray(hooks)).toBe(true);
+    });
+  });
+
+  describe('Execution Methods', () => {
+    let runtime: Runtime;
+    let context: ExecutionContext;
+    let mockElement: HTMLElement;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+      mockElement = document.createElement('div');
+      context = {
+        me: mockElement,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+    });
+
+    it('should execute a block node with commands', async () => {
+      const blockNode = {
+        type: 'block',
+        commands: [{ type: 'command', name: 'log', args: [{ type: 'literal', value: 'hello' }] }],
+      };
+
+      // Should not throw
+      await expect(runtime.execute(blockNode, context)).resolves.not.toThrow();
+    });
+
+    it('should execute a sequence node with commands', async () => {
+      const seqNode = {
+        type: 'sequence',
+        commands: [
+          {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'identifier', name: 'myVar' },
+              { type: 'identifier', name: 'to' },
+              { type: 'literal', value: 42 },
+            ],
+          },
+        ],
+      };
+
+      await runtime.execute(seqNode, context);
+      expect(context.locals?.get('myVar')).toBe(42);
+    });
+
+    it('should execute a Program node with features', async () => {
+      const programNode = {
+        type: 'Program',
+        features: [{ type: 'command', name: 'log', args: [{ type: 'literal', value: 'test' }] }],
+      };
+
+      await expect(runtime.execute(programNode, context)).resolves.not.toThrow();
+    });
+
+    it('should handle halt signal in command sequence', async () => {
+      const seqNode = {
+        type: 'sequence',
+        commands: [
+          { type: 'command', name: 'halt', args: [] },
+          { type: 'command', name: 'log', args: [{ type: 'literal', value: 'should not run' }] },
+        ],
+      };
+
+      // Halt signals propagate as exceptions from top-level execute()
+      await expect(runtime.execute(seqNode, context)).rejects.toThrow('HALT_EXECUTION');
+    });
+  });
+
+  describe('Behavior System', () => {
+    let runtime: Runtime;
+    let element: HTMLElement;
+    let context: ExecutionContext;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+      element = document.createElement('div');
+      document.body.appendChild(element);
+      context = {
+        me: element,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+    });
+
+    afterEach(() => {
+      element.remove();
+    });
+
+    it('should register a behavior definition', async () => {
+      const behaviorNode = {
+        type: 'behavior',
+        name: 'TestBehavior',
+        parameters: ['param1'],
+        eventHandlers: [],
+        initBlock: undefined,
+      };
+
+      await runtime.execute(behaviorNode, context);
+
+      // behaviorRegistry is public
+      expect(runtime.behaviorRegistry.has('TestBehavior')).toBe(true);
+    });
+
+    it('should execute behavior with init block', async () => {
+      // Register behavior
+      const behaviorNode = {
+        type: 'behavior',
+        name: 'InitBehavior',
+        parameters: [],
+        eventHandlers: [],
+        initBlock: {
+          type: 'block',
+          commands: [{ type: 'command', name: 'log', args: [{ type: 'literal', value: 'init' }] }],
+        },
+      };
+
+      await runtime.execute(behaviorNode, context);
+
+      // Now install it
+      const installNode = {
+        type: 'command',
+        name: 'install',
+        args: [{ type: 'identifier', name: 'InitBehavior' }],
+      };
+
+      await expect(runtime.execute(installNode, context)).resolves.not.toThrow();
+    });
+  });
+
+  describe('toSignal() conversion', () => {
+    let runtime: Runtime;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+    });
+
+    // Access protected method via any
+    const callToSignal = (rt: Runtime, error: unknown) => (rt as any).toSignal(error);
+
+    it('should convert isHalt error to halt signal', () => {
+      const error = new Error('halt') as any;
+      error.isHalt = true;
+      const signal = callToSignal(runtime, error);
+      expect(signal).toEqual({ type: 'halt' });
+    });
+
+    it('should convert isExit error to exit signal with returnValue', () => {
+      const error = new Error('exit') as any;
+      error.isExit = true;
+      error.returnValue = 'result';
+      const signal = callToSignal(runtime, error);
+      expect(signal).toEqual({ type: 'exit', returnValue: 'result' });
+    });
+
+    it('should convert isBreak error to break signal', () => {
+      const error = new Error('break') as any;
+      error.isBreak = true;
+      const signal = callToSignal(runtime, error);
+      expect(signal).toEqual({ type: 'break' });
+    });
+
+    it('should convert isContinue error to continue signal', () => {
+      const error = new Error('continue') as any;
+      error.isContinue = true;
+      const signal = callToSignal(runtime, error);
+      expect(signal).toEqual({ type: 'continue' });
+    });
+
+    it('should convert isReturn error to return signal with value', () => {
+      const error = new Error('return') as any;
+      error.isReturn = true;
+      error.returnValue = 42;
+      const signal = callToSignal(runtime, error);
+      expect(signal).toEqual({ type: 'return', returnValue: 42 });
+    });
+
+    it('should convert HALT_EXECUTION message to halt signal', () => {
+      const signal = callToSignal(runtime, new Error('HALT_EXECUTION'));
+      expect(signal).toEqual({ type: 'halt' });
+    });
+
+    it('should return null for normal errors', () => {
+      const signal = callToSignal(runtime, new Error('something went wrong'));
+      expect(signal).toBeNull();
+    });
+
+    it('should return null for non-Error values', () => {
+      expect(callToSignal(runtime, 'string')).toBeNull();
+      expect(callToSignal(runtime, 42)).toBeNull();
+      expect(callToSignal(runtime, null)).toBeNull();
+    });
+  });
+
+  describe('Result-based execution (enableResultPattern)', () => {
+    let runtime: Runtime;
+    let context: ExecutionContext;
+
+    beforeEach(() => {
+      // enableResultPattern is on by default
+      runtime = new Runtime();
+      context = {
+        me: document.createElement('div'),
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+    });
+
+    it('should execute command sequence via Result pattern', async () => {
+      const seqNode = {
+        type: 'sequence',
+        commands: [
+          {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'identifier', name: 'x' },
+              { type: 'identifier', name: 'to' },
+              { type: 'literal', value: 10 },
+            ],
+          },
+          {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'identifier', name: 'y' },
+              { type: 'identifier', name: 'to' },
+              { type: 'literal', value: 20 },
+            ],
+          },
+        ],
+      };
+
+      await runtime.execute(seqNode, context);
+
+      expect(context.locals?.get('x')).toBe(10);
+      expect(context.locals?.get('y')).toBe(20);
+    });
+
+    it('should propagate halt signal through Result pattern', async () => {
+      const seqNode = {
+        type: 'sequence',
+        commands: [
+          {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'identifier', name: 'x' },
+              { type: 'identifier', name: 'to' },
+              { type: 'literal', value: 'before' },
+            ],
+          },
+          { type: 'command', name: 'halt', args: [] },
+          {
+            type: 'command',
+            name: 'set',
+            args: [
+              { type: 'identifier', name: 'x' },
+              { type: 'identifier', name: 'to' },
+              { type: 'literal', value: 'after' },
+            ],
+          },
+        ],
+      };
+
+      // Halt propagates as exception from top-level execute; 'x' is set before halt fires
+      await expect(runtime.execute(seqNode, context)).rejects.toThrow('HALT_EXECUTION');
+      expect(context.locals?.get('x')).toBe('before');
+    });
+
+    it('should evaluate expressions via Result pattern', async () => {
+      const literalNode = { type: 'literal', value: 'hello' };
+      const result = await runtime.execute(literalNode, context);
+      expect(result).toBe('hello');
+    });
+
+    it('should return value from return command', async () => {
+      const seqNode = {
+        type: 'sequence',
+        commands: [{ type: 'command', name: 'return', args: [{ type: 'literal', value: 42 }] }],
+      };
+
+      const result = await runtime.execute(seqNode, context);
+      // After return, context.result should have the value
+      expect(context.result).toBe(42);
+    });
+  });
+
+  describe('unwrapCommandResult()', () => {
+    // Import directly for testing
+    it('should return undefined for undefined input', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(unwrapCommandResult(undefined)).toBeUndefined();
+    });
+
+    it('should unwrap CallCommand result', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(unwrapCommandResult({ result: 'value', wasAsync: false })).toBe('value');
+    });
+
+    it('should unwrap GetCommand result', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(unwrapCommandResult({ value: 42 })).toBe(42);
+    });
+
+    it('should unwrap FetchCommand result', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(unwrapCommandResult({ data: { items: [] }, status: 200, headers: {} })).toEqual({
+        items: [],
+      });
+    });
+
+    it('should return undefined for IfCommand with no result', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(
+        unwrapCommandResult({ conditionResult: true, executedBranch: 'then' })
+      ).toBeUndefined();
+    });
+
+    it('should pass through primitive values', async () => {
+      const { unwrapCommandResult } = await import('./runtime-base');
+      expect(unwrapCommandResult('hello')).toBe('hello');
+      expect(unwrapCommandResult(42)).toBe(42);
+      expect(unwrapCommandResult(true)).toBe(true);
+    });
+  });
+
+  describe('Behavior timeout protection', () => {
+    it('should timeout on slow init block', async () => {
+      // Use a very short timeout
+      const runtime = new Runtime({ commandTimeout: 50 });
+      const element = document.createElement('div');
+      document.body.appendChild(element);
+
+      const context: ExecutionContext = {
+        me: element,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+
+      // Register behavior with slow init
+      runtime.behaviorRegistry.set('SlowBehavior', {
+        name: 'SlowBehavior',
+        parameters: [],
+        eventHandlers: [],
+        initBlock: {
+          type: 'command',
+          name: 'wait',
+          args: [{ type: 'literal', value: '500ms' }],
+        },
+      });
+
+      // Install should throw timeout error
+      const installNode = {
+        type: 'command',
+        name: 'install',
+        args: [{ type: 'identifier', name: 'SlowBehavior' }],
+      };
+
+      await expect(runtime.execute(installNode, context)).rejects.toThrow(/timed out/);
+
+      element.remove();
+    });
+  });
+});

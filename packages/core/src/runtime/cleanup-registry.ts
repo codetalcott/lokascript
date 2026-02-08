@@ -62,12 +62,16 @@ export interface CleanupStats {
 export class CleanupRegistry {
   /** Element-scoped cleanups (WeakMap allows GC of removed elements) */
   private elementCleanups = new WeakMap<Element, CleanupEntry[]>();
-  /**
-   * Track elements with cleanups for stats.
-   * Note: We use a regular Set which means elements won't be GC'd while tracked.
-   * This is acceptable since we clean up when elements are removed from DOM.
-   */
-  private trackedElements = new Set<Element>();
+  /** Counter for number of tracked elements (avoids strong-reference Set that defeats WeakMap GC) */
+  private elementCount = 0;
+  /** Per-type counters for element-scoped cleanups (avoids needing to iterate elements for stats) */
+  private typeCounts: Record<CleanupType, number> = {
+    listener: 0,
+    observer: 0,
+    interval: 0,
+    timeout: 0,
+    custom: 0,
+  };
   /** Global cleanups not tied to specific elements */
   private globalCleanups: CleanupEntry[] = [];
   /** Debug mode */
@@ -196,12 +200,16 @@ export class CleanupRegistry {
    * Add a cleanup entry for an element
    */
   private addCleanup(element: Element, entry: CleanupEntry): void {
-    const existing = this.elementCleanups.get(element) || [];
-    existing.push(entry);
-    this.elementCleanups.set(element, existing);
+    const existing = this.elementCleanups.get(element);
+    if (existing) {
+      existing.push(entry);
+    } else {
+      this.elementCleanups.set(element, [entry]);
+      this.elementCount++;
+    }
 
-    // Track the element for stats
-    this.trackedElements.add(element);
+    // Track per-type count
+    this.typeCounts[entry.type]++;
 
     if (this.debugMode) {
       debug.runtime(`CleanupRegistry: Registered ${entry.type} for element`, element);
@@ -229,10 +237,12 @@ export class CleanupRegistry {
           debug.runtime(`CleanupRegistry: Error during cleanup:`, error);
         }
       }
+      // Decrement per-type counter
+      this.typeCounts[entry.type]--;
     }
 
     this.elementCleanups.delete(element);
-    this.trackedElements.delete(element);
+    this.elementCount--;
 
     if (this.debugMode) {
       debug.runtime(`CleanupRegistry: Cleaned up ${count} resources for element`);
@@ -314,66 +324,40 @@ export class CleanupRegistry {
    * Get statistics about registered cleanups
    */
   getStats(): CleanupStats {
-    let listeners = 0;
-    let observers = 0;
-    let intervals = 0;
-    let timeouts = 0;
-    let custom = 0;
-
-    // Count element cleanups
-    for (const element of this.trackedElements) {
-      const entries = this.elementCleanups.get(element);
-      if (entries) {
-        for (const entry of entries) {
-          switch (entry.type) {
-            case 'listener':
-              listeners++;
-              break;
-            case 'observer':
-              observers++;
-              break;
-            case 'interval':
-              intervals++;
-              break;
-            case 'timeout':
-              timeouts++;
-              break;
-            case 'custom':
-              custom++;
-              break;
-          }
-        }
-      }
-    }
-
     // Count global cleanups by type
+    let globalListeners = 0;
+    let globalObservers = 0;
+    let globalIntervals = 0;
+    let globalTimeouts = 0;
+    let globalCustom = 0;
+
     for (const entry of this.globalCleanups) {
       switch (entry.type) {
         case 'listener':
-          listeners++;
+          globalListeners++;
           break;
         case 'observer':
-          observers++;
+          globalObservers++;
           break;
         case 'interval':
-          intervals++;
+          globalIntervals++;
           break;
         case 'timeout':
-          timeouts++;
+          globalTimeouts++;
           break;
         case 'custom':
-          custom++;
+          globalCustom++;
           break;
       }
     }
 
     return {
-      elementsTracked: this.trackedElements.size,
-      listeners,
-      observers,
-      intervals,
-      timeouts,
-      custom,
+      elementsTracked: this.elementCount,
+      listeners: this.typeCounts.listener + globalListeners,
+      observers: this.typeCounts.observer + globalObservers,
+      intervals: this.typeCounts.interval + globalIntervals,
+      timeouts: this.typeCounts.timeout + globalTimeouts,
+      custom: this.typeCounts.custom + globalCustom,
       global: this.globalCleanups.length,
     };
   }
