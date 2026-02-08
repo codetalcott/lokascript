@@ -1690,7 +1690,7 @@ function buildRoleToken(roleSpec: RoleSpec, profile: LanguageProfile): PatternTo
     type: 'role',
     role: roleSpec.role,
     optional: !roleSpec.required,
-    expectedTypes: roleSpec.expectedTypes as any,
+    expectedTypes: roleSpec.expectedTypes,
   };
 
   // Use override marker if available, otherwise use default

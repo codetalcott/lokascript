@@ -5,7 +5,7 @@
  * Used by the pattern generator to create language-specific patterns.
  */
 
-import type { SemanticRole, ActionType, SemanticValue } from '../types';
+import type { SemanticRole, ActionType, SemanticValue, ExpectedType } from '../types';
 
 // =============================================================================
 // Command Schema Types
@@ -22,7 +22,7 @@ export interface RoleSpec {
   /** Whether this role is required */
   readonly required: boolean;
   /** Expected value types */
-  readonly expectedTypes: Array<'selector' | 'literal' | 'reference' | 'expression'>;
+  readonly expectedTypes: Array<ExpectedType>;
   /** Default value if not provided */
   readonly default?: SemanticValue;
   /** Position hint for SVO languages (higher = earlier) */

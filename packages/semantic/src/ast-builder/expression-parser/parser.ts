@@ -256,7 +256,13 @@ export class ExpressionParser {
             : token.value === 'null'
               ? null
               : undefined;
-      return this.createLiteral(value, token.value as any, token);
+      const dataTypeMap: Record<string, LiteralNode['dataType']> = {
+        true: 'boolean',
+        false: 'boolean',
+        null: 'null',
+        undefined: 'undefined',
+      };
+      return this.createLiteral(value, dataTypeMap[token.value] ?? 'string', token);
     }
 
     if (this.match(TokenType.TEMPLATE_LITERAL)) {
@@ -491,7 +497,12 @@ export class ExpressionParser {
     return {
       type: 'propertyAccess',
       object,
-      property: typeof property === 'string' ? property : ((property as any).name ?? ''),
+      property:
+        typeof property === 'string'
+          ? property
+          : property.type === 'identifier'
+            ? (property as IdentifierNode).name
+            : '',
       start: object.start,
       end: this.previous().end,
     };

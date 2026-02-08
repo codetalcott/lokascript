@@ -16,7 +16,13 @@
  * - Can be extended with custom validators using the same API
  */
 
-import type { SemanticParseResult, SemanticValue, SemanticRole, ActionType } from '../types';
+import type {
+  SemanticParseResult,
+  SemanticValue,
+  SemanticRole,
+  ActionType,
+  ExpectedType,
+} from '../types';
 import type { CommandSchema } from '../generators/command-schemas';
 import { commandSchemas } from '../generators/command-schemas';
 
@@ -109,10 +115,7 @@ function getStringValue(value: SemanticValue): string | undefined {
 /**
  * Check if a semantic value matches expected types.
  */
-function valueMatchesType(
-  value: SemanticValue,
-  expectedTypes: Array<'selector' | 'literal' | 'reference' | 'expression'>
-): boolean {
+function valueMatchesType(value: SemanticValue, expectedTypes: Array<ExpectedType>): boolean {
   // Handle null/undefined
   if (value === null || value === undefined) {
     return false;

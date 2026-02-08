@@ -111,6 +111,12 @@ export type SemanticValue =
   | PropertyPathValue
   | ExpressionValue;
 
+/**
+ * Expected value types for role tokens.
+ * Shared between RoleSpec (command-schemas) and RolePatternToken.
+ */
+export type ExpectedType = SemanticValue['type'];
+
 export interface LiteralValue {
   readonly type: 'literal';
   readonly value: string | number | boolean;
@@ -330,7 +336,7 @@ export interface RolePatternToken {
   readonly role: SemanticRole;
   readonly optional?: boolean;
   /** Expected value types (for validation) */
-  readonly expectedTypes?: Array<SemanticValue['type']>;
+  readonly expectedTypes?: Array<ExpectedType>;
 }
 
 export interface GroupPatternToken {
