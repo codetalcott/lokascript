@@ -282,9 +282,4 @@ export function createRemoveUntil(
 // Export singleton instance
 export const temporalModifierManager = TemporalModifierManager.getInstance();
 
-// Export for browser global access
-if (typeof window !== 'undefined') {
-  (window as any).__HYPERFIXI_TEMPORAL__ = temporalModifierManager;
-}
-
 export default TemporalModifierManager;

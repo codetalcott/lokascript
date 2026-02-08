@@ -17,6 +17,7 @@ import type { HookContext, RuntimeHooks } from '../types/hooks';
 import { HookRegistry } from '../types/hooks';
 import { ExpressionEvaluator } from '../core/expression-evaluator';
 import { debug } from '../utils/debug';
+import { isControlFlowError } from './runtime-base';
 
 /**
  * Runtime-compatible command interface
@@ -122,6 +123,11 @@ export class CommandAdapterV2 implements RuntimeCommand {
     // Use shared evaluator if provided, otherwise create new (backward compat)
     this.expressionEvaluator = sharedEvaluator ?? new ExpressionEvaluator();
     this.hookRegistry = hookRegistry ?? null;
+  }
+
+  /** Update the hook registry (called when registry is set after adapter creation) */
+  setHookRegistry(registry: HookRegistry): void {
+    this.hookRegistry = registry;
   }
 
   /**
@@ -276,18 +282,7 @@ export class CommandAdapterV2 implements RuntimeCommand {
 
       return result;
     } catch (error) {
-      // Don't log control flow signals — they're expected (exit, halt, break, etc.)
-      const isControlFlow =
-        error instanceof Error &&
-        ((error as any).isExit ||
-          (error as any).isHalt ||
-          (error as any).isBreak ||
-          (error as any).isContinue ||
-          (error as any).isReturn ||
-          error.message === 'EXIT_COMMAND' ||
-          error.message === 'HALT_EXECUTION' ||
-          error.message === 'EXIT_EXECUTION');
-      if (!isControlFlow) {
+      if (!isControlFlowError(error)) {
         debug.command(`CommandAdapterV2: Error executing '${this.name}':`, error);
       }
 
@@ -340,9 +335,13 @@ export class CommandRegistryV2 {
    */
   setHookRegistry(registry: HookRegistry): void {
     this.hookRegistry = registry;
-    // Update existing adapters with the new hook registry
-    // Note: This requires re-registering adapters, so we just store for new registrations
-    debug.runtime(`CommandRegistryV2: Hook registry set`);
+    // Propagate to all existing adapters so hooks work on already-registered commands
+    for (const adapter of this.adapters.values()) {
+      adapter.setHookRegistry(registry);
+    }
+    debug.runtime(
+      `CommandRegistryV2: Hook registry set and propagated to ${this.adapters.size} adapters`
+    );
   }
 
   /**
@@ -358,7 +357,14 @@ export class CommandRegistryV2 {
    * Also registers any aliases defined in metadata
    */
   register(impl: any): void {
-    const name = (impl.name || impl.metadata?.name).toLowerCase();
+    const rawName = impl.name || impl.metadata?.name;
+    if (!rawName || typeof rawName !== 'string') {
+      throw new Error(
+        `Cannot register command: no name found. ` +
+          `Provide a 'name' property or 'metadata.name' on the implementation.`
+      );
+    }
+    const name = rawName.toLowerCase();
 
     debug.runtime(`CommandRegistryV2: Registering command '${name}'`);
 

@@ -3,10 +3,13 @@
  * Tests the execution of parsed AST nodes with proper context management
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Runtime } from './runtime';
 import { parse } from '../parser/parser';
 import type { ExecutionContext } from '../types/core';
+import { isControlFlowError } from './runtime-base';
+import { CommandRegistryV2 } from './command-adapter';
+import { HookRegistry } from '../types/hooks';
 
 // Mock DOM for testing
 const createMockElement = () => {
@@ -334,6 +337,189 @@ describe('Hyperscript Runtime', () => {
       criticalCommands.forEach(commandName => {
         expect(enhancedRegistry.has(commandName)).toBe(true);
       });
+    });
+  });
+});
+
+// ============================================================================
+// Runtime Audit Tests
+// ============================================================================
+
+describe('Runtime Audit Fixes', () => {
+  describe('isControlFlowError()', () => {
+    it('should detect halt signals', () => {
+      const error = new Error('HALT_EXECUTION') as any;
+      error.isHalt = true;
+      expect(isControlFlowError(error)).toBe(true);
+    });
+
+    it('should detect exit signals', () => {
+      const error = new Error('EXIT_COMMAND') as any;
+      error.isExit = true;
+      expect(isControlFlowError(error)).toBe(true);
+    });
+
+    it('should detect break signals', () => {
+      const error = new Error('break') as any;
+      error.isBreak = true;
+      expect(isControlFlowError(error)).toBe(true);
+    });
+
+    it('should detect continue signals', () => {
+      const error = new Error('continue') as any;
+      error.isContinue = true;
+      expect(isControlFlowError(error)).toBe(true);
+    });
+
+    it('should detect return signals', () => {
+      const error = new Error('return') as any;
+      error.isReturn = true;
+      expect(isControlFlowError(error)).toBe(true);
+    });
+
+    it('should detect legacy message-based halt', () => {
+      expect(isControlFlowError(new Error('HALT_EXECUTION'))).toBe(true);
+    });
+
+    it('should detect legacy message-based exit', () => {
+      expect(isControlFlowError(new Error('EXIT_COMMAND'))).toBe(true);
+      expect(isControlFlowError(new Error('EXIT_EXECUTION'))).toBe(true);
+    });
+
+    it('should return false for normal errors', () => {
+      expect(isControlFlowError(new Error('Something went wrong'))).toBe(false);
+      expect(isControlFlowError(new TypeError('type error'))).toBe(false);
+    });
+
+    it('should return false for non-Error values', () => {
+      expect(isControlFlowError('string')).toBe(false);
+      expect(isControlFlowError(42)).toBe(false);
+      expect(isControlFlowError(null)).toBe(false);
+      expect(isControlFlowError(undefined)).toBe(false);
+    });
+  });
+
+  describe('queryElements() with invalid CSS selectors', () => {
+    let runtime: Runtime;
+    let context: ExecutionContext;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+      context = {
+        me: document.createElement('div'),
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+    });
+
+    it('should return empty array for invalid CSS selectors', () => {
+      // Access queryElements via protected method through subclass or direct test
+      const result = (runtime as any).queryElements('invalid[[[', context);
+      expect(result).toEqual([]);
+    });
+
+    it('should work normally for valid CSS selectors', () => {
+      const result = (runtime as any).queryElements('div', context);
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe('CommandRegistryV2.register() validation', () => {
+    it('should throw descriptive error for commands with no name', () => {
+      const registry = new CommandRegistryV2();
+      expect(() => registry.register({})).toThrow('Cannot register command: no name found');
+    });
+
+    it('should throw for undefined name and metadata', () => {
+      const registry = new CommandRegistryV2();
+      expect(() => registry.register({ metadata: {} })).toThrow(
+        'Cannot register command: no name found'
+      );
+    });
+
+    it('should accept commands with name property', () => {
+      const registry = new CommandRegistryV2();
+      expect(() =>
+        registry.register({
+          name: 'test',
+          execute: async () => {},
+        })
+      ).not.toThrow();
+      expect(registry.has('test')).toBe(true);
+    });
+
+    it('should accept commands with metadata.name', () => {
+      const registry = new CommandRegistryV2();
+      expect(() =>
+        registry.register({
+          metadata: { name: 'meta-test' },
+          execute: async () => {},
+        })
+      ).not.toThrow();
+      expect(registry.has('meta-test')).toBe(true);
+    });
+  });
+
+  describe('Hook registry propagation', () => {
+    it('should propagate hook registry to pre-registered adapters', () => {
+      const registry = new CommandRegistryV2();
+
+      // Register command BEFORE setting hook registry
+      registry.register({
+        name: 'test-cmd',
+        execute: async () => 'result',
+      });
+
+      // Now set hook registry (this is what RuntimeBase constructor does)
+      const hookRegistry = new HookRegistry();
+      registry.setHookRegistry(hookRegistry);
+
+      // Verify the adapter got the hook registry
+      const adapter = registry.getAdapter('test-cmd');
+      expect(adapter).toBeDefined();
+      // The adapter's hookRegistry field should now be set
+      expect((adapter as any).hookRegistry).toBe(hookRegistry);
+    });
+  });
+
+  describe('Event delegation with invalid CSS selectors', () => {
+    let runtime: Runtime;
+    let context: ExecutionContext;
+    let mockElement: HTMLElement;
+
+    beforeEach(() => {
+      runtime = new Runtime();
+      mockElement = document.createElement('div');
+      document.body.appendChild(mockElement);
+      context = {
+        me: mockElement,
+        it: null,
+        you: null,
+        result: null,
+        locals: new Map(),
+        globals: new Map(),
+      };
+    });
+
+    afterEach(() => {
+      mockElement.remove();
+    });
+
+    it('should not throw when event delegation has invalid selector', async () => {
+      // Create an event handler with an invalid delegation selector
+      const handlerNode = {
+        type: 'eventHandler',
+        event: 'click',
+        events: ['click'],
+        commands: [{ type: 'command', name: 'log', args: [{ type: 'literal', value: 'clicked' }] }],
+        selector: 'invalid[[[',
+      };
+
+      // Should not throw during handler registration
+      await expect(runtime.execute(handlerNode as any, context)).resolves.not.toThrow();
     });
   });
 });

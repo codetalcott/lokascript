@@ -259,7 +259,7 @@ export class Runtime extends RuntimeBase {
       registry: CommandRegistryV2;
       expressionEvaluator: ExpressionEvaluator;
     } = {
-      registry: registry as unknown as CommandRegistryV2,
+      registry,
       expressionEvaluator,
     };
 
@@ -282,7 +282,7 @@ export class Runtime extends RuntimeBase {
    * @returns The command registry instance
    */
   getRegistry(): CommandRegistryV2 {
-    return this.registry as unknown as CommandRegistryV2;
+    return this.registry;
   }
 }
 

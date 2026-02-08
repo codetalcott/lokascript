@@ -14,6 +14,41 @@ import { HookRegistry } from '../types/hooks';
 import { ok, err, isOk } from '../types/result';
 
 import { BaseExpressionEvaluator } from '../core/base-expression-evaluator';
+
+/**
+ * Convert an ExecutionSignal to a legacy Error for backward compatibility.
+ * Used when Result-based execution returns a signal that must be re-thrown
+ * as an exception for callers expecting exception-based control flow.
+ */
+function signalToError(signal: ExecutionSignal): Error {
+  const error = new Error(signal.type.toUpperCase() + '_EXECUTION') as Error & {
+    [key: string]: unknown;
+  };
+  error['is' + signal.type.charAt(0).toUpperCase() + signal.type.slice(1)] = true;
+  if ('returnValue' in signal) {
+    error.returnValue = signal.returnValue;
+  }
+  return error;
+}
+
+/**
+ * Check if an error is a control-flow signal (halt, exit, break, continue, return).
+ * These are expected signals used for flow control, not actual errors.
+ */
+export function isControlFlowError(e: unknown): boolean {
+  if (!(e instanceof Error)) return false;
+  const err = e as any;
+  return (
+    err.isHalt === true ||
+    err.isExit === true ||
+    err.isBreak === true ||
+    err.isContinue === true ||
+    err.isReturn === true ||
+    e.message === 'HALT_EXECUTION' ||
+    e.message === 'EXIT_COMMAND' ||
+    e.message === 'EXIT_EXECUTION'
+  );
+}
 // NOTE: ExpressionEvaluator import removed for tree-shaking.
 // Use ConfigurableExpressionEvaluator or ExpressionEvaluator explicitly in your bundle.
 import { CommandRegistryV2 as CommandRegistry } from './command-adapter';
@@ -348,16 +383,7 @@ export class RuntimeBase {
             try {
               const result = await this.processCommandWithResult(node as CommandNode, context);
               if (!isOk(result)) {
-                // Convert signal back to exception for backward compatibility
-                const signal = result.error;
-                const error = new Error(signal.type.toUpperCase() + '_EXECUTION') as Error & {
-                  [key: string]: unknown;
-                };
-                error['is' + signal.type.charAt(0).toUpperCase() + signal.type.slice(1)] = true;
-                if ('returnValue' in signal) {
-                  error.returnValue = signal.returnValue;
-                }
-                throw error;
+                throw signalToError(result.error);
               }
               return result.value;
             } catch (e) {
@@ -410,14 +436,7 @@ export class RuntimeBase {
               context
             );
             if (!isOk(result)) {
-              // Convert signal back to exception for backward compatibility
-              const signal = result.error;
-              const error = new Error(signal.type.toUpperCase() + '_EXECUTION') as any;
-              error['is' + signal.type.charAt(0).toUpperCase() + signal.type.slice(1)] = true;
-              if ('returnValue' in signal) {
-                error.returnValue = signal.returnValue;
-              }
-              throw error;
+              throw signalToError(result.error);
             }
             return result.value;
           }
@@ -441,14 +460,7 @@ export class RuntimeBase {
           if (this.options.enableResultPattern) {
             const result = await this.evaluateExpressionWithResult(node, context);
             if (!isOk(result)) {
-              // Convert signal back to exception for backward compatibility
-              const signal = result.error;
-              const error = new Error(signal.type.toUpperCase() + '_EXECUTION') as any;
-              error['is' + signal.type.charAt(0).toUpperCase() + signal.type.slice(1)] = true;
-              if ('returnValue' in signal) {
-                error.returnValue = signal.returnValue;
-              }
-              throw error;
+              throw signalToError(result.error);
             }
             return result.value;
           }
@@ -497,14 +509,7 @@ export class RuntimeBase {
           runtime: this,
         });
       } catch (e) {
-        // Don't log control flow errors - they're expected signals
-        const isControlFlowError =
-          e instanceof Error &&
-          ((e as any).isHalt === true ||
-            (e as any).isExit === true ||
-            e.message === 'HALT_EXECUTION' ||
-            e.message === 'EXIT_COMMAND');
-        if (!isControlFlowError) {
+        if (!isControlFlowError(e)) {
           console.error(`Error executing command '${commandName}':`, e);
         }
         throw e;
@@ -1128,8 +1133,13 @@ export class RuntimeBase {
 
       // Event Delegation Check
       if (selector && domEvent.target instanceof Element) {
-        if (!domEvent.target.matches(selector) && !domEvent.target.closest(selector)) {
-          return;
+        try {
+          if (!domEvent.target.matches(selector) && !domEvent.target.closest(selector)) {
+            return;
+          }
+        } catch {
+          // Invalid CSS selector — skip delegation filter rather than crashing the handler
+          debug.runtime(`Event delegation: invalid CSS selector '${selector}', skipping filter`);
         }
       }
 
@@ -1182,6 +1192,7 @@ export class RuntimeBase {
 
     // Apply event modifiers
     let eventHandler: (domEvent: Event) => void | Promise<void>;
+    let debounceCleanup: (() => void) | null = null;
 
     if (modifiers) {
       let wrappedHandler = baseEventHandler;
@@ -1212,6 +1223,14 @@ export class RuntimeBase {
         eventHandler = (domEvent: Event) => {
           if (timeoutId) clearTimeout(timeoutId);
           timeoutId = setTimeout(() => wrappedHandler(domEvent), delay);
+        };
+
+        // Track cleanup for pending debounce timeout
+        debounceCleanup = () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = undefined;
+          }
         };
       }
       // Apply .throttle modifier - limit execution frequency
@@ -1251,6 +1270,14 @@ export class RuntimeBase {
           );
         }
       }
+      // Register debounce cleanup for global listeners
+      if (debounceCleanup) {
+        if (targets.length > 0) {
+          this.cleanupRegistry.registerCustom(targets[0], debounceCleanup, 'debounce-timeout');
+        } else {
+          this.cleanupRegistry.registerGlobal(debounceCleanup, 'timeout', 'debounce-timeout');
+        }
+      }
     } else {
       // Attach to HTMLElement targets
       for (const el of targets) {
@@ -1258,6 +1285,10 @@ export class RuntimeBase {
           el.addEventListener(evt, eventHandler, listenerOptions);
           // Register for cleanup
           this.cleanupRegistry.registerListener(el, el, evt, eventHandler);
+        }
+        // Register debounce cleanup per element
+        if (debounceCleanup) {
+          this.cleanupRegistry.registerCustom(el, debounceCleanup, 'debounce-timeout');
         }
       }
     }
@@ -1305,7 +1336,12 @@ export class RuntimeBase {
               try {
                 await this.execute(command, mutationContext);
               } catch (error) {
-                console.error(`❌ Error executing mutation handler command:`, error);
+                if (isControlFlowError(error)) {
+                  const e = error as any;
+                  if (e.isHalt || e.isExit || e.isReturn) break;
+                } else {
+                  console.error(`Error executing mutation handler command:`, error);
+                }
               }
             }
           }
@@ -1391,7 +1427,12 @@ export class RuntimeBase {
               try {
                 await this.execute(command, changeContext);
               } catch (error) {
-                console.error(`❌ Error executing change handler command:`, error);
+                if (isControlFlowError(error)) {
+                  const e = error as any;
+                  if (e.isHalt || e.isExit || e.isReturn) break;
+                } else {
+                  console.error(`Error executing change handler command:`, error);
+                }
               }
             }
           }
@@ -1427,7 +1468,13 @@ export class RuntimeBase {
     if (cleanSelector.startsWith('<') && cleanSelector.endsWith('/>')) {
       cleanSelector = cleanSelector.slice(1, -2).trim(); // Remove '<' and '/>' and whitespace
     }
-    return Array.from(doc.querySelectorAll(cleanSelector));
+    try {
+      return Array.from(doc.querySelectorAll(cleanSelector));
+    } catch {
+      // Invalid CSS selector — return empty array instead of crashing
+      debug.runtime(`queryElements: invalid CSS selector '${cleanSelector}'`);
+      return [];
+    }
   }
 
   protected isElement(obj: unknown): obj is HTMLElement {
