@@ -209,6 +209,20 @@ export function validateBoolean(value: unknown, name: string): ValidationResult 
 }
 
 /**
+ * Convert a simple `string | null` validation result to a `ValidationResult`.
+ *
+ * Use this to bridge validation-helpers.ts (which returns `string | null`)
+ * with code that expects a full `ValidationResult` object.
+ *
+ * @param result - null for success, or an error message string
+ * @returns ValidationResult equivalent
+ */
+export function toValidationResult(result: string | null): ValidationResult {
+  if (result === null) return validResult();
+  return invalidResult([createError('validation-error', result)]);
+}
+
+/**
  * Combine multiple validation results
  * Returns invalid if any result is invalid
  *

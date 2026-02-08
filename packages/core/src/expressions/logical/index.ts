@@ -166,8 +166,12 @@ export const strictEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['==='],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left === right;
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = left === right;
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -183,8 +187,12 @@ export const notEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=', 'is not', 'does not equal'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left != right;
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = left != right;
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -200,8 +208,12 @@ export const strictNotEqualsExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['!=='],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return left !== right;
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = left !== right;
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -217,8 +229,12 @@ export const lessThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<', 'is less than'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return compareValues(left, right, '<');
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = compareValues(left, right, '<');
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -234,8 +250,12 @@ export const lessThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['<=', 'is less than or equal to'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return compareValues(left, right, '<=');
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = compareValues(left, right, '<=');
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -251,8 +271,12 @@ export const greaterThanExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>', 'is greater than'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return compareValues(left, right, '>');
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = compareValues(left, right, '>');
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -268,8 +292,12 @@ export const greaterThanOrEqualExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['>=', 'is greater than or equal to'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
-    return compareValues(left, right, '>=');
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = compareValues(left, right, '>=');
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -403,10 +431,14 @@ export const orExpression: ExpressionImplementation = {
   associativity: 'Left',
   operators: ['or', '||'],
 
-  async evaluate(_context: ExecutionContext, left: unknown, right: unknown): Promise<any> {
+  async evaluate(context: ExecutionContext, left: unknown, right: unknown): Promise<any> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
     // Return the first truthy value, or the last value if all are falsy
     // This matches JavaScript || behavior: returns actual values, not booleans
-    return left || right;
+    const result = left || right;
+    if (tracking) trackEvaluation(this, context, [left, right], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -422,9 +454,13 @@ export const notExpression: ExpressionImplementation = {
   associativity: 'Right',
   operators: ['not', '!'],
 
-  async evaluate(_context: ExecutionContext, operand: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, operand: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
     // Convert to boolean using truthy/falsy rules
-    return !operand;
+    const result = !operand;
+    if (tracking) trackEvaluation(this, context, [operand], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -442,16 +478,21 @@ export const isEmptyExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['is empty', 'isEmpty'],
 
-  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
-    if (value == null) return true;
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    let result: boolean;
+    if (value == null) result = true;
     // Uses registry-based type checks
-    if (isString(value)) return (value as string).length === 0;
-    if (Array.isArray(value)) return value.length === 0;
-    if (value instanceof NodeList) return value.length === 0;
+    else if (isString(value)) result = (value as string).length === 0;
+    else if (Array.isArray(value)) result = value.length === 0;
+    else if (value instanceof NodeList) result = value.length === 0;
     // DOM elements should NEVER be considered empty
-    if (value instanceof Node || value instanceof Element) return false;
-    if (isObject(value)) return Object.keys(value as object).length === 0;
-    return false;
+    else if (value instanceof Node || value instanceof Element) result = false;
+    else if (isObject(value)) result = Object.keys(value as object).length === 0;
+    else result = false;
+    if (tracking) trackEvaluation(this, context, [value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -465,24 +506,29 @@ export const noExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['no'],
 
-  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
     // The 'no' operator returns true for "absence of value":
     // - null/undefined: true (no value)
     // - false: true (boolean false is "no value" in _hyperscript)
     // - empty arrays/NodeLists: true (empty collections)
     // - everything else: false (including empty strings, 0, objects)
-    if (value == null) return true;
-    if (value === false) return true;
-    if (Array.isArray(value)) return value.length === 0;
-    if (value instanceof NodeList) return value.length === 0;
+    let result: boolean;
+    if (value == null) result = true;
+    else if (value === false) result = true;
+    else if (Array.isArray(value)) result = value.length === 0;
+    else if (value instanceof NodeList) result = value.length === 0;
     // Strings exist even when empty - not "no value"
-    if (isString(value)) return false;
+    else if (isString(value)) result = false;
     // DOM elements are real objects
-    if (value instanceof Node || value instanceof Element) return false;
+    else if (value instanceof Node || value instanceof Element) result = false;
     // Objects with keys exist
-    if (isObject(value)) return Object.keys(value as object).length === 0;
+    else if (isObject(value)) result = Object.keys(value as object).length === 0;
     // Numbers (including 0), true, etc. are values
-    return false;
+    else result = false;
+    if (tracking) trackEvaluation(this, context, [value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -497,7 +543,11 @@ export const isNotEmptyExpression: ExpressionImplementation = {
   operators: ['is not empty', 'isNotEmpty'],
 
   async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
-    return !(await isEmptyExpression.evaluate(context, value));
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = !(await isEmptyExpression.evaluate(context, value));
+    if (tracking) trackEvaluation(this, context, [value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -511,8 +561,12 @@ export const existsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['exists'],
 
-  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
-    return value != null;
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = value != null;
+    if (tracking) trackEvaluation(this, context, [value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -526,8 +580,12 @@ export const doesNotExistExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['does not exist', 'doesNotExist'],
 
-  async evaluate(_context: ExecutionContext, value: unknown): Promise<boolean> {
-    return value == null;
+  async evaluate(context: ExecutionContext, value: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = value == null;
+    if (tracking) trackEvaluation(this, context, [value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -545,54 +603,66 @@ export const containsExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['contains', 'includes', 'include'],
 
-  async evaluate(_context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    let result: boolean;
+
     // Handle DOM element containment first
     if (container && value) {
       // If both are DOM elements, check containment
       if (isDOMElement(container) && isDOMElement(value)) {
-        return (container as Node).contains(value as Node);
+        result = (container as Node).contains(value as Node);
+        if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+        return result;
       }
 
       // If container is CSS selector string, resolve to element (uses registry-based type check)
       if (isString(container) && (container as string).match(/^[.#][\w-]+$/)) {
         const containerElement = document.querySelector(container as string);
         if (containerElement && isDOMElement(value)) {
-          return containerElement.contains(value as Node);
+          result = containerElement.contains(value as Node);
+          if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+          return result;
         }
         if (containerElement && isString(value) && (value as string).match(/^[.#][\w-]+$/)) {
           const valueElement = document.querySelector(value as string);
-          return valueElement ? containerElement.contains(valueElement) : false;
+          result = valueElement ? containerElement.contains(valueElement) : false;
+          if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+          return result;
         }
       }
 
       // If value is CSS selector string, resolve to element (uses registry-based type check)
       if (isString(value) && (value as string).match(/^[.#][\w-]+$/) && isDOMElement(container)) {
         const valueElement = document.querySelector(value as string);
-        return valueElement ? (container as Node).contains(valueElement) : false;
+        result = valueElement ? (container as Node).contains(valueElement) : false;
+        if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+        return result;
       }
     }
 
     // String containment (uses registry-based type checks)
     if (isString(container) && isString(value)) {
-      return (container as string).includes(value as string);
+      result = (container as string).includes(value as string);
     }
-
     // Array containment
-    if (Array.isArray(container)) {
-      return container.includes(value);
+    else if (Array.isArray(container)) {
+      result = container.includes(value);
     }
-
     // Check for NodeList (browser environment only)
-    if (typeof NodeList !== 'undefined' && container instanceof NodeList) {
-      return Array.from(container).includes(value as Node);
+    else if (typeof NodeList !== 'undefined' && container instanceof NodeList) {
+      result = Array.from(container).includes(value as Node);
     }
-
     // Check if object has property (uses registry-based type checks)
-    if (isObject(container) && isString(value)) {
-      return (value as string) in (container as object);
+    else if (isObject(container) && isString(value)) {
+      result = (value as string) in (container as object);
+    } else {
+      result = false;
     }
 
-    return false;
+    if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -607,7 +677,11 @@ export const doesNotContainExpression: ExpressionImplementation = {
   operators: ['does not contain', 'doesNotContain', 'does not include', 'doesNotInclude'],
 
   async evaluate(context: ExecutionContext, container: unknown, value: unknown): Promise<boolean> {
-    return !(await containsExpression.evaluate(context, container, value));
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = !(await containsExpression.evaluate(context, container, value));
+    if (tracking) trackEvaluation(this, context, [container, value], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -621,12 +695,14 @@ export const startsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['starts with', 'startsWith'],
 
-  async evaluate(_context: ExecutionContext, str: unknown, prefix: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, str: unknown, prefix: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
     // Uses registry-based type checks
-    if (!isString(str) || !isString(prefix)) {
-      return false;
-    }
-    return (str as string).startsWith(prefix as string);
+    const result =
+      isString(str) && isString(prefix) ? (str as string).startsWith(prefix as string) : false;
+    if (tracking) trackEvaluation(this, context, [str, prefix], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -640,12 +716,14 @@ export const endsWithExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['ends with', 'endsWith'],
 
-  async evaluate(_context: ExecutionContext, str: unknown, suffix: unknown): Promise<boolean> {
+  async evaluate(context: ExecutionContext, str: unknown, suffix: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
     // Uses registry-based type checks
-    if (!isString(str) || !isString(suffix)) {
-      return false;
-    }
-    return (str as string).endsWith(suffix as string);
+    const result =
+      isString(str) && isString(suffix) ? (str as string).endsWith(suffix as string) : false;
+    if (tracking) trackEvaluation(this, context, [str, suffix], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -814,23 +892,23 @@ export const hasExpression: ExpressionImplementation = {
   evaluatesTo: 'Boolean',
   operators: ['has', 'have'],
 
-  async evaluate(
-    _context: ExecutionContext,
-    element: unknown,
-    selector: unknown
-  ): Promise<boolean> {
+  async evaluate(context: ExecutionContext, element: unknown, selector: unknown): Promise<boolean> {
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    let result = false;
     // Check class presence: "me has .active"
     if (element instanceof Element && isString(selector)) {
       const selectorStr = selector as string;
       if (selectorStr.startsWith('.')) {
-        return element.classList.contains(selectorStr.slice(1));
+        result = element.classList.contains(selectorStr.slice(1));
       }
       // Check attribute presence: "me has [disabled]"
-      if (selectorStr.startsWith('[') && selectorStr.endsWith(']')) {
-        return element.hasAttribute(selectorStr.slice(1, -1));
+      else if (selectorStr.startsWith('[') && selectorStr.endsWith(']')) {
+        result = element.hasAttribute(selectorStr.slice(1, -1));
       }
     }
-    return false;
+    if (tracking) trackEvaluation(this, context, [element, selector], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {
@@ -845,7 +923,11 @@ export const doesNotHaveExpression: ExpressionImplementation = {
   operators: ['does not have'],
 
   async evaluate(context: ExecutionContext, element: unknown, selector: unknown): Promise<boolean> {
-    return !(await hasExpression.evaluate(context, element, selector));
+    const tracking = (context as { evaluationHistory?: unknown[] }).evaluationHistory;
+    const startTime = tracking ? Date.now() : 0;
+    const result = !(await hasExpression.evaluate(context, element, selector));
+    if (tracking) trackEvaluation(this, context, [element, selector], result, startTime);
+    return result;
   },
 
   validate(args: unknown[]): string | null {

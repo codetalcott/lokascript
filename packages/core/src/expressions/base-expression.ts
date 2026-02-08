@@ -23,8 +23,20 @@ import type {
 import { isString, isNumber, isBoolean, isObject, isFunction } from './type-helpers';
 
 /**
- * Abstract base class for expression implementations
- * Provides shared functionality to reduce code duplication
+ * Abstract base class for typed expression implementations.
+ *
+ * Use this when an expression needs:
+ * - Typed results (`EvaluationResult<T>`) with success/error tracking
+ * - Structured validation (`ValidationResult` with multiple errors/suggestions)
+ * - Built-in performance tracking via `trackPerformance()`
+ * - Input schema validation via `RuntimeValidator<TInput>`
+ *
+ * Used by: parser-integrated expressions (mathematical/, comparison/, property/)
+ * and `impl/` subdirectories within bundled categories.
+ *
+ * For simpler expressions, prefer `ExpressionImplementation` (object literal)
+ * from `types/core.ts` — it uses variadic args, returns raw values, and
+ * validates with `string | null`.
  */
 export abstract class BaseExpressionImpl<TInput = unknown, TOutput = unknown> {
   // Required properties that subclasses must define

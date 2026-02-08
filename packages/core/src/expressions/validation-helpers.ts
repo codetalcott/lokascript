@@ -5,11 +5,16 @@
  * Each function returns null on success or an error message string on failure,
  * matching the standard ExpressionImplementation.validate() return type.
  *
+ * Use this API for simple expressions. For expressions needing multiple errors
+ * or suggestions, use `shared/validation-utils.ts` (returns `ValidationResult`).
+ * Bridge between the two with `toValidationResult()` / `fromValidationResult()`.
+ *
  * Estimated savings: ~200 lines across expression implementations
  *
  * Uses centralized type-helpers for consistent type checking.
  */
 
+import type { ValidationResult } from '../types/base-types';
 import { isObject } from './type-helpers';
 
 // Number-to-word mapping for small numbers (matches existing error message style)
@@ -249,4 +254,18 @@ export function validateArgRange(
     return `${expressionName} requires ${min}-${max} arguments${argDesc}`;
   }
   return null;
+}
+
+/**
+ * Convert a `ValidationResult` to a simple `string | null`.
+ *
+ * Use this to bridge `shared/validation-utils.ts` (which returns `ValidationResult`)
+ * with code that expects a simple `string | null` from `validate()`.
+ *
+ * @param result - ValidationResult object
+ * @returns null if valid, or the first error message as a string
+ */
+export function fromValidationResult(result: ValidationResult): string | null {
+  if (result.isValid) return null;
+  return result.errors[0]?.message ?? 'Validation failed';
 }

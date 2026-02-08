@@ -214,6 +214,17 @@ export interface CommandImplementation<
 
 // TypedExecutionContext is now exported from base-types.ts above
 
+/**
+ * Lightweight expression interface — preferred for new expressions.
+ *
+ * Uses variadic args and returns raw values. Validation returns `string | null`.
+ * Used by all 6 bundled expression categories (references, logical, special,
+ * conversion, positional, properties).
+ *
+ * For expressions needing typed results (`TypedResult<T>`), structured validation
+ * (`ValidationResult`), or built-in performance tracking, use `BaseExpressionImpl`
+ * from `expressions/base-expression.ts` instead.
+ */
 export interface ExpressionImplementation {
   name: string;
   category: ExpressionCategory;

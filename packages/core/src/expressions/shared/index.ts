@@ -40,6 +40,7 @@ export {
   validResult,
   invalidResult,
   createError,
+  toValidationResult,
   validateBinaryInput,
   validateUnaryInput,
   validateNotNull,
