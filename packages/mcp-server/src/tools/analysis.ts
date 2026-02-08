@@ -183,8 +183,8 @@ export async function handleAnalysisTool(
       case 'explain_code': {
         const audience = (args.audience as string) || 'intermediate';
         const detail = (args.detail as string) || 'detailed';
-        // Use fallback if core/ast-utils unavailable
-        if (!astToolkit) {
+        // Use fallback if core/ast-utils unavailable or explainCode not exported
+        if (!astToolkit || typeof astToolkit.explainCode !== 'function') {
           return simpleExplanation(code, audience, detail);
         }
         const ast = await parseHyperscript(code);
@@ -198,8 +198,8 @@ export async function handleAnalysisTool(
       }
 
       case 'recognize_intent': {
-        // Use fallback if core/ast-utils unavailable
-        if (!astToolkit) {
+        // Use fallback if core/ast-utils unavailable or recognizeIntent not exported
+        if (!astToolkit || typeof astToolkit.recognizeIntent !== 'function') {
           return simpleIntentRecognition(code);
         }
         const intent = astToolkit.recognizeIntent(code);
