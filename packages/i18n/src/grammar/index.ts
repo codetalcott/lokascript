@@ -37,6 +37,15 @@ export {
   indonesianProfile,
   quechuaProfile,
   swahiliProfile,
+  bengaliProfile,
+  italianProfile,
+  russianProfile,
+  ukrainianProfile,
+  vietnameseProfile,
+  hindiProfile,
+  tagalogProfile,
+  thaiProfile,
+  polishProfile,
 } from './profiles';
 
 // Direct language-pair translation

@@ -19,70 +19,22 @@ import { getProfile, profiles } from './profiles';
 import { hasDirectMapping, getDirectMapping } from './direct-mappings';
 import { dictionaries } from '../dictionaries';
 import { findInDictionary, translateFromEnglish } from '../types';
-import { ENGLISH_MODIFIER_ROLES, CONDITIONAL_KEYWORDS, THEN_KEYWORDS } from '../constants';
+import {
+  ENGLISH_MODIFIER_ROLES,
+  ENGLISH_COMMANDS,
+  CONDITIONAL_KEYWORDS,
+  THEN_KEYWORDS,
+} from '../constants';
 
 // =============================================================================
 // Compound Statement Handling
 // =============================================================================
 
 /**
- * English commands that can start a new statement.
- * Used to detect command boundaries in space-chained statements.
- */
-const COMMAND_KEYWORDS = new Set([
-  'add',
-  'append',
-  'async',
-  'beep',
-  'break',
-  'call',
-  'continue',
-  'decrement',
-  'default',
-  'exit',
-  'fetch',
-  'for',
-  'get',
-  'go',
-  'halt',
-  'hide',
-  'if',
-  'increment',
-  'install',
-  'js',
-  'log',
-  'make',
-  'measure',
-  'morph',
-  'pick',
-  'process',
-  'push',
-  'put',
-  'remove',
-  'render',
-  'repeat',
-  'replace',
-  'return',
-  'send',
-  'set',
-  'settle',
-  'show',
-  'swap',
-  'take',
-  'tell',
-  'throw',
-  'toggle',
-  'transition',
-  'trigger',
-  'unless',
-  'wait',
-]);
-
-/**
  * Get all command keywords including translated ones for a locale.
  */
 function getCommandKeywordsForLocale(locale: string): Set<string> {
-  const keywords = new Set(COMMAND_KEYWORDS);
+  const keywords = new Set(ENGLISH_COMMANDS);
 
   // Add translated command keywords from dictionaries
   const dict = dictionaries[locale];
@@ -119,7 +71,7 @@ function splitCompoundStatement(input: string, sourceLocale: string): string[] {
 
   // If we have multiple lines, treat each as a separate part
   // (but still need to handle "then" within each line)
-  let parts: string[] = [];
+  const parts: string[] = [];
 
   for (const line of lines) {
     const lineParts = splitOnThen(line, sourceLocale);
@@ -298,6 +250,21 @@ function reconstructWithLineStructure(
  * - "on <event> <command>" stays together (event handler with first command)
  * - Modifiers like "to", "from" don't trigger splits
  */
+/** Modifier keywords that should not trigger command boundary splits */
+const BOUNDARY_MODIFIERS = new Set([
+  'to',
+  'into',
+  'from',
+  'with',
+  'by',
+  'as',
+  'at',
+  'in',
+  'on',
+  'of',
+  'over',
+]);
+
 function splitOnCommandBoundaries(input: string, sourceLocale: string): string[] {
   const commandKeywords = getCommandKeywordsForLocale(sourceLocale);
   const tokens = input.split(/\s+/);
@@ -325,21 +292,6 @@ function splitOnCommandBoundaries(input: string, sourceLocale: string): string[]
       const prevToken = currentPart[currentPart.length - 1];
       const prevLower = prevToken.toLowerCase();
 
-      // Don't split if the previous token is a modifier like "to", "from", "by", etc.
-      const modifiers = new Set([
-        'to',
-        'into',
-        'from',
-        'with',
-        'by',
-        'as',
-        'at',
-        'in',
-        'on',
-        'of',
-        'over',
-      ]);
-
       // For event handlers: don't split before the first command
       // E.g., "on click wait 1s" should stay together
       if (!seenFirstCommand) {
@@ -349,7 +301,7 @@ function splitOnCommandBoundaries(input: string, sourceLocale: string): string[]
         continue;
       }
 
-      if (!modifiers.has(prevLower) && !commandKeywords.has(prevLower)) {
+      if (!BOUNDARY_MODIFIERS.has(prevLower) && !commandKeywords.has(prevLower)) {
         // This looks like a command boundary - save current part and start new one
         parts.push(currentPart.join(' '));
         currentPart = [token];
@@ -700,7 +652,7 @@ function parseEventHandler(tokens: string[], profile: LanguageProfile): ParsedSt
     // Collect source value tokens until a command keyword is found
     const sourceValue: string[] = [];
     while (tokens[startIndex]) {
-      if (COMMAND_KEYWORDS.has(tokens[startIndex].toLowerCase())) break;
+      if (ENGLISH_COMMANDS.has(tokens[startIndex].toLowerCase())) break;
       sourceValue.push(tokens[startIndex]);
       startIndex++;
     }

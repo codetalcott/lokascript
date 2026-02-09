@@ -49,11 +49,22 @@ export { idKeywords, idDictionary } from './parser/id';
 export { quKeywords, quDictionary } from './parser/qu';
 export { swKeywords, swDictionary } from './parser/sw';
 export { ptKeywords, ptDictionary } from './parser/pt';
+export { itKeywords, itDictionary } from './parser/it';
+export { viKeywords, viDictionary } from './parser/vi';
+export { plKeywords, plDictionary } from './parser/pl';
+export { ruKeywords, ruDictionary } from './parser/ru';
+export { ukKeywords, ukDictionary } from './parser/uk';
+export { hiKeywords, hiDictionary } from './parser/hi';
+export { bnKeywords, bnDictionary } from './parser/bn';
+export { thKeywords, thDictionary } from './parser/th';
+export { msKeywords, msDictionary } from './parser/ms';
+export { tlKeywords, tlDictionary } from './parser/tl';
 
 // Locale management
 export { LocaleManager, detectBrowserLocale } from './parser/locale-manager';
 
 // Re-export dictionaries for custom provider creation
+export { en } from './dictionaries/en';
 export { es } from './dictionaries/es';
 export { ja } from './dictionaries/ja';
 export { fr } from './dictionaries/fr';
@@ -66,6 +77,16 @@ export { id } from './dictionaries/id';
 export { qu } from './dictionaries/qu';
 export { sw } from './dictionaries/sw';
 export { pt } from './dictionaries/pt';
+export { it } from './dictionaries/it';
+export { vi } from './dictionaries/vi';
+export { pl } from './dictionaries/pl';
+export { russianDictionary } from './dictionaries/ru';
+export { ukrainianDictionary } from './dictionaries/uk';
+export { hindiDictionary } from './dictionaries/hi';
+export { bn } from './dictionaries/bn';
+export { th } from './dictionaries/th';
+export { ms } from './dictionaries/ms';
+export { tl } from './dictionaries/tl';
 
 // Grammar-aware transformation system (Phase 2)
 export {

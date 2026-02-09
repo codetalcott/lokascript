@@ -2,6 +2,7 @@
 
 import { dictionaries } from '../dictionaries';
 import { DICTIONARY_CATEGORIES } from '../types';
+import { profiles } from '../grammar/profiles';
 
 export interface LocaleInfo {
   code: string;
@@ -98,17 +99,7 @@ export function getBestMatchingLocale(
 
   const requested = parseLocale(requestedLocale);
 
-  // Try language-only match
-  const languageMatch = availableLocales.find(locale => {
-    const available = parseLocale(locale);
-    return available.language === requested.language;
-  });
-
-  if (languageMatch) {
-    return languageMatch;
-  }
-
-  // Try language-script match
+  // Try language+script match first (more specific)
   if (requested.script) {
     const scriptMatch = availableLocales.find(locale => {
       const available = parseLocale(locale);
@@ -118,6 +109,16 @@ export function getBestMatchingLocale(
     if (scriptMatch) {
       return scriptMatch;
     }
+  }
+
+  // Fall back to language-only match
+  const languageMatch = availableLocales.find(locale => {
+    const available = parseLocale(locale);
+    return available.language === requested.language;
+  });
+
+  if (languageMatch) {
+    return languageMatch;
   }
 
   return null;
@@ -160,24 +161,17 @@ function escapeRegex(str: string): string {
 }
 
 /**
- * Format a locale for display
+ * Format a locale for display using the native name from its grammar profile.
  */
 export function formatLocaleName(locale: string): string {
-  const names: Record<string, string> = {
-    en: 'English',
-    es: 'Español',
-    ko: '한국어',
-    zh: '中文',
-    'zh-TW': '繁體中文',
-    ja: '日本語',
-    fr: 'Français',
-    de: 'Deutsch',
-    pt: 'Português',
-    hi: 'हिन्दी',
-    ar: 'العربية',
-  };
+  const profile = profiles[locale];
+  if (profile) return profile.name;
 
-  return names[locale] || locale;
+  // Fallback for sub-locale codes (e.g., 'zh-TW')
+  const subLocaleNames: Record<string, string> = {
+    'zh-TW': '繁體中文',
+  };
+  return subLocaleNames[locale] || locale;
 }
 
 /**

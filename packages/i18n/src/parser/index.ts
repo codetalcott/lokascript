@@ -45,6 +45,16 @@ export { idKeywords, idDictionary } from './id';
 export { quKeywords, quDictionary } from './qu';
 export { swKeywords, swDictionary } from './sw';
 export { ptKeywords, ptDictionary } from './pt';
+export { itKeywords, itDictionary } from './it';
+export { viKeywords, viDictionary } from './vi';
+export { plKeywords, plDictionary } from './pl';
+export { ruKeywords, ruDictionary } from './ru';
+export { ukKeywords, ukDictionary } from './uk';
+export { hiKeywords, hiDictionary } from './hi';
+export { bnKeywords, bnDictionary } from './bn';
+export { thKeywords, thDictionary } from './th';
+export { msKeywords, msDictionary } from './ms';
+export { tlKeywords, tlDictionary } from './tl';
 
 // Locale management
 export { LocaleManager, detectBrowserLocale } from './locale-manager';

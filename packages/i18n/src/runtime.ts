@@ -4,6 +4,7 @@ import { HyperscriptTranslator } from './translator';
 import { Dictionary, I18nConfig, TranslationOptions } from './types';
 import { getBrowserLocales, isRTL } from './utils/locale';
 import { getFormatter } from './formatting';
+import { profiles } from './grammar/profiles';
 
 /**
  * Runtime i18n manager for client-side locale switching
@@ -377,21 +378,39 @@ export class RuntimeI18nManager {
    * Get locale display name
    */
   private getLocaleDisplayName(locale: string, showNative: boolean): string {
-    const names: Record<string, { english: string; native: string }> = {
-      en: { english: 'English', native: 'English' },
-      es: { english: 'Spanish', native: 'Español' },
-      fr: { english: 'French', native: 'Français' },
-      de: { english: 'German', native: 'Deutsch' },
-      ja: { english: 'Japanese', native: '日本語' },
-      ko: { english: 'Korean', native: '한국어' },
-      zh: { english: 'Chinese', native: '中文' },
-      ar: { english: 'Arabic', native: 'العربية' },
+    if (showNative) {
+      const profile = profiles[locale];
+      if (profile) return profile.name;
+      return locale;
+    }
+
+    const englishNames: Record<string, string> = {
+      en: 'English',
+      es: 'Spanish',
+      fr: 'French',
+      de: 'German',
+      ja: 'Japanese',
+      ko: 'Korean',
+      zh: 'Chinese',
+      ar: 'Arabic',
+      tr: 'Turkish',
+      pt: 'Portuguese',
+      id: 'Indonesian',
+      qu: 'Quechua',
+      sw: 'Swahili',
+      it: 'Italian',
+      vi: 'Vietnamese',
+      pl: 'Polish',
+      ru: 'Russian',
+      uk: 'Ukrainian',
+      hi: 'Hindi',
+      bn: 'Bengali',
+      th: 'Thai',
+      ms: 'Malay',
+      tl: 'Tagalog',
     };
 
-    const info = names[locale];
-    if (!info) return locale;
-
-    return showNative ? info.native : info.english;
+    return englishNames[locale] || locale;
   }
 
   /**
