@@ -26,6 +26,30 @@ const delegatedEvents = new Set<string>();
 const delegationHandlers = new Map<string, EventListener>();
 
 /**
+ * Callback type for registering cleanup functions with an external registry.
+ * Avoids importing CleanupRegistry directly (which lives in src/runtime/).
+ */
+export type DelegationCleanupRegistrar = (cleanup: () => void, description: string) => void;
+
+let _cleanupRegistrar: DelegationCleanupRegistrar | null = null;
+
+/**
+ * Wire delegation cleanup into an external cleanup system (e.g., CleanupRegistry).
+ * When set, all document-level delegation listeners are registered for cleanup,
+ * including any already-active handlers.
+ */
+export function setDelegationCleanupRegistrar(registrar: DelegationCleanupRegistrar): void {
+  _cleanupRegistrar = registrar;
+  // Register existing delegation handlers
+  delegationHandlers.forEach((handler, eventType) => {
+    registrar(
+      () => document.removeEventListener(eventType, handler, { capture: true }),
+      `Event delegation for '${eventType}'`
+    );
+  });
+}
+
+/**
  * Creates a new event manager
  */
 export function createEventManager(): HyperscriptEventManager {
@@ -38,8 +62,9 @@ export function createEventManager(): HyperscriptEventManager {
 /**
  * Generates a unique listener ID
  */
+let listenerIdCounter = 0;
 function generateListenerId(): string {
-  return `listener_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+  return `listener_${++listenerIdCounter}`;
 }
 
 /**
@@ -230,6 +255,14 @@ function ensureEventDelegation(eventType: string): void {
   delegationHandlers.set(eventType, delegationHandler);
 
   document.addEventListener(eventType, delegationHandler, { capture: true });
+
+  // Register for cleanup if a registrar is available
+  if (_cleanupRegistrar) {
+    _cleanupRegistrar(
+      () => document.removeEventListener(eventType, delegationHandler, { capture: true }),
+      `Event delegation for '${eventType}'`
+    );
+  }
 }
 
 /**
@@ -282,6 +315,12 @@ export function cleanupEventDelegation(): void {
   delegatedEvents.clear();
   delegationHandlers.clear();
   delegationSetup = false;
+  _cleanupRegistrar = null;
+
+  // Clear global manager registry to prevent stale references
+  if (typeof window !== 'undefined' && (window as any).__hyperscriptEventManagers) {
+    (window as any).__hyperscriptEventManagers = [];
+  }
 }
 
 /**
@@ -396,8 +435,13 @@ export function waitForEvent(
 }
 
 /**
- * Emits fx:config event for fixi compatibility
- * Allows modification of request configuration before sending
+ * Emits a cancelable `fx:config` event for fixi compatibility.
+ * Listeners may modify `event.detail.config` before the request is sent,
+ * or call `event.preventDefault()` to abort the request entirely.
+ *
+ * @param element - The element dispatching the event
+ * @param cfg - The request configuration object (url, method, headers, etc.)
+ * @returns `true` to proceed with the request; `false` if cancelled via `preventDefault()`
  */
 export function emitConfigEvent(element: HTMLElement, cfg: any): boolean {
   const event = new CustomEvent('fx:config', {
@@ -413,8 +457,12 @@ export function emitConfigEvent(element: HTMLElement, cfg: any): boolean {
 }
 
 /**
- * Emits fx:before event for fixi compatibility
- * Fired just before HTTP request is sent
+ * Emits a cancelable `fx:before` event just before the HTTP request is sent.
+ * Call `event.preventDefault()` to abort the request.
+ *
+ * @param element - The element dispatching the event
+ * @param cfg - The finalized request configuration
+ * @returns `true` to proceed with the request; `false` if cancelled via `preventDefault()`
  */
 export function emitBeforeEvent(element: HTMLElement, cfg: any): boolean {
   const event = new CustomEvent('fx:before', {
@@ -430,8 +478,13 @@ export function emitBeforeEvent(element: HTMLElement, cfg: any): boolean {
 }
 
 /**
- * Emits fx:after event for fixi compatibility
- * Fired after HTTP response is received
+ * Emits a cancelable `fx:after` event after the HTTP response is received.
+ * Listeners may inspect the response via `event.detail.config` or cancel
+ * further processing (e.g., DOM swap) via `event.preventDefault()`.
+ *
+ * @param element - The element dispatching the event
+ * @param cfg - The request configuration including response data
+ * @returns `true` to continue processing; `false` if cancelled via `preventDefault()`
  */
 export function emitAfterEvent(element: HTMLElement, cfg: any): boolean {
   const event = new CustomEvent('fx:after', {

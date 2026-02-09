@@ -184,8 +184,8 @@ export type ExpressionCategory =
  *   TypedExecutionContext - Type registry + validation cache
  */
 export interface ExecutionContext extends CoreExecutionContext {
-  /** Result of last operation */
-  readonly result: unknown;
+  /** Result of last operation — mutable for runtime context updates */
+  result: unknown;
 
   // Control flow flags
   readonly halted?: boolean;

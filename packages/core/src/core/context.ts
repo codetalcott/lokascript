@@ -17,11 +17,11 @@ const sharedGlobals = new Map<string, any>();
  * @param globals - Optional globals Map (defaults to shared globals)
  */
 export function createContext(
-  element?: HTMLElement | null,
+  element?: Element | null,
   globals?: Map<string, any>
 ): ExecutionContext {
   return {
-    me: element || null,
+    me: element ?? null,
     it: null,
     you: null,
     result: null,
@@ -49,10 +49,10 @@ export function getSharedGlobals(): Map<string, any> {
  */
 export function createChildContext(
   parent: ExecutionContext,
-  element?: HTMLElement | null
+  element?: Element | null
 ): ExecutionContext {
   return {
-    me: element || null,
+    me: element ?? parent.me,
     it: null,
     you: null,
     result: null,
@@ -97,14 +97,12 @@ export function ensureContext(userContext?: Partial<ExecutionContext> | any): Ex
 
   // Create proper context with user's element, then merge other user values
   // Use Element (not HTMLElement) for SVG, MathML, and cross-frame element support
-  const ctx = createContext(
-    userContext.me instanceof Element ? (userContext.me as HTMLElement) : null
-  );
+  const ctx = createContext(userContext.me instanceof Element ? userContext.me : null);
 
   // Merge user-provided values
-  if (userContext.it !== undefined) Object.assign(ctx, { it: userContext.it });
+  if (userContext.it !== undefined) ctx.it = userContext.it;
   if (userContext.you !== undefined) ctx.you = userContext.you;
-  if (userContext.result !== undefined) Object.assign(ctx, { result: userContext.result });
+  if (userContext.result !== undefined) ctx.result = userContext.result;
   if (userContext.event !== undefined) Object.assign(ctx, { event: userContext.event });
 
   return ctx;
@@ -122,16 +120,16 @@ export function setContextValue(
   // Handle special context variables
   switch (name) {
     case 'me':
-      Object.assign(context, { me: value });
+      context.me = value;
       return;
     case 'it':
-      Object.assign(context, { it: value });
+      context.it = value;
       return;
     case 'you':
       context.you = value;
       return;
     case 'result':
-      Object.assign(context, { result: value });
+      context.result = value;
       return;
   }
 
@@ -164,14 +162,22 @@ export function getContextValue(context: ExecutionContext, name: string): any {
     return context.locals.get(name);
   }
 
-  // Check global scope
-  if (context.globals.has(name)) {
-    return context.globals.get(name);
+  // Walk up the scope chain (parent locals shadow globals)
+  if (context.parent) {
+    const parentValue = getContextValue(context.parent, name);
+    if (parentValue !== undefined) {
+      return parentValue;
+    }
   }
 
-  // Walk up the scope chain
-  if (context.parent) {
-    return getContextValue(context.parent, name);
+  // Check legacy variables Map (backward compatibility)
+  if (context.variables?.has(name)) {
+    return context.variables.get(name);
+  }
+
+  // Check global scope (last — globals are the outermost scope)
+  if (context.globals.has(name)) {
+    return context.globals.get(name);
   }
 
   // Variable not found
@@ -192,14 +198,21 @@ export function hasContextValue(context: ExecutionContext, name: string): boolea
     return true;
   }
 
-  // Check global scope
-  if (context.globals.has(name)) {
+  // Walk up the scope chain (parent locals shadow globals)
+  if (context.parent) {
+    if (hasContextValue(context.parent, name)) {
+      return true;
+    }
+  }
+
+  // Check legacy variables Map (backward compatibility)
+  if (context.variables?.has(name)) {
     return true;
   }
 
-  // Walk up the scope chain
-  if (context.parent) {
-    return hasContextValue(context.parent, name);
+  // Check global scope (last — globals are the outermost scope)
+  if (context.globals.has(name)) {
+    return true;
   }
 
   return false;
@@ -223,6 +236,12 @@ export function deleteContextValue(context: ExecutionContext, name: string): boo
   // Try to delete from global scope
   if (context.globals.has(name)) {
     context.globals.delete(name);
+    return true;
+  }
+
+  // Try to delete from legacy variables Map (backward compatibility)
+  if (context.variables?.has(name)) {
+    context.variables.delete(name);
     return true;
   }
 
@@ -250,10 +269,10 @@ export function snapshotContext(context: ExecutionContext): Record<string, any> 
  * Restores context state from a snapshot
  */
 export function restoreContext(context: ExecutionContext, snapshot: Record<string, any>): void {
-  if (snapshot.me !== undefined) Object.assign(context, { me: snapshot.me });
-  if (snapshot.it !== undefined) Object.assign(context, { it: snapshot.it });
+  if (snapshot.me !== undefined) context.me = snapshot.me;
+  if (snapshot.it !== undefined) context.it = snapshot.it;
   if (snapshot.you !== undefined) context.you = snapshot.you;
-  if (snapshot.result !== undefined) Object.assign(context, { result: snapshot.result });
+  if (snapshot.result !== undefined) context.result = snapshot.result;
 
   if (snapshot.locals) {
     context.locals.clear();
@@ -263,7 +282,12 @@ export function restoreContext(context: ExecutionContext, snapshot: Record<strin
   }
 
   if (snapshot.globals) {
-    context.globals.clear();
+    // Non-destructive update: globals are shared across all contexts,
+    // so clear() would momentarily wipe state visible to other contexts.
+    const snapshotKeys = new Set(Object.keys(snapshot.globals));
+    for (const key of context.globals.keys()) {
+      if (!snapshotKeys.has(key)) context.globals.delete(key);
+    }
     Object.entries(snapshot.globals).forEach(([key, value]) => {
       context.globals.set(key, value);
     });
@@ -278,11 +302,11 @@ export function restoreContext(context: ExecutionContext, snapshot: Record<strin
  * Clones a context (useful for parallel execution)
  */
 export function cloneContext(context: ExecutionContext): ExecutionContext {
-  const cloned = createContext(context.me instanceof HTMLElement ? context.me : null);
+  const cloned = createContext(context.me);
 
-  Object.assign(cloned, { it: context.it });
+  cloned.it = context.it;
   cloned.you = context.you;
-  Object.assign(cloned, { result: context.result });
+  cloned.result = context.result;
 
   // Deep copy locals
   context.locals.forEach((value, key) => {
@@ -290,8 +314,7 @@ export function cloneContext(context: ExecutionContext): ExecutionContext {
   });
 
   // Share globals reference (globals should be shared)
-  Object.assign(cloned, { globals: context.globals });
-  Object.assign(cloned, { parent: context.parent });
+  Object.assign(cloned, { globals: context.globals, parent: context.parent });
 
   // Copy flags if both exist
   if (cloned.flags && context.flags) {
@@ -310,10 +333,10 @@ export function mergeContexts(target: ExecutionContext, source: ExecutionContext
     target.locals.set(key, value);
   });
 
-  // Update special variables if they exist in source
-  if (source.it !== null) Object.assign(target, { it: source.it });
-  if (source.you !== null) target.you = source.you;
-  if (source.result !== null) Object.assign(target, { result: source.result });
+  // Update special variables if they were set in source (null is a valid value)
+  if (source.it !== undefined) target.it = source.it;
+  if (source.you !== undefined) target.you = source.you;
+  if (source.result !== undefined) target.result = source.result;
 }
 
 /**

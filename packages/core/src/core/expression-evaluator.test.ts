@@ -29,7 +29,7 @@ describe('Expression Evaluator - Assignment Operators', () => {
     const result = await evaluator.evaluate(ast, context);
 
     expect(result).toBe(42);
-    expect(context.variables?.get('x')).toBe(42);
+    expect(context.locals.get('x')).toBe(42);
   });
 
   it('should handle chained assignment with right associativity', async () => {
@@ -37,9 +37,9 @@ describe('Expression Evaluator - Assignment Operators', () => {
     const result = await evaluator.evaluate(ast, context);
 
     expect(result).toBe(10);
-    expect(context.variables?.get('a')).toBe(10);
-    expect(context.variables?.get('b')).toBe(10);
-    expect(context.variables?.get('c')).toBe(10);
+    expect(context.locals.get('a')).toBe(10);
+    expect(context.locals.get('b')).toBe(10);
+    expect(context.locals.get('c')).toBe(10);
   });
 
   it('should handle assignment to context variables', async () => {
@@ -50,14 +50,14 @@ describe('Expression Evaluator - Assignment Operators', () => {
   });
 
   it('should handle assignment with expression on right side', async () => {
-    // Set up initial value
-    context.variables?.set('x', 5);
+    // Set up initial value — use locals (canonical scope for variables)
+    context.locals.set('x', 5);
 
     const ast = parse('y = x + 10').node!;
     const result = await evaluator.evaluate(ast, context);
 
     expect(result).toBe(15);
-    expect(context.variables?.get('y')).toBe(15);
+    expect(context.locals.get('y')).toBe(15);
   });
 });
 
@@ -219,5 +219,141 @@ describe('Expression Evaluator - Local Variables (:variable)', () => {
 
     const result = await evaluator.evaluate(node, context);
     expect(result).toBeNull();
+  });
+});
+
+describe('Expression Evaluator - has/have Operator', () => {
+  let evaluator: ExpressionEvaluator;
+  let context: ExecutionContext;
+  let el: HTMLElement;
+
+  beforeEach(() => {
+    evaluator = new ExpressionEvaluator();
+    el = document.createElement('div');
+    el.className = 'active highlight';
+    el.setAttribute('data-id', '123');
+    el.setAttribute('disabled', '');
+    el.innerHTML = '<button id="btn" class="primary">Click</button><span class="label">Text</span>';
+    context = {
+      me: el,
+      it: null,
+      you: null,
+      result: null,
+      locals: new Map(),
+      globals: new Map(),
+    } as ExecutionContext;
+  });
+
+  it('should check CSS class (existing behavior)', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'class', selector: '.active' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should return false for missing CSS class', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'class', selector: '.nonexistent' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(false);
+  });
+
+  it('should check attribute existence via attributeAccess', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'attributeAccess', attributeName: 'disabled' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should return false for missing attribute', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'attributeAccess', attributeName: 'hidden' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(false);
+  });
+
+  it('should check descendant by ID', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'id', selector: '#btn' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should return false for missing descendant ID', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'id', selector: '#missing' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(false);
+  });
+
+  it('should check descendant by general CSS selector', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'compound', selector: 'button.primary' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should check array inclusion', async () => {
+    context.locals.set('myArr', [1, 2, 3]);
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'myArr', scope: 'local' },
+      right: { type: 'literal', value: 2 },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should check string inclusion', async () => {
+    context.locals.set('greeting', 'hello world');
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'greeting', scope: 'local' },
+      right: { type: 'literal', value: 'world' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should work with have alias', async () => {
+    const node = {
+      type: 'binaryExpression',
+      operator: 'have',
+      left: { type: 'identifier', name: 'me' },
+      right: { type: 'cssSelector', selectorType: 'class', selector: '.active' },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(true);
+  });
+
+  it('should return false for non-element non-array non-string', async () => {
+    context.locals.set('num', 42);
+    const node = {
+      type: 'binaryExpression',
+      operator: 'has',
+      left: { type: 'identifier', name: 'num', scope: 'local' },
+      right: { type: 'literal', value: 4 },
+    };
+    expect(await evaluator.evaluate(node, context)).toBe(false);
   });
 });

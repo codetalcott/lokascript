@@ -22,6 +22,7 @@ import {
   emitErrorEvent,
   emitFinallyEvent,
   emitSwappedEvent,
+  setDelegationCleanupRegistrar,
 } from './events';
 
 describe('Event System', () => {
@@ -511,6 +512,65 @@ describe('Event System', () => {
       expect(parentHandler).toHaveBeenCalled();
 
       document.body.removeChild(parentElement);
+    });
+  });
+
+  describe('Delegation Cleanup Registrar', () => {
+    it('should call registrar for existing delegation handlers', () => {
+      // Set up delegation first (creates document listeners)
+      setupEventDelegation();
+
+      const cleanups: Array<{ cleanup: () => void; description: string }> = [];
+      const registrar = (cleanup: () => void, description: string) => {
+        cleanups.push({ cleanup, description });
+      };
+
+      setDelegationCleanupRegistrar(registrar);
+
+      // Should have registered cleanups for each common event type
+      expect(cleanups.length).toBeGreaterThan(0);
+      expect(cleanups[0].description).toContain('Event delegation');
+    });
+
+    it('should call registrar for new delegation handlers after setup', () => {
+      const cleanups: Array<{ cleanup: () => void; description: string }> = [];
+      const registrar = (cleanup: () => void, description: string) => {
+        cleanups.push({ cleanup, description });
+      };
+
+      // Set registrar BEFORE delegation is set up
+      setDelegationCleanupRegistrar(registrar);
+      const countBefore = cleanups.length;
+
+      // Now set up delegation — new handlers should be registered
+      setupEventDelegation();
+
+      expect(cleanups.length).toBeGreaterThan(countBefore);
+    });
+
+    it('should reset registrar on cleanupEventDelegation', () => {
+      const cleanups: string[] = [];
+
+      // Set up delegation first so cleanup doesn't early-return
+      setupEventDelegation();
+      setDelegationCleanupRegistrar((_, desc) => cleanups.push(desc));
+      const countAfterSetup = cleanups.length;
+
+      // Cleanup resets the registrar
+      cleanupEventDelegation();
+
+      // Set up delegation again — should NOT call the old registrar
+      setupEventDelegation();
+
+      // No new cleanups registered beyond what was captured before cleanup
+      expect(cleanups.length).toBe(countAfterSetup);
+    });
+
+    it('should work without a registrar (no-op)', () => {
+      // This should not throw
+      setupEventDelegation();
+      // Delegation works normally without a registrar
+      expect(true).toBe(true);
     });
   });
 });

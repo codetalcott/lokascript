@@ -7,7 +7,6 @@
  */
 
 import { BaseExpressionEvaluator } from './base-expression-evaluator';
-import { debug } from '../utils/debug';
 
 // Import all expression categories
 import { referencesExpressions } from '../expressions/references/index';
@@ -40,11 +39,7 @@ export class ExpressionEvaluator extends BaseExpressionEvaluator {
     this.registerCategory(positionalExpressions);
 
     // Register property expressions
-    debug.expr('About to register properties expressions:', Object.keys(propertiesExpressions));
     this.registerCategory(propertiesExpressions);
-    debug.expr('Total expressions registered:', this.expressionRegistry.size);
-    debug.expr('Registry has "possessive":', this.expressionRegistry.has('possessive'));
-    debug.expr('Registry has "my":', this.expressionRegistry.has('my'));
 
     // Register special expressions
     this.registerCategory(specialExpressions);
