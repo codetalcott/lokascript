@@ -43,7 +43,6 @@ export default defineConfig({
       exclude: [
         'src/**/*.{test,spec}.ts',
         'src/**/*.d.ts',
-        'src/generator/**',
         'src/benchmark/**',
       ],
       // Coverage thresholds enabled at 60% (starting point)
