@@ -100,10 +100,7 @@ cd packages/mcp-server && npm publish --access public && cd ../..
 # 10. Patterns Reference
 cd packages/patterns-reference && npm publish --access public && cd ../..
 
-# 11. SSR Support
-cd packages/ssr-support && npm publish --access public && cd ../..
-
-# 13. Template Integration
+# 11. Template Integration
 cd packages/template-integration && npm publish --access public && cd ../..
 
 # 14. Types Browser
@@ -137,7 +134,6 @@ npm view @lokascript/ast-toolkit version && \
 npm view @lokascript/component-schema version && \
 npm view @lokascript/mcp-server version && \
 npm view @lokascript/patterns-reference version && \
-npm view @lokascript/ssr-support version && \
 npm view @lokascript/template-integration version && \
 npm view @lokascript/types-browser version && \
 echo "✅ All packages published!"

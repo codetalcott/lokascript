@@ -687,9 +687,6 @@ export async function createProject(options: ScaffoldOptions): Promise<void> {
   if (features.includes('i18n')) {
     await addDependency(projectPath, '@lokascript/i18n', '^0.1.0');
   }
-  if (features.includes('ssr')) {
-    await addDependency(projectPath, '@lokascript/ssr-support', '^0.1.0');
-  }
 
   // Add TypeScript support
   if (typescript) {

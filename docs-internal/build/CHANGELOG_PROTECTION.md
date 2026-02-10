@@ -77,7 +77,6 @@ This ensures:
 - @lokascript/mcp-server
 - @lokascript/patterns-reference
 - @lokascript/semantic
-- @lokascript/ssr-support
 - @lokascript/template-integration
 - @lokascript/testing-framework
 - @lokascript/types-browser

@@ -61,7 +61,6 @@ npm run packages:list:public
 #   ✅ @lokascript/mcp-server
 #   ✅ @lokascript/patterns-reference
 #   ✅ @lokascript/semantic
-#   ✅ @lokascript/ssr-support
 #   ✅ @lokascript/template-integration
 #   ✅ @lokascript/testing-framework
 #   ✅ @lokascript/types-browser
@@ -245,9 +244,6 @@ cd packages/mcp-server && npm publish --access public && cd ../..
 
 # Patterns Reference
 cd packages/patterns-reference && npm publish --access public && cd ../..
-
-# SSR Support
-cd packages/ssr-support && npm publish --access public && cd ../..
 
 # Template Integration
 cd packages/template-integration && npm publish --access public && cd ../..

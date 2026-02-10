@@ -39,7 +39,6 @@ All 14 public packages have been validated and prepared for publication to npm u
 | @lokascript/component-schema     | 1.0.0   | TBD         | ✅ Ready |
 | @lokascript/mcp-server           | 1.0.0   | TBD         | ✅ Ready |
 | @lokascript/patterns-reference   | 1.0.0   | TBD         | ✅ Ready |
-| @lokascript/ssr-support          | 1.0.0   | TBD         | ✅ Ready |
 | @lokascript/template-integration | 1.0.0   | TBD         | ✅ Ready |
 | @lokascript/testing-framework    | 1.0.0   | TBD         | ✅ Ready |
 | @lokascript/types-browser        | 1.0.0   | TBD         | ✅ Ready |

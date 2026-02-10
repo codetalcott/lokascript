@@ -23,7 +23,6 @@
 | @lokascript/analytics            | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/developer-tools      | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/smart-bundling       | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/ssr-support          | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/tron-backend         | 0.1.0           | 0.2.0       | Experimental                      |
 
 ### Publication Priority
@@ -53,7 +52,6 @@
 - @lokascript/analytics (0.2.0)
 - @lokascript/developer-tools (0.2.0)
 - @lokascript/smart-bundling (0.2.0)
-- @lokascript/ssr-support (0.2.0)
 - @lokascript/tron-backend (0.2.0)
 
 ## Paid Feature Analysis

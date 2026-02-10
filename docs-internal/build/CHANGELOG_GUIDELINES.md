@@ -17,7 +17,6 @@ The CHANGELOG.md is a **public-facing document** that describes changes to publi
 - @lokascript/component-schema
 - @lokascript/mcp-server
 - @lokascript/patterns-reference
-- @lokascript/ssr-support
 - @lokascript/template-integration
 - @lokascript/testing-framework
 - @lokascript/types-browser
