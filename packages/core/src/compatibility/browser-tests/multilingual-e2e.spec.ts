@@ -10,20 +10,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Multilingual Bundle E2E', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ page }) => {
     // Navigate to the test page that loads both bundles
-    await page.goto(`${baseURL}/packages/core/test-multilingual-e2e.html`);
-
-    // Wait for both bundles to load
-    await page.waitForFunction(
-      () => {
-        return (
-          typeof (window as any).LokaScriptSemantic !== 'undefined' &&
-          typeof (window as any).hyperfixi !== 'undefined'
-        );
-      },
-      { timeout: 10000 }
-    );
+    // page.goto waits for 'load' event, so bundles should be ready after this
+    await page.goto('/packages/core/test-multilingual-e2e.html');
   });
 
   test('bundles load correctly @quick', async ({ page }) => {

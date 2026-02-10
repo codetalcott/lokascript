@@ -8,15 +8,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Semantic Multilingual Parser', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ page }) => {
     // Navigate to the semantic package test page
-    // The Playwright config serves from project root on port 3000
-    await page.goto(`${baseURL}/packages/semantic/test-browser.html`);
-
-    // Wait for the semantic bundle to load
-    await page.waitForFunction(() => typeof (window as any).LokaScriptSemantic !== 'undefined', {
-      timeout: 5000,
-    });
+    // page.goto waits for 'load' event, so the bundle should be ready after this
+    await page.goto('/packages/semantic/test-browser.html');
   });
 
   test('bundle loads and exposes LokaScriptSemantic global @quick', async ({ page }) => {

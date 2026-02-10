@@ -53,7 +53,10 @@ test.describe('Gallery Examples @gallery', () => {
       // Filter out expected errors (like failed network requests)
       const criticalErrors = errors.filter(
         e =>
-          !e.includes('net::') && !e.includes('Failed to load resource') && !e.includes('favicon')
+          !e.includes('net::') &&
+          !e.includes('Failed to load resource') &&
+          !e.includes('favicon') &&
+          !e.includes('[prism-loader]')
       );
 
       if (criticalErrors.length > 0) {

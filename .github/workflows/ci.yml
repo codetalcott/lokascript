@@ -449,6 +449,17 @@ jobs:
           rm -rf node_modules/@lokascript
           npm install
 
+      - name: Verify browser test artifacts
+        run: |
+          echo "=== Semantic bundle check ==="
+          ls -la packages/semantic/dist/browser.global.js || echo "MISSING: browser.global.js"
+          echo "=== Core bundle check ==="
+          ls -la packages/core/dist/lokascript-browser.js || echo "MISSING: lokascript-browser.js"
+          ls -la packages/core/dist/lokascript-multilingual.js || echo "MISSING: lokascript-multilingual.js"
+          ls -la packages/core/dist/lokascript-hybrid-complete.js || echo "MISSING: lokascript-hybrid-complete.js"
+          echo "=== i18n bundle check ==="
+          ls -la packages/i18n/dist/lokascript-i18n.min.js || echo "MISSING: lokascript-i18n.min.js"
+
       - name: Run Playwright tests
         run: npx playwright test --project=quick
         working-directory: packages/core
