@@ -12,7 +12,6 @@
 | @lokascript/vite-plugin        | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
 | @lokascript/mcp-server         | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
 | @lokascript/types-browser      | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @lokascript/multi-tenant       | 0.1.0           | 0.5.0       | Functional but needs docs         |
 | @lokascript/server-integration | 0.1.0           | 0.5.0       | Functional but experimental       |
 | @lokascript/ast-toolkit        | 0.1.0           | 0.3.0       | Working but needs polish          |
 | @lokascript/behaviors          | 0.1.0           | 0.3.0       | Working but needs polish          |
@@ -43,7 +42,6 @@
 
 #### Tier 3: Beta/Experimental (Hold for Now)
 
-- @lokascript/multi-tenant (0.5.0)
 - @lokascript/server-integration (0.5.0)
 - @lokascript/analytics (0.2.0)
 - @lokascript/developer-tools (0.2.0)

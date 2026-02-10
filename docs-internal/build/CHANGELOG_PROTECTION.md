@@ -84,7 +84,6 @@ This ensures:
 
 - @lokascript/analytics
 - @lokascript/developer-tools
-- @lokascript/multi-tenant
 - @lokascript/server-integration
 - @lokascript/smart-bundling
 - @lokascript/tron-backend
@@ -140,7 +139,6 @@ See CHANGELOG_GUIDELINES.md for more information.
 Private packages:
   - @lokascript/analytics
   - @lokascript/developer-tools
-  - @lokascript/multi-tenant
   - @lokascript/server-integration
   - @lokascript/smart-bundling
   - @lokascript/tron-backend

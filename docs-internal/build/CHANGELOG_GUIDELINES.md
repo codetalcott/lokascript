@@ -34,7 +34,6 @@ The CHANGELOG.md is a **public-facing document** that describes changes to publi
 
 - @lokascript/analytics
 - @lokascript/developer-tools
-- @lokascript/multi-tenant
 - @lokascript/server-integration
 - @lokascript/smart-bundling
 - @lokascript/tron-backend

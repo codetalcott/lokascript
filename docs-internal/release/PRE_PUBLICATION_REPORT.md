@@ -45,7 +45,6 @@ All 14 public packages have been validated and prepared for publication to npm u
 
 - @lokascript/analytics
 - @lokascript/developer-tools
-- @lokascript/multi-tenant
 - @lokascript/server-integration
 - @lokascript/smart-bundling
 - @lokascript/tron-backend
