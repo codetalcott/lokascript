@@ -32,10 +32,8 @@ The CHANGELOG.md is a **public-facing document** that describes changes to publi
 
 **Private packages** (7 packages):
 
-- @lokascript/analytics
 - @lokascript/developer-tools
 - @lokascript/smart-bundling
-- @lokascript/tron-backend
 - hyperfixi-python
 
 **Internal changes**:

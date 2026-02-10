@@ -82,10 +82,8 @@ This ensures:
 
 ### Private Packages (6) - Exclude from CHANGELOG
 
-- @lokascript/analytics
 - @lokascript/developer-tools
 - @lokascript/smart-bundling
-- @lokascript/tron-backend
 
 ## Workflow Example
 
@@ -136,10 +134,8 @@ Private packages should not be in the public changelog.
 See CHANGELOG_GUIDELINES.md for more information.
 
 Private packages:
-  - @lokascript/analytics
   - @lokascript/developer-tools
   - @lokascript/smart-bundling
-  - @lokascript/tron-backend
 
 # 3. Publication is blocked!
 ```

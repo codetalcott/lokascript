@@ -16,7 +16,6 @@
 | @lokascript/behaviors          | 0.1.0           | 0.3.0       | Working but needs polish          |
 | @lokascript/patterns-reference | 0.1.0           | 0.3.0       | Functional support package        |
 | @lokascript/testing-framework  | 0.1.0           | 0.3.0       | Functional support package        |
-| @lokascript/analytics          | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/developer-tools    | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/smart-bundling     | 0.1.0           | 0.2.0       | Early stage                       |
 | @lokascript/tron-backend       | 0.1.0           | 0.2.0       | Experimental                      |
@@ -41,7 +40,6 @@
 
 #### Tier 3: Beta/Experimental (Hold for Now)
 
-- @lokascript/analytics (0.2.0)
 - @lokascript/developer-tools (0.2.0)
 - @lokascript/smart-bundling (0.2.0)
 - @lokascript/tron-backend (0.2.0)

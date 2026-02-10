@@ -43,10 +43,8 @@ All 14 public packages have been validated and prepared for publication to npm u
 
 ## Private Packages (Not Published)
 
-- @lokascript/analytics
 - @lokascript/developer-tools
 - @lokascript/smart-bundling
-- @lokascript/tron-backend
 - hyperfixi-python (different ecosystem)
 
 ## Pre-Publication Checklist
