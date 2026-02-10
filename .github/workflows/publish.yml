@@ -27,6 +27,8 @@ on:
 env:
   NODE_OPTIONS: --max-old-space-size=4096
   # All public packages to publish (in dependency order)
+  # @lokascript: semantic, i18n, hyperscript-adapter, patterns-reference, mcp-server
+  # @hyperfixi: core, vite-plugin
   PACKAGES: 'semantic,core,i18n,hyperscript-adapter,patterns-reference,mcp-server,vite-plugin'
 
 jobs:
@@ -117,8 +119,16 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           echo "Setting all packages to version $VERSION"
 
+          # Helper: get npm scope for a package
+          pkg_scope() {
+            case "$1" in
+              core|vite-plugin|behaviors|types-browser|testing-framework|developer-tools|smart-bundling|aot-compiler) echo "@hyperfixi" ;;
+              *) echo "@lokascript" ;;
+            esac
+          }
+
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
-            echo "  → @lokascript/$pkg"
+            echo "  → $(pkg_scope $pkg)/$pkg"
             cd "packages/$pkg"
             npm version "$VERSION" --no-git-tag-version --allow-same-version
             cd ../..
@@ -134,7 +144,8 @@ jobs:
           echo "DRY RUN: Would publish all packages at version $VERSION"
 
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
-            echo "  → @lokascript/$pkg@$VERSION"
+            SCOPE=$(node -p "require('./packages/$pkg/package.json').name")
+            echo "  → $SCOPE@$VERSION"
             cd "packages/$pkg"
             npm publish --dry-run --tag ${{ github.event.inputs.npm-tag }} --access public
             cd ../..
@@ -147,7 +158,8 @@ jobs:
           echo "Publishing all packages at version $VERSION (OIDC trusted publishing)"
 
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
-            echo "Publishing @lokascript/$pkg@$VERSION"
+            SCOPE=$(node -p "require('./packages/$pkg/package.json').name")
+            echo "Publishing $SCOPE@$VERSION"
             cd "packages/$pkg"
             npm publish --tag ${{ github.event.inputs.npm-tag }} --access public --provenance
             cd ../..
@@ -176,9 +188,10 @@ jobs:
           git tag -f "v$VERSION"
           git push origin "v$VERSION" --force
 
-          # Create per-package tags
+          # Create per-package tags (use actual npm name from package.json)
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
-            TAG_NAME="@lokascript/${pkg}@${VERSION}"
+            PKG_NAME=$(node -p "require('./packages/$pkg/package.json').name")
+            TAG_NAME="${PKG_NAME}@${VERSION}"
             git tag -f "$TAG_NAME"
             git push origin "$TAG_NAME" --force
           done
@@ -198,21 +211,21 @@ jobs:
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             $PRERELEASE_FLAG \
-            --notes "## @lokascript v${VERSION}
+            --notes "## HyperFixi + LokaScript v${VERSION}
 
           All packages published at version ${VERSION}:
-          - @lokascript/core
+          - @hyperfixi/core
+          - @hyperfixi/vite-plugin
           - @lokascript/semantic
           - @lokascript/i18n
           - @lokascript/hyperscript-adapter
-          - @lokascript/vite-plugin
           - @lokascript/mcp-server
           - @lokascript/patterns-reference
 
           ### Install
           \`\`\`bash
-          npm install @lokascript/core@${VERSION}
-          npm install @lokascript/vite-plugin@${VERSION}
+          npm install @hyperfixi/core@${VERSION}
+          npm install @hyperfixi/vite-plugin@${VERSION}
           npm install @lokascript/hyperscript-adapter@${VERSION}
           \`\`\`"
 
@@ -228,7 +241,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Packages" >> $GITHUB_STEP_SUMMARY
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
-            echo "- @lokascript/$pkg@$VERSION" >> $GITHUB_STEP_SUMMARY
+            PKG_NAME=$(node -p "require('./packages/$pkg/package.json').name")
+            echo "- $PKG_NAME@$VERSION" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY
 

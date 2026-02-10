@@ -312,7 +312,7 @@
   </div>
 
   <!-- Load LokaScript Core -->
-  <script src="../core/dist/lokascript-browser.js"></script>
+  <script src="../core/dist/hyperfixi.js"></script>
 
   <!-- Load i18n Bundle -->
   <script src="./dist/lokascript-i18n.min.js"></script>
@@ -439,7 +439,7 @@
       const loading = document.getElementById('loading');
       const container = document.getElementById('test-container');
 
-      if (typeof window.lokascript === 'undefined') {
+      if (typeof window.hyperfixi === 'undefined') {
         loading.textContent = '❌ Error: LokaScript core bundle not loaded';
         loading.style.color = '#dc3545';
         return;
@@ -455,7 +455,7 @@
       loading.style.display = 'none';
       container.style.display = 'grid';
 
-      console.log('✓ LokaScript core loaded:', window.lokascript);
+      console.log('✓ LokaScript core loaded:', window.hyperfixi);
       console.log('✓ LokaScript i18n loaded:', window.LokaScriptI18n);
       console.log('Available providers:', Object.keys(window.LokaScriptI18n).filter(k => k.endsWith('Keywords')));
 

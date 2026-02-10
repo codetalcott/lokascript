@@ -435,7 +435,7 @@
     </div>
 
     <!-- Load LokaScript -->
-    <script src="../../packages/core/dist/lokascript-browser.js"></script>
+    <script src="../../packages/core/dist/hyperfixi.js"></script>
     <script src="../debug-panel.js"></script>
     <script src="../../packages/i18n/dist/lokascript-i18n.min.js"></script>
 
@@ -560,8 +560,8 @@
             target.setAttribute('_', snippet.english);
 
             // Process with LokaScript
-            if (window.lokascript?.processNode) {
-                window.lokascript.processNode(target);
+            if (window.hyperfixi?.processNode) {
+                window.hyperfixi.processNode(target);
             }
 
             // Mark as loaded
@@ -599,7 +599,7 @@
             // Initial render
             renderSnippets();
 
-            console.log('LokaScript loaded:', !!window.lokascript);
+            console.log('LokaScript loaded:', !!window.hyperfixi);
             console.log('LokaScript i18n loaded:', !!window.LokaScriptI18n);
         });
     </script>

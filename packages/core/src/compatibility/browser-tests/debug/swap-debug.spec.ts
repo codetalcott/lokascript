@@ -21,7 +21,7 @@ test('minimal swap test with put instead', async ({ page }) => {
     <body>
       <button id="btn" _="on click put 'UPDATED' into #target">Test Put</button>
       <div id="target">Original</div>
-      <script src="http://127.0.0.1:3000/packages/core/dist/lokascript-browser.js"></script>
+      <script src="http://127.0.0.1:3000/packages/core/dist/hyperfixi.js"></script>
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           console.log('DOM loaded');
@@ -73,7 +73,7 @@ test('swap innerHTML direct', async ({ page }) => {
     <body>
       <button id="btn" _="on click swap #target with 'SWAPPED'">Swap</button>
       <div id="target">Original</div>
-      <script src="http://127.0.0.1:3000/packages/core/dist/lokascript-browser.js"></script>
+      <script src="http://127.0.0.1:3000/packages/core/dist/hyperfixi.js"></script>
       <script>
         document.addEventListener('DOMContentLoaded', () => {
           console.log('DOM loaded');

@@ -1,0 +1,21 @@
+{
+  "name": "@lokascript/developer-tools",
+  "version": "2.0.0",
+  "description": "Deprecated. Use @hyperfixi/developer-tools instead.",
+  "deprecated": "This package has been renamed to @hyperfixi/developer-tools. Install @hyperfixi/developer-tools instead.",
+  "main": "index.js",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@hyperfixi/developer-tools": "^2.0.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codetalcott/hyperfixi.git",
+    "directory": "stubs/lokascript-developer-tools"
+  }
+}

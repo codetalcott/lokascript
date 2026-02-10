@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in LokaScript
+description: Report a bug in HyperFixi / LokaScript
 title: '[Bug]: '
 labels: ['bug']
 body:
@@ -43,10 +43,10 @@ body:
       label: Affected Package
       description: Which package is affected?
       options:
-        - '@lokascript/core'
+        - '@hyperfixi/core'
+        - '@hyperfixi/vite-plugin'
         - '@lokascript/semantic'
         - '@lokascript/i18n'
-        - '@lokascript/vite-plugin'
         - '@lokascript/mcp-server'
         - '@lokascript/patterns-reference'
         - 'Other / Multiple'
@@ -59,12 +59,12 @@ body:
       label: Bundle Type
       description: Which bundle are you using?
       options:
-        - 'lokascript-browser.js (full)'
-        - 'lokascript-hybrid-complete.js'
-        - 'lokascript-hybrid-hx.js'
-        - 'lokascript-lite-plus.js'
-        - 'lokascript-lite.js'
-        - 'lokascript-multilingual.js'
+        - 'hyperfixi.js (full)'
+        - 'hyperfixi-hybrid-complete.js'
+        - 'hyperfixi-hx.js'
+        - 'hyperfixi-lite-plus.js'
+        - 'hyperfixi-lite.js'
+        - 'hyperfixi-multilingual.js'
         - 'Vite plugin (auto-generated)'
         - 'Node.js / Server'
         - 'Not sure'
@@ -73,7 +73,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: What version of LokaScript are you using?
+      description: What version of HyperFixi are you using?
       placeholder: 'e.g., 1.3.0'
 
   - type: dropdown

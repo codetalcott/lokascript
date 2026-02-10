@@ -1,0 +1,21 @@
+{
+  "name": "@lokascript/vite-plugin",
+  "version": "2.0.0",
+  "description": "Deprecated. Use @hyperfixi/vite-plugin instead.",
+  "deprecated": "This package has been renamed to @hyperfixi/vite-plugin. Install @hyperfixi/vite-plugin instead.",
+  "main": "index.js",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@hyperfixi/vite-plugin": "^2.0.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codetalcott/hyperfixi.git",
+    "directory": "stubs/lokascript-vite-plugin"
+  }
+}

@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new feature or improvement for LokaScript
+description: Suggest a new feature or improvement for HyperFixi / LokaScript
 title: '[Feature]: '
 labels: ['feature-request']
 body:
@@ -36,10 +36,10 @@ body:
       label: Affected Package
       description: Which package would this feature belong to?
       options:
-        - '@lokascript/core'
+        - '@hyperfixi/core'
+        - '@hyperfixi/vite-plugin'
         - '@lokascript/semantic'
         - '@lokascript/i18n'
-        - '@lokascript/vite-plugin'
         - '@lokascript/mcp-server'
         - 'New package'
         - 'Not sure'

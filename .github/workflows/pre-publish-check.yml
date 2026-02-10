@@ -54,12 +54,12 @@ jobs:
               PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
 
               if [ "$PRIVATE" = "true" ]; then
-                echo "| @lokascript/$pkg | $VERSION | ⚠️ Private |" >> $GITHUB_STEP_SUMMARY
+                echo "| $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") | $VERSION | ⚠️ Private |" >> $GITHUB_STEP_SUMMARY
               else
-                echo "| @lokascript/$pkg | $VERSION | ✅ Public |" >> $GITHUB_STEP_SUMMARY
+                echo "| $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") | $VERSION | ✅ Public |" >> $GITHUB_STEP_SUMMARY
               fi
             else
-              echo "| @lokascript/$pkg | N/A | ❌ Not found |" >> $GITHUB_STEP_SUMMARY
+              echo "| $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") | N/A | ❌ Not found |" >> $GITHUB_STEP_SUMMARY
             fi
           done
 
@@ -85,7 +85,7 @@ jobs:
               [ -f "packages/$pkg/LICENSE" ] || [ -f "LICENSE" ] && LICENSE="✅"
               [ -f "packages/$pkg/package.json" ] && PACKAGE="✅"
 
-              echo "| @lokascript/$pkg | $README | $CHANGELOG | $LICENSE | $PACKAGE |" >> $GITHUB_STEP_SUMMARY
+              echo "| $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") | $README | $CHANGELOG | $LICENSE | $PACKAGE |" >> $GITHUB_STEP_SUMMARY
             fi
           done
 
@@ -99,7 +99,7 @@ jobs:
           # Build in dependency order:
           # 1. patterns-reference (no deps)
           # 2. ast-toolkit (depends on patterns-reference)
-          # 3. semantic (no lokascript deps)
+          # 3. semantic (no @hyperfixi deps)
           # 4. core (depends on semantic, patterns-reference)
           # 5. i18n (depends on ast-toolkit)
 
@@ -146,11 +146,11 @@ jobs:
           for pkg in "${PKG_ARRAY[@]}"; do
             pkg=$(echo "$pkg" | xargs)
             if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/tsconfig.json" ]; then
-              echo "Checking @lokascript/$pkg..."
+              echo "Checking $(node -p "require('./packages/$pkg/package.json').name")..."
               if npm run typecheck --prefix "packages/$pkg" 2>&1 | tee /tmp/${pkg}-typecheck.log; then
-                echo "✅ @lokascript/$pkg - TypeScript OK" >> $GITHUB_STEP_SUMMARY
+                echo "✅ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - TypeScript OK" >> $GITHUB_STEP_SUMMARY
               else
-                echo "❌ @lokascript/$pkg - TypeScript errors found" >> $GITHUB_STEP_SUMMARY
+                echo "❌ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - TypeScript errors found" >> $GITHUB_STEP_SUMMARY
                 echo "<details><summary>Errors</summary>" >> $GITHUB_STEP_SUMMARY
                 echo "" >> $GITHUB_STEP_SUMMARY
                 echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
@@ -172,15 +172,15 @@ jobs:
             pkg=$(echo "$pkg" | xargs)
             if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/package.json" ]; then
               if grep -q '"test"' "packages/$pkg/package.json"; then
-                echo "Testing @lokascript/$pkg..."
+                echo "Testing $(node -p "require('./packages/$pkg/package.json').name")..."
                 if npm test --prefix "packages/$pkg" 2>&1 | tee /tmp/${pkg}-test.log; then
                   TESTS=$(grep -o '[0-9]* passed' /tmp/${pkg}-test.log | head -1 || echo "0 passed")
-                  echo "✅ @lokascript/$pkg - $TESTS" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - $TESTS" >> $GITHUB_STEP_SUMMARY
                 else
-                  echo "❌ @lokascript/$pkg - Tests failed" >> $GITHUB_STEP_SUMMARY
+                  echo "❌ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Tests failed" >> $GITHUB_STEP_SUMMARY
                 fi
               else
-                echo "⚠️ @lokascript/$pkg - No tests configured" >> $GITHUB_STEP_SUMMARY
+                echo "⚠️ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - No tests configured" >> $GITHUB_STEP_SUMMARY
               fi
             fi
           done
@@ -196,20 +196,20 @@ jobs:
             pkg=$(echo "$pkg" | xargs)
             if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/package.json" ]; then
               if grep -q '"build"' "packages/$pkg/package.json"; then
-                echo "Building @lokascript/$pkg..."
+                echo "Building $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg")..."
                 if npm run build --prefix "packages/$pkg" 2>&1 | tee /tmp/${pkg}-build.log; then
                   # Check dist directory
                   if [ -d "packages/$pkg/dist" ] && [ "$(ls -A packages/$pkg/dist)" ]; then
                     FILES=$(ls packages/$pkg/dist | wc -l)
-                    echo "✅ @lokascript/$pkg - Built successfully ($FILES files)" >> $GITHUB_STEP_SUMMARY
+                    echo "✅ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Built successfully ($FILES files)" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "⚠️ @lokascript/$pkg - Built but dist is empty" >> $GITHUB_STEP_SUMMARY
+                    echo "⚠️ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Built but dist is empty" >> $GITHUB_STEP_SUMMARY
                   fi
                 else
-                  echo "❌ @lokascript/$pkg - Build failed" >> $GITHUB_STEP_SUMMARY
+                  echo "❌ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Build failed" >> $GITHUB_STEP_SUMMARY
                 fi
               else
-                echo "⚠️ @lokascript/$pkg - No build script" >> $GITHUB_STEP_SUMMARY
+                echo "⚠️ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - No build script" >> $GITHUB_STEP_SUMMARY
               fi
             fi
           done
@@ -228,17 +228,17 @@ jobs:
           for pkg in "${PKG_ARRAY[@]}"; do
             pkg=$(echo "$pkg" | xargs)
             if [ -d "packages/$pkg" ] && [ -f "packages/$pkg/package.json" ]; then
-              echo "Validating @lokascript/$pkg exports..."
+              echo "Validating $(node -p "require('./packages/$pkg/package.json').name") exports..."
               if node scripts/validate-exports.mjs "$pkg" 2>&1 | tee /tmp/${pkg}-exports.log; then
                 MISSING=$(grep -c "Missing exports" /tmp/${pkg}-exports.log 2>/dev/null || echo "0")
                 if [ "$MISSING" = "0" ]; then
-                  echo "✅ @lokascript/$pkg - All exports valid" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - All exports valid" >> $GITHUB_STEP_SUMMARY
                 else
-                  echo "❌ @lokascript/$pkg - Missing exports detected" >> $GITHUB_STEP_SUMMARY
+                  echo "❌ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Missing exports detected" >> $GITHUB_STEP_SUMMARY
                   FAILED_PKGS="$FAILED_PKGS $pkg"
                 fi
               else
-                echo "❌ @lokascript/$pkg - Export validation failed" >> $GITHUB_STEP_SUMMARY
+                echo "❌ $(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg") - Export validation failed" >> $GITHUB_STEP_SUMMARY
                 FAILED_PKGS="$FAILED_PKGS $pkg"
               fi
             fi
@@ -291,7 +291,7 @@ jobs:
               echo "| Bundle | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
               echo "|--------|------|---------|" >> $GITHUB_STEP_SUMMARY
 
-              for file in packages/core/dist/lokascript-*.js packages/core/dist/hyperfixi-*.js; do
+              for file in packages/core/dist/hyperfixi*.js packages/core/dist/lokascript-*.js; do
                 if [[ -f "$file" && ! "$file" == *.map ]]; then
                   filename=$(basename "$file")
                   size=$(wc -c < "$file" | tr -d ' ')
@@ -321,18 +321,18 @@ jobs:
           failed=0
 
           # Check lite bundle
-          if [[ -f "packages/core/dist/lokascript-lite.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-lite.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi-lite.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi-lite.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_LITE" ]]; then
-              echo "❌ lokascript-lite.js (${size} bytes gzip) exceeds limit (${MAX_LITE} bytes)" >> $GITHUB_STEP_SUMMARY
+              echo "❌ hyperfixi-lite.js (${size} bytes gzip) exceeds limit (${MAX_LITE} bytes)" >> $GITHUB_STEP_SUMMARY
               failed=1
             else
-              echo "✅ lokascript-lite.js (${size} bytes gzip) within limit (${MAX_LITE} bytes)" >> $GITHUB_STEP_SUMMARY
+              echo "✅ hyperfixi-lite.js (${size} bytes gzip) within limit (${MAX_LITE} bytes)" >> $GITHUB_STEP_SUMMARY
             fi
           fi
 
           # Check hybrid bundles
-          for bundle in packages/core/dist/lokascript-hybrid-*.js; do
+          for bundle in packages/core/dist/hyperfixi-hybrid-*.js; do
             if [[ -f "$bundle" ]]; then
               size=$(gzip -c "$bundle" | wc -c | tr -d ' ')
               filename=$(basename "$bundle")
@@ -346,13 +346,13 @@ jobs:
           done
 
           # Check full browser bundle
-          if [[ -f "packages/core/dist/lokascript-browser.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-browser.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_BROWSER" ]]; then
-              echo "❌ lokascript-browser.js (${size} bytes gzip) exceeds limit (${MAX_BROWSER} bytes)" >> $GITHUB_STEP_SUMMARY
+              echo "❌ hyperfixi.js (${size} bytes gzip) exceeds limit (${MAX_BROWSER} bytes)" >> $GITHUB_STEP_SUMMARY
               failed=1
             else
-              echo "✅ lokascript-browser.js (${size} bytes gzip) within limit (${MAX_BROWSER} bytes)" >> $GITHUB_STEP_SUMMARY
+              echo "✅ hyperfixi.js (${size} bytes gzip) within limit (${MAX_BROWSER} bytes)" >> $GITHUB_STEP_SUMMARY
             fi
           fi
 

@@ -115,7 +115,7 @@ const BUNDLES = {
     },
   },
   browser: {
-    file: 'lokascript-browser.js',
+    file: 'hyperfixi.js',
     size: '203 KB',
     features: {
       toggle: true,

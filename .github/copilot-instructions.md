@@ -1,4 +1,4 @@
-# LokaScript Copilot Instructions
+# HyperFixi Copilot Instructions
 
 - Monorepo uses npm workspaces; install Node >=18 and run `npm install` once at the repo root.
 - Root scripts fan out to every workspace; when iterating prefer targeted commands like `npm run test --prefix packages/core` to avoid 20+ package runs.
@@ -21,7 +21,7 @@
 - Linting uses ESLint+Prettier; run `npm run lint --prefix packages/<name>` for focused fixes and respect side-effect free modules.
 - Browser bundles are built with Rollup (`rollup.config.mjs`, `rollup.browser.config.mjs`); update both when changing entry names or output formats.
 - For Deno support, update `packages/core/src/deno-*.ts` and keep `deno-*.test.ts` passing.
-- AI-facing MCP server lives in `mcp-server-hyperscript`; its handlers embed `@lokascript/core` so changes to analysis APIs must be reflected in `setupHandlers()`.
+- AI-facing MCP server lives in `packages/mcp-server`; its handlers embed `@hyperfixi/core` so changes to analysis APIs must be reflected in `setupHandlers()`.
 - Metric dashboards and reports live in root markdown files (e.g. `COMPLETE_COMPATIBILITY_REPORT.md`); update them when altering compatibility workflows.
 - For test data reuse, prefer fixtures under `packages/core/tests` and `packages/core/src/test-utilities.ts` rather than ad-hoc mocks.
 - When touching DOM-facing code, sync the demos in `cookbook/` and `packages/core/src/examples` to avoid regression drift.

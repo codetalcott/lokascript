@@ -36,7 +36,7 @@ jobs:
         run: npm ci
 
       # Build order based on dependency graph:
-      # 1. semantic (no lokascript deps)
+      # 1. semantic (no @hyperfixi deps)
       # 2. core (depends on semantic)
       # 3. patterns-reference (depends on semantic)
       # 4. i18n (depends on core, semantic)
@@ -146,7 +146,7 @@ jobs:
 
       - name: Rebuild workspace links
         run: |
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Validate all package exports
@@ -212,12 +212,13 @@ jobs:
           echo "=== Checking all .d.ts files ==="
           find packages/semantic/dist -name "*.d.ts" -type f
           echo "=== Checking workspace symlink ==="
+          ls -la node_modules/@hyperfixi/ 2>/dev/null || echo "No @hyperfixi symlinks yet"
           ls -la node_modules/@lokascript/ 2>/dev/null || echo "No @lokascript symlinks yet"
 
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Run ESLint (public packages)
@@ -274,7 +275,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       # Note: vitest with pool:'forks' may hang after tests complete due to
@@ -353,7 +354,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Generate coverage - core
@@ -446,7 +447,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Verify browser test artifacts
@@ -454,9 +455,9 @@ jobs:
           echo "=== Semantic bundle check ==="
           ls -la packages/semantic/dist/browser.global.js || echo "MISSING: browser.global.js"
           echo "=== Core bundle check ==="
-          ls -la packages/core/dist/lokascript-browser.js || echo "MISSING: lokascript-browser.js"
-          ls -la packages/core/dist/lokascript-multilingual.js || echo "MISSING: lokascript-multilingual.js"
-          ls -la packages/core/dist/lokascript-hybrid-complete.js || echo "MISSING: lokascript-hybrid-complete.js"
+          ls -la packages/core/dist/hyperfixi.js || echo "MISSING: hyperfixi.js"
+          ls -la packages/core/dist/hyperfixi-multilingual.js || echo "MISSING: hyperfixi-multilingual.js"
+          ls -la packages/core/dist/hyperfixi-hybrid-complete.js || echo "MISSING: hyperfixi-hybrid-complete.js"
           echo "=== i18n bundle check ==="
           ls -la packages/i18n/dist/lokascript-i18n.min.js || echo "MISSING: lokascript-i18n.min.js"
 
@@ -504,7 +505,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Populate patterns database
@@ -564,7 +565,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Analyze bundle sizes
@@ -575,7 +576,7 @@ jobs:
           echo "| Bundle | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|---------|" >> $GITHUB_STEP_SUMMARY
 
-          for file in packages/core/dist/lokascript-*.js; do
+          for file in packages/core/dist/hyperfixi*.js; do
             if [[ -f "$file" && ! "$file" == *.map ]]; then
               filename=$(basename "$file")
               size=$(wc -c < "$file" | tr -d ' ')
@@ -611,25 +612,25 @@ jobs:
 
           failed=0
 
-          if [[ -f "packages/core/dist/lokascript-lite.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-lite.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi-lite.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi-lite.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_LITE" ]]; then
-              echo "::warning::lokascript-lite.js ($size bytes gzip) exceeds limit ($MAX_LITE bytes)"
+              echo "::warning::hyperfixi-lite.js ($size bytes gzip) exceeds limit ($MAX_LITE bytes)"
             fi
           fi
 
-          if [[ -f "packages/core/dist/lokascript-hybrid-complete.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-hybrid-complete.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi-hybrid-complete.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi-hybrid-complete.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_HYBRID" ]]; then
-              echo "::warning::lokascript-hybrid-complete.js ($size bytes gzip) exceeds limit ($MAX_HYBRID bytes)"
+              echo "::warning::hyperfixi-hybrid-complete.js ($size bytes gzip) exceeds limit ($MAX_HYBRID bytes)"
             fi
           fi
 
-          if [[ -f "packages/core/dist/lokascript-browser.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-browser.js | wc -c | tr -d ' ')
-            echo "browser.js gzipped: $size bytes (limit: $MAX_BROWSER bytes)"
+          if [[ -f "packages/core/dist/hyperfixi.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi.js | wc -c | tr -d ' ')
+            echo "hyperfixi.js gzipped: $size bytes (limit: $MAX_BROWSER bytes)"
             if [[ "$size" -gt "$MAX_BROWSER" ]]; then
-              echo "::warning::lokascript-browser.js ($size bytes gzip) exceeds limit ($MAX_BROWSER bytes)"
+              echo "::warning::hyperfixi.js ($size bytes gzip) exceeds limit ($MAX_BROWSER bytes)"
             fi
           fi
 
@@ -667,7 +668,7 @@ jobs:
       - name: Rebuild workspace links
         run: |
           # Remove stale workspace symlinks and reinstall
-          rm -rf node_modules/@lokascript
+          rm -rf node_modules/@hyperfixi node_modules/@lokascript
           npm install
 
       - name: Run benchmarks

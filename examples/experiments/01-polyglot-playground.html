@@ -343,7 +343,7 @@
     </div>
 
     <!-- Load LokaScript -->
-    <script src="../../packages/core/dist/lokascript-browser.js"></script>
+    <script src="../../packages/core/dist/hyperfixi.js"></script>
     <script src="../debug-panel.js"></script>
     <script src="../../packages/i18n/dist/lokascript-i18n.min.js"></script>
 
@@ -404,7 +404,7 @@
 
         // Dynamically execute hyperscript on an element
         function executeHyperscript(code, targetSelector) {
-            if (!window.lokascript) {
+            if (!window.hyperfixi) {
                 showStatus('LokaScript runtime not loaded', 'error');
                 return;
             }
@@ -417,8 +417,8 @@
                 document.body.appendChild(tempBtn);
 
                 // Initialize hyperscript on the element
-                if (window.lokascript.processNode) {
-                    window.lokascript.processNode(tempBtn);
+                if (window.hyperfixi.processNode) {
+                    window.hyperfixi.processNode(tempBtn);
                 }
 
                 // Trigger click to execute
@@ -474,7 +474,7 @@
             updateTranslations('on click increment #count');
             input.value = 'on click increment #count';
 
-            console.log('LokaScript loaded:', !!window.lokascript);
+            console.log('LokaScript loaded:', !!window.hyperfixi);
             console.log('LokaScript i18n loaded:', !!window.LokaScriptI18n);
         });
     </script>

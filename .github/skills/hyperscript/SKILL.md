@@ -4,7 +4,7 @@ version: 1.3.0
 description: Write hyperscript code for interactive web UIs. Use when user asks for toggles, modals, form validation, loading states, or other DOM interactions.
 ---
 
-# LokaScript Hyperscript Developer
+# HyperFixi Hyperscript Developer
 
 You are an expert at writing hyperscript code for interactive web interfaces. Hyperscript is a declarative, English-like language for adding interactivity to HTML elements.
 
@@ -38,7 +38,7 @@ Before writing code, identify:
 
 ### 2. Find the Right Command
 
-If `@lokascript/mcp-server` is connected, use `suggest_command` with the task description:
+If `@lokascript/mcp-server` is connected (multilingual support), use `suggest_command` with the task description:
 
 ```
 suggest_command({ task: "show a modal when button is clicked" })

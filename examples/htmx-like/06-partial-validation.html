@@ -211,7 +211,7 @@
     </div>
   </div>
 
-  <script src="../../packages/core/dist/lokascript-browser.js"></script>
+  <script src="../../packages/core/dist/hyperfixi.js"></script>
   <script>
     // Get validation functions from hyperfixi
     const {
@@ -221,12 +221,12 @@
       resetPartialValidationConfig,
       emitPartialValidationWarnings,
       formatResultSummary
-    } = window.lokascript ? window.lokascript : {};
+    } = window.hyperfixi ? window.hyperfixi : {};
 
     // Check if validation is available
     if (!validatePartialContent) {
       document.getElementById('validation-log').innerHTML =
-        '<span class="log-critical">ERROR: Partial validation not available. Make sure lokascript-browser.js is loaded.</span>';
+        '<span class="log-critical">ERROR: Partial validation not available. Make sure hyperfixi.js is loaded.</span>';
     }
 
     // Initialize with validation enabled

@@ -14,10 +14,10 @@
 
 ## Affected Packages
 
-- [ ] `@lokascript/core`
+- [ ] `@hyperfixi/core`
+- [ ] `@hyperfixi/vite-plugin`
 - [ ] `@lokascript/semantic`
 - [ ] `@lokascript/i18n`
-- [ ] `@lokascript/vite-plugin`
 - [ ] `@lokascript/mcp-server`
 - [ ] `@lokascript/patterns-reference`
 - [ ] Other: <!-- specify -->

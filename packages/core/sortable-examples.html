@@ -562,7 +562,7 @@
     <script>
         // Cache busting for development - force fresh load
         const script = document.createElement('script');
-        script.src = '/dist/lokascript-browser.js?v=' + Date.now();
+        script.src = '/dist/hyperfixi.js?v=' + Date.now();
         document.write(script.outerHTML);
     </script>
 
@@ -621,7 +621,7 @@ end
             if (typeof hyperfixi !== 'undefined') {
                 console.log('✅ LokaScript Methods:', Object.keys(hyperfixi));
             } else {
-                console.error('❌ LokaScript not loaded! Check /dist/lokascript-browser.js');
+                console.error('❌ LokaScript not loaded! Check /dist/hyperfixi.js');
             }
         });
 

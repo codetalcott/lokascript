@@ -513,7 +513,7 @@ Examples:
   </div>
 
   <!-- Load LokaScript bundles -->
-  <script src="../../packages/core/dist/lokascript-browser.js"></script>
+  <script src="../../packages/core/dist/hyperfixi.js"></script>
   <script src="../debug-panel.js"></script>
   <script src="../../packages/i18n/dist/lokascript-i18n.min.js"></script>
 
@@ -691,7 +691,7 @@ Examples:
         logToConsole(`Applying: ${englishCode}`, 'info');
 
         // Apply hyperscript to the demo button
-        if (window.lokascript) {
+        if (window.hyperfixi) {
           const btn = window.demoBtn || document.getElementById('demo-btn');
 
           // Clear any previous hyperscript by replacing the button
@@ -701,9 +701,9 @@ Examples:
           window.demoBtn = newBtn;
 
           // Use the programmatic API
-          const context = window.lokascript.createContext(newBtn);
+          const context = window.hyperfixi.createContext(newBtn);
 
-          window.lokascript.run(englishCode, context).then(() => {
+          window.hyperfixi.run(englishCode, context).then(() => {
             newBtn.setAttribute('_', englishCode);
             document.getElementById('current-code').textContent = englishCode;
             logToConsole('Hyperscript applied! Click the button to test.', 'success');

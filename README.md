@@ -1,25 +1,25 @@
-# LokaScript
+# HyperFixi
 
-[![CI](https://github.com/codetalcott/lokascript/actions/workflows/ci.yml/badge.svg)](https://github.com/codetalcott/lokascript/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/codetalcott/lokascript/graph/badge.svg)](https://codecov.io/gh/codetalcott/lokascript)
-[![npm version](https://img.shields.io/npm/v/@lokascript/core.svg)](https://www.npmjs.com/package/@lokascript/core)
+[![CI](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml/badge.svg)](https://github.com/codetalcott/hyperfixi/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/codetalcott/hyperfixi/graph/badge.svg)](https://codecov.io/gh/codetalcott/hyperfixi)
+[![npm version](https://img.shields.io/npm/v/@hyperfixi/core.svg)](https://www.npmjs.com/package/@hyperfixi/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modular, tree-shakeable implementation of [\_hyperscript](https://hyperscript.org) with optional multilingual support.
 
 **Use it as:**
 
-- **Pure hyperscript** - Fully typed, tree-shakeable, 8-912 KB bundles
+- **Pure hyperscript** - Fully typed, tree-shakeable, 2-200 KB bundles
 - **With multilingual** - DOM scripting in Japanese, Korean, Arabic, Spanish, and 19 other languages
 
 ## About This Project
 
-LokaScript is a **fully-featured hyperscript implementation** with two key additions:
+HyperFixi is a **fully-featured hyperscript implementation** with two key additions:
 
-1. **Modern architecture**: Tree-shakeable modules, TypeScript types, and configurable bundles (8 KB - 912 KB)
-2. **Optional multilingual support**: Use hyperscript in ~20 languages with native word order and grammar
+1. **Modern architecture**: Tree-shakeable modules, TypeScript types, and configurable bundles (2 KB - 200 KB)
+2. **Optional multilingual support**: Use hyperscript in 24 languages with native word order and grammar
 
-The core is a complete hyperscript runtime and parser that works independently. The multilingual features are opt-in for projects that need them.
+The core engine (`@hyperfixi/*`) is a complete hyperscript runtime and parser that works independently. The multilingual features (`@lokascript/*`) are opt-in for projects that need them.
 
 ### Why Multilingual?
 
@@ -35,39 +35,39 @@ This requires language-specific patterns for each command. The multilingual pack
 
 ## Current Status
 
-| Package                                           | Tests        | Status |
-| ------------------------------------------------- | ------------ | ------ |
-| [@lokascript/core](./packages/core)               | 3316 passing | Stable |
-| [@lokascript/semantic](./packages/semantic)       | 1984 passing | Stable |
-| [@lokascript/i18n](./packages/i18n)               | 309 passing  | Stable |
-| [@lokascript/vite-plugin](./packages/vite-plugin) | 163 passing  | Stable |
+| Package                                          | Tests        | Status |
+| ------------------------------------------------ | ------------ | ------ |
+| [@hyperfixi/core](./packages/core)               | 5700 passing | Stable |
+| [@lokascript/semantic](./packages/semantic)      | 3553 passing | Stable |
+| [@lokascript/i18n](./packages/i18n)              | 470 passing  | Stable |
+| [@hyperfixi/vite-plugin](./packages/vite-plugin) | 163 passing  | Stable |
 
 ### Language Support
 
-**23 languages**: Arabic, Bengali, Chinese, English, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Malay, Polish, Portuguese, Quechua, Russian, Spanish, Swahili, Tagalog, Thai, Turkish, Ukrainian, Vietnamese
+**24 languages**: Arabic, Bengali, Chinese, English, French, German, Hebrew, Hindi, Indonesian, Italian, Japanese, Korean, Malay, Polish, Portuguese, Quechua, Russian, Spanish, Swahili, Tagalog, Thai, Turkish, Ukrainian, Vietnamese
 
 ### Bundle Sizes
 
 **Core bundles** (pure hyperscript, no multilingual):
 
-| Bundle                        | Size   | Use Case                                    |
-| ----------------------------- | ------ | ------------------------------------------- |
-| lokascript-lite.js            | 8 KB   | Minimal (8 commands, regex parser)          |
-| lokascript-hybrid-complete.js | 28 KB  | **Recommended** (~85% hyperscript coverage) |
-| lokascript-browser-minimal.js | 271 KB | Full parser + 10 commands (no multilingual) |
-| lokascript-browser.js         | 912 KB | Everything (includes all 23 languages)      |
+| Bundle                       | Size (gzip) | Use Case                                    |
+| ---------------------------- | ----------- | ------------------------------------------- |
+| hyperfixi-lite.js            | 1.9 KB      | Minimal (8 commands, regex parser)          |
+| hyperfixi-hybrid-complete.js | 7.2 KB      | **Recommended** (~85% hyperscript coverage) |
+| hyperfixi-minimal.js         | 63 KB       | Full parser + 30 commands                   |
+| hyperfixi.js                 | 200 KB      | Everything (all 47 commands)                |
 
 **Semantic bundles** (optional, for multilingual support):
 
-| Bundle                      | Size   | Use Case                                |
-| --------------------------- | ------ | --------------------------------------- |
-| Semantic (English only)     | 84 KB  | Multilingual parsing (English only)     |
-| Semantic (all 23 languages) | 260 KB | Multilingual parsing (all 23 languages) |
+| Bundle                      | Size  | Use Case                                |
+| --------------------------- | ----- | --------------------------------------- |
+| Semantic (English only)     | 20 KB | Multilingual parsing (English only)     |
+| Semantic (all 24 languages) | 90 KB | Multilingual parsing (all 24 languages) |
 
 **Most projects should use:**
 
-- **Browser/CDN**: `lokascript-hybrid-complete.js` (28 KB)
-- **Vite/bundler**: `@lokascript/vite-plugin` for automatic tree-shaking
+- **Browser/CDN**: `hyperfixi-hybrid-complete.js` (7.2 KB gzipped)
+- **Vite/bundler**: `@hyperfixi/vite-plugin` for automatic tree-shaking
 - **Node.js**: Import specific commands/expressions for optimal tree-shaking
 
 ## Quick Start
@@ -75,22 +75,22 @@ This requires language-specific patterns for each command. The multilingual pack
 ### Browser (CDN)
 
 ```html
-<script src="lokascript-hybrid-complete.js"></script>
+<script src="https://unpkg.com/@hyperfixi/core/dist/hyperfixi-hybrid-complete.js"></script>
 <button _="on click toggle .active">Toggle</button>
 ```
 
 ### Vite Projects
 
 ```bash
-npm install @lokascript/vite-plugin
+npm install @hyperfixi/vite-plugin
 ```
 
 ```javascript
 // vite.config.js
-import { lokascript } from '@lokascript/vite-plugin';
+import { hyperfixi } from '@hyperfixi/vite-plugin';
 
 export default {
-  plugins: [lokascript()],
+  plugins: [hyperfixi()],
 };
 ```
 
@@ -98,26 +98,26 @@ The plugin scans your files for `_="..."` attributes and generates a minimal bun
 
 ## Usage Modes
 
-LokaScript can be used in three ways:
+HyperFixi can be used in three ways:
 
 ### 1. Standalone Hyperscript (No Multilingual)
 
 Pure hyperscript with full TypeScript types and tree-shakeable architecture:
 
 ```typescript
-import { lokascript } from '@lokascript/core';
+import { hyperscript } from '@hyperfixi/core';
 
 // V2 API - clean, typed
-const result = lokascript.compileSync('toggle .active');
-await lokascript.eval('toggle .active', element);
+const result = hyperscript.compileSync('toggle .active');
+await hyperscript.eval('toggle .active', element);
 ```
 
 **Tree-shakeable**: Import only what you need:
 
 ```typescript
-import { createRuntime } from '@lokascript/core/runtime';
-import { toggle, add, remove } from '@lokascript/core/commands';
-import { references, logical } from '@lokascript/core/expressions';
+import { createRuntime } from '@hyperfixi/core/runtime';
+import { toggle, add, remove } from '@hyperfixi/core/commands';
+import { references, logical } from '@hyperfixi/core/expressions';
 
 const hyperscript = createRuntime({
   commands: [toggle, add, remove],
@@ -133,19 +133,19 @@ The plugin scans your files and generates minimal bundles automatically:
 
 ```javascript
 // vite.config.js
-import { lokascript } from '@lokascript/vite-plugin';
+import { hyperfixi } from '@hyperfixi/vite-plugin';
 
 export default {
-  plugins: [lokascript()],
+  plugins: [hyperfixi()],
 };
 ```
 
 ### 3. Multilingual (Optional)
 
-Add support for 23 languages when needed:
+Add support for 24 languages when needed:
 
 ```typescript
-import { MultilingualHyperscript } from '@lokascript/core/multilingual';
+import { MultilingualHyperscript } from '@hyperfixi/core/multilingual';
 
 const ml = new MultilingualHyperscript();
 await ml.initialize();
@@ -161,7 +161,7 @@ const arabic = await ml.translate('toggle .active', 'en', 'ar');
 
 ## Documentation
 
-**[Full Documentation](https://github.com/codetalcott/lokascript#readme)** — guides, API reference, and cookbook
+**[Full Documentation](https://github.com/codetalcott/hyperfixi#readme)** — guides, API reference, and cookbook
 
 For LLM agents (Claude Code, etc.): see [CLAUDE.md](./CLAUDE.md) and package-level CLAUDE.md files.
 
@@ -169,30 +169,30 @@ For LLM agents (Claude Code, etc.): see [CLAUDE.md](./CLAUDE.md) and package-lev
 
 ```text
 packages/
-├── core/           # Hyperscript runtime, parser, 43 commands
+├── core/           # @hyperfixi/core — Hyperscript runtime, parser, 47 commands
 │   ├── parser/     # AST parser (~3800 lines)
 │   ├── runtime/    # Execution engine
 │   └── commands/   # Command implementations
 │
-├── semantic/       # Semantic-first multilingual parsing
-│   ├── tokenizers/ # 23 language-specific tokenizers
+├── semantic/       # @lokascript/semantic — Semantic-first multilingual parsing
+│   ├── tokenizers/ # 24 language-specific tokenizers
 │   ├── patterns/   # Command pattern generation
 │   └── parser/     # Semantic parser with confidence scoring
 │
-├── i18n/           # Grammar transformation
+├── i18n/           # @lokascript/i18n — Grammar transformation
 │   ├── grammar/    # SOV/VSO word order transformation
-│   └── profiles/   # 13 language profiles with markers
+│   └── profiles/   # Language profiles with markers
 │
-├── vite-plugin/    # Zero-config Vite integration
+├── vite-plugin/    # @hyperfixi/vite-plugin — Zero-config Vite integration
 │   ├── scanner/    # Hyperscript detection in HTML/Vue/Svelte/JSX
 │   └── generator/  # Minimal bundle generation
 │
-└── mcp-server/     # Model Context Protocol server for LLM integration
+└── mcp-server/     # @lokascript/mcp-server — Model Context Protocol for LLM integration
 ```
 
 ### MCP Server
 
-The `mcp-server` package exposes LokaScript tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
+The `mcp-server` package exposes HyperFixi tools to LLM agents via [Model Context Protocol](https://modelcontextprotocol.io). This enables AI assistants to validate hyperscript, suggest commands, translate between languages, and explain code—useful for both development and ongoing maintenance.
 
 ## Examples
 
@@ -206,20 +206,6 @@ npx http-server . -p 3000 -c-1
 # http://127.0.0.1:3000/examples/           # Gallery index
 # http://127.0.0.1:3000/examples/multilingual/  # Multilingual demos
 ```
-
-## Pattern Registry
-
-The pattern registry documents all supported hyperscript patterns and their implementation status:
-
-```bash
-# View pattern coverage
-node scripts/analysis/verify-patterns-coverage.mjs
-
-# Analyze all patterns
-node scripts/analysis/analyze-all-patterns.mjs
-```
-
-Registry location: [scripts/analysis/patterns-registry.mjs](scripts/analysis/patterns-registry.mjs)
 
 ## Language-Specific Bundles
 
@@ -247,7 +233,7 @@ Pre-built regional bundles in `packages/semantic/dist/`:
 | `browser-en.en.global.js`                 | 20 KB | English only       |
 | `browser-western.western.global.js`       | 30 KB | en, es, pt, fr, de |
 | `browser-east-asian.east-asian.global.js` | 24 KB | ja, zh, ko         |
-| `browser.global.js`                       | 61 KB | All 13 languages   |
+| `browser.global.js`                       | 90 KB | All 24 languages   |
 
 ### Core (Custom Command Bundles)
 
@@ -296,15 +282,19 @@ npm run add-language -- --code=xx --name=LanguageName --native=NativeName \
 
 Then fill in keyword translations in `src/generators/profiles/{code}.ts`.
 
+## Migration from v1.x
+
+See [MIGRATION.md](./MIGRATION.md) for upgrading from `@lokascript/*` v1.x packages.
+
 ## About This Experiment
 
-This project exists because LLM agents made it possible. I could not have built a 23-language semantic parser alone—the linguistic knowledge required is beyond any individual. Ongoing maintenance will continue with LLM assistance.
+This project exists because LLM agents made it possible. I could not have built a 24-language semantic parser alone—the linguistic knowledge required is beyond any individual. Ongoing maintenance will continue with LLM assistance.
 
 The codebase is complex. The semantic role mapping, grammar transformations, and language-specific tokenizers add significant machinery compared to original hyperscript. Whether this complexity is worth the accessibility gains is an open question.
 
 **Current gaps:**
 
-- Compatibility is one-way: official \_hyperscript code should work in LokaScript, but LokaScript's extended syntax (multilingual, flexible grammar) won't work in official \_hyperscript
+- Compatibility is one-way: official \_hyperscript code should work in HyperFixi, but HyperFixi's extended syntax (multilingual, flexible grammar) won't work in official \_hyperscript
 - Bundle sizes are large for full multilingual support
 - Language idioms are approximations, not yet verified by native speakers
 

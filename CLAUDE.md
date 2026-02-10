@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**LokaScript** is a complete \_hyperscript ecosystem with server-side compilation, multi-language i18n (24 languages including SOV/VSO grammar transformation), semantic-first multilingual parsing, and comprehensive developer tooling.
+**HyperFixi** is a complete \_hyperscript ecosystem with server-side compilation, multi-language i18n (24 languages including SOV/VSO grammar transformation), semantic-first multilingual parsing, and comprehensive developer tooling. Engine packages are published under `@hyperfixi/*`, multilingual packages under `@lokascript/*`.
 
 - **8100+ tests** passing across all suites
 - **203 KB** browser bundle (gzipped, 39% reduction from original)
@@ -21,7 +21,7 @@ packages/
 │   │   ├── commands/         # 43 command implementations
 │   │   ├── commands-v2/      # Standalone command modules (tree-shakeable)
 │   │   └── expressions/      # 6 expression categories (references, logical, etc.)
-│   └── dist/                 # Built bundles (lokascript-browser.js)
+│   └── dist/                 # Built bundles (hyperfixi.js)
 │
 ├── i18n/           # Internationalization (24 languages + grammar transformation)
 │   ├── src/
@@ -226,7 +226,7 @@ Key files:
 The `MultilingualHyperscript` class provides a unified API that integrates semantic parsing with grammar transformation:
 
 ```typescript
-import { MultilingualHyperscript } from '@lokascript/core';
+import { MultilingualHyperscript } from '@hyperfixi/core';
 
 const ml = new MultilingualHyperscript();
 await ml.initialize();
@@ -357,7 +357,7 @@ import {
   isNonLatinLanguage, // Check if language uses non-Latin script
   getAllLanguageCodes, // Get all supported language codes
   clearCustomKeywords, // Clear custom keywords
-} from '@lokascript/vite-plugin';
+} from '@hyperfixi/vite-plugin';
 
 // Register custom keywords for detection
 registerCustomKeywords('my-lang', {
@@ -373,7 +373,7 @@ registerCustomKeywords('my-lang', {
 Every compilation returns metadata about which parser was used and any warnings:
 
 ```javascript
-const result = lokascript.compile('toggle .active');
+const result = hyperfixi.compile('toggle .active');
 console.log(result.metadata);
 // {
 //   parserUsed: 'semantic',
@@ -394,16 +394,16 @@ This helps identify:
 In browser console:
 
 ```javascript
-lokascript.debugControl.enable(); // Enable detailed logging
-lokascript.debugControl.disable(); // Disable logging
-lokascript.debugControl.isEnabled(); // Check status
-lokascript.debugControl.status(); // Get detailed status
+hyperfixi.debugControl.enable(); // Enable detailed logging
+hyperfixi.debugControl.disable(); // Disable logging
+hyperfixi.debugControl.isEnabled(); // Check status
+hyperfixi.debugControl.status(); // Get detailed status
 ```
 
 Or set localStorage directly:
 
 ```javascript
-localStorage.setItem('lokascript:debug', '*');
+localStorage.setItem('hyperfixi:debug', '*');
 // Then reload page
 ```
 
@@ -425,7 +425,7 @@ Debug logging persists across page reloads via localStorage and works in product
 Listen to semantic parse events to understand parser decisions:
 
 ```javascript
-window.addEventListener('lokascript:semantic-parse', e => {
+window.addEventListener('hyperfixi:semantic-parse', e => {
   console.log('Semantic parse:', e.detail);
   // {
   //   input: 'toggle .active',
@@ -443,7 +443,7 @@ window.addEventListener('lokascript:semantic-parse', e => {
 Get parsing statistics:
 
 ```javascript
-const stats = lokascript.semanticDebug.getStats();
+const stats = hyperfixi.semanticDebug.getStats();
 console.log(stats);
 // {
 //   totalParses: 42,
@@ -459,7 +459,7 @@ console.log(stats);
 The new API provides cleaner methods with structured results:
 
 ```javascript
-import { hyperscript } from 'lokascript';
+import { hyperscript } from 'hyperfixi';
 
 // Compile (sync) - returns CompileResult with ok/errors/meta
 const result = hyperscript.compileSync('toggle .active');
@@ -496,12 +496,12 @@ See [packages/core/docs/API.md](packages/core/docs/API.md) for complete document
 
 ## Type Safety: Environment-Specific Conditional Types
 
-LokaScript uses TypeScript conditional types for zero-cost type safety across browser and server environments:
+HyperFixi uses TypeScript conditional types for zero-cost type safety across browser and server environments:
 
 **Browser code** (full DOM type safety):
 
 ```typescript
-import type { BrowserEventPayload } from '@lokascript/core/registry/browser';
+import type { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
 
 const payload: BrowserEventPayload = {
   type: 'click',
@@ -526,7 +526,7 @@ const payload: ServerEventPayload = {
 **Universal code** (works in both):
 
 ```typescript
-import type { UniversalEventPayload } from '@lokascript/core/registry/universal';
+import type { UniversalEventPayload } from '@hyperfixi/core/registry/universal';
 
 function handle(payload: UniversalEventPayload) {
   if (payload.target instanceof Element) {
@@ -556,26 +556,26 @@ See [TYPE_SAFETY_DESIGN.md](docs-internal/analysis/TYPE_SAFETY_DESIGN.md) for im
 
 ## Vite Plugin (Recommended)
 
-For Vite projects, use `@lokascript/vite-plugin` for automatic minimal bundles:
+For Vite projects, use `@hyperfixi/vite-plugin` for automatic minimal bundles:
 
 ```javascript
 // vite.config.js
-import { lokascript } from '@lokascript/vite-plugin';
+import { hyperfixi } from '@hyperfixi/vite-plugin';
 
 export default {
-  plugins: [lokascript()],
+  plugins: [hyperfixi()],
 };
 ```
 
 ```javascript
 // app.js - just import, plugin handles the rest
-import 'lokascript';
+import 'hyperfixi';
 ```
 
 The plugin automatically scans your files for `_="..."` attributes and generates a bundle with only the commands you use. Options:
 
 ```javascript
-lokascript({
+hyperfixi({
   extraCommands: ['fetch'], // Always include these commands
   extraBlocks: ['if'], // Always include these blocks
   positional: true, // Include positional expressions
@@ -588,24 +588,24 @@ lokascript({
 
 ### Core Bundles
 
-| Bundle                                          | Global                  | Size (gzip) | Use Case                 |
-| ----------------------------------------------- | ----------------------- | ----------- | ------------------------ |
-| `packages/core/dist/lokascript-browser.js`      | `window.lokascript`     | 203.5 KB    | Full bundle with parser  |
-| `packages/core/dist/lokascript-multilingual.js` | `window.lokascript`     | 64.3 KB     | Multilingual (no parser) |
-| `packages/i18n/dist/lokascript-i18n.min.js`     | `window.LokaScriptI18n` | 35.0 KB     | Grammar transformation   |
+| Bundle                                         | Global                  | Size (gzip) | Use Case                 |
+| ---------------------------------------------- | ----------------------- | ----------- | ------------------------ |
+| `packages/core/dist/hyperfixi.js`              | `window.hyperfixi`      | 203.5 KB    | Full bundle with parser  |
+| `packages/core/dist/hyperfixi-multilingual.js` | `window.hyperfixi`      | 64.3 KB     | Multilingual (no parser) |
+| `packages/i18n/dist/lokascript-i18n.min.js`    | `window.LokaScriptI18n` | 35.0 KB     | Grammar transformation   |
 
-> **Note**: Backward-compatible aliases (`hyperfixi-*.js`) are available in v1.1.0 but will be removed in v2.0.0. See [MIGRATION.md](MIGRATION.md).
+> **Note**: As of v2.0.0, the primary bundles are `hyperfixi-*.js`. Backward-compatible aliases (`lokascript-*.js`) are provided but will be removed in v3.0.0. See [MIGRATION.md](MIGRATION.md).
 
 ### Lite Bundles (Size-Optimized)
 
 For projects prioritizing bundle size over features:
 
-| Bundle                          | Size (gzip) | Commands  | Features                                      |
-| ------------------------------- | ----------- | --------- | --------------------------------------------- |
-| `lokascript-lite.js`            | 1.9 KB      | 8         | Regex parser, basic commands                  |
-| `lokascript-lite-plus.js`       | 2.6 KB      | 14        | Regex parser, more commands, i18n aliases     |
-| `lokascript-hybrid-complete.js` | 7.3 KB      | 21+blocks | Full AST parser, expressions, event modifiers |
-| `lokascript-hybrid-hx.js`       | 9.7 KB      | 21+blocks | hybrid-complete + htmx/fixi attribute support |
+| Bundle                         | Size (gzip) | Commands  | Features                                      |
+| ------------------------------ | ----------- | --------- | --------------------------------------------- |
+| `hyperfixi-lite.js`            | 1.9 KB      | 8         | Regex parser, basic commands                  |
+| `hyperfixi-lite-plus.js`       | 2.6 KB      | 14        | Regex parser, more commands, i18n aliases     |
+| `hyperfixi-hybrid-complete.js` | 7.3 KB      | 21+blocks | Full AST parser, expressions, event modifiers |
+| `hyperfixi-hx.js`              | 9.7 KB      | 21+blocks | hybrid-complete + htmx/fixi attribute support |
 
 **Hybrid Complete** (~85% hyperscript coverage) is recommended - it supports:
 
@@ -733,15 +733,15 @@ For developers writing hyperscript in their native language:
 ```html
 <!-- Load both bundles -->
 <script src="lokascript-semantic.browser.global.js"></script>
-<script src="lokascript-multilingual.js"></script>
+<script src="hyperfixi-multilingual.js"></script>
 <script>
   // Execute in any of 24 supported languages
-  await lokascript.execute('토글 .active', 'ko');      // Korean
-  await lokascript.execute('トグル .active', 'ja');    // Japanese
-  await lokascript.execute('alternar .active', 'es');  // Spanish
+  await hyperfixi.execute('토글 .active', 'ko');      // Korean
+  await hyperfixi.execute('トグル .active', 'ja');    // Japanese
+  await hyperfixi.execute('alternar .active', 'es');  // Spanish
 
   // Translate between languages
-  const korean = await lokascript.translate('toggle .active', 'en', 'ko');
+  const korean = await hyperfixi.translate('toggle .active', 'en', 'ko');
 </script>
 ```
 
@@ -750,7 +750,7 @@ For developers writing hyperscript in their native language:
 ### Full Bundle Usage
 
 ```html
-<script src="lokascript-browser.js"></script>
+<script src="hyperfixi.js"></script>
 <script src="lokascript-i18n.min.js"></script>
 <script src="lokascript-semantic.browser.global.js"></script>
 <script>
