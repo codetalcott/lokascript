@@ -100,10 +100,7 @@ cd packages/mcp-server && npm publish --access public && cd ../..
 # 10. Patterns Reference
 cd packages/patterns-reference && npm publish --access public && cd ../..
 
-# 11. Progressive Enhancement
-cd packages/progressive-enhancement && npm publish --access public && cd ../..
-
-# 12. SSR Support
+# 11. SSR Support
 cd packages/ssr-support && npm publish --access public && cd ../..
 
 # 13. Template Integration
@@ -140,7 +137,6 @@ npm view @lokascript/ast-toolkit version && \
 npm view @lokascript/component-schema version && \
 npm view @lokascript/mcp-server version && \
 npm view @lokascript/patterns-reference version && \
-npm view @lokascript/progressive-enhancement version && \
 npm view @lokascript/ssr-support version && \
 npm view @lokascript/template-integration version && \
 npm view @lokascript/types-browser version && \

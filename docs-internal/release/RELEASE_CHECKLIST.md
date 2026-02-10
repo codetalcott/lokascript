@@ -57,7 +57,6 @@ See [RELEASE_GUIDE.md](RELEASE_GUIDE.md) for detailed instructions.
 - [ ] @lokascript/component-schema
 - [ ] @lokascript/mcp-server
 - [ ] @lokascript/patterns-reference
-- [ ] @lokascript/progressive-enhancement
 - [ ] @lokascript/ssr-support
 - [ ] @lokascript/template-integration
 - [ ] @lokascript/types-browser

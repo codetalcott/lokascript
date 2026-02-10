@@ -60,7 +60,6 @@ npm run packages:list:public
 #   ✅ @lokascript/i18n
 #   ✅ @lokascript/mcp-server
 #   ✅ @lokascript/patterns-reference
-#   ✅ @lokascript/progressive-enhancement
 #   ✅ @lokascript/semantic
 #   ✅ @lokascript/ssr-support
 #   ✅ @lokascript/template-integration
@@ -246,9 +245,6 @@ cd packages/mcp-server && npm publish --access public && cd ../..
 
 # Patterns Reference
 cd packages/patterns-reference && npm publish --access public && cd ../..
-
-# Progressive Enhancement
-cd packages/progressive-enhancement && npm publish --access public && cd ../..
 
 # SSR Support
 cd packages/ssr-support && npm publish --access public && cd ../..

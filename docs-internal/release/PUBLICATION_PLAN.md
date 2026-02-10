@@ -4,28 +4,27 @@
 
 ### Current Status
 
-| Package                             | Current Version | Recommended | Rationale                         |
-| ----------------------------------- | --------------- | ----------- | --------------------------------- |
-| @lokascript/core                    | 2.0.0           | 2.0.0       | Main package, already established |
-| @lokascript/semantic                | 0.1.0           | 1.0.0       | Stable, 730+ tests passing        |
-| @lokascript/i18n                    | 0.1.0           | 1.0.0       | Stable, 424 tests passing         |
-| @lokascript/vite-plugin             | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @lokascript/mcp-server              | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @lokascript/types-browser           | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
-| @lokascript/multi-tenant            | 0.1.0           | 0.5.0       | Functional but needs docs         |
-| @lokascript/server-integration      | 0.1.0           | 0.5.0       | Functional but experimental       |
-| @lokascript/ast-toolkit             | 0.1.0           | 0.3.0       | Working but needs polish          |
-| @lokascript/behaviors               | 0.1.0           | 0.3.0       | Working but needs polish          |
-| @lokascript/component-schema        | 0.2.0           | 0.3.0       | Align with others                 |
-| @lokascript/patterns-reference      | 0.1.0           | 0.3.0       | Functional support package        |
-| @lokascript/testing-framework       | 0.1.0           | 0.3.0       | Functional support package        |
-| @lokascript/template-integration    | 0.1.0           | 0.3.0       | Functional support package        |
-| @lokascript/analytics               | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/developer-tools         | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/progressive-enhancement | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/smart-bundling          | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/ssr-support             | 0.1.0           | 0.2.0       | Early stage                       |
-| @lokascript/tron-backend            | 0.1.0           | 0.2.0       | Experimental                      |
+| Package                          | Current Version | Recommended | Rationale                         |
+| -------------------------------- | --------------- | ----------- | --------------------------------- |
+| @lokascript/core                 | 2.0.0           | 2.0.0       | Main package, already established |
+| @lokascript/semantic             | 0.1.0           | 1.0.0       | Stable, 730+ tests passing        |
+| @lokascript/i18n                 | 0.1.0           | 1.0.0       | Stable, 424 tests passing         |
+| @lokascript/vite-plugin          | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/mcp-server           | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/types-browser        | 1.0.0           | 1.0.0       | Already at 1.0.0, keep            |
+| @lokascript/multi-tenant         | 0.1.0           | 0.5.0       | Functional but needs docs         |
+| @lokascript/server-integration   | 0.1.0           | 0.5.0       | Functional but experimental       |
+| @lokascript/ast-toolkit          | 0.1.0           | 0.3.0       | Working but needs polish          |
+| @lokascript/behaviors            | 0.1.0           | 0.3.0       | Working but needs polish          |
+| @lokascript/component-schema     | 0.2.0           | 0.3.0       | Align with others                 |
+| @lokascript/patterns-reference   | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/testing-framework    | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/template-integration | 0.1.0           | 0.3.0       | Functional support package        |
+| @lokascript/analytics            | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/developer-tools      | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/smart-bundling       | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/ssr-support          | 0.1.0           | 0.2.0       | Early stage                       |
+| @lokascript/tron-backend         | 0.1.0           | 0.2.0       | Experimental                      |
 
 ### Publication Priority
 
@@ -53,7 +52,6 @@
 - @lokascript/server-integration (0.5.0)
 - @lokascript/analytics (0.2.0)
 - @lokascript/developer-tools (0.2.0)
-- @lokascript/progressive-enhancement (0.2.0)
 - @lokascript/smart-bundling (0.2.0)
 - @lokascript/ssr-support (0.2.0)
 - @lokascript/tron-backend (0.2.0)

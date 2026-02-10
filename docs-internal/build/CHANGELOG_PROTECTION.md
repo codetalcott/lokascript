@@ -76,7 +76,6 @@ This ensures:
 - @lokascript/i18n
 - @lokascript/mcp-server
 - @lokascript/patterns-reference
-- @lokascript/progressive-enhancement
 - @lokascript/semantic
 - @lokascript/ssr-support
 - @lokascript/template-integration
