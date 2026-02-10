@@ -8,8 +8,6 @@
 - Command implementations live under `src/commands/<domain>`; register factories through `command-registry.ts` so `ENHANCED_COMMAND_FACTORIES` stays in sync.
 - Runtime orchestration is in `src/runtime/runtime.ts`; preserve async execution and context cloning patterns when extending execution flow.
 - Public exports are centralized in `src/index.ts` and mirrored in the `package.json` exports map; update Rollup configs when exposing new entry points.
-- Server API sits in `packages/server-integration`: Express service (`src/service/lokascript-service.ts`) invokes the compiler, cache layer (`src/cache`), and context parser (`src/parser`).
-- Multi-language clients under `clients/*` consume the HTTP API; keep payload shapes consistent with `packages/server-integration/src/types.ts`.
 - Docs and cookbook examples live under `docs/` and `cookbook/`; update matching demo HTML when changing public APIs.
 - Examples gallery (`examples/`) can be served via `npm run dev` which starts an HTTP server at port 3000.
 - Docs site (`apps/docs-site`) serves documentation; build with `npm run docs:build` or preview via `npm run docs:dev`.
@@ -18,7 +16,7 @@
 - Continuous metrics tracked by `scripts/compatibility-monitor.js`; it writes `metrics/compatibility-history.json` and exits non-zero when thresholds slip.
 - Manual browser dashboards live in `packages/core/test-dashboard.html`; serve via `npx http-server packages/core -p 3000 -c-1` for visual feedback.
 - Vitest defaults use Happy DOM; shared setup is in `packages/core/src/test-setup.ts`—import it in new spec files for DOM globals.
-- Performance-sensitive code favors preallocated arrays and LRU caches; follow existing patterns in `packages/server-integration/src/cache` and `packages/core/src/performance`.
+- Performance-sensitive code favors preallocated arrays and LRU caches; follow existing patterns in `packages/core/src/performance`.
 - Keep TypeScript strict; every workspace extends `tsconfig.base.json` and CI expects zero compiler errors via `npm run typecheck --workspaces`.
 - Linting uses ESLint+Prettier; run `npm run lint --prefix packages/<name>` for focused fixes and respect side-effect free modules.
 - Browser bundles are built with Rollup (`rollup.config.mjs`, `rollup.browser.config.mjs`); update both when changing entry names or output formats.
