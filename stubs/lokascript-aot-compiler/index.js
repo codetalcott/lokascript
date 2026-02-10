@@ -1,5 +1,3 @@
 // @lokascript/aot-compiler has been renamed to @hyperfixi/aot-compiler
-// This package is a backward-compatibility stub.
-// Please update your imports to use @hyperfixi/aot-compiler instead.
-console.warn('[DEPRECATED] @lokascript/aot-compiler has been renamed to @hyperfixi/aot-compiler. Please update your imports.');
+// This package is a backward-compatibility stub. Install @hyperfixi/aot-compiler directly.
 module.exports = require('@hyperfixi/aot-compiler');

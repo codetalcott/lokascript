@@ -1,114 +1,126 @@
-# Migration Guide: hyperfixi → lokascript (v1.1.0)
+# Migration Guide: v1.x → v2.0.0
 
 ## Overview
 
-Version 1.1.0 renames all bundles from `hyperfixi-*` to `lokascript-*` to align with the package name (`@lokascript/core`) and the primary window global (`window.lokascript`).
+Version 2.0.0 splits the project into two npm scopes:
+
+- **`@hyperfixi/*`** — Core hyperscript engine (runtime, parser, commands, vite-plugin, etc.)
+- **`@lokascript/*`** — Multilingual packages (semantic parsing, i18n, language-server, etc.)
+
+The primary window global is now `window.hyperfixi`. Bundle filenames changed from `lokascript-*.js` to `hyperfixi-*.js`.
+
+**Backward compatibility:** Old `@lokascript/*` engine package names will be published as stub packages that re-export from `@hyperfixi/*`. Old bundle filenames (`lokascript-*.js`) are provided as aliases. `window.lokascript` still works with a deprecation warning.
 
 **Timeline:**
 
-- **v1.1.0** (Current): New names, old names work with deprecation warnings
-- **v2.0.0** (Future): Old names removed
+- **v2.0.0** (Current): New names are primary, old names work with deprecation warnings
+- **v3.0.0** (Future): Old names and aliases removed
 
-##Quick Migration
+## Quick Migration
 
-### 1. Update Bundle References
+### 1. Update npm Packages
 
-**CDN Users:**
+```bash
+# Before
+npm install @lokascript/core @lokascript/vite-plugin
+
+# After
+npm install @hyperfixi/core @hyperfixi/vite-plugin
+```
+
+**Package name changes:**
+
+| v1.x (Old)                      | v2.0.0 (New)                   |
+| ------------------------------- | ------------------------------ |
+| `@lokascript/core`              | `@hyperfixi/core`              |
+| `@lokascript/behaviors`         | `@hyperfixi/behaviors`         |
+| `@lokascript/vite-plugin`       | `@hyperfixi/vite-plugin`       |
+| `@lokascript/types-browser`     | `@hyperfixi/types-browser`     |
+| `@lokascript/testing-framework` | `@hyperfixi/testing-framework` |
+| `@lokascript/developer-tools`   | `@hyperfixi/developer-tools`   |
+| `@lokascript/smart-bundling`    | `@hyperfixi/smart-bundling`    |
+| `@lokascript/aot-compiler`      | `@hyperfixi/aot-compiler`      |
+
+**Unchanged packages** (stay under `@lokascript`):
+
+- `@lokascript/semantic`
+- `@lokascript/i18n`
+- `@lokascript/language-server`
+- `@lokascript/mcp-server`
+- `@lokascript/hyperscript-adapter`
+- `@lokascript/patterns-reference`
+
+### 2. Update TypeScript Imports
+
+```typescript
+// Before
+import { hyperscript } from '@lokascript/core';
+import { hyperfixi } from '@lokascript/vite-plugin';
+import type { BrowserEventPayload } from '@lokascript/core/registry/browser';
+
+// After
+import { hyperscript } from '@hyperfixi/core';
+import { hyperfixi } from '@hyperfixi/vite-plugin';
+import type { BrowserEventPayload } from '@hyperfixi/core/registry/browser';
+```
+
+### 3. Update Bundle References
 
 ```html
 <!-- Before -->
-<script src="https://unpkg.com/@lokascript/core/dist/hyperfixi-browser.js"></script>
+<script src="lokascript-hybrid-complete.js"></script>
 
 <!-- After -->
-<script src="https://unpkg.com/@lokascript/core/dist/lokascript-browser.js"></script>
+<script src="hyperfixi-hybrid-complete.js"></script>
 ```
 
-**NPM Users:**
+**Bundle filename changes:**
+
+| v1.x (Old)                       | v2.0.0 (New)                   |
+| -------------------------------- | ------------------------------ |
+| `lokascript-browser.js`          | `hyperfixi.js`                 |
+| `lokascript-lite.js`             | `hyperfixi-lite.js`            |
+| `lokascript-lite-plus.js`        | `hyperfixi-lite-plus.js`       |
+| `lokascript-hybrid-complete.js`  | `hyperfixi-hybrid-complete.js` |
+| `lokascript-hybrid-hx.js`        | `hyperfixi-hx.js`              |
+| `lokascript-browser-minimal.js`  | `hyperfixi-minimal.js`         |
+| `lokascript-browser-standard.js` | `hyperfixi-standard.js`        |
+| `lokascript-multilingual.js`     | `hyperfixi-multilingual.js`    |
+
+### 4. Update Window Global
 
 ```javascript
 // Before
-import '@lokascript/core/browser'; // loads hyperfixi-browser.js
-
-// After
-import '@lokascript/core/browser'; // now loads lokascript-browser.js
-// (package.json exports updated automatically)
-```
-
-### 2. Update Window Global
-
-```javascript
-// Before
-window.hyperfixi.execute('toggle .active', el);
-
-// After
 window.lokascript.execute('toggle .active', el);
+
+// After
+window.hyperfixi.execute('toggle .active', el);
 ```
 
-### 3. Update Import Paths (if using direct paths)
+### 5. Update Debug localStorage Key
 
 ```javascript
 // Before
-import { runtime } from '@lokascript/core/dist/hyperfixi-browser.js';
+localStorage.setItem('lokascript:debug', '*');
 
 // After
-import { runtime } from '@lokascript/core/dist/lokascript-browser.js';
+localStorage.setItem('hyperfixi:debug', '*');
 ```
 
-## Bundle Name Changes
+(The old key still works as a fallback.)
 
-| Old Name                        | New Name                         | Size (gzipped) |
-| ------------------------------- | -------------------------------- | -------------- |
-| `hyperfixi-browser.js`          | `lokascript-browser.js`          | 203 KB         |
-| `hyperfixi-lite.js`             | `lokascript-lite.js`             | 1.9 KB         |
-| `hyperfixi-lite-plus.js`        | `lokascript-lite-plus.js`        | 2.6 KB         |
-| `hyperfixi-hybrid-complete.js`  | `lokascript-hybrid-complete.js`  | 7.3 KB         |
-| `hyperfixi-hybrid-hx.js`        | `lokascript-hybrid-hx.js`        | 9.7 KB         |
-| `hyperfixi-browser-minimal.js`  | `lokascript-browser-minimal.js`  | 58 KB          |
-| `hyperfixi-browser-standard.js` | `lokascript-browser-standard.js` | 63 KB          |
-
-## Python Package
-
-The Python package has been renamed from `hyperfixi` to `lokascript`:
-
-```bash
-# OLD
-pip install hyperfixi
-
-# NEW
-pip install lokascript
-```
-
-**Django Settings:**
-
-```python
-# Before
-INSTALLED_APPS = [
-    'hyperfixi.django',
-]
-
-# After
-INSTALLED_APPS = [
-    'lokascript.django',
-]
-```
-
-**Template Tags:**
-
-```django
-<!-- Both work (backward compatible) -->
-{% load hyperfixi %}  <!-- Old (deprecated) -->
-{% load lokascript %}  <!-- New (recommended) -->
-```
-
-**Management Commands:**
+### 6. Update CLI Commands
 
 ```bash
 # Before
-python manage.py hyperfixi_check
+npx lokascript validate src/
+npx lokascript-test
+npx lokascript-aot compile src/
 
 # After
-python manage.py lokascript_check
-python manage.py lokascript_bundle
+npx hyperfixi validate src/
+npx hyperfixi-test
+npx hyperfixi-aot compile src/
 ```
 
 ## Automated Migration
@@ -116,136 +128,65 @@ python manage.py lokascript_bundle
 Use find-and-replace across your project:
 
 ```bash
-# Bundle references
-find . -type f \( -name "*.html" -o -name "*.js" -o -name "*.ts" \) \
-  -exec sed -i '' 's/hyperfixi-browser/lokascript-browser/g' {} +
+# Package imports (only rename engine packages, NOT @lokascript/semantic, @lokascript/i18n, etc.)
+find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.mjs" \) \
+  -not -path "*/node_modules/*" \
+  -exec perl -i -pe 's#\@lokascript/(core|behaviors|vite-plugin|types-browser|testing-framework|developer-tools|smart-bundling|aot-compiler)#\@hyperfixi/$1#g' {} +
 
-find . -type f \( -name "*.html" -o -name "*.js" -o -name "*.ts" \) \
-  -exec sed -i '' 's/hyperfixi-lite/lokascript-lite/g' {} +
+# Bundle references in HTML
+find . -type f -name "*.html" \
+  -exec sed -i '' 's/lokascript-browser\.js/hyperfixi.js/g' {} + \
+  -exec sed -i '' 's/lokascript-hybrid-complete\.js/hyperfixi-hybrid-complete.js/g' {} + \
+  -exec sed -i '' 's/lokascript-hybrid-hx\.js/hyperfixi-hx.js/g' {} + \
+  -exec sed -i '' 's/lokascript-lite-plus\.js/hyperfixi-lite-plus.js/g' {} + \
+  -exec sed -i '' 's/lokascript-lite\.js/hyperfixi-lite.js/g' {} + \
+  -exec sed -i '' 's/lokascript-browser-minimal\.js/hyperfixi-minimal.js/g' {} + \
+  -exec sed -i '' 's/lokascript-browser-standard\.js/hyperfixi-standard.js/g' {} + \
+  -exec sed -i '' 's/lokascript-multilingual\.js/hyperfixi-multilingual.js/g' {} +
 
 # Window global
 find . -type f \( -name "*.html" -o -name "*.js" -o -name "*.ts" \) \
-  -exec sed -i '' 's/window\.hyperfixi/window.lokascript/g' {} +
+  -not -path "*/node_modules/*" \
+  -exec sed -i '' 's/window\.lokascript/window.hyperfixi/g' {} +
 ```
 
 ## Backward Compatibility
 
 ### Bundle File Aliases
 
-Old bundle names still work in v1.1.0:
+Old bundle names still work in v2.0.0 (they are copies of the new names):
 
 ```html
 <!-- Both work -->
-<script src="lokascript-browser.js"></script>
-<!-- New -->
-<script src="hyperfixi-browser.js"></script>
-<!-- Old (alias) -->
+<script src="hyperfixi-hybrid-complete.js"></script>
+<!-- New (primary) -->
+<script src="lokascript-hybrid-complete.js"></script>
+<!-- Old (alias, will be removed in v3.0.0) -->
 ```
-
-⚠️ Aliases will be removed in v2.0.0
 
 ### Window Global
 
-`window.hyperfixi` still works but shows a console warning:
+`window.lokascript` still works but shows a console warning:
 
 ```javascript
-window.hyperfixi.execute(...)  // ⚠️ Shows deprecation warning
-window.lokascript.execute(...)  // ✅ No warning
+window.lokascript.execute(...)  // Shows deprecation warning
+window.hyperfixi.execute(...)   // No warning
 ```
 
-Console warning:
+### npm Stub Packages
 
-```
-[DEPRECATED] window.hyperfixi is deprecated and will be removed in v2.0.0.
-Please use window.lokascript instead.
-See https://github.com/lokascript/lokascript/blob/main/MIGRATION.md
-```
+The old `@lokascript/*` engine package names will be published as v2.0.0 stubs that re-export from the new `@hyperfixi/*` packages. If you install `@lokascript/core@2`, you'll get a thin wrapper around `@hyperfixi/core`.
 
-## Troubleshooting
+## Why the Rename?
 
-### Issue: Module not found
+The project has two distinct audiences:
 
-**Error:** `Cannot find module 'dist/hyperfixi-browser.js'`
+1. **Most users** want a modern hyperscript engine with fixi/htmx integration — "HyperFixi" communicates this immediately
+2. **Multilingual users** want to write hyperscript in their native language — "LokaScript" (from Sanskrit "loka" = world) fits this
 
-**Solution:** Update to new bundle name or install v1.1.0:
-
-```bash
-npm install @lokascript/core@latest
-```
-
-### Issue: Deprecation warnings in console
-
-**Warning:** "window.hyperfixi is deprecated..."
-
-**Solution:** Update all references to use `window.lokascript`:
-
-```javascript
-// Find all occurrences
-grep -r "window\.hyperfixi" src/
-
-// Replace with window.lokascript
-```
-
-### Issue: Types not found
-
-**Error:** `Property 'hyperfixi' does not exist on type 'Window'`
-
-**Solution:** Update TypeScript types:
-
-```bash
-npm install @lokascript/types-browser@latest
-```
-
-The types already include both `window.lokascript` and deprecated `window.hyperfixi`.
-
-### Issue: Python import errors
-
-**Error:** `ModuleNotFoundError: No module named 'hyperfixi'`
-
-**Solution:** Uninstall old package and install new one:
-
-```bash
-pip uninstall hyperfixi
-pip install lokascript
-```
-
-Update imports:
-
-```python
-# Before
-from hyperfixi import hs
-
-# After
-from lokascript import hs
-```
+Having everything under `@lokascript/*` confused the messaging. The dual-scope split makes each product's purpose clear.
 
 ## Support
 
-- **GitHub Issues:** https://github.com/lokascript/lokascript/issues
-- **Discussions:** https://github.com/lokascript/lokascript/discussions
-- **Documentation:** https://github.com/codetalcott/lokascript#readme
-
-## Timeline for v2.0.0
-
-In v2.0.0 (planned for Q2 2026), the following will be removed:
-
-- ❌ Bundle file aliases (`hyperfixi-*.js` files)
-- ❌ `window.hyperfixi` global
-- ❌ Deprecation warnings
-
-You will need to have migrated to the new names before upgrading to v2.0.0.
-
-## Why the Name Change?
-
-**lokascript** (from Sanskrit "loka" meaning "world/realm/universe") better reflects the project's multilingual scope:
-
-- 23 languages supported
-- SOV/VSO/SVO grammar transformation
-- Semantic-first multilingual parsing
-- More distinctive and searchable than "hyperfixi"
-
-The rebrand aligns all naming:
-
-- Package: `@lokascript/core`
-- Global: `window.lokascript`
-- Bundles: `lokascript-*.js`
+- **GitHub Issues:** https://github.com/codetalcott/hyperfixi/issues
+- **Documentation:** https://github.com/codetalcott/hyperfixi#readme

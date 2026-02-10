@@ -1,4 +1,4 @@
 // @lokascript/developer-tools has been renamed to @hyperfixi/developer-tools
-// This package is a backward-compatibility stub.
-console.warn('[DEPRECATED] @lokascript/developer-tools has been renamed to @hyperfixi/developer-tools. Please update your imports.');
+// This package is a backward-compatibility stub. Install @hyperfixi/developer-tools directly.
 export * from '@hyperfixi/developer-tools';
+export { default } from '@hyperfixi/developer-tools';

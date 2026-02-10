@@ -1,7 +1,7 @@
 {
   "name": "@lokascript/smart-bundling",
   "version": "2.0.0",
-  "description": "Deprecated. Use @hyperfixi/smart-bundling instead.",
+  "description": "Renamed to @hyperfixi/smart-bundling. Install @hyperfixi/smart-bundling instead.",
   "deprecated": "This package has been renamed to @hyperfixi/smart-bundling. Install @hyperfixi/smart-bundling instead.",
   "main": "index.js",
   "module": "index.mjs",
@@ -10,12 +10,9 @@
     "@hyperfixi/smart-bundling": "^2.0.0"
   },
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/codetalcott/hyperfixi.git",
+    "url": "git+https://github.com/codetalcott/hyperfixi.git",
     "directory": "stubs/lokascript-smart-bundling"
   }
 }

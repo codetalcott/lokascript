@@ -1,4 +1,4 @@
 // @lokascript/core has been renamed to @hyperfixi/core
-// This package is a backward-compatibility stub.
-console.warn('[DEPRECATED] @lokascript/core has been renamed to @hyperfixi/core. Please update your imports.');
+// This package is a backward-compatibility stub. Install @hyperfixi/core directly.
 export * from '@hyperfixi/core';
+export { default } from '@hyperfixi/core';
