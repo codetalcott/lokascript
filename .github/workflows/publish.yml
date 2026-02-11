@@ -163,14 +163,29 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           echo "Publishing all packages at version $VERSION"
+          FAILED=""
 
           for pkg in semantic core i18n hyperscript-adapter patterns-reference mcp-server vite-plugin; do
             SCOPE=$(node -p "require('./packages/$pkg/package.json').name")
             echo "Publishing $SCOPE@$VERSION"
             cd "packages/$pkg"
-            npm publish --tag ${{ github.event.inputs.npm-tag }} --access public
+            if npm publish --tag ${{ github.event.inputs.npm-tag }} --access public 2>&1 | tee /tmp/publish-$pkg.log; then
+              echo "✅ $SCOPE@$VERSION published"
+            else
+              if grep -q "previously published" /tmp/publish-$pkg.log; then
+                echo "⏭️  $SCOPE@$VERSION already published, skipping"
+              else
+                echo "❌ $SCOPE@$VERSION failed"
+                FAILED="$FAILED $SCOPE"
+              fi
+            fi
             cd ../..
           done
+
+          if [ -n "$FAILED" ]; then
+            echo "::error::Failed to publish:$FAILED"
+            exit 1
+          fi
 
       - name: Commit version changes
         if: ${{ github.event.inputs.dry-run == 'false' }}
