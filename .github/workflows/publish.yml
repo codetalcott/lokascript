@@ -8,11 +8,12 @@ on:
         required: true
         type: choice
         options:
+          - current
           - patch
           - minor
           - major
           - prerelease
-        default: 'patch'
+        default: 'current'
       npm-tag:
         description: 'npm dist-tag (latest, beta, next, etc.)'
         required: true
@@ -84,6 +85,7 @@ jobs:
           npm run build --prefix packages/hyperscript-adapter
           npm run build --prefix packages/patterns-reference
           npm run build --prefix packages/ast-toolkit
+          npm run build --prefix packages/compilation-service
           npm run build --prefix packages/mcp-server
           npm run build --prefix packages/vite-plugin
 
@@ -102,14 +104,21 @@ jobs:
           CURRENT=$(node -p "require('./packages/core/package.json').version")
           echo "Current version: $CURRENT"
 
-          # Calculate new version
-          cd packages/core
-          npm version ${{ github.event.inputs.version-type }} --no-git-tag-version > /dev/null 2>&1
-          NEW=$(node -p "require('./package.json').version")
-          cd ../..
+          VERSION_TYPE="${{ github.event.inputs.version-type }}"
 
-          # Reset core's package.json (we'll set all at once below)
-          git checkout packages/core/package.json
+          if [ "$VERSION_TYPE" = "current" ]; then
+            # Use the version already in package.json as-is
+            NEW="$CURRENT"
+          else
+            # Calculate new version via npm version bump
+            cd packages/core
+            npm version "$VERSION_TYPE" --no-git-tag-version > /dev/null 2>&1
+            NEW=$(node -p "require('./package.json').version")
+            cd ../..
+
+            # Reset core's package.json (we'll set all at once below)
+            git checkout packages/core/package.json
+          fi
 
           echo "New version: $NEW"
           echo "version=$NEW" >> $GITHUB_OUTPUT
