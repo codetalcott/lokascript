@@ -3,3 +3,5 @@
  */
 
 export * from './types';
+export * from './tokenization';
+export * from './pattern-matching';

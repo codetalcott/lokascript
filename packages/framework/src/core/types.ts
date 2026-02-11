@@ -279,6 +279,124 @@ export interface LanguageTokenizer {
 }
 
 // =============================================================================
+// Pattern Matching Types
+// =============================================================================
+
+/**
+ * A language pattern defines how a semantic structure appears in a specific language.
+ */
+export interface LanguagePattern {
+  /** Unique identifier for this pattern */
+  readonly id: string;
+  /** ISO 639-1 language code */
+  readonly language: string;
+  /** Which command this pattern matches */
+  readonly command: ActionType;
+  /** Priority for disambiguation (higher = checked first) */
+  readonly priority: number;
+  /** The pattern template with role placeholders */
+  readonly template: PatternTemplate;
+  /** Rules for extracting semantic roles from matched tokens */
+  readonly extraction: ExtractionRules;
+  /** Optional constraints on when this pattern applies */
+  readonly constraints?: PatternConstraints;
+}
+
+/**
+ * Pattern template - defines expected token sequence.
+ */
+export interface PatternTemplate {
+  /** Human-readable template string */
+  readonly format: string;
+  /** Parsed token sequence for matching */
+  readonly tokens: PatternToken[];
+}
+
+/**
+ * Pattern token - literal, role placeholder, or group.
+ */
+export type PatternToken = LiteralPatternToken | RolePatternToken | GroupPatternToken;
+
+export interface LiteralPatternToken {
+  readonly type: 'literal';
+  readonly value: string;
+  /** Alternative spellings/forms that also match */
+  readonly alternatives?: string[];
+}
+
+export interface RolePatternToken {
+  readonly type: 'role';
+  readonly role: SemanticRole;
+  readonly optional?: boolean;
+  /** Expected value types (for validation) */
+  readonly expectedTypes?: Array<ExpectedType>;
+}
+
+export interface GroupPatternToken {
+  readonly type: 'group';
+  readonly tokens: PatternToken[];
+  readonly optional?: boolean;
+}
+
+/**
+ * Rules for extracting semantic values from matched tokens.
+ */
+export interface ExtractionRules {
+  readonly [role: string]: ExtractionRule;
+}
+
+export interface ExtractionRule {
+  /** Position-based extraction (0-indexed from pattern start) */
+  readonly position?: number;
+  /** Marker-based extraction (find value after this marker) */
+  readonly marker?: string;
+  /** Alternative markers that also work */
+  readonly markerAlternatives?: string[];
+  /** Transform the extracted value */
+  readonly transform?: (raw: string) => SemanticValue;
+  /** Default value if not found (for optional roles) */
+  readonly default?: SemanticValue;
+  /** Static value extraction */
+  readonly value?: string;
+  /** Extract value from a pattern role by name */
+  readonly fromRole?: string;
+}
+
+/**
+ * Additional constraints on pattern applicability.
+ */
+export interface PatternConstraints {
+  /** Required roles that must be present */
+  readonly requiredRoles?: SemanticRole[];
+  /** Roles that must NOT be present */
+  readonly forbiddenRoles?: SemanticRole[];
+  /** Valid selector types for the patient role */
+  readonly validPatientTypes?: Array<SelectorValue['selectorKind']>;
+  /** Pattern IDs this conflicts with */
+  readonly conflictsWith?: string[];
+}
+
+/**
+ * Result of matching a pattern against tokens.
+ */
+export interface PatternMatchResult {
+  readonly pattern: LanguagePattern;
+  readonly captured: ReadonlyMap<SemanticRole, SemanticValue>;
+  readonly consumedTokens: number;
+  readonly confidence: number; // 0-1, how well the pattern matched
+}
+
+/**
+ * Error when pattern matching fails.
+ */
+export interface PatternMatchError {
+  readonly message: string;
+  readonly position: SourcePosition;
+  readonly expectedPatterns?: string[];
+  readonly partialMatch?: Partial<PatternMatchResult>;
+}
+
+// =============================================================================
 // Helper Functions
 // =============================================================================
 
