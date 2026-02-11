@@ -85,6 +85,7 @@ jobs:
           npm run build --prefix packages/hyperscript-adapter
           npm run build --prefix packages/patterns-reference
           npm run build --prefix packages/ast-toolkit
+          npm run build --prefix packages/aot-compiler
           npm run build --prefix packages/compilation-service
           npm run build --prefix packages/mcp-server
           npm run build --prefix packages/vite-plugin
