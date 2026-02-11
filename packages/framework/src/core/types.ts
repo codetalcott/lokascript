@@ -197,6 +197,88 @@ export interface LoopSemanticNode extends SemanticNode {
 }
 
 // =============================================================================
+// Tokenization Types
+// =============================================================================
+
+/**
+ * Token kind - categorizes what type of token this is.
+ */
+export type TokenKind =
+  | 'keyword' // Command or modifier keyword
+  | 'selector' // CSS selector or identifier (#id, .class, table-name)
+  | 'literal' // String or number literal
+  | 'particle' // Grammatical particle (を, に, من)
+  | 'conjunction' // Grammatical conjunction
+  | 'event-modifier' // Event modifier (.once, .debounce(300))
+  | 'identifier' // Generic identifier
+  | 'operator' // Operators (., +, -, etc.)
+  | 'punctuation'; // Punctuation (parentheses, etc.)
+
+/**
+ * A language token - the result of tokenization.
+ */
+export interface LanguageToken {
+  readonly value: string;
+  readonly kind: TokenKind;
+  readonly position: SourcePosition;
+  /** Normalized form from explicit keyword map */
+  readonly normalized?: string;
+  /** Morphologically normalized stem */
+  readonly stem?: string;
+  /** Confidence in the morphological stem (0.0-1.0) */
+  readonly stemConfidence?: number;
+  /** Additional metadata for specific token types */
+  readonly metadata?: Record<string, unknown>;
+}
+
+/**
+ * Token stream - provides sequential access to tokens with backtracking.
+ */
+export interface TokenStream {
+  readonly tokens: readonly LanguageToken[];
+  readonly language: string;
+
+  /** Look at token at current position + offset without consuming */
+  peek(offset?: number): LanguageToken | null;
+
+  /** Consume and return current token, advance position */
+  advance(): LanguageToken;
+
+  /** Check if we've consumed all tokens */
+  isAtEnd(): boolean;
+
+  /** Save current position for backtracking */
+  mark(): StreamMark;
+
+  /** Restore to a saved position */
+  reset(mark: StreamMark): void;
+
+  /** Get current position */
+  position(): number;
+}
+
+/**
+ * Stream mark for backtracking during parsing.
+ */
+export interface StreamMark {
+  readonly position: number;
+}
+
+/**
+ * Language tokenizer interface - converts text to tokens.
+ */
+export interface LanguageTokenizer {
+  readonly language: string;
+  readonly direction: 'ltr' | 'rtl';
+
+  /** Convert input string to token stream */
+  tokenize(input: string): TokenStream;
+
+  /** Classify a single token */
+  classifyToken(token: string): TokenKind;
+}
+
+// =============================================================================
 // Helper Functions
 // =============================================================================
 
