@@ -92,7 +92,7 @@ jobs:
           echo "| Bundle | Raw | Gzipped |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-----|---------|" >> $GITHUB_STEP_SUMMARY
 
-          for file in packages/core/dist/lokascript-*.js; do
+          for file in packages/core/dist/hyperfixi-*.js packages/core/dist/hyperfixi.js; do
             if [[ -f "$file" && ! "$file" == *.map ]]; then
               filename=$(basename "$file")
               raw=$(wc -c < "$file" | tr -d ' ')
@@ -112,26 +112,26 @@ jobs:
 
           failed=0
 
-          if [[ -f "packages/core/dist/lokascript-lite.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-lite.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi-lite.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi-lite.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_LITE" ]]; then
-              echo "::error::lokascript-lite.js ($size bytes gzip) exceeds limit ($MAX_LITE bytes)"
+              echo "::error::hyperfixi-lite.js ($size bytes gzip) exceeds limit ($MAX_LITE bytes)"
               failed=1
             fi
           fi
 
-          if [[ -f "packages/core/dist/lokascript-hybrid-complete.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-hybrid-complete.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi-hybrid-complete.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi-hybrid-complete.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_HYBRID" ]]; then
-              echo "::error::lokascript-hybrid-complete.js ($size bytes gzip) exceeds limit ($MAX_HYBRID bytes)"
+              echo "::error::hyperfixi-hybrid-complete.js ($size bytes gzip) exceeds limit ($MAX_HYBRID bytes)"
               failed=1
             fi
           fi
 
-          if [[ -f "packages/core/dist/lokascript-browser.js" ]]; then
-            size=$(gzip -c packages/core/dist/lokascript-browser.js | wc -c | tr -d ' ')
+          if [[ -f "packages/core/dist/hyperfixi.js" ]]; then
+            size=$(gzip -c packages/core/dist/hyperfixi.js | wc -c | tr -d ' ')
             if [[ "$size" -gt "$MAX_BROWSER" ]]; then
-              echo "::error::lokascript-browser.js ($size bytes gzip) exceeds limit ($MAX_BROWSER bytes)"
+              echo "::error::hyperfixi.js ($size bytes gzip) exceeds limit ($MAX_BROWSER bytes)"
               failed=1
             fi
           fi

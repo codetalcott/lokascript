@@ -119,7 +119,7 @@ jobs:
           fi
 
           if [ -d "packages/core" ]; then
-            echo "Building @lokascript/core..."
+            echo "Building @hyperfixi/core..."
             npm run build --prefix packages/core 2>&1 || true
             npm run build:parser-modules --prefix packages/core 2>&1 || true
           fi
