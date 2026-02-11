@@ -23,21 +23,28 @@
 // Main API
 export * from './api';
 
+// Interfaces (for dependency injection)
+export * from './interfaces';
+
 // Core modules
 export * from './schema';
 export * from './generation';
 
-// Core - export classes and utilities
-export * from './core';
-
-// Re-export grammar types with PatternMatcher aliased to avoid conflict
+// Grammar exports - explicitly list to avoid PatternMatcher conflict with core
+export { GrammarTransformer } from './grammar/transformer';
+export type { TransformerConfig } from './grammar/transformer';
+export { reorderRoles, insertMarkers, joinTokens } from './grammar/types';
 export type {
   LanguageProfile,
-  PatternMatcher as GrammarPatternMatcher,
   PatternTransform,
-  SemanticRole,
+  ParsedElement,
   WordOrder,
+  GrammaticalMarker,
+  AdpositionType,
 } from './grammar/types';
+
+// Core - export classes and utilities
+export * from './core';
 
 // Re-export key types for convenience
 export type {

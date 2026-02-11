@@ -6,6 +6,7 @@
  */
 
 export * from './types';
+export * from './transformer';
 
 // Re-export key transformation functions
 export { reorderRoles, insertMarkers, joinTokens } from './types';
