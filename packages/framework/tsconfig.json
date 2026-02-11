@@ -7,7 +7,8 @@
     "declarationMap": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "incremental": false
+    "incremental": false,
+    "downlevelIteration": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "test/**/*", "examples/**/*"]
