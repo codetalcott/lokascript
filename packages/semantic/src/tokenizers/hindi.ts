@@ -25,6 +25,7 @@ import {
   type KeywordEntry,
 } from './base';
 import { hindiProfile } from '../generators/profiles/hindi';
+import { HindiMorphologicalNormalizer } from './morphology/hindi-normalizer';
 
 // =============================================================================
 // Hindi Character Classification
@@ -97,6 +98,7 @@ export class HindiTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    this.normalizer = new HindiMorphologicalNormalizer();
     this.initializeKeywordsFromProfile(hindiProfile, HINDI_EXTRAS);
   }
 

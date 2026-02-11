@@ -86,60 +86,21 @@ const PREPOSITIONS = new Set([
 
 /**
  * Extra keywords not covered by the profile:
- * - Literals (true, false)
- * - Positional words
- * - Event names
- * - Time units
- * - Multi-word phrases
- * - Additional synonyms
- * - Accent variations
+ * - Literals (true, false, null, undefined)
+ * - Time units (segundo, minuto, hora with suffixes)
+ * - Reference alternatives (mí with accent, destino for target)
+ *
+ * All other keywords (positional, events, commands, logical operators,
+ * multi-word phrases) are now in the profile.
  */
 const SPANISH_EXTRAS: KeywordEntry[] = [
-  // Values/Literals
+  // Values/Literals (not in profile - generic across all languages)
   { native: 'verdadero', normalized: 'true' },
   { native: 'falso', normalized: 'false' },
   { native: 'nulo', normalized: 'null' },
   { native: 'indefinido', normalized: 'undefined' },
 
-  // Positional
-  { native: 'primero', normalized: 'first' },
-  { native: 'primera', normalized: 'first' },
-  { native: 'último', normalized: 'last' },
-  { native: 'ultima', normalized: 'last' },
-  { native: 'siguiente', normalized: 'next' },
-  { native: 'anterior', normalized: 'previous' },
-  { native: 'cercano', normalized: 'closest' },
-  { native: 'padre', normalized: 'parent' },
-
-  // Events
-  { native: 'clic', normalized: 'click' },
-  { native: 'click', normalized: 'click' },
-  { native: 'hacer clic', normalized: 'click' },
-  { native: 'entrada', normalized: 'input' },
-  { native: 'cambio', normalized: 'change' },
-  { native: 'envío', normalized: 'submit' },
-  { native: 'envio', normalized: 'submit' },
-  { native: 'tecla abajo', normalized: 'keydown' },
-  { native: 'tecla arriba', normalized: 'keyup' },
-  { native: 'ratón encima', normalized: 'mouseover' },
-  { native: 'raton encima', normalized: 'mouseover' },
-  { native: 'ratón fuera', normalized: 'mouseout' },
-  { native: 'raton fuera', normalized: 'mouseout' },
-  { native: 'enfoque', normalized: 'focus' },
-  { native: 'desenfoque', normalized: 'blur' },
-  { native: 'carga', normalized: 'load' },
-  { native: 'desplazamiento', normalized: 'scroll' },
-
-  // References
-  { native: 'yo', normalized: 'me' },
-  { native: 'mí', normalized: 'me' },
-  { native: 'mi', normalized: 'me' },
-  { native: 'ello', normalized: 'it' },
-  { native: 'resultado', normalized: 'result' },
-  { native: 'objetivo', normalized: 'target' },
-  { native: 'destino', normalized: 'target' },
-
-  // Time units
+  // Time units (not in profile - handled by number parser)
   { native: 'segundo', normalized: 's' },
   { native: 'segundos', normalized: 's' },
   { native: 'milisegundo', normalized: 'ms' },
@@ -149,36 +110,9 @@ const SPANISH_EXTRAS: KeywordEntry[] = [
   { native: 'hora', normalized: 'h' },
   { native: 'horas', normalized: 'h' },
 
-  // Multi-word phrases
-  { native: 'de lo contrario', normalized: 'else' },
-  { native: 'hasta que', normalized: 'until' },
-  { native: 'antes de', normalized: 'before' },
-  { native: 'después de', normalized: 'after' },
-  { native: 'despues de', normalized: 'after' },
-  { native: 'dentro de', normalized: 'into' },
-  { native: 'fuera de', normalized: 'out' },
-
-  // Accent variations not in profile
-  { native: 'asincrono', normalized: 'async' },
-  { native: 'despues', normalized: 'after' },
-
-  // Command overrides (ensure correct mapping when profile has multiple meanings)
-  { native: 'añadir', normalized: 'add' }, // Profile may have this as 'append'
-
-  // Synonyms not in profile
-  { native: 'toggle', normalized: 'toggle' },
-  { native: 'borrar', normalized: 'remove' },
-  { native: 'pon', normalized: 'put' },
-  { native: 'crear', normalized: 'make' },
-
-  // Logical/conditional
-  { native: 'y', normalized: 'and' },
-  { native: 'o', normalized: 'or' },
-  { native: 'no', normalized: 'not' },
-  { native: 'es', normalized: 'is' },
-  { native: 'existe', normalized: 'exists' },
-  { native: 'vacío', normalized: 'empty' },
-  { native: 'vacio', normalized: 'empty' },
+  // Reference alternatives (accent variation, synonym)
+  { native: 'mí', normalized: 'me' }, // Accented form of mi
+  { native: 'destino', normalized: 'target' }, // Synonym for objetivo
 ];
 
 // =============================================================================

@@ -25,6 +25,7 @@ import {
   type KeywordEntry,
 } from './base';
 import { bengaliProfile } from '../generators/profiles/bengali';
+import { bengaliMorphologicalNormalizer } from './morphology/bengali-normalizer';
 
 // =============================================================================
 // Bengali Character Classification
@@ -100,6 +101,7 @@ export class BengaliTokenizer extends BaseTokenizer {
   constructor() {
     super();
     this.initializeKeywordsFromProfile(bengaliProfile, BENGALI_EXTRAS);
+    this.setNormalizer(bengaliMorphologicalNormalizer);
   }
 
   tokenize(input: string): TokenStream {

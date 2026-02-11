@@ -98,15 +98,13 @@ const CASE_SUFFIXES = new Set([
 /**
  * Extra keywords not covered by the profile.
  *
- * SIMPLIFIED: Following the Tagalog/Hindi model of minimal EXTRAS.
+ * SIMPLIFIED: Following the Tagalog/Hindi/Spanish model of minimal EXTRAS.
  * Command synonyms and diacritic-free variants should be in profile alternatives,
  * not duplicated here. Only includes:
  * - Literals (true, false, null, undefined)
- * - Positional words
- * - Event names
- * - Time units
- * - References not in profile
- * - Logical operators
+ * - Positional words (first, last, next, previous, closest, parent)
+ * - Complex event names (multi-word events not in profile)
+ * - Time units (s, ms, m, h)
  */
 const TURKISH_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -120,7 +118,7 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'tanımsız', normalized: 'undefined' },
   { native: 'tanimsiz', normalized: 'undefined' },
 
-  // Positional
+  // Positional (not in profile)
   { native: 'ilk', normalized: 'first' },
   { native: 'son', normalized: 'last' },
   { native: 'sonraki', normalized: 'next' },
@@ -130,18 +128,7 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'en_yakin', normalized: 'closest' },
   { native: 'ebeveyn', normalized: 'parent' },
 
-  // Events
-  { native: 'tıklama', normalized: 'click' },
-  { native: 'tiklama', normalized: 'click' },
-  { native: 'tık', normalized: 'click' },
-  { native: 'tik', normalized: 'click' },
-  { native: 'giriş', normalized: 'input' },
-  { native: 'giris', normalized: 'input' },
-  { native: 'değişim', normalized: 'change' },
-  { native: 'degisim', normalized: 'change' },
-  { native: 'odak', normalized: 'focus' },
-  { native: 'bulanık', normalized: 'blur' },
-  { native: 'bulanik', normalized: 'blur' },
+  // Complex event names (multi-word events not in profile)
   { native: 'fare üzerinde', normalized: 'mouseover' },
   { native: 'fare uzerinde', normalized: 'mouseover' },
   { native: 'fare dışında', normalized: 'mouseout' },
@@ -153,30 +140,19 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'tuş_bırak', normalized: 'keyup' },
   { native: 'tus_birak', normalized: 'keyup' },
 
-  // References (possessive forms not in profile)
-  { native: 'benim', normalized: 'my' },
-  { native: 'onun', normalized: 'its' },
-
   // Time units
   { native: 'saniye', normalized: 's' },
   { native: 'milisaniye', normalized: 'ms' },
   { native: 'dakika', normalized: 'm' },
   { native: 'saat', normalized: 'h' },
 
-  // Then/conjunction (clause chaining)
+  // Then/after disambiguation (sonra can mean 'after' or 'then' depending on context)
   { native: 'sonra', normalized: 'then' },
-  { native: 'ardından', normalized: 'then' },
-  { native: 'ardindan', normalized: 'then' },
-  { native: 'daha sonra', normalized: 'then' },
 
-  // Logical
-  { native: 've', normalized: 'and' },
-  { native: 'veya', normalized: 'or' },
-  { native: 'değil', normalized: 'not' },
-  { native: 'degil', normalized: 'not' },
-
-  // Note: Command synonyms and diacritic-free variants should be in profile alternatives.
-  // Event triggers (üzerinde, olduğunda) should be in profile as 'on' alternatives.
+  // Note: Command keywords (odak, bulanık, tıklama, giriş, değişim) moved to profile.
+  // Note: Logical operators (ve, veya, değil) moved to profile.
+  // Note: Then variants (ardından, ardindan, daha sonra) moved to profile.
+  // Note: Possessive forms (benim, onun) already in profile.possessive.
 ];
 
 // =============================================================================

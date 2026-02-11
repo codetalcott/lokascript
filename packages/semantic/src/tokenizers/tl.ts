@@ -25,6 +25,7 @@ import {
   isUrlStart,
 } from './base';
 import { tagalogProfile } from '../generators/profiles/tl';
+import { tagalogMorphologicalNormalizer } from './morphology/tagalog-normalizer';
 
 // =============================================================================
 // Tagalog-Specific Keywords (not in profile)
@@ -72,6 +73,8 @@ export class TagalogTokenizer extends BaseTokenizer {
     super();
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(tagalogProfile, TAGALOG_EXTRAS);
+    // Set morphological normalizer for verb conjugation handling
+    this.normalizer = tagalogMorphologicalNormalizer;
   }
 
   tokenize(input: string): TokenStream {

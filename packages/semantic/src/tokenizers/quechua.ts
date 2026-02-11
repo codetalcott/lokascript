@@ -25,6 +25,7 @@ import {
   type KeywordEntry,
 } from './base';
 import { quechuaProfile } from '../generators/profiles/quechua';
+import { quechuaMorphologicalNormalizer } from './morphology/quechua-normalizer';
 
 // =============================================================================
 // Quechua Character Classification
@@ -161,6 +162,7 @@ export class QuechuaTokenizer extends BaseTokenizer {
   constructor() {
     super();
     this.initializeKeywordsFromProfile(quechuaProfile, QUECHUA_EXTRAS);
+    this.normalizer = quechuaMorphologicalNormalizer;
   }
 
   tokenize(input: string): TokenStream {

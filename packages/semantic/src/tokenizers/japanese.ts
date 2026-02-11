@@ -115,9 +115,15 @@ const PARTICLE_ROLES = new Map<string, ParticleMetadata>([
  * - Literals (true, false, null, undefined)
  * - Positional words
  * - Event names
- * - Attached particle forms (native idioms)
- * - Conditional event forms
+ * - Alternative reference forms (私 for me)
+ * - Conditional event forms (temporal markers)
  * - Time units
+ *
+ * Moved to profile alternatives:
+ * - そして → and.alternatives
+ * - ならば, なら → then.alternatives
+ * - ブラー → blur.alternatives
+ * - 私の, その → possessive.keywords (already there)
  */
 const JAPANESE_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -145,28 +151,18 @@ const JAPANESE_EXTRAS: KeywordEntry[] = [
   { native: 'キーアップ', normalized: 'keyup' },
   { native: 'マウスオーバー', normalized: 'mouseover' },
   { native: 'マウスアウト', normalized: 'mouseout' },
-  { native: 'ブラー', normalized: 'blur' },
 
-  // References (additional forms)
-  { native: '私', normalized: 'me' },
-  { native: '私の', normalized: 'my' },
-  { native: 'その', normalized: 'its' },
+  // References (alternative forms not in profile)
+  { native: '私', normalized: 'me' }, // Alternative to 自分 (jibun)
 
   // Note: Attached particle forms (を切り替え, を追加, etc.) are intentionally NOT included
   // because they would cause ambiguous parsing. The separate particle + verb pattern
   // (を + 切り替え) is preferred for consistent semantic analysis.
 
-  // Conditional event forms
+  // Conditional event forms (temporal markers - special event syntax)
   { native: 'したら', normalized: 'on' },
   { native: 'すると', normalized: 'on' },
   { native: '時に', normalized: 'on' },
-
-  // Control flow helpers
-  { native: 'もし', normalized: 'if' }, // Starts with particle も, needs explicit entry
-  { native: 'ならば', normalized: 'then' },
-  { native: 'なら', normalized: 'then' },
-  { native: 'それから', normalized: 'then' }, // Chain connector
-  { native: 'そして', normalized: 'and' }, // Alternative connector
 
   // Time units
   { native: '秒', normalized: 's' },

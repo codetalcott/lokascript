@@ -23,12 +23,12 @@ export const spanishProfile: LanguageProfile = {
     subjectDrop: true,
   },
   references: {
-    me: 'yo', // "I/me"
+    me: 'yo', // "I/me" (mí, mi are alternatives handled in possessive)
     it: 'ello', // "it"
     you: 'tú', // "you"
     result: 'resultado',
     event: 'evento',
-    target: 'objetivo',
+    target: 'objetivo', // destino is a synonym
     body: 'cuerpo',
   },
   possessive: {
@@ -41,7 +41,7 @@ export const spanishProfile: LanguageProfile = {
       you: 'tu', // "your"
     },
     keywords: {
-      mi: 'me',
+      mi: 'me', // Also accepts mí (with accent)
       tu: 'you',
       su: 'it',
     },
@@ -54,15 +54,15 @@ export const spanishProfile: LanguageProfile = {
   },
   keywords: {
     // Class/Attribute operations
-    toggle: { primary: 'alternar', alternatives: ['conmutar'], normalized: 'toggle' },
+    toggle: { primary: 'alternar', alternatives: ['conmutar', 'toggle'], normalized: 'toggle' },
     add: { primary: 'agregar', alternatives: ['añadir'], normalized: 'add' },
     remove: {
       primary: 'quitar',
-      alternatives: ['eliminar', 'remover', 'sacar'],
+      alternatives: ['eliminar', 'remover', 'sacar', 'borrar'],
       normalized: 'remove',
     },
     // Content operations
-    put: { primary: 'poner', alternatives: ['colocar'], normalized: 'put' },
+    put: { primary: 'poner', alternatives: ['colocar', 'pon'], normalized: 'put' },
     append: { primary: 'anexar', normalized: 'append' },
     prepend: { primary: 'anteponer', normalized: 'prepend' },
     take: { primary: 'tomar', normalized: 'take' },
@@ -85,14 +85,20 @@ export const spanishProfile: LanguageProfile = {
     trigger: { primary: 'disparar', alternatives: ['activar'], normalized: 'trigger' },
     send: { primary: 'enviar', normalized: 'send' },
     // DOM focus
-    focus: { primary: 'enfocar', normalized: 'focus' },
-    blur: { primary: 'desenfocar', normalized: 'blur' },
+    focus: { primary: 'enfocar', alternatives: ['enfoque'], normalized: 'focus' },
+    blur: { primary: 'desenfocar', alternatives: ['desenfoque'], normalized: 'blur' },
     // Common event names (for event handler patterns)
-    click: { primary: 'clic', alternatives: ['hacer clic'], normalized: 'click' },
+    click: { primary: 'clic', alternatives: ['hacer clic', 'click'], normalized: 'click' },
     hover: { primary: 'sobrevolar', alternatives: ['pasar por encima'], normalized: 'hover' },
-    submit: { primary: 'envío', alternatives: ['someter'], normalized: 'submit' },
+    submit: { primary: 'envío', alternatives: ['envio', 'someter'], normalized: 'submit' },
     input: { primary: 'entrada', alternatives: ['introducir'], normalized: 'input' },
     change: { primary: 'cambio', alternatives: ['cambiar'], normalized: 'change' },
+    load: { primary: 'carga', normalized: 'load' },
+    scroll: { primary: 'desplazamiento', normalized: 'scroll' },
+    keydown: { primary: 'tecla abajo', normalized: 'keydown' },
+    keyup: { primary: 'tecla arriba', normalized: 'keyup' },
+    mouseover: { primary: 'ratón encima', alternatives: ['raton encima'], normalized: 'mouseover' },
+    mouseout: { primary: 'ratón fuera', alternatives: ['raton fuera'], normalized: 'mouseout' },
     // Navigation
     go: { primary: 'ir', alternatives: ['navegar'], normalized: 'go' },
     // Async
@@ -114,10 +120,15 @@ export const spanishProfile: LanguageProfile = {
     return: { primary: 'retornar', alternatives: ['devolver'], normalized: 'return' },
     then: { primary: 'entonces', alternatives: ['luego'], normalized: 'then' },
     and: { primary: 'y', alternatives: ['además', 'también'], normalized: 'and' },
+    or: { primary: 'o', normalized: 'or' },
+    not: { primary: 'no', normalized: 'not' },
+    is: { primary: 'es', normalized: 'is' },
+    exists: { primary: 'existe', normalized: 'exists' },
+    empty: { primary: 'vacío', alternatives: ['vacio'], normalized: 'empty' },
     end: { primary: 'fin', alternatives: ['final', 'terminar'], normalized: 'end' },
     // Advanced
     js: { primary: 'js', normalized: 'js' },
-    async: { primary: 'asíncrono', normalized: 'async' },
+    async: { primary: 'asíncrono', alternatives: ['asincrono'], normalized: 'async' },
     tell: { primary: 'decir', normalized: 'tell' },
     default: { primary: 'predeterminar', alternatives: ['por defecto'], normalized: 'default' },
     init: { primary: 'iniciar', alternatives: ['inicializar'], normalized: 'init' },
@@ -130,12 +141,24 @@ export const spanishProfile: LanguageProfile = {
     exit: { primary: 'salir', normalized: 'exit' },
     pick: { primary: 'escoger', normalized: 'pick' },
     render: { primary: 'renderizar', normalized: 'render' },
+    // Positional expressions
+    first: { primary: 'primero', alternatives: ['primera'], normalized: 'first' },
+    last: { primary: 'último', alternatives: ['ultima'], normalized: 'last' },
+    next: { primary: 'siguiente', normalized: 'next' },
+    previous: { primary: 'anterior', normalized: 'previous' },
+    closest: { primary: 'cercano', normalized: 'closest' },
+    parent: { primary: 'padre', normalized: 'parent' },
     // Modifiers
-    into: { primary: 'dentro', alternatives: ['adentro'], normalized: 'into' },
-    before: { primary: 'antes', normalized: 'before' },
-    after: { primary: 'después', normalized: 'after' },
+    into: { primary: 'dentro', alternatives: ['adentro', 'dentro de'], normalized: 'into' },
+    before: { primary: 'antes', alternatives: ['antes de'], normalized: 'before' },
+    after: {
+      primary: 'después',
+      alternatives: ['despues', 'después de', 'despues de'],
+      normalized: 'after',
+    },
+    out: { primary: 'fuera', alternatives: ['fuera de'], normalized: 'out' },
     // Event modifiers (for repeat until event)
-    until: { primary: 'hasta', normalized: 'until' },
+    until: { primary: 'hasta', alternatives: ['hasta que'], normalized: 'until' },
     event: { primary: 'evento', normalized: 'event' },
     from: { primary: 'de', alternatives: ['desde'], normalized: 'from' },
   },

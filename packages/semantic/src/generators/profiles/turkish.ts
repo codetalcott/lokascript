@@ -109,13 +109,17 @@ export const turkishProfile: LanguageProfile = {
     send: { primary: 'gönder', normalized: 'send' },
     // DOM focus
     focus: { primary: 'odak', alternatives: ['odaklanma'], normalized: 'focus' },
-    blur: { primary: 'bulanık', alternatives: ['bulanıklık'], normalized: 'blur' },
+    blur: { primary: 'bulanık', alternatives: ['bulanıklık', 'bulanik'], normalized: 'blur' },
     // Common event names (for event handler patterns)
-    click: { primary: 'tıklama', alternatives: ['tıkla'], normalized: 'click' },
+    click: {
+      primary: 'tıklama',
+      alternatives: ['tıkla', 'tiklama', 'tık', 'tik'],
+      normalized: 'click',
+    },
     hover: { primary: 'üzerine gelme', alternatives: ['üzerinde gezinme'], normalized: 'hover' },
     submit: { primary: 'gönderme', normalized: 'submit' },
-    input: { primary: 'giriş', alternatives: ['girdi'], normalized: 'input' },
-    change: { primary: 'değişiklik', alternatives: ['değişim'], normalized: 'change' },
+    input: { primary: 'giriş', alternatives: ['girdi', 'giris'], normalized: 'input' },
+    change: { primary: 'değişiklik', alternatives: ['değişim', 'degisim'], normalized: 'change' },
     // Navigation
     go: { primary: 'git', normalized: 'go' },
     // Async
@@ -135,8 +139,10 @@ export const turkishProfile: LanguageProfile = {
     throw: { primary: 'fırlat', normalized: 'throw' },
     call: { primary: 'çağır', normalized: 'call' },
     return: { primary: 'dön', normalized: 'return' },
-    then: { primary: 'ardından', alternatives: ['daha sonra'], normalized: 'then' },
+    then: { primary: 'ardından', alternatives: ['daha sonra', 'ardindan'], normalized: 'then' },
     and: { primary: 've', alternatives: ['ayrıca', 'hem de'], normalized: 'and' },
+    or: { primary: 'veya', normalized: 'or' },
+    not: { primary: 'değil', alternatives: ['degil'], normalized: 'not' },
     end: { primary: 'son', alternatives: ['bitiş', 'bitti'], normalized: 'end' },
     // Advanced
     js: { primary: 'js', normalized: 'js' },

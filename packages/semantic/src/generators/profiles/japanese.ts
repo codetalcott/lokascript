@@ -101,7 +101,7 @@ export const japaneseProfile: LanguageProfile = {
     send: { primary: '送る', alternatives: ['送信'], normalized: 'send' },
     // DOM focus
     focus: { primary: 'フォーカス', alternatives: ['集中'], normalized: 'focus' },
-    blur: { primary: 'ぼかし', alternatives: ['フォーカス解除'], normalized: 'blur' },
+    blur: { primary: 'ぼかし', alternatives: ['フォーカス解除', 'ブラー'], normalized: 'blur' },
     // Navigation
     go: { primary: '移動', alternatives: ['行く', 'ナビゲート'], normalized: 'go' },
     // Async
@@ -109,7 +109,7 @@ export const japaneseProfile: LanguageProfile = {
     fetch: { primary: 'フェッチ', normalized: 'fetch' },
     settle: { primary: '安定', alternatives: ['落ち着く'], normalized: 'settle' },
     // Control flow
-    if: { primary: 'もし', alternatives: ['条件'], normalized: 'if' },
+    if: { primary: 'もし', normalized: 'if' },
     when: { primary: 'とき', alternatives: ['ときに'], normalized: 'when' },
     where: { primary: 'どこ', normalized: 'where' },
     else: { primary: 'そうでなければ', alternatives: ['それ以外'], normalized: 'else' },
@@ -121,8 +121,8 @@ export const japaneseProfile: LanguageProfile = {
     throw: { primary: '投げる', alternatives: ['スロー'], normalized: 'throw' },
     call: { primary: '呼び出し', alternatives: ['コール', '呼ぶ'], normalized: 'call' },
     return: { primary: '戻る', alternatives: ['返す', 'リターン'], normalized: 'return' },
-    then: { primary: 'それから', alternatives: ['次に'], normalized: 'then' },
-    and: { primary: 'また', alternatives: ['と'], normalized: 'and' },
+    then: { primary: 'それから', alternatives: ['次に', 'ならば', 'なら'], normalized: 'then' },
+    and: { primary: 'また', alternatives: ['と', 'そして'], normalized: 'and' },
     end: { primary: '終わり', alternatives: ['終了', 'おわり'], normalized: 'end' },
     // Advanced
     js: { primary: 'JS実行', alternatives: ['js'], normalized: 'js' },

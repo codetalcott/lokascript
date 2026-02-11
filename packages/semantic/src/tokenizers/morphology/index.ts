@@ -61,3 +61,20 @@ export {
   UkrainianMorphologicalNormalizer,
   ukrainianMorphologicalNormalizer,
 } from './ukrainian-normalizer';
+
+export { HindiMorphologicalNormalizer, hindiMorphologicalNormalizer } from './hindi-normalizer';
+
+export {
+  BengaliMorphologicalNormalizer,
+  bengaliMorphologicalNormalizer,
+} from './bengali-normalizer';
+
+export {
+  TagalogMorphologicalNormalizer,
+  tagalogMorphologicalNormalizer,
+} from './tagalog-normalizer';
+
+export {
+  QuechuaMorphologicalNormalizer,
+  quechuaMorphologicalNormalizer,
+} from './quechua-normalizer';
