@@ -22,9 +22,8 @@ function checkDebugEnabled(): boolean {
   // Check localStorage first (browser only, persists across reloads)
   if (typeof localStorage !== 'undefined') {
     try {
-      const setting =
-        localStorage.getItem('hyperfixi:debug') ||
-        localStorage.getItem('lokascript:debug');
+      const ls = localStorage;
+      const setting = ls.getItem('hyperfixi:debug') || ls.getItem('lokascript:debug');
       if (setting === '*' || setting === 'true') return true;
       // Could also support namespace-specific: 'semantic,parser,evaluator'
     } catch {
@@ -198,9 +197,8 @@ export const debugControl = {
   status(): { enabled: boolean; source: string } {
     if (typeof localStorage !== 'undefined') {
       try {
-        const setting =
-          localStorage.getItem('hyperfixi:debug') ||
-          localStorage.getItem('lokascript:debug');
+        const ls = localStorage;
+        const setting = ls.getItem('hyperfixi:debug') || ls.getItem('lokascript:debug');
         if (setting) {
           return { enabled: true, source: 'localStorage' };
         }
