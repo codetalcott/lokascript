@@ -156,18 +156,35 @@ export class TurkishKeywordExtractor implements ContextAwareExtractor {
       }
     }
 
-    // No keyword match - extract as regular word using character classification
+    // No keyword match in greedy loop - extract full word and try longest match
+    // Use greedy approach to handle compound keywords
     let word = '';
     let pos = position;
 
+    // Extract full Turkish word
     while (pos < input.length && isTurkishLetter(input[pos])) {
-      // Check if we're at the start of a known keyword (for word boundary detection)
-      if (word.length > 0 && this.context.isKeywordStart(input, pos)) {
-        break;
-      }
       word += input[pos];
       pos++;
     }
+
+    // Now try to find the longest matching keyword from what we extracted
+    for (let len = word.length; len >= 2; len--) {
+      const candidate = word.substring(0, len);
+      const keywordEntry = this.context.lookupKeyword(candidate);
+      if (keywordEntry) {
+        return {
+          value: candidate,
+          length: len,
+          metadata: {
+            normalized:
+              keywordEntry.normalized !== keywordEntry.native ? keywordEntry.normalized : undefined,
+          },
+        };
+      }
+    }
+
+    // No keyword found, return the full word as-is
+    if (!word) return null;
 
     if (!word) return null;
 

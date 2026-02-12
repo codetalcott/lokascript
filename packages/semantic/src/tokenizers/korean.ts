@@ -22,6 +22,7 @@ import {
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { KoreanKeywordExtractor } from './extractors/korean-keyword';
 import { KoreanParticleExtractor } from './extractors/korean-particle';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // Character classification functions moved to extractors/korean-keyword.ts
 
@@ -152,6 +153,7 @@ export class KoreanTokenizer extends BaseTokenizer {
     this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
     this.registerExtractor(new StringLiteralExtractor()); // Strings
     this.registerExtractor(new NumberExtractor()); // Numbers (includes Korean time units)
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (counter, click, etc.)
     this.registerExtractor(new KoreanParticleExtractor()); // Particles with vowel harmony metadata
     this.registerExtractor(new KoreanKeywordExtractor()); // Korean keywords (context-aware)
     this.registerExtractor(new OperatorExtractor()); // Operators

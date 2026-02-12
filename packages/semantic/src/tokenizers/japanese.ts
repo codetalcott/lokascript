@@ -22,6 +22,7 @@ import {
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { JapaneseKeywordExtractor } from './extractors/japanese-keyword';
 import { JapaneseParticleExtractor } from './extractors/japanese-particle';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // Character classification functions moved to extractors/japanese-keyword.ts
 
@@ -137,6 +138,7 @@ export class JapaneseTokenizer extends BaseTokenizer {
     this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
     this.registerExtractor(new StringLiteralExtractor()); // Strings
     this.registerExtractor(new NumberExtractor()); // Numbers (includes Japanese time units)
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (counter, click, etc.)
     this.registerExtractor(new JapaneseParticleExtractor()); // Particles with role metadata
     this.registerExtractor(new JapaneseKeywordExtractor()); // Japanese keywords (context-aware)
     this.registerExtractor(new OperatorExtractor()); // Operators

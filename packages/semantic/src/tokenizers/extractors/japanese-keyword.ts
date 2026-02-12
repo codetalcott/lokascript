@@ -75,18 +75,35 @@ export class JapaneseKeywordExtractor implements ContextAwareExtractor {
       // For now, extract the word and let classifyToken determine if it's a keyword
     }
 
-    // Extract Japanese word - read until non-Japanese or known keyword boundary
+    // Extract Japanese word - read until non-Japanese boundary
+    // Use greedy matching to handle compound keywords like "末尾追加"
     let word = '';
     let pos = position;
 
     while (pos < input.length && isJapanese(input[pos])) {
-      // Check if we're at the start of a known keyword (for word boundary detection)
-      if (word.length > 0 && this.context.isKeywordStart(input, pos)) {
-        break;
-      }
       word += input[pos];
       pos++;
     }
+
+    // After extracting the full word, check if it's a keyword or needs boundary detection
+    // For compound keywords (e.g., "末尾追加"), we want to match the longest first
+    // Try to find the longest matching keyword from the current position
+    let bestMatch = word;
+    let bestLength = word.length;
+
+    // Try progressively shorter substrings to find the longest matching keyword
+    for (let len = word.length; len > 0; len--) {
+      const candidate = word.substring(0, len);
+      if (this.context.lookupKeyword(candidate)) {
+        bestMatch = candidate;
+        bestLength = len;
+        break; // Found longest match
+      }
+    }
+
+    // Use the best match
+    word = bestMatch;
+    pos = position + bestLength;
 
     if (!word) return null;
 
