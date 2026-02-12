@@ -12,6 +12,8 @@ import { getDecrementPatternsBn } from './bn';
 import { getDecrementPatternsDe } from './de';
 import { getDecrementPatternsHi } from './hi';
 import { getDecrementPatternsIt } from './it';
+import { getDecrementPatternsJa } from './ja';
+import { getDecrementPatternsKo } from './ko';
 import { getDecrementPatternsPl } from './pl';
 import { getDecrementPatternsRu } from './ru';
 import { getDecrementPatternsTh } from './th';
@@ -33,6 +35,10 @@ export function getDecrementPatternsForLanguage(language: string): LanguagePatte
       return getDecrementPatternsHi();
     case 'it':
       return getDecrementPatternsIt();
+    case 'ja':
+      return getDecrementPatternsJa();
+    case 'ko':
+      return getDecrementPatternsKo();
     case 'pl':
       return getDecrementPatternsPl();
     case 'ru':
@@ -57,6 +63,8 @@ export { getDecrementPatternsBn } from './bn';
 export { getDecrementPatternsDe } from './de';
 export { getDecrementPatternsHi } from './hi';
 export { getDecrementPatternsIt } from './it';
+export { getDecrementPatternsJa } from './ja';
+export { getDecrementPatternsKo } from './ko';
 export { getDecrementPatternsPl } from './pl';
 export { getDecrementPatternsRu } from './ru';
 export { getDecrementPatternsTh } from './th';
@@ -73,6 +81,8 @@ export const decrementPatternLanguages = [
   'de',
   'hi',
   'it',
+  'ja',
+  'ko',
   'pl',
   'ru',
   'th',

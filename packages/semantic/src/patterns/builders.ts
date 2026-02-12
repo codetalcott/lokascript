@@ -23,6 +23,9 @@ import { getSetPatternsForLanguage } from './set/index';
 import { getGetPatternsForLanguage } from './get/index';
 import { getIncrementPatternsForLanguage } from './increment/index';
 import { getDecrementPatternsForLanguage } from './decrement/index';
+import { getAppendPatternsForLanguage } from './append/index';
+import { getPrependPatternsForLanguage } from './prepend/index';
+import { getTriggerPatternsForLanguage } from './trigger/index';
 
 // Import English-only patterns
 import { getEnglishOnlyPatterns } from './languages/en';
@@ -64,6 +67,9 @@ const PATTERN_LOADERS: PatternLoader[] = [
   getGetPatternsForLanguage,
   getIncrementPatternsForLanguage,
   getDecrementPatternsForLanguage,
+  getAppendPatternsForLanguage,
+  getPrependPatternsForLanguage,
+  getTriggerPatternsForLanguage,
 
   // Grammar-transformed patterns (for SOV/VSO grammar output)
   getGrammarTransformedPatternsForLanguage,
