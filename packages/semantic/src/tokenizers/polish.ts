@@ -11,34 +11,26 @@
  * - Imperative form used in software UI (unlike most languages that use infinitive)
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { polishProfile } from '../generators/profiles/polish';
 import { PolishMorphologicalNormalizer } from './morphology/polish-normalizer';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createPolishExtractors } from './extractors/polish-keyword';
 
 // =============================================================================
-// Polish Character Classification
+// Polish Prepositions (used in classifyToken)
 // =============================================================================
 
-const { isLetter: isPolishLetter, isIdentifierChar: isPolishIdentifierChar } =
-  createLatinCharClassifiers(/[a-zA-ZąęćńóśźżłĄĘĆŃÓŚŹŻŁ]/);
-
-// =============================================================================
-// Polish Prepositions
-// =============================================================================
-
+/**
+ * Polish prepositions that mark grammatical roles.
+ */
 const PREPOSITIONS = new Set([
   'do', // to, into
   'od', // from
@@ -160,7 +152,7 @@ const POLISH_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
-// Polish Tokenizer
+// Polish Tokenizer Implementation
 // =============================================================================
 
 export class PolishTokenizer extends BaseTokenizer {
@@ -171,106 +163,31 @@ export class PolishTokenizer extends BaseTokenizer {
     super();
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(polishProfile, POLISH_EXTRAS);
-    this.normalizer = new PolishMorphologicalNormalizer();
+    // Set morphological normalizer for verb conjugations
+    this.setNormalizer(new PolishMorphologicalNormalizer());
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createPolishExtractors()); // Polish keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      if (isPolishLetter(input[pos])) {
-        const wordToken = this.extractWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'pl');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
+
     if (PREPOSITIONS.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(lower)) return 'keyword';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -281,89 +198,16 @@ export class PolishTokenizer extends BaseTokenizer {
       return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
+    if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
+
     return 'identifier';
   }
 
-  private extractWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isPolishIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // Check if it's a preposition first
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  private extractNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    if (input[pos] === '-' || input[pos] === '+') {
-      number += input[pos++];
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Check for time units
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('milisekund') || remaining.startsWith('milisekunda')) {
-      number += 'ms';
-      pos =
-        unitPos +
-        (remaining.startsWith('milisekundy') ? 11 : remaining.startsWith('milisekunda') ? 11 : 10);
-    } else if (remaining.startsWith('sekund') || remaining.startsWith('sekunda')) {
-      number += 's';
-      pos =
-        unitPos + (remaining.startsWith('sekundy') ? 7 : remaining.startsWith('sekunda') ? 7 : 6);
-    } else if (remaining.startsWith('minut') || remaining.startsWith('minuta')) {
-      number += 'm';
-      pos = unitPos + (remaining.startsWith('minuty') ? 6 : remaining.startsWith('minuta') ? 6 : 5);
-    } else if (remaining.startsWith('godzin') || remaining.startsWith('godzina')) {
-      number += 'h';
-      pos =
-        unitPos + (remaining.startsWith('godziny') ? 7 : remaining.startsWith('godzina') ? 7 : 6);
-    } else if (remaining.startsWith('ms')) {
-      number += 'ms';
-      pos = unitPos + 2;
-    } else if (remaining.startsWith('s') && !remaining.startsWith('se')) {
-      number += 's';
-      pos = unitPos + 1;
-    }
-
-    if (!number || number === '-' || number === '+') return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
-  }
+  // extractWord(), extractNumber() methods removed
+  // Now handled by PolishKeywordExtractor (context-aware)
 }
 
+/**
+ * Singleton instance.
+ */
 export const polishTokenizer = new PolishTokenizer();

@@ -10,22 +10,19 @@
  * with extras for literals, positional words, and event names.
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { TokenKind } from '../types';
 import type { KeywordEntry } from './base';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isAsciiIdentifierChar,
-  isUrlStart,
-} from './base';
+import { BaseTokenizer } from './base';
 import { tagalogProfile } from '../generators/profiles/tl';
 import { tagalogMorphologicalNormalizer } from './morphology/tagalog-normalizer';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createTagalogExtractors } from './extractors/tagalog-keyword';
 
 // =============================================================================
 // Tagalog-Specific Keywords (not in profile)
@@ -74,124 +71,20 @@ export class TagalogTokenizer extends BaseTokenizer {
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(tagalogProfile, TAGALOG_EXTRAS);
     // Set morphological normalizer for verb conjugation handling
-    this.normalizer = tagalogMorphologicalNormalizer;
+    this.setNormalizer(tagalogMorphologicalNormalizer);
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createTagalogExtractors()); // Tagalog keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // CSS selectors
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // String literals
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Numbers
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.tryNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // URLs
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Variable references (:name)
-      if (input[pos] === ':') {
-        const varToken = this.tryVariableRef(input, pos);
-        if (varToken) {
-          tokens.push(varToken);
-          pos = varToken.position.end;
-          continue;
-        }
-      }
-
-      // Operators and punctuation
-      if ('()[]{}:,;'.includes(input[pos])) {
-        tokens.push(createToken(input[pos], 'operator', createPosition(pos, pos + 1)));
-        pos++;
-        continue;
-      }
-
-      // Words/identifiers - try profile keyword matching first
-      if (isAsciiIdentifierChar(input[pos])) {
-        const startPos = pos;
-
-        // Try to match keywords from profile (longest first)
-        const keywordToken = this.tryProfileKeyword(input, pos);
-        if (keywordToken) {
-          tokens.push(keywordToken);
-          pos = keywordToken.position.end;
-          continue;
-        }
-
-        // Unknown word - read until non-identifier
-        let word = '';
-        while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-          word += input[pos];
-          pos++;
-        }
-        if (word) {
-          tokens.push(createToken(word, 'identifier', createPosition(startPos, pos)));
-        }
-        continue;
-      }
-
-      // Unknown character - skip
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'tl');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     // O(1) Map lookup instead of O(n) array search

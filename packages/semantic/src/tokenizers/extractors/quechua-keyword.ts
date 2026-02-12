@@ -1,0 +1,212 @@
+/**
+ * Quechua Keyword Extractor (Context-Aware)
+ *
+ * Handles Quechua (Runasimi) word extraction for:
+ * - Latin alphabet with special characters (ñ, glottal stop apostrophe)
+ * - SOV word order
+ * - Agglutinative/polysynthetic morphology
+ * - Postposition suffixes (case markers)
+ *
+ * Integrates with morphological normalizer for verb conjugations.
+ */
+
+import type { ExtractionResult } from '../value-extractor-types';
+import type { ContextAwareExtractor, TokenizerContext } from '../context-aware-extractor';
+
+/**
+ * Check if a character is a Quechua letter.
+ * Quechua uses Latin alphabet with special glottal stop apostrophe and ñ.
+ */
+function isQuechuaLetter(char: string): boolean {
+  const code = char.charCodeAt(0);
+  // Basic Latin letters
+  if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) {
+    return true;
+  }
+  // Quechua special characters: ñ, apostrophe
+  return char === 'ñ' || char === 'Ñ' || char === "'" || char === '\u2019';
+}
+
+/**
+ * Quechua suffixes (postpositions/case markers).
+ * These can be written with or without hyphens.
+ */
+const SUFFIXES = new Set([
+  '-ta', // accusative (direct object)
+  '-man', // allative (to, towards)
+  '-manta', // ablative (from)
+  '-pi', // locative (at, in)
+  '-wan', // comitative/instrumental (with)
+  '-paq', // benefactive (for)
+  '-kama', // limitative (until, up to)
+  '-rayku', // causative (because of)
+  '-hina', // simulative (like, as)
+  // Standalone (unhyphenated) forms — used when written as separate words
+  'ta',
+  'man',
+  'manta',
+  'pi',
+  'wan',
+  'paq',
+  'kama',
+  'hina',
+  'pa',
+]);
+
+/**
+ * Common Quechua postpositions that are not typically attached as suffixes.
+ */
+const POSTPOSITIONS = new Set([
+  'kama', // until
+  'hina', // like, as
+  'rayku', // because of
+  'paq', // for
+]);
+
+/**
+ * QuechuaKeywordExtractor - Context-aware extractor for Quechua words.
+ *
+ * Handles:
+ * - Quechua alphabet with glottal stop apostrophe
+ * - Agglutinative morphology
+ * - Postposition detection with metadata
+ */
+export class QuechuaKeywordExtractor implements ContextAwareExtractor {
+  readonly name = 'quechua-keyword';
+
+  private context?: TokenizerContext;
+
+  setContext(context: TokenizerContext): void {
+    this.context = context;
+  }
+
+  canExtract(input: string, position: number): boolean {
+    return isQuechuaLetter(input[position]);
+  }
+
+  extract(input: string, position: number): ExtractionResult | null {
+    if (!this.context) {
+      throw new Error('QuechuaKeywordExtractor: context not set');
+    }
+
+    const startPos = position;
+
+    // First, try to find the longest matching keyword starting at this position
+    // This ensures compound words are recognized whole
+    const maxKeywordLen = 12; // Longest Quechua keyword
+    for (let len = Math.min(maxKeywordLen, input.length - startPos); len >= 2; len--) {
+      const candidate = input.slice(startPos, startPos + len);
+
+      // Check all chars are Quechua
+      let allQuechua = true;
+      for (let i = 0; i < candidate.length; i++) {
+        if (!isQuechuaLetter(candidate[i])) {
+          allQuechua = false;
+          break;
+        }
+      }
+      if (!allQuechua) continue;
+
+      // Look up keyword entry
+      const keywordEntry = this.context.lookupKeyword(candidate);
+      if (keywordEntry) {
+        return {
+          value: candidate,
+          length: len,
+          metadata: {
+            normalized:
+              keywordEntry.normalized !== keywordEntry.native ? keywordEntry.normalized : undefined,
+          },
+        };
+      }
+
+      // Try morphological normalization
+      if (this.context.normalizer) {
+        const morphResult = this.context.normalizer.normalize(candidate);
+        if (morphResult.stem !== candidate && morphResult.confidence >= 0.7) {
+          const stemEntry = this.context.lookupKeyword(morphResult.stem);
+          if (stemEntry) {
+            return {
+              value: candidate,
+              length: len,
+              metadata: {
+                normalized: stemEntry.normalized,
+              },
+            };
+          }
+        }
+      }
+    }
+
+    // No keyword match - extract as regular word using character classification
+    let word = '';
+    let pos = position;
+
+    while (pos < input.length && isQuechuaLetter(input[pos])) {
+      // Check if we're at the start of a known keyword (for word boundary detection)
+      if (word.length > 0 && this.context.isKeywordStart(input, pos)) {
+        break;
+      }
+      word += input[pos];
+      pos++;
+    }
+
+    if (!word) return null;
+
+    // Check if it's a suffix (with metadata for disambiguation)
+    if (SUFFIXES.has(word.toLowerCase())) {
+      return {
+        value: word,
+        length: pos - startPos,
+        metadata: {
+          suffixValue: word.toLowerCase(),
+        },
+      };
+    }
+
+    // Check if it's a postposition (with metadata for disambiguation)
+    if (POSTPOSITIONS.has(word.toLowerCase())) {
+      return {
+        value: word,
+        length: pos - startPos,
+        metadata: {
+          postpositionValue: word.toLowerCase(),
+        },
+      };
+    }
+
+    // Look up keyword entry
+    const keywordEntry = this.context.lookupKeyword(word);
+    const normalized =
+      keywordEntry && keywordEntry.normalized !== keywordEntry.native
+        ? keywordEntry.normalized
+        : undefined;
+
+    // Try morphological normalization if available
+    let morphNormalized: string | undefined;
+    if (!keywordEntry && this.context.normalizer) {
+      const morphResult = this.context.normalizer.normalize(word);
+      if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
+        const stemEntry = this.context.lookupKeyword(morphResult.stem);
+        if (stemEntry) {
+          morphNormalized = stemEntry.normalized;
+        }
+      }
+    }
+
+    return {
+      value: word,
+      length: pos - startPos,
+      metadata: {
+        normalized: normalized || morphNormalized,
+      },
+    };
+  }
+}
+
+/**
+ * Create Quechua-specific keyword extractor.
+ */
+export function createQuechuaKeywordExtractor(): ContextAwareExtractor {
+  return new QuechuaKeywordExtractor();
+}

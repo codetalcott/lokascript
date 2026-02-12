@@ -10,32 +10,21 @@
  * - Word order is typically SOV
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { TurkishMorphologicalNormalizer } from './morphology/turkish-normalizer';
 import { turkishProfile } from '../generators/profiles/turkish';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createTurkishKeywordExtractor } from './extractors/turkish-keyword';
 
 // =============================================================================
-// Turkish Character Classification
-// =============================================================================
-
-const { isLetter: isTurkishLetter } = createLatinCharClassifiers(/[a-zA-ZçÇğĞıİöÖşŞüÜ]/);
-
-// =============================================================================
-// Turkish Particles and Postpositions
+// Turkish Prepositions (used in classifyToken)
 // =============================================================================
 
 /**
@@ -46,7 +35,6 @@ const POSTPOSITIONS = new Set([
   'için', // for
   'kadar', // until, as far as
   'gibi', // like
-  // 'sonra' removed — classified as keyword('then') for hyperscript clause chaining
   'önce', // before
   'üzerinde', // on, above
   'altında', // under
@@ -96,15 +84,13 @@ const CASE_SUFFIXES = new Set([
 // =============================================================================
 
 /**
- * Extra keywords not covered by the profile.
- *
- * SIMPLIFIED: Following the Tagalog/Hindi/Spanish model of minimal EXTRAS.
- * Command synonyms and diacritic-free variants should be in profile alternatives,
- * not duplicated here. Only includes:
+ * Extra keywords not covered by the profile:
  * - Literals (true, false, null, undefined)
- * - Positional words (first, last, next, previous, closest, parent)
- * - Complex event names (multi-word events not in profile)
- * - Time units (s, ms, m, h)
+ * - Time units (saniye, dakika, saat with suffixes)
+ * - Then disambiguation (sonra)
+ *
+ * All other keywords (positional, events, commands, logical operators,
+ * multi-word phrases) are now in the profile.
  */
 const TURKISH_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -146,31 +132,8 @@ const TURKISH_EXTRAS: KeywordEntry[] = [
   { native: 'dakika', normalized: 'm' },
   { native: 'saat', normalized: 'h' },
 
-  // Then/after disambiguation (sonra can mean 'after' or 'then' depending on context)
+  // Then disambiguation (sonra for clause chaining)
   { native: 'sonra', normalized: 'then' },
-
-  // Note: Command keywords (odak, bulanık, tıklama, giriş, değişim) moved to profile.
-  // Note: Logical operators (ve, veya, değil) moved to profile.
-  // Note: Then variants (ardından, ardindan, daha sonra) moved to profile.
-  // Note: Possessive forms (benim, onun) already in profile.possessive.
-];
-
-// =============================================================================
-// Turkish Time Units
-// =============================================================================
-
-/**
- * Turkish time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- * Includes abbreviations (dk, sa) commonly used in Turkish.
- */
-const TURKISH_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: 'milisaniye', suffix: 'ms', length: 10, caseInsensitive: true },
-  { pattern: 'dakika', suffix: 'm', length: 6, caseInsensitive: true },
-  { pattern: 'saniye', suffix: 's', length: 6, caseInsensitive: true },
-  { pattern: 'saat', suffix: 'h', length: 4, caseInsensitive: true },
-  { pattern: 'dk', suffix: 'm', length: 2, checkBoundary: true }, // Common abbreviation for dakika
-  { pattern: 'sa', suffix: 'h', length: 2, checkBoundary: true }, // Common abbreviation for saat
 ];
 
 // =============================================================================
@@ -183,115 +146,34 @@ export class TurkishTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(turkishProfile, TURKISH_EXTRAS);
     // Set morphological normalizer for verb conjugations
-    this.normalizer = new TurkishMorphologicalNormalizer();
+    this.setNormalizer(new TurkishMorphologicalNormalizer());
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractor(createTurkishKeywordExtractor()); // Turkish keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first (ASCII-based)
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number (including Turkish time units)
-      if (isDigit(input[pos])) {
-        const numberToken = this.extractTurkishNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try multi-word phrases first (e.g., "üzerine gelme", "fare üzerinde")
-      const phraseToken = this.tryMultiWordPhrase(input, pos);
-      if (phraseToken) {
-        tokens.push(phraseToken);
-        pos = phraseToken.position.end;
-        continue;
-      }
-
-      // Try Turkish word
-      if (isTurkishLetter(input[pos])) {
-        const wordToken = this.extractTurkishWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'tr');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
+
     if (POSTPOSITIONS.has(lower)) return 'particle';
     if (CASE_SUFFIXES.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(lower)) return 'keyword';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -302,97 +184,13 @@ export class TurkishTokenizer extends BaseTokenizer {
       return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
+    if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
 
     return 'identifier';
   }
 
-  /**
-   * Try to match multi-word phrases that function as single units.
-   * Multi-word phrases are included in profileKeywords and sorted longest-first,
-   * so they'll be matched before their constituent words.
-   *
-   * Examples: "üzerine gelme" (hover), "fare üzerinde" (mouseover)
-   */
-  private tryMultiWordPhrase(input: string, pos: number): LanguageToken | null {
-    // Check against multi-word entries in profileKeywords (sorted longest-first)
-    for (const entry of this.profileKeywords) {
-      // Only check multi-word phrases (contain space)
-      if (!entry.native.includes(' ')) continue;
-
-      const phrase = entry.native;
-      const candidate = input.slice(pos, pos + phrase.length).toLowerCase();
-      if (candidate === phrase.toLowerCase()) {
-        // Check word boundary
-        const nextPos = pos + phrase.length;
-        if (
-          nextPos >= input.length ||
-          isWhitespace(input[nextPos]) ||
-          !isTurkishLetter(input[nextPos])
-        ) {
-          return createToken(
-            input.slice(pos, pos + phrase.length),
-            'keyword',
-            createPosition(pos, nextPos),
-            entry.normalized
-          );
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Extract a Turkish word.
-   * Uses morphological normalization to handle verb conjugations.
-   */
-  private extractTurkishWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    // Extract Turkish letters (including special chars)
-    while (pos < input.length && (isTurkishLetter(input[pos]) || input[pos] === '_')) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lowerWord = word.toLowerCase();
-
-    // Check if it's a case suffix (particle) first
-    // This prevents roleMarker keywords from overriding particle classification
-    if (CASE_SUFFIXES.has(lowerWord)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // Check if it's a postposition
-    if (POSTPOSITIONS.has(lowerWord)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lowerWord);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    // Try morphological normalization for conjugated forms
-    const morphToken = this.tryMorphKeywordMatch(lowerWord, startPos, pos);
-    if (morphToken) return morphToken;
-
-    // Not a keyword or recognized form, return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including Turkish time unit suffixes.
-   */
-  private extractTurkishNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, TURKISH_TIME_UNITS, {
-      allowSign: false,
-      skipWhitespace: true,
-    });
-  }
+  // tryMultiWordPhrase(), extractTurkishWord(), extractTurkishNumber() methods removed
+  // Now handled by TurkishKeywordExtractor (context-aware)
 }
 
 /**

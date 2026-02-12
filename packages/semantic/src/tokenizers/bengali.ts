@@ -9,37 +9,30 @@
  * - CSS selectors are embedded ASCII
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createUnicodeRangeClassifier,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isAsciiIdentifierChar,
-  isUrlStart,
-  type KeywordEntry,
-} from './base';
-import { bengaliProfile } from '../generators/profiles/bengali';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { bengaliMorphologicalNormalizer } from './morphology/bengali-normalizer';
+import { bengaliProfile } from '../generators/profiles/bengali';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { BengaliKeywordExtractor } from './extractors/bengali-keyword';
+import { BengaliParticleExtractor } from './extractors/bengali-particle';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
-// =============================================================================
-// Bengali Character Classification
-// =============================================================================
-
-/** Check if character is in the Bengali script range (U+0980-U+09FF). */
-const isBengali = createUnicodeRangeClassifier([[0x0980, 0x09ff]]);
+// Character classification functions moved to extractors/bengali-keyword.ts
 
 // =============================================================================
 // Bengali Postpositions
 // =============================================================================
 
 /**
- * Single-word postpositions.
+ * Single-word postpositions (for classifyToken only).
+ * Actual extraction is handled by BengaliParticleExtractor.
  */
 const SINGLE_POSTPOSITIONS = new Set([
   'কে',
@@ -100,205 +93,57 @@ export class BengaliTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(bengaliProfile, BENGALI_EXTRAS);
+    // Set morphological normalizer for verb conjugations
     this.setNormalizer(bengaliMorphologicalNormalizer);
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractor(new BengaliParticleExtractor()); // Particles with role metadata
+    this.registerExtractor(new BengaliKeywordExtractor()); // Bengali keywords (context-aware)
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (for mixed content)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Variable references (:name)
-      if (input[pos] === ':') {
-        const startPos = pos;
-        pos++; // Skip :
-        let varName = '';
-        while (pos < input.length && (isAsciiIdentifierChar(input[pos]) || isBengali(input[pos]))) {
-          varName += input[pos];
-          pos++;
-        }
-        if (varName) {
-          tokens.push(
-            createToken(':' + varName, 'identifier', createPosition(startPos, pos), ':' + varName)
-          );
-          continue;
-        }
-        pos = startPos;
-      }
-
-      // Bengali words
-      if (isBengali(input[pos])) {
-        const startPos = pos;
-        let word = '';
-
-        // Extract word without including spaces (let parser handle multi-word patterns)
-        while (pos < input.length && isBengali(input[pos])) {
-          word += input[pos];
-          pos++;
-        }
-
-        // Postpositions take priority — they are grammatical particles, not keywords
-        if (SINGLE_POSTPOSITIONS.has(word)) {
-          tokens.push(createToken(word, 'particle', createPosition(startPos, pos)));
-        } else {
-          // Check if it's a keyword (O(1) Map lookup)
-          const keywordEntry = this.lookupKeyword(word);
-          if (keywordEntry) {
-            tokens.push(
-              createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized)
-            );
-          } else {
-            tokens.push(createToken(word, 'identifier', createPosition(startPos, pos)));
-          }
-        }
-        continue;
-      }
-
-      // ASCII identifiers
-      if (isAsciiIdentifierChar(input[pos])) {
-        const startPos = pos;
-        let word = '';
-        while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-          word += input[pos];
-          pos++;
-        }
-
-        // Check if it's a known keyword (O(1) Map lookup)
-        const keywordEntry = this.lookupKeyword(word);
-        const kind: TokenKind = keywordEntry ? 'keyword' : 'identifier';
-        tokens.push(
-          createToken(
-            word,
-            kind,
-            createPosition(startPos, pos),
-            keywordEntry?.normalized || word.toLowerCase()
-          )
-        );
-        continue;
-      }
-
-      // Operators and punctuation
-      const startPos = pos;
-      tokens.push(createToken(input[pos], 'operator', createPosition(startPos, pos + 1)));
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, this.language);
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(value: string): TokenKind {
-    // O(1) Map lookup instead of O(n) array search
-    if (this.isKeyword(value)) {
-      return 'keyword';
-    }
     if (SINGLE_POSTPOSITIONS.has(value)) return 'particle';
+    // O(1) Map lookup instead of O(n) array search
+    if (this.isKeyword(value)) return 'keyword';
+    // Check URLs before selectors (./path vs .class)
     if (
-      value.startsWith('.') ||
+      value.startsWith('/') ||
+      value.startsWith('./') ||
+      value.startsWith('../') ||
+      value.startsWith('http')
+    )
+      return 'url';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(value))
+      return 'event-modifier';
+    if (
       value.startsWith('#') ||
+      value.startsWith('.') ||
       value.startsWith('[') ||
       value.startsWith('*') ||
       value.startsWith('<')
     )
       return 'selector';
-    if (value.startsWith(':')) return 'identifier';
     if (value.startsWith('"') || value.startsWith("'")) return 'literal';
-    if (/^-?\d/.test(value)) return 'literal';
+    if (/^\d/.test(value)) return 'literal';
+    if (value.startsWith(':')) return 'identifier';
+
     return 'identifier';
   }
 
-  private extractNumber(input: string, start: number): LanguageToken | null {
-    let pos = start;
-    let num = '';
-
-    if (input[pos] === '-') {
-      num += '-';
-      pos++;
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      num += input[pos];
-      pos++;
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      num += '.';
-      pos++;
-      while (pos < input.length && isDigit(input[pos])) {
-        num += input[pos];
-        pos++;
-      }
-    }
-
-    if (num === '-') {
-      return null;
-    }
-
-    return createToken(num, 'literal', createPosition(start, pos));
-  }
+  // extractNumber() method removed - now handled by NumberExtractor
 }
 
 export const bengaliTokenizer = new BengaliTokenizer();

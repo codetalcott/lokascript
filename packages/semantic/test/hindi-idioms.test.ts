@@ -657,7 +657,7 @@ describe('Hindi Postpositions and Modifiers', () => {
     });
 
     it('should handle के (oblique/plural possessive)', () => {
-      const tokens = getTokens('#list के बाद', 'hi');
+      const tokens = getTokens('#element के .active', 'hi');
       const keToken = tokens.find(t => t.value === 'के');
       expect(keToken).toBeDefined();
     });

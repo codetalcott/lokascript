@@ -10,33 +10,25 @@
  * - No grammatical gender, but noun classes
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { swahiliProfile } from '../generators/profiles/swahili';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createSwahiliExtractors } from './extractors/swahili-keyword';
 
 // =============================================================================
-// Swahili Character Classification
+// Swahili Prepositions (used in classifyToken)
 // =============================================================================
 
-const { isLetter: isSwahiliLetter, isIdentifierChar: isSwahiliIdentifierChar } =
-  createLatinCharClassifiers(/[a-zA-Z]/);
-
-// =============================================================================
-// Swahili Prepositions
-// =============================================================================
-
+/**
+ * Swahili prepositions that mark grammatical roles.
+ */
 const PREPOSITIONS = new Set([
   'kwa', // to, for, with, by
   'na', // and, with
@@ -81,43 +73,44 @@ const SWAHILI_EXTRAS: KeywordEntry[] = [
   { native: 'haijafafanuliwa', normalized: 'undefined' },
 
   // Positional
-  { native: 'kwanza', normalized: 'first' },
-  { native: 'mwisho', normalized: 'last' },
-  { native: 'inayofuata', normalized: 'next' },
-  { native: 'iliyopita', normalized: 'previous' },
-  { native: 'karibu zaidi', normalized: 'closest' },
+  { native: 'wa kwanza', normalized: 'first' },
+  { native: 'wa mwisho', normalized: 'last' },
+  { native: 'ifuatayo', normalized: 'next' },
+  { native: 'iliyotangulia', normalized: 'previous' },
+  { native: 'karibu', normalized: 'closest' },
   { native: 'mzazi', normalized: 'parent' },
 
   // Events
   { native: 'bonyeza', normalized: 'click' },
   { native: 'click', normalized: 'click' },
-  { native: 'ingiza', normalized: 'input' },
-  { native: 'badiliko', normalized: 'change' },
+  { native: 'ganti', normalized: 'change' }, // Use 'ganti' instead of 'badilisha' to avoid conflict
   { native: 'wasilisha', normalized: 'submit' },
-  { native: 'funguo chini', normalized: 'keydown' },
-  { native: 'funguo juu', normalized: 'keyup' },
-  { native: 'kipanya juu', normalized: 'mouseover' },
-  { native: 'kipanya nje', normalized: 'mouseout' },
-  { native: 'ukungu', normalized: 'blur' },
-  { native: 'sogeza', normalized: 'scroll' },
+  { native: 'bonyeza kitufe', normalized: 'keydown' },
+  { native: 'sogeza juu', normalized: 'mouseover' },
+  { native: 'sogeza nje', normalized: 'mouseout' },
+  { native: 'fifia', normalized: 'blur' },
+  { native: 'pakia', normalized: 'load' },
+  { native: 'sukuma', normalized: 'scroll' },
+  { native: 'input', normalized: 'input' },
 
-  // Additional references
-  { native: 'yenyewe', normalized: 'it' },
+  // References
+  { native: 'yangu', normalized: 'my' },
   { native: 'wangu', normalized: 'my' },
-  { native: 'langu', normalized: 'my' },
   { native: 'changu', normalized: 'my' },
+  { native: 'langu', normalized: 'my' },
 
   // Time units
   { native: 'sekunde', normalized: 's' },
-  { native: 'milisekunde', normalized: 'ms' },
+  { native: 'millisekunde', normalized: 'ms' },
   { native: 'dakika', normalized: 'm' },
   { native: 'saa', normalized: 'h' },
 
-  // Additional synonyms and multi-word phrases
-  { native: 'ondoa lenga', normalized: 'blur' },
-  { native: 'piga simu', normalized: 'call' },
-  { native: 'basi', normalized: 'then' },
-  { native: 'mpaka', normalized: 'until' },
+  // Logical/conditional
+  { native: 'au', normalized: 'or' },
+  { native: 'si', normalized: 'not' },
+  { native: 'ni', normalized: 'is' },
+  { native: 'ipo', normalized: 'exists' },
+  { native: 'tupu', normalized: 'empty' },
 ];
 
 // =============================================================================
@@ -130,106 +123,34 @@ export class SwahiliTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(swahiliProfile, SWAHILI_EXTRAS);
+    // Swahili has morphological normalization but no normalizer is set yet
+    // If SwahiliMorphologicalNormalizer exists, uncomment:
+    // this.setNormalizer(new SwahiliMorphologicalNormalizer());
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createSwahiliExtractors()); // Swahili keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      if (isSwahiliLetter(input[pos])) {
-        const wordToken = this.extractWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'sw');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
+
     if (PREPOSITIONS.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(lower)) return 'keyword';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -240,77 +161,16 @@ export class SwahiliTokenizer extends BaseTokenizer {
       return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
+    if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
+
     return 'identifier';
   }
 
-  private extractWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isSwahiliIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  private extractNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    if (input[pos] === '-' || input[pos] === '+') {
-      number += input[pos++];
-    }
-
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    let unitPos = pos;
-    while (unitPos < input.length && isWhitespace(input[unitPos])) {
-      unitPos++;
-    }
-
-    const remaining = input.slice(unitPos).toLowerCase();
-    if (remaining.startsWith('milisekunde')) {
-      number += 'ms';
-      pos = unitPos + 11;
-    } else if (remaining.startsWith('sekunde')) {
-      number += 's';
-      pos = unitPos + 7;
-    } else if (remaining.startsWith('dakika')) {
-      number += 'm';
-      pos = unitPos + 6;
-    } else if (remaining.startsWith('saa')) {
-      number += 'h';
-      pos = unitPos + 3;
-    }
-
-    if (!number || number === '-' || number === '+') return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
-  }
+  // extractWord(), extractNumber() methods removed
+  // Now handled by SwahiliKeywordExtractor (context-aware)
 }
 
+/**
+ * Singleton instance.
+ */
 export const swahiliTokenizer = new SwahiliTokenizer();
