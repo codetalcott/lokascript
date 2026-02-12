@@ -1,7 +1,7 @@
 /**
  * Romance Language Keyword Extractors (Context-Aware)
  *
- * Shared extractors for Romance languages (Portuguese, French, Italian)
+ * Shared extractors for Romance languages (Portuguese, French, German, Italian)
  * that have similar structure to Spanish but different character sets.
  */
 
@@ -180,4 +180,67 @@ const GERMAN_PREPOSITIONS = new Set([
 
 export function createGermanExtractors(): ContextAwareExtractor[] {
   return [new RomanceKeywordExtractor('german-keyword', /[a-zA-ZäöüßÄÖÜẞ]/, GERMAN_PREPOSITIONS)];
+}
+
+// =============================================================================
+// Italian
+// =============================================================================
+
+const ITALIAN_PREPOSITIONS = new Set([
+  'in',
+  'a',
+  'di',
+  'da',
+  'con',
+  'su',
+  'per',
+  'tra',
+  'fra',
+  'dopo',
+  'prima',
+  'dentro',
+  'fuori',
+  'sopra',
+  'sotto',
+  // Articulated prepositions (preposition + article)
+  'al', // a + il
+  'allo', // a + lo
+  'alla', // a + la
+  'ai', // a + i
+  'agli', // a + gli
+  'alle', // a + le
+  'del', // di + il
+  'dello', // di + lo
+  'della', // di + la
+  'dei', // di + i
+  'degli', // di + gli
+  'delle', // di + le
+  'dal', // da + il
+  'dallo', // da + lo
+  'dalla', // da + la
+  'dai', // da + i
+  'dagli', // da + gli
+  'dalle', // da + le
+  'nel', // in + il
+  'nello', // in + lo
+  'nella', // in + la
+  'nei', // in + i
+  'negli', // in + gli
+  'nelle', // in + le
+  'sul', // su + il
+  'sullo', // su + lo
+  'sulla', // su + la
+  'sui', // su + i
+  'sugli', // su + gli
+  'sulle', // su + le
+]);
+
+export function createItalianExtractors(): ContextAwareExtractor[] {
+  return [
+    new RomanceKeywordExtractor(
+      'italian-keyword',
+      /[a-zA-ZàèéìíîòóùúÀÈÉÌÍÎÒÓÙÚ]/,
+      ITALIAN_PREPOSITIONS
+    ),
+  ];
 }

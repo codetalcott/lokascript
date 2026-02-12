@@ -9,41 +9,21 @@
  * - CSS selectors are embedded ASCII
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createUnicodeRangeClassifier,
-  combineClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isAsciiIdentifierChar,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { KoreanMorphologicalNormalizer } from './morphology/korean-normalizer';
 import { koreanProfile } from '../generators/profiles/korean';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { KoreanKeywordExtractor } from './extractors/korean-keyword';
+import { KoreanParticleExtractor } from './extractors/korean-particle';
 
-// =============================================================================
-// Korean Character Classification
-// =============================================================================
-
-/** Check if character is a Korean syllable block (U+AC00-U+D7A3). */
-const isHangul = createUnicodeRangeClassifier([[0xac00, 0xd7a3]]);
-
-/** Check if character is a Hangul Jamo (U+1100-U+11FF, U+3130-U+318F). */
-const isJamo = createUnicodeRangeClassifier([
-  [0x1100, 0x11ff], // Hangul Jamo
-  [0x3130, 0x318f], // Hangul Compatibility Jamo
-]);
-
-/** Check if character is Korean (Hangul syllable or Jamo). */
-const isKorean = combineClassifiers(isHangul, isJamo);
+// Character classification functions moved to extractors/korean-keyword.ts
 
 // =============================================================================
 // Korean Particles (조사)
@@ -80,181 +60,25 @@ const PARTICLES = new Set([
   '보다', // boda - than
 ]);
 
-/**
- * Single-character particles.
- */
-const SINGLE_CHAR_PARTICLES = new Set([
-  '이',
-  '가',
-  '을',
-  '를',
-  '은',
-  '는',
-  '에',
-  '로',
-  '와',
-  '과',
-  '의',
-  '도',
-  '만',
-]);
-
-/**
- * Multi-character particles.
- */
-const MULTI_CHAR_PARTICLES = ['에서', '으로', '부터', '까지', '처럼', '보다'];
-
-/**
- * Temporal event suffixes that should be split from compound words.
- * These are verb endings that indicate "when" something happens.
- * Sorted by length (longest first) to ensure greedy matching.
- *
- * Examples:
- * - 클릭할때 → 클릭 + 할때 (click + when)
- * - 입력할때 → 입력 + 할때 (input + when)
- */
-const TEMPORAL_EVENT_SUFFIXES = ['할때', '하면', '하니까', '할 때'];
-
-/**
- * Particle metadata mapping particles to semantic roles, confidence scores,
- * and vowel harmony variants. Korean particles change based on whether the
- * preceding syllable ends in a consonant or vowel.
- */
-interface ParticleMetadata {
-  readonly role: string; // SemanticRole
-  readonly confidence: number;
-  readonly variant?: 'consonant' | 'vowel'; // For vowel harmony pairs
-  readonly description?: string;
-}
-
-const PARTICLE_ROLES = new Map<string, ParticleMetadata>([
-  // Subject markers (vowel harmony pair)
-  [
-    '이',
-    {
-      role: 'agent',
-      confidence: 0.85,
-      variant: 'consonant',
-      description: 'subject marker (after consonant)',
-    },
-  ],
-  [
-    '가',
-    {
-      role: 'agent',
-      confidence: 0.85,
-      variant: 'vowel',
-      description: 'subject marker (after vowel)',
-    },
-  ],
-
-  // Object markers (vowel harmony pair)
-  [
-    '을',
-    {
-      role: 'patient',
-      confidence: 0.95,
-      variant: 'consonant',
-      description: 'object marker (after consonant)',
-    },
-  ],
-  [
-    '를',
-    {
-      role: 'patient',
-      confidence: 0.95,
-      variant: 'vowel',
-      description: 'object marker (after vowel)',
-    },
-  ],
-
-  // Topic markers (vowel harmony pair)
-  [
-    '은',
-    {
-      role: 'agent',
-      confidence: 0.75,
-      variant: 'consonant',
-      description: 'topic marker (after consonant)',
-    },
-  ],
-  [
-    '는',
-    {
-      role: 'agent',
-      confidence: 0.75,
-      variant: 'vowel',
-      description: 'topic marker (after vowel)',
-    },
-  ],
-
-  // Location/time markers
-  ['에', { role: 'destination', confidence: 0.85, description: 'at/to marker' }],
-  ['에서', { role: 'source', confidence: 0.8, description: 'at/from marker (action location)' }],
-
-  // Direction/means markers (vowel harmony pair)
-  [
-    '로',
-    {
-      role: 'destination',
-      confidence: 0.85,
-      variant: 'vowel',
-      description: 'to/by means (after vowel or ㄹ)',
-    },
-  ],
-  [
-    '으로',
-    {
-      role: 'destination',
-      confidence: 0.85,
-      variant: 'consonant',
-      description: 'to/by means (after consonant)',
-    },
-  ],
-
-  // And/with markers (vowel harmony pair)
-  [
-    '와',
-    { role: 'style', confidence: 0.7, variant: 'vowel', description: 'and/with (after vowel)' },
-  ],
-  [
-    '과',
-    {
-      role: 'style',
-      confidence: 0.7,
-      variant: 'consonant',
-      description: 'and/with (after consonant)',
-    },
-  ],
-
-  // Other markers
-  ['의', { role: 'patient', confidence: 0.6, description: 'possessive marker' }],
-  ['도', { role: 'patient', confidence: 0.65, description: 'also/too marker' }],
-  ['만', { role: 'patient', confidence: 0.65, description: 'only marker' }],
-  ['부터', { role: 'source', confidence: 0.9, description: 'from/since marker' }],
-  ['까지', { role: 'destination', confidence: 0.75, description: 'until/to marker' }],
-  ['처럼', { role: 'manner', confidence: 0.8, description: 'like/as marker' }],
-  ['보다', { role: 'source', confidence: 0.75, description: 'than marker' }],
-]);
+// Particle constants and metadata moved to extractors/korean-particle.ts
+// Temporal event suffixes moved to extractors/korean-keyword.ts
 
 // =============================================================================
 // Korean Extras (keywords not in profile)
 // =============================================================================
 
 /**
- * Extra keywords not covered by the profile.
- *
- * SIMPLIFIED: Following the Tagalog/Hindi model of minimal EXTRAS.
- * Removed attached particle+verb compounds (를토글, 을토글, etc.) that create
- * parsing ambiguity. Japanese tokenizer explicitly avoids these - we follow suit.
- *
- * Only includes:
+ * Extra keywords not covered by the profile:
  * - Literals (true, false, null, undefined)
  * - Positional words
  * - Event names
+ * - Alternative reference forms
+ * - Conditional event forms (temporal markers)
  * - Time units
- * - References not in profile
- * - Logical operators
+ *
+ * Note: Attached particle+verb forms (를토글, 을토글, etc.) are intentionally NOT included
+ * because they would cause ambiguous parsing. The separate particle + verb pattern
+ * (를 + 토글) is preferred for consistent semantic analysis.
  */
 const KOREAN_EXTRAS: KeywordEntry[] = [
   // Values/Literals
@@ -304,28 +128,9 @@ const KOREAN_EXTRAS: KeywordEntry[] = [
   { native: '밀리초', normalized: 'ms' },
   { native: '분', normalized: 'm' },
   { native: '시간', normalized: 'h' },
-
-  // Note: Attached particle+verb forms (를토글, 을토글, etc.) are intentionally
-  // NOT included because they cause ambiguous parsing. The separate particle + verb
-  // pattern (를 + 토글) is preferred for consistent semantic analysis.
-  // This follows the same approach as the Japanese tokenizer.
 ];
 
-// =============================================================================
-// Korean Time Units
-// =============================================================================
-
-/**
- * Korean time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- * Korean time units attach directly without whitespace.
- */
-const KOREAN_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: '밀리초', suffix: 'ms', length: 3 },
-  { pattern: '시간', suffix: 'h', length: 2 },
-  { pattern: '초', suffix: 's', length: 1 },
-  { pattern: '분', suffix: 'm', length: 1 },
-];
+// Korean time units moved to generic-extractors.ts (NumberExtractor handles them)
 
 // =============================================================================
 // Korean Tokenizer Implementation
@@ -341,161 +146,36 @@ export class KoreanTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(koreanProfile, KOREAN_EXTRAS);
     // Set morphological normalizer for verb conjugations
     this.normalizer = new KoreanMorphologicalNormalizer();
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers (includes Korean time units)
+    this.registerExtractor(new KoreanParticleExtractor()); // Particles with vowel harmony metadata
+    this.registerExtractor(new KoreanKeywordExtractor()); // Korean keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first (ASCII-based, highest priority)
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number (including Korean time units)
-      if (isDigit(input[pos])) {
-        const numberToken = this.extractKoreanNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try Korean word FIRST (before particles)
-      // This ensures keywords like 로그 aren't split on particle characters
-      if (isKorean(input[pos])) {
-        const wordToken = this.extractKoreanWord(input, pos);
-        if (wordToken) {
-          // Check if the word ends with a temporal event suffix (e.g., 클릭할때 → 클릭 + 할때)
-          const splitResult = this.trySplitTemporalSuffix(wordToken);
-          if (splitResult) {
-            tokens.push(splitResult.stemToken);
-            tokens.push(splitResult.suffixToken);
-          } else {
-            tokens.push(wordToken);
-          }
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Try multi-character particle (before single-character)
-      const multiParticle = this.tryMultiCharParticle(input, pos, MULTI_CHAR_PARTICLES);
-      if (multiParticle) {
-        // Add role metadata to particle token
-        const metadata = PARTICLE_ROLES.get(multiParticle.value);
-        if (metadata) {
-          tokens.push({
-            ...multiParticle,
-            metadata: {
-              particleRole: metadata.role,
-              particleConfidence: metadata.confidence,
-              particleVariant: metadata.variant,
-            },
-          });
-        } else {
-          tokens.push(multiParticle);
-        }
-        pos = multiParticle.position.end;
-        continue;
-      }
-
-      // Try single-character particle
-      if (SINGLE_CHAR_PARTICLES.has(input[pos])) {
-        const particle = input[pos];
-        const metadata = PARTICLE_ROLES.get(particle);
-        if (metadata) {
-          tokens.push({
-            ...createToken(particle, 'particle', createPosition(pos, pos + 1)),
-            metadata: {
-              particleRole: metadata.role,
-              particleConfidence: metadata.confidence,
-              particleVariant: metadata.variant,
-            },
-          });
-        } else {
-          tokens.push(createToken(particle, 'particle', createPosition(pos, pos + 1)));
-        }
-        pos++;
-        continue;
-      }
-
-      // Try ASCII word (for mixed content)
-      if (isAsciiIdentifierChar(input[pos])) {
-        const asciiToken = this.extractAsciiWord(input, pos);
-        if (asciiToken) {
-          tokens.push(asciiToken);
-          pos = asciiToken.position.end;
-          continue;
-        }
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'ko');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(token)) return 'keyword';
+    // Check URLs before selectors (./path vs .class)
+    if (
+      token.startsWith('/') ||
+      token.startsWith('./') ||
+      token.startsWith('../') ||
+      token.startsWith('http')
+    )
+      return 'url';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -510,204 +190,8 @@ export class KoreanTokenizer extends BaseTokenizer {
     return 'identifier';
   }
 
-  /**
-   * Extract a Korean word (sequence of Hangul).
-   * Prioritizes known keywords, then uses particle-based word boundaries.
-   *
-   * Uses morphological normalization to handle verb conjugations.
-   */
-  private extractKoreanWord(input: string, startPos: number): LanguageToken | null {
-    // First, try to find the longest matching keyword starting at this position
-    // This ensures compound words like 추가, 증가, 숨기다 are recognized whole
-    const maxKeywordLen = 6; // Longest Korean keyword
-    for (let len = Math.min(maxKeywordLen, input.length - startPos); len >= 2; len--) {
-      const candidate = input.slice(startPos, startPos + len);
-      // Check all chars are Korean
-      let allKorean = true;
-      for (let i = 0; i < candidate.length; i++) {
-        if (!isKorean(candidate[i])) {
-          allKorean = false;
-          break;
-        }
-      }
-      if (!allKorean) continue;
-
-      // If this candidate starting at the beginning is a particle, return null
-      // to let the main tokenize loop handle it as a particle
-      // This prevents roleMarker keywords from overriding particle classification
-      if (PARTICLES.has(candidate) && startPos === startPos) {
-        // Check if this particle-like candidate is at a word boundary (standalone)
-        const afterCandidate = startPos + len;
-        const nextChar = afterCandidate < input.length ? input[afterCandidate] : '';
-        if (nextChar === '' || isWhitespace(nextChar) || !isKorean(nextChar)) {
-          return null; // Let main loop handle as particle
-        }
-        // Otherwise it's part of a larger word, continue checking
-      }
-
-      // O(1) Map lookup instead of O(n) array search
-      const keywordEntry = this.lookupKeyword(candidate);
-      if (keywordEntry) {
-        return createToken(
-          candidate,
-          'keyword',
-          createPosition(startPos, startPos + len),
-          keywordEntry.normalized
-        );
-      }
-
-      // Try morphological normalization for conjugated forms
-      const morphToken = this.tryMorphKeywordMatch(candidate, startPos, startPos + len);
-      if (morphToken) return morphToken;
-    }
-
-    // No keyword match - extract as regular word using particle boundaries
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length) {
-      const char = input[pos];
-      const nextChar = pos + 1 < input.length ? input[pos + 1] : '';
-
-      // If we're at a particle with no content yet, return null to let main loop handle it
-      // This ensures particles like 를, 를 in #count를증가 are separated properly
-      if (word.length === 0 && SINGLE_CHAR_PARTICLES.has(char)) {
-        return null;
-      }
-
-      // Stop at single-char particles only if:
-      // 1. We have content already
-      // 2. The particle is at a word boundary (followed by whitespace, end, non-Korean, or another particle)
-      if (SINGLE_CHAR_PARTICLES.has(char) && word.length > 0) {
-        const isWordBoundary =
-          nextChar === '' ||
-          isWhitespace(nextChar) ||
-          !isKorean(nextChar) ||
-          SINGLE_CHAR_PARTICLES.has(nextChar);
-
-        if (isWordBoundary) {
-          break;
-        }
-        // Otherwise, continue - this particle char is part of the word
-      }
-
-      // Check for multi-char particle (these are always at word boundaries)
-      let foundMulti = false;
-      for (const particle of MULTI_CHAR_PARTICLES) {
-        if (input.slice(pos, pos + particle.length) === particle && word.length > 0) {
-          // Only treat as particle if followed by word boundary
-          const afterParticle = pos + particle.length;
-          const charAfter = afterParticle < input.length ? input[afterParticle] : '';
-          if (charAfter === '' || isWhitespace(charAfter) || !isKorean(charAfter)) {
-            foundMulti = true;
-            break;
-          }
-        }
-      }
-      if (foundMulti) break;
-
-      // Continue if Korean character
-      if (isKorean(char)) {
-        word += char;
-        pos++;
-      } else {
-        break;
-      }
-    }
-
-    if (!word) return null;
-
-    // If the word is a particle, return null to let the main tokenize loop handle it
-    // This prevents roleMarker keywords from overriding particle classification
-    if (PARTICLES.has(word)) {
-      return null;
-    }
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(word);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    // Try morphological normalization for conjugated forms
-    const morphToken = this.tryMorphKeywordMatch(word, startPos, pos);
-    if (morphToken) return morphToken;
-
-    // Not a keyword, return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract an ASCII word (for mixed Korean/English content).
-   */
-  private extractAsciiWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including Korean time unit suffixes.
-   * Korean time units attach directly without whitespace.
-   */
-  private extractKoreanNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, KOREAN_TIME_UNITS, {
-      allowSign: false,
-      skipWhitespace: false,
-    });
-  }
-
-  /**
-   * Try to split a temporal event suffix from a word token.
-   * This handles compact forms like 클릭할때 → 클릭 + 할때
-   *
-   * @returns Split tokens if a suffix is found, null otherwise
-   */
-  private trySplitTemporalSuffix(
-    wordToken: LanguageToken
-  ): { stemToken: LanguageToken; suffixToken: LanguageToken } | null {
-    const word = wordToken.value;
-
-    // Check for temporal suffixes (longest first)
-    for (const suffix of TEMPORAL_EVENT_SUFFIXES) {
-      if (word.endsWith(suffix) && word.length > suffix.length) {
-        const stem = word.slice(0, -suffix.length);
-
-        // Only split if the stem is a known keyword
-        const stemLower = stem.toLowerCase();
-        const keywordEntry = this.lookupKeyword(stemLower);
-        if (!keywordEntry) continue;
-
-        const stemEnd = wordToken.position.start + stem.length;
-
-        const stemToken = createToken(
-          stem,
-          'keyword',
-          createPosition(wordToken.position.start, stemEnd),
-          keywordEntry.normalized
-        );
-
-        // Create suffix token as a keyword (event marker)
-        const suffixToken = createToken(
-          suffix,
-          'keyword',
-          createPosition(stemEnd, wordToken.position.end),
-          'when' // Normalize temporal suffixes to 'when'
-        );
-
-        return { stemToken, suffixToken };
-      }
-    }
-
-    return null;
-  }
+  // extractKoreanWord(), extractAsciiWord(), extractKoreanNumber(), and trySplitTemporalSuffix() methods removed
+  // Now handled by KoreanKeywordExtractor and NumberExtractor
 }
 
 /**

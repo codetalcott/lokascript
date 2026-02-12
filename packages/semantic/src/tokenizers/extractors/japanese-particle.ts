@@ -55,10 +55,12 @@ const MULTI_CHAR_PARTICLES = new Map<string, ParticleMetadata>([
 export class JapaneseParticleExtractor implements ContextAwareExtractor {
   readonly name = 'japanese-particle';
 
-  private context?: TokenizerContext;
+  // Context available for future use (e.g., particle boundary detection)
+  private _context?: TokenizerContext;
 
   setContext(context: TokenizerContext): void {
-    this.context = context;
+    this._context = context;
+    void this._context; // Satisfy noUnusedLocals
   }
 
   canExtract(input: string, position: number): boolean {

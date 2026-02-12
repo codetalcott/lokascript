@@ -19,62 +19,17 @@
  *   hiển thị #modal     → show #modal
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { vietnameseProfile } from '../generators/profiles/vietnamese';
-
-// =============================================================================
-// Vietnamese Character Classification
-// =============================================================================
-
-// Vietnamese letters include Latin alphabet plus special characters and tone marks
-const { isLetter: isVietnameseLetter, isIdentifierChar: isVietnameseIdentifierChar } =
-  createLatinCharClassifiers(
-    /[a-zA-ZàáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]/
-  );
-
-// =============================================================================
-// Vietnamese Prepositions
-// =============================================================================
-
-/**
- * Vietnamese prepositions that mark grammatical roles.
- */
-const PREPOSITIONS = new Set([
-  'trong', // in, inside
-  'ngoài', // outside
-  'trên', // on, above
-  'dưới', // under, below
-  'vào', // into
-  'ra', // out
-  'đến', // to
-  'từ', // from
-  'với', // with
-  'cho', // for, to
-  'bởi', // by
-  'qua', // through
-  'trước', // before
-  'sau', // after
-  'giữa', // between
-  'bên', // beside
-  'theo', // according to, along
-  'về', // about, towards
-  'tới', // to, towards
-  'lên', // up
-  'xuống', // down
-]);
+import { createVietnameseExtractors } from './extractors/vietnamese-keyword';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
 
 // =============================================================================
 // Vietnamese Extras (keywords not in profile)
@@ -162,119 +117,27 @@ export class VietnameseTokenizer extends BaseTokenizer {
     super();
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(vietnameseProfile, VIETNAMESE_EXTRAS);
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createVietnameseExtractors()); // Vietnamese keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first (ASCII-based, highest priority)
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number
-      if (isDigit(input[pos])) {
-        const numberToken = this.extractVietnameseNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try operator
-      const opToken = this.tryOperator(input, pos);
-      if (opToken) {
-        tokens.push(opToken);
-        pos = opToken.position.end;
-        continue;
-      }
-
-      // Try multi-word phrase first (before single words)
-      const phraseToken = this.tryMultiWordPhrase(input, pos);
-      if (phraseToken) {
-        tokens.push(phraseToken);
-        pos = phraseToken.position.end;
-        continue;
-      }
-
-      // Try Vietnamese word
-      if (isVietnameseLetter(input[pos])) {
-        const wordToken = this.extractVietnameseWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'vi');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
-    if (PREPOSITIONS.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(lower)) return 'keyword';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -285,130 +148,13 @@ export class VietnameseTokenizer extends BaseTokenizer {
       return 'selector';
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
+    if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
 
     return 'identifier';
   }
 
-  /**
-   * Try to match a multi-word phrase.
-   * Multi-word phrases are included in profileKeywords and sorted longest-first.
-   */
-  private tryMultiWordPhrase(input: string, pos: number): LanguageToken | null {
-    // Check against multi-word entries in profileKeywords (sorted longest-first)
-    for (const entry of this.profileKeywords) {
-      // Only check multi-word phrases (contain space)
-      if (!entry.native.includes(' ')) continue;
-
-      const phrase = entry.native;
-      const candidate = input.slice(pos, pos + phrase.length).toLowerCase();
-      if (candidate === phrase.toLowerCase()) {
-        // Make sure we're at a word boundary after the phrase
-        const nextChar = input[pos + phrase.length];
-        if (nextChar && isVietnameseLetter(nextChar)) continue;
-
-        return createToken(
-          input.slice(pos, pos + phrase.length),
-          'keyword',
-          createPosition(pos, pos + phrase.length),
-          entry.normalized
-        );
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Extract a Vietnamese word (single syllable/word).
-   */
-  private extractVietnameseWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isVietnameseIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // Check if it's a preposition first
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // O(1) Map lookup for exact keyword match
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    // Return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including time unit suffixes.
-   */
-  private extractVietnameseNumber(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let number = '';
-
-    // Integer part
-    while (pos < input.length && isDigit(input[pos])) {
-      number += input[pos++];
-    }
-
-    // Optional decimal
-    if (pos < input.length && input[pos] === '.') {
-      number += input[pos++];
-      while (pos < input.length && isDigit(input[pos])) {
-        number += input[pos++];
-      }
-    }
-
-    // Check for time units (Vietnamese or standard)
-    if (pos < input.length) {
-      const remaining = input.slice(pos).toLowerCase();
-      // Vietnamese time units (with space after number)
-      if (remaining.startsWith(' mili giây') || remaining.startsWith(' miligiây')) {
-        number += 'ms';
-        pos += remaining.startsWith(' mili giây') ? 10 : 9;
-      } else if (remaining.startsWith(' giây')) {
-        number += 's';
-        pos += 5;
-      } else if (remaining.startsWith(' phút')) {
-        number += 'm';
-        pos += 5;
-      } else if (remaining.startsWith(' giờ')) {
-        number += 'h';
-        pos += 4;
-      }
-      // Standard time units (s, ms, m, h) - no space
-      else if (remaining.startsWith('ms')) {
-        number += 'ms';
-        pos += 2;
-      } else if (remaining[0] === 's' && !isVietnameseLetter(remaining[1] || '')) {
-        number += 's';
-        pos += 1;
-      } else if (
-        remaining[0] === 'm' &&
-        remaining[1] !== 's' &&
-        !isVietnameseLetter(remaining[1] || '')
-      ) {
-        number += 'm';
-        pos += 1;
-      } else if (remaining[0] === 'h' && !isVietnameseLetter(remaining[1] || '')) {
-        number += 'h';
-        pos += 1;
-      }
-    }
-
-    if (!number) return null;
-
-    return createToken(number, 'literal', createPosition(startPos, pos));
-  }
+  // tryMultiWordPhrase(), extractVietnameseWord(), extractVietnameseNumber() methods removed
+  // Now handled by VietnameseKeywordExtractor (context-aware)
 }
 
 /**

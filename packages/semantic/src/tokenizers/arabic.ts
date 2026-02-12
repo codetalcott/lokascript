@@ -9,172 +9,59 @@
  * - CSS selectors are LTR islands within RTL text
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
+import type { TokenKind, LanguageToken, TokenStream } from '../types';
 import {
   BaseTokenizer,
   TokenStreamImpl,
   createToken,
   createPosition,
-  createUnicodeRangeClassifier,
   isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isAsciiIdentifierChar,
-  isUrlStart,
   type KeywordEntry,
-  type TimeUnitMapping,
 } from './base';
 import { ArabicMorphologicalNormalizer } from './morphology/arabic-normalizer';
 import { arabicProfile } from '../generators/profiles/arabic';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { ArabicKeywordExtractor } from './extractors/arabic-keyword';
+import { ArabicProcliticExtractor } from './extractors/arabic-proclitic';
+import { ArabicTemporalExtractor } from './extractors/arabic-temporal';
+
+// Character classification functions moved to extractors/arabic-keyword.ts
+
+// Proclitic constants and metadata moved to extractors/arabic-proclitic.ts
+// Temporal marker constants and metadata moved to extractors/arabic-temporal.ts
 
 // =============================================================================
-// Arabic Character Classification
-// =============================================================================
-
-/** Check if character is Arabic (includes all Arabic Unicode blocks). */
-const isArabic = createUnicodeRangeClassifier([
-  [0x0600, 0x06ff], // Arabic
-  [0x0750, 0x077f], // Arabic Supplement
-  [0x08a0, 0x08ff], // Arabic Extended-A
-  [0xfb50, 0xfdff], // Arabic Presentation Forms-A
-  [0xfe70, 0xfeff], // Arabic Presentation Forms-B
-]);
-
-// =============================================================================
-// Arabic Prefixes and Prepositions
+// Arabic Token Classification Sets
 // =============================================================================
 
 /**
- * Arabic prefix prepositions that attach to the following word.
- * These are marked with trailing hyphen in patterns to indicate attachment.
+ * Arabic conjunctions for token classification.
+ * Only includes multi-proclitic sequences (ول, وب, etc.).
+ * Single-character proclitics (و, ف) are NOT included here because:
+ * - When attached to words, they're extracted by ArabicProcliticExtractor with metadata
+ * - When standalone, they should be classified as identifiers, not conjunctions
+ * The extractor metadata indicates their role, which pattern matching uses.
  */
-const ATTACHED_PREFIXES = new Set([
-  'بـ', // bi- (with, by)
-  'لـ', // li- (to, for)
-  'كـ', // ka- (like, as)
-  'وـ', // wa- (and)
+const CONJUNCTIONS = new Set([
+  // Multi-proclitic sequences only
+  'ول', // wa + li- (and-to)
+  'وب', // wa + bi- (and-with)
+  'وك', // wa + ka- (and-like)
+  'فل', // fa + li- (then-to)
+  'فب', // fa + bi- (then-with)
+  'فك', // fa + ka- (then-like)
 ]);
 
 /**
- * Arabic proclitic conjunctions and prefixes that attach directly to the following word.
- * These are separated during tokenization for proper list/coordination handling.
- *
- * Single-character proclitics (و, ف) are emitted as separate conjunction tokens
- * to support polysyndetic coordination (A وB وC).
- *
- * Attached prefixes (بـ, لـ, كـ) are prepositions that attach to words.
- * Multi-proclitic sequences (ولـ, وبـ, فلـ, etc.) are split into components.
- *
- * @see NATIVE_REVIEW_NEEDED.md for implementation details
- */
-const PROCLITICS = new Map<string, { normalized: string; type: 'conjunction' | 'preposition' }>([
-  // Conjunctions (single character)
-  ['و', { normalized: 'and', type: 'conjunction' }], // wa - conjunction "and"
-  ['ف', { normalized: 'then', type: 'conjunction' }], // fa - conjunction "then/so"
-
-  // Attached prefix prepositions
-  ['ب', { normalized: 'with', type: 'preposition' }], // bi- (with, by)
-  ['ل', { normalized: 'to', type: 'preposition' }], // li- (to, for)
-  ['ك', { normalized: 'like', type: 'preposition' }], // ka- (like, as)
-
-  // Multi-proclitic sequences (conjunction + preposition)
-  ['ول', { normalized: 'and-to', type: 'conjunction' }], // wa + li-
-  ['وب', { normalized: 'and-with', type: 'conjunction' }], // wa + bi-
-  ['وك', { normalized: 'and-like', type: 'conjunction' }], // wa + ka-
-  ['فل', { normalized: 'then-to', type: 'conjunction' }], // fa + li-
-  ['فب', { normalized: 'then-with', type: 'conjunction' }], // fa + bi-
-  ['فك', { normalized: 'then-like', type: 'conjunction' }], // fa + ka-
-]);
-
-/**
- * Arabic temporal markers (event trigger keywords) with formality and confidence tracking.
- *
- * Formality levels:
- * - 'formal': Modern Standard Arabic (MSA) - preferred in written/formal contexts
- * - 'neutral': Common in both MSA and dialects
- * - 'dialectal': Informal/colloquial - common in spoken Arabic
- *
- * Confidence reflects how reliably the marker indicates an event trigger ("on" event).
- * Formal markers have higher confidence due to standardization.
- */
-interface TemporalMarkerMetadata {
-  readonly normalized: string;
-  readonly formality: 'formal' | 'neutral' | 'dialectal';
-  readonly confidence: number;
-  readonly description: string;
-}
-
-const TEMPORAL_MARKERS = new Map<string, TemporalMarkerMetadata>([
-  [
-    'عندما',
-    {
-      normalized: 'on',
-      formality: 'formal',
-      confidence: 0.95,
-      description: 'when (formal MSA)',
-    },
-  ],
-  [
-    'حينما',
-    {
-      normalized: 'on',
-      formality: 'formal',
-      confidence: 0.93,
-      description: 'when/whenever (formal)',
-    },
-  ],
-  [
-    'عند',
-    {
-      normalized: 'on',
-      formality: 'neutral',
-      confidence: 0.88,
-      description: 'at/when (neutral)',
-    },
-  ],
-  [
-    'حين',
-    {
-      normalized: 'on',
-      formality: 'neutral',
-      confidence: 0.85,
-      description: 'when/time (neutral)',
-    },
-  ],
-  [
-    'لمّا',
-    {
-      normalized: 'on',
-      formality: 'dialectal',
-      confidence: 0.7,
-      description: 'when (dialectal, with shadda)',
-    },
-  ],
-  [
-    'لما',
-    {
-      normalized: 'on',
-      formality: 'dialectal',
-      confidence: 0.68,
-      description: 'when (dialectal, no diacritic)',
-    },
-  ],
-  [
-    'لدى',
-    {
-      normalized: 'on',
-      formality: 'neutral',
-      confidence: 0.82,
-      description: 'at/with (temporal)',
-    },
-  ],
-]);
-
-/**
- * Arabic standalone prepositions.
- * Note: Temporal markers (عند, لدى, etc.) are NOT in this set - they're handled
- * separately in TEMPORAL_MARKERS with formality metadata.
+ * Arabic standalone prepositions for token classification.
+ * Note: Temporal markers (عند, لدى, etc.) are handled by ArabicTemporalExtractor
+ * with formality metadata.
  */
 const PREPOSITIONS = new Set([
   'في', // fī (in)
@@ -182,12 +69,15 @@ const PREPOSITIONS = new Set([
   'من', // min (from)
   'إلى', // ilā (to)
   'الى', // ilā (alternative spelling)
-  // 'عند' removed - it's a temporal marker with metadata
   'مع', // maʿa (with)
   'عن', // ʿan (about, from)
   'قبل', // qabl (before)
   'بعد', // baʿd (after)
   'بين', // bayn (between)
+  // Attached prefix prepositions (can also appear standalone)
+  'ب', // bi- (with, by)
+  'ل', // li- (to, for)
+  'ك', // ka- (like, as)
 ]);
 
 // =============================================================================
@@ -254,8 +144,14 @@ const ARABIC_EXTRAS: KeywordEntry[] = [
   { native: 'ساعة', normalized: 'h' },
   { native: 'ساعات', normalized: 'h' },
 
-  // Note: Temporal markers (عندما, حينما, etc.) are in TEMPORAL_MARKERS map
-  // with formality metadata, not in ARABIC_EXTRAS
+  // Temporal markers (also in ArabicTemporalExtractor with formality metadata)
+  { native: 'عندما', normalized: 'on' },
+  { native: 'حينما', normalized: 'on' },
+  { native: 'عند', normalized: 'on' },
+  { native: 'حين', normalized: 'on' },
+  { native: 'لمّا', normalized: 'on' },
+  { native: 'لما', normalized: 'on' },
+  { native: 'لدى', normalized: 'on' },
   //
   // Command spelling variants are now in the profile alternatives:
   // - toggle: بدل, غيّر, غير (in profile)
@@ -264,25 +160,7 @@ const ARABIC_EXTRAS: KeywordEntry[] = [
   // - etc.
 ];
 
-// =============================================================================
-// Arabic Time Units
-// =============================================================================
-
-/**
- * Arabic time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- * Arabic allows space between number and unit (ملي ثانية = millisecond).
- */
-const ARABIC_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: 'ملي ثانية', suffix: 'ms', length: 9, caseInsensitive: false },
-  { pattern: 'ملي_ثانية', suffix: 'ms', length: 8, caseInsensitive: false },
-  { pattern: 'دقائق', suffix: 'm', length: 5, caseInsensitive: false },
-  { pattern: 'دقيقة', suffix: 'm', length: 5, caseInsensitive: false },
-  { pattern: 'ثواني', suffix: 's', length: 5, caseInsensitive: false },
-  { pattern: 'ثانية', suffix: 's', length: 5, caseInsensitive: false },
-  { pattern: 'ساعات', suffix: 'h', length: 5, caseInsensitive: false },
-  { pattern: 'ساعة', suffix: 'h', length: 4, caseInsensitive: false },
-];
+// Arabic time units moved to generic-extractors.ts (NumberExtractor handles them)
 
 // =============================================================================
 // Arabic Tokenizer Implementation
@@ -294,132 +172,104 @@ export class ArabicTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(arabicProfile, ARABIC_EXTRAS);
     // Set morphological normalizer for prefix/suffix stripping
     this.normalizer = new ArabicMorphologicalNormalizer();
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    // CRITICAL: Temporal markers FIRST (before proclitics and keywords)
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers (includes Arabic time units)
+    this.registerExtractor(new ArabicTemporalExtractor()); // Temporal markers with formality metadata
+    this.registerExtractor(new ArabicProcliticExtractor()); // Proclitics (after temporal check)
+    this.registerExtractor(new ArabicKeywordExtractor()); // Arabic keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
+  // Override tokenizeWithExtractors to handle proclitic metadata
+  protected override tokenizeWithExtractors(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 
     while (pos < input.length) {
       // Skip whitespace
-      if (isWhitespace(input[pos])) {
+      while (pos < input.length && isWhitespace(input[pos])) {
         pos++;
-        continue;
       }
+      if (pos >= input.length) break;
 
-      // Try CSS selector first (LTR island in RTL text)
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
+      // Try registered extractors in order
+      let extracted = false;
+      for (const extractor of this.extractors) {
+        if (extractor.canExtract(input, pos)) {
+          const result = extractor.extract(input, pos);
+          if (result) {
+            // Extract normalized from metadata if present
+            const normalized = result.metadata?.normalized as string | undefined;
+            const metadata = result.metadata;
 
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
+            // Special handling for proclitics: use metadata to determine kind
+            let kind: TokenKind;
+            if (metadata?.procliticType === 'conjunction') {
+              kind = 'conjunction';
+            } else if (metadata?.procliticType === 'preposition') {
+              kind = 'particle';
+            } else {
+              kind = this.classifyToken(result.value);
+            }
 
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
+            // Build options object only if we have normalized or metadata
+            const options: { normalized?: string; metadata?: Record<string, unknown> } = {};
+            if (normalized) options.normalized = normalized;
+            if (metadata) options.metadata = metadata;
 
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
+            tokens.push(
+              createToken(
+                result.value,
+                kind,
+                createPosition(pos, pos + result.length),
+                Object.keys(options).length > 0 ? options : undefined
+              )
+            );
+            pos += result.length;
+            extracted = true;
+            break;
+          }
         }
       }
 
-      // Try number
-      if (isDigit(input[pos])) {
-        const numberToken = this.extractArabicNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
+      // Fallback: single character as operator/punctuation
+      if (!extracted) {
+        const char = input[pos];
+        const kind = this.classifyUnknownChar(char);
+        tokens.push(createToken(char, kind, createPosition(pos, pos + 1)));
+        pos++;
       }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try Arabic preposition (multi-word first)
-      const prepToken = this.tryPreposition(input, pos);
-      if (prepToken) {
-        tokens.push(prepToken);
-        pos = prepToken.position.end;
-        continue;
-      }
-
-      // Try Arabic word (with proclitic detection)
-      if (isArabic(input[pos])) {
-        // Check for proclitic conjunction (و or ف) attached to following word
-        const procliticResult = this.tryProclitic(input, pos);
-        if (procliticResult) {
-          tokens.push(procliticResult.conjunction);
-          pos = procliticResult.conjunction.position.end;
-          // Continue to let the next iteration extract the remaining word
-          continue;
-        }
-
-        const wordToken = this.extractArabicWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Try ASCII word (for mixed content)
-      if (isAsciiIdentifierChar(input[pos])) {
-        const asciiToken = this.extractAsciiWord(input, pos);
-        if (asciiToken) {
-          tokens.push(asciiToken);
-          pos = asciiToken.position.end;
-          continue;
-        }
-      }
-
-      // Skip unknown character
-      pos++;
     }
 
-    return new TokenStreamImpl(tokens, 'ar');
+    return new TokenStreamImpl(tokens, this.language);
   }
 
   classifyToken(token: string): TokenKind {
+    if (CONJUNCTIONS.has(token)) return 'conjunction';
     if (PREPOSITIONS.has(token)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(token)) return 'keyword';
+    // Check URLs before selectors (./path vs .class)
+    if (
+      token.startsWith('/') ||
+      token.startsWith('./') ||
+      token.startsWith('../') ||
+      token.startsWith('http')
+    )
+      return 'url';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -434,267 +284,8 @@ export class ArabicTokenizer extends BaseTokenizer {
     return 'identifier';
   }
 
-  /**
-   * Try to match an Arabic preposition.
-   * Attaches prepositionValue metadata for disambiguation in pattern matching.
-   */
-  private tryPreposition(input: string, pos: number): LanguageToken | null {
-    // Check prepositions from longest to shortest
-    const sortedPreps = Array.from(PREPOSITIONS).sort((a, b) => b.length - a.length);
-
-    for (const prep of sortedPreps) {
-      if (input.slice(pos, pos + prep.length) === prep) {
-        // Check that it's a standalone word (followed by space or non-Arabic)
-        const nextPos = pos + prep.length;
-        if (nextPos >= input.length || isWhitespace(input[nextPos]) || !isArabic(input[nextPos])) {
-          const token = createToken(prep, 'particle', createPosition(pos, nextPos));
-          // Attach metadata for preposition disambiguation
-          return {
-            ...token,
-            metadata: {
-              prepositionValue: prep,
-            },
-          };
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Try to extract a proclitic (conjunction or preposition) that's attached to the following word.
-   *
-   * Arabic proclitics attach directly to words without space:
-   * - والنقر → و + النقر (and + the-click)
-   * - فالتبديل → ف + التبديل (then + the-toggle)
-   * - بالنقر → ب + النقر (with + the-click)
-   * - ولالنقر → و + ل + النقر (and + to + the-click)
-   *
-   * This enables:
-   * - Polysyndetic coordination: A وB وC
-   * - Attached prepositions: بالنقر (with-the-click)
-   * - Multi-proclitic sequences: ولالنقر (and-to-the-click)
-   *
-   * Returns null if:
-   * - Not a proclitic character/sequence
-   * - Proclitic is standalone (followed by space)
-   * - Remaining word is too short (< 2 chars, to avoid false positives)
-   * - Full word is a recognized keyword (e.g., بدل should NOT be split to ب + دل)
-   *
-   * @see NATIVE_REVIEW_NEEDED.md for implementation rationale
-   */
-  private tryProclitic(input: string, pos: number): { conjunction: LanguageToken } | null {
-    // CRITICAL: Check if the full word is a keyword BEFORE splitting
-    // This prevents keywords like بدل (toggle) from being split into ب (with) + دل
-    let wordEnd = pos;
-    while (wordEnd < input.length && (isArabic(input[wordEnd]) || input[wordEnd] === 'ـ')) {
-      wordEnd++;
-    }
-    const fullWord = input.slice(pos, wordEnd);
-
-    // Check if full word is a keyword (with or without diacritics)
-    if (this.lookupKeyword(fullWord)) {
-      return null; // Let extractArabicWord handle it
-    }
-
-    // Check temporal markers (they also shouldn't be split)
-    if (TEMPORAL_MARKERS.has(fullWord)) {
-      return null;
-    }
-
-    // Check prepositions (they also shouldn't be split)
-    if (PREPOSITIONS.has(fullWord)) {
-      return null;
-    }
-    // Try multi-character proclitics first (longest match)
-    // Check 2-character sequences (ول, وب, فل, فب, etc.)
-    if (pos + 2 <= input.length) {
-      const twoChar = input.slice(pos, pos + 2);
-      const twoCharEntry = PROCLITICS.get(twoChar);
-      if (twoCharEntry) {
-        // Check if there's a following Arabic character (proclitic must be attached)
-        const nextPos = pos + 2;
-        if (nextPos < input.length && isArabic(input[nextPos])) {
-          // Count remaining Arabic characters to ensure meaningful word follows
-          let remainingLength = 0;
-          let checkPos = nextPos;
-          while (checkPos < input.length && isArabic(input[checkPos])) {
-            remainingLength++;
-            checkPos++;
-          }
-
-          // Require at least 2 characters after proclitic to avoid false positives
-          if (remainingLength >= 2) {
-            // IMPORTANT: Check if a single-char proclitic would leave a keyword
-            // e.g., "وبدل" should be "و" + "بدل" (keyword), not "وب" + "دل"
-            const singleCharProclitic = PROCLITICS.get(input[pos]);
-            if (singleCharProclitic) {
-              const afterSingleChar = input.slice(pos + 1, wordEnd);
-              if (this.lookupKeyword(afterSingleChar)) {
-                // Single-char proclitic leaves a keyword - don't match multi-proclitic
-                // Fall through to single-char proclitic handling below
-              } else {
-                // Multi-char proclitic is valid
-                const tokenKind =
-                  twoCharEntry.type === 'conjunction'
-                    ? ('conjunction' as const)
-                    : ('particle' as const);
-                return {
-                  conjunction: createToken(
-                    twoChar,
-                    tokenKind,
-                    createPosition(pos, nextPos),
-                    twoCharEntry.normalized
-                  ),
-                };
-              }
-            } else {
-              // No single-char proclitic alternative, use multi-char
-              const tokenKind =
-                twoCharEntry.type === 'conjunction'
-                  ? ('conjunction' as const)
-                  : ('particle' as const);
-              return {
-                conjunction: createToken(
-                  twoChar,
-                  tokenKind,
-                  createPosition(pos, nextPos),
-                  twoCharEntry.normalized
-                ),
-              };
-            }
-          }
-        }
-      }
-    }
-
-    // Try single-character proclitics
-    const char = input[pos];
-    const entry = PROCLITICS.get(char);
-
-    if (!entry) return null;
-
-    // Check if there's a following Arabic character (proclitic must be attached)
-    const nextPos = pos + 1;
-    if (nextPos >= input.length || !isArabic(input[nextPos])) {
-      return null; // Standalone conjunction or end of input
-    }
-
-    // Count remaining Arabic characters to ensure meaningful word follows
-    let remainingLength = 0;
-    let checkPos = nextPos;
-    while (checkPos < input.length && isArabic(input[checkPos])) {
-      remainingLength++;
-      checkPos++;
-    }
-
-    // Require at least 2 characters after proclitic to avoid false positives
-    // (e.g., وو could be a typo, and short roots need protection)
-    if (remainingLength < 2) {
-      return null;
-    }
-
-    const tokenKind =
-      entry.type === 'conjunction' ? ('conjunction' as const) : ('particle' as const);
-    return {
-      conjunction: createToken(char, tokenKind, createPosition(pos, nextPos), entry.normalized),
-    };
-  }
-
-  /**
-   * Extract an Arabic word.
-   * Uses morphological normalization to handle prefix/suffix variations.
-   * Attaches metadata for temporal markers (formality, confidence).
-   */
-  private extractArabicWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    // Check for attached prefix
-    for (const prefix of ATTACHED_PREFIXES) {
-      const basePrefix = prefix.replace('ـ', '');
-      if (input.slice(pos, pos + basePrefix.length) === basePrefix) {
-        // This is a prefix - extract it separately
-        // For now, include it in the word
-      }
-    }
-
-    // Extract Arabic characters
-    while (pos < input.length && (isArabic(input[pos]) || input[pos] === 'ـ')) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    // Check if it's a temporal marker (with formality metadata)
-    const temporalMarker = TEMPORAL_MARKERS.get(word);
-    if (temporalMarker) {
-      const token = createToken(
-        word,
-        'keyword',
-        createPosition(startPos, pos),
-        temporalMarker.normalized
-      );
-      return {
-        ...token,
-        metadata: {
-          temporalFormality: temporalMarker.formality,
-          temporalConfidence: temporalMarker.confidence,
-        },
-      };
-    }
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(word);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    // Check if it's a preposition (with metadata for disambiguation)
-    if (PREPOSITIONS.has(word)) {
-      const token = createToken(word, 'particle', createPosition(startPos, pos));
-      return {
-        ...token,
-        metadata: {
-          prepositionValue: word,
-        },
-      };
-    }
-
-    // Try morphological normalization for conjugated/inflected forms
-    const morphToken = this.tryMorphKeywordMatch(word, startPos, pos);
-    if (morphToken) return morphToken;
-
-    // Not a keyword or recognized form, return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract an ASCII word.
-   */
-  private extractAsciiWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including Arabic time unit suffixes.
-   * Arabic allows space between number and unit.
-   */
-  private extractArabicNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, ARABIC_TIME_UNITS, {
-      allowSign: false,
-      skipWhitespace: true,
-    });
-  }
+  // extractArabicWord(), extractAsciiWord(), extractArabicNumber(), tryPreposition(),
+  // and tryProclitic() methods removed - now handled by extractors
 }
 
 /**

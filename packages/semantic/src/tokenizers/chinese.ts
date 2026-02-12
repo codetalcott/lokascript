@@ -11,36 +11,20 @@
  * - CSS selectors are embedded ASCII
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createUnicodeRangeClassifier,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isAsciiIdentifierChar,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { chineseProfile } from '../generators/profiles/chinese';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { ChineseKeywordExtractor } from './extractors/chinese-keyword';
+import { ChineseParticleExtractor } from './extractors/chinese-particle';
 
-// =============================================================================
-// Chinese Character Classification
-// =============================================================================
-
-/** Check if character is a CJK character (Chinese). */
-const isChinese = createUnicodeRangeClassifier([
-  [0x4e00, 0x9fff], // CJK Unified Ideographs
-  [0x3400, 0x4dbf], // CJK Unified Ideographs Extension A
-  [0x20000, 0x2a6df], // CJK Unified Ideographs Extension B
-  [0xf900, 0xfaff], // CJK Compatibility Ideographs
-  [0x2f800, 0x2fa1f], // CJK Compatibility Ideographs Supplement
-]);
+// Character classification functions moved to extractors/chinese-keyword.ts
 
 // =============================================================================
 // Chinese Particles/Prepositions
@@ -72,10 +56,7 @@ const PARTICLES = new Set([
   '吧', // ba - suggestion particle
 ]);
 
-/**
- * Multi-character particles/phrases.
- */
-const MULTI_CHAR_PARTICLES = ['然后', '接着', '并且', '或者', '如果', '那么', '否则'];
+// Particle constants and metadata moved to extractors/chinese-particle.ts
 
 // =============================================================================
 // Chinese Extras (keywords not in profile)
@@ -181,22 +162,7 @@ const CHINESE_EXTRAS: KeywordEntry[] = [
   { native: '完', normalized: 'end' },
 ];
 
-// =============================================================================
-// Chinese Time Units
-// =============================================================================
-
-/**
- * Chinese time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- * Chinese time units attach directly without whitespace.
- */
-const CHINESE_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: '毫秒', suffix: 'ms', length: 2 },
-  { pattern: '分钟', suffix: 'm', length: 2 },
-  { pattern: '小时', suffix: 'h', length: 2 },
-  { pattern: '秒', suffix: 's', length: 1 },
-  { pattern: '分', suffix: 'm', length: 1 },
-];
+// Chinese time units moved to generic-extractors.ts (NumberExtractor handles them)
 
 // =============================================================================
 // Chinese Tokenizer Implementation
@@ -208,128 +174,39 @@ export class ChineseTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(chineseProfile, CHINESE_EXTRAS);
+    // Chinese is analytic - no morphological normalizer needed
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings (includes Chinese quotes)
+    this.registerExtractor(new NumberExtractor()); // Numbers (includes Chinese time units)
+    this.registerExtractor(new ChineseParticleExtractor()); // Particles with role metadata
+    this.registerExtractor(new ChineseKeywordExtractor()); // Chinese keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace (Chinese can have spaces for readability)
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first (ASCII-based, highest priority)
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal (both ASCII and Chinese quotes)
-      // Chinese quotes: \u201C " \u201D " \u2018 ' \u2019 '
-      if (
-        isQuote(input[pos]) ||
-        input[pos] === '\u201C' ||
-        input[pos] === '\u201D' ||
-        input[pos] === '\u2018' ||
-        input[pos] === '\u2019'
-      ) {
-        const stringToken = this.tryChineseString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number (including Chinese time units)
-      if (isDigit(input[pos])) {
-        const numberToken = this.extractChineseNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try multi-character particle (before single-character)
-      const multiParticle = this.tryMultiCharParticle(input, pos, MULTI_CHAR_PARTICLES);
-      if (multiParticle) {
-        tokens.push(multiParticle);
-        pos = multiParticle.position.end;
-        continue;
-      }
-
-      // Try Chinese word (CJK sequence)
-      if (isChinese(input[pos])) {
-        const wordToken = this.extractChineseWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Try ASCII word (for mixed content)
-      if (isAsciiIdentifierChar(input[pos])) {
-        const asciiToken = this.extractAsciiWord(input, pos);
-        if (asciiToken) {
-          tokens.push(asciiToken);
-          pos = asciiToken.position.end;
-          continue;
-        }
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'zh');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     if (PARTICLES.has(token)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(token)) return 'keyword';
+    // Check URLs before selectors (./path vs .class)
+    if (
+      token.startsWith('/') ||
+      token.startsWith('./') ||
+      token.startsWith('../') ||
+      token.startsWith('http')
+    )
+      return 'url';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -348,137 +225,6 @@ export class ChineseTokenizer extends BaseTokenizer {
     if (/^\d/.test(token)) return 'literal';
 
     return 'identifier';
-  }
-
-  /**
-   * Extract a Chinese word.
-   * Uses greedy matching to find the longest known keyword.
-   * Chinese doesn't have inflection, so we don't need morphological normalization.
-   * profileKeywords is already sorted longest-first, enabling greedy matching.
-   */
-  private extractChineseWord(input: string, startPos: number): LanguageToken | null {
-    // profileKeywords is sorted longest-first, so iterate through for greedy match
-    for (const entry of this.profileKeywords) {
-      const keyword = entry.native;
-      const candidate = input.slice(startPos, startPos + keyword.length);
-
-      if (candidate === keyword) {
-        // Check all chars are Chinese (to avoid matching partial ASCII)
-        let allChinese = true;
-        for (let i = 0; i < keyword.length; i++) {
-          if (!isChinese(keyword[i])) {
-            allChinese = false;
-            break;
-          }
-        }
-        if (allChinese) {
-          return createToken(
-            candidate,
-            'keyword',
-            createPosition(startPos, startPos + keyword.length),
-            entry.normalized
-          );
-        }
-      }
-    }
-
-    // No keyword match - extract as regular word
-    // Stop at particles, ASCII, or whitespace
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length) {
-      const char = input[pos];
-
-      // Stop at single-char particles if we have content
-      if (PARTICLES.has(char) && word.length > 0) {
-        break;
-      }
-
-      // Continue if Chinese character
-      if (isChinese(char)) {
-        word += char;
-        pos++;
-      } else {
-        break;
-      }
-    }
-
-    if (!word) return null;
-
-    // Check if this word is a particle
-    if (PARTICLES.has(word)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // Not a keyword, return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract an ASCII word (for mixed Chinese/English content).
-   */
-  private extractAsciiWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Try to extract a string literal, including Chinese quotes.
-   * Chinese quotes: \u201C " (open) \u201D " (close) \u2018 ' (open) \u2019 ' (close)
-   */
-  private tryChineseString(input: string, pos: number): LanguageToken | null {
-    const char = input[pos];
-
-    // ASCII quotes
-    if (char === '"' || char === "'" || char === '`') {
-      return this.tryString(input, pos);
-    }
-
-    // Chinese double quotes: \u201C " ... \u201D "
-    if (char === '\u201C') {
-      let endPos = pos + 1;
-      while (endPos < input.length && input[endPos] !== '\u201D') {
-        endPos++;
-      }
-      if (endPos >= input.length) return null;
-
-      const value = input.slice(pos, endPos + 1);
-      return createToken(value, 'literal', createPosition(pos, endPos + 1));
-    }
-
-    // Chinese single quotes: \u2018 ' ... \u2019 '
-    if (char === '\u2018') {
-      let endPos = pos + 1;
-      while (endPos < input.length && input[endPos] !== '\u2019') {
-        endPos++;
-      }
-      if (endPos >= input.length) return null;
-
-      const value = input.slice(pos, endPos + 1);
-      return createToken(value, 'literal', createPosition(pos, endPos + 1));
-    }
-
-    return null;
-  }
-
-  /**
-   * Extract a number, including Chinese time unit suffixes.
-   * Chinese time units attach directly without whitespace.
-   */
-  private extractChineseNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, CHINESE_TIME_UNITS, {
-      allowSign: false,
-      skipWhitespace: false,
-    });
   }
 }
 
