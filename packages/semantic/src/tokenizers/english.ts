@@ -160,7 +160,7 @@ export class EnglishTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(englishProfile, ENGLISH_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

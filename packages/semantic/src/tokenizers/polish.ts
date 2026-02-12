@@ -174,7 +174,7 @@ export class PolishTokenizer extends BaseTokenizer {
     this.normalizer = new PolishMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

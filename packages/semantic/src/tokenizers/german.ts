@@ -190,7 +190,7 @@ export class GermanTokenizer extends BaseTokenizer {
     this.normalizer = new GermanMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

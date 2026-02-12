@@ -77,7 +77,7 @@ export class MalayTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(malayProfile, MALAY_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

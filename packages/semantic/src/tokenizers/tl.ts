@@ -77,7 +77,7 @@ export class TagalogTokenizer extends BaseTokenizer {
     this.normalizer = tagalogMorphologicalNormalizer;
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

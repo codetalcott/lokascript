@@ -164,7 +164,7 @@ export class VietnameseTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(vietnameseProfile, VIETNAMESE_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

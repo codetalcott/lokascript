@@ -5,10 +5,7 @@
  * This is hyperscript-specific syntax (used in fetch commands).
  */
 
-import type {
-  ValueExtractor,
-  ExtractionResult,
-} from '@lokascript/framework/interfaces/value-extractor';
+import type { ValueExtractor, ExtractionResult } from '../value-extractor-types';
 
 /**
  * Extract a URL from input at position.

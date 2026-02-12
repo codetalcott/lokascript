@@ -162,7 +162,7 @@ export class UkrainianTokenizer extends BaseTokenizer {
     this.normalizer = new UkrainianMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

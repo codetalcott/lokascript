@@ -165,7 +165,7 @@ export class QuechuaTokenizer extends BaseTokenizer {
     this.normalizer = quechuaMorphologicalNormalizer;
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

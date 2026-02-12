@@ -8,10 +8,7 @@
  * on either side is handled by IdentifierExtractor.
  */
 
-import type {
-  ValueExtractor,
-  ExtractionResult,
-} from '@lokascript/framework/interfaces/value-extractor';
+import type { ValueExtractor, ExtractionResult } from '../value-extractor-types';
 
 /**
  * PropertyAccessExtractor - Detects property access pattern (obj.prop).
@@ -45,7 +42,7 @@ export class PropertyAccessExtractor implements ValueExtractor {
     return this.lastTokenWasIdentifier && !hasWhitespaceBefore;
   }
 
-  extract(input: string, position: number): ExtractionResult | null {
+  extract(_input: string, _position: number): ExtractionResult | null {
     // Just emit the '.' operator - the identifier on either side is handled by IdentifierExtractor
     return {
       value: '.',

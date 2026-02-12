@@ -131,7 +131,7 @@ export class SpanishTokenizer extends BaseTokenizer {
     this.normalizer = new SpanishMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

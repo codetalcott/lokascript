@@ -104,7 +104,7 @@ export class BengaliTokenizer extends BaseTokenizer {
     this.setNormalizer(bengaliMorphologicalNormalizer);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

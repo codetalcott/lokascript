@@ -8,12 +8,14 @@
 
 import type { LanguageToken, TokenKind, TokenStream, LanguageTokenizer } from '../types';
 import type { MorphologicalNormalizer, NormalizationResult } from './morphology/types';
+import type { ValueExtractor } from './value-extractor-types';
 import {
   createToken,
   createPosition,
   isWhitespace,
   isDigit,
   isAsciiIdentifierChar,
+  TokenStreamImpl,
   type TimeUnitMapping,
   type CreateTokenOptions,
 } from './token-utils';
@@ -68,8 +70,116 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
   /** Map for O(1) keyword lookups by lowercase native word */
   protected profileKeywordMap: Map<string, KeywordEntry> = new Map();
 
-  abstract tokenize(input: string): TokenStream;
+  /**
+   * Pluggable value extractors for domain-specific syntax.
+   * When registered, BaseTokenizer will use extractor-based tokenization instead of legacy methods.
+   */
+  protected extractors: ValueExtractor[] = [];
+
+  /**
+   * Tokenize input string to token stream.
+   * Delegates to extractor-based tokenization if extractors are registered,
+   * otherwise subclass must override this method.
+   */
+  tokenize(input: string): TokenStream {
+    if (this.isUsingExtractors()) {
+      return this.tokenizeWithExtractors(input);
+    }
+
+    // If no extractors registered, subclass must provide implementation
+    throw new Error(
+      `${this.constructor.name}: tokenize() not implemented and no extractors registered. ` +
+        'Either register extractors or override tokenize() method.'
+    );
+  }
+
   abstract classifyToken(token: string): TokenKind;
+
+  /**
+   * Register a value extractor for domain-specific syntax.
+   */
+  registerExtractor(extractor: ValueExtractor): void {
+    this.extractors.push(extractor);
+  }
+
+  /**
+   * Register multiple value extractors at once.
+   */
+  registerExtractors(extractors: ValueExtractor[]): void {
+    for (const extractor of extractors) {
+      this.registerExtractor(extractor);
+    }
+  }
+
+  /**
+   * Clear all registered extractors.
+   */
+  clearExtractors(): void {
+    this.extractors = [];
+  }
+
+  /**
+   * Check if this tokenizer is using extractor-based tokenization.
+   */
+  protected isUsingExtractors(): boolean {
+    return this.extractors.length > 0;
+  }
+
+  /**
+   * Tokenize input using registered value extractors.
+   */
+  protected tokenizeWithExtractors(input: string): TokenStream {
+    const tokens: LanguageToken[] = [];
+    let pos = 0;
+
+    while (pos < input.length) {
+      // Skip whitespace
+      while (pos < input.length && isWhitespace(input[pos])) {
+        pos++;
+      }
+      if (pos >= input.length) break;
+
+      // Try registered extractors in order
+      let extracted = false;
+      for (const extractor of this.extractors) {
+        if (extractor.canExtract(input, pos)) {
+          const result = extractor.extract(input, pos);
+          if (result) {
+            tokens.push(
+              createToken(
+                result.value,
+                this.classifyToken(result.value),
+                createPosition(pos, pos + result.length),
+                result.metadata
+              )
+            );
+            pos += result.length;
+            extracted = true;
+            break;
+          }
+        }
+      }
+
+      // Fallback: single character as operator/punctuation
+      if (!extracted) {
+        const char = input[pos];
+        const kind = this.classifyUnknownChar(char);
+        tokens.push(createToken(char, kind, createPosition(pos, pos + 1)));
+        pos++;
+      }
+    }
+
+    return new TokenStreamImpl(tokens, this.language);
+  }
+
+  /**
+   * Classify an unknown character when no extractor matches.
+   */
+  protected classifyUnknownChar(char: string): TokenKind {
+    if ('()[]{},:;'.includes(char)) return 'punctuation';
+    if ('+-*/<>=!&|'.includes(char)) return 'operator';
+    return 'identifier';
+  }
 
   /**
    * Check if current position is a property access (obj.prop) vs CSS selector (.active).

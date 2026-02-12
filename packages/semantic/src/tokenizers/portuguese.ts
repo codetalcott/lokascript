@@ -170,7 +170,7 @@ export class PortugueseTokenizer extends BaseTokenizer {
     this.normalizer = new PortugueseMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

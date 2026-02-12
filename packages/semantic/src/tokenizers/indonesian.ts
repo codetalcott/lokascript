@@ -136,7 +136,7 @@ export class IndonesianTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(indonesianProfile, INDONESIAN_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

@@ -192,7 +192,7 @@ export class FrenchTokenizer extends BaseTokenizer {
     this.normalizer = new FrenchMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

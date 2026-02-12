@@ -343,7 +343,7 @@ export class KoreanTokenizer extends BaseTokenizer {
     this.normalizer = new KoreanMorphologicalNormalizer();
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 

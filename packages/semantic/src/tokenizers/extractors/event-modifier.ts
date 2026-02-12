@@ -5,10 +5,7 @@
  * This is hyperscript-specific syntax.
  */
 
-import type {
-  ValueExtractor,
-  ExtractionResult,
-} from '@lokascript/framework/interfaces/value-extractor';
+import type { ValueExtractor, ExtractionResult } from '../value-extractor-types';
 
 /**
  * EventModifierExtractor - Extracts event modifiers for hyperscript.

@@ -211,7 +211,7 @@ export class ChineseTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(chineseProfile, CHINESE_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 
