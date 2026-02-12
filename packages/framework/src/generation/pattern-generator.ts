@@ -138,6 +138,7 @@ function buildTokens(
 
 /**
  * Add a role token with its grammatical marker if needed.
+ * For optional roles, wraps the role + marker in a group.
  */
 function addRoleWithMarker(
   tokens: PatternToken[],
@@ -145,38 +146,48 @@ function addRoleWithMarker(
   profile: PatternGenLanguageProfile
 ): void {
   const marker = getMarkerForRole(roleSpec, profile);
+  const isOptional = !roleSpec.required;
+
+  // Build the role token
+  const roleToken: PatternToken = {
+    type: 'role',
+    role: roleSpec.role,
+    optional: isOptional,
+    expectedTypes: roleSpec.expectedTypes,
+  };
 
   if (marker) {
     const markerInfo = profile.roleMarkers?.[roleSpec.role];
     const position = markerInfo?.position ?? 'before';
 
-    if (position === 'before') {
-      // Preposition: marker before role
-      tokens.push({ type: 'literal', value: marker });
-      tokens.push({
-        type: 'role',
-        role: roleSpec.role,
-        optional: !roleSpec.required,
-        expectedTypes: roleSpec.expectedTypes,
-      });
+    if (isOptional) {
+      // Optional role: wrap marker + role in optional group
+      if (position === 'before') {
+        tokens.push({
+          type: 'group',
+          optional: true,
+          tokens: [{ type: 'literal', value: marker }, roleToken],
+        });
+      } else {
+        tokens.push({
+          type: 'group',
+          optional: true,
+          tokens: [roleToken, { type: 'literal', value: marker }],
+        });
+      }
     } else {
-      // Postposition/particle: role before marker
-      tokens.push({
-        type: 'role',
-        role: roleSpec.role,
-        optional: !roleSpec.required,
-        expectedTypes: roleSpec.expectedTypes,
-      });
-      tokens.push({ type: 'literal', value: marker });
+      // Required role: add marker + role separately
+      if (position === 'before') {
+        tokens.push({ type: 'literal', value: marker });
+        tokens.push(roleToken);
+      } else {
+        tokens.push(roleToken);
+        tokens.push({ type: 'literal', value: marker });
+      }
     }
   } else {
     // No marker - just add the role
-    tokens.push({
-      type: 'role',
-      role: roleSpec.role,
-      optional: !roleSpec.required,
-      expectedTypes: roleSpec.expectedTypes,
-    });
+    tokens.push(roleToken);
   }
 }
 

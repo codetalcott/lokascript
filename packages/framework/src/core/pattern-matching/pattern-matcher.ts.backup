@@ -18,17 +18,11 @@ import type {
 import { createSelector, createLiteral, createReference, createPropertyPath } from '../types';
 
 /**
- * Helper to check if a value is a built-in reference.
- * In the generic framework, we don't assume any built-in references.
- * DSLs that need references (like hyperscript's 'me', 'it', 'you') should
- * handle them in their tokenizer or provide a custom reference validator.
- *
- * For generic DSLs, identifiers are treated as expressions by default.
+ * Helper to check if a value is a valid reference.
+ * In the generic framework, any string can be a reference - DSLs define their own references.
  */
-function isValidReference(_value: string): boolean {
-  // In generic framework, no built-in references
-  // Identifiers should be expressions
-  return false;
+function isValidReference(value: string): boolean {
+  return typeof value === 'string' && value.length > 0;
 }
 import { isTypeCompatible } from './utils/type-validation';
 import { getPossessiveReference } from './utils/possessive-keywords';
@@ -68,25 +62,6 @@ export class PatternMatcher {
     const mark = tokens.mark();
     const captured = new Map<SemanticRole, SemanticValue>();
 
-    // ===== DEBUG LOGGING START =====
-    console.log('\n========================================');
-    console.log('matchPattern ENTRY');
-    console.log('========================================');
-    console.log('Pattern ID:', pattern.id);
-    console.log('Pattern command:', pattern.command);
-    console.log('Pattern language:', pattern.language);
-    console.log('Pattern template:', JSON.stringify(pattern.template, null, 2));
-    const firstTokens = [];
-    for (let i = 0; i < 10; i++) {
-      const t = tokens.peek(i);
-      if (t)
-        firstTokens.push({ type: (t as any).type, value: (t as any).value, kind: (t as any).kind });
-      else break;
-    }
-    console.log('Input tokens (first 10):', firstTokens);
-    console.log('Profile code:', profile?.code);
-    // ===== DEBUG LOGGING END =====
-
     // Use provided profile for possessive keyword lookup
     this.currentProfile = profile;
 
@@ -94,17 +69,9 @@ export class PatternMatcher {
     this.stemMatchCount = 0;
     this.totalKeywordMatches = 0;
 
-    console.log('\n--- Calling matchTokenSequence ---');
-    console.log('Pattern tokens to match:', JSON.stringify(pattern.template.tokens, null, 2));
     const success = this.matchTokenSequence(tokens, pattern.template.tokens, captured);
-    console.log('matchTokenSequence returned:', success);
-    console.log(
-      'Captured roles:',
-      Array.from(captured.entries()).map(([k, v]) => [k, JSON.stringify(v)])
-    );
 
     if (!success) {
-      console.log('>>> MATCH FAILED - resetting token position');
       tokens.reset(mark);
       return null;
     }
@@ -195,23 +162,9 @@ export class PatternMatcher {
     }
 
     for (const patternToken of patternTokens) {
-      console.log('\n  >> Matching pattern token:', JSON.stringify(patternToken, null, 2));
-      const currTok = tokens.peek();
-      console.log(
-        '  >> Current input token:',
-        currTok
-          ? JSON.stringify({
-              type: (currTok as any).type,
-              value: (currTok as any).value,
-              kind: (currTok as any).kind,
-            })
-          : 'EOF'
-      );
       const matched = this.matchPatternToken(tokens, patternToken, captured);
-      console.log('  >> Match result:', matched);
 
       if (!matched) {
-        console.log('  >> Token match FAILED');
         // If token is optional, continue
         if (this.isOptional(patternToken)) {
           continue;
@@ -254,25 +207,10 @@ export class PatternMatcher {
     patternToken: PatternToken & { type: 'literal' }
   ): boolean {
     const token = tokens.peek();
-    console.log('    >>> matchLiteralToken: expecting', patternToken.value);
-    console.log(
-      '    >>> matchLiteralToken: got token',
-      token
-        ? JSON.stringify({
-            type: (token as any).type,
-            value: (token as any).value,
-            kind: (token as any).kind,
-          })
-        : 'null'
-    );
-    if (!token) {
-      console.log('    >>> matchLiteralToken: FAIL - no token');
-      return false;
-    }
+    if (!token) return false;
 
     // Check main value
     const matchType = this.getMatchType(token, patternToken.value);
-    console.log('    >>> matchType for', token.value, 'vs', patternToken.value, ':', matchType);
     if (matchType !== 'none') {
       this.totalKeywordMatches++;
       if (matchType === 'stem') {
@@ -312,17 +250,10 @@ export class PatternMatcher {
     patternToken: PatternToken & { type: 'role' },
     captured: Map<SemanticRole, SemanticValue>
   ): boolean {
-    console.log('    >>> matchRoleToken ENTRY: capturing role', patternToken.role);
-    console.log('    >>> matchRoleToken: expected types', patternToken.expectedTypes);
-    console.log('    >>> matchRoleToken: optional?', patternToken.optional);
     // Skip noise words like "the" before selectors (English idiom support)
     this.skipNoiseWords(tokens);
 
     const token = tokens.peek();
-    console.log(
-      '    >>> After skipNoiseWords, current token:',
-      token ? JSON.stringify({ value: (token as any).value, kind: (token as any).kind }) : 'null'
-    );
     if (!token) {
       return patternToken.optional || false;
     }
@@ -400,30 +331,17 @@ export class PatternMatcher {
     }
 
     // Try to extract a semantic value from the token
-    console.log(
-      '    >>> Trying tokenToSemanticValue for token:',
-      token ? JSON.stringify({ value: (token as any).value, kind: (token as any).kind }) : 'null'
-    );
     const value = this.tokenToSemanticValue(token);
-    console.log('    >>> tokenToSemanticValue returned:', value ? JSON.stringify(value) : 'null');
     if (!value) {
       return patternToken.optional || false;
     }
 
     // Validate expected types if specified
-    console.log(
-      '    >>> Validating type:',
-      value.type,
-      'against expected:',
-      patternToken.expectedTypes
-    );
     if (patternToken.expectedTypes && patternToken.expectedTypes.length > 0) {
       if (!patternToken.expectedTypes.includes(value.type)) {
-        console.log('    >>> TYPE MISMATCH - returning', patternToken.optional || false);
         return patternToken.optional || false;
       }
     }
-    console.log('    >>> Type validation PASSED');
 
     captured.set(patternToken.role, value);
     tokens.advance();
