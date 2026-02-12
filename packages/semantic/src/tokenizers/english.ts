@@ -170,6 +170,17 @@ export class EnglishTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(token)) return 'keyword';
+    // Check URLs before selectors (./path vs .class)
+    if (
+      token.startsWith('/') ||
+      token.startsWith('./') ||
+      token.startsWith('../') ||
+      token.startsWith('http')
+    )
+      return 'url';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -181,7 +192,6 @@ export class EnglishTokenizer extends BaseTokenizer {
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
     if (['==', '!=', '<=', '>=', '<', '>', '&&', '||', '!'].includes(token)) return 'operator';
-    if (token.startsWith('/') || token.startsWith('./') || token.startsWith('http')) return 'url';
 
     return 'identifier';
   }

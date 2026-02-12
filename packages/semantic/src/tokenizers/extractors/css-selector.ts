@@ -43,9 +43,9 @@ export function extractCssSelector(input: string, position: number): string | nu
     return null; // Unclosed bracket
   }
 
-  // HTML tag selector: <tag/> or <tag#id.class/>
+  // HTML tag selector: <tag/> or <tag#id.class[attr]/> or <tag[attr=value]/>
   if (char === '<') {
-    const match = input.slice(position).match(/^<[\w-]+(?:[#.][\w-]+)*\s*\/>/);
+    const match = input.slice(position).match(/^<[\w-]+(?:[#.][\w-]+|\[[^\]]+\])*\s*\/>/);
     return match ? match[0] : null;
   }
 

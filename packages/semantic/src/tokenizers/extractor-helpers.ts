@@ -10,6 +10,7 @@ import {
   CssSelectorExtractor,
   EventModifierExtractor,
   UrlExtractor,
+  VariableRefExtractor,
   // PropertyAccessExtractor, // TODO: Needs refinement, skip for now
 } from './extractors/index';
 
@@ -41,5 +42,14 @@ import {
  * ```
  */
 export function getHyperscriptExtractors(): ValueExtractor[] {
-  return [new CssSelectorExtractor(), new EventModifierExtractor(), new UrlExtractor()];
+  // Order matters!
+  // 1. URLs BEFORE CSS selectors (./path vs .class)
+  // 2. Event modifiers BEFORE CSS selectors (.once vs .active)
+  // 3. Variable refs BEFORE operators (:x vs :)
+  return [
+    new UrlExtractor(),
+    new EventModifierExtractor(),
+    new VariableRefExtractor(),
+    new CssSelectorExtractor(),
+  ];
 }

@@ -37,7 +37,6 @@ export class EventModifierExtractor implements ValueExtractor {
       value: fullMatch,
       length: fullMatch.length,
       metadata: {
-        type: 'event-modifier',
         modifierName,
         value: value ? (modifierName === 'queue' ? value : parseInt(value, 10)) : undefined,
       },

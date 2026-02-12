@@ -127,6 +127,8 @@ export interface CreateTokenOptions {
   stem?: string;
   /** Confidence in the stem (0.0-1.0) */
   stemConfidence?: number;
+  /** Additional metadata for specific token types (e.g., event modifier data) */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -145,7 +147,7 @@ export function createToken(
 
   // Handle options object
   if (normalizedOrOptions) {
-    const { normalized, stem, stemConfidence } = normalizedOrOptions;
+    const { normalized, stem, stemConfidence, metadata } = normalizedOrOptions;
     return {
       value,
       kind,
@@ -153,6 +155,7 @@ export function createToken(
       ...(normalized !== undefined && { normalized }),
       ...(stem !== undefined && { stem }),
       ...(stemConfidence !== undefined && { stemConfidence }),
+      ...(metadata !== undefined && { metadata }),
     };
   }
 

@@ -148,6 +148,9 @@ export class FrenchTokenizer extends BaseTokenizer {
   classifyToken(token: string): TokenKind {
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(token)) return 'keyword';
+    // Check for event modifiers before CSS selectors
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||

@@ -14,3 +14,6 @@ export { CssSelectorExtractor, extractCssSelector } from './css-selector';
 export { EventModifierExtractor } from './event-modifier';
 export { UrlExtractor, extractUrl } from './url';
 export { PropertyAccessExtractor } from './property-access';
+export { VariableRefExtractor } from './variable-ref';
+export { JapaneseKeywordExtractor } from './japanese-keyword';
+export { JapaneseParticleExtractor } from './japanese-particle';

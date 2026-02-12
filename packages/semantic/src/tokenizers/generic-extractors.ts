@@ -85,12 +85,40 @@ export class NumberExtractor implements ValueExtractor {
       }
     }
 
-    return length > 0
-      ? {
-          value: input.substring(position, position + length),
-          length,
-        }
-      : null;
+    if (length === 0) return null;
+
+    // Check for time unit suffixes: ms, s, m, h
+    const numValue = input.substring(position, position + length);
+    const afterNum = position + length;
+
+    // Try to match time units
+    if (afterNum < input.length) {
+      const remaining = input.slice(afterNum);
+
+      // Try 'ms' first (2 chars)
+      if (remaining.startsWith('ms')) {
+        return {
+          value: numValue + 'ms',
+          length: length + 2,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+
+      // Try single-char units: s, m, h
+      // Make sure it's followed by non-letter (word boundary)
+      if (/^[smh](?![a-zA-Z])/.test(remaining)) {
+        return {
+          value: numValue + remaining[0],
+          length: length + 1,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+    }
+
+    return {
+      value: numValue,
+      length,
+    };
   }
 }
 

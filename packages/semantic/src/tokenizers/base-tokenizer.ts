@@ -151,12 +151,16 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
         if (extractor.canExtract(input, pos)) {
           const result = extractor.extract(input, pos);
           if (result) {
+            // Extract normalized from metadata if present, but keep full metadata too
+            const normalized = result.metadata?.normalized as string | undefined;
+            const metadata = result.metadata;
+
             tokens.push(
               createToken(
                 result.value,
                 this.classifyToken(result.value),
                 createPosition(pos, pos + result.length),
-                result.metadata
+                normalized || metadata ? { normalized, metadata } : undefined
               )
             );
             pos += result.length;
