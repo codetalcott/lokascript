@@ -8,52 +8,21 @@
  * - Uses accent marks that need proper handling
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { SpanishMorphologicalNormalizer } from './morphology/spanish-normalizer';
 import { spanishProfile } from '../generators/profiles/spanish';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createSpanishExtractors } from './extractors/spanish-keyword';
 
 // =============================================================================
-// Spanish Character Classification
-// =============================================================================
-
-const { isLetter: isSpanishLetter, isIdentifierChar: isSpanishIdentifierChar } =
-  createLatinCharClassifiers(/[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/);
-
-// =============================================================================
-// Spanish Time Units
-// =============================================================================
-
-/**
- * Spanish time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- */
-const SPANISH_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: 'milisegundos', suffix: 'ms', length: 12, caseInsensitive: true },
-  { pattern: 'milisegundo', suffix: 'ms', length: 11, caseInsensitive: true },
-  { pattern: 'segundos', suffix: 's', length: 8, caseInsensitive: true },
-  { pattern: 'segundo', suffix: 's', length: 7, caseInsensitive: true },
-  { pattern: 'minutos', suffix: 'm', length: 7, caseInsensitive: true },
-  { pattern: 'minuto', suffix: 'm', length: 6, caseInsensitive: true },
-  { pattern: 'horas', suffix: 'h', length: 5, caseInsensitive: true },
-  { pattern: 'hora', suffix: 'h', length: 4, caseInsensitive: true },
-];
-
-// =============================================================================
-// Spanish Prepositions
+// Spanish Prepositions (used in classifyToken)
 // =============================================================================
 
 /**
@@ -128,117 +97,20 @@ export class SpanishTokenizer extends BaseTokenizer {
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(spanishProfile, SPANISH_EXTRAS);
     // Set morphological normalizer for verb conjugations
-    this.normalizer = new SpanishMorphologicalNormalizer();
+    this.setNormalizer(new SpanishMorphologicalNormalizer());
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createSpanishExtractors()); // Spanish keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractSpanishNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try multi-word phrases first (e.g., "de lo contrario", "hasta que")
-      const phraseToken = this.tryMultiWordPhrase(input, pos);
-      if (phraseToken) {
-        tokens.push(phraseToken);
-        pos = phraseToken.position.end;
-        continue;
-      }
-
-      // Try Spanish word
-      if (isSpanishLetter(input[pos])) {
-        const wordToken = this.extractSpanishWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Try operator
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'es');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     const lower = token.toLowerCase();
@@ -261,87 +133,8 @@ export class SpanishTokenizer extends BaseTokenizer {
     return 'identifier';
   }
 
-  /**
-   * Try to match multi-word phrases that function as single units.
-   * Multi-word phrases are included in profileKeywords and sorted longest-first,
-   * so they'll be matched before their constituent words.
-   */
-  private tryMultiWordPhrase(input: string, pos: number): LanguageToken | null {
-    // Check against multi-word entries in profileKeywords (sorted longest-first)
-    for (const entry of this.profileKeywords) {
-      // Only check multi-word phrases (contain space)
-      if (!entry.native.includes(' ')) continue;
-
-      const phrase = entry.native;
-      const candidate = input.slice(pos, pos + phrase.length).toLowerCase();
-      if (candidate === phrase.toLowerCase()) {
-        // Check word boundary
-        const nextPos = pos + phrase.length;
-        if (
-          nextPos >= input.length ||
-          isWhitespace(input[nextPos]) ||
-          !isSpanishLetter(input[nextPos])
-        ) {
-          return createToken(
-            input.slice(pos, pos + phrase.length),
-            'keyword',
-            createPosition(pos, nextPos),
-            entry.normalized
-          );
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Extract a Spanish word.
-   *
-   * Uses morphological normalization to handle:
-   * - Reflexive verbs (mostrarse → mostrar)
-   * - Verb conjugations (alternando → alternar)
-   */
-  private extractSpanishWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isSpanishIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // Check if it's a preposition first
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    // O(1) Map lookup for exact keyword match
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    // Try morphological normalization for conjugated/reflexive forms
-    const morphToken = this.tryMorphKeywordMatch(lower, startPos, pos);
-    if (morphToken) return morphToken;
-
-    // Not a keyword, return as identifier
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including Spanish time unit suffixes.
-   */
-  private extractSpanishNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, SPANISH_TIME_UNITS, {
-      allowSign: true,
-      skipWhitespace: true,
-    });
-  }
+  // tryMultiWordPhrase(), extractSpanishWord(), extractSpanishNumber() methods removed
+  // Now handled by SpanishKeywordExtractor (context-aware)
 }
 
 /**
