@@ -10,69 +10,18 @@
  * - Compound nouns
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { germanProfile } from '../generators/profiles/german';
 import { GermanMorphologicalNormalizer } from './morphology/german-normalizer';
-
-// =============================================================================
-// German Character Classification
-// =============================================================================
-
-const { isLetter: isGermanLetter, isIdentifierChar: isGermanIdentifierChar } =
-  createLatinCharClassifiers(/[a-zA-ZäöüÄÖÜß]/);
-
-// =============================================================================
-// German Prepositions
-// =============================================================================
-
-const PREPOSITIONS = new Set([
-  'an', // at, on
-  'auf', // on
-  'aus', // from, out of
-  'bei', // at, near
-  'durch', // through
-  'für', // for
-  'fur', // for (no umlaut)
-  'gegen', // against
-  'in', // in
-  'mit', // with
-  'nach', // after, to
-  'ohne', // without
-  'seit', // since
-  'über', // over, about
-  'uber', // over (no umlaut)
-  'um', // around, at
-  'unter', // under
-  'von', // from, of
-  'vor', // before, in front of
-  'zu', // to
-  'zwischen', // between
-  'bis', // until
-  'gegenüber', // opposite
-  'gegenuber', // opposite (no umlaut)
-  'während', // during
-  'wahrend', // during (no umlaut)
-  'wegen', // because of
-  'trotz', // despite
-  'statt', // instead of
-  'innerhalb', // inside
-  'außerhalb', // outside
-  'ausserhalb', // outside (no umlaut)
-]);
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createGermanExtractors } from './extractors/german-keyword';
 
 // =============================================================================
 // German Extras (keywords not in profile)
@@ -158,25 +107,6 @@ const GERMAN_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
-// German Time Units
-// =============================================================================
-
-/**
- * German time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- */
-const GERMAN_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: 'millisekunden', suffix: 'ms', length: 13, caseInsensitive: true },
-  { pattern: 'millisekunde', suffix: 'ms', length: 12, caseInsensitive: true },
-  { pattern: 'sekunden', suffix: 's', length: 8, caseInsensitive: true },
-  { pattern: 'sekunde', suffix: 's', length: 7, caseInsensitive: true },
-  { pattern: 'minuten', suffix: 'm', length: 7, caseInsensitive: true },
-  { pattern: 'minute', suffix: 'm', length: 6, caseInsensitive: true },
-  { pattern: 'stunden', suffix: 'h', length: 7, caseInsensitive: true },
-  { pattern: 'stunde', suffix: 'h', length: 6, caseInsensitive: true },
-];
-
-// =============================================================================
 // German Tokenizer Implementation
 // =============================================================================
 
@@ -188,105 +118,23 @@ export class GermanTokenizer extends BaseTokenizer {
     super();
     this.initializeKeywordsFromProfile(germanProfile, GERMAN_EXTRAS);
     this.normalizer = new GermanMorphologicalNormalizer();
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createGermanExtractors()); // German keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      if (isGermanLetter(input[pos])) {
-        const wordToken = this.extractWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'de');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
-    const lower = token.toLowerCase();
-    if (PREPOSITIONS.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
-    if (this.isKeyword(lower)) return 'keyword';
+    if (this.isKeyword(token)) return 'keyword';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
@@ -300,40 +148,8 @@ export class GermanTokenizer extends BaseTokenizer {
     return 'identifier';
   }
 
-  private extractWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isGermanIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including German time unit suffixes.
-   */
-  private extractNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, GERMAN_TIME_UNITS, {
-      allowSign: true,
-      skipWhitespace: true,
-    });
-  }
+  // extractWord() and extractNumber() methods removed
+  // Now handled by GermanKeywordExtractor and NumberExtractor (context-aware)
 }
 
 export const germanTokenizer = new GermanTokenizer();

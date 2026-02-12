@@ -9,30 +9,18 @@
  * - Accent marks
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  createLatinCharClassifiers,
-  isWhitespace,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  type KeywordEntry,
-  type TimeUnitMapping,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { portugueseProfile } from '../generators/profiles/portuguese';
 import { PortugueseMorphologicalNormalizer } from './morphology/portuguese-normalizer';
-
-// =============================================================================
-// Portuguese Character Classification
-// =============================================================================
-
-const { isLetter: isPortugueseLetter, isIdentifierChar: isPortugueseIdentifierChar } =
-  createLatinCharClassifiers(/[a-zA-ZáàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ]/);
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createPortugueseExtractors } from './extractors/portuguese-keyword';
 
 // =============================================================================
 // Portuguese Prepositions
@@ -138,25 +126,6 @@ const PORTUGUESE_EXTRAS: KeywordEntry[] = [
 ];
 
 // =============================================================================
-// Portuguese Time Units
-// =============================================================================
-
-/**
- * Portuguese time unit patterns for number parsing.
- * Sorted by length (longest first) to ensure correct matching.
- */
-const PORTUGUESE_TIME_UNITS: readonly TimeUnitMapping[] = [
-  { pattern: 'milissegundos', suffix: 'ms', length: 13, caseInsensitive: true },
-  { pattern: 'milissegundo', suffix: 'ms', length: 12, caseInsensitive: true },
-  { pattern: 'segundos', suffix: 's', length: 8, caseInsensitive: true },
-  { pattern: 'segundo', suffix: 's', length: 7, caseInsensitive: true },
-  { pattern: 'minutos', suffix: 'm', length: 7, caseInsensitive: true },
-  { pattern: 'minuto', suffix: 'm', length: 6, caseInsensitive: true },
-  { pattern: 'horas', suffix: 'h', length: 5, caseInsensitive: true },
-  { pattern: 'hora', suffix: 'h', length: 4, caseInsensitive: true },
-];
-
-// =============================================================================
 // Portuguese Tokenizer Implementation
 // =============================================================================
 
@@ -166,100 +135,18 @@ export class PortugueseTokenizer extends BaseTokenizer {
 
   constructor() {
     super();
+    // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(portugueseProfile, PORTUGUESE_EXTRAS);
-    this.normalizer = new PortugueseMorphologicalNormalizer();
-  }
+    // Set morphological normalizer for verb conjugations
+    this.setNormalizer(new PortugueseMorphologicalNormalizer());
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access (obj.prop) vs CSS selector (.active)
-        if (this.tryPropertyAccess(input, pos, tokens)) {
-          pos++;
-          continue;
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      if (isQuote(input[pos])) {
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.extractNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      if (isPortugueseLetter(input[pos])) {
-        const wordToken = this.extractWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'pt');
+    // Register extractors (in priority order)
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createPortugueseExtractors()); // Portuguese keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
   classifyToken(token: string): TokenKind {
@@ -278,41 +165,6 @@ export class PortugueseTokenizer extends BaseTokenizer {
     if (token.startsWith('"') || token.startsWith("'")) return 'literal';
     if (/^\d/.test(token)) return 'literal';
     return 'identifier';
-  }
-
-  private extractWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isPortugueseIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    const lower = word.toLowerCase();
-
-    // O(1) Map lookup instead of O(n) array search
-    const keywordEntry = this.lookupKeyword(lower);
-    if (keywordEntry) {
-      return createToken(word, 'keyword', createPosition(startPos, pos), keywordEntry.normalized);
-    }
-
-    if (PREPOSITIONS.has(lower)) {
-      return createToken(word, 'particle', createPosition(startPos, pos));
-    }
-
-    return createToken(word, 'identifier', createPosition(startPos, pos));
-  }
-
-  /**
-   * Extract a number, including Portuguese time unit suffixes.
-   */
-  private extractNumber(input: string, startPos: number): LanguageToken | null {
-    return this.tryNumberWithTimeUnits(input, startPos, PORTUGUESE_TIME_UNITS, {
-      allowSign: true,
-      skipWhitespace: true,
-    });
   }
 }
 
