@@ -14,6 +14,7 @@ import {
   defineCommand,
   defineRole,
   BaseTokenizer,
+  getDefaultExtractors,
   type LanguageTokenizer,
   type TokenStream,
   type SemanticNode,
@@ -68,26 +69,13 @@ class EnglishSQLTokenizer extends BaseTokenizer {
   readonly language = 'en';
   readonly direction = 'ltr' as const;
 
-  tokenize(input: string): TokenStream {
-    const tokens = [];
-    const words = input.split(/\s+/);
-
-    let position = 0;
-    for (const word of words) {
-      if (word) {
-        tokens.push(
-          createToken(
-            word,
-            this.classifyToken(word),
-            createPosition(position, position + word.length)
-          )
-        );
-        position += word.length + 1; // +1 for space
-      }
-    }
-
-    return new TokenStreamImpl(tokens, this.language);
+  constructor() {
+    super();
+    // Register default extractors - handles strings, numbers, operators, punctuation, identifiers
+    this.registerExtractors(getDefaultExtractors());
   }
+
+  // No need to implement tokenize() - uses extractor-based tokenization from BaseTokenizer
 
   classifyToken(token: string): 'keyword' | 'identifier' | 'literal' | 'operator' {
     const keywords = ['select', 'from', 'where', 'insert', 'update', 'delete'];
@@ -108,26 +96,13 @@ class SpanishSQLTokenizer extends BaseTokenizer {
   readonly language = 'es';
   readonly direction = 'ltr' as const;
 
-  tokenize(input: string): TokenStream {
-    const tokens = [];
-    const words = input.split(/\s+/);
-
-    let position = 0;
-    for (const word of words) {
-      if (word) {
-        tokens.push(
-          createToken(
-            word,
-            this.classifyToken(word),
-            createPosition(position, position + word.length)
-          )
-        );
-        position += word.length + 1;
-      }
-    }
-
-    return new TokenStreamImpl(tokens, this.language);
+  constructor() {
+    super();
+    // Register default extractors - handles strings, numbers, operators, punctuation, identifiers
+    this.registerExtractors(getDefaultExtractors());
   }
+
+  // No need to implement tokenize() - uses extractor-based tokenization from BaseTokenizer
 
   classifyToken(token: string): 'keyword' | 'identifier' | 'literal' | 'operator' {
     const keywords = ['seleccionar', 'de', 'donde'];
