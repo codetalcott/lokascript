@@ -9,6 +9,7 @@
 import type { LanguageToken, TokenKind, TokenStream, LanguageTokenizer } from '../types';
 import type { MorphologicalNormalizer, NormalizationResult } from './morphology/types';
 import type { ValueExtractor } from './value-extractor-types';
+import { isContextAwareExtractor, createTokenizerContext } from './context-aware-extractor';
 import {
   createToken,
   createPosition,
@@ -97,8 +98,13 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
 
   /**
    * Register a value extractor for domain-specific syntax.
+   * If the extractor is context-aware, initializes it with tokenizer context.
    */
   registerExtractor(extractor: ValueExtractor): void {
+    // Initialize context for context-aware extractors
+    if (isContextAwareExtractor(extractor)) {
+      extractor.setContext(createTokenizerContext(this));
+    }
     this.extractors.push(extractor);
   }
 

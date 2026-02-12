@@ -5,22 +5,17 @@
  * English uses space-separated words with prepositions.
  */
 
-import type { LanguageToken, TokenKind, TokenStream } from '../types';
-import {
-  BaseTokenizer,
-  TokenStreamImpl,
-  createToken,
-  createPosition,
-  isWhitespace,
-  isAsciiIdentifierChar,
-  isSelectorStart,
-  isQuote,
-  isDigit,
-  isUrlStart,
-  isPossessiveMarker,
-  type KeywordEntry,
-} from './base';
+import type { TokenKind } from '../types';
+import { BaseTokenizer, type KeywordEntry } from './base';
 import { englishProfile } from '../generators/profiles/english';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+} from './generic-extractors';
+import { getHyperscriptExtractors } from './extractor-helpers';
+import { createEnglishExtractors } from './extractors/english-keyword';
 
 // =============================================================================
 // English Extras (keywords not in profile)
@@ -158,147 +153,19 @@ export class EnglishTokenizer extends BaseTokenizer {
     super();
     // Initialize keywords from profile + extras (single source of truth)
     this.initializeKeywordsFromProfile(englishProfile, ENGLISH_EXTRAS);
+
+    // Register extractors for extractor-based tokenization
+    // Order matters: more specific extractors first
+    this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
+    this.registerExtractor(new StringLiteralExtractor()); // Strings
+    this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractors(createEnglishExtractors()); // English keywords (context-aware)
+    this.registerExtractor(new OperatorExtractor()); // Operators
+    this.registerExtractor(new PunctuationExtractor()); // Punctuation
   }
 
-  override tokenize(input: string): TokenStream {
-    const tokens: LanguageToken[] = [];
-    let pos = 0;
-
-    while (pos < input.length) {
-      // Skip whitespace
-      if (isWhitespace(input[pos])) {
-        pos++;
-        continue;
-      }
-
-      // Try CSS selector first (highest priority)
-      // But check if this is a property access or method call first
-      if (isSelectorStart(input[pos])) {
-        // Check for event modifier first (.once, .debounce(), etc.)
-        const modifierToken = this.tryEventModifier(input, pos);
-        if (modifierToken) {
-          tokens.push(modifierToken);
-          pos = modifierToken.position.end;
-          continue;
-        }
-
-        // Check for property access pattern: identifier.identifier or identifier.method()
-        // When the previous token is an identifier or keyword AND there's no whitespace,
-        // treat . as property accessor. With whitespace (e.g., "add .active"), it's a selector.
-        if (input[pos] === '.') {
-          const lastToken = tokens[tokens.length - 1];
-          // Property access requires NO whitespace between tokens (e.g., "obj.prop")
-          // CSS selectors have whitespace (e.g., "add .active")
-          const hasWhitespaceBefore = lastToken && lastToken.position.end < pos;
-          const isPropertyAccess =
-            lastToken &&
-            !hasWhitespaceBefore &&
-            (lastToken.kind === 'identifier' ||
-              lastToken.kind === 'keyword' ||
-              lastToken.kind === 'selector');
-
-          if (isPropertyAccess) {
-            // Tokenize . as property accessor
-            tokens.push(createToken('.', 'operator', createPosition(pos, pos + 1)));
-            pos++;
-            continue;
-          }
-
-          // Check for method call pattern at start: .identifier(
-          const methodStart = pos + 1;
-          let methodEnd = methodStart;
-          while (methodEnd < input.length && isAsciiIdentifierChar(input[methodEnd])) {
-            methodEnd++;
-          }
-          // If followed by (, this is a method call, not a class selector
-          if (methodEnd < input.length && input[methodEnd] === '(') {
-            // Tokenize . as property accessor
-            tokens.push(createToken('.', 'operator', createPosition(pos, pos + 1)));
-            pos++;
-            continue;
-          }
-        }
-
-        const selectorToken = this.trySelector(input, pos);
-        if (selectorToken) {
-          tokens.push(selectorToken);
-          pos = selectorToken.position.end;
-          continue;
-        }
-      }
-
-      // Try string literal (but not possessive markers)
-      if (isQuote(input[pos])) {
-        // Check for possessive 's marker first
-        if (input[pos] === "'" && isPossessiveMarker(input, pos)) {
-          // Tokenize 's as a possessive marker
-          tokens.push(createToken("'s", 'punctuation', createPosition(pos, pos + 2)));
-          pos += 2;
-          continue;
-        }
-        const stringToken = this.tryString(input, pos);
-        if (stringToken) {
-          tokens.push(stringToken);
-          pos = stringToken.position.end;
-          continue;
-        }
-      }
-
-      // Try URL (/path, ./path, http://, etc.)
-      if (isUrlStart(input, pos)) {
-        const urlToken = this.tryUrl(input, pos);
-        if (urlToken) {
-          tokens.push(urlToken);
-          pos = urlToken.position.end;
-          continue;
-        }
-      }
-
-      // Try number
-      if (
-        isDigit(input[pos]) ||
-        (input[pos] === '-' && pos + 1 < input.length && isDigit(input[pos + 1]))
-      ) {
-        const numberToken = this.tryNumber(input, pos);
-        if (numberToken) {
-          tokens.push(numberToken);
-          pos = numberToken.position.end;
-          continue;
-        }
-      }
-
-      // Try variable reference (:varname)
-      const varToken = this.tryVariableRef(input, pos);
-      if (varToken) {
-        tokens.push(varToken);
-        pos = varToken.position.end;
-        continue;
-      }
-
-      // Try word (identifier or keyword)
-      if (isAsciiIdentifierChar(input[pos])) {
-        const wordToken = this.extractWord(input, pos);
-        if (wordToken) {
-          tokens.push(wordToken);
-          pos = wordToken.position.end;
-          continue;
-        }
-      }
-
-      // Try operator
-      const operatorToken = this.tryOperator(input, pos);
-      if (operatorToken) {
-        tokens.push(operatorToken);
-        pos = operatorToken.position.end;
-        continue;
-      }
-
-      // Skip unknown character
-      pos++;
-    }
-
-    return new TokenStreamImpl(tokens, 'en');
-  }
+  // tokenize() method removed - now uses extractor-based tokenization from BaseTokenizer
+  // All tokenization logic delegated to registered extractors (context-aware)
 
   classifyToken(token: string): TokenKind {
     // O(1) Map lookup instead of O(n) array search
@@ -319,102 +186,8 @@ export class EnglishTokenizer extends BaseTokenizer {
     return 'identifier';
   }
 
-  /**
-   * Extract a word (identifier or keyword) from the input.
-   * Handles namespaced event names like "draggable:start".
-   */
-  private extractWord(input: string, startPos: number): LanguageToken | null {
-    let pos = startPos;
-    let word = '';
-
-    while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-      word += input[pos++];
-    }
-
-    if (!word) return null;
-
-    // Check for namespaced event name pattern: word:word (e.g., draggable:start)
-    // This is different from variable references (:varname) which start with colon
-    if (pos < input.length && input[pos] === ':') {
-      const colonPos = pos;
-      pos++; // consume colon
-      let namespace = '';
-      while (pos < input.length && isAsciiIdentifierChar(input[pos])) {
-        namespace += input[pos++];
-      }
-      // Only treat as namespaced event if there's text after the colon
-      if (namespace) {
-        word = word + ':' + namespace;
-      } else {
-        // No text after colon, revert to just the word
-        pos = colonPos;
-      }
-    }
-
-    const kind = this.classifyToken(word);
-
-    // O(1) Map lookup for normalized form (for synonyms like flip→toggle)
-    const keywordEntry = this.lookupKeyword(word);
-    const normalized =
-      keywordEntry && keywordEntry.normalized !== keywordEntry.native
-        ? keywordEntry.normalized
-        : undefined;
-
-    // Check for natural class syntax: "{identifier} class" → ".{identifier}"
-    // This allows "toggle the active class" to work like "toggle the .active"
-    if (kind === 'identifier') {
-      const classConversion = this.tryConvertToClassSelector(input, pos, word);
-      if (classConversion) {
-        return classConversion.token;
-      }
-    }
-
-    return createToken(
-      word,
-      kind,
-      createPosition(startPos, pos),
-      normalized // Will be undefined if not a synonym, which is fine
-    );
-  }
-
-  /**
-   * Try to convert an identifier followed by "class" to a class selector.
-   * E.g., "active class" → ".active"
-   *
-   * This enables natural English syntax like:
-   * - "toggle the active class" → "toggle .active"
-   * - "add the visible class" → "add .visible"
-   */
-  private tryConvertToClassSelector(
-    input: string,
-    pos: number,
-    word: string
-  ): { token: LanguageToken; endPos: number } | null {
-    let checkPos = pos;
-
-    // Skip whitespace
-    while (checkPos < input.length && /\s/.test(input[checkPos])) {
-      checkPos++;
-    }
-
-    // Check if next word is "class"
-    if (input.slice(checkPos, checkPos + 5).toLowerCase() === 'class') {
-      // Make sure "class" is a complete word (not "className" etc.)
-      const afterClass = checkPos + 5;
-      if (afterClass >= input.length || !isAsciiIdentifierChar(input[afterClass])) {
-        // Convert to class selector
-        const selectorValue = '.' + word;
-        // Note: we DON'T consume "class" here - let the noise word handling in
-        // pattern-matcher skip it. This keeps the token stream cleaner.
-        return {
-          token: createToken(selectorValue, 'selector', createPosition(pos - word.length, pos)),
-          endPos: pos,
-        };
-      }
-    }
-
-    return null;
-  }
+  // extractWord() and tryConvertToClassSelector() methods removed
+  // Now handled by EnglishKeywordExtractor (context-aware)
 }
 
 /**

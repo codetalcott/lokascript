@@ -91,7 +91,7 @@ export class ThaiTokenizer extends BaseTokenizer {
     this.initializeKeywordsFromProfile(thaiProfile, THAI_EXTRAS);
   }
 
-  tokenize(input: string): TokenStream {
+  override tokenize(input: string): TokenStream {
     const tokens: LanguageToken[] = [];
     let pos = 0;
 
