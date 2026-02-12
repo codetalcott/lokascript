@@ -155,12 +155,17 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
             const normalized = result.metadata?.normalized as string | undefined;
             const metadata = result.metadata;
 
+            // Build options object only if we have normalized or metadata
+            const options: { normalized?: string; metadata?: Record<string, unknown> } = {};
+            if (normalized) options.normalized = normalized;
+            if (metadata) options.metadata = metadata;
+
             tokens.push(
               createToken(
                 result.value,
                 this.classifyToken(result.value),
                 createPosition(pos, pos + result.length),
-                normalized || metadata ? { normalized, metadata } : undefined
+                Object.keys(options).length > 0 ? options : undefined
               )
             );
             pos += result.length;

@@ -18,11 +18,52 @@ export class StringLiteralExtractor implements ValueExtractor {
 
   canExtract(input: string, position: number): boolean {
     const char = input[position];
-    return char === '"' || char === "'" || char === '`';
+    return (
+      char === '"' ||
+      char === "'" ||
+      char === '`' ||
+      char === '\u201C' || // Chinese double quote open
+      char === '\u2018' // Chinese single quote open
+    );
   }
 
   extract(input: string, position: number): ExtractionResult | null {
     const quote = input[position];
+
+    // Chinese quotes (different open/close characters)
+    if (quote === '\u201C') {
+      // Chinese double quote: " ... "
+      let length = 1;
+      while (position + length < input.length) {
+        if (input[position + length] === '\u201D') {
+          length++; // Include closing quote
+          return {
+            value: input.substring(position, position + length),
+            length,
+          };
+        }
+        length++;
+      }
+      return null; // Unterminated
+    }
+
+    if (quote === '\u2018') {
+      // Chinese single quote: ' ... '
+      let length = 1;
+      while (position + length < input.length) {
+        if (input[position + length] === '\u2019') {
+          length++; // Include closing quote
+          return {
+            value: input.substring(position, position + length),
+            length,
+          };
+        }
+        length++;
+      }
+      return null; // Unterminated
+    }
+
+    // ASCII quotes (same open/close character, support escaping)
     let length = 1;
     let escaped = false;
 
@@ -95,7 +136,39 @@ export class NumberExtractor implements ValueExtractor {
     if (afterNum < input.length) {
       const remaining = input.slice(afterNum);
 
-      // Try 'ms' first (2 chars)
+      // Chinese multi-char time units (longest first)
+      const chineseUnits = [
+        { pattern: '毫秒', suffix: 'ms', length: 2 },
+        { pattern: '分钟', suffix: 'm', length: 2 },
+        { pattern: '小时', suffix: 'h', length: 2 },
+      ];
+      for (const unit of chineseUnits) {
+        if (remaining.startsWith(unit.pattern)) {
+          return {
+            value: numValue + unit.suffix,
+            length: length + unit.length,
+            metadata: { hasTimeUnit: true },
+          };
+        }
+      }
+
+      // Japanese multi-char time units
+      if (remaining.startsWith('ミリ秒')) {
+        return {
+          value: numValue + 'ms',
+          length: length + 3,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+      if (remaining.startsWith('時間')) {
+        return {
+          value: numValue + 'h',
+          length: length + 2,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+
+      // Try 'ms' first (2 chars, ASCII)
       if (remaining.startsWith('ms')) {
         return {
           value: numValue + 'ms',
@@ -104,7 +177,22 @@ export class NumberExtractor implements ValueExtractor {
         };
       }
 
-      // Try single-char units: s, m, h
+      // Chinese/Japanese single-char time units
+      const cjkUnits = [
+        { pattern: '秒', suffix: 's' },
+        { pattern: '分', suffix: 'm' },
+      ];
+      for (const unit of cjkUnits) {
+        if (remaining.startsWith(unit.pattern)) {
+          return {
+            value: numValue + unit.suffix,
+            length: length + 1,
+            metadata: { hasTimeUnit: true },
+          };
+        }
+      }
+
+      // Try single-char units: s, m, h (ASCII)
       // Make sure it's followed by non-letter (word boundary)
       if (/^[smh](?![a-zA-Z])/.test(remaining)) {
         return {
