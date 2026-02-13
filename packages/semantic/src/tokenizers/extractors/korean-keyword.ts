@@ -147,6 +147,7 @@ export class KoreanKeywordExtractor implements ContextAwareExtractor {
               normalized: stemEntry.normalized,
               hasSuffix: true,
               suffix: suffix,
+              stem: stem, // Set stem for pattern matching
             },
           };
         }
@@ -162,12 +163,16 @@ export class KoreanKeywordExtractor implements ContextAwareExtractor {
 
     // Try morphological normalization if available
     let morphNormalized: string | undefined;
+    let morphStem: string | undefined;
+    let morphConfidence: number | undefined;
     if (!keywordEntry && this.context.normalizer) {
       const morphResult = this.context.normalizer.normalize(word);
       if (morphResult.stem !== word && morphResult.confidence >= 0.7) {
         const stemEntry = this.context.lookupKeyword(morphResult.stem);
         if (stemEntry) {
           morphNormalized = stemEntry.normalized;
+          morphStem = morphResult.stem; // Native language stem for pattern matching
+          morphConfidence = morphResult.confidence;
         }
       }
     }
@@ -177,6 +182,8 @@ export class KoreanKeywordExtractor implements ContextAwareExtractor {
       length: pos - startPos,
       metadata: {
         normalized: normalized || morphNormalized,
+        stem: morphStem,
+        stemConfidence: morphConfidence,
       },
     };
   }

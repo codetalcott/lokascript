@@ -151,13 +151,22 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
         if (extractor.canExtract(input, pos)) {
           const result = extractor.extract(input, pos);
           if (result) {
-            // Extract normalized from metadata if present, but keep full metadata too
+            // Extract fields from metadata if present
             const normalized = result.metadata?.normalized as string | undefined;
+            const stem = result.metadata?.stem as string | undefined;
+            const stemConfidence = result.metadata?.stemConfidence as number | undefined;
             const metadata = result.metadata;
 
-            // Build options object only if we have normalized or metadata
-            const options: { normalized?: string; metadata?: Record<string, unknown> } = {};
+            // Build options object with all available fields
+            const options: {
+              normalized?: string;
+              stem?: string;
+              stemConfidence?: number;
+              metadata?: Record<string, unknown>;
+            } = {};
             if (normalized) options.normalized = normalized;
+            if (stem) options.stem = stem;
+            if (stemConfidence !== undefined) options.stemConfidence = stemConfidence;
             if (metadata) options.metadata = metadata;
 
             tokens.push(
