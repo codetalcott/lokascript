@@ -95,6 +95,9 @@ export class ThaiTokenizer extends BaseTokenizer {
   classifyToken(value: string): TokenKind {
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(value)) return 'keyword';
+    // Check event modifiers BEFORE selectors (.once vs .active)
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(value))
+      return 'event-modifier';
     if (
       value.startsWith('.') ||
       value.startsWith('#') ||

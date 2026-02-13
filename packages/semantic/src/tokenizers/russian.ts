@@ -148,6 +148,9 @@ export class RussianTokenizer extends BaseTokenizer {
     if (PREPOSITIONS.has(lower)) return 'particle';
     // O(1) Map lookup instead of O(n) array search
     if (this.isKeyword(lower)) return 'keyword';
+    // Check event modifiers BEFORE selectors (.once vs .active)
+    if (/^\.(once|prevent|stop|debounce|throttle|queue)(\(.*\))?$/.test(token))
+      return 'event-modifier';
     if (
       token.startsWith('#') ||
       token.startsWith('.') ||
