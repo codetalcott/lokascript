@@ -116,10 +116,20 @@ export class HebrewProcliticExtractor implements ContextAwareExtractor {
     }
 
     // Check if next char is also a proclitic (chained prefixes like מה = from-the)
-    // If so, don't extract yet - let them be extracted together
+    // But only skip if the word after BOTH proclitics is also meaningful
     if (position + 1 < input.length && PROCLITIC_PREFIXES.has(input[position + 1])) {
-      // Don't extract - let it be part of a longer chain
-      return null;
+      // Check if word after first proclitic is meaningful
+      const afterFirstPrefix = input.slice(position + 1, wordEnd);
+      const afterFirstEntry = this.context?.lookupKeyword(afterFirstPrefix);
+      const isAfterFirstEvent = EVENT_NAMES.has(afterFirstPrefix);
+
+      // If word after first proclitic is meaningful, split here
+      if (afterFirstEntry || isAfterFirstEvent || afterFirstPrefix.length >= 3) {
+        // Don't skip - this is a valid split point
+      } else {
+        // Word after first proclitic is NOT meaningful - let chain be handled together
+        return null;
+      }
     }
 
     // Check if the remaining word (after prefix) is a keyword or meaningful
