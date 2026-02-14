@@ -1,14 +1,22 @@
 # @lokascript/hyperscript-adapter
 
-Multilingual plugin for the original [\_hyperscript](https://hyperscript.org). Write hyperscript in any of 24 languages — the adapter translates to English before the standard parser runs.
+Multilingual plugin for the original [\_hyperscript](https://hyperscript.org). Write hyperscript in any of 24 languages — the adapter translates to hyperscript code before the standard parser runs.
+
+## Install
+
+```bash
+npm install @lokascript/hyperscript-adapter
+```
+
+Or use a CDN — see [Browser](#browser) below.
 
 ## Quick Start
 
 ### Browser
 
 ```html
-<script src="_hyperscript.js"></script>
-<script src="hyperscript-i18n-es.global.js"></script>
+<script src="https://unpkg.com/hyperscript.org"></script>
+<script src="https://unpkg.com/@lokascript/hyperscript-adapter/dist/hyperscript-i18n-es.global.js"></script>
 
 <!-- Spanish -->
 <button _="on click alternar .active on me" data-lang="es">Toggle</button>
@@ -23,6 +31,8 @@ Multilingual plugin for the original [\_hyperscript](https://hyperscript.org). W
 ```
 
 The plugin auto-registers when `_hyperscript` is available. No extra JS needed.
+
+See the [live demo](https://lokascript-docs.fly.dev/multilingual-plugin/) for interactive examples.
 
 ### Node.js / Bundlers
 
@@ -145,3 +155,36 @@ The plugin overrides `runtime.getScript()` — the method \_hyperscript calls to
 - **Feature declarations** (`def`, `worker`): these are original \_hyperscript feature-level keywords that are not part of the adapter's translation layer — keep them in English. Command bodies within features translate normally. (`behavior` IS supported.)
 - **SOV/VSO accuracy**: Japanese, Korean, Turkish have lower pattern coverage — confidence gating may trigger fallback to the original text
 - **Programmatic calls**: `_hyperscript("code")` bypasses the plugin; use `preprocess()` for those
+
+## Troubleshooting
+
+**"Translation unchanged" warning in console**
+
+The adapter logs this when it receives non-English text but produces no change. Common causes:
+
+- Wrong language code — check the `data-lang` attribute matches a supported language (e.g. `es`, not `spa`)
+- Unsupported command — only commands with semantic patterns translate (toggle, add, remove, put, set, etc.). Feature-level keywords (`def`, `worker`) stay in English.
+- Missing language bundle — if using a single-language bundle, only that language translates. Other languages pass through unchanged.
+
+**SOV languages (ja, ko, tr) not translating reliably**
+
+These languages produce lower confidence scores due to word-order differences. Lower the threshold with a per-language map:
+
+```javascript
+_hyperscript.use(
+  hyperscriptI18n({
+    confidenceThreshold: { ja: 0.1, ko: 0.05, tr: 0.1, '*': 0.5 },
+  })
+);
+```
+
+**`_hyperscript("code")` calls not translating**
+
+The plugin only intercepts `_="..."` attributes in the DOM. For programmatic calls, use `preprocess()`:
+
+```javascript
+import { preprocess } from '@lokascript/hyperscript-adapter';
+
+const english = preprocess('alternar .active', 'es');
+_hyperscript(english);
+```

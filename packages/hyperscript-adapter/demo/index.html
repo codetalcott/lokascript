@@ -92,6 +92,15 @@
       overflow-x: auto;
     }
     .result { margin-top: 12px; padding: 8px; background: #f9f9f9; border-radius: 4px; }
+    .output {
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      min-height: 40px;
+      margin-top: 8px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -169,6 +178,36 @@
     Poner texto (Spanish)
   </button>
   <div id="msg">(message will appear here)</div>
+</section>
+
+<!-- ============================================ -->
+<!-- Spanish: Remove class -->
+<!-- ============================================ -->
+<section>
+  <h2>Remove Class <span class="lang-tag">ES - Spanish</span></h2>
+  <p>Click "Agregar" to add, then "Quitar" to remove <code>.highlight</code>:</p>
+  <div class="code-block">_="quitar .highlight de #removeBox"</div>
+  <button _="on click agregar .highlight en #removeBox" data-lang="es">
+    Agregar .highlight
+  </button>
+  <button _="on click quitar .highlight de #removeBox" data-lang="es">
+    Quitar .highlight
+  </button>
+  <div class="box" id="removeBox">Box</div>
+</section>
+
+<!-- ============================================ -->
+<!-- Spanish: Compound (then) -->
+<!-- ============================================ -->
+<section>
+  <h2>Compound Command <span class="lang-tag">ES - Spanish</span></h2>
+  <p>Two commands chained with <code>then</code> — add highlight, then put text:</p>
+  <div class="code-block">_='agregar .highlight en #compoundBox then poner "Done!" en #compoundMsg'</div>
+  <button _='on click agregar .highlight en #compoundBox then poner "Listo!" en #compoundMsg' data-lang="es">
+    Agregar + Poner (Spanish)
+  </button>
+  <div class="box" id="compoundBox">Box</div>
+  <div id="compoundMsg" class="output">(message appears here)</div>
 </section>
 
 <!-- ============================================ -->
