@@ -3,7 +3,30 @@
  *
  * Extracts typed values from input strings.
  * DSLs can provide custom extractors for their domain-specific syntax.
+ *
+ * Includes the ContextAwareExtractor extension for extractors that need
+ * access to tokenizer state (keyword maps, morphological normalizers, etc.).
  */
+
+import type { MorphologicalNormalizer } from '../core/tokenization/morphology/types';
+
+// =============================================================================
+// Keyword Entry (needed by TokenizerContext)
+// =============================================================================
+
+/**
+ * Keyword entry for tokenizer - maps native word to normalized English form.
+ * Re-exported here so ContextAwareExtractor consumers can use it without
+ * depending on the base-tokenizer module directly.
+ */
+export interface KeywordEntry {
+  readonly native: string;
+  readonly normalized: string;
+}
+
+// =============================================================================
+// Core Extractor Types
+// =============================================================================
 
 /**
  * Extraction result with value and consumed length.
@@ -62,11 +85,45 @@ export class StringLiteralExtractor implements ValueExtractor {
 
   canExtract(input: string, position: number): boolean {
     const char = input[position];
-    return char === '"' || char === "'" || char === '`';
+    return (
+      char === '"' ||
+      char === "'" ||
+      char === '`' ||
+      char === '\u201C' || // Chinese double quote open "
+      char === '\u2018' // Chinese single quote open '
+    );
   }
 
   extract(input: string, position: number): ExtractionResult | null {
     const quote = input[position];
+
+    // Chinese double quotes " ... "
+    if (quote === '\u201C') {
+      let length = 1;
+      while (position + length < input.length) {
+        if (input[position + length] === '\u201D') {
+          length++;
+          return { value: input.substring(position, position + length), length };
+        }
+        length++;
+      }
+      return null;
+    }
+
+    // Chinese single quotes ' ... '
+    if (quote === '\u2018') {
+      let length = 1;
+      while (position + length < input.length) {
+        if (input[position + length] === '\u2019') {
+          length++;
+          return { value: input.substring(position, position + length), length };
+        }
+        length++;
+      }
+      return null;
+    }
+
+    // ASCII quotes (same open/close, support escaping)
     let length = 1;
     let escaped = false;
 
@@ -128,12 +185,68 @@ export class NumberExtractor implements ValueExtractor {
       }
     }
 
-    return length > 0
-      ? {
-          value: input.substring(position, position + length),
-          length,
+    if (length === 0) return null;
+
+    const numValue = input.substring(position, position + length);
+    const afterNum = position + length;
+
+    // Check for time unit suffixes
+    if (afterNum < input.length) {
+      const remaining = input.slice(afterNum);
+
+      // CJK multi-char time units (longest first)
+      const cjkMultiUnits: { pattern: string; suffix: string }[] = [
+        { pattern: '毫秒', suffix: 'ms' }, // Chinese milliseconds
+        { pattern: '分钟', suffix: 'm' }, // Chinese minutes
+        { pattern: '小时', suffix: 'h' }, // Chinese hours
+        { pattern: 'ミリ秒', suffix: 'ms' }, // Japanese milliseconds
+        { pattern: '時間', suffix: 'h' }, // Japanese hours
+      ];
+      for (const unit of cjkMultiUnits) {
+        if (remaining.startsWith(unit.pattern)) {
+          return {
+            value: numValue + unit.suffix,
+            length: length + unit.pattern.length,
+            metadata: { hasTimeUnit: true },
+          };
         }
-      : null;
+      }
+
+      // ASCII 'ms' (2 chars, must check before single-char)
+      if (remaining.startsWith('ms')) {
+        return {
+          value: numValue + 'ms',
+          length: length + 2,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+
+      // CJK single-char time units
+      const cjkSingleUnits: { pattern: string; suffix: string }[] = [
+        { pattern: '秒', suffix: 's' }, // CJK seconds
+        { pattern: '分', suffix: 'm' }, // CJK minutes
+      ];
+      for (const unit of cjkSingleUnits) {
+        if (remaining.startsWith(unit.pattern)) {
+          return {
+            value: numValue + unit.suffix,
+            length: length + 1,
+            metadata: { hasTimeUnit: true },
+          };
+        }
+      }
+
+      // ASCII single-char units: s, m, h (with word boundary check)
+      if (/^[smh](?![a-zA-Z])/.test(remaining)) {
+        return {
+          value: numValue + remaining[0],
+          length: length + 1,
+          metadata: { hasTimeUnit: true },
+        };
+      }
+    }
+
+    return { value: numValue, length };
   }
 }
 
@@ -169,6 +282,41 @@ export class IdentifierExtractor implements ValueExtractor {
 }
 
 /**
+ * Unicode identifier extractor - handles non-Latin scripts.
+ *
+ * Matches contiguous runs of Unicode letters, numbers, and combining marks
+ * that aren't ASCII (ASCII identifiers are handled by IdentifierExtractor).
+ * Essential for DSLs supporting CJK, Arabic, Cyrillic, Devanagari, etc.
+ */
+export class UnicodeIdentifierExtractor implements ValueExtractor {
+  readonly name = 'unicode-identifier';
+
+  canExtract(input: string, position: number): boolean {
+    const code = input.charCodeAt(position);
+    // Skip ASCII range (handled by IdentifierExtractor)
+    if (code < 0x80) return false;
+    // Match any Unicode letter
+    return /\p{L}/u.test(input[position]);
+  }
+
+  extract(input: string, position: number): ExtractionResult | null {
+    let length = 0;
+
+    while (position + length < input.length) {
+      const char = input[position + length];
+      // Match Unicode letters, numbers, and combining marks (e.g., Arabic diacritics)
+      if (/[\p{L}\p{N}\p{M}]/u.test(char)) {
+        length++;
+      } else {
+        break;
+      }
+    }
+
+    return length > 0 ? { value: input.substring(position, position + length), length } : null;
+  }
+}
+
+/**
  * Whitespace extractor - handles spaces, tabs, newlines.
  */
 export class WhitespaceExtractor implements ValueExtractor {
@@ -192,4 +340,96 @@ export class WhitespaceExtractor implements ValueExtractor {
         }
       : null;
   }
+}
+
+// =============================================================================
+// Context-Aware Extractor System
+// =============================================================================
+
+/**
+ * Tokenizer context provided to context-aware extractors.
+ * Gives extractors access to tokenizer state without tight coupling.
+ */
+export interface TokenizerContext {
+  /** ISO 639-1 language code */
+  readonly language: string;
+
+  /** Text direction */
+  readonly direction: 'ltr' | 'rtl';
+
+  /**
+   * Look up a keyword by its native form.
+   * Returns keyword entry with normalized form, or undefined if not found.
+   */
+  lookupKeyword(native: string): KeywordEntry | undefined;
+
+  /**
+   * Check if a word is a known keyword.
+   */
+  isKeyword(native: string): boolean;
+
+  /**
+   * Check if a known keyword starts at the given position.
+   * Useful for word boundary detection in non-space languages.
+   */
+  isKeywordStart(input: string, position: number): boolean;
+
+  /**
+   * Optional morphological normalizer for this language.
+   */
+  readonly normalizer?: MorphologicalNormalizer;
+}
+
+/**
+ * Context-aware extractor - has access to tokenizer state.
+ *
+ * Use this for extractors that need:
+ * - Keyword lookup (for normalization)
+ * - Morphological analysis (for conjugation handling)
+ * - Language-specific rules
+ *
+ * For stateless extractors (strings, numbers, operators), use ValueExtractor.
+ */
+export interface ContextAwareExtractor extends ValueExtractor {
+  /**
+   * Set the tokenizer context.
+   * Called once by the tokenizer during registration.
+   */
+  setContext(context: TokenizerContext): void;
+}
+
+/**
+ * Type guard to check if an extractor is context-aware.
+ */
+export function isContextAwareExtractor(
+  extractor: ValueExtractor | ContextAwareExtractor
+): extractor is ContextAwareExtractor {
+  return 'setContext' in extractor && typeof extractor.setContext === 'function';
+}
+
+/**
+ * Create a TokenizerContext from a tokenizer instance.
+ * Works with any object that exposes the required methods.
+ */
+export function createTokenizerContext(tokenizer: {
+  language: string;
+  direction: 'ltr' | 'rtl';
+  lookupKeyword(native: string): KeywordEntry | undefined;
+  isKeyword(native: string): boolean;
+  isKeywordStart(input: string, position: number): boolean;
+  normalizer?: MorphologicalNormalizer;
+}): TokenizerContext {
+  const ctx: TokenizerContext = {
+    language: tokenizer.language,
+    direction: tokenizer.direction,
+    lookupKeyword: tokenizer.lookupKeyword.bind(tokenizer),
+    isKeyword: tokenizer.isKeyword.bind(tokenizer),
+    isKeywordStart: tokenizer.isKeywordStart.bind(tokenizer),
+  };
+
+  if (tokenizer.normalizer) {
+    return { ...ctx, normalizer: tokenizer.normalizer };
+  }
+
+  return ctx;
 }

@@ -23,6 +23,7 @@ import { lspBridgeTools, handleLspBridgeTool } from './tools/lsp-bridge.js';
 import { languageDocsTools, handleLanguageDocsTool } from './tools/language-docs.js';
 import { profileTools, handleProfileTool } from './tools/profiles.js';
 import { compilationTools, handleCompilationTool } from './tools/compilation.js';
+import { sqlDomainTools, handleSQLDomainTool } from './tools/sql-domain.js';
 
 // Resource implementations
 import { listResources, readResource } from './resources/index.js';
@@ -58,6 +59,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       ...languageDocsTools,
       ...profileTools,
       ...compilationTools,
+      ...sqlDomainTools,
     ],
   };
 });
@@ -134,6 +136,16 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     name === 'diff_behaviors'
   ) {
     return handleCompilationTool(name, args as Record<string, unknown>);
+  }
+
+  // SQL domain tools
+  if (
+    name === 'parse_sql' ||
+    name === 'compile_sql' ||
+    name === 'validate_sql' ||
+    name === 'translate_sql'
+  ) {
+    return handleSQLDomainTool(name, args as Record<string, unknown>);
   }
 
   // Pattern tools with get_ prefix (after LSP, language-docs, and profile tools to avoid conflict)

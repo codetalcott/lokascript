@@ -43,7 +43,8 @@
     "@lokascript/compilation-service": "*",
     "@hyperfixi/core": "*",
     "@hyperfixi/patterns-reference": "*",
-    "@lokascript/semantic": "*"
+    "@lokascript/semantic": "*",
+    "@lokascript/domain-sql": "*"
   },
   "peerDependenciesMeta": {
     "@lokascript/compilation-service": {
@@ -57,6 +58,9 @@
     },
     "@lokascript/semantic": {
       "optional": true
+    },
+    "@lokascript/domain-sql": {
+      "optional": true
     }
   },
   "devDependencies": {
@@ -64,6 +68,7 @@
     "@hyperfixi/core": "*",
     "@hyperfixi/patterns-reference": "*",
     "@lokascript/semantic": "*",
+    "@lokascript/domain-sql": "*",
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",

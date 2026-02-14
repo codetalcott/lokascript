@@ -183,7 +183,11 @@ export class PatternMatcher {
       if (priorityDiff !== 0) return priorityDiff;
 
       // Then by confidence
-      return b.confidence - a.confidence;
+      const confidenceDiff = b.confidence - a.confidence;
+      if (Math.abs(confidenceDiff) > 0.001) return confidenceDiff;
+
+      // Then by tokens consumed (prefer more complete matches)
+      return b.consumedTokens - a.consumedTokens;
     });
 
     // Re-consume tokens for the best match

@@ -8,7 +8,12 @@
 
 import type { LanguageToken, TokenKind, TokenStream, LanguageTokenizer } from '../types';
 import type { MorphologicalNormalizer, NormalizationResult } from './morphology/types';
-import type { ValueExtractor } from '../../interfaces/value-extractor';
+import {
+  type ValueExtractor,
+  type KeywordEntry,
+  isContextAwareExtractor,
+  createTokenizerContext,
+} from '../../interfaces/value-extractor';
 import {
   createToken,
   createPosition,
@@ -25,13 +30,9 @@ import { extractCssSelector, extractStringLiteral, extractNumber, extractUrl } f
 // Types
 // =============================================================================
 
-/**
- * Keyword entry for tokenizer - maps native word to normalized English form.
- */
-export interface KeywordEntry {
-  readonly native: string;
-  readonly normalized: string;
-}
+// KeywordEntry is imported from interfaces/value-extractor and re-exported
+// for backward compatibility with code importing from this module.
+export type { KeywordEntry };
 
 /**
  * Profile interface for keyword derivation.
@@ -101,10 +102,14 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
   /**
    * Register a value extractor for domain-specific syntax.
    * Extractors are tried in registration order during tokenization.
+   * Context-aware extractors automatically receive the tokenizer context.
    *
    * @param extractor - Value extractor to register
    */
   registerExtractor(extractor: ValueExtractor): void {
+    if (isContextAwareExtractor(extractor)) {
+      extractor.setContext(createTokenizerContext(this as any));
+    }
     this.extractors.push(extractor);
   }
 

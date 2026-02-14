@@ -1,249 +1,28 @@
 /**
  * Generic Value Extractors for Semantic Package
  *
- * These are copies of the framework's generic extractors, maintained separately
- * to avoid circular dependencies between framework and semantic packages.
- *
- * Canonical versions: @lokascript/framework/src/core/tokenization/extractors/
+ * Shared extractors (StringLiteralExtractor, NumberExtractor, IdentifierExtractor)
+ * are re-exported from @lokascript/framework. Domain-specific extractors
+ * (OperatorExtractor, PunctuationExtractor) remain here.
  */
 
 import type { ValueExtractor, ExtractionResult } from './value-extractor-types';
 
 // =============================================================================
-// String Literal Extractor
+// Re-exported from framework (canonical implementations)
+// Import + re-export pattern: creates local bindings AND exports
 // =============================================================================
 
-export class StringLiteralExtractor implements ValueExtractor {
-  readonly name = 'string-literal';
+import {
+  StringLiteralExtractor,
+  NumberExtractor,
+  IdentifierExtractor,
+} from '@lokascript/framework';
 
-  canExtract(input: string, position: number): boolean {
-    const char = input[position];
-    return (
-      char === '"' ||
-      char === "'" ||
-      char === '`' ||
-      char === '\u201C' || // Chinese double quote open
-      char === '\u2018' // Chinese single quote open
-    );
-  }
-
-  extract(input: string, position: number): ExtractionResult | null {
-    const quote = input[position];
-
-    // Chinese quotes (different open/close characters)
-    if (quote === '\u201C') {
-      // Chinese double quote: " ... "
-      let length = 1;
-      while (position + length < input.length) {
-        if (input[position + length] === '\u201D') {
-          length++; // Include closing quote
-          return {
-            value: input.substring(position, position + length),
-            length,
-          };
-        }
-        length++;
-      }
-      return null; // Unterminated
-    }
-
-    if (quote === '\u2018') {
-      // Chinese single quote: ' ... '
-      let length = 1;
-      while (position + length < input.length) {
-        if (input[position + length] === '\u2019') {
-          length++; // Include closing quote
-          return {
-            value: input.substring(position, position + length),
-            length,
-          };
-        }
-        length++;
-      }
-      return null; // Unterminated
-    }
-
-    // ASCII quotes (same open/close character, support escaping)
-    let length = 1;
-    let escaped = false;
-
-    while (position + length < input.length) {
-      const char = input[position + length];
-
-      if (escaped) {
-        escaped = false;
-        length++;
-        continue;
-      }
-
-      if (char === '\\') {
-        escaped = true;
-        length++;
-        continue;
-      }
-
-      if (char === quote) {
-        length++; // Include closing quote
-        return {
-          value: input.substring(position, position + length),
-          length,
-        };
-      }
-
-      length++;
-    }
-
-    // Unterminated string
-    return null;
-  }
-}
+export { StringLiteralExtractor, NumberExtractor, IdentifierExtractor };
 
 // =============================================================================
-// Number Extractor
-// =============================================================================
-
-export class NumberExtractor implements ValueExtractor {
-  readonly name = 'number';
-
-  canExtract(input: string, position: number): boolean {
-    return /\d/.test(input[position]);
-  }
-
-  extract(input: string, position: number): ExtractionResult | null {
-    let length = 0;
-    let hasDecimal = false;
-
-    while (position + length < input.length) {
-      const char = input[position + length];
-
-      if (/\d/.test(char)) {
-        length++;
-      } else if (char === '.' && !hasDecimal) {
-        hasDecimal = true;
-        length++;
-      } else {
-        break;
-      }
-    }
-
-    if (length === 0) return null;
-
-    // Check for time unit suffixes: ms, s, m, h
-    const numValue = input.substring(position, position + length);
-    const afterNum = position + length;
-
-    // Try to match time units
-    if (afterNum < input.length) {
-      const remaining = input.slice(afterNum);
-
-      // Chinese multi-char time units (longest first)
-      const chineseUnits = [
-        { pattern: '毫秒', suffix: 'ms', length: 2 },
-        { pattern: '分钟', suffix: 'm', length: 2 },
-        { pattern: '小时', suffix: 'h', length: 2 },
-      ];
-      for (const unit of chineseUnits) {
-        if (remaining.startsWith(unit.pattern)) {
-          return {
-            value: numValue + unit.suffix,
-            length: length + unit.length,
-            metadata: { hasTimeUnit: true },
-          };
-        }
-      }
-
-      // Japanese multi-char time units
-      if (remaining.startsWith('ミリ秒')) {
-        return {
-          value: numValue + 'ms',
-          length: length + 3,
-          metadata: { hasTimeUnit: true },
-        };
-      }
-      if (remaining.startsWith('時間')) {
-        return {
-          value: numValue + 'h',
-          length: length + 2,
-          metadata: { hasTimeUnit: true },
-        };
-      }
-
-      // Try 'ms' first (2 chars, ASCII)
-      if (remaining.startsWith('ms')) {
-        return {
-          value: numValue + 'ms',
-          length: length + 2,
-          metadata: { hasTimeUnit: true },
-        };
-      }
-
-      // Chinese/Japanese single-char time units
-      const cjkUnits = [
-        { pattern: '秒', suffix: 's' },
-        { pattern: '分', suffix: 'm' },
-      ];
-      for (const unit of cjkUnits) {
-        if (remaining.startsWith(unit.pattern)) {
-          return {
-            value: numValue + unit.suffix,
-            length: length + 1,
-            metadata: { hasTimeUnit: true },
-          };
-        }
-      }
-
-      // Try single-char units: s, m, h (ASCII)
-      // Make sure it's followed by non-letter (word boundary)
-      if (/^[smh](?![a-zA-Z])/.test(remaining)) {
-        return {
-          value: numValue + remaining[0],
-          length: length + 1,
-          metadata: { hasTimeUnit: true },
-        };
-      }
-    }
-
-    return {
-      value: numValue,
-      length,
-    };
-  }
-}
-
-// =============================================================================
-// Identifier Extractor
-// =============================================================================
-
-export class IdentifierExtractor implements ValueExtractor {
-  readonly name = 'identifier';
-
-  canExtract(input: string, position: number): boolean {
-    return /[a-zA-Z_]/.test(input[position]);
-  }
-
-  extract(input: string, position: number): ExtractionResult | null {
-    let length = 0;
-
-    while (position + length < input.length) {
-      const char = input[position + length];
-      if (/[a-zA-Z0-9_]/.test(char)) {
-        length++;
-      } else {
-        break;
-      }
-    }
-
-    return length > 0
-      ? {
-          value: input.substring(position, position + length),
-          length,
-        }
-      : null;
-  }
-}
-
-// =============================================================================
-// Operator Extractor
+// Operator Extractor (semantic-specific)
 // =============================================================================
 
 const DEFAULT_OPERATORS = [
@@ -309,7 +88,7 @@ export class OperatorExtractor implements ValueExtractor {
 }
 
 // =============================================================================
-// Punctuation Extractor
+// Punctuation Extractor (semantic-specific)
 // =============================================================================
 
 const DEFAULT_PUNCTUATION = '()[]{},:;';

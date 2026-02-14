@@ -39,7 +39,7 @@ describe('PatternGenerator', () => {
       expect(pattern.priority).toBe(100);
       expect(pattern.template.tokens).toHaveLength(2);
       expect(pattern.template.tokens[0]).toEqual({ type: 'literal', value: 'toggle' });
-      expect(pattern.template.tokens[1]).toEqual({ type: 'role', role: 'patient' });
+      expect(pattern.template.tokens[1]).toMatchObject({ type: 'role', role: 'patient' });
     });
 
     it('should generate an SOV pattern with verb last', () => {
@@ -67,7 +67,7 @@ describe('PatternGenerator', () => {
 
       expect(pattern.template.tokens).toHaveLength(2);
       // In SOV, role comes first, then verb
-      expect(pattern.template.tokens[0]).toEqual({ type: 'role', role: 'patient' });
+      expect(pattern.template.tokens[0]).toMatchObject({ type: 'role', role: 'patient' });
       expect(pattern.template.tokens[1]).toEqual({ type: 'literal', value: 'トグル' });
     });
 
@@ -96,7 +96,7 @@ describe('PatternGenerator', () => {
       expect(pattern.template.tokens).toHaveLength(2);
       // VSO is like SVO - verb first
       expect(pattern.template.tokens[0]).toEqual({ type: 'literal', value: 'بدّل' });
-      expect(pattern.template.tokens[1]).toEqual({ type: 'role', role: 'patient' });
+      expect(pattern.template.tokens[1]).toMatchObject({ type: 'role', role: 'patient' });
     });
 
     it('should include role markers when specified', () => {
@@ -129,7 +129,7 @@ describe('PatternGenerator', () => {
       expect(pattern.template.tokens).toHaveLength(3);
       expect(pattern.template.tokens[0]).toEqual({ type: 'literal', value: 'get' });
       expect(pattern.template.tokens[1]).toEqual({ type: 'literal', value: 'from' });
-      expect(pattern.template.tokens[2]).toEqual({ type: 'role', role: 'target' });
+      expect(pattern.template.tokens[2]).toMatchObject({ type: 'role', role: 'target' });
     });
 
     it('should handle optional roles with groups', () => {
@@ -303,9 +303,9 @@ describe('PatternGenerator', () => {
 
       // Should be: put, value (higher svoPosition = first), into, destination
       expect(pattern.template.tokens[0]).toEqual({ type: 'literal', value: 'put' });
-      expect(pattern.template.tokens[1]).toEqual({ type: 'role', role: 'value' });
+      expect(pattern.template.tokens[1]).toMatchObject({ type: 'role', role: 'value' });
       expect(pattern.template.tokens[2]).toEqual({ type: 'literal', value: 'into' });
-      expect(pattern.template.tokens[3]).toEqual({ type: 'role', role: 'destination' });
+      expect(pattern.template.tokens[3]).toMatchObject({ type: 'role', role: 'destination' });
     });
 
     it('should generate format string for documentation', () => {

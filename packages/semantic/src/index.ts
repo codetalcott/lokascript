@@ -141,6 +141,39 @@ export {
 } from './tokenizers';
 
 // =============================================================================
+// Extractors (Cross-DSL Reuse)
+// =============================================================================
+
+// Hyperscript-specific extractors
+export {
+  CssSelectorExtractor,
+  EventModifierExtractor,
+  UrlExtractor,
+  VariableRefExtractor,
+} from './tokenizers/extractors';
+export { getHyperscriptExtractors } from './tokenizers/extractor-helpers';
+
+// Generic extractors (re-exported from @lokascript/framework)
+export {
+  StringLiteralExtractor,
+  NumberExtractor,
+  IdentifierExtractor,
+  OperatorExtractor,
+  PunctuationExtractor,
+  getDefaultExtractors,
+} from './tokenizers/generic-extractors';
+
+// Context-aware extractor system (re-exported from @lokascript/framework)
+export type { TokenizerContext, ContextAwareExtractor } from './tokenizers/context-aware-extractor';
+export {
+  isContextAwareExtractor,
+  createTokenizerContext,
+} from './tokenizers/context-aware-extractor';
+
+// Value extractor types (re-exported from @lokascript/framework)
+export type { ValueExtractor, ExtractionResult } from './tokenizers/value-extractor-types';
+
+// =============================================================================
 // Parser
 // =============================================================================
 

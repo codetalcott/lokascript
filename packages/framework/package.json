@@ -1,7 +1,6 @@
 {
   "name": "@lokascript/framework",
   "version": "1.0.0",
-  "private": true,
   "description": "Generic framework for building multilingual DSLs with semantic parsing and grammar transformation",
   "type": "module",
   "main": "dist/index.cjs",
@@ -112,7 +111,7 @@
     "node": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "sideEffects": false
 }

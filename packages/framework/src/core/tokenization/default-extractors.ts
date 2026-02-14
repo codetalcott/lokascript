@@ -10,6 +10,7 @@ import {
   StringLiteralExtractor,
   NumberExtractor,
   IdentifierExtractor,
+  UnicodeIdentifierExtractor,
 } from '../../interfaces/value-extractor';
 import { OperatorExtractor, PunctuationExtractor } from './extractors/index';
 
@@ -23,6 +24,7 @@ import { OperatorExtractor, PunctuationExtractor } from './extractors/index';
  * - Operators: +, -, *, /, =, ==, !=, >=, <=, etc.
  * - Punctuation: ( ) [ ] { } , : ;
  * - Identifiers: variable_names, functionNames
+ * - Unicode identifiers: CJK, Arabic, Cyrillic, etc.
  *
  * @returns Array of default extractors
  *
@@ -42,7 +44,8 @@ export function getDefaultExtractors(): ValueExtractor[] {
     new NumberExtractor(), // 123, 45.67
     new OperatorExtractor(), // +, -, *, /, =, >, <, etc.
     new PunctuationExtractor(), // ( ) [ ] { } , : ;
-    new IdentifierExtractor(), // variable_names, functionNames
+    new IdentifierExtractor(), // variable_names, functionNames (ASCII)
+    new UnicodeIdentifierExtractor(), // CJK, Arabic, Cyrillic, etc.
   ];
 }
 

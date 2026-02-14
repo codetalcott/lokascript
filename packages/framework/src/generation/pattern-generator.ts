@@ -158,7 +158,9 @@ function addRoleWithMarker(
 
   if (marker) {
     const markerInfo = profile.roleMarkers?.[roleSpec.role];
-    const position = markerInfo?.position ?? 'before';
+    // Default: SOV languages use postpositions (after), others prepositions (before)
+    const defaultPosition = profile.wordOrder === 'SOV' ? 'after' : 'before';
+    const position = markerInfo?.position ?? defaultPosition;
 
     if (isOptional) {
       // Optional role: wrap marker + role in optional group
