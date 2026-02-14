@@ -16,7 +16,7 @@ Or use a CDN — see [Browser](#browser) below.
 
 ```html
 <script src="https://unpkg.com/hyperscript.org"></script>
-<script src="https://unpkg.com/@lokascript/hyperscript-adapter/dist/hyperscript-i18n-es.global.js"></script>
+<script src="https://unpkg.com/@lokascript/hyperscript-adapter@2/dist/hyperscript-i18n-es.global.js"></script>
 
 <!-- Spanish -->
 <button _="on click alternar .active on me" data-lang="es">Toggle</button>
