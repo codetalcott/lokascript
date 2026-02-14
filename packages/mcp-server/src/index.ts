@@ -24,6 +24,7 @@ import { languageDocsTools, handleLanguageDocsTool } from './tools/language-docs
 import { profileTools, handleProfileTool } from './tools/profiles.js';
 import { compilationTools, handleCompilationTool } from './tools/compilation.js';
 import { sqlDomainTools, handleSQLDomainTool } from './tools/sql-domain.js';
+import { routeTools, handleRouteTool } from './tools/routes.js';
 
 // Resource implementations
 import { listResources, readResource } from './resources/index.js';
@@ -60,6 +61,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       ...profileTools,
       ...compilationTools,
       ...sqlDomainTools,
+      ...routeTools,
     ],
   };
 });
@@ -146,6 +148,11 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     name === 'translate_sql'
   ) {
     return handleSQLDomainTool(name, args as Record<string, unknown>);
+  }
+
+  // ServerBridge route tools
+  if (name === 'extract_routes' || name === 'generate_server_routes') {
+    return handleRouteTool(name, args as Record<string, unknown>);
   }
 
   // Pattern tools with get_ prefix (after LSP, language-docs, and profile tools to avoid conflict)

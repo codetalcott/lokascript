@@ -58,7 +58,9 @@ async function main(): Promise<void> {
   } else if (command === 'generate') {
     await runGenerate({
       dir,
-      framework: flags.framework === 'hono' ? 'hono' : 'express',
+      framework: (['hono', 'openapi', 'django', 'fastapi'].includes(flags.framework as string)
+        ? flags.framework
+        : 'express') as 'express' | 'hono' | 'openapi' | 'django' | 'fastapi',
       output: typeof flags.output === 'string' ? flags.output : undefined,
       typescript: flags.typescript !== false,
       overwrite: flags.overwrite === true,
@@ -87,7 +89,7 @@ Scan options:
   --ignore=URLS          Comma-separated URL patterns to ignore
 
 Generate options:
-  --framework=express|hono  Target framework (default: express)
+  --framework=express|hono|openapi|django|fastapi  Target framework (default: express)
   --output=DIR              Output directory (default: ./server/routes)
   --typescript              Generate TypeScript (default: true)
   --no-typescript           Generate JavaScript

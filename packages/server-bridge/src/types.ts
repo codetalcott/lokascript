@@ -104,7 +104,7 @@ export interface GenerateResult {
 
 export interface ServerBridgeConfig {
   /** Target framework */
-  framework?: 'express' | 'hono';
+  framework?: 'express' | 'hono' | 'openapi' | 'django' | 'fastapi';
   /** Output directory */
   output?: string;
   /** TypeScript output */

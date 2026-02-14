@@ -21,5 +21,8 @@ export { extractFormFields, extractFormBodies } from './scanner/form-scanner.js'
 export { scanRoutes, scanDirectory } from './scanner/route-scanner.js';
 export { ExpressGenerator } from './generators/express-generator.js';
 export { HonoGenerator } from './generators/hono-generator.js';
+export { OpenAPIGenerator } from './generators/openapi-generator.js';
+export { DjangoGenerator } from './generators/django-generator.js';
+export { FastAPIGenerator } from './generators/fastapi-generator.js';
 export type { RouteGenerator } from './generators/types.js';
 export { createManifest, loadManifest, saveManifest, diffRoutes } from './generators/manifest.js';

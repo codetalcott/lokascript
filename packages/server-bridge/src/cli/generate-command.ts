@@ -3,6 +3,9 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { scanDirectory } from '../scanner/route-scanner.js';
 import { ExpressGenerator } from '../generators/express-generator.js';
 import { HonoGenerator } from '../generators/hono-generator.js';
+import { OpenAPIGenerator } from '../generators/openapi-generator.js';
+import { DjangoGenerator } from '../generators/django-generator.js';
+import { FastAPIGenerator } from '../generators/fastapi-generator.js';
 import {
   loadManifest,
   saveManifest,
@@ -15,7 +18,7 @@ import type { RouteGenerator } from '../generators/types.js';
 
 interface GenerateOptions {
   dir: string;
-  framework?: 'express' | 'hono';
+  framework?: 'express' | 'hono' | 'openapi' | 'django' | 'fastapi';
   output?: string;
   typescript?: boolean;
   overwrite?: boolean;
@@ -55,7 +58,15 @@ export async function runGenerate(options: GenerateOptions): Promise<void> {
 
   // Select generator
   const generator: RouteGenerator =
-    config.framework === 'hono' ? new HonoGenerator() : new ExpressGenerator();
+    config.framework === 'openapi'
+      ? new OpenAPIGenerator()
+      : config.framework === 'hono'
+        ? new HonoGenerator()
+        : config.framework === 'django'
+          ? new DjangoGenerator()
+          : config.framework === 'fastapi'
+            ? new FastAPIGenerator()
+            : new ExpressGenerator();
 
   const outputDir = resolve(cwd, config.output ?? './server/routes');
 
@@ -70,11 +81,13 @@ export async function runGenerate(options: GenerateOptions): Promise<void> {
     overwrite: options.overwrite,
   });
 
-  // Write files
-  await mkdir(join(outputDir, 'routes'), { recursive: true });
+  // Write files — create subdirectories as needed
+  await mkdir(outputDir, { recursive: true });
 
   for (const file of generated.files) {
     const filePath = join(outputDir, file.path);
+    const fileDir = join(filePath, '..');
+    await mkdir(fileDir, { recursive: true });
     await writeFile(filePath, file.content, 'utf-8');
   }
 
