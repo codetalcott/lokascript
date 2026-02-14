@@ -105,7 +105,7 @@ export abstract class BaseTokenizer implements LanguageTokenizer {
   registerExtractor(extractor: ValueExtractor): void {
     // Initialize context for context-aware extractors
     if (isContextAwareExtractor(extractor)) {
-      extractor.setContext(createTokenizerContext(this));
+      extractor.setContext(createTokenizerContext(this as any));
     }
     this.extractors.push(extractor);
   }

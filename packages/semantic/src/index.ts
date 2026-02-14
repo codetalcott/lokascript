@@ -150,7 +150,7 @@ export {
   EventModifierExtractor,
   UrlExtractor,
   VariableRefExtractor,
-} from './tokenizers/extractors';
+} from './tokenizers/extractors/index';
 export { getHyperscriptExtractors } from './tokenizers/extractor-helpers';
 
 // Generic extractors (re-exported from @lokascript/framework)
