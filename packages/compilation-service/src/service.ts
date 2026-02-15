@@ -50,10 +50,34 @@ export class CompilationService {
   private cache: SemanticCache;
   private confidenceThreshold: number;
   private translateFn: ((code: string, from: string, to: string) => string) | null = null;
+  private testRenderers: Map<string, TestRenderer>;
+  private componentRenderers: Map<string, ComponentRenderer>;
 
   private constructor(options: ServiceOptions = {}) {
     this.confidenceThreshold = options.confidenceThreshold ?? 0.7;
     this.cache = new SemanticCache(options.cacheSize ?? 500);
+
+    // Initialize renderer registries with defaults
+    this.testRenderers = new Map<string, TestRenderer>(
+      Object.entries(options.testRenderers ?? { playwright: new PlaywrightRenderer() })
+    );
+    this.componentRenderers = new Map<string, ComponentRenderer>(
+      Object.entries(options.componentRenderers ?? { react: new ReactRenderer() })
+    );
+  }
+
+  /**
+   * Register a test renderer for a given framework.
+   */
+  registerTestRenderer(framework: string, renderer: TestRenderer): void {
+    this.testRenderers.set(framework, renderer);
+  }
+
+  /**
+   * Register a component renderer for a given framework.
+   */
+  registerComponentRenderer(framework: string, renderer: ComponentRenderer): void {
+    this.componentRenderers.set(framework, renderer);
   }
 
   /**
@@ -313,7 +337,16 @@ export class CompilationService {
     }
 
     // Step 4: Render tests
-    const renderer: TestRenderer = new PlaywrightRenderer();
+    const frameworkName = request.framework ?? 'playwright';
+    const renderer = this.testRenderers.get(frameworkName);
+    if (!renderer) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'UNKNOWN_FRAMEWORK',
+        message: `No test renderer registered for framework '${frameworkName}'. Available: ${[...this.testRenderers.keys()].join(', ')}`,
+      });
+      return { ok: false, tests: [], operations: [], diagnostics };
+    }
 
     // Optionally compile for 'compiled' execution mode
     let compiledJs: string | undefined;
@@ -404,7 +437,16 @@ export class CompilationService {
     }
 
     // Step 4: Render component
-    const renderer: ComponentRenderer = new ReactRenderer();
+    const frameworkName = request.framework ?? 'react';
+    const renderer = this.componentRenderers.get(frameworkName);
+    if (!renderer) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'UNKNOWN_FRAMEWORK',
+        message: `No component renderer registered for framework '${frameworkName}'. Available: ${[...this.componentRenderers.keys()].join(', ')}`,
+      });
+      return { ok: false, operations: [], diagnostics };
+    }
     const generated = renderer.render(spec, {
       componentName: request.componentName,
       typescript: request.typescript,

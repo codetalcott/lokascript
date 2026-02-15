@@ -164,7 +164,7 @@ export interface TestRequest {
   confidence?: number;
 
   /** Test framework to target (default 'playwright') */
-  framework?: 'playwright';
+  framework?: string;
   /** How to load hyperscript in the test (default 'runtime') */
   executionMode?: 'runtime' | 'compiled';
   /** Override auto-generated test name */
@@ -224,7 +224,7 @@ export interface ComponentRequest {
   confidence?: number;
 
   /** Target framework (default 'react') */
-  framework?: 'react';
+  framework?: string;
   /** Override auto-generated component name */
   componentName?: string;
   /** TypeScript output (default true) */
@@ -281,6 +281,10 @@ export interface ServiceOptions {
   confidenceThreshold?: number;
   /** Maximum cache entries (default 500, 0 to disable) */
   cacheSize?: number;
+  /** Custom test renderers keyed by framework name (default: { playwright: PlaywrightRenderer }) */
+  testRenderers?: Record<string, import('./renderers/types.js').TestRenderer>;
+  /** Custom component renderers keyed by framework name (default: { react: ReactRenderer }) */
+  componentRenderers?: Record<string, import('./renderers/component-types.js').ComponentRenderer>;
 }
 
 // =============================================================================

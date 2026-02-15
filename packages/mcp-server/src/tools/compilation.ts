@@ -104,6 +104,10 @@ export const compilationTools: Tool[] = [
           enum: ['runtime', 'compiled'],
           description: 'How to load hyperscript in test (default runtime)',
         },
+        framework: {
+          type: 'string',
+          description: 'Test framework to target (default "playwright")',
+        },
       },
     },
   },
@@ -122,6 +126,10 @@ export const compilationTools: Tool[] = [
         typescript: {
           type: 'boolean',
           description: 'TypeScript output (default true)',
+        },
+        framework: {
+          type: 'string',
+          description: 'Component framework to target (default "react")',
         },
       },
     },
@@ -220,6 +228,7 @@ export async function handleCompilationTool(
           language: args.language as string | undefined,
           testName: args.testName as string | undefined,
           executionMode: args.executionMode as 'runtime' | 'compiled' | undefined,
+          framework: args.framework as string | undefined,
         });
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
@@ -235,6 +244,7 @@ export async function handleCompilationTool(
           language: args.language as string | undefined,
           componentName: args.componentName as string | undefined,
           typescript: args.typescript as boolean | undefined,
+          framework: args.framework as string | undefined,
         });
         return {
           content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

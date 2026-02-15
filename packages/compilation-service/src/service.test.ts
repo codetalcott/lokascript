@@ -380,4 +380,155 @@ describe('CompilationService', () => {
       expect(result.diagnostics.some(d => d.code === 'NO_INPUT')).toBe(true);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Pluggable Renderers
+  // ---------------------------------------------------------------------------
+
+  describe('pluggable renderers', () => {
+    it('uses default playwright renderer for generateTests()', () => {
+      const result = service.generateTests({
+        explicit: '[toggle patient:.active]',
+      });
+      expect(result.ok).toBe(true);
+      expect(result.tests).toHaveLength(1);
+      expect(result.tests[0].framework).toBe('playwright');
+    });
+
+    it('uses default react renderer for generateComponent()', () => {
+      const result = service.generateComponent({
+        explicit: '[toggle patient:.active]',
+      });
+      expect(result.ok).toBe(true);
+      expect(result.component?.framework).toBe('react');
+    });
+
+    it('returns error for unknown test framework', () => {
+      const result = service.generateTests({
+        explicit: '[toggle patient:.active]',
+        framework: 'vitest',
+      });
+      expect(result.ok).toBe(false);
+      expect(result.diagnostics.some(d => d.code === 'UNKNOWN_FRAMEWORK')).toBe(true);
+    });
+
+    it('returns error for unknown component framework', () => {
+      const result = service.generateComponent({
+        explicit: '[toggle patient:.active]',
+        framework: 'svelte',
+      });
+      expect(result.ok).toBe(false);
+      expect(result.diagnostics.some(d => d.code === 'UNKNOWN_FRAMEWORK')).toBe(true);
+    });
+
+    it('accepts custom test renderer via registerTestRenderer()', () => {
+      const mockRenderer = {
+        framework: 'mock-test',
+        render: () => ({
+          name: 'mock test',
+          code: '// mock test code',
+          html: '<div></div>',
+          framework: 'mock-test',
+          operations: [],
+        }),
+      };
+
+      service.registerTestRenderer('mock-test', mockRenderer);
+      const result = service.generateTests({
+        explicit: '[toggle patient:.active]',
+        framework: 'mock-test',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.tests[0].framework).toBe('mock-test');
+      expect(result.tests[0].code).toBe('// mock test code');
+    });
+
+    it('accepts custom component renderer via registerComponentRenderer()', () => {
+      const mockRenderer = {
+        framework: 'mock-component',
+        render: () => ({
+          name: 'MockComponent',
+          code: '// mock component code',
+          framework: 'mock-component',
+          operations: [],
+          hooks: [],
+        }),
+      };
+
+      service.registerComponentRenderer('mock-component', mockRenderer);
+      const result = service.generateComponent({
+        explicit: '[toggle patient:.active]',
+        framework: 'mock-component',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.component?.framework).toBe('mock-component');
+      expect(result.component?.code).toBe('// mock component code');
+    });
+  });
+});
+
+// =============================================================================
+// Custom Renderers via ServiceOptions
+// =============================================================================
+
+describe('CompilationService with custom renderers', () => {
+  let service: CompilationService;
+
+  beforeAll(async () => {
+    service = await CompilationService.create({
+      testRenderers: {
+        custom: {
+          framework: 'custom',
+          render: () => ({
+            name: 'custom test',
+            code: '// custom renderer',
+            html: '<div></div>',
+            framework: 'custom',
+            operations: [],
+          }),
+        },
+      },
+      componentRenderers: {
+        vue: {
+          framework: 'vue',
+          render: () => ({
+            name: 'VueComponent',
+            code: '// vue component',
+            framework: 'vue',
+            operations: [],
+            hooks: [],
+          }),
+        },
+      },
+    });
+  }, 30000);
+
+  it('uses custom test renderer from ServiceOptions', () => {
+    const result = service.generateTests({
+      explicit: '[toggle patient:.active]',
+      framework: 'custom',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.tests[0].framework).toBe('custom');
+  });
+
+  it('uses custom component renderer from ServiceOptions', () => {
+    const result = service.generateComponent({
+      explicit: '[toggle patient:.active]',
+      framework: 'vue',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.component?.framework).toBe('vue');
+  });
+
+  it('does not have default renderers when custom ones are provided', () => {
+    const result = service.generateTests({
+      explicit: '[toggle patient:.active]',
+      framework: 'playwright',
+    });
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.some(d => d.code === 'UNKNOWN_FRAMEWORK')).toBe(true);
+  });
 });
