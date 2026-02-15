@@ -28,7 +28,7 @@ function generateInsert(node: SemanticNode): string {
 
 function generateUpdate(node: SemanticNode): string {
   const sourceStr = extractRoleValue(node, 'source') || 'table';
-  const valuesStr = extractRoleValue(node, 'values');
+  const valuesStr = extractRoleValue(node, 'values') || 'column = value';
   const conditionStr = extractRoleValue(node, 'condition');
 
   let sql = `UPDATE ${sourceStr} SET ${valuesStr}`;
