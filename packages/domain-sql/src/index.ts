@@ -2,8 +2,8 @@
  * @lokascript/domain-sql — Multilingual SQL DSL
  *
  * A proof-of-generality SQL domain built on @lokascript/framework.
- * Parses SQL queries written in English, Spanish, Japanese, or Arabic,
- * demonstrating that the framework supports SVO, SOV, and VSO word orders.
+ * Parses SQL queries written in 8 languages, demonstrating that the
+ * framework supports SVO, SOV, and VSO word orders.
  *
  * @example
  * ```typescript
@@ -26,22 +26,47 @@
  * // Arabic (VSO)
  * sql.compile('اختر name من users', 'ar');
  * // → { ok: true, code: 'SELECT name FROM users' }
+ *
+ * // Korean (SOV)
+ * sql.compile('users 에서 name 선택', 'ko');
+ *
+ * // Chinese (SVO)
+ * sql.compile('查询 name 从 users', 'zh');
+ *
+ * // Turkish (SOV)
+ * sql.compile('users den name seç', 'tr');
+ *
+ * // French (SVO)
+ * sql.compile('sélectionner name de users', 'fr');
  * ```
  */
 
 import { createMultilingualDSL, type MultilingualDSL } from '@lokascript/framework';
 import { allSchemas, selectSchema, insertSchema, updateSchema, deleteSchema } from './schemas';
-import { englishProfile, spanishProfile, japaneseProfile, arabicProfile } from './profiles';
+import {
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+} from './profiles';
 import {
   EnglishSQLTokenizer,
   SpanishSQLTokenizer,
   JapaneseSQLTokenizer,
   ArabicSQLTokenizer,
+  KoreanSQLTokenizer,
+  ChineseSQLTokenizer,
+  TurkishSQLTokenizer,
+  FrenchSQLTokenizer,
 } from './tokenizers';
 import { sqlCodeGenerator } from './generators/sql-generator';
 
 /**
- * Create a multilingual SQL DSL instance with all 4 supported languages.
+ * Create a multilingual SQL DSL instance with all 8 supported languages.
  */
 export function createSQLDSL(): MultilingualDSL {
   return createMultilingualDSL({
@@ -76,6 +101,34 @@ export function createSQLDSL(): MultilingualDSL {
         tokenizer: ArabicSQLTokenizer,
         patternProfile: arabicProfile,
       },
+      {
+        code: 'ko',
+        name: 'Korean',
+        nativeName: '한국어',
+        tokenizer: KoreanSQLTokenizer,
+        patternProfile: koreanProfile,
+      },
+      {
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+        tokenizer: ChineseSQLTokenizer,
+        patternProfile: chineseProfile,
+      },
+      {
+        code: 'tr',
+        name: 'Turkish',
+        nativeName: 'Türkçe',
+        tokenizer: TurkishSQLTokenizer,
+        patternProfile: turkishProfile,
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        nativeName: 'Français',
+        tokenizer: FrenchSQLTokenizer,
+        patternProfile: frenchProfile,
+      },
     ],
     codeGenerator: sqlCodeGenerator,
   });
@@ -83,11 +136,25 @@ export function createSQLDSL(): MultilingualDSL {
 
 // Re-export schemas for consumers who want to extend
 export { allSchemas, selectSchema, insertSchema, updateSchema, deleteSchema };
-export { englishProfile, spanishProfile, japaneseProfile, arabicProfile } from './profiles';
+export {
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+} from './profiles';
 export { sqlCodeGenerator } from './generators/sql-generator';
+export { renderSQL } from './generators/sql-renderer';
 export {
   EnglishSQLTokenizer,
   SpanishSQLTokenizer,
   JapaneseSQLTokenizer,
   ArabicSQLTokenizer,
+  KoreanSQLTokenizer,
+  ChineseSQLTokenizer,
+  TurkishSQLTokenizer,
+  FrenchSQLTokenizer,
 } from './tokenizers';

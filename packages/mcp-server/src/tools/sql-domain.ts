@@ -9,8 +9,9 @@
 import { validateRequired, getString, jsonResponse, errorResponse } from './utils.js';
 import type { ValidationError } from './utils.js';
 
-// Lazy-loaded SQL DSL instance
+// Lazy-loaded SQL DSL instance and renderer
 let sqlDSL: any = null;
+let sqlRenderer: ((node: any, language: string) => string) | null = null;
 
 async function getSQL() {
   if (sqlDSL) return sqlDSL;
@@ -18,6 +19,7 @@ async function getSQL() {
   try {
     const mod = await import('@lokascript/domain-sql');
     sqlDSL = mod.createSQLDSL();
+    sqlRenderer = mod.renderSQL;
     return sqlDSL;
   } catch {
     throw new Error('@lokascript/domain-sql not available. Install it to use SQL domain tools.');
@@ -33,7 +35,8 @@ export const sqlDomainTools = [
     name: 'parse_sql',
     description:
       'Parse a natural-language SQL query into a semantic representation. ' +
-      'Supports English (SVO), Spanish (SVO), Japanese (SOV), and Arabic (VSO).',
+      'Supports English (SVO), Spanish (SVO), Japanese (SOV), Arabic (VSO), ' +
+      'Korean (SOV), Chinese (SVO), Turkish (SOV), and French (SVO).',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -43,7 +46,7 @@ export const sqlDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -54,7 +57,7 @@ export const sqlDomainTools = [
     name: 'compile_sql',
     description:
       'Compile a natural-language SQL query to standard SQL. ' +
-      'Input can be in English, Spanish, Japanese, or Arabic.',
+      'Input can be in English, Spanish, Japanese, Arabic, Korean, Chinese, Turkish, or French.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -64,7 +67,7 @@ export const sqlDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -75,7 +78,7 @@ export const sqlDomainTools = [
     name: 'validate_sql',
     description:
       'Validate a natural-language SQL query. Returns whether it parses successfully ' +
-      'and any errors. Supports 4 languages.',
+      'and any errors. Supports 8 languages.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -85,7 +88,7 @@ export const sqlDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -106,11 +109,11 @@ export const sqlDomainTools = [
         },
         from: {
           type: 'string',
-          description: 'Source language code: en, es, ja, ar',
+          description: 'Source language code: en, es, ja, ar, ko, zh, tr, fr',
         },
         to: {
           type: 'string',
-          description: 'Target language code: en, es, ja, ar',
+          description: 'Target language code: en, es, ja, ar, ko, zh, tr, fr',
         },
       },
       required: ['query', 'from', 'to'],
@@ -228,7 +231,17 @@ async function translateSql(args: Record<string, unknown>): Promise<ToolResponse
   // Compile to standard SQL (language-neutral output)
   const compiled = sql.compile(query, from);
 
-  // Also parse with confidence to show the semantic representation
+  // Render to target natural language
+  let rendered: string | null = null;
+  if (sqlRenderer) {
+    try {
+      rendered = sqlRenderer(node, to);
+    } catch {
+      // Fall through with rendered = null
+    }
+  }
+
+  // Semantic representation
   const roles: Record<string, unknown> = {};
   for (const [key, value] of node.roles) {
     roles[key] = value;
@@ -236,8 +249,8 @@ async function translateSql(args: Record<string, unknown>): Promise<ToolResponse
 
   return jsonResponse({
     input: { query, language: from },
+    rendered: rendered ? { code: rendered, language: to } : null,
     semantic: { action: node.action, roles },
     sql: compiled.ok ? compiled.code : null,
-    note: `Translation renders to standard SQL. Natural language rendering in '${to}' requires the render() API (not yet implemented for SQL domain).`,
   });
 }

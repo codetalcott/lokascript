@@ -3,7 +3,7 @@
  *
  * Defines the semantic structure of SQL commands using the framework's
  * defineCommand/defineRole helpers. Each schema specifies roles (columns,
- * source, condition, etc.) and per-language marker overrides.
+ * source, condition, etc.) and per-language marker overrides for 8 languages.
  */
 
 import { defineCommand, defineRole } from '@lokascript/framework';
@@ -33,7 +33,16 @@ export const selectSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 2,
-      markerOverride: { en: 'from', es: 'de', ja: 'から', ar: 'من' },
+      markerOverride: {
+        en: 'from',
+        es: 'de',
+        ja: 'から',
+        ar: 'من',
+        ko: '에서',
+        zh: '从',
+        tr: 'den',
+        fr: 'de',
+      },
     }),
     defineRole({
       role: 'condition',
@@ -42,7 +51,16 @@ export const selectSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 0,
       sovPosition: 0,
-      markerOverride: { en: 'where', es: 'donde', ja: '条件', ar: 'حيث' },
+      markerOverride: {
+        en: 'where',
+        es: 'donde',
+        ja: '条件',
+        ar: 'حيث',
+        ko: '조건',
+        zh: '条件',
+        tr: 'koşul',
+        fr: 'où',
+      },
     }),
   ],
 });
@@ -72,7 +90,16 @@ export const insertSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 2,
-      markerOverride: { en: 'into', es: 'en', ja: 'に', ar: 'في' },
+      markerOverride: {
+        en: 'into',
+        es: 'en',
+        ja: 'に',
+        ar: 'في',
+        ko: '에',
+        zh: '到',
+        tr: 'e',
+        fr: 'dans',
+      },
     }),
   ],
 });
@@ -102,7 +129,16 @@ export const updateSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 2,
-      markerOverride: { en: 'set', es: 'establecer', ja: '設定', ar: 'عيّن' },
+      markerOverride: {
+        en: 'set',
+        es: 'establecer',
+        ja: '設定',
+        ar: 'عيّن',
+        ko: '설정',
+        zh: '设置',
+        tr: 'ayarla',
+        fr: 'définir',
+      },
     }),
     defineRole({
       role: 'condition',
@@ -111,7 +147,16 @@ export const updateSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 0,
       sovPosition: 0,
-      markerOverride: { en: 'where', es: 'donde', ja: '条件', ar: 'حيث' },
+      markerOverride: {
+        en: 'where',
+        es: 'donde',
+        ja: '条件',
+        ar: 'حيث',
+        ko: '조건',
+        zh: '条件',
+        tr: 'koşul',
+        fr: 'où',
+      },
     }),
   ],
 });
@@ -133,7 +178,16 @@ export const deleteSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { en: 'from', es: 'de', ja: 'から', ar: 'من' },
+      markerOverride: {
+        en: 'from',
+        es: 'de',
+        ja: 'から',
+        ar: 'من',
+        ko: '에서',
+        zh: '从',
+        tr: 'den',
+        fr: 'de',
+      },
     }),
     defineRole({
       role: 'condition',
@@ -142,7 +196,16 @@ export const deleteSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 0,
       sovPosition: 0,
-      markerOverride: { en: 'where', es: 'donde', ja: '条件', ar: 'حيث' },
+      markerOverride: {
+        en: 'where',
+        es: 'donde',
+        ja: '条件',
+        ar: 'حيث',
+        ko: '조건',
+        zh: '条件',
+        tr: 'koşul',
+        fr: 'où',
+      },
     }),
   ],
 });
