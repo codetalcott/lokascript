@@ -244,6 +244,30 @@ export class PatternMatcher {
           : 'EOF'
       );
 
+      // Greedy role capture: consume all remaining tokens until the next
+      // recognized marker keyword or end of input
+      if (patternToken.type === 'role' && patternToken.greedy) {
+        const stopMarkers = this.collectStopMarkers(patternTokens, i + 1);
+        const values: string[] = [];
+        while (!tokens.isAtEnd()) {
+          const nextToken = tokens.peek();
+          if (!nextToken) break;
+          if (this.isStopMarker(nextToken, stopMarkers)) break;
+          values.push(nextToken.value);
+          tokens.advance();
+        }
+        if (values.length > 0) {
+          captured.set(patternToken.role, { type: 'expression', raw: values.join(' ') });
+          prevOptionalMark = null;
+          prevOptionalRole = null;
+          continue;
+        } else if (patternToken.optional) {
+          continue;
+        } else {
+          return false;
+        }
+      }
+
       // Save stream position before attempting optional roles
       const isOptionalRole = patternToken.type === 'role' && patternToken.optional === true;
       const markBefore = isOptionalRole ? tokens.mark() : null;
@@ -946,6 +970,50 @@ export class PatternMatcher {
     }
 
     return 'none';
+  }
+
+  /**
+   * Collect literal values from upcoming pattern tokens that act as stop markers
+   * for greedy role capture. Returns the set of lowercase values.
+   */
+  private collectStopMarkers(patternTokens: PatternToken[], startIndex: number): Set<string> {
+    const markers = new Set<string>();
+    for (let j = startIndex; j < patternTokens.length; j++) {
+      const pt = patternTokens[j];
+      if (pt.type === 'literal') {
+        markers.add(pt.value.toLowerCase());
+        if (pt.alternatives) {
+          for (const alt of pt.alternatives) {
+            markers.add(alt.toLowerCase());
+          }
+        }
+        break;
+      }
+      if (pt.type === 'group') {
+        for (const gt of pt.tokens) {
+          if (gt.type === 'literal') {
+            markers.add(gt.value.toLowerCase());
+            if (gt.alternatives) {
+              for (const alt of gt.alternatives) {
+                markers.add(alt.toLowerCase());
+              }
+            }
+            break;
+          }
+        }
+        break;
+      }
+    }
+    return markers;
+  }
+
+  /**
+   * Check if a token matches any stop marker for greedy capture.
+   */
+  private isStopMarker(token: LanguageToken, stopMarkers: Set<string>): boolean {
+    if (stopMarkers.size === 0) return false;
+    const value = (token.normalized || token.value).toLowerCase();
+    return stopMarkers.has(value);
   }
 
   /**

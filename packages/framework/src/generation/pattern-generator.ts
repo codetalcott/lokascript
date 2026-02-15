@@ -154,6 +154,7 @@ function addRoleWithMarker(
     role: roleSpec.role,
     optional: isOptional,
     expectedTypes: roleSpec.expectedTypes,
+    ...(roleSpec.greedy && { greedy: true }),
   };
 
   if (marker) {

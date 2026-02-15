@@ -1,15 +1,16 @@
 /**
  * JSX Domain MCP Tools
  *
- * Provides multilingual JSX/React code generation, parsing, and validation
- * via the @lokascript/domain-jsx package. Supports 4 languages (EN, ES, JA, AR)
- * with SVO, SOV, and VSO word orders.
+ * Provides multilingual JSX/React code generation, parsing, validation, and
+ * translation via the @lokascript/domain-jsx package. Supports 8 languages
+ * (EN, ES, JA, AR, KO, ZH, TR, FR) with SVO, SOV, and VSO word orders.
  */
 
 import { validateRequired, getString, jsonResponse, errorResponse } from './utils.js';
 
-// Lazy-loaded JSX DSL instance
+// Lazy-loaded JSX DSL instance + renderer
 let jsxDSL: any = null;
+let jsxRenderer: ((node: any, lang: string) => string) | null = null;
 
 async function getJSX() {
   if (jsxDSL) return jsxDSL;
@@ -17,6 +18,7 @@ async function getJSX() {
   try {
     const mod = await import('@lokascript/domain-jsx');
     jsxDSL = mod.createJSXDSL();
+    jsxRenderer = mod.renderJSX;
     return jsxDSL;
   } catch {
     throw new Error('@lokascript/domain-jsx not available. Install it to use JSX domain tools.');
@@ -33,7 +35,7 @@ export const jsxDomainTools = [
     description:
       'Parse a natural-language JSX/React description into a semantic representation. ' +
       'Supports 6 commands (element, component, render, state, effect, fragment) in ' +
-      'English (SVO), Spanish (SVO), Japanese (SOV), and Arabic (VSO).',
+      '8 languages: English, Spanish, Japanese, Arabic, Korean, Chinese, Turkish, French.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -45,7 +47,7 @@ export const jsxDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -56,7 +58,8 @@ export const jsxDomainTools = [
     name: 'compile_jsx',
     description:
       'Compile a natural-language JSX/React description to JavaScript/JSX code. ' +
-      'Generates React-compatible output (JSX elements, useState, useEffect, createRoot, etc.).',
+      'Generates React-compatible output (JSX elements, useState, useEffect, createRoot, etc.). ' +
+      'Supports 8 languages: en, es, ja, ar, ko, zh, tr, fr.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -66,7 +69,7 @@ export const jsxDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -77,7 +80,7 @@ export const jsxDomainTools = [
     name: 'validate_jsx',
     description:
       'Validate a natural-language JSX/React description. Returns whether it parses ' +
-      'successfully and any errors. Supports 4 languages.',
+      'successfully and any errors. Supports 8 languages: en, es, ja, ar, ko, zh, tr, fr.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -87,7 +90,7 @@ export const jsxDomainTools = [
         },
         language: {
           type: 'string',
-          description: 'Language code: en, es, ja, ar',
+          description: 'Language code: en, es, ja, ar, ko, zh, tr, fr',
           default: 'en',
         },
       },
@@ -98,7 +101,8 @@ export const jsxDomainTools = [
     name: 'translate_jsx',
     description:
       'Translate a JSX/React description between natural languages. Parses in the ' +
-      'source language and compiles to JSX/React code.',
+      'source language and renders in the target language. Also compiles to JSX code. ' +
+      'Supports 8 languages: en, es, ja, ar, ko, zh, tr, fr.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -108,11 +112,11 @@ export const jsxDomainTools = [
         },
         from: {
           type: 'string',
-          description: 'Source language code: en, es, ja, ar',
+          description: 'Source language code: en, es, ja, ar, ko, zh, tr, fr',
         },
         to: {
           type: 'string',
-          description: 'Target language code: en, es, ja, ar',
+          description: 'Target language code: en, es, ja, ar, ko, zh, tr, fr',
         },
       },
       required: ['code', 'from', 'to'],
@@ -236,11 +240,21 @@ async function translateJsx(args: Record<string, unknown>): Promise<ToolResponse
   // Compile to JSX (language-neutral output)
   const compiled = jsx.compile(code, from);
 
+  // Render to target language using the natural language renderer
+  let rendered: string | null = null;
+  if (jsxRenderer) {
+    try {
+      rendered = jsxRenderer(node, to);
+    } catch {
+      // Fall through — rendered stays null
+    }
+  }
+
   return jsonResponse({
     input: { code, language: from },
     semantic: { action: node.action, roles: serializeRoles(node.roles) },
+    rendered: rendered ? { code: rendered, language: to } : null,
     jsx: compiled.ok ? compiled.code : null,
     errors: compiled.errors,
-    note: `JSX output is language-neutral. Natural language rendering in '${to}' requires a renderer (not yet implemented for JSX domain).`,
   });
 }

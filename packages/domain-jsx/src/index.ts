@@ -2,9 +2,9 @@
  * @lokascript/domain-jsx — Multilingual JSX DSL
  *
  * A proof-of-generality JSX/React domain built on @lokascript/framework.
- * Parses JSX component descriptions written in English, Spanish, Japanese,
- * or Arabic, demonstrating that the framework supports SVO, SOV, and VSO
- * word orders for UI component DSLs.
+ * Parses JSX component descriptions written in 8 languages (EN, ES, JA, AR,
+ * KO, ZH, TR, FR), demonstrating that the framework supports SVO, SOV, and
+ * VSO word orders for UI component DSLs.
  *
  * @example
  * ```typescript
@@ -14,19 +14,15 @@
  *
  * // English (SVO)
  * jsx.compile('element div with className "app"', 'en');
- * // → { ok: true, code: '<div className="app" />' }
- *
- * // Spanish (SVO)
- * jsx.compile('renderizar App en root', 'es');
- * // → { ok: true, code: 'createRoot(document.getElementById("root")).render(<App />)' }
  *
  * // Japanese (SOV)
  * jsx.compile('count 0 初期値 状態', 'ja');
- * // → { ok: true, code: 'const [count, setCount] = useState(0)' }
  *
- * // Arabic (VSO)
- * jsx.compile('ارسم App في root', 'ar');
- * // → { ok: true, code: 'createRoot(document.getElementById("root")).render(<App />)' }
+ * // Korean (SOV)
+ * jsx.compile('count 0 초기값 상태', 'ko');
+ *
+ * // Chinese (SVO)
+ * jsx.compile('状态 count 初始 0', 'zh');
  * ```
  */
 
@@ -40,17 +36,30 @@ import {
   effectSchema,
   fragmentSchema,
 } from './schemas';
-import { englishProfile, spanishProfile, japaneseProfile, arabicProfile } from './profiles';
+import {
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+} from './profiles';
 import {
   EnglishJSXTokenizer,
   SpanishJSXTokenizer,
   JapaneseJSXTokenizer,
   ArabicJSXTokenizer,
+  KoreanJSXTokenizer,
+  ChineseJSXTokenizer,
+  TurkishJSXTokenizer,
+  FrenchJSXTokenizer,
 } from './tokenizers';
-import { jsxCodeGenerator } from './generators/jsx-generator';
+import { jsxCodeGenerator, createJSXCodeGenerator } from './generators/jsx-generator';
 
 /**
- * Create a multilingual JSX DSL instance with all 4 supported languages.
+ * Create a multilingual JSX DSL instance with all 8 supported languages.
  */
 export function createJSXDSL(): MultilingualDSL {
   return createMultilingualDSL({
@@ -85,6 +94,34 @@ export function createJSXDSL(): MultilingualDSL {
         tokenizer: ArabicJSXTokenizer,
         patternProfile: arabicProfile,
       },
+      {
+        code: 'ko',
+        name: 'Korean',
+        nativeName: '한국어',
+        tokenizer: KoreanJSXTokenizer,
+        patternProfile: koreanProfile,
+      },
+      {
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+        tokenizer: ChineseJSXTokenizer,
+        patternProfile: chineseProfile,
+      },
+      {
+        code: 'tr',
+        name: 'Turkish',
+        nativeName: 'Türkçe',
+        tokenizer: TurkishJSXTokenizer,
+        patternProfile: turkishProfile,
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        nativeName: 'Français',
+        tokenizer: FrenchJSXTokenizer,
+        patternProfile: frenchProfile,
+      },
     ],
     codeGenerator: jsxCodeGenerator,
   });
@@ -100,11 +137,25 @@ export {
   effectSchema,
   fragmentSchema,
 };
-export { englishProfile, spanishProfile, japaneseProfile, arabicProfile } from './profiles';
-export { jsxCodeGenerator } from './generators/jsx-generator';
+export {
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+} from './profiles';
+export { jsxCodeGenerator, createJSXCodeGenerator } from './generators/jsx-generator';
+export { renderJSX } from './generators/jsx-renderer';
 export {
   EnglishJSXTokenizer,
   SpanishJSXTokenizer,
   JapaneseJSXTokenizer,
   ArabicJSXTokenizer,
+  KoreanJSXTokenizer,
+  ChineseJSXTokenizer,
+  TurkishJSXTokenizer,
+  FrenchJSXTokenizer,
 } from './tokenizers';

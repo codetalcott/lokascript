@@ -60,8 +60,6 @@ export const japaneseProfile: PatternGenLanguageProfile = {
     effect: { primary: 'エフェクト' },
     fragment: { primary: 'フラグメント' },
   },
-  // All markers use the default SOV 'after' (postposition) placement.
-  // Role markers come from schema markerOverride.
 };
 
 // =============================================================================
@@ -82,7 +80,84 @@ export const arabicProfile: PatternGenLanguageProfile = {
 };
 
 // =============================================================================
+// Korean (SOV)
+// =============================================================================
+
+export const koreanProfile: PatternGenLanguageProfile = {
+  code: 'ko',
+  wordOrder: 'SOV',
+  keywords: {
+    element: { primary: '요소' },
+    component: { primary: '컴포넌트' },
+    render: { primary: '렌더링' },
+    state: { primary: '상태' },
+    effect: { primary: '효과' },
+    fragment: { primary: '프래그먼트' },
+  },
+};
+
+// =============================================================================
+// Chinese (SVO)
+// =============================================================================
+
+export const chineseProfile: PatternGenLanguageProfile = {
+  code: 'zh',
+  wordOrder: 'SVO',
+  keywords: {
+    element: { primary: '元素' },
+    component: { primary: '组件' },
+    render: { primary: '渲染' },
+    state: { primary: '状态' },
+    effect: { primary: '效果' },
+    fragment: { primary: '片段' },
+  },
+};
+
+// =============================================================================
+// Turkish (SOV)
+// =============================================================================
+
+export const turkishProfile: PatternGenLanguageProfile = {
+  code: 'tr',
+  wordOrder: 'SOV',
+  keywords: {
+    element: { primary: 'oge' },
+    component: { primary: 'bilesen' },
+    render: { primary: 'isle' },
+    state: { primary: 'durum' },
+    effect: { primary: 'etki' },
+    fragment: { primary: 'parca' },
+  },
+};
+
+// =============================================================================
+// French (SVO)
+// =============================================================================
+
+export const frenchProfile: PatternGenLanguageProfile = {
+  code: 'fr',
+  wordOrder: 'SVO',
+  keywords: {
+    element: { primary: 'element' },
+    component: { primary: 'composant' },
+    render: { primary: 'afficher' },
+    state: { primary: 'etat' },
+    effect: { primary: 'effet' },
+    fragment: { primary: 'fragment' },
+  },
+};
+
+// =============================================================================
 // All Profiles
 // =============================================================================
 
-export const allProfiles = [englishProfile, spanishProfile, japaneseProfile, arabicProfile];
+export const allProfiles = [
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+];

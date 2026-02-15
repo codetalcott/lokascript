@@ -3,7 +3,7 @@
  *
  * Defines the semantic structure of JSX/React commands using the framework's
  * defineCommand/defineRole helpers. Each schema specifies roles (tag, props,
- * children, etc.) and per-language marker overrides.
+ * children, etc.) and per-language marker overrides for 8 languages.
  *
  * Commands:
  *  - element   — Create a JSX element
@@ -22,6 +22,10 @@ import { defineCommand, defineRole } from '@lokascript/framework';
 // ES: elemento div con className "app"
 // JA: div className で 要素
 // AR: عنصر div مع className "app"
+// KO: div className 로 요소
+// ZH: 元素 div 用 className "app"
+// TR: div className ile oge
+// FR: element div avec className "app"
 // =============================================================================
 
 export const elementSchema = defineCommand({
@@ -43,28 +47,48 @@ export const elementSchema = defineCommand({
       description: 'Element properties/attributes',
       required: false,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { en: 'with', es: 'con', ja: 'で', ar: 'مع' },
+      markerOverride: {
+        en: 'with',
+        es: 'con',
+        ja: 'で',
+        ar: 'مع',
+        ko: '로',
+        zh: '用',
+        tr: 'ile',
+        fr: 'avec',
+      },
     }),
     defineRole({
       role: 'children',
       description: 'Child elements or text content',
       required: false,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 0,
       sovPosition: 0,
-      markerOverride: { en: 'containing', es: 'conteniendo', ja: '内容', ar: 'يحتوي' },
+      markerOverride: {
+        en: 'containing',
+        es: 'conteniendo',
+        ja: '内容',
+        ar: 'يحتوي',
+        ko: '포함',
+        zh: '包含',
+        tr: 'iceren',
+        fr: 'contenant',
+      },
     }),
   ],
 });
 
 // =============================================================================
 // COMPONENT — Define a React component
-// EN: component Button with props text onClick
-// ES: componente Button con props text onClick
-// JA: Button text プロパティ コンポーネント
-// AR: مكوّن Button مع خصائص text onClick
+// EN: component Button with text onClick
+// ES: componente Button con text onClick
+// JA: Button text 속성 コンポーネント
+// AR: مكوّن Button مع text onClick
 // =============================================================================
 
 export const componentSchema = defineCommand({
@@ -86,18 +110,38 @@ export const componentSchema = defineCommand({
       description: 'Component prop definitions',
       required: false,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { en: 'with props', es: 'con props', ja: 'プロパティ', ar: 'مع خصائص' },
+      markerOverride: {
+        en: 'with',
+        es: 'con',
+        ja: 'プロパティ',
+        ar: 'مع',
+        ko: '속성',
+        zh: '属性',
+        tr: 'ozellik',
+        fr: 'proprietes',
+      },
     }),
     defineRole({
       role: 'children',
       description: 'Component body / return value',
       required: false,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 0,
       sovPosition: 0,
-      markerOverride: { en: 'returning', es: 'retornando', ja: '返す', ar: 'يُرجع' },
+      markerOverride: {
+        en: 'returning',
+        es: 'retornando',
+        ja: '返す',
+        ar: 'يُرجع',
+        ko: '반환',
+        zh: '返回',
+        tr: 'donduren',
+        fr: 'retournant',
+      },
     }),
   ],
 });
@@ -131,7 +175,16 @@ export const renderSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 2,
-      markerOverride: { en: 'into', es: 'en', ja: 'に', ar: 'في' },
+      markerOverride: {
+        en: 'into',
+        es: 'en',
+        ja: 'に',
+        ar: 'في',
+        ko: '에',
+        zh: '到',
+        tr: 'e',
+        fr: 'dans',
+      },
     }),
   ],
 });
@@ -165,7 +218,16 @@ export const stateSchema = defineCommand({
       expectedTypes: ['expression', 'literal'],
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { en: 'initial', es: 'inicial', ja: '初期値', ar: 'ابتدائي' },
+      markerOverride: {
+        en: 'initial',
+        es: 'inicial',
+        ja: '初期値',
+        ar: 'ابتدائي',
+        ko: '초기값',
+        zh: '初始',
+        tr: 'baslangic',
+        fr: 'initial',
+      },
     }),
   ],
 });
@@ -197,9 +259,19 @@ export const effectSchema = defineCommand({
       description: 'Dependency array for the effect',
       required: false,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 1,
       sovPosition: 2,
-      markerOverride: { en: 'on', es: 'en', ja: 'で', ar: 'عند' },
+      markerOverride: {
+        en: 'on',
+        es: 'en',
+        ja: 'で',
+        ar: 'عند',
+        ko: '에서',
+        zh: '在',
+        tr: 'de',
+        fr: 'sur',
+      },
     }),
   ],
 });
@@ -223,6 +295,7 @@ export const fragmentSchema = defineCommand({
       description: 'Child elements to group',
       required: true,
       expectedTypes: ['expression'],
+      greedy: true,
       svoPosition: 1,
       sovPosition: 1,
     }),

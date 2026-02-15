@@ -4,6 +4,10 @@
  * Transforms semantic AST nodes into JSX/React code output.
  * Always generates standard JSX/React syntax regardless of the input language.
  *
+ * Supports two modes:
+ *  - JavaScript (default): standard JSX/React output
+ *  - TypeScript: adds type annotations (useState<number>, interface Props, etc.)
+ *
  * Generated output examples:
  *  - element   → <div className="app" />
  *  - component → function Button({ text, onClick }) { }
@@ -13,7 +17,7 @@
  *  - fragment  → <><Header /><Footer /></>
  */
 
-import type { SemanticNode, CodeGenerator } from '@lokascript/framework';
+import type { SemanticNode, SemanticValue, CodeGenerator } from '@lokascript/framework';
 import { extractRoleValue } from '@lokascript/framework';
 
 /** Escape characters for safe interpolation into JS string literals */
@@ -97,6 +101,37 @@ function parseProps(propsStr: string): string {
   return pairs.join(' ');
 }
 
+/**
+ * Infer a TypeScript type from an initial value string.
+ */
+function inferType(value: string): string {
+  if (value === 'true' || value === 'false') return 'boolean';
+  if (/^\d+(\\.\\d+)?$/.test(value)) return 'number';
+  if (/^["']/.test(value)) return 'string';
+  if (value === 'null' || value === 'undefined') return 'unknown';
+  return 'unknown';
+}
+
+/**
+ * Infer a TypeScript type from a SemanticValue, falling back to string heuristics.
+ */
+function inferTypeFromValue(sv: SemanticValue | undefined, strValue: string): string {
+  if (sv && sv.type === 'literal' && 'dataType' in sv && sv.dataType) {
+    return sv.dataType;
+  }
+  return inferType(strValue);
+}
+
+/**
+ * Infer a TypeScript type for a component prop by name.
+ */
+function inferPropType(propName: string): string {
+  if (/^on[A-Z]/.test(propName)) return '() => void';
+  if (propName === 'disabled' || propName === 'checked' || propName === 'hidden') return 'boolean';
+  if (propName === 'children') return 'React.ReactNode';
+  return 'string';
+}
+
 // ---------------------------------------------------------------------------
 // Command generators
 // ---------------------------------------------------------------------------
@@ -113,13 +148,26 @@ function generateElement(node: SemanticNode): string {
   return `<${tagStr}${propsStr} />`;
 }
 
-function generateComponent(node: SemanticNode): string {
+function generateComponent(node: SemanticNode, typescript: boolean): string {
   const nameStr = extractRoleValue(node, 'name') || 'Component';
   const propsStr = extractRoleValue(node, 'props');
   const bodyStr = extractRoleValue(node, 'children') || 'null';
 
-  // Build destructured props list
-  const propsList = propsStr ? `{ ${propsStr.split(/\s+/).join(', ')} }` : '';
+  if (!propsStr) {
+    if (typescript) {
+      return `function ${nameStr}(): JSX.Element {\n  return ${bodyStr};\n}`;
+    }
+    return `function ${nameStr}() {\n  return ${bodyStr};\n}`;
+  }
+
+  const propNames = propsStr.split(/\s+/);
+  const propsList = `{ ${propNames.join(', ')} }`;
+
+  if (typescript) {
+    const propsTypeName = `${nameStr}Props`;
+    const typeFields = propNames.map(p => `  ${p}: ${inferPropType(p)};`).join('\n');
+    return `interface ${propsTypeName} {\n${typeFields}\n}\n\nfunction ${nameStr}(${propsList}: ${propsTypeName}): JSX.Element {\n  return ${bodyStr};\n}`;
+  }
 
   return `function ${nameStr}(${propsList}) {\n  return ${bodyStr};\n}`;
 }
@@ -131,19 +179,40 @@ function generateRender(node: SemanticNode): string {
   return `createRoot(document.getElementById("${escapeForString(targetStr)}")).render(<${escapeForString(componentStr)} />)`;
 }
 
-function generateState(node: SemanticNode): string {
+function formatInitialValue(sv: SemanticValue | undefined, strValue: string): string {
+  // Re-quote string literals that had quotes stripped by the tokenizer
+  if (sv && sv.type === 'literal' && 'dataType' in sv && sv.dataType === 'string') {
+    if (!/^["']/.test(strValue)) {
+      return `"${escapeForString(strValue)}"`;
+    }
+  }
+  return strValue;
+}
+
+function generateState(node: SemanticNode, typescript: boolean): string {
   const nameStr = extractRoleValue(node, 'name') || 'value';
-  const initialStr = extractRoleValue(node, 'initial') || 'null';
+  const initialSV = node.roles.get('initial');
+  const rawStr = initialSV ? extractRoleValue(node, 'initial') : 'null';
+  const initialStr = formatInitialValue(initialSV, rawStr);
+
+  if (typescript) {
+    const tsType = inferTypeFromValue(initialSV, initialStr);
+    return `const [${nameStr}, ${toSetterName(nameStr)}] = useState<${tsType}>(${initialStr})`;
+  }
 
   return `const [${nameStr}, ${toSetterName(nameStr)}] = useState(${initialStr})`;
 }
 
-function generateEffect(node: SemanticNode): string {
+function generateEffect(node: SemanticNode, typescript: boolean): string {
   const callbackStr = extractRoleValue(node, 'callback') || '() => {}';
   const depsStr = extractRoleValue(node, 'deps');
 
   // Build deps array
   const depsArray = depsStr ? `[${depsStr.split(/\s+/).join(', ')}]` : '[]';
+
+  if (typescript) {
+    return `useEffect((): void => { ${callbackStr}(); }, ${depsArray})`;
+  }
 
   return `useEffect(() => { ${callbackStr}(); }, ${depsArray})`;
 }
@@ -165,11 +234,11 @@ function generateFragment(node: SemanticNode): string {
 }
 
 // ---------------------------------------------------------------------------
-// Public generator
+// Public generators
 // ---------------------------------------------------------------------------
 
 /**
- * JSX code generator implementation.
+ * JSX code generator implementation (JavaScript mode).
  */
 export const jsxCodeGenerator: CodeGenerator = {
   generate(node: SemanticNode): string {
@@ -177,13 +246,13 @@ export const jsxCodeGenerator: CodeGenerator = {
       case 'element':
         return generateElement(node);
       case 'component':
-        return generateComponent(node);
+        return generateComponent(node, false);
       case 'render':
         return generateRender(node);
       case 'state':
-        return generateState(node);
+        return generateState(node, false);
       case 'effect':
-        return generateEffect(node);
+        return generateEffect(node, false);
       case 'fragment':
         return generateFragment(node);
       default:
@@ -191,3 +260,33 @@ export const jsxCodeGenerator: CodeGenerator = {
     }
   },
 };
+
+/**
+ * Create a JSX code generator with optional TypeScript output.
+ */
+export function createJSXCodeGenerator(options?: { typescript?: boolean }): CodeGenerator {
+  const ts = options?.typescript ?? false;
+
+  if (!ts) return jsxCodeGenerator;
+
+  return {
+    generate(node: SemanticNode): string {
+      switch (node.action) {
+        case 'element':
+          return generateElement(node);
+        case 'component':
+          return generateComponent(node, true);
+        case 'render':
+          return generateRender(node);
+        case 'state':
+          return generateState(node, true);
+        case 'effect':
+          return generateEffect(node, true);
+        case 'fragment':
+          return generateFragment(node);
+        default:
+          throw new Error(`Unknown JSX command: ${node.action}`);
+      }
+    },
+  };
+}

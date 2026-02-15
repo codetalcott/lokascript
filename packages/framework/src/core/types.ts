@@ -331,6 +331,8 @@ export interface RolePatternToken {
   readonly optional?: boolean;
   /** Expected value types (for validation) */
   readonly expectedTypes?: Array<ExpectedType>;
+  /** When true, captures all remaining tokens until next marker or end */
+  readonly greedy?: boolean;
 }
 
 export interface GroupPatternToken {

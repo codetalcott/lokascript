@@ -72,6 +72,16 @@ export interface RoleSpec {
    * Maps language code to the rendering marker.
    */
   readonly renderOverride?: Record<string, string>;
+
+  /**
+   * When true, this role captures all remaining tokens until the next
+   * recognized marker keyword or end of input, joining their values
+   * with spaces into a single ExpressionValue.
+   *
+   * Only meaningful for the last role in a sequence or a role followed
+   * by a marked role. Default: false.
+   */
+  readonly greedy?: boolean;
 }
 
 /**
