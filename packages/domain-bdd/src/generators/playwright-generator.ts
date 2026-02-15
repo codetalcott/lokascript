@@ -4,14 +4,41 @@
  * Transforms BDD semantic AST nodes into Playwright test code.
  * Generates individual assertion/action lines for single steps,
  * or a complete test() block for compound scenario nodes.
+ *
+ * Uses declarative mappings from ./mappings.ts for extensibility.
  */
 
 import type { SemanticNode, SemanticValue, CodeGenerator } from '@lokascript/framework';
+import { STATE_MAPPINGS, ACTION_MAPPINGS, ASSERTION_MAPPINGS } from './mappings.js';
 
 function extractValue(value: SemanticValue): string {
   if ('raw' in value && value.raw !== undefined) return String(value.raw);
   if ('value' in value && value.value !== undefined) return String(value.value);
   return '';
+}
+
+/** Escape single quotes and backslashes for JS string literals */
+function escapeForString(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/** Escape special characters for use inside a RegExp literal */
+function escapeForRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Find a mapping by keyword (case-insensitive) */
+function findMapping<T extends { keywords: string[] }>(
+  mappings: T[],
+  keyword: string
+): T | undefined {
+  const kw = keyword.toLowerCase();
+  return mappings.find(m => m.keywords.includes(kw));
+}
+
+/** Interpolate template variables with escaping */
+function interpolate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\$\{(\w+)\}/g, (_, key) => escapeForString(vars[key] ?? ''));
 }
 
 // =============================================================================
@@ -25,18 +52,12 @@ function generateGiven(node: SemanticNode): string {
   const targetStr = target ? extractValue(target) : 'page';
   const stateStr = state ? extractValue(state) : 'visible';
 
-  switch (stateStr.toLowerCase()) {
-    case 'exists':
-      return `  await expect(page.locator('${targetStr}')).toBeAttached();`;
-    case 'visible':
-      return `  await expect(page.locator('${targetStr}')).toBeVisible();`;
-    case 'hidden':
-      return `  await expect(page.locator('${targetStr}')).toBeHidden();`;
-    case 'loaded':
-      return `  await page.waitForLoadState('domcontentloaded');`;
-    default:
-      return `  // Given: ${targetStr} ${stateStr}`;
+  const mapping = findMapping(STATE_MAPPINGS, stateStr);
+  if (mapping) {
+    return interpolate(mapping.template, { target: targetStr });
   }
+
+  return `  // Given: ${targetStr} ${stateStr}`;
 }
 
 function generateWhen(node: SemanticNode): string {
@@ -48,36 +69,12 @@ function generateWhen(node: SemanticNode): string {
   const targetStr = target ? extractValue(target) : '';
   const valueStr = value ? extractValue(value) : '';
 
-  switch (actionStr.toLowerCase()) {
-    case 'click':
-    case 'clicked':
-    case 'clic': // ES
-    case 'クリック': // JA
-    case 'نقر': // AR
-      return `  await page.locator('${targetStr}').click();`;
-    case 'type':
-    case 'typed':
-    case 'escribir': // ES
-    case '入力': // JA
-    case 'كتابة': // AR
-      return `  await page.locator('${targetStr}').fill('${valueStr}');`;
-    case 'hover':
-    case 'ホバー': // JA
-    case 'تحويم': // AR
-      return `  await page.locator('${targetStr}').hover();`;
-    case 'navigate':
-    case 'navegar': // ES
-    case '移動': // JA
-    case 'انتقال': // AR
-      return `  await page.goto('${valueStr}');`;
-    case 'submit':
-    case 'enviar': // ES
-    case '送信': // JA
-    case 'إرسال': // AR
-      return `  await page.locator('${targetStr}').press('Enter');`;
-    default:
-      return `  // When: ${actionStr} ${targetStr}`;
+  const mapping = findMapping(ACTION_MAPPINGS, actionStr);
+  if (mapping) {
+    return interpolate(mapping.template, { target: targetStr, value: valueStr });
   }
+
+  return `  // When: ${actionStr} ${targetStr}`;
 }
 
 function generateThen(node: SemanticNode): string {
@@ -91,21 +88,26 @@ function generateThen(node: SemanticNode): string {
 
   // Handle CSS class assertions (.active, .hidden, etc.)
   if (assertionStr.startsWith('.')) {
-    return `  await expect(page.locator('${targetStr}')).toHaveClass(/${assertionStr.slice(1)}/);`;
+    return `  await expect(page.locator('${escapeForString(targetStr)}')).toHaveClass(/${escapeForRegex(assertionStr.slice(1))}/);`;
   }
 
-  switch (assertionStr.toLowerCase()) {
-    case 'visible':
-      return `  await expect(page.locator('${targetStr}')).toBeVisible();`;
-    case 'hidden':
-      return `  await expect(page.locator('${targetStr}')).toBeHidden();`;
-    case 'text':
-      return `  await expect(page.locator('${targetStr}')).toHaveText('${expectedStr}');`;
-    case 'count':
-      return `  await expect(page.locator('${targetStr}')).toHaveCount(${expectedStr});`;
-    default:
-      return `  // Then: ${targetStr} ${assertionStr} ${expectedStr}`;
+  // Handle count separately (numeric, no string escaping)
+  if (
+    assertionStr.toLowerCase() === 'count' ||
+    ASSERTION_MAPPINGS.find(
+      m => m.keywords.includes(assertionStr.toLowerCase()) && m.template.includes('toHaveCount')
+    )
+  ) {
+    const count = Number.isFinite(Number(expectedStr)) ? expectedStr : '0';
+    return `  await expect(page.locator('${escapeForString(targetStr)}')).toHaveCount(${count});`;
   }
+
+  const mapping = findMapping(ASSERTION_MAPPINGS, assertionStr);
+  if (mapping) {
+    return interpolate(mapping.template, { target: targetStr, expected: expectedStr });
+  }
+
+  return `  // Then: ${targetStr} ${assertionStr} ${expectedStr}`;
 }
 
 // =============================================================================
@@ -113,14 +115,52 @@ function generateThen(node: SemanticNode): string {
 // =============================================================================
 
 function generateScenario(node: SemanticNode): string {
-  // Access statements from compound node
-  const compound = node as SemanticNode & { statements?: SemanticNode[] };
+  // Access statements and name from compound node
+  const compound = node as SemanticNode & { statements?: SemanticNode[]; name?: string };
   const statements = compound.statements ?? [];
+  const scenarioName = compound.name ?? 'scenario';
 
-  const lines: string[] = [`test('scenario', async ({ page }) => {`];
+  const lines: string[] = [`test('${escapeForString(scenarioName)}', async ({ page }) => {`];
 
   for (const step of statements) {
     lines.push(bddCodeGenerator.generate(step));
+  }
+
+  lines.push(`});`);
+  return lines.join('\n');
+}
+
+// =============================================================================
+// Feature Generator
+// =============================================================================
+
+import type { FeatureParseResult } from '../parser/scenario-parser.js';
+
+/**
+ * Generate a Playwright test.describe block from a FeatureParseResult.
+ */
+export function generateFeature(feature: FeatureParseResult): string {
+  const lines: string[] = [];
+  lines.push(`test.describe('${escapeForString(feature.name)}', () => {`);
+
+  // Background → beforeEach
+  if (feature.background && feature.background.steps.length > 0) {
+    lines.push(`  test.beforeEach(async ({ page }) => {`);
+    for (const step of feature.background.steps) {
+      lines.push(`  ${bddCodeGenerator.generate(step)}`);
+    }
+    lines.push(`  });`);
+    lines.push('');
+  }
+
+  // Scenarios → test blocks
+  for (const scenario of feature.scenarios) {
+    const name = scenario.name ?? 'scenario';
+    lines.push(`  test('${escapeForString(name)}', async ({ page }) => {`);
+    for (const step of scenario.steps) {
+      lines.push(`  ${bddCodeGenerator.generate(step)}`);
+    }
+    lines.push(`  });`);
   }
 
   lines.push(`});`);

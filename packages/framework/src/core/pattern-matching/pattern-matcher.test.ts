@@ -366,6 +366,211 @@ describe('PatternMatcher', () => {
     });
   });
 
+  describe('Backtracking', () => {
+    it('should skip optional unmarked role when next literal needs the token', () => {
+      // Pattern: select [columns? (expression)] 'from' [source (expression)]
+      // Input: "select from users"
+      // Without backtracking: columns="from", then literal 'from' fails
+      // With backtracking: columns skipped, from matches literal, source="users"
+      const schema = defineCommand({
+        action: 'select',
+        roles: [
+          defineRole({
+            role: 'columns',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 2,
+          }),
+          defineRole({
+            role: 'source',
+            required: true,
+            expectedTypes: ['expression'],
+            svoPosition: 1,
+            markerOverride: { en: 'from' },
+          }),
+        ],
+      });
+
+      const profile: PatternGenLanguageProfile = {
+        code: 'en',
+        wordOrder: 'SVO',
+        keywords: {
+          select: { primary: 'select' },
+        },
+        roleMarkers: {
+          source: { primary: 'from', position: 'before' },
+        },
+      };
+
+      const pattern = generatePattern(schema, profile);
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'select', position: createPosition(0, 6) }),
+        createToken({ kind: 'keyword', value: 'from', position: createPosition(7, 11) }),
+        createToken({ kind: 'identifier', value: 'users', position: createPosition(12, 17) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('columns')).toBe(false);
+      expect(result?.captured.has('source')).toBe(true);
+    });
+
+    it('should still capture optional role when token is not the next literal', () => {
+      // Pattern: select [columns? (expression)] 'from' [source (expression)]
+      // Input: "select name from users"
+      // columns="name" (not a literal match), from matches, source="users"
+      const schema = defineCommand({
+        action: 'select',
+        roles: [
+          defineRole({
+            role: 'columns',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 2,
+          }),
+          defineRole({
+            role: 'source',
+            required: true,
+            expectedTypes: ['expression'],
+            svoPosition: 1,
+            markerOverride: { en: 'from' },
+          }),
+        ],
+      });
+
+      const profile: PatternGenLanguageProfile = {
+        code: 'en',
+        wordOrder: 'SVO',
+        keywords: {
+          select: { primary: 'select' },
+        },
+        roleMarkers: {
+          source: { primary: 'from', position: 'before' },
+        },
+      };
+
+      const pattern = generatePattern(schema, profile);
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'select', position: createPosition(0, 6) }),
+        createToken({ kind: 'identifier', value: 'name', position: createPosition(7, 11) }),
+        createToken({ kind: 'keyword', value: 'from', position: createPosition(12, 16) }),
+        createToken({ kind: 'identifier', value: 'users', position: createPosition(17, 22) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('columns')).toBe(true);
+      expect(result?.captured.has('source')).toBe(true);
+    });
+
+    it('should backtrack optional role when keyword was consumed as identifier', () => {
+      // Pattern: command [target? (expression)] 'to' [destination (expression)]
+      // Input: "command to output"
+      // "to" is keyword, optional target consumes it, then literal 'to' fails
+      // Backtrack: skip target, 'to' matches literal, destination="output"
+      const schema = defineCommand({
+        action: 'send',
+        roles: [
+          defineRole({
+            role: 'target',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 2,
+          }),
+          defineRole({
+            role: 'destination',
+            required: true,
+            expectedTypes: ['expression'],
+            svoPosition: 1,
+            markerOverride: { en: 'to' },
+          }),
+        ],
+      });
+
+      const profile: PatternGenLanguageProfile = {
+        code: 'en',
+        wordOrder: 'SVO',
+        keywords: {
+          send: { primary: 'send' },
+        },
+        roleMarkers: {
+          destination: { primary: 'to', position: 'before' },
+        },
+      };
+
+      const pattern = generatePattern(schema, profile);
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'send', position: createPosition(0, 4) }),
+        createToken({ kind: 'keyword', value: 'to', position: createPosition(5, 7) }),
+        createToken({ kind: 'identifier', value: 'output', position: createPosition(8, 14) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('target')).toBe(false);
+      expect(result?.captured.has('destination')).toBe(true);
+    });
+
+    it('should not backtrack when optional role has a marker (group)', () => {
+      // When optional roles have markers, they form groups that already
+      // handle backtracking via matchGroupToken. Verify this still works.
+      // Pattern: command ['with' target?] 'from' [source]
+      // Input: "command from users"
+      // The optional group [with target] is skipped (no 'with' found)
+      const schema = defineCommand({
+        action: 'get',
+        roles: [
+          defineRole({
+            role: 'target',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 2,
+            markerOverride: { en: 'with' },
+          }),
+          defineRole({
+            role: 'source',
+            required: true,
+            expectedTypes: ['expression'],
+            svoPosition: 1,
+            markerOverride: { en: 'from' },
+          }),
+        ],
+      });
+
+      const profile: PatternGenLanguageProfile = {
+        code: 'en',
+        wordOrder: 'SVO',
+        keywords: {
+          get: { primary: 'get' },
+        },
+        roleMarkers: {
+          target: { primary: 'with', position: 'before' },
+          source: { primary: 'from', position: 'before' },
+        },
+      };
+
+      const pattern = generatePattern(schema, profile);
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'get', position: createPosition(0, 3) }),
+        createToken({ kind: 'keyword', value: 'from', position: createPosition(4, 8) }),
+        createToken({ kind: 'identifier', value: 'users', position: createPosition(9, 14) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('target')).toBe(false);
+      expect(result?.captured.has('source')).toBe(true);
+    });
+  });
+
   describe('matchBest', () => {
     it('should return highest confidence match from multiple patterns', () => {
       const simpleSchema = defineCommand({

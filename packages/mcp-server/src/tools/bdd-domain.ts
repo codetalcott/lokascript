@@ -10,15 +10,30 @@ import { validateRequired, getString, jsonResponse, errorResponse } from './util
 // Lazy-loaded BDD DSL instance
 let bddDSL: any = null;
 let bddScenarioParser: any = null;
+let bddGenerator: any = null;
+let bddRenderer: any = null;
 
 async function getBDD() {
-  if (bddDSL) return { dsl: bddDSL, parseScenario: bddScenarioParser };
+  if (bddDSL)
+    return {
+      dsl: bddDSL,
+      parseScenario: bddScenarioParser,
+      generator: bddGenerator,
+      renderer: bddRenderer,
+    };
 
   try {
     const mod = await import('@lokascript/domain-bdd');
     bddDSL = mod.createBDDDSL();
     bddScenarioParser = mod.parseBDDScenario;
-    return { dsl: bddDSL, parseScenario: bddScenarioParser };
+    bddGenerator = mod.bddCodeGenerator;
+    bddRenderer = mod.renderBDD ?? null;
+    return {
+      dsl: bddDSL,
+      parseScenario: bddScenarioParser,
+      generator: bddGenerator,
+      renderer: bddRenderer,
+    };
   } catch {
     throw new Error('@lokascript/domain-bdd not available. Install it to use BDD domain tools.');
   }
@@ -99,7 +114,7 @@ export const bddDomainTools = [
     name: 'translate_bdd',
     description:
       'Translate a BDD scenario between natural languages. Parses in the source ' +
-      'language and compiles to Playwright (language-neutral output).',
+      'language and renders in the target language (or compiles to Playwright).',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -210,38 +225,18 @@ async function compileBdd(args: Record<string, unknown>): Promise<ToolResponse> 
   const scenario = getString(args, 'scenario');
   const language = getString(args, 'language', 'en');
 
-  const { dsl, parseScenario } = await getBDD();
+  const { dsl, parseScenario, generator } = await getBDD();
 
   if (isMultiStep(scenario)) {
-    // Split into parts and compile each individually
-    const delimiter = /[,\n،、。]/;
-    const parts = scenario
-      .split(delimiter)
-      .map(s => s.trim())
-      .filter(Boolean);
-    const compiled: string[] = [];
-    const errors: string[] = [];
-
-    for (const part of parts) {
-      try {
-        const result = dsl.compile(part, language);
-        if (result.ok) {
-          compiled.push(result.code);
-        } else {
-          errors.push(...(result.errors ?? [`Failed to compile: ${part}`]));
-        }
-      } catch (err: any) {
-        errors.push(`Failed to compile step "${part}": ${err.message}`);
-      }
-    }
-
-    const code = [`test('scenario', async ({ page }) => {`, ...compiled, `});`].join('\n');
+    const result = parseScenario(scenario, language);
+    const code = generator.generate(result.scenario);
 
     return jsonResponse({
-      ok: errors.length === 0,
+      ok: result.errors.length === 0,
       code,
-      stepCount: compiled.length,
-      errors: errors.length > 0 ? errors : undefined,
+      stepCount: result.steps.length,
+      ...(result.name ? { scenarioName: result.name } : {}),
+      errors: result.errors.length > 0 ? result.errors : undefined,
       language,
     });
   }
@@ -293,28 +288,40 @@ async function translateBdd(args: Record<string, unknown>): Promise<ToolResponse
   const from = getString(args, 'from');
   const to = getString(args, 'to');
 
-  const { dsl, parseScenario } = await getBDD();
+  const { dsl, parseScenario, generator, renderer } = await getBDD();
 
   if (isMultiStep(scenario)) {
     const result = parseScenario(scenario, from);
+
+    // Render each step to target language if renderer available
+    let rendered: string | null = null;
+    if (renderer) {
+      const renderedSteps = result.steps.map((step: any) => renderer(step, to));
+      rendered = renderedSteps.join('\n');
+    }
+
     return jsonResponse({
       input: { scenario, language: from },
+      translated: rendered,
+      playwright: generator.generate(result.scenario),
       steps: result.steps.map((step: any) => ({
         action: step.action,
         roles: serializeRoles(step.roles),
       })),
       errors: result.errors,
-      note: `Translation renders semantic representation. Natural language rendering in '${to}' requires the render() API (not yet implemented for BDD domain).`,
     });
   }
 
   const node = dsl.parse(scenario, from);
   const compiled = dsl.compile(scenario, from);
 
+  // Render to target language if renderer available
+  const rendered = renderer ? renderer(node, to) : null;
+
   return jsonResponse({
     input: { scenario, language: from },
+    translated: rendered,
     semantic: { action: node.action, roles: serializeRoles(node.roles) },
     playwright: compiled.ok ? compiled.code : null,
-    note: `Translation renders to Playwright code. Natural language rendering in '${to}' requires the render() API (not yet implemented for BDD domain).`,
   });
 }

@@ -21,8 +21,7 @@
     "multilingual"
   ],
   "activationEvents": [
-    "onLanguage:html",
-    "onLanguage:hyperscript"
+    "onLanguage:html"
   ],
   "main": "./dist/extension.js",
   "contributes": {

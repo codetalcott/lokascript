@@ -72,7 +72,76 @@ export const arabicProfile: PatternGenLanguageProfile = {
 };
 
 // =============================================================================
+// Korean (SOV)
+// =============================================================================
+
+export const koreanProfile: PatternGenLanguageProfile = {
+  code: 'ko',
+  wordOrder: 'SOV',
+  keywords: {
+    given: { primary: '전제' },
+    when: { primary: '만약' },
+    then: { primary: '그러면' },
+    and: { primary: '그리고' },
+  },
+};
+
+// =============================================================================
+// Chinese (SVO)
+// =============================================================================
+
+export const chineseProfile: PatternGenLanguageProfile = {
+  code: 'zh',
+  wordOrder: 'SVO',
+  keywords: {
+    given: { primary: '假设' },
+    when: { primary: '当' },
+    then: { primary: '那么' },
+    and: { primary: '并且' },
+  },
+};
+
+// =============================================================================
+// Turkish (SOV)
+// =============================================================================
+
+export const turkishProfile: PatternGenLanguageProfile = {
+  code: 'tr',
+  wordOrder: 'SOV',
+  keywords: {
+    given: { primary: 'varsayalım' },
+    when: { primary: 'olduğunda' },
+    then: { primary: 'sonra' },
+    and: { primary: 've' },
+  },
+};
+
+// =============================================================================
+// French (SVO)
+// =============================================================================
+
+export const frenchProfile: PatternGenLanguageProfile = {
+  code: 'fr',
+  wordOrder: 'SVO',
+  keywords: {
+    given: { primary: 'soit' },
+    when: { primary: 'quand' },
+    then: { primary: 'alors' },
+    and: { primary: 'et' },
+  },
+};
+
+// =============================================================================
 // All Profiles
 // =============================================================================
 
-export const allProfiles = [englishProfile, spanishProfile, japaneseProfile, arabicProfile];
+export const allProfiles = [
+  englishProfile,
+  spanishProfile,
+  japaneseProfile,
+  arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
+];

@@ -33,21 +33,31 @@ import {
   spanishProfile,
   japaneseProfile,
   arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
 } from './profiles/index.js';
 import {
   EnglishBDDTokenizer,
   SpanishBDDTokenizer,
   JapaneseBDDTokenizer,
   ArabicBDDTokenizer,
+  KoreanBDDTokenizer,
+  ChineseBDDTokenizer,
+  TurkishBDDTokenizer,
+  FrenchBDDTokenizer,
 } from './tokenizers/index.js';
 import { bddCodeGenerator } from './generators/playwright-generator.js';
 import {
   parseBDDScenario as parseScenarioImpl,
+  parseBDDFeature as parseFeatureImpl,
   type ScenarioParseResult,
+  type FeatureParseResult,
 } from './parser/scenario-parser.js';
 
 /**
- * Create a multilingual BDD DSL instance with all 4 supported languages.
+ * Create a multilingual BDD DSL instance with all 8 supported languages.
  */
 export function createBDDDSL(): MultilingualDSL {
   return createMultilingualDSL({
@@ -82,6 +92,34 @@ export function createBDDDSL(): MultilingualDSL {
         tokenizer: new ArabicBDDTokenizer(),
         patternProfile: arabicProfile,
       },
+      {
+        code: 'ko',
+        name: 'Korean',
+        nativeName: '한국어',
+        tokenizer: new KoreanBDDTokenizer(),
+        patternProfile: koreanProfile,
+      },
+      {
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+        tokenizer: new ChineseBDDTokenizer(),
+        patternProfile: chineseProfile,
+      },
+      {
+        code: 'tr',
+        name: 'Turkish',
+        nativeName: 'Türkçe',
+        tokenizer: new TurkishBDDTokenizer(),
+        patternProfile: turkishProfile,
+      },
+      {
+        code: 'fr',
+        name: 'French',
+        nativeName: 'Français',
+        tokenizer: new FrenchBDDTokenizer(),
+        patternProfile: frenchProfile,
+      },
     ],
     codeGenerator: bddCodeGenerator,
   });
@@ -96,6 +134,14 @@ export function parseBDDScenario(input: string, language: string): ScenarioParse
   return parseScenarioImpl(dsl, input, language);
 }
 
+/**
+ * Parse a full BDD Feature block with Background and multiple Scenarios.
+ */
+export function parseBDDFeature(input: string, language: string): FeatureParseResult {
+  const dsl = createBDDDSL();
+  return parseFeatureImpl(dsl, input, language);
+}
+
 // Re-export schemas for consumers who want to extend
 export { allSchemas, givenSchema, whenSchema, thenSchema, andSchema };
 export {
@@ -103,12 +149,21 @@ export {
   spanishProfile,
   japaneseProfile,
   arabicProfile,
+  koreanProfile,
+  chineseProfile,
+  turkishProfile,
+  frenchProfile,
 } from './profiles/index.js';
-export { bddCodeGenerator } from './generators/playwright-generator.js';
+export { bddCodeGenerator, generateFeature } from './generators/playwright-generator.js';
+export { renderBDD } from './generators/bdd-renderer.js';
 export {
   EnglishBDDTokenizer,
   SpanishBDDTokenizer,
   JapaneseBDDTokenizer,
   ArabicBDDTokenizer,
+  KoreanBDDTokenizer,
+  ChineseBDDTokenizer,
+  TurkishBDDTokenizer,
+  FrenchBDDTokenizer,
 } from './tokenizers/index.js';
-export type { ScenarioParseResult } from './parser/scenario-parser.js';
+export type { ScenarioParseResult, FeatureParseResult } from './parser/scenario-parser.js';

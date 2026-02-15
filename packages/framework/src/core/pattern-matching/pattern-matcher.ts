@@ -199,6 +199,10 @@ export class PatternMatcher {
 
   /**
    * Match a sequence of pattern tokens against the token stream.
+   *
+   * Supports bounded single-step backtracking: if an optional role consumes
+   * a token and the immediately following pattern token fails, the matcher
+   * resets to before the optional role and retries the failed token.
    */
   private matchTokenSequence(
     tokens: TokenStream,
@@ -221,7 +225,12 @@ export class PatternMatcher {
       }
     }
 
-    for (const patternToken of patternTokens) {
+    // Backtracking state: track the most recent optional role that consumed a token
+    let prevOptionalMark: ReturnType<TokenStream['mark']> | null = null;
+    let prevOptionalRole: SemanticRole | null = null;
+
+    for (let i = 0; i < patternTokens.length; i++) {
+      const patternToken = patternTokens[i];
       this.logger.debug('  >> Matching pattern token:', JSON.stringify(patternToken, null, 2));
       const currTok = tokens.peek();
       this.logger.debug(
@@ -234,17 +243,51 @@ export class PatternMatcher {
             })
           : 'EOF'
       );
+
+      // Save stream position before attempting optional roles
+      const isOptionalRole = patternToken.type === 'role' && patternToken.optional === true;
+      const markBefore = isOptionalRole ? tokens.mark() : null;
+
       const matched = this.matchPatternToken(tokens, patternToken, captured);
       this.logger.debug('  >> Match result:', matched);
 
-      if (!matched) {
-        this.logger.debug('  >> Token match FAILED');
-        // If token is optional, continue
-        if (this.isOptional(patternToken)) {
+      if (matched) {
+        if (isOptionalRole) {
+          // Track this consumption so we can undo it if the next token fails
+          prevOptionalMark = markBefore;
+          prevOptionalRole = patternToken.role;
+        } else {
+          // Non-optional succeeded — clear backtrack state
+          prevOptionalMark = null;
+          prevOptionalRole = null;
+        }
+        continue;
+      }
+
+      // Match failed
+      this.logger.debug('  >> Token match FAILED');
+
+      if (this.isOptional(patternToken)) {
+        continue;
+      }
+
+      // Required token failed — try backtracking over the previous optional role
+      if (prevOptionalMark && prevOptionalRole) {
+        this.logger.debug('  >> BACKTRACKING: undoing optional role', prevOptionalRole);
+        tokens.reset(prevOptionalMark);
+        captured.delete(prevOptionalRole);
+        prevOptionalMark = null;
+        prevOptionalRole = null;
+
+        // Retry the current (failed) pattern token from the restored position
+        const retryMatched = this.matchPatternToken(tokens, patternToken, captured);
+        this.logger.debug('  >> Backtrack retry result:', retryMatched);
+        if (retryMatched) {
           continue;
         }
-        return false;
       }
+
+      return false;
     }
 
     return true;
