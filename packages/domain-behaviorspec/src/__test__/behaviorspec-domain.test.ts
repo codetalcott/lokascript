@@ -101,11 +101,9 @@ describe('English parsing', () => {
     expect(roleValue(node, 'target')).toBe('#button');
   });
 
-  it('parses when with types and destination', () => {
-    // Note: unmarked tokens between action and marker aren't supported by the
-    // framework pattern matcher, so the value-to-type isn't inline here.
-    // Use "when user types into #search" to specify the target element.
-    const node = dsl.parse('when user types into #search', 'en');
+  it('parses when with types and destination (marker scan)', () => {
+    // Framework marker scan allows 'hello' to sit between action and 'into' marker
+    const node = dsl.parse("when user types 'hello' into #search", 'en');
     expect(node.action).toBe('when');
     expect(roleValue(node, 'action')).toBe('types');
     expect(roleValue(node, 'destination')).toBe('#search');
@@ -474,8 +472,8 @@ describe('Playwright generation', () => {
     expect(result.code).toContain('#button');
   });
 
-  it('generates fill for when types', () => {
-    const result = dsl.compile('when user types into #search', 'en');
+  it('generates fill for when types with marker scan', () => {
+    const result = dsl.compile("when user types 'hello' into #search", 'en');
     expect(result.ok).toBe(true);
     expect(result.code).toContain('#search');
     expect(result.code).toContain('fill');

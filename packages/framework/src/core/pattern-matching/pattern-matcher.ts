@@ -50,6 +50,9 @@ export interface PatternMatcherProfile {
 // =============================================================================
 
 export class PatternMatcher {
+  /** Maximum tokens to scan ahead when looking for a group's leading marker */
+  private static readonly MAX_MARKER_SCAN = 3;
+
   /** Debug logger */
   private logger = createLogger('pattern-matcher');
 
@@ -917,6 +920,10 @@ export class PatternMatcher {
 
   /**
    * Match a group pattern token (optional sequence).
+   * When the group's leading marker isn't at the current position, scans ahead
+   * up to MAX_MARKER_SCAN tokens to find it. This allows unmarked tokens
+   * (e.g., a value like 'hello') to sit between groups without blocking later
+   * marker matches.
    */
   private matchGroupToken(
     tokens: TokenStream,
@@ -924,24 +931,66 @@ export class PatternMatcher {
     captured: Map<SemanticRole, SemanticValue>
   ): boolean {
     const mark = tokens.mark();
-
-    // Track which roles were captured before this group
     const capturedBefore = new Set(captured.keys());
 
     const success = this.matchTokenSequence(tokens, patternToken.tokens, captured);
+    if (success) return true;
 
-    if (!success) {
-      tokens.reset(mark);
-      // Clear any roles that were partially captured during the failed group match
-      for (const role of captured.keys()) {
-        if (!capturedBefore.has(role)) {
-          captured.delete(role);
-        }
-      }
-      return patternToken.optional || false;
+    // Reset from failed attempt
+    tokens.reset(mark);
+    for (const role of captured.keys()) {
+      if (!capturedBefore.has(role)) captured.delete(role);
     }
 
-    return true;
+    if (!patternToken.optional) return false;
+
+    // Marker scan: look ahead for the group's leading marker past intervening tokens.
+    // This handles cases like "types 'hello' into #search" where 'hello' blocks the
+    // 'into' marker from being found at the current position.
+    const leadingMarker = this.getGroupLeadingMarker(patternToken);
+    if (leadingMarker) {
+      for (let offset = 1; offset <= PatternMatcher.MAX_MARKER_SCAN; offset++) {
+        const ahead = tokens.peek(offset);
+        if (!ahead) break;
+        const aheadValue = (ahead.normalized || ahead.value).toLowerCase();
+        if (aheadValue === leadingMarker) {
+          this.logger.debug(
+            '  >> MARKER SCAN: found',
+            leadingMarker,
+            'at offset',
+            offset,
+            '- skipping intervening tokens'
+          );
+          // Advance past intervening tokens to reach the marker
+          for (let s = 0; s < offset; s++) tokens.advance();
+
+          // Retry group match from marker position
+          const retrySuccess = this.matchTokenSequence(tokens, patternToken.tokens, captured);
+          if (retrySuccess) return true;
+
+          // Retry failed — full reset
+          tokens.reset(mark);
+          for (const role of captured.keys()) {
+            if (!capturedBefore.has(role)) captured.delete(role);
+          }
+          break;
+        }
+      }
+    }
+
+    return true; // Optional group, just skip
+  }
+
+  /**
+   * Get the leading marker literal from an optional group.
+   * Returns the lowercase marker value, or null if the group
+   * doesn't start with a literal token (e.g., SOV groups where
+   * the role comes before the marker).
+   */
+  private getGroupLeadingMarker(group: PatternToken & { type: 'group' }): string | null {
+    const first = group.tokens[0];
+    if (first?.type === 'literal') return first.value.toLowerCase();
+    return null;
   }
 
   /**

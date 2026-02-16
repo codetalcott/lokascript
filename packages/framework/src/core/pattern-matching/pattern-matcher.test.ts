@@ -571,6 +571,161 @@ describe('PatternMatcher', () => {
     });
   });
 
+  describe('Marker scan for optional groups', () => {
+    // Schema: command [actor?] action ['on' target?] ['into' destination?]
+    function createScanSchema() {
+      return defineCommand({
+        action: 'do',
+        roles: [
+          defineRole({
+            role: 'actor',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 3,
+          }),
+          defineRole({
+            role: 'verb',
+            required: true,
+            expectedTypes: ['expression'],
+            svoPosition: 2,
+          }),
+          defineRole({
+            role: 'target',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 1,
+            markerOverride: { en: 'on' },
+          }),
+          defineRole({
+            role: 'destination',
+            required: false,
+            expectedTypes: ['expression'],
+            svoPosition: 0,
+            markerOverride: { en: 'into' },
+          }),
+        ],
+      });
+    }
+
+    function createScanProfile(): PatternGenLanguageProfile {
+      return {
+        code: 'en',
+        wordOrder: 'SVO',
+        keywords: {
+          do: { primary: 'do' },
+        },
+        roleMarkers: {
+          target: { primary: 'on', position: 'before' },
+          destination: { primary: 'into', position: 'before' },
+        },
+      };
+    }
+
+    it('should find marker past one intervening token', () => {
+      const pattern = generatePattern(createScanSchema(), createScanProfile());
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'do', position: createPosition(0, 2) }),
+        createToken({ kind: 'identifier', value: 'user', position: createPosition(3, 7) }),
+        createToken({ kind: 'identifier', value: 'types', position: createPosition(8, 13) }),
+        createToken({ kind: 'identifier', value: 'hello', position: createPosition(14, 19) }),
+        createToken({ kind: 'keyword', value: 'into', position: createPosition(20, 24) }),
+        createToken({ kind: 'identifier', value: 'output', position: createPosition(25, 31) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('actor')).toBe(true);
+      expect(result?.captured.has('verb')).toBe(true);
+      expect(result?.captured.has('destination')).toBe(true);
+      expect(result?.captured.get('destination')).toMatchObject({ raw: 'output' });
+    });
+
+    it('should find marker past two intervening tokens', () => {
+      const pattern = generatePattern(createScanSchema(), createScanProfile());
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'do', position: createPosition(0, 2) }),
+        createToken({ kind: 'identifier', value: 'user', position: createPosition(3, 7) }),
+        createToken({ kind: 'identifier', value: 'types', position: createPosition(8, 13) }),
+        createToken({ kind: 'identifier', value: 'hello', position: createPosition(14, 19) }),
+        createToken({ kind: 'identifier', value: 'world', position: createPosition(20, 25) }),
+        createToken({ kind: 'keyword', value: 'into', position: createPosition(26, 30) }),
+        createToken({ kind: 'identifier', value: 'output', position: createPosition(31, 37) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('destination')).toBe(true);
+      expect(result?.captured.get('destination')).toMatchObject({ raw: 'output' });
+    });
+
+    it('should not scan when group matches immediately', () => {
+      const pattern = generatePattern(createScanSchema(), createScanProfile());
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'do', position: createPosition(0, 2) }),
+        createToken({ kind: 'identifier', value: 'user', position: createPosition(3, 7) }),
+        createToken({ kind: 'identifier', value: 'types', position: createPosition(8, 13) }),
+        createToken({ kind: 'keyword', value: 'on', position: createPosition(14, 16) }),
+        createToken({ kind: 'identifier', value: 'button', position: createPosition(17, 23) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('target')).toBe(true);
+      expect(result?.captured.get('target')).toMatchObject({ raw: 'button' });
+    });
+
+    it('should not exceed MAX_MARKER_SCAN (3 tokens)', () => {
+      const pattern = generatePattern(createScanSchema(), createScanProfile());
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'do', position: createPosition(0, 2) }),
+        createToken({ kind: 'identifier', value: 'user', position: createPosition(3, 7) }),
+        createToken({ kind: 'identifier', value: 'types', position: createPosition(8, 13) }),
+        createToken({ kind: 'identifier', value: 'a', position: createPosition(14, 15) }),
+        createToken({ kind: 'identifier', value: 'b', position: createPosition(16, 17) }),
+        createToken({ kind: 'identifier', value: 'c', position: createPosition(18, 19) }),
+        createToken({ kind: 'identifier', value: 'd', position: createPosition(20, 21) }),
+        createToken({ kind: 'keyword', value: 'into', position: createPosition(22, 26) }),
+        createToken({ kind: 'identifier', value: 'output', position: createPosition(27, 33) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      // Match succeeds (all required roles match) but destination not captured
+      // because 'into' is 4 tokens away (> MAX_MARKER_SCAN of 3)
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('destination')).toBe(false);
+    });
+
+    it('should match both groups when both markers present', () => {
+      const pattern = generatePattern(createScanSchema(), createScanProfile());
+
+      const tokens = createMockTokenStream([
+        createToken({ kind: 'keyword', value: 'do', position: createPosition(0, 2) }),
+        createToken({ kind: 'identifier', value: 'user', position: createPosition(3, 7) }),
+        createToken({ kind: 'identifier', value: 'types', position: createPosition(8, 13) }),
+        createToken({ kind: 'keyword', value: 'on', position: createPosition(14, 16) }),
+        createToken({ kind: 'identifier', value: 'button', position: createPosition(17, 23) }),
+        createToken({ kind: 'keyword', value: 'into', position: createPosition(24, 28) }),
+        createToken({ kind: 'identifier', value: 'output', position: createPosition(29, 35) }),
+      ]);
+
+      const result = matcher.matchPattern(tokens, pattern);
+
+      expect(result).not.toBeNull();
+      expect(result?.captured.has('target')).toBe(true);
+      expect(result?.captured.get('target')).toMatchObject({ raw: 'button' });
+      expect(result?.captured.has('destination')).toBe(true);
+      expect(result?.captured.get('destination')).toMatchObject({ raw: 'output' });
+    });
+  });
+
   describe('matchBest', () => {
     it('should return highest confidence match from multiple patterns', () => {
       const simpleSchema = defineCommand({
