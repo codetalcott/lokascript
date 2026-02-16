@@ -90,6 +90,9 @@ jobs:
       - name: Build developer-tools package
         run: npm run build --prefix packages/developer-tools
 
+      - name: Build server-bridge package
+        run: npm run build --prefix packages/server-bridge
+
       - name: Build vite-plugin package
         run: npm run build --prefix packages/vite-plugin
 
@@ -130,6 +133,7 @@ jobs:
             packages/compilation-service/dist/
             packages/mcp-server/dist/
             packages/developer-tools/dist/
+            packages/server-bridge/dist/
             packages/vite-plugin/dist/
             packages/language-server/dist/
           retention-days: 1
