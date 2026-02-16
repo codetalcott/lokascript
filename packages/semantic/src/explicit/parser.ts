@@ -9,9 +9,9 @@
  *   [command role1:value1 role2:value2 ...]
  *
  * Examples:
- *   [toggle class:.active target:#button]
- *   [put content:"hello" destination:#output]
- *   [on event:click body:[toggle class:.active]]
+ *   [toggle patient:.active destination:#button]
+ *   [put patient:"hello" destination:#output]
+ *   [on event:click body:[toggle patient:.active]]
  */
 
 import type { SemanticNode, SemanticValue, SemanticRole, ActionType } from '../types';
@@ -23,6 +23,7 @@ import {
   createReference,
   isValidReference,
 } from '../types';
+import { getSchema } from '../generators/command-schemas';
 
 // =============================================================================
 // Explicit Syntax Parser
@@ -51,6 +52,10 @@ export function parseExplicit(input: string): SemanticNode {
   const command = tokens[0].toLowerCase() as ActionType;
   const roles = new Map<SemanticRole, SemanticValue>();
 
+  // Look up schema for role validation (null = unknown command, skip validation)
+  const schema = getSchema(command);
+  const validRoleNames = schema ? new Set(schema.roles.map(r => r.role)) : null;
+
   // Parse role:value pairs
   for (let i = 1; i < tokens.length; i++) {
     const token = tokens[i];
@@ -60,7 +65,17 @@ export function parseExplicit(input: string): SemanticNode {
       throw new Error(`Invalid role format: "${token}". Expected role:value`);
     }
 
-    const role = token.slice(0, colonIndex) as SemanticRole;
+    const roleName = token.slice(0, colonIndex);
+
+    // Validate role name against schema (skip for unknown commands or 'body' structural role)
+    if (validRoleNames && roleName !== 'body' && !validRoleNames.has(roleName as SemanticRole)) {
+      const roleList = [...validRoleNames].join(', ');
+      throw new Error(
+        `Unknown role "${roleName}" for command "${command}". Valid roles: ${roleList}`
+      );
+    }
+
+    const role = roleName as SemanticRole;
     const valueStr = token.slice(colonIndex + 1);
 
     // Handle nested explicit syntax for body
@@ -74,6 +89,17 @@ export function parseExplicit(input: string): SemanticNode {
 
     const value = parseExplicitValue(valueStr);
     roles.set(role, value);
+  }
+
+  // Validate required roles are present (skip for event handlers — handled below)
+  if (schema && command !== 'on') {
+    for (const roleSpec of schema.roles) {
+      if (roleSpec.required && !roles.has(roleSpec.role as SemanticRole) && !roleSpec.default) {
+        throw new Error(
+          `Missing required role "${roleSpec.role}" for command "${command}": ${roleSpec.description}`
+        );
+      }
+    }
   }
 
   // Build appropriate node type

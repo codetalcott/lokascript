@@ -27,7 +27,7 @@ export const compilationTools: Tool[] = [
   {
     name: 'compile_hyperscript',
     description:
-      'Compile hyperscript to optimized JavaScript. Accepts natural language (24 languages), explicit syntax ([command role:value]), or LLM JSON ({ action, roles, trigger }).',
+      'Compile hyperscript to optimized JavaScript. Accepts natural language (code + language), explicit syntax (explicit), or LLM JSON (semantic). Common roles: patient (what to act on), destination (where to), source (where from). Use get_command_docs for per-command roles. Examples: explicit="[toggle patient:.active destination:#btn]", semantic={ action: "toggle", roles: { patient: { type: "selector", value: ".active" } } }',
     inputSchema: {
       type: 'object',
       properties: {

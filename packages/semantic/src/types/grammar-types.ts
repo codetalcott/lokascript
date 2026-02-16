@@ -64,7 +64,8 @@ export type SemanticRole =
   | 'agent' // Who/what performs action (reserved for future: AI agents, server-side)
   | 'patient' // What is acted upon (the counter, .active)
   | 'source' // Origin (from #input, from URL)
-  | 'destination' // Target location (into #output, to .class)
+  | 'destination' // Target location — intentionally broad: DOM element (#output),
+  //                  URL (/home), variable (:count). Disambiguated by value type per command.
   | 'goal' // Target value/state (to 'red', to 100)
   | 'event' // Trigger (click, input, keydown)
   | 'condition' // Boolean expression (if x > 5)
@@ -75,7 +76,8 @@ export type SemanticRole =
   | 'responseType' // Response format (as json, as text, as html)
   | 'method' // HTTP method/technique (via POST, using GET)
   | 'style' // Visual/behavioral manner (with fade, smoothly)
-  | 'manner' // Insertion position (before, after)
+  | 'manner' // Reserved — not currently used in command schemas.
+  //            Swap uses 'method'; put handles position via destination markers.
   // Control flow roles
   | 'loopType' // Loop variant: forever, times, for, while, until, until-event
   // Structural roles (for parser control)

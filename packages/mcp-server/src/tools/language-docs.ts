@@ -62,7 +62,7 @@ export const languageDocsTools: Tool[] = [
   {
     name: 'search_language_elements',
     description:
-      'Search across all hyperscript language elements (commands, expressions, keywords, features, special symbols). Useful for discovering available features.',
+      'Search across all hyperscript language elements (commands, expressions, keywords, features, special symbols, semantic roles). Useful for discovering available features. Search for role names like "patient", "destination", "source" to understand semantic roles used in explicit syntax.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -74,7 +74,7 @@ export const languageDocsTools: Tool[] = [
           type: 'array',
           items: {
             type: 'string',
-            enum: ['command', 'expression', 'keyword', 'feature', 'special_symbol'],
+            enum: ['command', 'expression', 'keyword', 'feature', 'special_symbol', 'role'],
           },
           description: 'Filter by element types. If not specified, searches all types.',
         },
@@ -153,6 +153,64 @@ function generateSyntaxString(schema: any): string {
   }
 
   return parts.join(' ');
+}
+
+/**
+ * Generate an explicit syntax example from a command schema.
+ * Produces: [toggle patient:.active destination:#element]
+ */
+function generateExplicitExample(schema: any): string {
+  const action: string = schema.action;
+  if (!schema.roles || schema.roles.length === 0) {
+    return `[${action}]`;
+  }
+
+  const parts = [action];
+  for (const role of schema.roles) {
+    const exampleValue = getExampleValue(role);
+    parts.push(`${role.role}:${exampleValue}`);
+  }
+  return `[${parts.join(' ')}]`;
+}
+
+/**
+ * Generate an LLM JSON example from a command schema.
+ * Produces: { action: "toggle", roles: { patient: { type: "selector", value: ".active" } } }
+ */
+function generateJsonExample(schema: any): Record<string, unknown> {
+  const roles: Record<string, { type: string; value: string | number | boolean }> = {};
+  for (const role of schema.roles || []) {
+    const primaryType = role.expectedTypes?.[0] ?? 'literal';
+    roles[role.role] = {
+      type: primaryType === 'expression' ? 'literal' : primaryType,
+      value: getExampleValue(role),
+    };
+  }
+  return { action: schema.action, roles };
+}
+
+/**
+ * Get a representative example value for a role based on its expected types.
+ */
+function getExampleValue(role: any): string | number | boolean {
+  if (role.default) {
+    return role.default.value ?? 'me';
+  }
+  const primaryType = role.expectedTypes?.[0];
+  switch (primaryType) {
+    case 'selector':
+      return role.description?.toLowerCase().includes('class') ? '.active' : '#element';
+    case 'reference':
+      return 'me';
+    case 'number':
+      return 5;
+    case 'boolean':
+      return true;
+    case 'duration':
+      return '500ms';
+    default:
+      return '"value"';
+  }
 }
 
 // =============================================================================
@@ -638,6 +696,191 @@ const SPECIAL_SYMBOLS_CATALOG = [
 ];
 
 // =============================================================================
+// Semantic Role Catalog
+// =============================================================================
+
+/**
+ * Semantic roles used in explicit syntax ([command role:value ...]).
+ * Derived from linguistic thematic roles (theta roles), extended for web/UI semantics.
+ * Each role has a general definition plus which commands use it and example explicit syntax.
+ */
+const ROLE_CATALOG: Record<
+  string,
+  {
+    name: string;
+    description: string;
+    origin: string;
+    usage: string;
+    commands: string[];
+    explicitExample: string;
+  }
+> = {
+  patient: {
+    name: 'patient',
+    description:
+      'The entity undergoing the action — what is being acted upon. The most common role, used by 25+ commands.',
+    origin: 'Linguistic thematic role: the entity that undergoes a change of state.',
+    usage:
+      'The class being toggled, the content being put, the element being shown, the variable being incremented.',
+    commands: [
+      'toggle',
+      'add',
+      'remove',
+      'put',
+      'set',
+      'show',
+      'hide',
+      'wait',
+      'log',
+      'increment',
+      'decrement',
+      'append',
+      'prepend',
+      'copy',
+      'throw',
+      'call',
+      'return',
+      'focus',
+      'blur',
+      'beep',
+      'pick',
+      'render',
+      'morph',
+      'swap',
+    ],
+    explicitExample: '[toggle patient:.active]',
+  },
+  destination: {
+    name: 'destination',
+    description:
+      'Where the action targets or where something ends up. Intentionally broad: DOM element, URL, or variable. Disambiguated by value type per command.',
+    origin: 'Linguistic thematic role: the endpoint or goal location of a motion/transfer.',
+    usage:
+      'The element receiving a class (toggle/add), the container for content (put), the URL to navigate to (go), the variable to store into (set).',
+    commands: [
+      'toggle',
+      'add',
+      'put',
+      'remove',
+      'append',
+      'prepend',
+      'trigger',
+      'clone',
+      'show',
+      'hide',
+      'transition',
+      'go',
+      'tell',
+      'set',
+      'get',
+      'fetch',
+      'send',
+      'morph',
+      'swap',
+    ],
+    explicitExample: '[put patient:"hello" destination:#output]',
+  },
+  source: {
+    name: 'source',
+    description: 'Where something originates from — the origin of data or the element to act on.',
+    origin: 'Linguistic thematic role: the starting point of a motion/transfer.',
+    usage: 'The element to remove from, the URL to fetch from, the event source element.',
+    commands: ['remove', 'on', 'get', 'take', 'pick', 'repeat', 'for', 'measure', 'fetch'],
+    explicitExample: '[fetch source:/api/data responseType:json]',
+  },
+  event: {
+    name: 'event',
+    description: 'The trigger event for an event handler.',
+    origin: 'DOM event model.',
+    usage: 'The event name that starts execution: click, input, keydown, mouseover, custom events.',
+    commands: ['on', 'trigger', 'send', 'repeat'],
+    explicitExample: '[on event:click body:[toggle patient:.active]]',
+  },
+  condition: {
+    name: 'condition',
+    description: 'A boolean expression that controls whether something executes.',
+    origin: 'Control flow semantics.',
+    usage: 'The test in an if/unless/while block.',
+    commands: ['if', 'unless', 'while'],
+    explicitExample: '[if condition:"x > 5"]',
+  },
+  quantity: {
+    name: 'quantity',
+    description: 'A numeric amount for the action.',
+    origin: 'Linguistic quantifier role.',
+    usage: 'How much to increment/decrement by, how many times to repeat.',
+    commands: ['increment', 'decrement', 'repeat', 'for'],
+    explicitExample: '[increment patient:#count quantity:5]',
+  },
+  duration: {
+    name: 'duration',
+    description: 'A time span for the action.',
+    origin: 'Temporal adverbial role.',
+    usage: 'How long a transition takes.',
+    commands: ['transition'],
+    explicitExample: '[transition patient:opacity duration:500ms]',
+  },
+  goal: {
+    name: 'goal',
+    description: 'The target value or state to reach.',
+    origin: 'Linguistic thematic role: the desired end-state.',
+    usage: 'The target value in a transition.',
+    commands: ['transition'],
+    explicitExample: '[transition patient:opacity goal:0]',
+  },
+  style: {
+    name: 'style',
+    description: 'The visual or behavioral manner of the action.',
+    origin: 'Adverbial modifier for manner/instrument.',
+    usage: 'Animation style for show/hide (fade, slide, opacity).',
+    commands: ['show', 'hide', 'render', 'transition'],
+    explicitExample: '[show patient:#modal style:opacity]',
+  },
+  method: {
+    name: 'method',
+    description: 'The technique or HTTP method used.',
+    origin: 'Instrument/manner role, specialized for web.',
+    usage: 'HTTP method for fetch (GET, POST), swap strategy (innerHTML, outerHTML).',
+    commands: ['swap', 'fetch'],
+    explicitExample: '[fetch source:/api method:POST responseType:json]',
+  },
+  responseType: {
+    name: 'responseType',
+    description: 'The expected response format.',
+    origin: 'HTTP content negotiation.',
+    usage: 'How to parse a fetch response: json, text, html, blob.',
+    commands: ['fetch'],
+    explicitExample: '[fetch source:/api responseType:json]',
+  },
+  manner: {
+    name: 'manner',
+    description:
+      'Reserved role for insertion position. Not currently used in command schemas — swap uses "method", put handles position via destination markers.',
+    origin: 'Linguistic adverbial role for how an action is performed.',
+    usage: 'Reserved for future use.',
+    commands: [],
+    explicitExample: '(not currently used)',
+  },
+  agent: {
+    name: 'agent',
+    description:
+      'Who or what performs the action. Reserved for future use (AI agents, server-side execution).',
+    origin: 'Linguistic thematic role: the entity that initiates the action.',
+    usage: 'Reserved for future use.',
+    commands: [],
+    explicitExample: '(not currently used)',
+  },
+  loopType: {
+    name: 'loopType',
+    description: 'The loop variant for repeat commands.',
+    origin: 'Control flow semantics.',
+    usage: 'Loop style: forever, times, while, until, until-event.',
+    commands: ['repeat'],
+    explicitExample: '[repeat loopType:forever]',
+  },
+};
+
+// =============================================================================
 // Best Practices Rules
 // =============================================================================
 
@@ -935,6 +1178,8 @@ function handleGetCommandDocs(args: Record<string, unknown>): {
                 command: schema.action,
                 description: schema.description,
                 syntax: generateSyntaxString(schema),
+                explicitSyntax: generateExplicitExample(schema),
+                jsonSyntax: generateJsonExample(schema),
                 category: schema.category,
                 primaryRole: schema.primaryRole,
                 hasBody: schema.hasBody || false,
@@ -1109,7 +1354,14 @@ function handleSearchLanguageElements(args: Record<string, unknown>): {
   const types = args.types as string[] | undefined;
   const limit = (args.limit as number) || 10;
 
-  const searchTypes = types || ['command', 'expression', 'keyword', 'feature', 'special_symbol'];
+  const searchTypes = types || [
+    'command',
+    'expression',
+    'keyword',
+    'feature',
+    'special_symbol',
+    'role',
+  ];
   const results: Array<{ type: string; name: string; description: string; [key: string]: any }> =
     [];
 
@@ -1225,6 +1477,29 @@ function handleSearchLanguageElements(args: Record<string, unknown>): {
           name: sym.name,
           symbol: sym.symbol,
           description: sym.description,
+        });
+      }
+    }
+  }
+
+  // Search semantic roles
+  if (searchTypes.includes('role')) {
+    for (const [name, role] of Object.entries(ROLE_CATALOG)) {
+      if (
+        name.includes(query) ||
+        role.description.toLowerCase().includes(query) ||
+        role.origin.toLowerCase().includes(query) ||
+        role.usage.toLowerCase().includes(query) ||
+        role.commands.some(c => c.includes(query))
+      ) {
+        results.push({
+          type: 'role',
+          name: role.name,
+          description: role.description,
+          origin: role.origin,
+          usage: role.usage,
+          commands: role.commands,
+          explicitExample: role.explicitExample,
         });
       }
     }

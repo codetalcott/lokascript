@@ -335,13 +335,66 @@ describe('Spanish Parsing', () => {
 // =============================================================================
 
 describe('Explicit Mode', () => {
+  // --- Parsing ---
+
   it('should parse explicit syntax', () => {
     const node = parseExplicit('[toggle patient:.active destination:#button]');
 
     expect(node.action).toBe('toggle');
-    expect(node.roles.get('patient' as any)?.value).toBe('.active');
-    expect(node.roles.get('destination' as any)?.value).toBe('#button');
+    expect(node.roles.get('patient')?.value).toBe('.active');
+    expect(node.roles.get('destination')?.value).toBe('#button');
   });
+
+  it('should parse put with patient and destination', () => {
+    const node = parseExplicit('[put patient:"hello" destination:#output]');
+
+    expect(node.action).toBe('put');
+    expect(node.roles.get('patient')?.value).toBe('hello');
+    expect(node.roles.get('destination')?.value).toBe('#output');
+  });
+
+  it('should parse add with patient and destination', () => {
+    const node = parseExplicit('[add patient:.active destination:#button]');
+
+    expect(node.action).toBe('add');
+    expect(node.roles.get('patient')?.value).toBe('.active');
+    expect(node.roles.get('destination')?.value).toBe('#button');
+  });
+
+  it('should parse fetch with source and responseType', () => {
+    const node = parseExplicit('[fetch source:/api/data responseType:json]');
+
+    expect(node.action).toBe('fetch');
+    expect(node.roles.get('source')?.value).toBe('/api/data');
+    expect(node.roles.get('responseType')?.value).toBe('json');
+  });
+
+  it('should parse increment with patient and quantity', () => {
+    const node = parseExplicit('[increment patient:#count quantity:5]');
+
+    expect(node.action).toBe('increment');
+    expect(node.roles.get('patient')?.value).toBe('#count');
+    expect(node.roles.get('quantity')?.value).toBe(5);
+  });
+
+  it('should parse boolean values', () => {
+    const node = parseExplicit('[log patient:true]');
+    expect(node.roles.get('patient')?.value).toBe(true);
+  });
+
+  it('should parse duration values', () => {
+    const node = parseExplicit('[wait patient:500ms]');
+    expect(node.roles.get('patient')?.value).toBe('500ms');
+  });
+
+  it('should parse nested body syntax', () => {
+    const node = parseExplicit('[on event:click body:[toggle patient:.active]]');
+
+    expect(node.kind).toBe('event-handler');
+    expect(node.action).toBe('on');
+  });
+
+  // --- Rendering ---
 
   it('should render to explicit syntax', () => {
     const node = parse('toggle .active on #button', 'en');
@@ -351,6 +404,8 @@ describe('Explicit Mode', () => {
     expect(explicit).toContain('.active');
     expect(explicit).toContain('#button');
   });
+
+  // --- Conversion ---
 
   it('should convert natural to explicit', () => {
     const explicit = toExplicit('toggle .active on #button', 'en');
@@ -364,6 +419,57 @@ describe('Explicit Mode', () => {
 
     expect(natural).toContain('toggle');
     expect(natural).toContain('.active');
+  });
+
+  // --- Validation (error cases) ---
+
+  it('should throw on missing brackets', () => {
+    expect(() => parseExplicit('toggle patient:.active')).toThrow('wrapped in brackets');
+  });
+
+  it('should throw on empty explicit statement', () => {
+    expect(() => parseExplicit('[]')).toThrow('Empty explicit statement');
+  });
+
+  it('should throw on missing colon in role:value pair', () => {
+    expect(() => parseExplicit('[toggle .active]')).toThrow('Expected role:value');
+  });
+
+  it('should throw on unknown role name with valid role list', () => {
+    expect(() => parseExplicit('[toggle typo:.active]')).toThrow('Unknown role "typo"');
+    expect(() => parseExplicit('[toggle typo:.active]')).toThrow('Valid roles:');
+    expect(() => parseExplicit('[toggle typo:.active]')).toThrow('patient');
+  });
+
+  it('should throw on missing required role with description', () => {
+    // put requires patient (content) — no default
+    expect(() => parseExplicit('[put destination:#output]')).toThrow('Missing required role "patient"');
+    expect(() => parseExplicit('[put destination:#output]')).toThrow('content to put');
+  });
+
+  it('should accept valid roles without error', () => {
+    // toggle destination is optional with default=me, so just patient is fine
+    expect(() => parseExplicit('[toggle patient:.active]')).not.toThrow();
+  });
+
+  // --- Round-trip ---
+
+  it('should round-trip toggle through explicit syntax', () => {
+    const node1 = parse('toggle .active on #button', 'en');
+    const explicit = renderExplicit(node1);
+    const node2 = parseExplicit(explicit);
+
+    expect(node2.action).toBe('toggle');
+    expect(node2.roles.get('patient')?.value).toBe('.active');
+  });
+
+  it('should round-trip add through explicit syntax', () => {
+    const node1 = parse('add .highlight to #panel', 'en');
+    const explicit = renderExplicit(node1);
+    const node2 = parseExplicit(explicit);
+
+    expect(node2.action).toBe('add');
+    expect(node2.roles.get('patient')?.value).toBe('.highlight');
   });
 });
 

@@ -131,11 +131,16 @@ function normalizeExplicit(input: string): NormalizeResult {
       diagnostics,
     };
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const hasRoleGuidance =
+      message.includes('Valid roles') || message.includes('Missing required role');
     diagnostics.push({
       severity: 'error',
       code: 'EXPLICIT_PARSE_ERROR',
-      message: error instanceof Error ? error.message : String(error),
-      suggestion: 'Use format: [command role:value ...] e.g. [toggle patient:.active]',
+      message,
+      suggestion: hasRoleGuidance
+        ? undefined
+        : 'Use format: [command role:value ...] e.g. [toggle patient:.active]. Use get_command_docs(command) to see valid roles.',
     });
     return { node: null, confidence: 0, format: 'explicit', diagnostics };
   }

@@ -725,64 +725,138 @@ function validateHyperscript(
 
 const COMMAND_SUGGESTIONS: Record<
   string,
-  { command: string; example: string; description: string }
+  { command: string; example: string; explicitSyntax: string; description: string }
 > = {
   toggle: {
     command: 'toggle',
     example: 'toggle .active',
+    explicitSyntax: '[toggle patient:.active destination:#element]',
     description: 'Toggle a class, attribute, or visibility',
   },
   add: {
     command: 'add',
     example: 'add .highlight to me',
+    explicitSyntax: '[add patient:.highlight destination:#element]',
     description: 'Add a class, attribute, or style',
   },
   remove: {
     command: 'remove',
     example: 'remove .error from #form',
+    explicitSyntax: '[remove patient:.error source:#form]',
     description: 'Remove a class, attribute, or element',
   },
   show: {
     command: 'show',
     example: 'show #modal with *opacity',
+    explicitSyntax: '[show patient:#modal style:opacity]',
     description: 'Show a hidden element',
   },
-  hide: { command: 'hide', example: 'hide me with *opacity', description: 'Hide an element' },
-  set: { command: 'set', example: 'set :count to 0', description: 'Set a variable or property' },
+  hide: {
+    command: 'hide',
+    example: 'hide me with *opacity',
+    explicitSyntax: '[hide patient:me style:opacity]',
+    description: 'Hide an element',
+  },
+  set: {
+    command: 'set',
+    example: 'set :count to 0',
+    explicitSyntax: '[set destination::count patient:0]',
+    description: 'Set a variable or property',
+  },
   put: {
     command: 'put',
     example: 'put "Hello" into #greeting',
+    explicitSyntax: '[put patient:"Hello" destination:#greeting]',
     description: 'Set element content',
   },
-  fetch: { command: 'fetch', example: 'fetch /api as json', description: 'Make HTTP request' },
-  wait: { command: 'wait', example: 'wait 500ms', description: 'Pause execution' },
-  send: { command: 'send', example: 'send refresh to #list', description: 'Dispatch custom event' },
-  go: { command: 'go', example: 'go to /page', description: 'Navigate to URL' },
+  fetch: {
+    command: 'fetch',
+    example: 'fetch /api as json',
+    explicitSyntax: '[fetch source:/api responseType:json]',
+    description: 'Make HTTP request',
+  },
+  wait: {
+    command: 'wait',
+    example: 'wait 500ms',
+    explicitSyntax: '[wait patient:500ms]',
+    description: 'Pause execution',
+  },
+  send: {
+    command: 'send',
+    example: 'send refresh to #list',
+    explicitSyntax: '[send event:refresh destination:#list]',
+    description: 'Dispatch custom event',
+  },
+  go: {
+    command: 'go',
+    example: 'go to /page',
+    explicitSyntax: '[go destination:/page]',
+    description: 'Navigate to URL',
+  },
   increment: {
     command: 'increment',
     example: 'increment :count',
+    explicitSyntax: '[increment patient::count]',
     description: 'Add 1 to a number',
   },
   decrement: {
     command: 'decrement',
     example: 'decrement :count',
+    explicitSyntax: '[decrement patient::count]',
     description: 'Subtract 1 from a number',
   },
-  focus: { command: 'focus', example: 'focus #input', description: 'Focus an element' },
+  focus: {
+    command: 'focus',
+    example: 'focus #input',
+    explicitSyntax: '[focus patient:#input]',
+    description: 'Focus an element',
+  },
   call: {
     command: 'call',
     example: 'call myFunction()',
+    explicitSyntax: '[call patient:myFunction()]',
     description: 'Call a JavaScript function',
   },
-  log: { command: 'log', example: 'log me', description: 'Log to console' },
-  beep: { command: 'beep', example: 'beep me', description: 'Debug output with type info' },
-  break: { command: 'break', example: 'break', description: 'Exit current loop' },
-  copy: { command: 'copy', example: 'copy #input.value', description: 'Copy to clipboard' },
-  exit: { command: 'exit', example: 'exit', description: 'Exit event handler' },
-  pick: { command: 'pick', example: 'pick .items', description: 'Pick random item' },
+  log: {
+    command: 'log',
+    example: 'log me',
+    explicitSyntax: '[log patient:me]',
+    description: 'Log to console',
+  },
+  beep: {
+    command: 'beep',
+    example: 'beep me',
+    explicitSyntax: '[beep patient:me]',
+    description: 'Debug output with type info',
+  },
+  break: {
+    command: 'break',
+    example: 'break',
+    explicitSyntax: '[break]',
+    description: 'Exit current loop',
+  },
+  copy: {
+    command: 'copy',
+    example: 'copy #input.value',
+    explicitSyntax: '[copy patient:#input]',
+    description: 'Copy to clipboard',
+  },
+  exit: {
+    command: 'exit',
+    example: 'exit',
+    explicitSyntax: '[exit]',
+    description: 'Exit event handler',
+  },
+  pick: {
+    command: 'pick',
+    example: 'pick .items',
+    explicitSyntax: '[pick source:.items]',
+    description: 'Pick random item',
+  },
   render: {
     command: 'render',
     example: 'render "<p>${name}</p>" with {name: "World"}',
+    explicitSyntax: '[render patient:"<p>${name}</p>"]',
     description: 'Render a template',
   },
 };
@@ -816,9 +890,15 @@ const TASK_KEYWORDS: Record<string, string[]> = {
  * Translate a command suggestion to a specific language.
  */
 function translateSuggestion(
-  suggestion: { command: string; example: string; description: string },
+  suggestion: { command: string; example: string; explicitSyntax: string; description: string },
   language: string
-): { command: string; example: string; description: string; englishCommand?: string } {
+): {
+  command: string;
+  example: string;
+  explicitSyntax: string;
+  description: string;
+  englishCommand?: string;
+} {
   if (!semanticPackage || language === 'en') {
     return suggestion;
   }
@@ -831,6 +911,7 @@ function translateSuggestion(
         return {
           command: trans.primary,
           example: suggestion.example.replace(suggestion.command, trans.primary),
+          explicitSyntax: suggestion.explicitSyntax,
           description: suggestion.description,
           englishCommand: suggestion.command,
         };
