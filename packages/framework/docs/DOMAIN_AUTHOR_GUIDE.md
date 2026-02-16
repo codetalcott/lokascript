@@ -446,18 +446,119 @@ export const listSchema = defineCommand({
 
 ### Natural Language Renderer
 
-For translation support, implement a renderer that converts `SemanticNode` → human-readable text:
+For translation support, implement a renderer that converts `SemanticNode` → human-readable text.
+
+**Option 1: Auto-generate from schemas** (simplest — handles word order automatically):
 
 ```typescript
-export function renderCommand(node: SemanticNode, language: string): string {
-  const keyword = KEYWORDS[node.action]?.[language] ?? node.action;
-  const target = extractRoleValue(node, 'target');
-  if (language === 'ja') return `${target} を ${keyword}`; // SOV
-  return `${keyword} ${target}`; // SVO
+import { createSchemaRenderer } from '@lokascript/framework';
+
+const renderer = createSchemaRenderer(schemas, profiles);
+renderer.render(node, 'ja'); // → "users から name 選択"
+```
+
+**Option 2: Use renderer helpers** (more control):
+
+```typescript
+import { lookupKeyword, lookupMarker, buildPhrase } from '@lokascript/framework';
+import type { KeywordTable, MarkerTable } from '@lokascript/framework';
+
+const KEYWORDS: KeywordTable = {
+  select: { en: 'select', ja: '選択', es: 'seleccionar' },
+};
+const MARKERS: MarkerTable = {
+  from: { en: 'from', ja: 'から', es: 'de' },
+};
+
+export function renderSelect(node: SemanticNode, lang: string): string {
+  const kw = lookupKeyword(KEYWORDS, 'select', lang);
+  const cols = extractRoleValue(node, 'columns');
+  const src = extractRoleValue(node, 'source');
+  const mk = lookupMarker(MARKERS, 'from', lang);
+
+  if (isSOV(lang)) return buildPhrase(src, mk, cols, kw);
+  return buildPhrase(kw, cols, mk, src);
 }
 ```
 
+**Option 3: Implement `NaturalLanguageRenderer` directly** (full control):
+
+```typescript
+import type { NaturalLanguageRenderer } from '@lokascript/framework';
+
+export const myRenderer: NaturalLanguageRenderer = {
+  render(node, language) {
+    switch (node.action) {
+      case 'select':
+        return renderSelect(node, language);
+      default:
+        return node.action;
+    }
+  },
+};
+```
+
 Wire it into translation: parse in source language, render in target language.
+
+### Structured Diagnostics
+
+Use the diagnostic collector for validation with rich error reporting:
+
+```typescript
+import { createDiagnosticCollector, fromError } from '@lokascript/framework';
+
+function validateMyDSL(input: string, language: string) {
+  const collector = createDiagnosticCollector();
+
+  // Check for issues
+  if (!input.trim()) {
+    collector.error('Empty input', { code: 'empty-input' });
+  }
+
+  try {
+    const node = dsl.parse(input, language);
+    if (node.metadata?.confidence && node.metadata.confidence < 0.7) {
+      collector.warning('Low confidence match', {
+        code: 'low-confidence',
+        suggestions: ['Check spelling', 'Try a different phrasing'],
+      });
+    }
+  } catch (err) {
+    collector.add(fromError(err, { code: 'parse-error', line: 1, source: input }));
+  }
+
+  return collector.toResult();
+  // { ok: false, diagnostics: [...], summary: { errors: 1, warnings: 0, infos: 0 } }
+}
+```
+
+### Domain Registry (MCP Integration)
+
+Instead of manually writing MCP tool definitions, use the domain registry:
+
+```typescript
+import { DomainRegistry } from '@lokascript/framework';
+
+const registry = new DomainRegistry();
+
+registry.register({
+  name: 'myapi',
+  description: 'Natural language MyAPI',
+  languages: ['en', 'es', 'ja'],
+  inputLabel: 'query',
+  inputDescription: 'MyAPI query in natural language',
+  getDSL: () => createMyapiDSL(),
+  getRenderer: () => myRenderer,
+});
+
+// Auto-generates: parse_myapi, compile_myapi, validate_myapi, translate_myapi
+const tools = registry.getToolDefinitions();
+
+// Dispatch tool calls automatically
+const result = await registry.handleToolCall('parse_myapi', { query: 'create foo' });
+```
+
+In the MCP server, register your domain with the shared registry instead of writing a custom tool file.
 
 ---
 

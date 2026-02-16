@@ -72,6 +72,33 @@ export type {
 
 export type { CommandSchema, RoleSpec } from './schema';
 
+// Renderer
+export type {
+  NaturalLanguageRenderer,
+  KeywordTable,
+  MarkerTable,
+  RendererConfig,
+} from './generation/renderer';
+export {
+  lookupKeyword,
+  lookupMarker,
+  buildPhrase,
+  buildTablesFromProfiles,
+  detectWordOrders,
+  createSchemaRenderer,
+} from './generation/renderer';
+
+// Diagnostics
+export type {
+  DiagnosticSeverity,
+  Diagnostic,
+  DiagnosticResult,
+  DiagnosticSummary,
+  DiagnosticCollector,
+  DiagnosticOptions,
+} from './generation/diagnostics';
+export { createDiagnosticCollector, fromError, filterBySeverity } from './generation/diagnostics';
+
 export type {
   LanguageConfig,
   DSLConfig,
@@ -79,7 +106,12 @@ export type {
   CodeGenerator,
   ValidationResult,
   CompileResult,
+  DomainDescriptor,
+  MCPToolDefinition,
+  MCPToolResponse,
 } from './api';
+
+export { DomainRegistry } from './api';
 
 // Re-export helper functions
 export {

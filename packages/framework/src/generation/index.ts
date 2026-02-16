@@ -1,5 +1,7 @@
 /**
- * Pattern generation from command schemas
+ * Pattern generation, rendering, and diagnostics
  */
 
 export * from './pattern-generator';
+export * from './renderer';
+export * from './diagnostics';
