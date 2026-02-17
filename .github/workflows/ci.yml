@@ -60,6 +60,9 @@ jobs:
       - name: Build domain-jsx package
         run: npm run build --prefix packages/domain-jsx
 
+      - name: Build domain-todo package
+        run: npm run build --prefix packages/domain-todo
+
       - name: Build semantic package
         run: npm run build --prefix packages/semantic
 
@@ -123,6 +126,7 @@ jobs:
             packages/domain-bdd/dist/
             packages/domain-sql/dist/
             packages/domain-jsx/dist/
+            packages/domain-todo/dist/
             packages/semantic/dist/
             packages/i18n/dist/
             packages/core/dist/
@@ -350,6 +354,9 @@ jobs:
 
       - name: Test domain-jsx
         run: npm test --prefix packages/domain-jsx
+
+      - name: Test domain-todo
+        run: npm test --prefix packages/domain-todo
 
       - name: Test language-server
         run: npm test --prefix packages/language-server -- --run

@@ -377,9 +377,12 @@ describe('PatternGenerator', () => {
 
       const pattern = generatePattern(schema, profile);
 
-      // Primary keyword should be used in tokens
-      expect(pattern.template.tokens[0]).toEqual({ type: 'literal', value: 'toggle' });
-      // Alternatives could be stored in token alternatives field (implementation-dependent)
+      // Primary keyword should be used in tokens, alternatives passed through
+      expect(pattern.template.tokens[0]).toEqual({
+        type: 'literal',
+        value: 'toggle',
+        alternatives: ['switch'],
+      });
     });
 
     it('should use markerOverride from role spec', () => {

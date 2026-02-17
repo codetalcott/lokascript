@@ -60,7 +60,7 @@ export function generatePattern(
   }
 
   // Build tokens based on word order
-  const tokens = buildTokens(schema, profile, keyword.primary);
+  const tokens = buildTokens(schema, profile, keyword.primary, keyword.alternatives);
 
   // Build extraction rules
   const extraction = buildExtractionRules(schema, profile);
@@ -87,9 +87,15 @@ export function generatePattern(
 function buildTokens(
   schema: CommandSchema,
   profile: PatternGenLanguageProfile,
-  keyword: string
+  keyword: string,
+  alternatives?: string[]
 ): PatternToken[] {
   const tokens: PatternToken[] = [];
+  const keywordToken: PatternToken = {
+    type: 'literal',
+    value: keyword,
+    ...(alternatives?.length && { alternatives }),
+  };
 
   // Sort roles by word order
   const sortedRoles = sortRolesByWordOrder(schema.roles, profile.wordOrder);
@@ -97,7 +103,7 @@ function buildTokens(
   // For SVO: [action, patient, destination, source, ...]
   if (profile.wordOrder === 'SVO') {
     // Add keyword first
-    tokens.push({ type: 'literal', value: keyword });
+    tokens.push(keywordToken);
 
     // Add roles with markers
     for (const role of sortedRoles) {
@@ -112,12 +118,12 @@ function buildTokens(
     }
 
     // Add keyword last
-    tokens.push({ type: 'literal', value: keyword });
+    tokens.push(keywordToken);
   }
   // For VSO: [action, destination, patient, source, ...]
   else if (profile.wordOrder === 'VSO') {
     // Add keyword first
-    tokens.push({ type: 'literal', value: keyword });
+    tokens.push(keywordToken);
 
     // Add roles with markers
     for (const role of sortedRoles) {
@@ -127,7 +133,7 @@ function buildTokens(
   // Other word orders can be added as needed
   else {
     // Fallback to SVO-style ordering
-    tokens.push({ type: 'literal', value: keyword });
+    tokens.push(keywordToken);
     for (const role of sortedRoles) {
       addRoleWithMarker(tokens, role, profile);
     }

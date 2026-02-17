@@ -5,7 +5,12 @@ import type { CommandSchema } from '@lokascript/framework';
 // add — Add a task to a list
 //   EN: add "Buy milk" to groceries
 //   ES: agregar "Comprar leche" a compras
-//   JA: 買い物 に "牛乳を買う" を 追加
+//   JA: 買い物 に ミルク を 追加
+//   AR: أضف حليب إلى مشتريات
+//   KO: 장보기 에 우유 를 추가
+//   ZH: 添加 牛奶 到 杂货
+//   TR: alışveriş e süt ekle
+//   FR: ajouter lait à courses
 // =============================================================================
 
 export const addSchema = defineCommand({
@@ -21,7 +26,7 @@ export const addSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 2, // First after verb: "add <item> ..."
       sovPosition: 1, // Second in SOV: "... <item> を 追加"
-      markerOverride: { ja: 'を' },
+      markerOverride: { ja: 'を', ko: '를' },
     }),
     defineRole({
       role: 'list',
@@ -30,16 +35,30 @@ export const addSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1, // Second after verb: "... to <list>"
       sovPosition: 2, // First in SOV: "<list> に ..."
-      markerOverride: { en: 'to', es: 'a', ja: 'に' },
+      markerOverride: {
+        en: 'to',
+        es: 'a',
+        ja: 'に',
+        ar: 'إلى',
+        ko: '에',
+        zh: '到',
+        tr: 'e',
+        fr: 'à',
+      },
     }),
   ],
 });
 
 // =============================================================================
 // complete — Mark a task as done
-//   EN: complete "Buy milk"
-//   ES: completar "Comprar leche"
-//   JA: "牛乳を買う" を 完了
+//   EN: complete milk
+//   ES: completar leche
+//   JA: ミルク を 完了
+//   AR: أكمل حليب
+//   KO: 우유 를 완료
+//   ZH: 完成 牛奶
+//   TR: süt tamamla
+//   FR: terminer lait
 // =============================================================================
 
 export const completeSchema = defineCommand({
@@ -55,7 +74,7 @@ export const completeSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { ja: 'を' },
+      markerOverride: { ja: 'を', ko: '를' },
     }),
   ],
 });
@@ -65,6 +84,11 @@ export const completeSchema = defineCommand({
 //   EN: list groceries
 //   ES: listar compras
 //   JA: 買い物 を 一覧
+//   AR: اعرض مشتريات
+//   KO: 장보기 를 목록
+//   ZH: 列出 杂货
+//   TR: alışveriş listele
+//   FR: lister courses
 // =============================================================================
 
 export const listSchema = defineCommand({
@@ -80,7 +104,7 @@ export const listSchema = defineCommand({
       expectedTypes: ['expression'],
       svoPosition: 1,
       sovPosition: 1,
-      markerOverride: { ja: 'を' },
+      markerOverride: { ja: 'を', ko: '를' },
     }),
   ],
 });

@@ -17,21 +17,23 @@ export const todoCodeGenerator: CodeGenerator = {
 };
 
 function generateAdd(node: SemanticNode): string {
-  const item = extractRoleValue(node, 'item') ?? 'Untitled';
-  const list = extractRoleValue(node, 'list');
+  const item = extractRoleValue(node, 'item');
+  if (!item) return JSON.stringify({ error: 'add: missing required role "item"' });
   const obj: Record<string, string> = { action: 'add', item };
+  const list = extractRoleValue(node, 'list');
   if (list) obj.list = list;
   return JSON.stringify(obj);
 }
 
 function generateComplete(node: SemanticNode): string {
-  const item = extractRoleValue(node, 'item') ?? 'Untitled';
+  const item = extractRoleValue(node, 'item');
+  if (!item) return JSON.stringify({ error: 'complete: missing required role "item"' });
   return JSON.stringify({ action: 'complete', item });
 }
 
 function generateList(node: SemanticNode): string {
-  const list = extractRoleValue(node, 'list');
   const obj: Record<string, string> = { action: 'list' };
+  const list = extractRoleValue(node, 'list');
   if (list) obj.list = list;
   return JSON.stringify(obj);
 }

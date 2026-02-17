@@ -42,6 +42,16 @@ export function createDomainRegistry(): DomainRegistry {
   });
 
   registry.register({
+    name: 'todo',
+    description: 'natural language todo management',
+    languages: ['en', 'es', 'ja', 'ar', 'ko', 'zh', 'tr', 'fr'],
+    inputLabel: 'command',
+    inputDescription: 'Todo command in natural language (e.g., "add milk to groceries")',
+    getDSL: () => import('@lokascript/domain-todo').then(m => m.createTodoDSL()),
+    getRenderer: () => import('@lokascript/domain-todo').then(m => m.renderTodo),
+  });
+
+  registry.register({
     name: 'behaviorspec',
     description: 'interaction testing specification',
     languages: ['en', 'es', 'ja', 'ar', 'ko', 'zh', 'tr', 'fr'],
