@@ -171,7 +171,23 @@ const SPECIAL_DOM_PROPERTIES: Record<string, (element: Element) => unknown> = {
   lastchild: el => el.lastElementChild,
   nextsibling: el => el.nextElementSibling,
   previoussibling: el => el.previousElementSibling,
+  values: el => collectFormValues(el),
 };
+
+/**
+ * Collect form values from an element as FormData.
+ * For HTMLFormElement, uses the native FormData constructor.
+ * Otherwise, queries descendant input/select/textarea elements.
+ */
+function collectFormValues(el: Element): FormData {
+  if (el instanceof HTMLFormElement) return new FormData(el);
+  const fd = new FormData();
+  el.querySelectorAll('input, select, textarea').forEach((input: Element) => {
+    const name = input.getAttribute('name');
+    if (name && 'value' in input) fd.append(name, (input as HTMLInputElement).value);
+  });
+  return fd;
+}
 
 /**
  * Access property from DOM element with comprehensive handling

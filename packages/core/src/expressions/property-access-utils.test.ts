@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { accessAttribute } from './property-access-utils';
+import { accessAttribute, getElementProperty } from './property-access-utils';
 
 describe('accessAttribute', () => {
   let element: HTMLElement;
@@ -116,5 +116,71 @@ describe('accessAttribute', () => {
       element.setAttribute('data-enabled', 'true');
       expect(accessAttribute(element, 'data-enabled')).toBe('true'); // String, not boolean
     });
+  });
+});
+
+describe('getElementProperty - values pseudo-property', () => {
+  it('should return FormData from an HTMLFormElement', () => {
+    const form = document.createElement('form');
+    const input = document.createElement('input');
+    input.name = 'username';
+    input.value = 'john';
+    form.appendChild(input);
+
+    const result = getElementProperty(form, 'values');
+    expect(result).toBeInstanceOf(FormData);
+    expect((result as FormData).get('username')).toBe('john');
+  });
+
+  it('should collect inputs from a non-form container', () => {
+    const div = document.createElement('div');
+    const input = document.createElement('input');
+    input.name = 'email';
+    input.value = 'test@example.com';
+    div.appendChild(input);
+
+    const result = getElementProperty(div, 'values');
+    expect(result).toBeInstanceOf(FormData);
+    expect((result as FormData).get('email')).toBe('test@example.com');
+  });
+
+  it('should return empty FormData for element with no inputs', () => {
+    const div = document.createElement('div');
+    const result = getElementProperty(div, 'values');
+    expect(result).toBeInstanceOf(FormData);
+    const entries = Array.from((result as FormData).entries());
+    expect(entries).toHaveLength(0);
+  });
+
+  it('should collect multiple named inputs', () => {
+    const form = document.createElement('form');
+    const input1 = document.createElement('input');
+    input1.name = 'first';
+    input1.value = 'Alice';
+    const input2 = document.createElement('input');
+    input2.name = 'last';
+    input2.value = 'Smith';
+    form.appendChild(input1);
+    form.appendChild(input2);
+
+    const result = getElementProperty(form, 'values') as FormData;
+    expect(result.get('first')).toBe('Alice');
+    expect(result.get('last')).toBe('Smith');
+  });
+
+  it('should skip inputs without a name attribute', () => {
+    const div = document.createElement('div');
+    const named = document.createElement('input');
+    named.name = 'keep';
+    named.value = 'yes';
+    const unnamed = document.createElement('input');
+    unnamed.value = 'skip';
+    div.appendChild(named);
+    div.appendChild(unnamed);
+
+    const result = getElementProperty(div, 'values') as FormData;
+    expect(result.get('keep')).toBe('yes');
+    const entries = Array.from(result.entries());
+    expect(entries).toHaveLength(1);
   });
 });

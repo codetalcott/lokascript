@@ -768,5 +768,29 @@ describe('HybridParser', () => {
       expect(value.type).toBe('valuesOf');
       expect(value.target.value).toBe('#my-form');
     });
+
+    it('should parse my values as possessive', () => {
+      const ast = parse('set :data to my values');
+      const value = ast.commands[0].args[1];
+      expect(value.type).toBe('possessive');
+      expect(value.object.value).toBe('me');
+      expect(value.property).toBe('values');
+    });
+
+    it('should parse its values as possessive', () => {
+      const ast = parse('set :data to its values');
+      const value = ast.commands[0].args[1];
+      expect(value.type).toBe('possessive');
+      expect(value.object.value).toBe('it');
+      expect(value.property).toBe('values');
+    });
+
+    it("should parse #form's values as possessive", () => {
+      const ast = parse("set :data to #form's values");
+      const value = ast.commands[0].args[1];
+      expect(value.type).toBe('possessive');
+      expect(value.object.value).toBe('#form');
+      expect(value.property).toBe('values');
+    });
   });
 });

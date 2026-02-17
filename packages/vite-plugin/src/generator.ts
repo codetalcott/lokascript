@@ -217,6 +217,15 @@ async function evaluate(node, ctx) {
       const obj = await evaluate(node.object, ctx);
       if (obj == null) return undefined;
       const prop = node.computed ? await evaluate(node.property, ctx) : node.property;
+      if (prop === 'values' && obj instanceof Element) {
+        if (obj instanceof HTMLFormElement) return new FormData(obj);
+        const fd = new FormData();
+        obj.querySelectorAll('input, select, textarea').forEach(input => {
+          const name = input.getAttribute('name');
+          if (name && 'value' in input) fd.append(name, (input as HTMLInputElement).value);
+        });
+        return fd;
+      }
       return obj[prop];
 
     case 'call': {

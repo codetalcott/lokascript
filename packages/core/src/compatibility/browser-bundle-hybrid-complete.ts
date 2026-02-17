@@ -80,6 +80,7 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
       const obj = await evaluate(node.object, ctx);
       if (obj == null) return undefined;
       const prop = node.computed ? await evaluate(node.property, ctx) : node.property;
+      if (prop === 'values' && obj instanceof Element) return collectFormValues(obj);
       return obj[prop];
 
     case 'call': {
@@ -116,27 +117,23 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
 
     case 'valuesOf': {
       const target = await evaluate(node.target, ctx);
-      if (target instanceof HTMLFormElement) {
-        return new FormData(target);
-      }
-      // For non-form elements, collect input values from descendants
-      if (target instanceof Element) {
-        const form = new FormData();
-        const inputs = target.querySelectorAll('input, select, textarea');
-        inputs.forEach((input: Element) => {
-          const name = input.getAttribute('name');
-          if (name && 'value' in input) {
-            form.append(name, (input as HTMLInputElement).value);
-          }
-        });
-        return form;
-      }
+      if (target instanceof Element) return collectFormValues(target);
       return new FormData();
     }
 
     default:
       return undefined;
   }
+}
+
+function collectFormValues(el: Element): FormData {
+  if (el instanceof HTMLFormElement) return new FormData(el);
+  const fd = new FormData();
+  el.querySelectorAll('input, select, textarea').forEach((input: Element) => {
+    const name = input.getAttribute('name');
+    if (name && 'value' in input) fd.append(name, (input as HTMLInputElement).value);
+  });
+  return fd;
 }
 
 async function evaluateBinary(node: ASTNode, ctx: Context): Promise<any> {

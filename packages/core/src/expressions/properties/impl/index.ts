@@ -197,6 +197,16 @@ export class PossessiveExpression
         return element.nextElementSibling;
       case 'previoussibling':
         return element.previousElementSibling;
+      case 'values':
+        if (element instanceof HTMLFormElement) return new FormData(element);
+        {
+          const fd = new FormData();
+          element.querySelectorAll('input, select, textarea').forEach((input: Element) => {
+            const name = input.getAttribute('name');
+            if (name && 'value' in input) fd.append(name, (input as HTMLInputElement).value);
+          });
+          return fd;
+        }
       default:
         // Try as attribute first
         if (element.hasAttribute(property)) {
