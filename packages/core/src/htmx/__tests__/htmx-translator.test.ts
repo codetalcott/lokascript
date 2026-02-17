@@ -34,7 +34,7 @@ describe('htmx-translator', () => {
           target: '#output',
         };
         const result = translateToHyperscript(config, button);
-        expect(result).toContain('swap innerHTML of #output with it');
+        expect(result).toContain('put it into #output');
       });
     });
 
@@ -103,7 +103,7 @@ describe('htmx-translator', () => {
           target: 'this',
         };
         const result = translateToHyperscript(config, button);
-        expect(result).toContain('swap innerHTML of me with it');
+        expect(result).toContain('put it into me');
       });
 
       it('resolves "closest div" syntax', () => {
@@ -158,7 +158,7 @@ describe('htmx-translator', () => {
           target: '#my-output',
         };
         const result = translateToHyperscript(config, button);
-        expect(result).toContain('swap innerHTML of #my-output with it');
+        expect(result).toContain('put it into #my-output');
       });
     });
 
@@ -172,7 +172,7 @@ describe('htmx-translator', () => {
           swap: 'innerHTML',
         };
         const result = translateToHyperscript(config, button);
-        expect(result).toContain('swap innerHTML of #output with it');
+        expect(result).toContain('put it into #output');
       });
 
       it('translates outerHTML swap', () => {
@@ -184,7 +184,7 @@ describe('htmx-translator', () => {
           swap: 'outerHTML',
         };
         const result = translateToHyperscript(config, button);
-        expect(result).toContain('swap #output with it');
+        expect(result).toContain("set #output's outerHTML to it");
       });
 
       it('translates beforeend swap', () => {
@@ -323,7 +323,7 @@ describe('htmx-translator', () => {
           trigger: 'load',
         };
         const result = translateToHyperscript(config, div);
-        expect(result).toContain('on load');
+        expect(result).toContain('on init');
       });
 
       it('translates revealed trigger to intersection', () => {
@@ -769,7 +769,7 @@ describe('HtmxAttributeProcessor', () => {
 
       const result = processor.manualProcess(el);
       expect(result).toContain("fetch '/api/users'");
-      expect(result).toContain('swap innerHTML of #users-list with it');
+      expect(result).toContain('put it into #users-list');
       expect(result).toContain('on click');
     });
   });

@@ -149,6 +149,7 @@ export class HybridParser {
       go: () => this.parseGo(),
       return: () => this.parseReturn(),
       transition: () => this.parseTransition(),
+      halt: () => this.parseHalt(),
     };
 
     const normalized = normalizeCommand(this.peek().value);
@@ -220,6 +221,7 @@ export class HybridParser {
     const url = this.parseExpression();
     let responseType: ASTNode = { type: 'literal', value: 'text' };
     let options: ASTNode | undefined;
+    let method: ASTNode | undefined;
 
     // Check for object literal directly after URL (no 'with' keyword)
     // e.g., fetch /url {method:"POST"}
@@ -228,8 +230,13 @@ export class HybridParser {
       options = this.parseExpression();
     }
 
-    // Parse 'as' and 'with' in any order
-    for (let i = 0; i < 2; i++) {
+    // Parse 'via', 'as' and 'with' in any order
+    for (let i = 0; i < 3; i++) {
+      if (this.match('via') && !method) {
+        this.advance();
+        method = this.parseExpression();
+        continue;
+      }
       if (this.match('as')) {
         this.advance();
         // Skip optional articles 'a'/'an'
@@ -248,7 +255,11 @@ export class HybridParser {
     if (this.match('then')) this.advance();
 
     const body = this.parseCommandSequence();
-    return { type: 'fetch', condition: { type: 'fetchConfig', url, responseType, options }, body };
+    return {
+      type: 'fetch',
+      condition: { type: 'fetchConfig', url, responseType, options, method },
+      body,
+    };
   }
 
   // Command parsing
@@ -463,6 +474,15 @@ export class HybridParser {
       value = this.parseExpression();
     }
     return { type: 'command', name: 'return', args: value ? [value] : [] };
+  }
+
+  private parseHalt(): CommandNode {
+    this.expect('halt');
+    // Skip optional 'the'
+    if (this.match('the')) this.advance();
+    // Skip optional 'event' or 'default'
+    if (this.match('event', 'default')) this.advance();
+    return { type: 'command', name: 'halt', args: [] };
   }
 
   // transition <property> to <value> [over <duration>]
@@ -758,6 +778,18 @@ export class HybridParser {
       const position = this.advance().value;
       const target = this.parsePositionalTarget();
       return { type: 'positional', position, target };
+    }
+
+    // values of <target> — collects form values as FormData
+    if (this.match('values')) {
+      this.advance();
+      if (this.match('of')) {
+        this.advance();
+        const target = this.parseExpression();
+        return { type: 'valuesOf', target };
+      }
+      // Not followed by 'of', treat as identifier
+      return { type: 'identifier', value: token.value };
     }
 
     if (token.type === 'identifier' || token.type === 'keyword') {

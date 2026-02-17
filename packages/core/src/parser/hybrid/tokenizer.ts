@@ -102,6 +102,11 @@ export const KEYWORDS = new Set([
   'init',
   'every',
   'by',
+  'halt',
+  'via',
+  'values',
+  'default',
+  'event',
 ]);
 
 export function tokenize(code: string): Token[] {

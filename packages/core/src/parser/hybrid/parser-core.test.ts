@@ -700,4 +700,73 @@ describe('HybridParser', () => {
       expect(cmd.target).toBeDefined();
     });
   });
+
+  describe('halt command', () => {
+    it('should parse bare halt', () => {
+      const ast = parse('halt');
+      const cmd = ast.commands[0];
+      expect(cmd.name).toBe('halt');
+      expect(cmd.args).toHaveLength(0);
+    });
+
+    it('should parse halt the event', () => {
+      const ast = parse('halt the event');
+      const cmd = ast.commands[0];
+      expect(cmd.name).toBe('halt');
+      expect(cmd.args).toHaveLength(0);
+    });
+
+    it('should parse halt the default', () => {
+      const ast = parse('halt the default');
+      const cmd = ast.commands[0];
+      expect(cmd.name).toBe('halt');
+    });
+
+    it('should parse halt in event handler sequence', () => {
+      const ast = parse('on submit halt the event then log "submitted"');
+      expect(ast.body).toHaveLength(2);
+      expect(ast.body[0].name).toBe('halt');
+      expect(ast.body[1].name).toBe('log');
+    });
+  });
+
+  describe('fetch with via clause', () => {
+    it('should parse fetch with via POST', () => {
+      const ast = parse('on click fetch "/api/data" via POST as html then log it end');
+      const block = ast.body[0];
+      expect(block.type).toBe('fetch');
+      expect(block.condition.method).toBeDefined();
+    });
+
+    it('should parse fetch with via and with clauses', () => {
+      const ast = parse('on click fetch "/api" via POST with values of me as html then log it end');
+      const block = ast.body[0];
+      expect(block.type).toBe('fetch');
+      expect(block.condition.method).toBeDefined();
+      expect(block.condition.options).toBeDefined();
+    });
+
+    it('should parse fetch with all clauses in any order', () => {
+      const ast = parse('on click fetch "/api" as json via PUT then log it end');
+      const block = ast.body[0];
+      expect(block.type).toBe('fetch');
+      expect(block.condition.method).toBeDefined();
+    });
+  });
+
+  describe('values of expression', () => {
+    it('should parse values of me', () => {
+      const ast = parse('set :data to values of me');
+      const value = ast.commands[0].args[1];
+      expect(value.type).toBe('valuesOf');
+      expect(value.target.value).toBe('me');
+    });
+
+    it('should parse values of selector', () => {
+      const ast = parse('set :data to values of #my-form');
+      const value = ast.commands[0].args[1];
+      expect(value.type).toBe('valuesOf');
+      expect(value.target.value).toBe('#my-form');
+    });
+  });
 });

@@ -48,7 +48,7 @@ const SWAP_MAP: Record<string, string> = {
  */
 const TRIGGER_MAP: Record<string, string> = {
   click: 'click',
-  load: 'load',
+  load: 'init',
   revealed: 'intersection',
   intersect: 'intersection',
   submit: 'submit',
@@ -225,11 +225,11 @@ function buildSwapCommand(target: string, swap: string, useMorph: boolean): stri
 
   // Standard innerHTML/outerHTML swap
   if (strategy === 'outerHTML') {
-    return `swap ${target} with it`;
+    return `set ${target}'s outerHTML to it`;
   }
 
   // Default: innerHTML
-  return `swap innerHTML of ${target} with it`;
+  return `put it into ${target}`;
 }
 
 /**

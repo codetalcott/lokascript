@@ -114,6 +114,26 @@ async function evaluate(node: ASTNode, ctx: Context): Promise<any> {
     case 'array':
       return Promise.all(node.elements.map((e: ASTNode) => evaluate(e, ctx)));
 
+    case 'valuesOf': {
+      const target = await evaluate(node.target, ctx);
+      if (target instanceof HTMLFormElement) {
+        return new FormData(target);
+      }
+      // For non-form elements, collect input values from descendants
+      if (target instanceof Element) {
+        const form = new FormData();
+        const inputs = target.querySelectorAll('input, select, textarea');
+        inputs.forEach((input: Element) => {
+          const name = input.getAttribute('name');
+          if (name && 'value' in input) {
+            form.append(name, (input as HTMLInputElement).value);
+          }
+        });
+        return form;
+      }
+      return new FormData();
+    }
+
     default:
       return undefined;
   }
@@ -545,6 +565,14 @@ async function executeCommand(cmd: CommandNode, ctx: Context): Promise<any> {
       throw { type: 'return', value };
     }
 
+    case 'halt': {
+      if (ctx.event) {
+        ctx.event.preventDefault();
+        ctx.event.stopPropagation();
+      }
+      return null;
+    }
+
     default:
       console.warn(`Unknown command: ${cmd.name}`);
       return null;
@@ -609,10 +637,33 @@ async function executeBlock(block: BlockNode, ctx: Context): Promise<any> {
     }
 
     case 'fetch': {
-      const { url, responseType } = block.condition as any;
+      const { url, responseType, options, method } = block.condition as any;
       try {
         const urlVal = await evaluate(url, ctx);
-        const response = await fetch(String(urlVal));
+        const fetchInit: RequestInit = {};
+
+        // Apply method (from 'via POST' etc.)
+        if (method) {
+          const methodVal = await evaluate(method, ctx);
+          fetchInit.method = String(methodVal).toUpperCase();
+        }
+
+        // Apply body/options (from 'with ...')
+        if (options) {
+          const optionsVal = await evaluate(options, ctx);
+          if (optionsVal instanceof FormData) {
+            fetchInit.body = optionsVal;
+          } else if (
+            optionsVal &&
+            typeof optionsVal === 'object' &&
+            !(optionsVal instanceof Element)
+          ) {
+            // Plain object — merge as fetch init options
+            Object.assign(fetchInit, optionsVal);
+          }
+        }
+
+        const response = await fetch(String(urlVal), fetchInit);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const resType = await evaluate(responseType, ctx);
@@ -815,6 +866,7 @@ const api = {
     'blur',
     'go',
     'return',
+    'halt',
   ],
 
   blocks: ['if', 'else', 'unless', 'repeat', 'for', 'while', 'fetch'],
