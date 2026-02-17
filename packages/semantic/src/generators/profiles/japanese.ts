@@ -12,6 +12,7 @@ export const japaneseProfile: LanguageProfile = {
   name: 'Japanese',
   nativeName: '日本語',
   direction: 'ltr',
+  script: 'cjk',
   wordOrder: 'SOV',
   markingStrategy: 'particle',
   usesSpaces: false,

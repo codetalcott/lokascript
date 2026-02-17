@@ -13,6 +13,7 @@ export const italianProfile: LanguageProfile = {
   name: 'Italian',
   nativeName: 'Italiano',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

@@ -11,6 +11,7 @@ export const englishProfile: LanguageProfile = {
   name: 'English',
   nativeName: 'English',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

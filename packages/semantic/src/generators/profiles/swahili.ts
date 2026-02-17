@@ -12,6 +12,7 @@ export const swahiliProfile: LanguageProfile = {
   name: 'Swahili',
   nativeName: 'Kiswahili',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

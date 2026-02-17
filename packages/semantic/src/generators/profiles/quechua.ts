@@ -12,6 +12,7 @@ export const quechuaProfile: LanguageProfile = {
   name: 'Quechua',
   nativeName: 'Runasimi',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SOV',
   markingStrategy: 'postposition',
   usesSpaces: true,

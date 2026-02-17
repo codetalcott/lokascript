@@ -22,6 +22,7 @@ export const spanishMexicoProfile: LanguageProfile = {
   name: 'Spanish (Mexico)',
   nativeName: 'Español (México)',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

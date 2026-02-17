@@ -23,6 +23,7 @@ import {
 } from './generic-extractors';
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { createRussianExtractors } from './extractors/cyrillic-keyword';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // =============================================================================
 // Russian Prepositions (used in classifyToken)
@@ -137,6 +138,7 @@ export class RussianTokenizer extends BaseTokenizer {
       ...createRussianExtractors(), // Russian keywords with morphology
       new StringLiteralExtractor(),
       new NumberExtractor(),
+      new AsciiIdentifierExtractor(), // ASCII identifiers (for mixed content)
       new OperatorExtractor(),
       new PunctuationExtractor(),
     ]);

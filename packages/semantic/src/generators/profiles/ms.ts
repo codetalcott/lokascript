@@ -11,6 +11,7 @@ export const malayProfile: LanguageProfile = {
   name: 'Malay',
   nativeName: 'Melayu',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

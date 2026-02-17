@@ -1104,13 +1104,15 @@ export class PatternMatcher {
   /**
    * Noise words that can be skipped in English for more natural syntax.
    * - "the" before selectors: "toggle the .active" → "toggle .active"
+   * - "the" before identifiers: "set the color to red" → "set color to red"
    * - "class" after class selectors: "add the .visible class" → "add .visible"
    */
   private static readonly ENGLISH_NOISE_WORDS = new Set(['the', 'a', 'an']);
 
   /**
-   * Skip noise words like "the" before selectors.
-   * This enables more natural English syntax like "toggle the .active".
+   * Skip noise words like "the" before selectors and identifiers.
+   * This enables more natural English syntax like "toggle the .active"
+   * and "set the color to red".
    */
   private skipNoiseWords(tokens: TokenStream): void {
     const token = tokens.peek();
@@ -1120,17 +1122,17 @@ export class PatternMatcher {
 
     // Check if current token is a noise word (like "the")
     if (PatternMatcher.ENGLISH_NOISE_WORDS.has(tokenLower)) {
-      // Look ahead to see if the next token is a selector
+      // Look ahead to see if the next token is a selector or identifier
       const mark = tokens.mark();
       tokens.advance();
       const nextToken = tokens.peek();
 
-      if (nextToken && nextToken.kind === 'selector') {
+      if (nextToken && (nextToken.kind === 'selector' || nextToken.kind === 'identifier')) {
         // Keep the position after "the" - effectively skipping it
         return;
       }
 
-      // Not followed by a selector, revert
+      // Not followed by a selector or identifier, revert
       tokens.reset(mark);
     }
 

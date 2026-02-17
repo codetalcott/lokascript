@@ -12,6 +12,7 @@ export const hindiProfile: LanguageProfile = {
   name: 'Hindi',
   nativeName: 'हिन्दी',
   direction: 'ltr',
+  script: 'devanagari',
   wordOrder: 'SOV',
   markingStrategy: 'postposition',
   usesSpaces: true,

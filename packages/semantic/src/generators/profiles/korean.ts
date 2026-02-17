@@ -12,6 +12,7 @@ export const koreanProfile: LanguageProfile = {
   name: 'Korean',
   nativeName: '한국어',
   direction: 'ltr',
+  script: 'hangul',
   wordOrder: 'SOV',
   markingStrategy: 'particle',
   usesSpaces: true, // Korean uses spaces between words, but particles attach

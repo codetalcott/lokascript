@@ -12,6 +12,7 @@ export const germanProfile: LanguageProfile = {
   name: 'German',
   nativeName: 'Deutsch',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

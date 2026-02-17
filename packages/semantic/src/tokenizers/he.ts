@@ -21,6 +21,7 @@ import {
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { createHebrewExtractors } from './extractors/hebrew-keyword';
 import { createHebrewProcliticExtractor } from './extractors/hebrew-proclitic';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // =============================================================================
 // Hebrew Prepositions (used in classifyToken)
@@ -124,6 +125,7 @@ export class HebrewTokenizer extends BaseTokenizer {
     this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs
     this.registerExtractor(new StringLiteralExtractor()); // Strings
     this.registerExtractor(new NumberExtractor()); // Numbers
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (for mixed content)
     this.registerExtractor(createHebrewProcliticExtractor()); // Hebrew proclitics (MUST come before keywords)
     this.registerExtractors(createHebrewExtractors()); // Hebrew keywords (context-aware)
     this.registerExtractor(new OperatorExtractor()); // Operators

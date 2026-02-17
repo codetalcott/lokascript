@@ -12,6 +12,7 @@ export const indonesianProfile: LanguageProfile = {
   name: 'Indonesian',
   nativeName: 'Bahasa Indonesia',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

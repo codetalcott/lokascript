@@ -12,6 +12,7 @@ export const bengaliProfile: LanguageProfile = {
   name: 'Bengali',
   nativeName: 'বাংলা',
   direction: 'ltr',
+  script: 'bengali',
   wordOrder: 'SOV',
   markingStrategy: 'postposition',
   usesSpaces: true,

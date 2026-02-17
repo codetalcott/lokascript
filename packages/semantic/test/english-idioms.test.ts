@@ -216,6 +216,23 @@ describe('English Natural Articles', () => {
     });
   });
 
+  describe('"the" before identifiers', () => {
+    it('should parse "set the color to red"', () => {
+      const result = parse('set the color to red', 'en');
+      expect(result).not.toBeNull();
+      expect(result?.action).toBe('set');
+      const dest = result?.roles.get('destination');
+      expect(dest?.type).toBe('expression');
+      expect(dest && 'raw' in dest ? dest.raw : undefined).toBe('color');
+    });
+
+    it('should parse "put the text into #output"', () => {
+      const result = parse('put the text into #output', 'en');
+      expect(result).not.toBeNull();
+      expect(result?.action).toBe('put');
+    });
+  });
+
   describe('"class" after class selectors', () => {
     it('should parse "add the .visible class"', () => {
       const result = parse('add the .visible class', 'en');
@@ -234,6 +251,24 @@ describe('English Natural Articles', () => {
       expect(result).not.toBeNull();
       expect(result?.action).toBe('toggle');
     });
+  });
+});
+
+// =============================================================================
+// Mixed-Script Parsing (translation round-trip)
+// =============================================================================
+
+describe('Mixed-script parsing (translation round-trip)', () => {
+  it('should parse Arabic with ASCII identifiers', () => {
+    const result = parse('اضبط color إلى red', 'ar');
+    expect(result).not.toBeNull();
+    expect(result?.action).toBe('set');
+  });
+
+  it('should parse Chinese with ASCII identifiers', () => {
+    const result = parse('设置 color 为 red', 'zh');
+    expect(result).not.toBeNull();
+    expect(result?.action).toBe('set');
   });
 });
 

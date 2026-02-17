@@ -12,6 +12,7 @@ export const frenchProfile: LanguageProfile = {
   name: 'French',
   nativeName: 'Français',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

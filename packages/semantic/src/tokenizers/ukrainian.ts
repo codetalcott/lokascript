@@ -23,6 +23,7 @@ import {
 } from './generic-extractors';
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { createUkrainianExtractors } from './extractors/cyrillic-keyword';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // =============================================================================
 // Ukrainian Prepositions (used in classifyToken)
@@ -133,6 +134,7 @@ export class UkrainianTokenizer extends BaseTokenizer {
       ...createUkrainianExtractors(), // Ukrainian keywords with morphology
       new StringLiteralExtractor(),
       new NumberExtractor(),
+      new AsciiIdentifierExtractor(), // ASCII identifiers (for mixed content)
       new OperatorExtractor(),
       new PunctuationExtractor(),
     ]);

@@ -13,6 +13,7 @@ export const vietnameseProfile: LanguageProfile = {
   name: 'Vietnamese',
   nativeName: 'Tiếng Việt',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

@@ -12,6 +12,7 @@ export const turkishProfile: LanguageProfile = {
   name: 'Turkish',
   nativeName: 'Türkçe',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SOV',
   markingStrategy: 'case-suffix',
   usesSpaces: true,

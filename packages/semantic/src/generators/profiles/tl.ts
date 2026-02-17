@@ -11,6 +11,7 @@ export const tagalogProfile: LanguageProfile = {
   name: 'Tagalog',
   nativeName: 'Tagalog',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'VSO',
   markingStrategy: 'preposition',
   usesSpaces: true,

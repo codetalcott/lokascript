@@ -13,6 +13,7 @@ export const polishProfile: LanguageProfile = {
   name: 'Polish',
   nativeName: 'Polski',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

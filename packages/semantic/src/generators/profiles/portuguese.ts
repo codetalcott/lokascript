@@ -12,6 +12,7 @@ export const portugueseProfile: LanguageProfile = {
   name: 'Portuguese',
   nativeName: 'Português',
   direction: 'ltr',
+  script: 'latin',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

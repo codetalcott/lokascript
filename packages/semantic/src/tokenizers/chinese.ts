@@ -23,6 +23,7 @@ import {
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { ChineseKeywordExtractor } from './extractors/chinese-keyword';
 import { ChineseParticleExtractor } from './extractors/chinese-particle';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 
 // Character classification functions moved to extractors/chinese-keyword.ts
 
@@ -183,6 +184,7 @@ export class ChineseTokenizer extends BaseTokenizer {
     this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
     this.registerExtractor(new StringLiteralExtractor()); // Strings (includes Chinese quotes)
     this.registerExtractor(new NumberExtractor()); // Numbers (includes Chinese time units)
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (for mixed content)
     this.registerExtractor(new ChineseParticleExtractor()); // Particles with role metadata
     this.registerExtractor(new ChineseKeywordExtractor()); // Chinese keywords (context-aware)
     this.registerExtractor(new OperatorExtractor()); // Operators

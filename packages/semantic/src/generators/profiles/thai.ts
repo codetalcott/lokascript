@@ -12,6 +12,7 @@ export const thaiProfile: LanguageProfile = {
   name: 'Thai',
   nativeName: 'ไทย',
   direction: 'ltr',
+  script: 'thai',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: false, // Thai doesn't use spaces between words

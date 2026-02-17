@@ -12,6 +12,7 @@ export const arabicProfile: LanguageProfile = {
   name: 'Arabic',
   nativeName: 'العربية',
   direction: 'rtl',
+  script: 'arabic',
   wordOrder: 'VSO',
   markingStrategy: 'preposition',
   usesSpaces: true,

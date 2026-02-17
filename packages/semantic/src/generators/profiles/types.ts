@@ -17,6 +17,22 @@ export type WordOrder = 'SVO' | 'SOV' | 'VSO' | 'VOS' | 'OSV' | 'OVS';
 export type MarkingStrategy = 'preposition' | 'postposition' | 'particle' | 'case-suffix';
 
 /**
+ * Writing system used by a language.
+ * Non-latin scripts require AsciiIdentifierExtractor in their tokenizer
+ * to handle mixed-script input (e.g., Arabic verb + CSS property name).
+ */
+export type ScriptType =
+  | 'latin'
+  | 'cyrillic'
+  | 'arabic'
+  | 'cjk'
+  | 'devanagari'
+  | 'hangul'
+  | 'bengali'
+  | 'thai'
+  | 'hebrew';
+
+/**
  * A grammatical marker (preposition, particle, etc.) for a semantic role.
  */
 export interface RoleMarker {
@@ -73,6 +89,8 @@ export interface LanguageProfile {
   readonly nativeName: string;
   /** Text direction */
   readonly direction: 'ltr' | 'rtl';
+  /** Writing system — non-latin scripts require AsciiIdentifierExtractor in their tokenizer */
+  readonly script: ScriptType;
   /** Primary word order */
   readonly wordOrder: WordOrder;
   /** How this language marks grammatical roles */

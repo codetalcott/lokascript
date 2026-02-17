@@ -28,6 +28,7 @@ import {
 } from './generic-extractors';
 import { getHyperscriptExtractors } from './extractor-helpers';
 import { ArabicKeywordExtractor } from './extractors/arabic-keyword';
+import { AsciiIdentifierExtractor } from './extractors/ascii-identifier';
 import { ArabicProcliticExtractor } from './extractors/arabic-proclitic';
 import { ArabicTemporalExtractor } from './extractors/arabic-temporal';
 
@@ -183,6 +184,7 @@ export class ArabicTokenizer extends BaseTokenizer {
     this.registerExtractors(getHyperscriptExtractors()); // CSS, events, URLs, variable refs
     this.registerExtractor(new StringLiteralExtractor()); // Strings
     this.registerExtractor(new NumberExtractor()); // Numbers (includes Arabic time units)
+    this.registerExtractor(new AsciiIdentifierExtractor()); // ASCII identifiers (for mixed content)
     this.registerExtractor(new ArabicTemporalExtractor()); // Temporal markers with formality metadata
     this.registerExtractor(new ArabicProcliticExtractor()); // Proclitics (after temporal check)
     this.registerExtractor(new ArabicKeywordExtractor()); // Arabic keywords (context-aware)

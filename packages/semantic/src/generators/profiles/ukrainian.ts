@@ -13,6 +13,7 @@ export const ukrainianProfile: LanguageProfile = {
   name: 'Ukrainian',
   nativeName: 'Українська',
   direction: 'ltr',
+  script: 'cyrillic',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,

@@ -12,6 +12,7 @@ export const chineseProfile: LanguageProfile = {
   name: 'Chinese',
   nativeName: '中文',
   direction: 'ltr',
+  script: 'cjk',
   wordOrder: 'SVO',
   markingStrategy: 'preposition', // Uses prepositions but often implicit
   usesSpaces: false,

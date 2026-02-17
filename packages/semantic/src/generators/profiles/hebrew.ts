@@ -13,6 +13,7 @@ export const hebrewProfile: LanguageProfile = {
   name: 'Hebrew',
   nativeName: 'עברית',
   direction: 'rtl',
+  script: 'hebrew',
   wordOrder: 'SVO',
   markingStrategy: 'preposition',
   usesSpaces: true,
