@@ -46,8 +46,11 @@ describe('Tool Definitions', () => {
   });
 
   it('provides 14 total tools', () => {
-    const total = validationTools.length + lspBridgeTools.length +
-      languageDocsTools.length + analysisTools.length;
+    const total =
+      validationTools.length +
+      lspBridgeTools.length +
+      languageDocsTools.length +
+      analysisTools.length;
     expect(total).toBe(14);
   });
 });

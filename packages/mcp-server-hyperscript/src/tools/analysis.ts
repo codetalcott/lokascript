@@ -47,7 +47,8 @@ export const analysisTools: Tool[] = [
   },
   {
     name: 'recognize_intent',
-    description: 'Classify the purpose of _hyperscript code (event-handling, dom-manipulation, etc.)',
+    description:
+      'Classify the purpose of _hyperscript code (event-handling, dom-manipulation, etc.)',
     inputSchema: {
       type: 'object',
       properties: {
@@ -70,7 +71,10 @@ export async function handleAnalysisTool(
   if (!code || typeof code !== 'string') {
     return {
       content: [
-        { type: 'text', text: JSON.stringify({ error: 'Missing required parameter: code' }, null, 2) },
+        {
+          type: 'text',
+          text: JSON.stringify({ error: 'Missing required parameter: code' }, null, 2),
+        },
       ],
       isError: true,
     };
@@ -81,16 +85,33 @@ export async function handleAnalysisTool(
       case 'analyze_complexity':
         return analyzeComplexity(code);
       case 'explain_code':
-        return explainCode(code, (args.audience as string) || 'intermediate', (args.detail as string) || 'detailed');
+        return explainCode(
+          code,
+          (args.audience as string) || 'intermediate',
+          (args.detail as string) || 'detailed'
+        );
       case 'recognize_intent':
         return recognizeIntent(code);
       default:
-        return { content: [{ type: 'text', text: `Unknown analysis tool: ${name}` }], isError: true };
+        return {
+          content: [{ type: 'text', text: `Unknown analysis tool: ${name}` }],
+          isError: true,
+        };
     }
   } catch (error) {
     return {
       content: [
-        { type: 'text', text: JSON.stringify({ error: `Error in ${name}`, message: error instanceof Error ? error.message : String(error) }, null, 2) },
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: `Error in ${name}`,
+              message: error instanceof Error ? error.message : String(error),
+            },
+            null,
+            2
+          ),
+        },
       ],
       isError: true,
     };
@@ -103,29 +124,36 @@ export async function handleAnalysisTool(
 
 function analyzeComplexity(code: string): { content: Array<{ type: string; text: string }> } {
   const lines = code.split('\n').length;
-  const commands = code.match(/\b(toggle|add|remove|show|hide|set|put|fetch|wait|send|trigger|call|log|increment|decrement|append|take|go|focus|transition)\b/gi) || [];
+  const commands =
+    code.match(
+      /\b(toggle|add|remove|show|hide|set|put|fetch|wait|send|trigger|call|log|increment|decrement|append|take|go|focus|transition)\b/gi
+    ) || [];
   const conditionals = code.match(/\b(if|else|unless)\b/gi) || [];
   const loops = code.match(/\b(repeat|for|while)\b/gi) || [];
   const events = code.match(/\bon\s+\w+/gi) || [];
 
   const estimatedCyclomatic = 1 + conditionals.length + loops.length;
-  const estimatedCognitive = conditionals.length + (loops.length * 2);
+  const estimatedCognitive = conditionals.length + loops.length * 2;
 
   return {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({
-          lines,
-          commandCount: commands.length,
-          uniqueCommands: [...new Set(commands.map(c => c.toLowerCase()))],
-          conditionalCount: conditionals.length,
-          loopCount: loops.length,
-          eventHandlerCount: events.length,
-          estimatedCyclomatic,
-          estimatedCognitive,
-          summary: `${lines} lines, ${commands.length} commands, cyclomatic ~${estimatedCyclomatic}, cognitive ~${estimatedCognitive}`,
-        }, null, 2),
+        text: JSON.stringify(
+          {
+            lines,
+            commandCount: commands.length,
+            uniqueCommands: [...new Set(commands.map(c => c.toLowerCase()))],
+            conditionalCount: conditionals.length,
+            loopCount: loops.length,
+            eventHandlerCount: events.length,
+            estimatedCyclomatic,
+            estimatedCognitive,
+            summary: `${lines} lines, ${commands.length} commands, cyclomatic ~${estimatedCyclomatic}, cognitive ~${estimatedCognitive}`,
+          },
+          null,
+          2
+        ),
       },
     ],
   };
@@ -150,12 +178,24 @@ function explainCode(
   // Command patterns
   const commandPatterns: Array<{ pattern: RegExp; format: (m: RegExpMatchArray) => string }> = [
     { pattern: /toggle\s+([.\w#@-]+)/gi, format: m => `It toggles ${m[1]}.` },
-    { pattern: /add\s+([.\w#@-]+)(?:\s+to\s+([^\s]+))?/gi, format: m => (m[2] ? `It adds ${m[1]} to ${m[2]}.` : `It adds ${m[1]}.`) },
-    { pattern: /remove\s+([.\w#@-]+)(?:\s+from\s+([^\s]+))?/gi, format: m => (m[2] ? `It removes ${m[1]} from ${m[2]}.` : `It removes ${m[1]}.`) },
+    {
+      pattern: /add\s+([.\w#@-]+)(?:\s+to\s+([^\s]+))?/gi,
+      format: m => (m[2] ? `It adds ${m[1]} to ${m[2]}.` : `It adds ${m[1]}.`),
+    },
+    {
+      pattern: /remove\s+([.\w#@-]+)(?:\s+from\s+([^\s]+))?/gi,
+      format: m => (m[2] ? `It removes ${m[1]} from ${m[2]}.` : `It removes ${m[1]}.`),
+    },
     { pattern: /set\s+([^\s]+)\s+to\s+([^\s]+)/gi, format: m => `It sets ${m[1]} to ${m[2]}.` },
     { pattern: /put\s+([^\s]+)\s+into\s+([^\s]+)/gi, format: m => `It puts ${m[1]} into ${m[2]}.` },
-    { pattern: /fetch\s+([^\s]+)(?:\s+as\s+(\w+))?/gi, format: m => (m[2] ? `It fetches from ${m[1]} as ${m[2]}.` : `It fetches from ${m[1]}.`) },
-    { pattern: /wait\s+(\d+\s*(?:ms|s|seconds?|milliseconds?))/gi, format: m => `It waits ${m[1]}.` },
+    {
+      pattern: /fetch\s+([^\s]+)(?:\s+as\s+(\w+))?/gi,
+      format: m => (m[2] ? `It fetches from ${m[1]} as ${m[2]}.` : `It fetches from ${m[1]}.`),
+    },
+    {
+      pattern: /wait\s+(\d+\s*(?:ms|s|seconds?|milliseconds?))/gi,
+      format: m => `It waits ${m[1]}.`,
+    },
     { pattern: /send\s+(\w+)/gi, format: m => `It sends a ${m[1]} event.` },
     { pattern: /call\s+([^\s(]+)/gi, format: m => `It calls ${m[1]}.` },
     { pattern: /show\s+([^\s]+)/gi, format: m => `It shows ${m[1]}.` },
@@ -208,7 +248,11 @@ function recognizeIntent(code: string): { content: Array<{ type: string; text: s
   const intents: string[] = [];
   const confidence: Record<string, number> = {};
 
-  if (/on\s+(click|submit|change|input|keydown|keyup|load|scroll|mouseenter|mouseleave|focus|blur)/i.test(code)) {
+  if (
+    /on\s+(click|submit|change|input|keydown|keyup|load|scroll|mouseenter|mouseleave|focus|blur)/i.test(
+      code
+    )
+  ) {
     intents.push('event-handling');
     confidence['event-handling'] = 0.9;
   }
@@ -245,12 +289,16 @@ function recognizeIntent(code: string): { content: Array<{ type: string; text: s
     content: [
       {
         type: 'text',
-        text: JSON.stringify({
-          primaryIntent: intents[0],
-          allIntents: intents,
-          confidence,
-          code,
-        }, null, 2),
+        text: JSON.stringify(
+          {
+            primaryIntent: intents[0],
+            allIntents: intents,
+            confidence,
+            code,
+          },
+          null,
+          2
+        ),
       },
     ],
   };

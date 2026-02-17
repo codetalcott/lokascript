@@ -50,12 +50,7 @@ const server = new Server(
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
-    tools: [
-      ...validationTools,
-      ...lspBridgeTools,
-      ...languageDocsTools,
-      ...analysisTools,
-    ],
+    tools: [...validationTools, ...lspBridgeTools, ...languageDocsTools, ...analysisTools],
   };
 });
 
@@ -88,11 +83,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
   }
 
   // Analysis tools
-  if (
-    name === 'analyze_complexity' ||
-    name === 'explain_code' ||
-    name === 'recognize_intent'
-  ) {
+  if (name === 'analyze_complexity' || name === 'explain_code' || name === 'recognize_intent') {
     return handleAnalysisTool(name, args as Record<string, unknown>);
   }
 

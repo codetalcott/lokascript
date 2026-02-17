@@ -37,67 +37,275 @@ interface DocumentSymbol {
 // =============================================================================
 
 const COMMANDS = [
-  'toggle', 'add', 'remove', 'show', 'hide', 'set', 'get', 'put', 'append',
-  'prepend', 'increment', 'decrement', 'log', 'send', 'trigger', 'wait',
-  'fetch', 'call', 'go', 'focus', 'blur', 'return', 'break', 'continue',
-  'exit', 'halt', 'throw', 'transition', 'take', 'tell', 'repeat', 'for',
-  'while', 'if', 'unless', 'js', 'default',
+  'toggle',
+  'add',
+  'remove',
+  'show',
+  'hide',
+  'set',
+  'get',
+  'put',
+  'append',
+  'prepend',
+  'increment',
+  'decrement',
+  'log',
+  'send',
+  'trigger',
+  'wait',
+  'fetch',
+  'call',
+  'go',
+  'focus',
+  'blur',
+  'return',
+  'break',
+  'continue',
+  'exit',
+  'halt',
+  'throw',
+  'transition',
+  'take',
+  'tell',
+  'repeat',
+  'for',
+  'while',
+  'if',
+  'unless',
+  'js',
+  'default',
 ];
 
 const FEATURES = ['on', 'behavior', 'def', 'init', 'worker', 'eventsource', 'socket'];
-const REFERENCES = ['me', 'you', 'it', 'result', 'my', 'its', 'your', 'event', 'target', 'detail', 'body', 'window', 'document'];
+const REFERENCES = [
+  'me',
+  'you',
+  'it',
+  'result',
+  'my',
+  'its',
+  'your',
+  'event',
+  'target',
+  'detail',
+  'body',
+  'window',
+  'document',
+];
 const BLOCK_KEYWORDS = ['then', 'end', 'else', 'from', 'to', 'into', 'with', 'as', 'in'];
 const POSITIONAL = ['first', 'last', 'next', 'previous', 'closest', 'parent', 'children', 'random'];
-const LOGICAL = ['and', 'or', 'not', 'is', 'exists', 'empty', 'matches', 'contains', 'has', 'no', 'do', 'does'];
+const LOGICAL = [
+  'and',
+  'or',
+  'not',
+  'is',
+  'exists',
+  'empty',
+  'matches',
+  'contains',
+  'has',
+  'no',
+  'do',
+  'does',
+];
 const EVENTS = [
-  'click', 'dblclick', 'submit', 'input', 'change', 'focus', 'blur',
-  'keydown', 'keyup', 'keypress', 'mouseenter', 'mouseleave', 'mouseover',
-  'mouseout', 'mousedown', 'mouseup', 'scroll', 'load', 'resize',
-  'intersection', 'mutation', 'every',
+  'click',
+  'dblclick',
+  'submit',
+  'input',
+  'change',
+  'focus',
+  'blur',
+  'keydown',
+  'keyup',
+  'keypress',
+  'mouseenter',
+  'mouseleave',
+  'mouseover',
+  'mouseout',
+  'mousedown',
+  'mouseup',
+  'scroll',
+  'load',
+  'resize',
+  'intersection',
+  'mutation',
+  'every',
 ];
 const EVENT_MODIFIERS = ['once', 'prevent', 'stop', 'capture', 'passive', 'debounce', 'throttle'];
 
-const ALL_KEYWORDS = [...COMMANDS, ...FEATURES, ...REFERENCES, ...BLOCK_KEYWORDS, ...POSITIONAL, ...LOGICAL];
+const ALL_KEYWORDS = [
+  ...COMMANDS,
+  ...FEATURES,
+  ...REFERENCES,
+  ...BLOCK_KEYWORDS,
+  ...POSITIONAL,
+  ...LOGICAL,
+];
 
 // =============================================================================
 // Hover Documentation
 // =============================================================================
 
 const HOVER_DOCS: Record<string, { title: string; description: string; example: string }> = {
-  toggle: { title: 'toggle', description: 'Toggle a class, attribute, or visibility on an element', example: 'toggle .active on me' },
-  add: { title: 'add', description: 'Add a class or attribute to an element', example: 'add .highlight to me' },
-  remove: { title: 'remove', description: 'Remove a class, attribute, or element', example: 'remove .error from #form' },
-  show: { title: 'show', description: 'Show a hidden element, optionally with a transition', example: 'show #modal with *opacity' },
-  hide: { title: 'hide', description: 'Hide an element, optionally with a transition', example: 'hide me with *opacity' },
-  set: { title: 'set', description: 'Set a variable or element property', example: 'set :count to 0' },
-  get: { title: 'get', description: 'Get a value from an element or expression', example: 'get #input.value' },
-  put: { title: 'put', description: 'Put content into an element', example: 'put "Hello" into #greeting' },
-  append: { title: 'append', description: 'Append content to the end of an element', example: 'append "<li>New</li>" to #list' },
-  fetch: { title: 'fetch', description: 'Make an HTTP request', example: 'fetch /api/data as json' },
-  wait: { title: 'wait', description: 'Pause execution for a specified duration', example: 'wait 500ms' },
+  toggle: {
+    title: 'toggle',
+    description: 'Toggle a class, attribute, or visibility on an element',
+    example: 'toggle .active on me',
+  },
+  add: {
+    title: 'add',
+    description: 'Add a class or attribute to an element',
+    example: 'add .highlight to me',
+  },
+  remove: {
+    title: 'remove',
+    description: 'Remove a class, attribute, or element',
+    example: 'remove .error from #form',
+  },
+  show: {
+    title: 'show',
+    description: 'Show a hidden element, optionally with a transition',
+    example: 'show #modal with *opacity',
+  },
+  hide: {
+    title: 'hide',
+    description: 'Hide an element, optionally with a transition',
+    example: 'hide me with *opacity',
+  },
+  set: {
+    title: 'set',
+    description: 'Set a variable or element property',
+    example: 'set :count to 0',
+  },
+  get: {
+    title: 'get',
+    description: 'Get a value from an element or expression',
+    example: 'get #input.value',
+  },
+  put: {
+    title: 'put',
+    description: 'Put content into an element',
+    example: 'put "Hello" into #greeting',
+  },
+  append: {
+    title: 'append',
+    description: 'Append content to the end of an element',
+    example: 'append "<li>New</li>" to #list',
+  },
+  fetch: {
+    title: 'fetch',
+    description: 'Make an HTTP request',
+    example: 'fetch /api/data as json',
+  },
+  wait: {
+    title: 'wait',
+    description: 'Pause execution for a specified duration',
+    example: 'wait 500ms',
+  },
   send: { title: 'send', description: 'Dispatch a custom event', example: 'send refresh to #list' },
-  trigger: { title: 'trigger', description: 'Trigger an event on an element', example: 'trigger submit on #form' },
-  call: { title: 'call', description: 'Call a JavaScript function', example: 'call alert("Hello")' },
+  trigger: {
+    title: 'trigger',
+    description: 'Trigger an event on an element',
+    example: 'trigger submit on #form',
+  },
+  call: {
+    title: 'call',
+    description: 'Call a JavaScript function',
+    example: 'call alert("Hello")',
+  },
   log: { title: 'log', description: 'Log a value to the console', example: 'log me' },
-  increment: { title: 'increment', description: 'Add 1 to a variable', example: 'increment :count' },
-  decrement: { title: 'decrement', description: 'Subtract 1 from a variable', example: 'decrement :count' },
+  increment: {
+    title: 'increment',
+    description: 'Add 1 to a variable',
+    example: 'increment :count',
+  },
+  decrement: {
+    title: 'decrement',
+    description: 'Subtract 1 from a variable',
+    example: 'decrement :count',
+  },
   go: { title: 'go', description: 'Navigate to a URL', example: 'go to /dashboard' },
-  take: { title: 'take', description: 'Move a class from siblings to this element (exclusive selection)', example: 'take .active from .tabs' },
-  transition: { title: 'transition', description: 'Animate a CSS property change', example: 'transition *opacity to 0 over 500ms' },
-  repeat: { title: 'repeat', description: 'Loop a fixed number of times', example: 'repeat 5 times ... end' },
-  on: { title: 'on', description: 'Handle a DOM or custom event', example: 'on click toggle .active' },
-  me: { title: 'me', description: 'Reference to the current element (the one with the _ attribute)', example: 'toggle .active on me' },
-  you: { title: 'you', description: 'Reference to the event target element', example: 'add .selected to you' },
-  it: { title: 'it', description: 'Reference to the result of the previous command', example: 'fetch /api then put it into #output' },
-  result: { title: 'result', description: 'Alias for "it" — the result of the previous command', example: 'fetch /api then put result into #output' },
-  closest: { title: 'closest', description: 'Find the nearest ancestor matching a selector', example: 'toggle .open on closest .accordion' },
-  first: { title: 'first', description: 'Get the first item from a collection', example: 'first of .items' },
-  last: { title: 'last', description: 'Get the last item from a collection', example: 'last of .items' },
-  next: { title: 'next', description: 'Get the next sibling matching a selector', example: 'toggle .open on next .panel' },
-  previous: { title: 'previous', description: 'Get the previous sibling matching a selector', example: 'previous <li/>' },
-  behavior: { title: 'behavior', description: 'Define a reusable behavior that can be installed on elements', example: 'behavior Toggleable ... end' },
-  def: { title: 'def', description: 'Define a reusable function', example: 'def greet(name) log name end' },
-  init: { title: 'init', description: 'Run code once when the element loads', example: 'init add .loaded to me' },
+  take: {
+    title: 'take',
+    description: 'Move a class from siblings to this element (exclusive selection)',
+    example: 'take .active from .tabs',
+  },
+  transition: {
+    title: 'transition',
+    description: 'Animate a CSS property change',
+    example: 'transition *opacity to 0 over 500ms',
+  },
+  repeat: {
+    title: 'repeat',
+    description: 'Loop a fixed number of times',
+    example: 'repeat 5 times ... end',
+  },
+  on: {
+    title: 'on',
+    description: 'Handle a DOM or custom event',
+    example: 'on click toggle .active',
+  },
+  me: {
+    title: 'me',
+    description: 'Reference to the current element (the one with the _ attribute)',
+    example: 'toggle .active on me',
+  },
+  you: {
+    title: 'you',
+    description: 'Reference to the event target element',
+    example: 'add .selected to you',
+  },
+  it: {
+    title: 'it',
+    description: 'Reference to the result of the previous command',
+    example: 'fetch /api then put it into #output',
+  },
+  result: {
+    title: 'result',
+    description: 'Alias for "it" — the result of the previous command',
+    example: 'fetch /api then put result into #output',
+  },
+  closest: {
+    title: 'closest',
+    description: 'Find the nearest ancestor matching a selector',
+    example: 'toggle .open on closest .accordion',
+  },
+  first: {
+    title: 'first',
+    description: 'Get the first item from a collection',
+    example: 'first of .items',
+  },
+  last: {
+    title: 'last',
+    description: 'Get the last item from a collection',
+    example: 'last of .items',
+  },
+  next: {
+    title: 'next',
+    description: 'Get the next sibling matching a selector',
+    example: 'toggle .open on next .panel',
+  },
+  previous: {
+    title: 'previous',
+    description: 'Get the previous sibling matching a selector',
+    example: 'previous <li/>',
+  },
+  behavior: {
+    title: 'behavior',
+    description: 'Define a reusable behavior that can be installed on elements',
+    example: 'behavior Toggleable ... end',
+  },
+  def: {
+    title: 'def',
+    description: 'Define a reusable function',
+    example: 'def greet(name) log name end',
+  },
+  init: {
+    title: 'init',
+    description: 'Run code once when the element loads',
+    example: 'init add .loaded to me',
+  },
 };
 
 // =============================================================================
@@ -183,7 +391,10 @@ export async function handleLspBridgeTool(
     case 'get_document_symbols':
       return getDocumentSymbols(args.code as string);
     default:
-      return { content: [{ type: 'text', text: `Unknown LSP bridge tool: ${name}` }], isError: true };
+      return {
+        content: [{ type: 'text', text: `Unknown LSP bridge tool: ${name}` }],
+        isError: true,
+      };
   }
 }
 
@@ -204,13 +415,19 @@ function getDiagnostics(code: string): { content: Array<{ type: string; text: st
     if (singleQuotes % 2 !== 0) {
       diagnostics.push({
         range: { start: { line: i, character: 0 }, end: { line: i, character: line.length } },
-        severity: 1, code: 'unmatched-quote', source: 'hyperscript-mcp', message: 'Unmatched single quote',
+        severity: 1,
+        code: 'unmatched-quote',
+        source: 'hyperscript-mcp',
+        message: 'Unmatched single quote',
       });
     }
     if (doubleQuotes % 2 !== 0) {
       diagnostics.push({
         range: { start: { line: i, character: 0 }, end: { line: i, character: line.length } },
-        severity: 1, code: 'unmatched-quote', source: 'hyperscript-mcp', message: 'Unmatched double quote',
+        severity: 1,
+        code: 'unmatched-quote',
+        source: 'hyperscript-mcp',
+        message: 'Unmatched double quote',
       });
     }
   }
@@ -220,8 +437,13 @@ function getDiagnostics(code: string): { content: Array<{ type: string; text: st
   const endCount = (code.match(/\bend\b/gi) || []).length;
   if (blockOpens > endCount) {
     diagnostics.push({
-      range: { start: { line: 0, character: 0 }, end: { line: lines.length - 1, character: lines[lines.length - 1].length } },
-      severity: 2, code: 'unclosed-block', source: 'hyperscript-mcp',
+      range: {
+        start: { line: 0, character: 0 },
+        end: { line: lines.length - 1, character: lines[lines.length - 1].length },
+      },
+      severity: 2,
+      code: 'unclosed-block',
+      source: 'hyperscript-mcp',
       message: `Possibly unclosed block: ${blockOpens} openings, ${endCount} "end" keywords`,
     });
   }
@@ -230,12 +452,16 @@ function getDiagnostics(code: string): { content: Array<{ type: string; text: st
     content: [
       {
         type: 'text',
-        text: JSON.stringify({
-          diagnostics,
-          count: diagnostics.length,
-          hasErrors: diagnostics.some(d => d.severity === 1),
-          hasWarnings: diagnostics.some(d => d.severity === 2),
-        }, null, 2),
+        text: JSON.stringify(
+          {
+            diagnostics,
+            count: diagnostics.length,
+            hasErrors: diagnostics.some(d => d.severity === 1),
+            hasWarnings: diagnostics.some(d => d.severity === 2),
+          },
+          null,
+          2
+        ),
       },
     ],
   };
@@ -273,7 +499,8 @@ function getCompletions(
       for (const cmd of COMMANDS) {
         const doc = HOVER_DOCS[cmd];
         completions.push({
-          label: cmd, kind: 'Keyword',
+          label: cmd,
+          kind: 'Keyword',
           detail: doc?.description || `Command: ${cmd}`,
           documentation: doc?.example,
         });
@@ -284,7 +511,8 @@ function getCompletions(
       for (const ref of REFERENCES) {
         const doc = HOVER_DOCS[ref];
         completions.push({
-          label: ref, kind: 'Variable',
+          label: ref,
+          kind: 'Variable',
           detail: doc?.description || `Reference: ${ref}`,
         });
       }
@@ -301,19 +529,27 @@ function getCompletions(
         { label: '@', kind: 'Selector', detail: 'Attribute reference (@attrName)' },
         { label: ':', kind: 'Selector', detail: 'Local variable (:varName)' },
         { label: '$', kind: 'Selector', detail: 'Global variable ($varName)' },
-        { label: '*', kind: 'Selector', detail: 'Style reference (*propertyName)' },
+        { label: '*', kind: 'Selector', detail: 'Style reference (*propertyName)' }
       );
       break;
 
     default: {
       // Show keyword-filtered completions
       const lastWord = prefix.split(/\s+/).pop() || '';
-      const all = [...COMMANDS, ...FEATURES, ...REFERENCES, ...BLOCK_KEYWORDS, ...POSITIONAL, ...LOGICAL];
+      const all = [
+        ...COMMANDS,
+        ...FEATURES,
+        ...REFERENCES,
+        ...BLOCK_KEYWORDS,
+        ...POSITIONAL,
+        ...LOGICAL,
+      ];
       for (const kw of all) {
         if (!lastWord || kw.startsWith(lastWord)) {
           const doc = HOVER_DOCS[kw];
           completions.push({
-            label: kw, kind: 'Keyword',
+            label: kw,
+            kind: 'Keyword',
             detail: doc?.description || kw,
           });
         }
@@ -325,11 +561,15 @@ function getCompletions(
     content: [
       {
         type: 'text',
-        text: JSON.stringify({
-          completions: completions.slice(0, 30),
-          context: inferredContext,
-          total: completions.length,
-        }, null, 2),
+        text: JSON.stringify(
+          {
+            completions: completions.slice(0, 30),
+            context: inferredContext,
+            total: completions.length,
+          },
+          null,
+          2
+        ),
       },
     ],
   };
@@ -374,12 +614,16 @@ function getHoverInfo(
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            hover: {
-              contents: `### ${doc.title}\n\n${doc.description}\n\n**Example:** \`${doc.example}\``,
-              word,
+          text: JSON.stringify(
+            {
+              hover: {
+                contents: `### ${doc.title}\n\n${doc.description}\n\n**Example:** \`${doc.example}\``,
+                word,
+              },
             },
-          }, null, 2),
+            null,
+            2
+          ),
         },
       ],
     };
@@ -391,12 +635,16 @@ function getHoverInfo(
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            hover: {
-              contents: `### ${word}\n\nDOM event. Use with \`on ${word}\` to handle this event.\n\n**Example:** \`on ${word} toggle .active\``,
-              word,
+          text: JSON.stringify(
+            {
+              hover: {
+                contents: `### ${word}\n\nDOM event. Use with \`on ${word}\` to handle this event.\n\n**Example:** \`on ${word} toggle .active\``,
+                word,
+              },
             },
-          }, null, 2),
+            null,
+            2
+          ),
         },
       ],
     };

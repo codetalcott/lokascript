@@ -44,10 +44,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/codetalcott/hyperfixi.git",
-    "directory": "mcp-server-hyperscript"
+    "directory": "packages/mcp-server-hyperscript"
   },
   "bugs": {
     "url": "https://github.com/codetalcott/hyperfixi/issues"
   },
-  "homepage": "https://github.com/codetalcott/hyperfixi/tree/main/mcp-server-hyperscript#readme"
+  "homepage": "https://github.com/codetalcott/hyperfixi/tree/main/packages/mcp-server-hyperscript#readme"
 }

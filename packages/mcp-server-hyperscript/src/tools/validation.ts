@@ -34,7 +34,8 @@ export const validationTools: Tool[] = [
       properties: {
         task: {
           type: 'string',
-          description: 'Description of what you want to do (e.g., "show a modal", "toggle a class")',
+          description:
+            'Description of what you want to do (e.g., "show a modal", "toggle a class")',
         },
       },
       required: ['task'],
@@ -66,11 +67,43 @@ export const validationTools: Tool[] = [
 // =============================================================================
 
 const VALID_COMMANDS = [
-  'toggle', 'add', 'remove', 'show', 'hide', 'set', 'get', 'put', 'append',
-  'prepend', 'increment', 'decrement', 'log', 'send', 'trigger', 'wait',
-  'fetch', 'call', 'go', 'focus', 'blur', 'return', 'break', 'continue',
-  'exit', 'halt', 'throw', 'transition', 'take', 'tell', 'repeat', 'for',
-  'while', 'if', 'unless', 'js', 'default',
+  'toggle',
+  'add',
+  'remove',
+  'show',
+  'hide',
+  'set',
+  'get',
+  'put',
+  'append',
+  'prepend',
+  'increment',
+  'decrement',
+  'log',
+  'send',
+  'trigger',
+  'wait',
+  'fetch',
+  'call',
+  'go',
+  'focus',
+  'blur',
+  'return',
+  'break',
+  'continue',
+  'exit',
+  'halt',
+  'throw',
+  'transition',
+  'take',
+  'tell',
+  'repeat',
+  'for',
+  'while',
+  'if',
+  'unless',
+  'js',
+  'default',
 ];
 
 const EVENT_KEYWORDS = ['on'];
@@ -159,7 +192,12 @@ export async function handleValidationTool(
         const code = args.code as string;
         if (!code || typeof code !== 'string') {
           return {
-            content: [{ type: 'text', text: JSON.stringify({ error: 'Missing required parameter: code' }, null, 2) }],
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ error: 'Missing required parameter: code' }, null, 2),
+              },
+            ],
             isError: true,
           };
         }
@@ -170,7 +208,12 @@ export async function handleValidationTool(
         const task = args.task as string;
         if (!task || typeof task !== 'string') {
           return {
-            content: [{ type: 'text', text: JSON.stringify({ error: 'Missing required parameter: task' }, null, 2) }],
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ error: 'Missing required parameter: task' }, null, 2),
+              },
+            ],
             isError: true,
           };
         }
@@ -208,7 +251,8 @@ export async function handleValidationTool(
 
 function validateHyperscript(code: string): { content: Array<{ type: string; text: string }> } {
   const errors: Array<{ message: string; line?: number; code?: string; suggestion?: string }> = [];
-  const warnings: Array<{ message: string; line?: number; code?: string; suggestion?: string }> = [];
+  const warnings: Array<{ message: string; line?: number; code?: string; suggestion?: string }> =
+    [];
   const lines = code.split('\n');
 
   // Check for onclick misuse
@@ -261,8 +305,20 @@ function validateHyperscript(code: string): { content: Array<{ type: string; tex
     const commandStartMatch = line.match(/^\s*(\w+)\s/);
     if (commandStartMatch) {
       const word = commandStartMatch[1].toLowerCase();
-      const allKeywords = [...VALID_COMMANDS, ...EVENT_KEYWORDS, ...BLOCK_KEYWORDS, 'then', 'end', 'else', 'on'];
-      if (word.length > 2 && !allKeywords.includes(word) && !/^(true|false|null|undefined|me|you|it|its|my|result)$/.test(word)) {
+      const allKeywords = [
+        ...VALID_COMMANDS,
+        ...EVENT_KEYWORDS,
+        ...BLOCK_KEYWORDS,
+        'then',
+        'end',
+        'else',
+        'on',
+      ];
+      if (
+        word.length > 2 &&
+        !allKeywords.includes(word) &&
+        !/^(true|false|null|undefined|me|you|it|its|my|result)$/.test(word)
+      ) {
         const closest = findClosestCommand(word, VALID_COMMANDS);
         if (closest) {
           warnings.push({
@@ -340,82 +396,158 @@ interface CommandSuggestion {
 }
 
 const COMMAND_SUGGESTIONS: Record<string, CommandSuggestion[]> = {
-  'toggle': [{
-    command: 'toggle', syntax: 'toggle <class|attr> [on <target>]',
-    example: 'toggle .active on #menu', description: 'Toggle a class or attribute on/off',
-  }],
-  'show': [{
-    command: 'show', syntax: 'show <target> [with <transition>]',
-    example: 'show #modal with *opacity', description: 'Show a hidden element',
-  }],
-  'hide': [{
-    command: 'hide', syntax: 'hide <target> [with <transition>]',
-    example: 'hide #modal with *opacity', description: 'Hide an element',
-  }],
-  'add': [{
-    command: 'add', syntax: 'add <class|attr> [to <target>]',
-    example: 'add .highlight to me', description: 'Add a class or attribute to an element',
-  }],
-  'remove': [{
-    command: 'remove', syntax: 'remove <class|attr> [from <target>]',
-    example: 'remove .error from #form', description: 'Remove a class, attribute, or element',
-  }],
-  'set': [{
-    command: 'set', syntax: 'set <property> to <value>',
-    example: 'set :count to 0', description: 'Set a variable or property value',
-  }],
-  'put': [{
-    command: 'put', syntax: 'put <value> into <target>',
-    example: 'put "Hello" into #greeting', description: 'Set element content',
-  }],
-  'fetch': [{
-    command: 'fetch', syntax: 'fetch <url> [as <type>]',
-    example: 'fetch /api/data as json', description: 'Make an HTTP request',
-  }],
-  'wait': [{
-    command: 'wait', syntax: 'wait <duration>',
-    example: 'wait 500ms', description: 'Pause execution for a duration',
-  }],
-  'send': [{
-    command: 'send', syntax: 'send <event> [to <target>]',
-    example: 'send refresh to #list', description: 'Dispatch a custom event',
-  }],
-  'trigger': [{
-    command: 'trigger', syntax: 'trigger <event> [on <target>]',
-    example: 'trigger submit on #form', description: 'Trigger an event on an element',
-  }],
-  'call': [{
-    command: 'call', syntax: 'call <function>(args)',
-    example: 'call alert("Hello")', description: 'Call a JavaScript function',
-  }],
-  'log': [{
-    command: 'log', syntax: 'log <expression>',
-    example: 'log me', description: 'Log a value to the console',
-  }],
-  'increment': [{
-    command: 'increment', syntax: 'increment <variable>',
-    example: 'increment :count', description: 'Add 1 to a variable',
-  }],
-  'decrement': [{
-    command: 'decrement', syntax: 'decrement <variable>',
-    example: 'decrement :count', description: 'Subtract 1 from a variable',
-  }],
-  'go': [{
-    command: 'go', syntax: 'go to <url>',
-    example: 'go to /dashboard', description: 'Navigate to a URL',
-  }],
-  'append': [{
-    command: 'append', syntax: 'append <content> to <target>',
-    example: 'append "<li>New</li>" to #list', description: 'Append content to an element',
-  }],
-  'take': [{
-    command: 'take', syntax: 'take <class> from <group>',
-    example: 'take .active from .tabs', description: 'Move a class from siblings to current element',
-  }],
-  'transition': [{
-    command: 'transition', syntax: 'transition <property> to <value> over <duration>',
-    example: 'transition *opacity to 0 over 500ms', description: 'Animate a CSS property',
-  }],
+  toggle: [
+    {
+      command: 'toggle',
+      syntax: 'toggle <class|attr> [on <target>]',
+      example: 'toggle .active on #menu',
+      description: 'Toggle a class or attribute on/off',
+    },
+  ],
+  show: [
+    {
+      command: 'show',
+      syntax: 'show <target> [with <transition>]',
+      example: 'show #modal with *opacity',
+      description: 'Show a hidden element',
+    },
+  ],
+  hide: [
+    {
+      command: 'hide',
+      syntax: 'hide <target> [with <transition>]',
+      example: 'hide #modal with *opacity',
+      description: 'Hide an element',
+    },
+  ],
+  add: [
+    {
+      command: 'add',
+      syntax: 'add <class|attr> [to <target>]',
+      example: 'add .highlight to me',
+      description: 'Add a class or attribute to an element',
+    },
+  ],
+  remove: [
+    {
+      command: 'remove',
+      syntax: 'remove <class|attr> [from <target>]',
+      example: 'remove .error from #form',
+      description: 'Remove a class, attribute, or element',
+    },
+  ],
+  set: [
+    {
+      command: 'set',
+      syntax: 'set <property> to <value>',
+      example: 'set :count to 0',
+      description: 'Set a variable or property value',
+    },
+  ],
+  put: [
+    {
+      command: 'put',
+      syntax: 'put <value> into <target>',
+      example: 'put "Hello" into #greeting',
+      description: 'Set element content',
+    },
+  ],
+  fetch: [
+    {
+      command: 'fetch',
+      syntax: 'fetch <url> [as <type>]',
+      example: 'fetch /api/data as json',
+      description: 'Make an HTTP request',
+    },
+  ],
+  wait: [
+    {
+      command: 'wait',
+      syntax: 'wait <duration>',
+      example: 'wait 500ms',
+      description: 'Pause execution for a duration',
+    },
+  ],
+  send: [
+    {
+      command: 'send',
+      syntax: 'send <event> [to <target>]',
+      example: 'send refresh to #list',
+      description: 'Dispatch a custom event',
+    },
+  ],
+  trigger: [
+    {
+      command: 'trigger',
+      syntax: 'trigger <event> [on <target>]',
+      example: 'trigger submit on #form',
+      description: 'Trigger an event on an element',
+    },
+  ],
+  call: [
+    {
+      command: 'call',
+      syntax: 'call <function>(args)',
+      example: 'call alert("Hello")',
+      description: 'Call a JavaScript function',
+    },
+  ],
+  log: [
+    {
+      command: 'log',
+      syntax: 'log <expression>',
+      example: 'log me',
+      description: 'Log a value to the console',
+    },
+  ],
+  increment: [
+    {
+      command: 'increment',
+      syntax: 'increment <variable>',
+      example: 'increment :count',
+      description: 'Add 1 to a variable',
+    },
+  ],
+  decrement: [
+    {
+      command: 'decrement',
+      syntax: 'decrement <variable>',
+      example: 'decrement :count',
+      description: 'Subtract 1 from a variable',
+    },
+  ],
+  go: [
+    {
+      command: 'go',
+      syntax: 'go to <url>',
+      example: 'go to /dashboard',
+      description: 'Navigate to a URL',
+    },
+  ],
+  append: [
+    {
+      command: 'append',
+      syntax: 'append <content> to <target>',
+      example: 'append "<li>New</li>" to #list',
+      description: 'Append content to an element',
+    },
+  ],
+  take: [
+    {
+      command: 'take',
+      syntax: 'take <class> from <group>',
+      example: 'take .active from .tabs',
+      description: 'Move a class from siblings to current element',
+    },
+  ],
+  transition: [
+    {
+      command: 'transition',
+      syntax: 'transition <property> to <value> over <duration>',
+      example: 'transition *opacity to 0 over 500ms',
+      description: 'Animate a CSS property',
+    },
+  ],
 };
 
 const TASK_PATTERNS: Array<{ pattern: RegExp; commands: string[] }> = [
@@ -500,7 +632,7 @@ function suggestCommand(task: string): { content: Array<{ type: string; text: st
 function getCodeFixes(
   errorCode: string | undefined,
   listAll: boolean
-): { content: Array<{ type: string; text: string }> } {
+): { content: Array<{ type: string; text: string }>; isError?: boolean } {
   if (listAll) {
     return {
       content: [
@@ -524,15 +656,11 @@ function getCodeFixes(
       content: [
         {
           type: 'text',
-          text: JSON.stringify(
-            { error: 'Provide errorCode or set listAll=true' },
-            null,
-            2
-          ),
+          text: JSON.stringify({ error: 'Provide errorCode or set listAll=true' }, null, 2),
         },
       ],
       isError: true,
-    } as any;
+    };
   }
 
   const fixes = ERROR_FIXES[errorCode];
