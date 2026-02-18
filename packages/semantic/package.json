@@ -248,7 +248,7 @@
   "author": "LokaScript Contributors",
   "license": "MIT",
   "dependencies": {
-    "@lokascript/framework": "1.0.0"
+    "@lokascript/framework": "*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
