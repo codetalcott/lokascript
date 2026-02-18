@@ -67,7 +67,8 @@ jobs:
 
       - name: Build all packages
         run: |
-          # Build order: base → semantic → core → everything else
+          # Build order: framework first (semantic depends on it), then semantic → core → rest
+          npm run build --prefix packages/framework
           npm run build --prefix packages/semantic
           npm run build --prefix packages/core
           npm run build:browser --prefix packages/core
@@ -75,7 +76,6 @@ jobs:
           npm run build --prefix packages/hyperscript-adapter
           npm run build --prefix packages/patterns-reference
           npm run build --prefix packages/aot-compiler
-          npm run build --prefix packages/framework
           npm run build --prefix packages/server-bridge
           npm run build --prefix packages/types-browser
           npm run build --prefix packages/domain-sql
