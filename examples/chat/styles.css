@@ -242,12 +242,150 @@ html, body {
 .confidence-fill.medium { background: var(--yellow); }
 .confidence-fill.low { background: var(--red); }
 
-/* Behavior card */
+/* Behavior card — split grid: code left, preview right */
 .behavior-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+}
+
+.card-main {
+  min-width: 0;
+  border-right: 1px solid var(--border);
+}
+
+.card-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  gap: 10px;
+  background: var(--bg-surface);
+  text-align: center;
+}
+
+.card-preview-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  align-self: flex-start;
+}
+
+.preview-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+.preview-target {
+  padding: 8px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-count {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.preview-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  transition: background var(--transition);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.preview-btn:hover { background: var(--accent-hover); }
+.preview-btn.active { background: var(--green); }
+
+.preview-btn-ghost {
+  background: var(--bg-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.preview-btn-ghost:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+/* Two-element scene: target above, trigger below */
+.preview-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 4px 0;
+}
+
+/* Represents the DOM element being acted on */
+.preview-demo-target {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  text-align: center;
+  transition: all 200ms ease;
+  cursor: default;
+}
+
+/* Visual: class has been applied */
+.preview-demo-target.class-active {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+  color: var(--text);
+}
+
+/* Visual: element is "hidden" — dim without reflowing layout */
+.preview-demo-target.preview-hidden {
+  opacity: 0.15;
+}
+
+/* Self-targeting: button acts as both trigger and target — override btn background */
+button.preview-demo-target {
+  background: var(--bg-hover);
+  color: var(--text);
+  cursor: pointer;
+}
+button.preview-demo-target:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
+}
+button.preview-demo-target.class-active {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+  color: var(--accent);
 }
 
 .card-tabs {
@@ -371,8 +509,9 @@ html, body {
   margin-top: 8px;
 }
 
-/* Translations row */
+/* Translations row — spans full card width in grid */
 .translations {
+  grid-column: 1 / -1;
   padding: 8px 12px;
   border-top: 1px solid var(--border);
   display: flex;
@@ -572,11 +711,84 @@ html, body {
 }
 
 /* Responsive */
-@media (max-width: 640px) {
+
+/* Tablet — narrow the preview column */
+@media (max-width: 767px) {
+  .behavior-card {
+    grid-template-columns: minmax(0, 1fr) 200px;
+  }
+}
+
+/* Mobile — stack to single column */
+@media (max-width: 479px) {
   .app { max-width: 100%; }
   .header { padding: 10px 12px; }
   .messages { padding: 12px; }
   .input-area { padding: 10px 12px; }
   .examples { gap: 6px; }
   .example-btn { font-size: 12px; padding: 5px 10px; }
+
+  .behavior-card {
+    grid-template-columns: 1fr;
+  }
+  .card-main {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-preview {
+    padding: 12px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .card-preview-label {
+    width: 100%;
+  }
+  .preview-counter {
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+  }
+  .preview-count {
+    font-size: 1.6em;
+  }
 }
+
+/* =============================================================================
+   Prism Syntax Highlighting Integration
+   ============================================================================= */
+
+/* Reset Prism's <pre> styles inside code-block wrapper */
+.code-block .code-pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 0;
+}
+
+/* Override Prism tomorrow theme: use our background, not Prism's */
+.code-block code[class*="language-"] {
+  background: transparent;
+  text-shadow: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Hyperscript token colors — from prism-hyperscript-i18n dark theme */
+.token.hs-command    { color: #66d9ef; font-weight: bold; }
+.token.hs-modifier   { color: #a8a8a8; }
+.token.hs-event      { color: #fd971f; }
+.token.hs-logical    { color: #ae81ff; }
+.token.hs-temporal   { color: #66cccc; }
+.token.hs-value      { color: #a6e22e; }
+.token.hs-attribute  { color: #6699cc; }
+.token.hs-expression { color: #f92672; }
+.token.hs-selector   { color: #2aa198; }

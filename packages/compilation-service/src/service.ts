@@ -577,6 +577,24 @@ export class CompilationService {
 // =============================================================================
 
 /**
+ * Flatten a SemanticValue (possibly nested property-path) to a string.
+ */
+function extractSemanticValueString(v: unknown): string {
+  if (!v || typeof v !== 'object') return '';
+  const sv = v as {
+    type?: string;
+    value?: unknown;
+    raw?: string;
+    object?: unknown;
+    property?: string;
+  };
+  if (sv.type === 'property-path') {
+    return `${extractSemanticValueString(sv.object)}.${sv.property ?? ''}`;
+  }
+  return String(sv.value ?? sv.raw ?? '');
+}
+
+/**
  * Convert a SemanticNode to SemanticJSON for the response.
  */
 function nodeToSemanticJSON(node: unknown): SemanticJSON | undefined {
@@ -599,13 +617,20 @@ function nodeToSemanticJSON(node: unknown): SemanticJSON | undefined {
       if (role === 'event') continue; // Handled via trigger
       const v = value as { type?: string; value?: unknown; raw?: string };
       if (v && v.type) {
-        const valueType = v.type as SemanticJSONValue['type'];
-        roles[role] = {
-          type: (['selector', 'literal', 'reference', 'expression'].includes(valueType)
-            ? valueType
-            : 'literal') as SemanticJSONValue['type'],
-          value: (v.value ?? v.raw ?? '') as string | number | boolean,
-        };
+        if (v.type === 'property-path') {
+          roles[role] = {
+            type: 'property-path',
+            value: extractSemanticValueString(v),
+          };
+        } else {
+          const valueType = v.type as SemanticJSONValue['type'];
+          roles[role] = {
+            type: (['selector', 'literal', 'reference', 'expression'].includes(valueType)
+              ? valueType
+              : 'literal') as SemanticJSONValue['type'],
+            value: (v.value ?? v.raw ?? '') as string | number | boolean,
+          };
+        }
       }
     }
   }

@@ -173,6 +173,36 @@ describe('CompilationService', () => {
       expect(result.js).toBeDefined();
     });
 
+    it('serializes property-path destination for set command', () => {
+      const result = service.compile({
+        code: 'on click set #output.innerHTML to "Hello!"',
+        language: 'en',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.semantic?.action).toBe('set');
+      expect(result.semantic?.roles.destination).toEqual({
+        type: 'property-path',
+        value: '#output.innerHTML',
+      });
+      expect(result.semantic?.roles.patient).toEqual({
+        type: 'literal',
+        value: 'Hello!',
+      });
+    });
+
+    it('compiles set with dotted me property (me.style.color)', () => {
+      // The semantic parser may not resolve bare `me.prop` chains to property-path,
+      // but compilation via the AST pipeline should still succeed.
+      const result = service.compile({
+        code: 'on click set me.style.color to "red"',
+        language: 'en',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.js).toBeDefined();
+    });
+
     it('rejects low-confidence parses', () => {
       const result = service.compile({
         code: 'xyzzy blorp grunk',

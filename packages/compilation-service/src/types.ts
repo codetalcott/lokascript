@@ -71,7 +71,7 @@ export interface SemanticJSON {
  */
 export interface SemanticJSONValue {
   /** Value type */
-  type: 'selector' | 'literal' | 'reference' | 'expression';
+  type: 'selector' | 'literal' | 'reference' | 'expression' | 'property-path';
   /** The value */
   value: string | number | boolean;
 }

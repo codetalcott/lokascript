@@ -198,10 +198,6 @@ function addBehaviorCard(compileResult, componentResults, translations) {
     panels.push(makeCodePanel(cardId, 'js', compileResult.js));
   }
 
-  // Preview tab
-  tabs.push(makeTab(cardId, 'preview', 'Preview'));
-  panels.push(makePreviewPanel(cardId, compileResult));
-
   // Framework tabs
   for (const [fw, result] of Object.entries(componentResults)) {
     if (result.ok && result.component) {
@@ -257,20 +253,34 @@ function addBehaviorCard(compileResult, componentResults, translations) {
       </div>
       ${diagnosticsHtml}
       <div class="behavior-card">
-        <div class="card-tabs">${tabs.join('')}</div>
-        <div class="card-content">${panels.join('')}</div>
+        <div class="card-main">
+          <div class="card-tabs">${tabs.join('')}</div>
+          <div class="card-content">${panels.join('')}</div>
+        </div>
+        <div class="card-preview">
+          <div class="card-preview-label">Preview</div>
+          ${makePreviewContent(cardId, compileResult)}
+        </div>
         ${translationsHtml}
       </div>
     </div>
   `;
 
   messagesEl.appendChild(msg);
+  if (window.Prism) {
+    msg.querySelectorAll('code[class*="language-"]').forEach(el => Prism.highlightElement(el));
+  }
   scrollToBottom();
 }
 
 // =============================================================================
 // Tab / Panel Helpers
 // =============================================================================
+
+function prismLangForTab(name) {
+  const map = { hyperscript: 'hyperscript', js: 'javascript', react: 'jsx', vue: 'markup', svelte: 'markup' };
+  return map[name] || null;
+}
 
 function makeTab(cardId, name, label, active = false) {
   return `<button class="card-tab${active ? ' active' : ''}"
@@ -279,75 +289,129 @@ function makeTab(cardId, name, label, active = false) {
 
 function makeCodePanel(cardId, name, code, active = false) {
   const panelId = `${cardId}-${name}`;
+  const lang = prismLangForTab(name);
+  const codeInner = lang
+    ? `<pre class="code-pre"><code class="language-${lang}">${escapeHtml(code)}</code></pre>`
+    : escapeHtml(code);
   return `
     <div class="tab-panel${active ? ' active' : ''}" data-tab="${name}" data-card="${cardId}">
       <div class="code-block" id="${panelId}">
         <button class="copy-btn" onclick="copyCode('${panelId}')">Copy</button>
-        ${escapeHtml(code)}
+        ${codeInner}
       </div>
     </div>
   `;
 }
 
-function makePreviewPanel(cardId, compileResult) {
+function makePreviewContent(cardId, compileResult) {
   const semantic = compileResult.semantic;
-  let previewContent = '';
+  if (!semantic) return `<div class="preview-empty">No preview available</div>`;
 
-  if (semantic) {
-    const action = semantic.action || '';
-    const trigger = semantic.trigger?.event || 'click';
+  const action = semantic.action || '';
+  const trigger = semantic.trigger?.event || 'click';
+  const triggerLabel = trigger.charAt(0).toUpperCase() + trigger.slice(1);
 
-    // Generate a simple interactive preview based on the action
-    if (['toggle', 'add', 'remove'].includes(action)) {
-      const className = extractRoleValue(semantic.roles, 'patient') || 'active';
-      previewContent = `
+  // ── Class manipulation: toggle / add / remove ──────────────────────────────
+  if (['toggle', 'add', 'remove'].includes(action)) {
+    const rawClass = extractRoleValue(semantic.roles, 'patient') || '.active';
+    const bare     = rawClass.replace(/^\./, '');
+    const dest     = extractRoleValue(semantic.roles, 'destination');
+    const isSelf   = !dest || /^(me|this|itself|my)$/i.test(dest);
+    const startWith = (action === 'remove'); // remove: target starts with class applied
+
+    if (isSelf) {
+      const initClass = startWith ? `${bare} class-active` : '';
+      const onClick = action === 'toggle'
+        ? `this.classList.toggle('${bare}'); this.classList.toggle('class-active', this.classList.contains('${bare}'))`
+        : action === 'add'
+          ? `this.classList.add('${bare}', 'class-active')`
+          : `this.classList.remove('${bare}', 'class-active')`;
+      return `
         <div class="preview-area">
-          <button onclick="this.classList.toggle('${className.replace(/^\./, '')}')"
-            style="padding: 10px 24px; border-radius: 6px; font-size: 14px; cursor: pointer;
-                   background: var(--accent); color: #fff; border: none;
-                   transition: all 200ms ease;">
-            ${trigger.charAt(0).toUpperCase() + trigger.slice(1)} me
+          <button class="preview-btn preview-demo-target ${initClass}" onclick="${onClick}">
+            ${triggerLabel} me
           </button>
         </div>
-        <div class="preview-note">Click to see the ${action} behavior</div>
-      `;
-    } else if (['show', 'hide'].includes(action)) {
-      previewContent = `
-        <div class="preview-area" style="flex-direction: column; gap: 12px;">
-          <div id="${cardId}-target" style="padding: 12px 24px; background: var(--bg-surface);
-               border: 1px solid var(--border); border-radius: 6px; color: var(--text);">
-            Target Element
-          </div>
-          <button onclick="document.getElementById('${cardId}-target').style.display =
-            document.getElementById('${cardId}-target').style.display === 'none' ? '' : 'none'"
-            style="padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;
-                   background: var(--bg-hover); color: var(--text); border: 1px solid var(--border);">
-            Toggle visibility
-          </button>
-        </div>
-      `;
-    } else {
-      previewContent = `
-        <div class="preview-area">
-          <div style="color: var(--text-muted); font-size: 13px;">
-            Preview not available for "${action}" command
-          </div>
-        </div>
+        <div class="preview-note">${action}s .${bare}</div>
       `;
     }
-  } else {
-    previewContent = `
-      <div class="preview-area">
-        <div style="color: var(--text-muted); font-size: 13px;">No preview available</div>
+
+    // External target
+    const initClass = startWith ? `${bare} class-active` : '';
+    const onClick = action === 'toggle'
+      ? `var t=document.getElementById('${cardId}-dt');t.classList.toggle('${bare}');t.classList.toggle('class-active',t.classList.contains('${bare}'))`
+      : action === 'add'
+        ? `var t=document.getElementById('${cardId}-dt');t.classList.add('${bare}','class-active')`
+        : `var t=document.getElementById('${cardId}-dt');t.classList.remove('${bare}','class-active')`;
+    return `
+      <div class="preview-scene">
+        <div id="${cardId}-dt" class="preview-demo-target ${initClass}">
+          ${escapeHtml(dest)}
+        </div>
+        <button class="preview-btn" onclick="${onClick}">
+          ${triggerLabel}
+        </button>
+      </div>
+      <div class="preview-note">${action}s .${bare} on ${escapeHtml(dest)}</div>
+    `;
+  }
+
+  // ── Visibility: show / hide ────────────────────────────────────────────────
+  if (['show', 'hide'].includes(action)) {
+    const target = extractRoleValue(semantic.roles, 'patient')
+                || extractRoleValue(semantic.roles, 'destination')
+                || '#target';
+    const startHidden = (action === 'hide');
+    return `
+      <div class="preview-scene">
+        <div id="${cardId}-vt" class="preview-demo-target${startHidden ? ' preview-hidden' : ''}">
+          ${escapeHtml(target)}
+        </div>
+        <button class="preview-btn preview-btn-ghost"
+          onclick="document.getElementById('${cardId}-vt').classList.toggle('preview-hidden')">
+          ${triggerLabel}
+        </button>
       </div>
     `;
   }
 
-  return `
-    <div class="tab-panel" data-tab="preview" data-card="${cardId}">
-      ${previewContent}
-    </div>
-  `;
+  // ── Counter: increment / decrement ────────────────────────────────────────
+  if (['increment', 'decrement'].includes(action)) {
+    const delta = action === 'decrement' ? -1 : 1;
+    return `
+      <div class="preview-area">
+        <div class="preview-counter">
+          <span id="${cardId}-count" class="preview-count">0</span>
+          <button class="preview-btn"
+            onclick="var el=document.getElementById('${cardId}-count');el.textContent=parseInt(el.textContent)+(${delta})">
+            ${triggerLabel}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Set: update property / content ───────────────────────────────────────
+  if (action === 'set') {
+    const destVal = extractRoleValue(semantic.roles, 'destination') || '';
+    const patient = extractRoleValue(semantic.roles, 'patient') || '';
+    // Extract element selector: "#output.innerHTML" → "#output", "me.style.color" → "me"
+    const dotIdx = destVal.indexOf('.', destVal.startsWith('#') || destVal.startsWith('.') ? 1 : 0);
+    const elemLabel = dotIdx > 0 ? destVal.slice(0, dotIdx) : (destVal || 'element');
+    const shortVal = patient.length > 20 ? patient.slice(0, 18) + '\u2026' : patient;
+    return `
+      <div class="preview-scene">
+        <div id="${cardId}-sv" class="preview-demo-target">${escapeHtml(elemLabel)}</div>
+        <button class="preview-btn" data-set-val="${escapeHtml(patient)}"
+          onclick="var el=document.getElementById('${cardId}-sv');el.textContent=this.dataset.setVal;el.classList.add('class-active')">
+          Set
+        </button>
+      </div>
+      <div class="preview-note">sets to &ldquo;${escapeHtml(shortVal)}&rdquo;</div>
+    `;
+  }
+
+  return `<div class="preview-empty">${escapeHtml(action) || 'No'} preview</div>`;
 }
 
 // =============================================================================
@@ -393,6 +457,12 @@ function extractRoleValue(roles, roleName) {
   if (!roles || !roles[roleName]) return null;
   const role = roles[roleName];
   return typeof role === 'object' ? String(role.value) : String(role);
+}
+
+function labelForSelector(selector) {
+  if (!selector) return 'element';
+  if (selector.startsWith('#') || selector.startsWith('.')) return selector.slice(1);
+  return selector;
 }
 
 // =============================================================================
