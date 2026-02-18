@@ -139,6 +139,10 @@ jobs:
           done
 
       - name: Publish packages
+        env:
+          # NPM_TOKEN required for initial publish of new packages
+          # (OIDC trusted publishing only works for packages already on npm)
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -o pipefail
           VERSION="${{ steps.version.outputs.version }}"
