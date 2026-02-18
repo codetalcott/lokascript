@@ -133,7 +133,8 @@ jobs:
                      compilation-service behaviors testing-framework language-server \
                      mcp-server-hyperscript language-server-hyperscript; do
             if [ -f "packages/$pkg/package.json" ]; then
-              (cd "packages/$pkg" && npm version "$VERSION" --no-git-tag-version --allow-same-version)
+              # Use npm pkg set to avoid registry lookups (safe for unpublished packages)
+              (cd "packages/$pkg" && npm pkg set version="$VERSION")
             fi
           done
 
