@@ -63,7 +63,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          # Delete stale lockfile — workspace package versions may differ from lockfile
+          # after a version bump. Regenerate fresh so workspace symlinks resolve correctly.
+          rm -f package-lock.json
+          npm install
 
       - name: Build all packages
         run: |
