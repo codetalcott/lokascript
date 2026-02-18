@@ -1,6 +1,5 @@
 {
   "name": "@lokascript/compilation-service",
-  "private": true,
   "version": "2.0.0",
   "description": "Semantic compilation service for LokaScript - validates and compiles hyperscript from 24 languages, explicit syntax, or LLM JSON",
   "type": "module",
