@@ -80,6 +80,12 @@ function generatePollHTMX(spec: FlowSpec): HTMXAttributes {
 
   attrs['hx-swap'] = 'innerHTML';
 
+  if (spec.responseFormat === 'json') {
+    notes.push(
+      'HTMX expects HTML responses by default. For JSON, use hx-ext="json-enc" or handle in a hyperscript handler.'
+    );
+  }
+
   return { attrs, notes };
 }
 

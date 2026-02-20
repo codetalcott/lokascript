@@ -372,5 +372,66 @@ describe('FlowScript Domain', () => {
       expect(rendered).toContain('sondear');
       expect(rendered).toContain('cada');
     });
+
+    it('should render fetch to Arabic VSO', () => {
+      const node = flow.parse('fetch /api/users as json into #user-list', 'en');
+      const rendered = renderFlow(node, 'ar');
+      expect(rendered).toContain('جلب');
+      expect(rendered).toContain('/api/users');
+      expect(rendered).toContain('ك');
+      expect(rendered).toContain('في');
+    });
+
+    it('should render submit to Arabic VSO', () => {
+      const node = flow.parse('submit #checkout to /api/order as json', 'en');
+      const rendered = renderFlow(node, 'ar');
+      expect(rendered).toContain('أرسل');
+      expect(rendered).toContain('إلى');
+      expect(rendered).toContain('/api/order');
+    });
+
+    it('should render transform to Arabic', () => {
+      const node = flow.parse('transform data with uppercase', 'en');
+      const rendered = renderFlow(node, 'ar');
+      expect(rendered).toContain('حوّل');
+      expect(rendered).toContain('ب');
+    });
+
+    it('should render stream to Arabic VSO', () => {
+      const node = flow.parse('stream /api/events as sse into #event-log', 'en');
+      const rendered = renderFlow(node, 'ar');
+      expect(rendered).toContain('بث');
+      expect(rendered).toContain('/api/events');
+    });
+
+    it('should round-trip Arabic render through parser', () => {
+      const enNode = flow.parse('fetch /api/users as json into #user-list', 'en');
+      const arText = renderFlow(enNode, 'ar');
+      const arNode = flow.parse(arText, 'ar');
+      expect(arNode.action).toBe('fetch');
+      expect(extractRoleValue(arNode, 'source')).toBe('/api/users');
+      expect(extractRoleValue(arNode, 'style')).toBe('json');
+      expect(extractRoleValue(arNode, 'destination')).toBe('#user-list');
+    });
+  });
+
+  // ===========================================================================
+  // Poll with Format
+  // ===========================================================================
+
+  describe('Poll with responseFormat', () => {
+    it('should compile poll with json format', () => {
+      const result = flow.compile('poll /api/status every 5s as json into #dashboard', 'en');
+      expect(result.ok).toBe(true);
+      expect(result.code).toContain('.json()');
+      expect(result.code).toContain('JSON.stringify');
+    });
+
+    it('should compile poll without format as text', () => {
+      const result = flow.compile('poll /api/status every 5s into #dashboard', 'en');
+      expect(result.ok).toBe(true);
+      expect(result.code).toContain('.text()');
+      expect(result.code).not.toContain('.json()');
+    });
   });
 });

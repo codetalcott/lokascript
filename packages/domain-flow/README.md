@@ -19,7 +19,7 @@ Multilingual reactive data flow DSL built on `@lokascript/framework`. Describe f
 | `poll`      | Repeated fetch on interval      | `poll /api/status every 5s as json into #status` |
 | `stream`    | Server-Sent Events (SSE)        | `stream /api/events as sse into #feed`           |
 | `submit`    | POST form data                  | `submit #login-form to /api/login`               |
-| `transform` | Client-side data transformation | `transform data with uppercase into #output`     |
+| `transform` | Client-side data transformation | `transform data with uppercase`                  |
 
 ## Usage
 
@@ -62,7 +62,7 @@ import { toFlowSpec, generateHTMX } from '@lokascript/domain-flow';
 const node = flow.parse('fetch /api/users as json into #list', 'en');
 const spec = toFlowSpec(node, 'en');
 const htmx = generateHTMX(spec);
-// → { tag: 'div', attrs: { 'hx-get': '/api/users', 'hx-target': '#list', 'hx-swap': 'innerHTML' } }
+// → { attrs: { 'hx-get': '/api/users', 'hx-target': '#list', 'hx-swap': 'innerHTML' }, notes: [...] }
 ```
 
 ### Route Extraction

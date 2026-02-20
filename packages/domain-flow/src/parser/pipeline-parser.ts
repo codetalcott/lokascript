@@ -7,6 +7,7 @@
  */
 
 import type { MultilingualDSL, SemanticNode } from '@lokascript/framework';
+import { renderFlow } from '../generators/flow-renderer.js';
 
 // =============================================================================
 // Types
@@ -124,7 +125,7 @@ export function compilePipeline(
   const compileErrors: string[] = [];
   const codes: string[] = [];
   for (const step of steps) {
-    const result = dsl.compile(renderStepBack(step.node, language, dsl), language);
+    const result = dsl.compile(renderStepBack(step.node, language), language);
     if (result.ok && result.code) {
       codes.push(result.code);
     } else {
@@ -143,16 +144,8 @@ export function compilePipeline(
 
 /**
  * Reconstruct a parse-able string from a SemanticNode for re-compilation.
- * Falls back to the original input segment.
+ * Uses the natural language renderer to produce correct output with markers.
  */
-function renderStepBack(node: SemanticNode, language: string, dsl: MultilingualDSL): string {
-  // Try to re-render the node — import the renderer dynamically would be circular,
-  // so we reconstruct from roles
-  const parts: string[] = [node.action];
-  for (const [role, value] of node.roles) {
-    const strVal =
-      typeof value === 'string' ? value : ((value as { value?: string })?.value ?? String(value));
-    parts.push(strVal);
-  }
-  return parts.join(' ');
+function renderStepBack(node: SemanticNode, language: string): string {
+  return renderFlow(node, language);
 }

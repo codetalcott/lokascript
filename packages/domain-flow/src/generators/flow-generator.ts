@@ -67,6 +67,7 @@ export function toFlowSpec(node: SemanticNode, language: string): FlowSpec {
     }
     case 'poll': {
       base.url = extractRoleValue(node, 'source') || undefined;
+      base.responseFormat = normalizeFormat(extractRoleValue(node, 'style'));
       base.target = extractRoleValue(node, 'destination') || undefined;
       base.method = 'GET';
       const dur = extractRoleValue(node, 'duration');
@@ -107,6 +108,15 @@ function normalizeFormat(format: string | null): FlowSpec['responseFormat'] {
 }
 
 // =============================================================================
+// String Escaping
+// =============================================================================
+
+/** Escape a string for safe inclusion in single-quoted JS string literals. */
+function escapeStr(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+// =============================================================================
 // Per-Command JS Generators
 // =============================================================================
 
@@ -116,16 +126,16 @@ function generateFetch(node: SemanticNode): string {
   const target = extractRoleValue(node, 'destination');
 
   const parseMethod = format === 'json' ? '.json()' : '.text()';
-  const lines: string[] = [`fetch('${url}')`, `  .then(r => r${parseMethod})`];
+  const lines: string[] = [`fetch('${escapeStr(url)}')`, `  .then(r => r${parseMethod})`];
 
   if (target) {
     lines.push(`  .then(data => {`);
     if (format === 'json') {
       lines.push(
-        `    document.querySelector('${target}').innerHTML = typeof data === 'string' ? data : JSON.stringify(data);`
+        `    document.querySelector('${escapeStr(target)}').innerHTML = typeof data === 'string' ? data : JSON.stringify(data);`
       );
     } else {
-      lines.push(`    document.querySelector('${target}').innerHTML = data;`);
+      lines.push(`    document.querySelector('${escapeStr(target)}').innerHTML = data;`);
     }
     lines.push(`  })`);
   }
@@ -137,18 +147,26 @@ function generateFetch(node: SemanticNode): string {
 function generatePoll(node: SemanticNode): string {
   const url = extractRoleValue(node, 'source') || '/';
   const duration = extractRoleValue(node, 'duration') || '5s';
+  const format = extractRoleValue(node, 'style')?.toLowerCase() || 'text';
   const target = extractRoleValue(node, 'destination');
   const ms = parseDuration(duration);
 
+  const parseMethod = format === 'json' ? '.json()' : '.text()';
   const lines: string[] = [
     `setInterval(async () => {`,
     `  try {`,
-    `    const r = await fetch('${url}');`,
-    `    const data = await r.text();`,
+    `    const r = await fetch('${escapeStr(url)}');`,
+    `    const data = await r${parseMethod};`,
   ];
 
   if (target) {
-    lines.push(`    document.querySelector('${target}').innerHTML = data;`);
+    if (format === 'json') {
+      lines.push(
+        `    document.querySelector('${escapeStr(target)}').innerHTML = typeof data === 'string' ? data : JSON.stringify(data);`
+      );
+    } else {
+      lines.push(`    document.querySelector('${escapeStr(target)}').innerHTML = data;`);
+    }
   }
 
   lines.push(`  } catch (err) {`, `    console.error('Poll error:', err);`, `  }`, `}, ${ms});`);
@@ -160,12 +178,12 @@ function generateStream(node: SemanticNode): string {
   const url = extractRoleValue(node, 'source') || '/';
   const target = extractRoleValue(node, 'destination');
 
-  const lines: string[] = [`const es = new EventSource('${url}');`];
+  const lines: string[] = [`const es = new EventSource('${escapeStr(url)}');`];
 
   if (target) {
     lines.push(
       `es.onmessage = (event) => {`,
-      `  document.querySelector('${target}').insertAdjacentHTML('beforeend', event.data);`,
+      `  document.querySelector('${escapeStr(target)}').insertAdjacentHTML('beforeend', event.data);`,
       `};`
     );
   } else {
@@ -183,13 +201,13 @@ function generateSubmit(node: SemanticNode): string {
   const format = extractRoleValue(node, 'style')?.toLowerCase();
 
   const lines: string[] = [
-    `const form = document.querySelector('${form}');`,
+    `const form = document.querySelector('${escapeStr(form)}');`,
     `const formData = new FormData(form);`,
   ];
 
   if (format === 'json') {
     lines.push(
-      `fetch('${url}', {`,
+      `fetch('${escapeStr(url)}', {`,
       `  method: 'POST',`,
       `  headers: { 'Content-Type': 'application/json' },`,
       `  body: JSON.stringify(Object.fromEntries(formData)),`,
@@ -199,7 +217,7 @@ function generateSubmit(node: SemanticNode): string {
     );
   } else {
     lines.push(
-      `fetch('${url}', {`,
+      `fetch('${escapeStr(url)}', {`,
       `  method: 'POST',`,
       `  body: formData,`,
       `})`,

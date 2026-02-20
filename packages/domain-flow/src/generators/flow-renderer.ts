@@ -39,6 +39,10 @@ function isSOV(lang: string): boolean {
   return SOV_LANGUAGES.has(lang);
 }
 
+function isVSO(lang: string): boolean {
+  return VSO_LANGUAGES.has(lang);
+}
+
 function kw(command: string, lang: string): string {
   return COMMAND_KEYWORDS[command]?.[lang] ?? command;
 }
@@ -63,7 +67,13 @@ function renderFetch(node: SemanticNode, lang: string): string {
     if (style) parts.push(style, mk('as', lang));
     parts.push(verb);
     if (dest) parts.push(dest, mk('into', lang));
+  } else if (isVSO(lang)) {
+    // VSO: verb first, then source, then modifiers
+    parts.push(verb, source);
+    if (style) parts.push(mk('as', lang), style);
+    if (dest) parts.push(mk('into', lang), dest);
   } else {
+    // SVO (default)
     parts.push(verb, source);
     if (style) parts.push(mk('as', lang), style);
     if (dest) parts.push(mk('into', lang), dest);
@@ -75,6 +85,7 @@ function renderFetch(node: SemanticNode, lang: string): string {
 function renderPoll(node: SemanticNode, lang: string): string {
   const source = extractRoleValue(node, 'source') || '/';
   const duration = extractRoleValue(node, 'duration') || '5s';
+  const style = extractRoleValue(node, 'style');
   const dest = extractRoleValue(node, 'destination');
   const verb = kw('poll', lang);
   const parts: string[] = [];
@@ -82,11 +93,18 @@ function renderPoll(node: SemanticNode, lang: string): string {
   if (isSOV(lang)) {
     parts.push(source);
     parts.push(duration, mk('every', lang));
+    if (style) parts.push(style, mk('as', lang));
     parts.push(verb);
     if (dest) parts.push(dest, mk('into', lang));
+  } else if (isVSO(lang)) {
+    parts.push(verb, source);
+    parts.push(mk('every', lang), duration);
+    if (style) parts.push(mk('as', lang), style);
+    if (dest) parts.push(mk('into', lang), dest);
   } else {
     parts.push(verb, source);
     parts.push(mk('every', lang), duration);
+    if (style) parts.push(mk('as', lang), style);
     if (dest) parts.push(mk('into', lang), dest);
   }
 
@@ -105,6 +123,10 @@ function renderStream(node: SemanticNode, lang: string): string {
     if (style) parts.push(style, mk('as', lang));
     parts.push(verb);
     if (dest) parts.push(dest, mk('into', lang));
+  } else if (isVSO(lang)) {
+    parts.push(verb, source);
+    if (style) parts.push(mk('as', lang), style);
+    if (dest) parts.push(mk('into', lang), dest);
   } else {
     parts.push(verb, source);
     if (style) parts.push(mk('as', lang), style);
@@ -126,6 +148,11 @@ function renderSubmit(node: SemanticNode, lang: string): string {
     parts.push(dest, mk('to', lang));
     if (style) parts.push(style, mk('as', lang));
     parts.push(verb);
+  } else if (isVSO(lang)) {
+    // VSO: verb + patient + destination marker + destination + style
+    parts.push(verb, patient);
+    parts.push(mk('to', lang), dest);
+    if (style) parts.push(mk('as', lang), style);
   } else {
     parts.push(verb, patient);
     parts.push(mk('to', lang), dest);
@@ -145,6 +172,9 @@ function renderTransform(node: SemanticNode, lang: string): string {
     parts.push(patient);
     parts.push(instrument, mk('with', lang));
     parts.push(verb);
+  } else if (isVSO(lang)) {
+    parts.push(verb, patient);
+    parts.push(mk('with', lang), instrument);
   } else {
     parts.push(verb, patient);
     parts.push(mk('with', lang), instrument);

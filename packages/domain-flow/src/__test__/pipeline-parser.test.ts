@@ -161,5 +161,28 @@ stream /api/events as sse`;
       expect(result.ok).toBe(false);
       expect(result.errors).toContain('Empty pipeline');
     });
+
+    it('should compile multi-step pipeline via renderFlow', () => {
+      const result = compilePipeline(
+        flow,
+        'fetch /api/users as json → transform data with uppercase',
+        'en'
+      );
+      expect(result.ok).toBe(true);
+      expect(result.code).toContain("fetch('/api/users')");
+      expect(result.code).toContain('uppercase');
+      expect(result.code).toContain('--- next step ---');
+    });
+
+    it('should compile Spanish multi-step pipeline', () => {
+      const result = compilePipeline(
+        flow,
+        'obtener /api/users como json → transformar data con uppercase',
+        'es'
+      );
+      expect(result.ok).toBe(true);
+      expect(result.code).toContain("fetch('/api/users')");
+      expect(result.code).toContain('uppercase');
+    });
   });
 });
