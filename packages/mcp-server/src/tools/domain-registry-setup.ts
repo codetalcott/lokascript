@@ -102,5 +102,20 @@ export function createDomainRegistry(): DomainRegistry {
     },
   });
 
+  registry.register({
+    name: 'flow',
+    description: 'declarative reactive data flow pipelines (fetch, poll, stream, submit)',
+    languages: ['en', 'es', 'ja', 'ar'],
+    inputLabel: 'pipeline',
+    inputDescription: 'FlowScript pipeline (e.g., "fetch /api/users as json into #list")',
+    getDSL: () => import('@lokascript/domain-flow').then(m => m.createFlowDSL()),
+    getRenderer: () => import('@lokascript/domain-flow').then(m => m.renderFlow),
+    scanConfig: {
+      attributes: ['data-flow', '_flow'],
+      scriptTypes: ['text/flowscript'],
+      defaultLanguage: 'en',
+    },
+  });
+
   return registry;
 }
