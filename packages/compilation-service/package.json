@@ -33,7 +33,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "hono": "^4.11.7"
+    "hono": "^4.11.7",
+    "@lokascript/framework": "*"
   },
   "devDependencies": {
     "@hono/node-server": "^1.13.0",

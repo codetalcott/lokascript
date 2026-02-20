@@ -47,34 +47,15 @@ export interface TranslateRequest {
 }
 
 // =============================================================================
-// LLM JSON Format
+// LLM JSON Format (re-exported from @lokascript/framework)
 // =============================================================================
 
-/**
- * Structured semantic representation for LLM output.
- * This is the "reliable input format" — no parsing ambiguity.
- */
-export interface SemanticJSON {
-  /** Command name (e.g., "toggle", "add", "set", "put") */
-  action: string;
-  /** Semantic roles mapping */
-  roles: Record<string, SemanticJSONValue>;
-  /** Event trigger (for event handlers) */
-  trigger?: {
-    event: string;
-    modifiers?: Record<string, unknown>;
-  };
-}
-
-/**
- * A typed value in a semantic role.
- */
-export interface SemanticJSONValue {
-  /** Value type */
-  type: 'selector' | 'literal' | 'reference' | 'expression' | 'property-path';
-  /** The value */
-  value: string | number | boolean;
-}
+import type {
+  SemanticJSON as _SemanticJSON,
+  SemanticJSONValue as _SemanticJSONValue,
+} from '@lokascript/framework/ir';
+export type SemanticJSON = _SemanticJSON;
+export type SemanticJSONValue = _SemanticJSONValue;
 
 // =============================================================================
 // Response Types

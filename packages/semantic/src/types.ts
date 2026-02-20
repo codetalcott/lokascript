@@ -568,18 +568,14 @@ export function createLiteral(
 /**
  * Check if a string is a valid reference keyword.
  */
-const VALID_REFERENCES: ReadonlySet<string> = new Set<ReferenceValue['value']>([
-  'me',
-  'you',
-  'it',
-  'result',
-  'event',
-  'target',
-  'body',
-]);
+import { isValidReference as isValidReferenceBase } from '@lokascript/framework';
 
+/**
+ * Check if a value is a valid hyperscript reference.
+ * Delegates to @lokascript/framework/ir with the default reference set.
+ */
 export function isValidReference(value: string): value is ReferenceValue['value'] {
-  return VALID_REFERENCES.has(value);
+  return isValidReferenceBase(value);
 }
 
 /**

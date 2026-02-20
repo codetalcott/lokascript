@@ -18,6 +18,7 @@ import type {
 // Import from registry for tree-shaking (registry uses directly-registered patterns first)
 import { getPatternsForLanguageAndCommand, tryGetProfile } from '../registry';
 import { getSupportedLanguages as getTokenizerLanguages } from '../tokenizers';
+import { renderExplicit as renderExplicitBase } from '@lokascript/framework';
 
 // =============================================================================
 // Semantic Renderer Implementation
@@ -76,32 +77,10 @@ export class SemanticRendererImpl implements ISemanticRenderer {
 
   /**
    * Render a semantic node in explicit mode.
+   * Delegates to @lokascript/framework/ir for the core logic.
    */
   renderExplicit(node: SemanticNode): string {
-    // Handle compound nodes
-    if (node.kind === 'compound') {
-      const compoundNode = node as CompoundSemanticNode;
-      const renderedStatements = compoundNode.statements.map(stmt => this.renderExplicit(stmt));
-      return renderedStatements.join(` ${compoundNode.chainType} `);
-    }
-
-    const parts: string[] = [node.action];
-
-    // Add roles
-    for (const [role, value] of node.roles) {
-      parts.push(`${role}:${this.valueToString(value)}`);
-    }
-
-    // Handle event handler body
-    if (node.kind === 'event-handler') {
-      const eventNode = node as EventHandlerSemanticNode;
-      if (eventNode.body && eventNode.body.length > 0) {
-        const bodyParts = eventNode.body.map(n => this.renderExplicit(n));
-        parts.push(`body:${bodyParts.join(' ')}`);
-      }
-    }
-
-    return `[${parts.join(' ')}]`;
+    return renderExplicitBase(node);
   }
 
   /**
@@ -243,35 +222,6 @@ export class SemanticRendererImpl implements ISemanticRenderer {
 
       default:
         return null;
-    }
-  }
-
-  /**
-   * Convert a semantic value to a string for explicit syntax.
-   */
-  private valueToString(value: SemanticValue): string {
-    switch (value.type) {
-      case 'literal':
-        if (typeof value.value === 'string') {
-          // Check if it needs quoting
-          if (value.dataType === 'string' || /\s/.test(value.value)) {
-            return `"${value.value}"`;
-          }
-          return value.value;
-        }
-        return String(value.value);
-
-      case 'selector':
-        return value.value;
-
-      case 'reference':
-        return value.value;
-
-      case 'property-path':
-        return `${this.valueToString(value.object)}'s ${value.property}`;
-
-      case 'expression':
-        return value.raw;
     }
   }
 

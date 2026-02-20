@@ -1,0 +1,106 @@
+import { describe, it, expect } from 'vitest';
+import { renderExplicit } from './explicit-renderer';
+import { parseExplicit } from './explicit-parser';
+import {
+  createCommandNode,
+  createSelector,
+  createLiteral,
+  createReference,
+  createEventHandlerNode,
+  createCompoundNode,
+} from '../core/types';
+
+describe('renderExplicit', () => {
+  it('renders a basic command', () => {
+    const node = createCommandNode('toggle', {
+      patient: createSelector('.active'),
+    });
+    expect(renderExplicit(node)).toBe('[toggle patient:.active]');
+  });
+
+  it('renders multiple roles', () => {
+    const node = createCommandNode('put', {
+      patient: createLiteral('hello', 'string'),
+      destination: createSelector('#output', 'id'),
+    });
+    const result = renderExplicit(node);
+    expect(result).toContain('put');
+    expect(result).toContain('patient:"hello"');
+    expect(result).toContain('destination:#output');
+    expect(result.startsWith('[')).toBe(true);
+    expect(result.endsWith(']')).toBe(true);
+  });
+
+  it('renders reference values', () => {
+    const node = createCommandNode('add', {
+      patient: createSelector('.clicked'),
+      destination: createReference('me'),
+    });
+    expect(renderExplicit(node)).toBe('[add patient:.clicked destination:me]');
+  });
+
+  it('renders numeric values', () => {
+    const node = createCommandNode('increment', {
+      destination: createSelector('#count', 'id'),
+      quantity: createLiteral(5, 'number'),
+    });
+    expect(renderExplicit(node)).toBe('[increment destination:#count quantity:5]');
+  });
+
+  it('renders boolean values', () => {
+    const node = createCommandNode('set', {
+      destination: createLiteral('myVar', 'string'),
+      goal: createLiteral(true, 'boolean'),
+    });
+    const result = renderExplicit(node);
+    expect(result).toContain('goal:true');
+  });
+
+  it('renders event handler with body', () => {
+    const bodyNode = createCommandNode('toggle', {
+      patient: createSelector('.active'),
+    });
+    const node = createEventHandlerNode('on', { event: createLiteral('click', 'string') }, [
+      bodyNode,
+    ]);
+    const result = renderExplicit(node);
+    expect(result).toContain('[on event:"click"');
+    expect(result).toContain('body:[toggle patient:.active]');
+  });
+
+  it('renders compound nodes', () => {
+    const node1 = createCommandNode('add', {
+      patient: createSelector('.loading'),
+    });
+    const node2 = createCommandNode('fetch', {
+      source: createLiteral('/api/data', 'string'),
+    });
+    const compound = createCompoundNode([node1, node2], 'then');
+    const result = renderExplicit(compound);
+    expect(result).toBe('[add patient:.loading] then [fetch source:"/api/data"]');
+  });
+});
+
+describe('round-trip: parse → render', () => {
+  const cases = [
+    '[toggle patient:.active]',
+    '[add patient:.highlight destination:#output]',
+    '[increment destination:#count quantity:5]',
+    '[wait duration:500ms]',
+    '[fetch source:/api/data responseType:json]',
+  ];
+
+  for (const input of cases) {
+    it(`round-trips: ${input}`, () => {
+      const node = parseExplicit(input);
+      const output = renderExplicit(node);
+      // Re-parse to verify semantic equivalence
+      const reparsed = parseExplicit(output);
+      expect(reparsed.action).toBe(node.action);
+      expect(reparsed.roles.size).toBe(node.roles.size);
+      for (const [role, value] of node.roles) {
+        expect(reparsed.roles.get(role)).toEqual(value);
+      }
+    });
+  }
+});
