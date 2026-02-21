@@ -63,6 +63,15 @@ jobs:
       - name: Build domain-todo package
         run: npm run build --prefix packages/domain-todo
 
+      - name: Build domain-behaviorspec package
+        run: npm run build --prefix packages/domain-behaviorspec
+
+      - name: Build domain-llm package
+        run: npm run build --prefix packages/domain-llm
+
+      - name: Build domain-flow package
+        run: npm run build --prefix packages/domain-flow
+
       - name: Build semantic package
         run: npm run build --prefix packages/semantic
 
@@ -127,6 +136,9 @@ jobs:
             packages/domain-sql/dist/
             packages/domain-jsx/dist/
             packages/domain-todo/dist/
+            packages/domain-behaviorspec/dist/
+            packages/domain-llm/dist/
+            packages/domain-flow/dist/
             packages/semantic/dist/
             packages/i18n/dist/
             packages/core/dist/
@@ -357,6 +369,15 @@ jobs:
 
       - name: Test domain-todo
         run: npm test --prefix packages/domain-todo
+
+      - name: Test domain-behaviorspec
+        run: npm test --prefix packages/domain-behaviorspec
+
+      - name: Test domain-llm
+        run: npm test --prefix packages/domain-llm
+
+      - name: Test domain-flow
+        run: npm test --prefix packages/domain-flow
 
       - name: Test language-server
         run: npm test --prefix packages/language-server -- --run

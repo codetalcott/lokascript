@@ -25,7 +25,7 @@ function getDispatcher(registry: DomainRegistry): CrossDomainDispatcher {
   return dispatcher;
 }
 
-function serializeRoles(roles: Map<string, unknown>): Record<string, unknown> {
+function serializeRoles(roles: ReadonlyMap<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const [key, value] of roles) {
     result[key] = value;
