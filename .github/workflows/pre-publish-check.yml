@@ -7,7 +7,7 @@ on:
         description: 'Packages to check (comma-separated, e.g., core,semantic,i18n or "all")'
         required: true
         type: string
-        default: 'core,semantic,i18n,hyperscript-adapter,vite-plugin,mcp-server'
+        default: 'all'
 
 jobs:
   pre-publish-check:
@@ -33,7 +33,7 @@ jobs:
         run: |
           PACKAGES="${{ github.event.inputs.packages }}"
           if [ "$PACKAGES" = "all" ]; then
-            PACKAGES="core,semantic,i18n,hyperscript-adapter,vite-plugin,mcp-server,ast-toolkit,behaviors,multi-tenant"
+            PACKAGES="framework,semantic,core,i18n,hyperscript-adapter,patterns-reference,server-bridge,types-browser,domain-sql,domain-bdd,domain-llm,domain-todo,domain-behaviorspec,domain-jsx,domain-flow,aot-compiler,compilation-service,mcp-server,vite-plugin,behaviors,testing-framework,language-server,mcp-server-hyperscript,language-server-hyperscript,multilingual-hyperscript"
           fi
           echo "Checking packages: $PACKAGES"
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
@@ -96,52 +96,20 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Building core packages (required for typecheck)..." >> $GITHUB_STEP_SUMMARY
 
-          # Build in dependency order:
-          # 1. patterns-reference (no deps)
-          # 2. ast-toolkit (depends on patterns-reference)
-          # 3. semantic (no @hyperfixi deps)
-          # 4. core (depends on semantic, patterns-reference)
-          # 5. i18n (depends on ast-toolkit)
+          # Build in dependency order (matches ci.yml and publish.yml)
+          BUILD_ORDER="framework domain-bdd domain-sql domain-jsx domain-todo domain-behaviorspec domain-llm domain-flow semantic core patterns-reference i18n hyperscript-adapter ast-toolkit aot-compiler compilation-service mcp-server server-bridge types-browser vite-plugin language-server"
 
-          if [ -d "packages/patterns-reference" ]; then
-            echo "Building @hyperfixi/patterns-reference..."
-            npm run build --prefix packages/patterns-reference 2>&1 || true
-          fi
+          for pkg in $BUILD_ORDER; do
+            if [ -d "packages/$pkg" ]; then
+              PKG_NAME=$(node -p "require('./packages/$pkg/package.json').name" 2>/dev/null || echo "$pkg")
+              echo "Building $PKG_NAME..."
+              npm run build --prefix "packages/$pkg" 2>&1 || echo "  ⚠ build failed for $pkg"
+            fi
+          done
 
-          if [ -d "packages/ast-toolkit" ]; then
-            echo "Building @lokascript/ast-toolkit..."
-            npm run build --prefix packages/ast-toolkit 2>&1 || true
-          fi
-
-          if [ -d "packages/semantic" ]; then
-            echo "Building @lokascript/semantic..."
-            npm run build --prefix packages/semantic 2>&1 || true
-          fi
-
+          # Browser bundles (requires i18n/dist)
           if [ -d "packages/core" ]; then
-            echo "Building @hyperfixi/core..."
-            npm run build --prefix packages/core 2>&1 || true
-            npm run build:parser-modules --prefix packages/core 2>&1 || true
-          fi
-
-          if [ -d "packages/i18n" ]; then
-            echo "Building @lokascript/i18n..."
-            npm run build --prefix packages/i18n 2>&1 || true
-          fi
-
-          if [ -d "packages/hyperscript-adapter" ]; then
-            echo "Building @lokascript/hyperscript-adapter..."
-            npm run build --prefix packages/hyperscript-adapter 2>&1 || true
-          fi
-
-          if [ -d "packages/aot-compiler" ]; then
-            echo "Building @hyperfixi/aot-compiler..."
-            npm run build --prefix packages/aot-compiler 2>&1 || true
-          fi
-
-          if [ -d "packages/compilation-service" ]; then
-            echo "Building @lokascript/compilation-service..."
-            npm run build --prefix packages/compilation-service 2>&1 || true
+            npm run build:browser --prefix packages/core 2>&1 || echo "  ⚠ browser build failed"
           fi
 
           echo "✅ Dependency builds complete" >> $GITHUB_STEP_SUMMARY
