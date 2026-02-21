@@ -28,48 +28,126 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Perform a weekly maintenance audit of the LokaScript monorepo.
+            You are running a weekly maintenance audit for the LokaScript monorepo.
+            Your job is to CREATE INDIVIDUAL ACTIONABLE ISSUES for problems found,
+            and CLOSE issues for problems that are resolved. Do NOT create a single
+            mega-report issue.
 
-            ## Checks to Run
+            ## Step 1: Run checks
 
-            1. **Security**: Run `npm audit` and report vulnerabilities by severity
-            2. **Dependencies**: Run `npm outdated` and list stale packages
-            3. **Bundle sizes**: Run `npm run build:browser --prefix packages/core` then check sizes
-            4. **Type safety**: Run `npm run typecheck --workspaces` and report errors
-            5. **Recent issues**: `gh issue list --state open --sort created --limit 15`
-            6. **Open PRs**: `gh pr list --state open`
-            7. **CI health**: `gh run list --limit 5` and check for failures on main
-            8. **Recent activity**: `git log --oneline --since="7 days ago"` for commit summary
+            Run these commands and capture the output:
 
-            ## Create Report
+            ```
+            npm audit --json 2>/dev/null || true
+            npm audit 2>/dev/null || true
+            gh pr list --state open --author "app/dependabot" --json number,title,createdAt,mergeable
+            gh pr list --state open --author "app/dependabot" --json number,title --jq '.[] | "\(.number)\t\(.title)"'
+            npm run typecheck --workspaces 2>&1 || true
+            gh run list --branch main --limit 5 --json conclusion,name,createdAt,headBranch
+            ```
 
-            Create a GitHub issue titled "Weekly Maintenance Report - $(date +%Y-%m-%d)" with:
+            ## Step 2: List existing maintenance issues
 
-            ### Summary
-            - Overall health: HEALTHY / NEEDS ATTENTION / CRITICAL
-            - Key metrics in a table
+            Search for all open automated maintenance issues:
+            ```
+            gh issue list --state open --label "automated,maintenance" --json number,title,labels --limit 50
+            ```
 
-            ### Security
-            - Vulnerability count by severity
-            - Recommended fixes
+            Save this list — you'll use it to avoid duplicates and to close resolved issues.
 
-            ### Dependencies
-            - Number of outdated packages
-            - Priority updates (major versions, security-related)
+            ## Step 3: Evaluate findings and manage issues
 
-            ### Build & Types
-            - Bundle size report
-            - TypeScript error count
+            For each category below, decide whether to CREATE, SKIP, or CLOSE issues.
 
-            ### Activity
-            - Commits this week
-            - Issues opened/closed
-            - PRs opened/merged
+            ### 3a: Security vulnerabilities (npm audit)
 
-            ### Action Items
-            - Prioritized list of things to address this week
+            - SKIP any vulnerability that already has a Dependabot PR open for it.
+              Cross-reference `npm audit` output with the Dependabot PR list.
+            - SKIP any vulnerability that already has an open maintenance issue.
+            - CREATE an issue only for vulnerabilities with NO Dependabot PR and NO
+              existing issue. Title format: `maint: security - <package> <severity> vulnerability`
+              Labels: `automated`, `maintenance`, `priority:high` (for high/critical) or
+              `priority:medium` (for moderate).
+            - CLOSE any existing security maintenance issue where `npm audit` no longer
+              reports the vulnerability. Add a comment: "Resolved — no longer flagged by npm audit."
 
-            Use labels: `maintenance`, `automated`
+            ### 3b: Dependabot PR backlog
+
+            Count open Dependabot PRs. Count how many are older than 7 days.
+            Count how many have failing CI (check via `gh pr checks <number> --json bucket`
+            for a sample of the oldest 3).
+
+            - If there are >5 stale Dependabot PRs (>7 days old), CREATE or UPDATE a
+              single issue titled `maint: dependabot - N stale PRs need review`.
+              List the PR numbers and titles. Labels: `automated`, `maintenance`, `dependencies`, `priority:medium`.
+            - If a previous "dependabot stale PRs" issue exists but the count is now ≤5,
+              CLOSE it with comment: "Backlog cleared — N or fewer stale PRs remaining."
+
+            ### 3c: TypeScript errors
+
+            Run typecheck across workspaces. For each PACKAGE that has errors:
+
+            - SKIP if an open issue already exists for that package (match by title prefix
+              `maint: typecheck - <package>`).
+            - CREATE an issue if new. Title: `maint: typecheck - <package> has N errors`.
+              Include the first 20 error lines in the issue body.
+              Labels: `automated`, `maintenance`, `priority:high`, and the appropriate
+              `pkg:*` label if one exists.
+            - CLOSE any existing typecheck issue for a package that now passes.
+              Comment: "Resolved — typecheck passes."
+
+            ### 3d: CI failures on main
+
+            Check the last 5 CI runs on main.
+
+            - If >2 of the last 5 failed, and no open issue exists, CREATE:
+              `maint: ci - repeated failures on main`. Include run URLs.
+              Labels: `automated`, `maintenance`, `ci`, `priority:high`.
+            - CLOSE if the last 3 runs are all green.
+
+            ### 3e: Major dependency updates (non-security)
+
+            Run `npm outdated 2>/dev/null || true`. Look for MAJOR version bumps only
+            (e.g., zod 3.x → 4.x, @types/node 20.x → 25.x).
+
+            - CREATE an issue per major version bump worth evaluating, if none exists.
+              Title: `maint: deps - evaluate <package> v<old> → v<new>`.
+              Labels: `automated`, `maintenance`, `dependencies`, `priority:low`.
+            - Limit to at most 3 new issues per run (most impactful first).
+            - SKIP packages where the major bump is just `@types/*` changing from
+              an old DefinitelyTyped version — these are low signal.
+
+            ## Step 4: Post summary to dashboard
+
+            Find the issue titled "Maintenance Dashboard" (label: `maintenance`).
+            If it doesn't exist, create it with labels `maintenance`, `automated` and pin
+            it (no pin API — just note in body "Pin this issue manually").
+
+            Add a COMMENT to the dashboard issue with this format:
+
+            ```
+            ## Weekly Check — <YYYY-MM-DD>
+
+            | Category | Status | Open Issues |
+            |----------|--------|-------------|
+            | Security | ✅ Clear / ⚠️ N vulns (M covered by Dependabot) | #X, #Y |
+            | Dependabot backlog | ✅ N PRs / ⚠️ N stale | #X |
+            | TypeScript | ✅ Clean / ⚠️ N packages failing | #X, #Y |
+            | CI (main) | ✅ Green / ⚠️ Failures | #X |
+            | Major deps | ✅ Current / 📋 N to evaluate | #X |
+
+            **Issues opened this week:** N
+            **Issues closed this week:** N
+            ```
+
+            ## Rules
+
+            - NEVER create a "Weekly Maintenance Report" mega-issue.
+            - ALWAYS deduplicate — search before creating.
+            - ALWAYS use the title prefix `maint:` so issues are easy to filter.
+            - Keep issue bodies SHORT and actionable — what's wrong, how to fix it.
+            - Every issue you create MUST have labels: `automated`, `maintenance`, plus
+              the relevant priority and category labels.
           claude_args: |
             --model claude-sonnet-4-20250514
             --allowedTools "Bash(npm:*),Bash(gh issue:*),Bash(gh run:*),Bash(gh pr:*),Bash(git log:*),Bash(date:*),Read,Grep,Glob"
