@@ -117,5 +117,20 @@ export function createDomainRegistry(): DomainRegistry {
     },
   });
 
+  registry.register({
+    name: 'voice',
+    description: 'voice/accessibility commands for speech-controlled web interaction',
+    languages: ['en', 'es', 'ja', 'ar', 'ko', 'zh', 'tr', 'fr'],
+    inputLabel: 'command',
+    inputDescription: 'Voice command in natural language (e.g., "click the submit button")',
+    getDSL: () => import('@lokascript/domain-voice').then(m => m.createVoiceDSL()),
+    getRenderer: () => import('@lokascript/domain-voice').then(m => m.renderVoice),
+    scanConfig: {
+      attributes: ['data-voice', '_voice'],
+      scriptTypes: ['text/voice'],
+      defaultLanguage: 'en',
+    },
+  });
+
   return registry;
 }
